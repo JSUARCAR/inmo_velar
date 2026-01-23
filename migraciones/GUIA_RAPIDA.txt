@@ -1,0 +1,65 @@
+# GUIA RAPIDA DE MIGRACION
+# SQLite -> PostgreSQL
+
+## PASO 1: Instalar psycopg2
+pip install psycopg2-binary
+
+## PASO 2: Verificar PostgreSQL
+# PostgreSQL debe estar corriendo en localhost:5432
+# Verifica con:
+Get-Service -Name postgresql*
+
+## PASO 3: Ejecutar la migración
+python migrate_to_postgresql.py
+
+# Este script:
+# - Crea la base de datos "db_inmo_velar"
+# - Crea el usuario "inmo_user"
+# - Migra 42 tablas
+# - Migra todos los datos
+# - Migra 50 índicesnig
+# - Migra 9 triggers
+# - Migra 3 vistas
+
+## PASO 4: Verificar
+python verify_connection.py
+
+## PASO 5: Configurar tu aplicación
+# Ver postgres_config.py para ejemplos
+
+# ==========================================
+# CONFIGURACION BASICA
+# ==========================================
+
+DATABASE_URL = "postgresql://inmo_user:7323@localhost:5432/db_inmo_velar"
+
+# o
+
+POSTGRES_CONFIG = {
+    'host': 'localhost',
+    'port': 5432,
+    'database': 'db_inmo_velar',
+    'user': 'inmo_user',
+    'password': '7323'
+}
+
+# ==========================================
+# CAMBIOS EN EL CODIGO
+# ==========================================
+
+# 1. Reemplazar sqlite3 por psycopg2
+import psycopg2  # En lugar de: import sqlite3
+
+# 2. Cambiar placeholders
+cursor.execute("SELECT * FROM usuarios WHERE id = %s", (id,))  # En lugar de: ?
+
+# 3. Obtener ID después de INSERT
+cursor.execute("INSERT INTO tabla (datos) VALUES (%s) RETURNING id", (datos,))
+last_id = cursor.fetchone()[0]
+
+# ==========================================
+# SOPORTE
+# ==========================================
+
+# Lee README_MIGRACION.md para más detalles
+# Lee postgres_config.py para ejemplos completos

@@ -1,0 +1,25 @@
+-- Ejecutar como superusuario (postgres) en pgAdmin o línea de comandos:
+-- psql -U postgres -d db_inmo_velar
+
+-- Crear la tabla BONIFICACIONES_ASESORES
+CREATE TABLE IF NOT EXISTS BONIFICACIONES_ASESORES (
+    ID_BONIFICACION_ASESOR SERIAL PRIMARY KEY,
+    ID_LIQUIDACION_ASESOR INTEGER NOT NULL,
+    TIPO_BONIFICACION VARCHAR(50) NOT NULL,
+    DESCRIPCION_BONIFICACION TEXT,
+    VALOR_BONIFICACION INTEGER NOT NULL,
+    FECHA_REGISTRO TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CREATED_BY VARCHAR(50),
+    CONSTRAINT fk_liquidacion_bono
+        FOREIGN KEY(ID_LIQUIDACION_ASESOR) 
+        REFERENCES LIQUIDACIONES_ASESORES(ID_LIQUIDACION_ASESOR)
+        ON DELETE CASCADE
+);
+
+-- Otorgar permisos al usuario inmo_user
+GRANT ALL PRIVILEGES ON TABLE BONIFICACIONES_ASESORES TO inmo_user;
+GRANT USAGE, SELECT ON SEQUENCE bonificaciones_asesores_id_bonificacion_asesor_seq TO inmo_user;
+
+-- Verificar
+SELECT table_name FROM information_schema.tables WHERE table_name = 'bonificaciones_asesores';

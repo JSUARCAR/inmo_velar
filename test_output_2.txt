@@ -1,0 +1,466 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.6, pytest-9.0.2, pluggy-1.5.0 -- C:\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX
+configfile: pyproject.toml
+plugins: anyio-3.7.1, timeout-2.4.0
+collecting ... collected 7 items
+
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_registrar_recibo_exitoso ERROR [ 14%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_registrar_recibo_dates_invalidas ERROR [ 28%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_registrar_recibo_propiedad_inexistente ERROR [ 42%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_validaciones_registro ERROR [ 57%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_marcar_pagado ERROR [ 71%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_verificar_vencimientos ERROR [ 85%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_obtener_resumen ERROR [100%]
+
+=================================== ERRORS ====================================
+_ ERROR at setup of TestServicioRecibosPublicos.test_registrar_recibo_exitoso _
+
+tmp_path = WindowsPath('C:/Users/PC/AppData/Local/Temp/pytest-of-PC/pytest-3/test_registrar_recibo_exitoso0')
+
+    @pytest.fixture
+    def db_manager(tmp_path):
+        db_file = tmp_path / "test_servicio.db"
+        # Reiniciar Singleton para test
+        DatabaseManager._instance = None
+        import src.infraestructura.persistencia.database as db_module
+        db_module.USE_POSTGRESQL = False
+        db_module.DB_MODE = 'sqlite'
+    
+        manager = DatabaseManager()
+        manager.use_postgresql = False
+        manager.database_path = db_file
+        manager._connection_pool = {}
+>       manager.ejecutar_script(SCHEMA_SQL)
+
+tests\integration\test_servicio_recibos_publicos.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\infraestructura\persistencia\database.py:275: in ejecutar_script
+    with self.transaccion() as conexion:
+         ^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:256: in transaccion
+    conexion = self.obtener_conexion()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:180: in obtener_conexion
+    return self._obtener_connection_thread_local()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.infraestructura.persistencia.database.DatabaseManager object at 0x0000022829D5F440>
+
+    def _obtener_connection_thread_local(self) -> Any:
+        """
+        Obtiene una conexi¾n para el thread actual.
+    
+        Retorna conexi¾n apropiada seg·n el modo (SQLite o PostgreSQL).
+        """
+        thread_id = threading.get_ident()
+    
+        if thread_id not in self._connection_pool:
+            if self.use_postgresql:
+                # Conexi¾n PostgreSQL
+                real_conn = psycopg2.connect(**self.pg_config)
+                real_conn.autocommit = False
+                # Wrap it to ensure cursors return uppercase dicts
+                conexion = UpperCaseConnectionWrapper(real_conn)
+            else:
+                # Conexi¾n SQLite
+>               conexion = sqlite3.connect(
+                           ^^^^^^^
+                    str(self.database_path),
+                    check_same_thread=False
+                )
+E               NameError: name 'sqlite3' is not defined. Did you forget to import 'sqlite3'
+
+src\infraestructura\persistencia\database.py:162: NameError
+_ ERROR at setup of TestServicioRecibosPublicos.test_registrar_recibo_dates_invalidas _
+
+tmp_path = WindowsPath('C:/Users/PC/AppData/Local/Temp/pytest-of-PC/pytest-3/test_registrar_recibo_dates_in0')
+
+    @pytest.fixture
+    def db_manager(tmp_path):
+        db_file = tmp_path / "test_servicio.db"
+        # Reiniciar Singleton para test
+        DatabaseManager._instance = None
+        import src.infraestructura.persistencia.database as db_module
+        db_module.USE_POSTGRESQL = False
+        db_module.DB_MODE = 'sqlite'
+    
+        manager = DatabaseManager()
+        manager.use_postgresql = False
+        manager.database_path = db_file
+        manager._connection_pool = {}
+>       manager.ejecutar_script(SCHEMA_SQL)
+
+tests\integration\test_servicio_recibos_publicos.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\infraestructura\persistencia\database.py:275: in ejecutar_script
+    with self.transaccion() as conexion:
+         ^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:256: in transaccion
+    conexion = self.obtener_conexion()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:180: in obtener_conexion
+    return self._obtener_connection_thread_local()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.infraestructura.persistencia.database.DatabaseManager object at 0x000002282D29C200>
+
+    def _obtener_connection_thread_local(self) -> Any:
+        """
+        Obtiene una conexi¾n para el thread actual.
+    
+        Retorna conexi¾n apropiada seg·n el modo (SQLite o PostgreSQL).
+        """
+        thread_id = threading.get_ident()
+    
+        if thread_id not in self._connection_pool:
+            if self.use_postgresql:
+                # Conexi¾n PostgreSQL
+                real_conn = psycopg2.connect(**self.pg_config)
+                real_conn.autocommit = False
+                # Wrap it to ensure cursors return uppercase dicts
+                conexion = UpperCaseConnectionWrapper(real_conn)
+            else:
+                # Conexi¾n SQLite
+>               conexion = sqlite3.connect(
+                           ^^^^^^^
+                    str(self.database_path),
+                    check_same_thread=False
+                )
+E               NameError: name 'sqlite3' is not defined. Did you forget to import 'sqlite3'
+
+src\infraestructura\persistencia\database.py:162: NameError
+_ ERROR at setup of TestServicioRecibosPublicos.test_registrar_recibo_propiedad_inexistente _
+
+tmp_path = WindowsPath('C:/Users/PC/AppData/Local/Temp/pytest-of-PC/pytest-3/test_registrar_recibo_propieda0')
+
+    @pytest.fixture
+    def db_manager(tmp_path):
+        db_file = tmp_path / "test_servicio.db"
+        # Reiniciar Singleton para test
+        DatabaseManager._instance = None
+        import src.infraestructura.persistencia.database as db_module
+        db_module.USE_POSTGRESQL = False
+        db_module.DB_MODE = 'sqlite'
+    
+        manager = DatabaseManager()
+        manager.use_postgresql = False
+        manager.database_path = db_file
+        manager._connection_pool = {}
+>       manager.ejecutar_script(SCHEMA_SQL)
+
+tests\integration\test_servicio_recibos_publicos.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\infraestructura\persistencia\database.py:275: in ejecutar_script
+    with self.transaccion() as conexion:
+         ^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:256: in transaccion
+    conexion = self.obtener_conexion()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:180: in obtener_conexion
+    return self._obtener_connection_thread_local()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.infraestructura.persistencia.database.DatabaseManager object at 0x000002282D29EE40>
+
+    def _obtener_connection_thread_local(self) -> Any:
+        """
+        Obtiene una conexi¾n para el thread actual.
+    
+        Retorna conexi¾n apropiada seg·n el modo (SQLite o PostgreSQL).
+        """
+        thread_id = threading.get_ident()
+    
+        if thread_id not in self._connection_pool:
+            if self.use_postgresql:
+                # Conexi¾n PostgreSQL
+                real_conn = psycopg2.connect(**self.pg_config)
+                real_conn.autocommit = False
+                # Wrap it to ensure cursors return uppercase dicts
+                conexion = UpperCaseConnectionWrapper(real_conn)
+            else:
+                # Conexi¾n SQLite
+>               conexion = sqlite3.connect(
+                           ^^^^^^^
+                    str(self.database_path),
+                    check_same_thread=False
+                )
+E               NameError: name 'sqlite3' is not defined. Did you forget to import 'sqlite3'
+
+src\infraestructura\persistencia\database.py:162: NameError
+__ ERROR at setup of TestServicioRecibosPublicos.test_validaciones_registro ___
+
+tmp_path = WindowsPath('C:/Users/PC/AppData/Local/Temp/pytest-of-PC/pytest-3/test_validaciones_registro0')
+
+    @pytest.fixture
+    def db_manager(tmp_path):
+        db_file = tmp_path / "test_servicio.db"
+        # Reiniciar Singleton para test
+        DatabaseManager._instance = None
+        import src.infraestructura.persistencia.database as db_module
+        db_module.USE_POSTGRESQL = False
+        db_module.DB_MODE = 'sqlite'
+    
+        manager = DatabaseManager()
+        manager.use_postgresql = False
+        manager.database_path = db_file
+        manager._connection_pool = {}
+>       manager.ejecutar_script(SCHEMA_SQL)
+
+tests\integration\test_servicio_recibos_publicos.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\infraestructura\persistencia\database.py:275: in ejecutar_script
+    with self.transaccion() as conexion:
+         ^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:256: in transaccion
+    conexion = self.obtener_conexion()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:180: in obtener_conexion
+    return self._obtener_connection_thread_local()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.infraestructura.persistencia.database.DatabaseManager object at 0x000002282D29FDA0>
+
+    def _obtener_connection_thread_local(self) -> Any:
+        """
+        Obtiene una conexi¾n para el thread actual.
+    
+        Retorna conexi¾n apropiada seg·n el modo (SQLite o PostgreSQL).
+        """
+        thread_id = threading.get_ident()
+    
+        if thread_id not in self._connection_pool:
+            if self.use_postgresql:
+                # Conexi¾n PostgreSQL
+                real_conn = psycopg2.connect(**self.pg_config)
+                real_conn.autocommit = False
+                # Wrap it to ensure cursors return uppercase dicts
+                conexion = UpperCaseConnectionWrapper(real_conn)
+            else:
+                # Conexi¾n SQLite
+>               conexion = sqlite3.connect(
+                           ^^^^^^^
+                    str(self.database_path),
+                    check_same_thread=False
+                )
+E               NameError: name 'sqlite3' is not defined. Did you forget to import 'sqlite3'
+
+src\infraestructura\persistencia\database.py:162: NameError
+______ ERROR at setup of TestServicioRecibosPublicos.test_marcar_pagado _______
+
+tmp_path = WindowsPath('C:/Users/PC/AppData/Local/Temp/pytest-of-PC/pytest-3/test_marcar_pagado0')
+
+    @pytest.fixture
+    def db_manager(tmp_path):
+        db_file = tmp_path / "test_servicio.db"
+        # Reiniciar Singleton para test
+        DatabaseManager._instance = None
+        import src.infraestructura.persistencia.database as db_module
+        db_module.USE_POSTGRESQL = False
+        db_module.DB_MODE = 'sqlite'
+    
+        manager = DatabaseManager()
+        manager.use_postgresql = False
+        manager.database_path = db_file
+        manager._connection_pool = {}
+>       manager.ejecutar_script(SCHEMA_SQL)
+
+tests\integration\test_servicio_recibos_publicos.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\infraestructura\persistencia\database.py:275: in ejecutar_script
+    with self.transaccion() as conexion:
+         ^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:256: in transaccion
+    conexion = self.obtener_conexion()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:180: in obtener_conexion
+    return self._obtener_connection_thread_local()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.infraestructura.persistencia.database.DatabaseManager object at 0x000002282C46E6F0>
+
+    def _obtener_connection_thread_local(self) -> Any:
+        """
+        Obtiene una conexi¾n para el thread actual.
+    
+        Retorna conexi¾n apropiada seg·n el modo (SQLite o PostgreSQL).
+        """
+        thread_id = threading.get_ident()
+    
+        if thread_id not in self._connection_pool:
+            if self.use_postgresql:
+                # Conexi¾n PostgreSQL
+                real_conn = psycopg2.connect(**self.pg_config)
+                real_conn.autocommit = False
+                # Wrap it to ensure cursors return uppercase dicts
+                conexion = UpperCaseConnectionWrapper(real_conn)
+            else:
+                # Conexi¾n SQLite
+>               conexion = sqlite3.connect(
+                           ^^^^^^^
+                    str(self.database_path),
+                    check_same_thread=False
+                )
+E               NameError: name 'sqlite3' is not defined. Did you forget to import 'sqlite3'
+
+src\infraestructura\persistencia\database.py:162: NameError
+__ ERROR at setup of TestServicioRecibosPublicos.test_verificar_vencimientos __
+
+tmp_path = WindowsPath('C:/Users/PC/AppData/Local/Temp/pytest-of-PC/pytest-3/test_verificar_vencimientos0')
+
+    @pytest.fixture
+    def db_manager(tmp_path):
+        db_file = tmp_path / "test_servicio.db"
+        # Reiniciar Singleton para test
+        DatabaseManager._instance = None
+        import src.infraestructura.persistencia.database as db_module
+        db_module.USE_POSTGRESQL = False
+        db_module.DB_MODE = 'sqlite'
+    
+        manager = DatabaseManager()
+        manager.use_postgresql = False
+        manager.database_path = db_file
+        manager._connection_pool = {}
+>       manager.ejecutar_script(SCHEMA_SQL)
+
+tests\integration\test_servicio_recibos_publicos.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\infraestructura\persistencia\database.py:275: in ejecutar_script
+    with self.transaccion() as conexion:
+         ^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:256: in transaccion
+    conexion = self.obtener_conexion()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:180: in obtener_conexion
+    return self._obtener_connection_thread_local()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.infraestructura.persistencia.database.DatabaseManager object at 0x000002282D29DEE0>
+
+    def _obtener_connection_thread_local(self) -> Any:
+        """
+        Obtiene una conexi¾n para el thread actual.
+    
+        Retorna conexi¾n apropiada seg·n el modo (SQLite o PostgreSQL).
+        """
+        thread_id = threading.get_ident()
+    
+        if thread_id not in self._connection_pool:
+            if self.use_postgresql:
+                # Conexi¾n PostgreSQL
+                real_conn = psycopg2.connect(**self.pg_config)
+                real_conn.autocommit = False
+                # Wrap it to ensure cursors return uppercase dicts
+                conexion = UpperCaseConnectionWrapper(real_conn)
+            else:
+                # Conexi¾n SQLite
+>               conexion = sqlite3.connect(
+                           ^^^^^^^
+                    str(self.database_path),
+                    check_same_thread=False
+                )
+E               NameError: name 'sqlite3' is not defined. Did you forget to import 'sqlite3'
+
+src\infraestructura\persistencia\database.py:162: NameError
+_____ ERROR at setup of TestServicioRecibosPublicos.test_obtener_resumen ______
+
+tmp_path = WindowsPath('C:/Users/PC/AppData/Local/Temp/pytest-of-PC/pytest-3/test_obtener_resumen0')
+
+    @pytest.fixture
+    def db_manager(tmp_path):
+        db_file = tmp_path / "test_servicio.db"
+        # Reiniciar Singleton para test
+        DatabaseManager._instance = None
+        import src.infraestructura.persistencia.database as db_module
+        db_module.USE_POSTGRESQL = False
+        db_module.DB_MODE = 'sqlite'
+    
+        manager = DatabaseManager()
+        manager.use_postgresql = False
+        manager.database_path = db_file
+        manager._connection_pool = {}
+>       manager.ejecutar_script(SCHEMA_SQL)
+
+tests\integration\test_servicio_recibos_publicos.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\infraestructura\persistencia\database.py:275: in ejecutar_script
+    with self.transaccion() as conexion:
+         ^^^^^^^^^^^^^^^^^^
+C:\Python312\Lib\contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:256: in transaccion
+    conexion = self.obtener_conexion()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+src\infraestructura\persistencia\database.py:180: in obtener_conexion
+    return self._obtener_connection_thread_local()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.infraestructura.persistencia.database.DatabaseManager object at 0x000002282D29CE00>
+
+    def _obtener_connection_thread_local(self) -> Any:
+        """
+        Obtiene una conexi¾n para el thread actual.
+    
+        Retorna conexi¾n apropiada seg·n el modo (SQLite o PostgreSQL).
+        """
+        thread_id = threading.get_ident()
+    
+        if thread_id not in self._connection_pool:
+            if self.use_postgresql:
+                # Conexi¾n PostgreSQL
+                real_conn = psycopg2.connect(**self.pg_config)
+                real_conn.autocommit = False
+                # Wrap it to ensure cursors return uppercase dicts
+                conexion = UpperCaseConnectionWrapper(real_conn)
+            else:
+                # Conexi¾n SQLite
+>               conexion = sqlite3.connect(
+                           ^^^^^^^
+                    str(self.database_path),
+                    check_same_thread=False
+                )
+E               NameError: name 'sqlite3' is not defined. Did you forget to import 'sqlite3'
+
+src\infraestructura\persistencia\database.py:162: NameError
+============================== warnings summary ===============================
+src\infraestructura\configuracion\settings.py:13
+  C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\infraestructura\configuracion\settings.py:13: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Settings(BaseSettings):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+ERROR tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_registrar_recibo_exitoso
+ERROR tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_registrar_recibo_dates_invalidas
+ERROR tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_registrar_recibo_propiedad_inexistente
+ERROR tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_validaciones_registro
+ERROR tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_marcar_pagado
+ERROR tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_verificar_vencimientos
+ERROR tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_obtener_resumen
+======================== 1 warning, 7 errors in 0.76s =========================

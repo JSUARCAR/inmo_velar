@@ -1,0 +1,89 @@
+test_01_login (__main__.TestIntegracion.test_01_login) ... ok
+test_02_propiedades (__main__.TestIntegracion.test_02_propiedades) ... ERROR
+test_03_contratos (__main__.TestIntegracion.test_03_contratos) ... ERROR
+test_04_liquidaciones (__main__.TestIntegracion.test_04_liquidaciones) ... ERROR
+test_05_recaudos (__main__.TestIntegracion.test_05_recaudos) ... ERROR
+
+======================================================================
+ERROR: test_02_propiedades (__main__.TestIntegracion.test_02_propiedades)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\test_integration_full.py", line 40, in test_02_propiedades
+    props = repo.listar_disponibles()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\infraestructura\persistencia\repositorio_propiedad_sqlite.py", line 119, in listar_disponibles
+    cursor.execute(
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\psycopg2\extras.py", line 236, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.UndefinedFunction: el operador no existe: boolean = integer
+LINE 3:             WHERE DISPONIBILIDAD_PROPIEDAD = 1 
+                                                   ^
+HINT:  Ning·n operador coincide en el nombre y tipos de argumentos. Puede ser necesario agregar conversi¾n explÝcita de tipos.
+
+
+======================================================================
+ERROR: test_03_contratos (__main__.TestIntegracion.test_03_contratos)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\test_integration_full.py", line 54, in test_03_contratos
+    arrs = repo_arr.listar_todos()
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\infraestructura\persistencia\repositorio_contrato_arrendamiento_sqlite.py", line 67, in listar_todos
+    cursor.execute(f"SELECT * FROM CONTRATOS_ARRENDAMIENTOS ORDER BY ID_CONTRATO_A DESC")
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\psycopg2\extras.py", line 236, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.InFailedSqlTransaction: transacci¾n abortada, las ¾rdenes serßn ignoradas hasta el fin de bloque de transacci¾n
+
+
+======================================================================
+ERROR: test_04_liquidaciones (__main__.TestIntegracion.test_04_liquidaciones)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\test_integration_full.py", line 64, in test_04_liquidaciones
+    liqs = repo.listar_todas()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\infraestructura\persistencia\repositorio_liquidacion_sqlite.py", line 262, in listar_todas
+    cursor.execute(query)
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\psycopg2\extras.py", line 236, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.InFailedSqlTransaction: transacci¾n abortada, las ¾rdenes serßn ignoradas hasta el fin de bloque de transacci¾n
+
+
+======================================================================
+ERROR: test_05_recaudos (__main__.TestIntegracion.test_05_recaudos)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\test_integration_full.py", line 75, in test_05_recaudos
+    recs = repo.listar_todos()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\infraestructura\persistencia\repositorio_recaudo_sqlite.py", line 220, in listar_todos
+    cursor.execute(query)
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\psycopg2\extras.py", line 236, in execute
+    return super().execute(query, vars)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+psycopg2.errors.InFailedSqlTransaction: transacci¾n abortada, las ¾rdenes serßn ignoradas hasta el fin de bloque de transacci¾n
+
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.073s
+
+FAILED (errors=4)
+
+
+============================================================
+INICIANDO PRUEBAS DE INTEGRACIËN - DB MODE: POSTGRESQL
+============================================================
+
+[TEST] Autenticaci¾n...
+  OK.
+
+[TEST] Propiedades...
+
+[TEST] Contratos...
+
+[TEST] Liquidaciones...
+
+[TEST] Recaudos...

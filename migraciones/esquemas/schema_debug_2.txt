@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-FLET\tests\manual_test_financiero.py", line 189, in <module>
+    run_tests()
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-FLET\tests\manual_test_financiero.py", line 138, in run_tests
+    servicio, id_a, id_m = setup()
+                           ^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-FLET\tests\manual_test_financiero.py", line 111, in setup
+    cursor.execute("""
+sqlite3.OperationalError: non-deterministic use of date() in a CHECK constraint
+ROOT: C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-FLET
+SETUP...
+DB Path: test_manual.db
+
+FAILED: non-deterministic use of date() in a CHECK constraint

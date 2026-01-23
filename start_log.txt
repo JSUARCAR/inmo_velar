@@ -1,0 +1,113 @@
+Warning: `reflex.plugins.sitemap.SitemapPlugin` plugin is enabled by default, 
+but not explicitly added to the config. If you want to use it, please add it to
+the `plugins` list in your config inside of `rxconfig.py`. To disable this 
+plugin, set `disable_plugins` to `['reflex.plugins.sitemap.SitemapPlugin']`.
+Warning: Windows Subsystem for Linux (WSL) is recommended for improving initial
+install times.
+Warning: Creating project directories in OneDrive may lead to performance 
+issues. For optimal performance, It is recommended to avoid using OneDrive for 
+your reflex app.
+Warning: `reflex.plugins.sitemap.SitemapPlugin` plugin is enabled by default, 
+but not explicitly added to the config. If you want to use it, please add it to
+the `plugins` list in your config inside of `rxconfig.py`. To disable this 
+plugin, set `disable_plugins` to `['reflex.plugins.sitemap.SitemapPlugin']`.
+----------------------------- Starting Reflex App -----------------------------
+Warning: `reflex.plugins.sitemap.SitemapPlugin` plugin is enabled by default, 
+but not explicitly added to the config. If you want to use it, please add it to
+the `plugins` list in your config inside of `rxconfig.py`. To disable this 
+plugin, set `disable_plugins` to `['reflex.plugins.sitemap.SitemapPlugin']`.
+Warning: `reflex.plugins.sitemap.SitemapPlugin` plugin is enabled by default, 
+but not explicitly added to the config. If you want to use it, please add it to
+the `plugins` list in your config inside of `rxconfig.py`. To disable this 
+plugin, set `disable_plugins` to `['reflex.plugins.sitemap.SitemapPlugin']`.
+Warning: Page dashboard is being redefined with the same component.
+Warning: Page personas is being redefined with the same component.
+Warning: Page propiedades is being redefined with the same component.
+Warning: Invalid icon tag: edit. Please use one of the following: credit_card, 
+location_edit, battery_medium, briefcase_medical, linkedin, signal_medium, 
+sun_medium, accessibility, activity, align_horizontal_distribute_center, ...
+See full list at https://reflex.dev/docs/library/data-display/icon/#icons-list.
+Using 'circle_help' icon instead.
+Warning: Invalid icon tag: alert_circle. Please use one of the following: 
+loader_circle, message_circle_code, message_circle_dashed, 
+message_circle_heart, message_circle_more, message_circle_off, 
+message_circle_plus, message_circle_question, message_circle_reply, 
+message_circle_warning, ...
+See full list at https://reflex.dev/docs/library/data-display/icon/#icons-list.
+Using 'circle_help' icon instead.
+Warning: Invalid icon tag: alert_circle. Please use one of the following: 
+loader_circle, message_circle_code, message_circle_dashed, 
+message_circle_heart, message_circle_more, message_circle_off, 
+message_circle_plus, message_circle_question, message_circle_reply, 
+message_circle_warning, ...
+See full list at https://reflex.dev/docs/library/data-display/icon/#icons-list.
+Using 'circle_help' icon instead.
+Warning: Invalid icon tag: alert_circle. Please use one of the following: 
+loader_circle, message_circle_code, message_circle_dashed, 
+message_circle_heart, message_circle_more, message_circle_off, 
+message_circle_plus, message_circle_question, message_circle_reply, 
+message_circle_warning, ...
+See full list at https://reflex.dev/docs/library/data-display/icon/#icons-list.
+Using 'circle_help' icon instead.
+Warning: Invalid icon tag: edit. Please use one of the following: credit_card, 
+location_edit, battery_medium, briefcase_medical, linkedin, signal_medium, 
+sun_medium, accessibility, activity, align_horizontal_distribute_center, ...
+See full list at https://reflex.dev/docs/library/data-display/icon/#icons-list.
+Using 'circle_help' icon instead.
+Traceback (most recent call last):
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\utils\prerequisites.py", line 349, in compile_or_validate_app
+    get_compiled_app(
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\utils\prerequisites.py", line 268, in get_compiled_app
+    app._compile(prerender_routes=prerender_routes, dry_run=dry_run, use_rich=use_rich)
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\app.py", line 1248, in _compile
+    self._compile_page(route, save_page=should_compile)
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\app.py", line 878, in _compile_page
+    component = compiler.compile_unevaluated_page(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\compiler\compiler.py", line 806, in compile_unevaluated_page
+    component = into_component(page.component)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\compiler\compiler.py", line 736, in into_component
+    component_called = component()
+                       ^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\presentacion_reflex\pages\contratos.py", line 299, in contratos
+    return dashboard_layout(contratos_page())
+                            ^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\presentacion_reflex\pages\contratos.py", line 27, in contratos_page
+    rx.input(
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\components\radix\themes\components\text_field.py", line 118, in create
+    component = super().create(*children, **props)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\components\el\elements\forms.py", line 478, in create
+    return super().create(*children, **props)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\components\radix\themes\base.py", line 135, in create
+    component = super().create(*children, **props)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\components\component.py", line 1069, in create
+    return cls._create(children_normalized, **props)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\components\component.py", line 1084, in _create
+    comp._post_init(children=list(children), **props)
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\components\component.py", line 812, in _post_init
+    kwargs["event_triggers"][key] = EventChain.create(
+                                    ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\event.py", line 530, in create
+    result = call_event_fn(value, args_spec, key=key)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\event.py", line 1802, in call_event_fn
+    out = fn(*[*parsed_args][:number_of_fn_args])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\presentacion_reflex\pages\contratos.py", line 31, in <lambda>
+    on_key_down=lambda key: rx.cond(
+                            ^^^^^^^^
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\components\core\cond.py", line 146, in cond
+    c2_var = Var.create(c2)
+             ^^^^^^^^^^^^^^
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\vars\base.py", line 717, in create
+    return LiteralVar.create(value, _var_data=_var_data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\AppData\Roaming\Python\Python312\site-packages\reflex\vars\base.py", line 1522, in _create_literal_var
+    raise TypeError(msg)
+TypeError: Unsupported type <class 'function'> for LiteralVar. Tried to create a LiteralVar from <function noop at 0x000001DE0D820360>.
+Happened while evaluating page 'contratos'

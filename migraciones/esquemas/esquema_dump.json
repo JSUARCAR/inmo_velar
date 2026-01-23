@@ -1,0 +1,2534 @@
+{
+  "USUARIOS": [
+    {
+      "nombre": "ID_USUARIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "NOMBRE_USUARIO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "CONTRASENA_HASH",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ROL",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_USUARIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ULTIMO_ACCESO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_CREACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "SESIONES_USUARIO": [
+    {
+      "nombre": "ID_SESION",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_USUARIO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INICIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_FIN",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "TOKEN_SESION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "MUNICIPIOS": [
+    {
+      "nombre": "ID_MUNICIPIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "NOMBRE_MUNICIPIO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "DEPARTAMENTO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_REGISTRO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "IPC": [
+    {
+      "nombre": "ID_IPC",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ANIO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_IPC",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_PUBLICACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_REGISTRO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "PERSONAS": [
+    {
+      "nombre": "ID_PERSONA",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "TIPO_DOCUMENTO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "NUMERO_DOCUMENTO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "NOMBRE_COMPLETO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "TELEFONO_PRINCIPAL",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CORREO_ELECTRONICO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "DIRECCION_PRINCIPAL",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_REGISTRO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_INACTIVACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "ASESORES": [
+    {
+      "nombre": "ID_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_PERSONA",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_USUARIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "COMISION_PORCENTAJE_ARRIENDO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "COMISION_PORCENTAJE_VENTA",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INGRESO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_INACTIVACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "PROPIETARIOS": [
+    {
+      "nombre": "ID_PROPIETARIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_PERSONA",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "BANCO_PROPIETARIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "NUMERO_CUENTA_PROPIETARIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_CUENTA",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "OBSERVACIONES_PROPIETARIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_PROPIETARIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INGRESO_PROPIETARIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_INACTIVACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "SEGUROS": [
+    {
+      "nombre": "ID_SEGURO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "NOMBRE_SEGURO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INICIO_SEGURO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "PORCENTAJE_SEGURO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_SEGURO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INGRESO_SEGURO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_INACTIVACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "ARRENDATARIOS": [
+    {
+      "nombre": "ID_ARRENDATARIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_PERSONA",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_SEGURO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CODIGO_APROBACION_SEGURO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "DIRECCION_REFERENCIA",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_ARRENDATARIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INGRESO_ARRENDATARIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_INACTIVACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "CODEUDORES": [
+    {
+      "nombre": "ID_CODEUDOR",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_PERSONA",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INGRESO_CODEUDOR",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_REGISTRO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_INACTIVACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "PROPIEDADES": [
+    {
+      "nombre": "ID_PROPIEDAD",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "MATRICULA_INMOBILIARIA",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_MUNICIPIO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "DIRECCION_PROPIEDAD",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_PROPIEDAD",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "DISPONIBILIDAD_PROPIEDAD",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "AREA_M2",
+      "tipo": "REAL",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "HABITACIONES",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "BANO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "PARQUEADERO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTRATO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_ADMINISTRACION",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CANON_ARRENDAMIENTO_ESTIMADO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_VENTA_PROPIEDAD",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "COMISION_VENTA_PROPIEDAD",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "OBSERVACIONES_PROPIEDAD",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INGRESO_PROPIEDAD",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_REGISTRO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_INACTIVACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "CONTRATOS_MANDATOS": [
+    {
+      "nombre": "ID_CONTRATO_M",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_PROPIEDAD",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_PROPIETARIO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INICIO_CONTRATO_M",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_FIN_CONTRATO_M",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "DURACION_CONTRATO_M",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "CANON_MANDATO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "COMISION_PORCENTAJE_CONTRATO_M",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "IVA_CONTRATO_M",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_CONTRATO_M",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_CANCELACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ALERTA_VENCIMINETO_CONTRATO_M",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_RENOVACION_CONTRATO_M",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "CONTRATOS_ARRENDAMIENTOS": [
+    {
+      "nombre": "ID_CONTRATO_A",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_PROPIEDAD",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_ARRENDATARIO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_CODEUDOR",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INICIO_CONTRATO_A",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_FIN_CONTRATO_A",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "DURACION_CONTRATO_A",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "CANON_ARRENDAMIENTO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "DEPOSITO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_CONTRATO_A",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_CANCELACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ALERTA_VENCIMIENTO_CONTRATO_A",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ALERTA_IPC",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_RENOVACION_CONTRATO_A",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INCREMENTO_IPC",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_ULTIMO_INCREMENTO_IPC",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "RENOVACIONES_CONTRATOS": [
+    {
+      "nombre": "ID_RENOVACION",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_CONTRATO_M",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ID_CONTRATO_A",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_CONTRATO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INICIO_ORIGINAL",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_FIN_ORIGINAL",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INICIO_RENOVACION",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_FIN_RENOVACION",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "CANON_ANTERIOR",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "CANON_NUEVO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "PORCENTAJE_INCREMENTO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_RENOVACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_RENOVACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "RECAUDO_ARRENDAMIENTO": [
+    {
+      "nombre": "ID_RECAUDO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_CONTRATO_A",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_RECAUDO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_RECAUDO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_VENCIMIENTO_RECAUDO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "MEDIO_PAGO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "REFERENCIA_RECAUDO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "PERIODO_RECAUDO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "DIRECCION_CONTRATO_A",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_RECAUDO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "DIAS_MORA",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_ANULACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "INCIDENTES": [
+    {
+      "nombre": "ID_INCIDENTE",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_PROPIEDAD",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_CONTRATO_M",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "DESCRIPCION_INCIDENTE",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "COSTO_INCIDENTE",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_INCIDENTE",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "QUIEN_ARREGLA",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "APROBADO_POR",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_ARREGLO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "DIAS_SIN_RESOLVER",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_CANCELACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "RECIBOS_PUBLICOS": [
+    {
+      "nombre": "ID_RECIBO_PUBLICO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_PROPIEDAD",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "PERIODO_RECIBO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_SERVICIO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_RECIBO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_VENCIMIENTO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "COMPROBANTE",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "LIQUIDACIONES_PROPIETARIOS": [
+    {
+      "nombre": "ID_LIQUIDACION_PROPIETARIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_CONTRATO_M",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_PROPIETARIO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "PERIODO_LIQUIDACION",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_VENCIMIENTO_PAGO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "CANON_MANDATO_LIQUIDADO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "COMISION_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "COMISION_SEGURO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "IVA_COMISION",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_INCIDENTES",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "IMPUESTO_4X1000",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_ADMINISTRACION",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_RECIBOS_PUBLICOS",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "TOTAL_DESCUENTOS",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_NETO_PROPIETARIO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_LIQUIDACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "DIAS_MORA",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_CREACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_APROBACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "USUARIO_CREADOR",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "USUARIO_APROBADOR",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "OBSERVACIONES_LIQUIDACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_ANULACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "LIQUIDACIONES_ASESORES": [
+    {
+      "nombre": "ID_LIQUIDACION_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_CONTRATO_A",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "PERIODO_LIQUIDACION",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "CANON_ARRENDAMIENTO_LIQUIDADO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "PORCENTAJE_COMISION",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "COMISION_BRUTA",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "TOTAL_DESCUENTOS",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_NETO_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_LIQUIDACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_CREACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_APROBACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "USUARIO_CREADOR",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "USUARIO_APROBADOR",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "OBSERVACIONES_LIQUIDACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_ANULACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "DESCUENTOS_ASESORES": [
+    {
+      "nombre": "ID_DESCUENTO_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_LIQUIDACION_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_DESCUENTO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "DESCRIPCION_DESCUENTO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_DESCUENTO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_REGISTRO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "SALDOS_FAVOR": [
+    {
+      "nombre": "ID_SALDO_FAVOR",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_PROPIETARIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ID_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_BENEFICIARIO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_SALDO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_GENERACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_RESOLUCION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "OBSERVACIONES",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "PAGOS_PROPIETARIOS": [
+    {
+      "nombre": "ID_PAGO_PROPIETARIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_LIQUIDACION_PROPIETARIO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_PROPIETARIO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_PAGO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_PROGRAMADA",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "MEDIO_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "REFERENCIA_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "BANCO_DESTINO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CUENTA_DESTINO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_CUENTA_DESTINO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_RECHAZO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "COMPROBANTE_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "OBSERVACIONES_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_CONFIRMACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "PAGOS_ASESORES": [
+    {
+      "nombre": "ID_PAGO_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_LIQUIDACION_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_ASESOR",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_PAGO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_PROGRAMADA",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "MEDIO_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "REFERENCIA_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_RECHAZO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "COMPROBANTE_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "OBSERVACIONES_PAGO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_CONFIRMACION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "ALERTAS": [
+    {
+      "nombre": "ID_ALERTAS",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "TIPO_ALERTA",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "DESCRIPCION_ALERTA",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "PRIORIDAD",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_GENERACION_ALERTA",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_VENCIMIENTO_ALERTA",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_ALERTA",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ID_ENTIDAD_RELACIONADA",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_ENTIDAD",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "USUARIO_ASIGNADO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ACCION_TOMADA",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_ACCION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "PLANTILLA_MENSAJE",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "DESTINATARIO_NOMBRE",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "DESTINATARIO_TELEFONO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "DESTINATARIO_EMAIL",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_RESOLUCION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "RESUELTO_AUTOMATICAMENTE",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "NOTIFICACIONES_ENVIADAS": [
+    {
+      "nombre": "ID_NOTIFICACION",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_ALERTA",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_NOTIFICACION",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "DESTINATARIO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ASUNTO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MENSAJE",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_ENVIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_ENVIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "RESPUESTA_SISTEMA",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "INTENTOS_ENVIO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_ENTREGA",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "PLANTILLAS_NOTIFICACIONES": [
+    {
+      "nombre": "ID_PLANTILLA",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "TIPO_ALERTA",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "CANAL",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ASUNTO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MENSAJE_PLANTILLA",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VARIABLES_DISPONIBLES",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "ARCHIVOS_ADJUNTOS": [
+    {
+      "nombre": "ID_ARCHIVO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "ID_ENTIDAD_RELACIONADA",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_ENTIDAD",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_ARCHIVO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "NOMBRE_ARCHIVO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "URL_ONEDRIVE",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "TAMA\u00d1O_KB",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "EXTENSION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "DESCRIPCION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "VERSION",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_CARGA",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "AUDITORIA_CAMBIOS": [
+    {
+      "nombre": "ID_AUDITORIA",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "TABLA",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_REGISTRO",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_OPERACION",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "CAMPO_MODIFICADO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_ANTERIOR",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_NUEVO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "USUARIO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_CAMBIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_CAMBIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "IP_ORIGEN",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "HISTORIAL_ESTADOS": [
+    {
+      "nombre": "ID_HISTORIAL",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "TIPO_ENTIDAD",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ID_ENTIDAD",
+      "tipo": "INTEGER",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_ANTERIOR",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "ESTADO_NUEVO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "MOTIVO_CAMBIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "FECHA_CAMBIO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "USUARIO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "REQUIRIO_APROBACION",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "APROBADO_POR",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ],
+  "PARAMETROS_SISTEMA": [
+    {
+      "nombre": "ID_PARAMETRO",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": true
+    },
+    {
+      "nombre": "NOMBRE_PARAMETRO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "VALOR_PARAMETRO",
+      "tipo": "TEXT",
+      "notnull": true,
+      "pk": false
+    },
+    {
+      "nombre": "TIPO_DATO",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "DESCRIPCION",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CATEGORIA",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "MODIFICABLE",
+      "tipo": "INTEGER",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "CREATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_AT",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    },
+    {
+      "nombre": "UPDATED_BY",
+      "tipo": "TEXT",
+      "notnull": false,
+      "pk": false
+    }
+  ]
+}

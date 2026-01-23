@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\test_integration_full.py", line 16, in <module>
+    from infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\infraestructura\persistencia\repositorio_contrato_arrendamiento_sqlite.py", line 96
+    if row is None:
+    ^^
+SyntaxError: invalid syntax

@@ -1,0 +1,23 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.6, pytest-9.0.2, pluggy-1.5.0 -- C:\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX
+configfile: pyproject.toml
+plugins: anyio-3.7.1, timeout-2.4.0
+collecting ... collected 7 items
+
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_registrar_recibo_exitoso PASSED [ 14%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_registrar_recibo_dates_invalidas PASSED [ 28%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_registrar_recibo_propiedad_inexistente PASSED [ 42%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_validaciones_registro PASSED [ 57%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_marcar_pagado PASSED [ 71%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_verificar_vencimientos PASSED [ 85%]
+tests/integration/test_servicio_recibos_publicos.py::TestServicioRecibosPublicos::test_obtener_resumen PASSED [100%]
+
+============================== warnings summary ===============================
+src\infraestructura\configuracion\settings.py:13
+  C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\infraestructura\configuracion\settings.py:13: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Settings(BaseSettings):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 7 passed, 1 warning in 0.54s =========================
