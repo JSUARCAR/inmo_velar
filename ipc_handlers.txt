@@ -1,0 +1,68 @@
+
+    # =========================================================================
+    # IPC INCREMENT HANDLERS
+    # =========================================================================
+    
+    def open_ipc_modal(self, id_contrato: int):
+        """Abre modal para aplicar incremento IPC."""
+        from datetime import datetime
+        self.ipc_target_contrato_id = id_contrato
+        self.form_data = {
+            "porcentaje_ipc": "5.62",
+            "fecha_aplicacion": datetime.now().strftime("%Y-%m-%d"),
+            "observaciones": ""
+        }
+        self.show_ipc_modal = True
+    
+    def close_ipc_modal(self):
+        """Cierra modal de IPC."""
+        self.show_ipc_modal = False
+        self.ipc_target_contrato_id = 0
+        self.form_data = {}
+        self.error_message = ""
+    
+    @rx.event(background=True)
+    async def apply_ipc_increment(self, form_data: Dict):
+        """Aplica incremento IPC al contrato seleccionado."""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+        
+        try:
+            porcentaje = float(form_data.get("porcentaje_ipc", 0))
+            fecha = form_data.get("fecha_aplicacion", "")
+            observaciones = form_data.get("observaciones", "")
+            
+            from src.aplicacion.servicios.servicio_contratos import ServicioContratos
+            from src.infraestructura.persistencia.database import db_manager
+            
+            servicio = ServicioContratos(db_manager)
+            resultado = servicio.aplicar_incremento_ipc(
+                id_contrato=self.ipc_target_contrato_id,
+                porcentaje_ipc=porcentaje,
+                fecha_aplicacion=fecha,
+                observaciones=observaciones,
+                usuario="admin"
+            )
+            
+            if resultado['success']:
+                async with self:
+                    self.show_ipc_modal = False
+                    self.ipc_target_contrato_id = 0
+                    self.form_data = {}
+                
+                # Recargar contratos
+                yield ContratosState.load_contratos()
+                yield rx.toast.success(resultado['message'], position="bottom-right")
+            else:
+                async with self:
+                    self.error_message = resultado['message']
+                yield rx.toast.error(resultado['message'], position="bottom-right")
+        
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al aplicar IPC: {str(e)}"
+            yield rx.toast.error(f"Error: {str(e)}", position="bottom-right")
+        finally:
+            async with self:
+                self.is_loading = False

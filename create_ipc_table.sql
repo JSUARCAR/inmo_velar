@@ -1,0 +1,25 @@
+-- Create IPC Increment History Table
+-- Tracks all IPC (Consumer Price Index) increments applied to lease contracts
+
+CREATE TABLE IF NOT EXISTS IPC_INCREMENT_HISTORY (
+    ID_INCREMENTO_IPC SERIAL PRIMARY KEY,
+    ID_CONTRATO_A INTEGER NOT NULL,
+    FECHA_APLICACION DATE NOT NULL,
+    PORCENTAJE_IPC DECIMAL(5,2) NOT NULL,
+    CANON_ANTERIOR BIGINT NOT NULL,
+    CANON_NUEVO BIGINT NOT NULL,
+    OBSERVACIONES TEXT,
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CREATED_BY TEXT,
+    FOREIGN KEY (ID_CONTRATO_A) REFERENCES CONTRATOS_ARRENDAMIENTOS(ID_CONTRATO_A)
+);
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_ipc_history_contrato ON IPC_INCREMENT_HISTORY(ID_CONTRATO_A);
+CREATE INDEX IF NOT EXISTS idx_ipc_history_fecha ON IPC_INCREMENT_HISTORY(FECHA_APLICACION);
+
+-- Verify table created
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+AND table_name = 'ipc_increment_history';

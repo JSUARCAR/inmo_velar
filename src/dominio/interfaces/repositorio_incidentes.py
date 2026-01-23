@@ -1,0 +1,30 @@
+from typing import List, Optional, Protocol
+from datetime import datetime
+from ..entidades.incidente import Incidente
+from ..entidades.cotizacion import Cotizacion
+
+class RepositorioIncidentes(Protocol):
+    def obtener_por_id(self, id_incidente: int) -> Optional[Incidente]:
+        ...
+        
+    def listar(self, id_propiedad: Optional[int] = None, estado: Optional[str] = None) -> List[Incidente]:
+        ...
+        
+    def guardar(self, incidente: Incidente) -> int:
+        ...
+        
+    def actualizar(self, incidente: Incidente) -> None:
+        ...
+        
+    def eliminar(self, id_incidente: int) -> None:
+        ...
+        
+    # Cotizaciones
+    def guardar_cotizacion(self, cotizacion: Cotizacion) -> int:
+        ...
+        
+    def obtener_cotizaciones(self, id_incidente: int) -> List[Cotizacion]:
+        ...
+        
+    def actualizar_cotizacion(self, cotizacion: Cotizacion) -> None:
+        ...

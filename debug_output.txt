@@ -1,0 +1,11 @@
+================================================================================
+DIAGNOSTICO: Carga de Asesores
+================================================================================
+
+Ejecutando query...
+Registros encontrados: 2
+
+Asesores con contratos activos:
+  ID: 6, Nombre: ARTHUR SUAREZ, Comision: 8
+  ID: 7, Nombre: OREO JAMIOY CRIALES, Comision: 8
+================================================================================

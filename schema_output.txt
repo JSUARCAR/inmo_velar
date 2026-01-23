@@ -1,0 +1,72 @@
+================================================================================
+Traceback (most recent call last):
+VERIFICACIËN DE ESQUEMA DE BASE DE DATOS
+================================================================================
+
+1. TABLAS EN LA BASE DE DATOS:
+   - alertas
+   - archivos_adjuntos
+   - arrendatarios
+   - asesores
+   - auditoria_cambios
+   - bonificaciones_asesores
+   - codeudores
+   - contratos_arrendamientos
+   - contratos_mandatos
+   - cotizaciones
+   - descuentos_asesores
+   - desocupaciones
+   - documentos
+   - historial_estados
+   - historial_incidentes
+   - incidentes
+   - ipc
+   - liquidaciones
+   - liquidaciones_asesores
+   - liquidaciones_contratos
+   - liquidaciones_propietarios
+   - municipios
+   - notificaciones_enviadas
+   - pagos_asesores
+   - pagos_propietarios
+   - parametros_sistema
+   - permisos
+   - personas
+   - plantillas_notificaciones
+   - polizas
+   - propiedades
+   - propietarios
+   - proveedores
+   - recaudo_arrendamiento
+   - recaudo_conceptos
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\verify_schema.py", line 57, in <module>
+   - recaudos
+   - recibos_publicos
+   - renovaciones_contratos
+   - rol_permisos
+   - saldos_favor
+   - seguros
+   - sesiones_usuario
+   - tareas_desocupacion
+   - usuarios
+
+2. ESQUEMA DE TABLA 'RECAUDOS':
+   - id_recaudo                     integer              NULL=NO DEFAULT=nextval('recaudos_id_recaudo_seq'::regclass)
+   - id_contrato_a                  integer              NULL=NO DEFAULT=None
+   - fecha_pago                     text                 NULL=NO DEFAULT=None
+   - valor_total                    bigint               NULL=NO DEFAULT=None
+   - metodo_pago                    text                 NULL=NO DEFAULT=None
+   - referencia_bancaria            text                 NULL=YES DEFAULT=None
+   - estado_recaudo                 text                 NULL=YES DEFAULT='Pendiente'::text
+   - observaciones                  text                 NULL=YES DEFAULT=None
+   - created_at                     text                 NULL=YES DEFAULT=CURRENT_TIMESTAMP
+   - created_by                     text                 NULL=YES DEFAULT=None
+   - updated_at                     text                 NULL=YES DEFAULT=None
+   - updated_by                     text                 NULL=YES DEFAULT=None
+
+3. BUSCANDO TABLA DE CONCEPTOS:
+    print(f"   \u2705 Encontrada: {table[0]}")
+  File "C:\Python312\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2705' in position 3: character maps to <undefined>

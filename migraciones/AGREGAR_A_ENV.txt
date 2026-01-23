@@ -1,0 +1,84 @@
+# ============================================================================
+# INSTRUCCIONES: AGREGAR AL ARCHIVO .env
+# ============================================================================
+#
+# Copia las siguientes líneas y pégalas AL FINAL de tu archivo .env existente
+# (después de la línea WA_AUTOSEND_DELAY=3.5)
+#
+# ============================================================================
+
+# ============================================================================
+# POSTGRESQL - NUEVA BASE DE DATOS
+# ============================================================================
+
+# === Configuración de PostgreSQL ===
+# Base de datos migrada desde SQLite
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=db_inmo_velar
+DB_USER=inmo_user
+DB_PASSWORD=7323
+
+# === Opciones de Conexión ===
+# Timeout de conexión en segundos
+DB_CONNECT_TIMEOUT=10
+
+# Nombre de la aplicación (visible en pg_stat_activity)
+DB_APPLICATION_NAME=InmobiliariaVelar
+
+# Pool de conexiones (para producción)
+# Número mínimo de conexiones en el pool
+DB_POOL_MIN=1
+# Número máximo de conexiones en el pool
+DB_POOL_MAX=10
+
+# === Modo de Base de Datos ===
+# Opciones: 'sqlite' o 'postgresql'
+# IMPORTANTE: Cambiar a 'postgresql' después de actualizar la aplicación
+DB_MODE=sqlite
+
+# === Legacy - SQLite (mantener para rollback si es necesario) ===
+# La base de datos SQLite original (backup)
+DATABASE_PATH_LEGACY=migraciones/DB_Inmo_Velar.db
+
+# ============================================================================
+# NOTAS IMPORTANTES:
+# ============================================================================
+# 
+# 1. DB_MODE='sqlite'
+#    - Mantén este valor mientras actualizas tu código
+#    - Cambia a 'postgresql' cuando estés listo para usar PostgreSQL
+#
+# 2. DATABASE_PATH_LEGACY
+#    - Mantiene la ruta de SQLite por si necesitas hacer rollback
+#    - Renombré DATABASE_PATH a DATABASE_PATH_LEGACY para evitar conflictos
+#
+# 3. Seguridad
+#    - Asegúrate de que .env esté en .gitignore (ya lo está ✅)
+#    - En producción, usa contraseñas más seguras
+#
+# 4. Código de ejemplo para cargar estas variables:
+#
+#    from dotenv import load_dotenv
+#    import os
+#    
+#    load_dotenv()
+#    
+#    # Determinar qué base de datos usar
+#    DB_MODE = os.getenv('DB_MODE', 'sqlite')
+#    
+#    if DB_MODE == 'postgresql':
+#        POSTGRES_CONFIG = {
+#            'host': os.getenv('DB_HOST', 'localhost'),
+#            'port': int(os.getenv('DB_PORT', 5432)),
+#            'database': os.getenv('DB_NAME', 'db_inmo_velar'),
+#            'user': os.getenv('DB_USER', 'inmo_user'),
+#            'password': os.getenv('DB_PASSWORD'),
+#            'connect_timeout': int(os.getenv('DB_CONNECT_TIMEOUT', 10)),
+#            'application_name': os.getenv('DB_APPLICATION_NAME', 'InmobiliariaVelar')
+#        }
+#    else:
+#        # Usar SQLite (legacy)
+#        DATABASE_PATH = os.getenv('DATABASE_PATH_LEGACY', 'migraciones/DB_Inmo_Velar.db')
+#
+# ============================================================================

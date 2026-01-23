@@ -1,0 +1,5472 @@
+{
+  "tables": {
+    "ALERTAS": {
+      "create_sql": "CREATE TABLE ALERTAS (\r\n    ID_ALERTAS INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    TIPO_ALERTA TEXT NOT NULL CHECK(TIPO_ALERTA IN (\r\n        'Vencimiento Contrato Mandato',\r\n        'Vencimiento Contrato Arrendamiento',\r\n        'Incremento IPC',\r\n        'Mora Recaudo',\r\n        'Mora Liquidación',\r\n        'Incidente Sin Resolver',\r\n        'Liquidación Pendiente Aprobación',\r\n        'Asesor Sin Actividad',\r\n        'Propietario Múltiples Moras',\r\n        'Pago Rechazado',\r\n        'Otros'\r\n    )),\r\n    DESCRIPCION_ALERTA TEXT NOT NULL,\r\n    PRIORIDAD TEXT CHECK(PRIORIDAD IN ('Alta', 'Media', 'Baja')) DEFAULT 'Media',\r\n    FECHA_GENERACION_ALERTA TEXT DEFAULT (datetime('now')),\r\n    FECHA_VENCIMIENTO_ALERTA TEXT,\r\n    ESTADO_ALERTA TEXT DEFAULT 'Pendiente' CHECK(ESTADO_ALERTA IN ('Pendiente', 'En Proceso', 'Resuelta', 'Archivada')),\r\n    ID_ENTIDAD_RELACIONADA INTEGER,\r\n    TIPO_ENTIDAD TEXT,\r\n    USUARIO_ASIGNADO TEXT,\r\n    ACCION_TOMADA TEXT,\r\n    FECHA_ACCION TEXT,\r\n    PLANTILLA_MENSAJE TEXT,\r\n    DESTINATARIO_NOMBRE TEXT,\r\n    DESTINATARIO_TELEFONO TEXT,\r\n    DESTINATARIO_EMAIL TEXT,\r\n    FECHA_RESOLUCION TEXT,\r\n    RESUELTO_AUTOMATICAMENTE INTEGER DEFAULT 0 CHECK(RESUELTO_AUTOMATICAMENTE IN (0, 1)),\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_ALERTAS",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "TIPO_ALERTA",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "DESCRIPCION_ALERTA",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "PRIORIDAD",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Media'",
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_GENERACION_ALERTA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now')",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_VENCIMIENTO_ALERTA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "ESTADO_ALERTA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Pendiente'",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "ID_ENTIDAD_RELACIONADA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "TIPO_ENTIDAD",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "USUARIO_ASIGNADO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "ACCION_TOMADA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "FECHA_ACCION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "PLANTILLA_MENSAJE",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "DESTINATARIO_NOMBRE",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "DESTINATARIO_TELEFONO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "DESTINATARIO_EMAIL",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "FECHA_RESOLUCION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "RESUELTO_AUTOMATICAMENTE",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "ARCHIVOS_ADJUNTOS": {
+      "create_sql": "CREATE TABLE ARCHIVOS_ADJUNTOS (\r\n    ID_ARCHIVO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_ENTIDAD_RELACIONADA INTEGER NOT NULL,\r\n    TIPO_ENTIDAD TEXT NOT NULL CHECK(TIPO_ENTIDAD IN (\r\n    'PROPIEDAD',\r\n    'CONTRATO_MANDATO',\r\n    'CONTRATO_ARRENDAMIENTO',\r\n    'PAGO_PROPIETARIO',\r\n    'PAGO_ASESOR',\r\n    'INCIDENTE',\r\n    'RECIBO_PUBLICO',\r\n    'LIQUIDACION_PROPIETARIO',\r\n    'LIQUIDACION_ASESOR'\r\n    )),\r\n    TIPO_ARCHIVO TEXT NOT NULL CHECK(TIPO_ARCHIVO IN (\r\n    'Foto Propiedad',\r\n    'Escritura',\r\n    'Certificado Tradición',\r\n    'Contrato Firmado',\r\n    'Documento Identidad',\r\n    'Comprobante Pago',\r\n    'Foto Incidente',\r\n    'Cotización',\r\n    'Factura',\r\n    'Recibo Público',\r\n    'Otros'\r\n    )),\r\n    NOMBRE_ARCHIVO TEXT NOT NULL,\r\n    URL_ONEDRIVE TEXT NOT NULL,\r\n    TAMAÑO_KB INTEGER,\r\n    EXTENSION TEXT,\r\n    DESCRIPCION TEXT,\r\n    VERSION INTEGER DEFAULT 1,\r\n    ESTADO INTEGER DEFAULT 1 CHECK(ESTADO IN (0, 1)),\r\n    FECHA_CARGA TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_ARCHIVO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_ENTIDAD_RELACIONADA",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "TIPO_ENTIDAD",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "TIPO_ARCHIVO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "NOMBRE_ARCHIVO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "URL_ONEDRIVE",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "TAMAÑO_KB",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "EXTENSION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "DESCRIPCION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "VERSION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "ESTADO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "FECHA_CARGA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "ARRENDATARIOS": {
+      "create_sql": "CREATE TABLE ARRENDATARIOS (\r\n    ID_ARRENDATARIO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_PERSONA INTEGER NOT NULL UNIQUE,\r\n    ID_SEGURO INTEGER,\r\n    CODIGO_APROBACION_SEGURO TEXT,\r\n    DIRECCION_REFERENCIA TEXT,\r\n    ESTADO_ARRENDATARIO INTEGER DEFAULT 1 CHECK(ESTADO_ARRENDATARIO IN (0, 1)),\r\n    FECHA_INGRESO_ARRENDATARIO TEXT DEFAULT (date('now')),\r\n    MOTIVO_INACTIVACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    FOREIGN KEY (ID_PERSONA) REFERENCES PERSONAS(ID_PERSONA),\r\n    FOREIGN KEY (ID_SEGURO) REFERENCES SEGUROS(ID_SEGURO)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_ARRENDATARIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_PERSONA",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_SEGURO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "CODIGO_APROBACION_SEGURO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "DIRECCION_REFERENCIA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "ESTADO_ARRENDATARIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "FECHA_INGRESO_ARRENDATARIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "date('now')",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "MOTIVO_INACTIVACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "SEGUROS",
+          "from": "ID_SEGURO",
+          "to": "ID_SEGURO",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "PERSONAS",
+          "from": "ID_PERSONA",
+          "to": "ID_PERSONA",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "ASESORES": {
+      "create_sql": "CREATE TABLE ASESORES (\r\n    ID_ASESOR INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_PERSONA INTEGER NOT NULL UNIQUE,\r\n    ID_USUARIO INTEGER UNIQUE,\r\n    COMISION_PORCENTAJE_ARRIENDO INTEGER NOT NULL DEFAULT 800 CHECK(COMISION_PORCENTAJE_ARRIENDO >= 0 AND COMISION_PORCENTAJE_ARRIENDO <= 10000),\r\n    COMISION_PORCENTAJE_VENTA INTEGER NOT NULL DEFAULT 300 CHECK(COMISION_PORCENTAJE_VENTA >= 0 AND COMISION_PORCENTAJE_VENTA <= 10000),\r\n    FECHA_INGRESO TEXT DEFAULT (date('now')),\r\n    ESTADO INTEGER DEFAULT 1 CHECK(ESTADO IN (0, 1)),\r\n    MOTIVO_INACTIVACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    FOREIGN KEY (ID_PERSONA) REFERENCES PERSONAS(ID_PERSONA),\r\n    FOREIGN KEY (ID_USUARIO) REFERENCES USUARIOS(ID_USUARIO)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_ASESOR",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_PERSONA",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_USUARIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "COMISION_PORCENTAJE_ARRIENDO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": "800",
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "COMISION_PORCENTAJE_VENTA",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": "300",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_INGRESO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "date('now')",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "ESTADO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "MOTIVO_INACTIVACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "USUARIOS",
+          "from": "ID_USUARIO",
+          "to": "ID_USUARIO",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "PERSONAS",
+          "from": "ID_PERSONA",
+          "to": "ID_PERSONA",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "AUDITORIA_CAMBIOS": {
+      "create_sql": "CREATE TABLE AUDITORIA_CAMBIOS (\r\n    ID_AUDITORIA INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    TABLA TEXT NOT NULL,\r\n    ID_REGISTRO INTEGER NOT NULL,\r\n    TIPO_OPERACION TEXT NOT NULL CHECK(TIPO_OPERACION IN ('INSERT', 'UPDATE', 'DELETE', 'ESTADO_CHANGE')),\r\n    CAMPO_MODIFICADO TEXT,\r\n    VALOR_ANTERIOR TEXT,\r\n    VALOR_NUEVO TEXT,\r\n    USUARIO TEXT NOT NULL,\r\n    FECHA_CAMBIO TEXT DEFAULT (datetime('now', 'localtime')),\r\n    MOTIVO_CAMBIO TEXT,\r\n    IP_ORIGEN TEXT\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_AUDITORIA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "TABLA",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_REGISTRO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "TIPO_OPERACION",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "CAMPO_MODIFICADO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "VALOR_ANTERIOR",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "VALOR_NUEVO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "USUARIO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "FECHA_CAMBIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "MOTIVO_CAMBIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "IP_ORIGEN",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "CODEUDORES": {
+      "create_sql": "CREATE TABLE CODEUDORES (\r\n    ID_CODEUDOR INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_PERSONA INTEGER NOT NULL UNIQUE,\r\n    FECHA_INGRESO_CODEUDOR TEXT DEFAULT (date('now')),\r\n    ESTADO_REGISTRO INTEGER DEFAULT 1 CHECK(ESTADO_REGISTRO IN (0, 1)),\r\n    MOTIVO_INACTIVACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    FOREIGN KEY (ID_PERSONA) REFERENCES PERSONAS(ID_PERSONA)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_CODEUDOR",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_PERSONA",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "FECHA_INGRESO_CODEUDOR",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "date('now')",
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "ESTADO_REGISTRO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "MOTIVO_INACTIVACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "PERSONAS",
+          "from": "ID_PERSONA",
+          "to": "ID_PERSONA",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "CONTRATOS_ARRENDAMIENTOS": {
+      "create_sql": "CREATE TABLE CONTRATOS_ARRENDAMIENTOS (\n            ID_CONTRATO_A INTEGER PRIMARY KEY AUTOINCREMENT,\n            ID_PROPIEDAD INTEGER NOT NULL,\n            ID_ARRENDATARIO INTEGER NOT NULL,\n            ID_CODEUDOR INTEGER,\n            FECHA_INICIO_CONTRATO_A TEXT NOT NULL,\n            FECHA_FIN_CONTRATO_A TEXT NOT NULL,\n            DURACION_CONTRATO_A INTEGER NOT NULL CHECK(DURACION_CONTRATO_A > 0),\n            CANON_ARRENDAMIENTO INTEGER NOT NULL CHECK(CANON_ARRENDAMIENTO >= 500000 AND CANON_ARRENDAMIENTO <= 200000000),\n            DEPOSITO INTEGER DEFAULT 0 CHECK(DEPOSITO >= 0),\n            ESTADO_CONTRATO_A TEXT CHECK(ESTADO_CONTRATO_A IN ('Activo', 'Finalizado', 'Legal', 'Cancelado')) DEFAULT 'Activo',\n            MOTIVO_CANCELACION TEXT,\n            ALERTA_VENCIMIENTO_CONTRATO_A INTEGER DEFAULT 1 CHECK(ALERTA_VENCIMIENTO_CONTRATO_A IN (0, 1)),\n            ALERTA_IPC INTEGER DEFAULT 0 CHECK(ALERTA_IPC IN (0, 1)),\n            FECHA_RENOVACION_CONTRATO_A TEXT,\n            FECHA_INCREMENTO_IPC TEXT,\n            FECHA_ULTIMO_INCREMENTO_IPC TEXT,\n            CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n            CREATED_BY TEXT,\n            UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n            UPDATED_BY TEXT,\n            CHECK(date(FECHA_FIN_CONTRATO_A) > date(FECHA_INICIO_CONTRATO_A)),\n            FOREIGN KEY (ID_PROPIEDAD) REFERENCES PROPIEDADES(ID_PROPIEDAD),\n            FOREIGN KEY (ID_ARRENDATARIO) REFERENCES ARRENDATARIOS(ID_ARRENDATARIO),\n            FOREIGN KEY (ID_CODEUDOR) REFERENCES CODEUDORES(ID_CODEUDOR)\n        )",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_CONTRATO_A",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_PROPIEDAD",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_ARRENDATARIO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "ID_CODEUDOR",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_INICIO_CONTRATO_A",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_FIN_CONTRATO_A",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "DURACION_CONTRATO_A",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CANON_ARRENDAMIENTO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "DEPOSITO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "ESTADO_CONTRATO_A",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Activo'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "MOTIVO_CANCELACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "ALERTA_VENCIMIENTO_CONTRATO_A",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "ALERTA_IPC",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "FECHA_RENOVACION_CONTRATO_A",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "FECHA_INCREMENTO_IPC",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "FECHA_ULTIMO_INCREMENTO_IPC",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "CODEUDORES",
+          "from": "ID_CODEUDOR",
+          "to": "ID_CODEUDOR",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "ARRENDATARIOS",
+          "from": "ID_ARRENDATARIO",
+          "to": "ID_ARRENDATARIO",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "PROPIEDADES",
+          "from": "ID_PROPIEDAD",
+          "to": "ID_PROPIEDAD",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "CONTRATOS_ARRENDAMIENTOS_OLD": {
+      "create_sql": "CREATE TABLE CONTRATOS_ARRENDAMIENTOS_OLD(\n  ID_CONTRATO_A INT,\n  ID_PROPIEDAD INT,\n  ID_ARRENDATARIO INT,\n  ID_CODEUDOR INT,\n  FECHA_INICIO_CONTRATO_A TEXT,\n  FECHA_FIN_CONTRATO_A TEXT,\n  DURACION_CONTRATO_A INT,\n  CANON_ARRENDAMIENTO INT,\n  DEPOSITO INT,\n  ESTADO_CONTRATO_A TEXT,\n  MOTIVO_CANCELACION TEXT,\n  ALERTA_VENCIMIENTO_CONTRATO_A INT,\n  ALERTA_IPC INT,\n  FECHA_RENOVACION_CONTRATO_A TEXT,\n  FECHA_INCREMENTO_IPC TEXT,\n  FECHA_ULTIMO_INCREMENTO_IPC TEXT,\n  CREATED_AT TEXT,\n  CREATED_BY TEXT,\n  UPDATED_AT TEXT,\n  UPDATED_BY TEXT\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_CONTRATO_A",
+          "type": "INT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 1,
+          "name": "ID_PROPIEDAD",
+          "type": "INT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_ARRENDATARIO",
+          "type": "INT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "ID_CODEUDOR",
+          "type": "INT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_INICIO_CONTRATO_A",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_FIN_CONTRATO_A",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "DURACION_CONTRATO_A",
+          "type": "INT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CANON_ARRENDAMIENTO",
+          "type": "INT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "DEPOSITO",
+          "type": "INT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "ESTADO_CONTRATO_A",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "MOTIVO_CANCELACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "ALERTA_VENCIMIENTO_CONTRATO_A",
+          "type": "INT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "ALERTA_IPC",
+          "type": "INT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "FECHA_RENOVACION_CONTRATO_A",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "FECHA_INCREMENTO_IPC",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "FECHA_ULTIMO_INCREMENTO_IPC",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "CONTRATOS_MANDATOS": {
+      "create_sql": "CREATE TABLE CONTRATOS_MANDATOS (\n            ID_CONTRATO_M INTEGER PRIMARY KEY AUTOINCREMENT,\n            ID_PROPIEDAD INTEGER NOT NULL,\n            ID_PROPIETARIO INTEGER NOT NULL,\n            ID_ASESOR INTEGER NOT NULL,\n            FECHA_INICIO_CONTRATO_M TEXT NOT NULL,\n            FECHA_FIN_CONTRATO_M TEXT NOT NULL,\n            DURACION_CONTRATO_M INTEGER NOT NULL CHECK(DURACION_CONTRATO_M > 0),\n            CANON_MANDATO INTEGER NOT NULL CHECK(CANON_MANDATO >= 500000 AND CANON_MANDATO <= 200000000),\n            COMISION_PORCENTAJE_CONTRATO_M INTEGER NOT NULL CHECK(COMISION_PORCENTAJE_CONTRATO_M >= 0 AND COMISION_PORCENTAJE_CONTRATO_M <= 10000),\n            IVA_CONTRATO_M INTEGER DEFAULT 1900 CHECK(IVA_CONTRATO_M >= 0),\n            ESTADO_CONTRATO_M TEXT CHECK(ESTADO_CONTRATO_M IN ('Activo', 'Finalizado', 'Cancelado')) DEFAULT 'Activo',\n            MOTIVO_CANCELACION TEXT,\n            ALERTA_VENCIMINETO_CONTRATO_M INTEGER DEFAULT 1 CHECK(ALERTA_VENCIMINETO_CONTRATO_M IN (0, 1)),\n            FECHA_RENOVACION_CONTRATO_M TEXT,\n            CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n            CREATED_BY TEXT,\n            UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n            UPDATED_BY TEXT,\n            CHECK(date(FECHA_FIN_CONTRATO_M) > date(FECHA_INICIO_CONTRATO_M)),\n            FOREIGN KEY (ID_PROPIEDAD) REFERENCES PROPIEDADES(ID_PROPIEDAD),\n            FOREIGN KEY (ID_PROPIETARIO) REFERENCES PROPIETARIOS(ID_PROPIETARIO),\n            FOREIGN KEY (ID_ASESOR) REFERENCES ASESORES(ID_ASESOR)\n        )",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_CONTRATO_M",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_PROPIEDAD",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_PROPIETARIO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "ID_ASESOR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_INICIO_CONTRATO_M",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_FIN_CONTRATO_M",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "DURACION_CONTRATO_M",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CANON_MANDATO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "COMISION_PORCENTAJE_CONTRATO_M",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "IVA_CONTRATO_M",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1900",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "ESTADO_CONTRATO_M",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Activo'",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "MOTIVO_CANCELACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "ALERTA_VENCIMINETO_CONTRATO_M",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "FECHA_RENOVACION_CONTRATO_M",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "ASESORES",
+          "from": "ID_ASESOR",
+          "to": "ID_ASESOR",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "PROPIETARIOS",
+          "from": "ID_PROPIETARIO",
+          "to": "ID_PROPIETARIO",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "PROPIEDADES",
+          "from": "ID_PROPIEDAD",
+          "to": "ID_PROPIEDAD",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "COTIZACIONES": {
+      "create_sql": "CREATE TABLE COTIZACIONES (\n    ID_COTIZACION INTEGER PRIMARY KEY AUTOINCREMENT,\n    ID_INCIDENTE INTEGER NOT NULL,\n    ID_PROVEEDOR INTEGER NOT NULL,\n    VALOR_MATERIALES INTEGER DEFAULT 0 CHECK(VALOR_MATERIALES >= 0),\n    VALOR_MANO_OBRA INTEGER DEFAULT 0 CHECK(VALOR_MANO_OBRA >= 0),\n    VALOR_TOTAL INTEGER NOT NULL CHECK(VALOR_TOTAL >= 0),\n    DESCRIPCION_TRABAJO TEXT,\n    DIAS_ESTIMADOS INTEGER DEFAULT 1,\n    FECHA_COTIZACION TEXT DEFAULT (datetime('now', 'localtime')),\n    ESTADO_COTIZACION TEXT DEFAULT 'Pendiente' CHECK(ESTADO_COTIZACION IN ('Pendiente', 'Aprobada', 'Rechazada')),\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n    CREATED_BY TEXT,\n    FOREIGN KEY (ID_INCIDENTE) REFERENCES INCIDENTES(ID_INCIDENTE),\n    FOREIGN KEY (ID_PROVEEDOR) REFERENCES PROVEEDORES(ID_PROVEEDOR)\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_COTIZACION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_INCIDENTE",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_PROVEEDOR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "VALOR_MATERIALES",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "VALOR_MANO_OBRA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "VALOR_TOTAL",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "DESCRIPCION_TRABAJO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "DIAS_ESTIMADOS",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "FECHA_COTIZACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "ESTADO_COTIZACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Pendiente'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "PROVEEDORES",
+          "from": "ID_PROVEEDOR",
+          "to": "ID_PROVEEDOR",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "INCIDENTES",
+          "from": "ID_INCIDENTE",
+          "to": "ID_INCIDENTE",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "DESCUENTOS_ASESORES": {
+      "create_sql": "CREATE TABLE DESCUENTOS_ASESORES (\r\n    ID_DESCUENTO_ASESOR INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_LIQUIDACION_ASESOR INTEGER NOT NULL,\r\n    TIPO_DESCUENTO TEXT NOT NULL CHECK(TIPO_DESCUENTO IN ('Préstamo', 'Anticipo', 'Sanción', 'Ajuste', 'Otros')),\r\n    DESCRIPCION_DESCUENTO TEXT NOT NULL,\r\n    VALOR_DESCUENTO INTEGER NOT NULL CHECK(VALOR_DESCUENTO >= 0),\r\n    FECHA_REGISTRO TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    FOREIGN KEY (ID_LIQUIDACION_ASESOR) REFERENCES LIQUIDACIONES_ASESORES(ID_LIQUIDACION_ASESOR)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_DESCUENTO_ASESOR",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_LIQUIDACION_ASESOR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "TIPO_DESCUENTO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "DESCRIPCION_DESCUENTO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "VALOR_DESCUENTO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_REGISTRO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "LIQUIDACIONES_ASESORES",
+          "from": "ID_LIQUIDACION_ASESOR",
+          "to": "ID_LIQUIDACION_ASESOR",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "DESOCUPACIONES": {
+      "create_sql": "CREATE TABLE DESOCUPACIONES (\n                    ID_DESOCUPACION INTEGER PRIMARY KEY AUTOINCREMENT,\n                    ID_CONTRATO INTEGER NOT NULL,\n                    FECHA_SOLICITUD TEXT NOT NULL,\n                    FECHA_PROGRAMADA TEXT NOT NULL,\n                    FECHA_REAL TEXT,\n                    ESTADO TEXT DEFAULT 'En Proceso' CHECK(ESTADO IN ('En Proceso', 'Completada', 'Cancelada')),\n                    OBSERVACIONES TEXT,\n                    CREATED_AT TEXT NOT NULL,\n                    CREATED_BY TEXT,\n                    UPDATED_AT TEXT,\n                    UPDATED_BY TEXT,\n                    FOREIGN KEY(ID_CONTRATO) REFERENCES CONTRATOS_ARRENDAMIENTOS(ID_CONTRATO_A)\n                )",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_DESOCUPACION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_CONTRATO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "FECHA_SOLICITUD",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "FECHA_PROGRAMADA",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_REAL",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "ESTADO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'En Proceso'",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "OBSERVACIONES",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "CONTRATOS_ARRENDAMIENTOS",
+          "from": "ID_CONTRATO",
+          "to": "ID_CONTRATO_A",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "DOCUMENTOS": {
+      "create_sql": "CREATE TABLE DOCUMENTOS (\n            ID INTEGER PRIMARY KEY AUTOINCREMENT,\n            ENTIDAD_TIPO TEXT NOT NULL,\n            ENTIDAD_ID TEXT NOT NULL,\n            NOMBRE_ARCHIVO TEXT NOT NULL,\n            EXTENSION TEXT,\n            MIME_TYPE TEXT,\n            DESCRIPCION TEXT,\n            CONTENIDO BLOB,\n            VERSION INTEGER DEFAULT 1,\n            ES_VIGENTE BOOLEAN DEFAULT 1,\n            CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n            CREATED_BY TEXT\n        )",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ENTIDAD_TIPO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ENTIDAD_ID",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "NOMBRE_ARCHIVO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "EXTENSION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "MIME_TYPE",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "DESCRIPCION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CONTENIDO",
+          "type": "BLOB",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "VERSION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "ES_VIGENTE",
+          "type": "BOOLEAN",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "CREATED_AT",
+          "type": "TIMESTAMP",
+          "not_null": 0,
+          "default_value": "CURRENT_TIMESTAMP",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "HISTORIAL_ESTADOS": {
+      "create_sql": "CREATE TABLE HISTORIAL_ESTADOS (\r\n    ID_HISTORIAL INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    TIPO_ENTIDAD TEXT NOT NULL CHECK(TIPO_ENTIDAD IN (\r\n    'CONTRATO_MANDATO',\r\n    'CONTRATO_ARRENDAMIENTO',\r\n    'LIQUIDACION_PROPIETARIO',\r\n    'LIQUIDACION_ASESOR',\r\n    'PAGO_PROPIETARIO',\r\n    'PAGO_ASESOR',\r\n    'RECAUDO',\r\n    'INCIDENTE',\r\n    'ALERTA'\r\n    )),\r\n    ID_ENTIDAD INTEGER NOT NULL,\r\n    ESTADO_ANTERIOR TEXT NOT NULL,\r\n    ESTADO_NUEVO TEXT NOT NULL,\r\n    MOTIVO_CAMBIO TEXT,\r\n    FECHA_CAMBIO TEXT DEFAULT (datetime('now', 'localtime')),\r\n    USUARIO TEXT NOT NULL,\r\n    REQUIRIO_APROBACION INTEGER DEFAULT 0 CHECK(REQUIRIO_APROBACION IN (0, 1)),\r\n    APROBADO_POR TEXT\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_HISTORIAL",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "TIPO_ENTIDAD",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_ENTIDAD",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "ESTADO_ANTERIOR",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "ESTADO_NUEVO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "MOTIVO_CAMBIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "FECHA_CAMBIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "USUARIO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "REQUIRIO_APROBACION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "APROBADO_POR",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "HISTORIAL_INCIDENTES": {
+      "create_sql": "CREATE TABLE HISTORIAL_INCIDENTES (\n            ID_HISTORIAL INTEGER PRIMARY KEY AUTOINCREMENT,\n            ID_INCIDENTE INTEGER NOT NULL,\n            ESTADO_ANTERIOR TEXT,\n            ESTADO_NUEVO TEXT NOT NULL,\n            FECHA_CAMBIO TEXT DEFAULT (datetime('now', 'localtime')),\n            USUARIO TEXT NOT NULL,\n            COMENTARIO TEXT,\n            TIPO_ACCION TEXT DEFAULT 'CAMBIO_ESTADO',\n            DATOS_ADICIONALES TEXT,\n            CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n            FOREIGN KEY (ID_INCIDENTE) REFERENCES INCIDENTES(ID_INCIDENTE)\n        )",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_HISTORIAL",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_INCIDENTE",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ESTADO_ANTERIOR",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "ESTADO_NUEVO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_CAMBIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "USUARIO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "COMENTARIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "TIPO_ACCION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'CAMBIO_ESTADO'",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "DATOS_ADICIONALES",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "INCIDENTES",
+          "from": "ID_INCIDENTE",
+          "to": "ID_INCIDENTE",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "INCIDENTES": {
+      "create_sql": "CREATE TABLE \"INCIDENTES\" (\n    ID_INCIDENTE INTEGER PRIMARY KEY AUTOINCREMENT,\n    ID_PROPIEDAD INTEGER NOT NULL,\n    ID_CONTRATO_M INTEGER,\n    DESCRIPCION_INCIDENTE TEXT NOT NULL,\n    COSTO_INCIDENTE INTEGER DEFAULT 0 CHECK(COSTO_INCIDENTE >= 0),\n    FECHA_INCIDENTE TEXT NOT NULL,\n    PRIORIDAD TEXT DEFAULT 'Media' CHECK(PRIORIDAD IN ('Baja', 'Media', 'Alta', 'Urgente')),\n    ORIGEN_REPORTE TEXT DEFAULT 'Inquilino' CHECK(ORIGEN_REPORTE IN ('Inquilino', 'Propietario', 'Inmobiliaria')),\n    RESPONSABLE_PAGO TEXT CHECK(RESPONSABLE_PAGO IN ('Inquilino', 'Propietario', 'Inmobiliaria', 'Aseguradora')),\n    ID_PROVEEDOR_ASIGNADO INTEGER,\n    ID_COTIZACION_APROBADA INTEGER,\n    QUIEN_ARREGLA TEXT, -- Legacy, kept for compatibility if needed, but ID_PROVEEDOR_ASIGNADO is preferred\n    APROBADO_POR TEXT,\n    FECHA_ARREGLO TEXT,\n    ESTADO TEXT DEFAULT 'Reportado' CHECK(ESTADO IN ('Reportado', 'En Revision', 'Cotizado', 'Aprobado', 'En Reparacion', 'Finalizado', 'Cancelado')),\n    DIAS_SIN_RESOLVER INTEGER DEFAULT 0,\n    MOTIVO_CANCELACION TEXT,\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n    CREATED_BY TEXT,\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n    UPDATED_BY TEXT,\n    FOREIGN KEY (ID_PROPIEDAD) REFERENCES PROPIEDADES(ID_PROPIEDAD),\n    FOREIGN KEY (ID_CONTRATO_M) REFERENCES CONTRATOS_MANDATOS(ID_CONTRATO_M),\n    FOREIGN KEY (ID_PROVEEDOR_ASIGNADO) REFERENCES PROVEEDORES(ID_PROVEEDOR),\n    FOREIGN KEY (ID_COTIZACION_APROBADA) REFERENCES COTIZACIONES(ID_COTIZACION)\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_INCIDENTE",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_PROPIEDAD",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_CONTRATO_M",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "DESCRIPCION_INCIDENTE",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "COSTO_INCIDENTE",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_INCIDENTE",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "PRIORIDAD",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Media'",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "ORIGEN_REPORTE",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Inquilino'",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "RESPONSABLE_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "ID_PROVEEDOR_ASIGNADO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "ID_COTIZACION_APROBADA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "QUIEN_ARREGLA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "APROBADO_POR",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "FECHA_ARREGLO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "ESTADO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Reportado'",
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "DIAS_SIN_RESOLVER",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "MOTIVO_CANCELACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 20,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "COTIZACIONES",
+          "from": "ID_COTIZACION_APROBADA",
+          "to": "ID_COTIZACION",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "PROVEEDORES",
+          "from": "ID_PROVEEDOR_ASIGNADO",
+          "to": "ID_PROVEEDOR",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "CONTRATOS_MANDATOS",
+          "from": "ID_CONTRATO_M",
+          "to": "ID_CONTRATO_M",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "PROPIEDADES",
+          "from": "ID_PROPIEDAD",
+          "to": "ID_PROPIEDAD",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "IPC": {
+      "create_sql": "CREATE TABLE IPC (\r\n    ID_IPC INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ANIO INTEGER UNIQUE NOT NULL,\r\n    VALOR_IPC INTEGER NOT NULL CHECK(VALOR_IPC >= 0 AND VALOR_IPC <= 10000),\r\n    FECHA_PUBLICACION TEXT,\r\n    ESTADO_REGISTRO INTEGER DEFAULT 1 CHECK(ESTADO_REGISTRO IN (0, 1)),\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_IPC",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ANIO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "VALOR_IPC",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "FECHA_PUBLICACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "ESTADO_REGISTRO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "LIQUIDACIONES": {
+      "create_sql": "CREATE TABLE LIQUIDACIONES (\n                ID_LIQUIDACION INTEGER PRIMARY KEY AUTOINCREMENT,\n                ID_CONTRATO_M INTEGER NOT NULL,\n                PERIODO TEXT NOT NULL,\n                FECHA_GENERACION TEXT NOT NULL,\n                \n                -- Ingresos\n                CANON_BRUTO INTEGER NOT NULL,\n                OTROS_INGRESOS INTEGER DEFAULT 0,\n                TOTAL_INGRESOS INTEGER NOT NULL,\n                \n                -- Egresos\n                COMISION_PORCENTAJE INTEGER NOT NULL,\n                COMISION_MONTO INTEGER NOT NULL,\n                IVA_COMISION INTEGER NOT NULL,\n                IMPUESTO_4X1000 INTEGER NOT NULL,\n                GASTOS_ADMINISTRACION INTEGER DEFAULT 0,\n                GASTOS_SERVICIOS INTEGER DEFAULT 0,\n                GASTOS_REPARACIONES INTEGER DEFAULT 0,\n                OTROS_EGRESOS INTEGER DEFAULT 0,\n                TOTAL_EGRESOS INTEGER NOT NULL,\n                \n                -- Resultado\n                NETO_A_PAGAR INTEGER NOT NULL,\n                \n                -- Estado\n                ESTADO_LIQUIDACION TEXT DEFAULT 'En Proceso' CHECK(ESTADO_LIQUIDACION IN ('En Proceso', 'Aprobada', 'Pagada', 'Cancelada')),\n                \n                -- Pago\n                FECHA_PAGO TEXT,\n                METODO_PAGO TEXT,\n                REFERENCIA_PAGO TEXT,\n                \n                -- Notas\n                OBSERVACIONES TEXT,\n                MOTIVO_CANCELACION TEXT,\n                \n                -- Auditoría de Estado\n                APROBADA_POR TEXT,\n                APROBADA_EN TEXT,\n                PAGADA_POR TEXT,\n                PAGADA_EN TEXT,\n                \n                CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n                CREATED_BY TEXT,\n                UPDATED_AT TEXT,\n                UPDATED_BY TEXT,\n                \n                FOREIGN KEY (ID_CONTRATO_M) REFERENCES CONTRATOS_MANDATOS(ID_CONTRATO_M),\n                UNIQUE(ID_CONTRATO_M, PERIODO)\n            )",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_LIQUIDACION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_CONTRATO_M",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "PERIODO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "FECHA_GENERACION",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "CANON_BRUTO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "OTROS_INGRESOS",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "TOTAL_INGRESOS",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "COMISION_PORCENTAJE",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "COMISION_MONTO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "IVA_COMISION",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "IMPUESTO_4X1000",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "GASTOS_ADMINISTRACION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "GASTOS_SERVICIOS",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "GASTOS_REPARACIONES",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "OTROS_EGRESOS",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "TOTAL_EGRESOS",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "NETO_A_PAGAR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "ESTADO_LIQUIDACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'En Proceso'",
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "FECHA_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "METODO_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 20,
+          "name": "REFERENCIA_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 21,
+          "name": "OBSERVACIONES",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 22,
+          "name": "MOTIVO_CANCELACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 23,
+          "name": "APROBADA_POR",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 24,
+          "name": "APROBADA_EN",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 25,
+          "name": "PAGADA_POR",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 26,
+          "name": "PAGADA_EN",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 27,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 28,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 29,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 30,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "CONTRATOS_MANDATOS",
+          "from": "ID_CONTRATO_M",
+          "to": "ID_CONTRATO_M",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "LIQUIDACIONES_ASESORES": {
+      "create_sql": "CREATE TABLE \"LIQUIDACIONES_ASESORES\" (\n    ID_LIQUIDACION_ASESOR INTEGER PRIMARY KEY AUTOINCREMENT,\n    \n    -- Referencias\n    ID_CONTRATO_A INTEGER,  -- Ahora es nullable (legacy field)\n    ID_ASESOR INTEGER NOT NULL,\n    \n    -- Período y Cálculo\n    PERIODO_LIQUIDACION TEXT NOT NULL,\n    CANON_ARRENDAMIENTO_LIQUIDADO INTEGER NOT NULL DEFAULT 0,\n    PORCENTAJE_COMISION INTEGER NOT NULL DEFAULT 0,\n    COMISION_BRUTA INTEGER NOT NULL DEFAULT 0,\n    TOTAL_DESCUENTOS INTEGER NOT NULL DEFAULT 0,\n    VALOR_NETO_ASESOR INTEGER NOT NULL DEFAULT 0,\n    \n    -- Estado y Flujo\n    ESTADO_LIQUIDACION TEXT NOT NULL DEFAULT 'Pendiente',\n    FECHA_CREACION TEXT,\n    FECHA_APROBACION TEXT,\n    USUARIO_CREADOR TEXT,\n    USUARIO_APROBADOR TEXT,\n    \n    -- Observaciones\n    OBSERVACIONES_LIQUIDACION TEXT,\n    MOTIVO_ANULACION TEXT,\n    \n    -- Auditoría\n    CREATED_AT TEXT NOT NULL DEFAULT (datetime('now')),\n    CREATED_BY TEXT,\n    UPDATED_AT TEXT,\n    UPDATED_BY TEXT,\n    \n    -- Constraints MODIFICADOS:\n    -- CAMBIO CRÍTICO: Ahora es UNIQUE por (ID_ASESOR, PERIODO) en lugar de (ID_CONTRATO_A, PERIODO)\n    -- Esto permite que un asesor tenga solo UNA liquidación por período\n    UNIQUE(ID_ASESOR, PERIODO_LIQUIDACION),\n    CHECK(ESTADO_LIQUIDACION IN ('Pendiente', 'Aprobada', 'Pagada', 'Anulada')),\n    CHECK(PORCENTAJE_COMISION >= 0 AND PORCENTAJE_COMISION <= 10000),\n    CHECK(COMISION_BRUTA >= 0),\n    CHECK(TOTAL_DESCUENTOS >= 0),\n    \n    -- Foreign Keys\n    FOREIGN KEY (ID_CONTRATO_A) REFERENCES CONTRATOS_ARRENDAMIENTOS(ID_CONTRATO_A),\n    FOREIGN KEY (ID_ASESOR) REFERENCES ASESORES(ID_ASESOR)\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_LIQUIDACION_ASESOR",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_CONTRATO_A",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_ASESOR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "PERIODO_LIQUIDACION",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "CANON_ARRENDAMIENTO_LIQUIDADO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "PORCENTAJE_COMISION",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "COMISION_BRUTA",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "TOTAL_DESCUENTOS",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "VALOR_NETO_ASESOR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "ESTADO_LIQUIDACION",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": "'Pendiente'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "FECHA_CREACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "FECHA_APROBACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "USUARIO_CREADOR",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "USUARIO_APROBADOR",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "OBSERVACIONES_LIQUIDACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "MOTIVO_ANULACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": "datetime('now')",
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "ASESORES",
+          "from": "ID_ASESOR",
+          "to": "ID_ASESOR",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "CONTRATOS_ARRENDAMIENTOS",
+          "from": "ID_CONTRATO_A",
+          "to": "ID_CONTRATO_A",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "LIQUIDACIONES_CONTRATOS": {
+      "create_sql": "CREATE TABLE LIQUIDACIONES_CONTRATOS (\n    ID_LIQUIDACION_CONTRATO INTEGER PRIMARY KEY AUTOINCREMENT,\n    \n    -- Referencias\n    ID_LIQUIDACION_ASESOR INTEGER NOT NULL,\n    ID_CONTRATO_A INTEGER NOT NULL,\n    \n    -- Canon incluido en esta liquidación para este contrato\n    CANON_INCLUIDO INTEGER NOT NULL DEFAULT 0,\n    \n    -- Auditoría\n    CREATED_AT TEXT NOT NULL DEFAULT (datetime('now')),\n    CREATED_BY TEXT,\n    \n    -- Constraints\n    CHECK(CANON_INCLUIDO >= 0),\n    UNIQUE(ID_LIQUIDACION_ASESOR, ID_CONTRATO_A),\n    \n    -- Foreign Keys\n    FOREIGN KEY (ID_LIQUIDACION_ASESOR) REFERENCES LIQUIDACIONES_ASESORES(ID_LIQUIDACION_ASESOR) ON DELETE CASCADE,\n    FOREIGN KEY (ID_CONTRATO_A) REFERENCES CONTRATOS_ARRENDAMIENTOS(ID_CONTRATO_A)\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_LIQUIDACION_CONTRATO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_LIQUIDACION_ASESOR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_CONTRATO_A",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "CANON_INCLUIDO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": "datetime('now')",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "CONTRATOS_ARRENDAMIENTOS",
+          "from": "ID_CONTRATO_A",
+          "to": "ID_CONTRATO_A",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "LIQUIDACIONES_ASESORES",
+          "from": "ID_LIQUIDACION_ASESOR",
+          "to": "ID_LIQUIDACION_ASESOR",
+          "on_update": "NO ACTION",
+          "on_delete": "CASCADE"
+        }
+      ]
+    },
+    "LIQUIDACIONES_PROPIETARIOS": {
+      "create_sql": "CREATE TABLE LIQUIDACIONES_PROPIETARIOS (\r\n    ID_LIQUIDACION_PROPIETARIO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_CONTRATO_M INTEGER NOT NULL,\r\n    ID_PROPIETARIO INTEGER NOT NULL,\r\n    PERIODO_LIQUIDACION TEXT NOT NULL,\r\n    FECHA_VENCIMIENTO_PAGO TEXT NOT NULL,\r\n    CANON_MANDATO_LIQUIDADO INTEGER NOT NULL CHECK(CANON_MANDATO_LIQUIDADO > 0),\r\n    COMISION_ASESOR INTEGER NOT NULL CHECK(COMISION_ASESOR >= 0),\r\n    COMISION_SEGURO INTEGER NOT NULL CHECK(COMISION_SEGURO >= 0),\r\n    IVA_COMISION INTEGER NOT NULL CHECK(IVA_COMISION >= 0),\r\n    VALOR_INCIDENTES INTEGER DEFAULT 0 CHECK(VALOR_INCIDENTES >= 0),\r\n    IMPUESTO_4X1000 INTEGER NOT NULL CHECK(IMPUESTO_4X1000 >= 0),\r\n    VALOR_ADMINISTRACION INTEGER DEFAULT 0 CHECK(VALOR_ADMINISTRACION >= 0),\r\n    VALOR_RECIBOS_PUBLICOS INTEGER DEFAULT 0 CHECK(VALOR_RECIBOS_PUBLICOS >= 0),\r\n    TOTAL_DESCUENTOS INTEGER NOT NULL CHECK(TOTAL_DESCUENTOS >= 0),\r\n    VALOR_NETO_PROPIETARIO INTEGER NOT NULL,\r\n    ESTADO_LIQUIDACION TEXT DEFAULT 'Pendiente' CHECK(ESTADO_LIQUIDACION IN ('Pendiente', 'Aprobada', 'Pagada', 'Mora', 'Anulada')),\r\n    DIAS_MORA INTEGER DEFAULT 0 CHECK(DIAS_MORA >= 0),\r\n    FECHA_CREACION TEXT DEFAULT (datetime('now', 'localtime')),\r\n    FECHA_APROBACION TEXT,\r\n    USUARIO_CREADOR TEXT,\r\n    USUARIO_APROBADOR TEXT,\r\n    OBSERVACIONES_LIQUIDACION TEXT,\r\n    MOTIVO_ANULACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    FOREIGN KEY (ID_CONTRATO_M) REFERENCES \"CONTRATOS_MANDATOS_OLD\"(ID_CONTRATO_M),\r\n    FOREIGN KEY (ID_PROPIETARIO) REFERENCES PROPIETARIOS(ID_PROPIETARIO),\r\n    UNIQUE(ID_CONTRATO_M, PERIODO_LIQUIDACION)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_LIQUIDACION_PROPIETARIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_CONTRATO_M",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_PROPIETARIO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "PERIODO_LIQUIDACION",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_VENCIMIENTO_PAGO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "CANON_MANDATO_LIQUIDADO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "COMISION_ASESOR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "COMISION_SEGURO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "IVA_COMISION",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "VALOR_INCIDENTES",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "IMPUESTO_4X1000",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "VALOR_ADMINISTRACION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "VALOR_RECIBOS_PUBLICOS",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "TOTAL_DESCUENTOS",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "VALOR_NETO_PROPIETARIO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "ESTADO_LIQUIDACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Pendiente'",
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "DIAS_MORA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "FECHA_CREACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "FECHA_APROBACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "USUARIO_CREADOR",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 20,
+          "name": "USUARIO_APROBADOR",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 21,
+          "name": "OBSERVACIONES_LIQUIDACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 22,
+          "name": "MOTIVO_ANULACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 23,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 24,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 25,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 26,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "PROPIETARIOS",
+          "from": "ID_PROPIETARIO",
+          "to": "ID_PROPIETARIO",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "CONTRATOS_MANDATOS_OLD",
+          "from": "ID_CONTRATO_M",
+          "to": "ID_CONTRATO_M",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "MUNICIPIOS": {
+      "create_sql": "CREATE TABLE MUNICIPIOS (\r\n    ID_MUNICIPIO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    NOMBRE_MUNICIPIO TEXT NOT NULL,\r\n    DEPARTAMENTO TEXT NOT NULL,\r\n    ESTADO_REGISTRO INTEGER DEFAULT 1 CHECK(ESTADO_REGISTRO IN (0, 1)),\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UNIQUE(NOMBRE_MUNICIPIO, DEPARTAMENTO)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_MUNICIPIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "NOMBRE_MUNICIPIO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "DEPARTAMENTO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "ESTADO_REGISTRO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "NOTIFICACIONES_ENVIADAS": {
+      "create_sql": "CREATE TABLE NOTIFICACIONES_ENVIADAS (\r\n    ID_NOTIFICACION INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_ALERTA INTEGER,\r\n    TIPO_NOTIFICACION TEXT NOT NULL CHECK(TIPO_NOTIFICACION IN ('WhatsApp', 'Email', 'Sistema', 'SMS')),\r\n    DESTINATARIO TEXT NOT NULL,\r\n    ASUNTO TEXT,\r\n    MENSAJE TEXT NOT NULL,\r\n    FECHA_ENVIO TEXT DEFAULT (datetime('now', 'localtime')),\r\n    ESTADO_ENVIO TEXT DEFAULT 'Pendiente' CHECK(ESTADO_ENVIO IN ('Pendiente', 'Enviado', 'Fallido', 'Entregado')),\r\n    RESPUESTA_SISTEMA TEXT,\r\n    INTENTOS_ENVIO INTEGER DEFAULT 1,\r\n    FECHA_ENTREGA TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    FOREIGN KEY (ID_ALERTA) REFERENCES ALERTAS(ID_ALERTAS)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_NOTIFICACION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_ALERTA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "TIPO_NOTIFICACION",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "DESTINATARIO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "ASUNTO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "MENSAJE",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "FECHA_ENVIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "ESTADO_ENVIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Pendiente'",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "RESPUESTA_SISTEMA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "INTENTOS_ENVIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "FECHA_ENTREGA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "ALERTAS",
+          "from": "ID_ALERTA",
+          "to": "ID_ALERTAS",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "PAGOS_ASESORES": {
+      "create_sql": "CREATE TABLE PAGOS_ASESORES (\r\n    ID_PAGO_ASESOR INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_LIQUIDACION_ASESOR INTEGER NOT NULL,\r\n    ID_ASESOR INTEGER NOT NULL,\r\n    VALOR_PAGO INTEGER NOT NULL CHECK(VALOR_PAGO > 0),\r\n    FECHA_PAGO TEXT,\r\n    FECHA_PROGRAMADA TEXT NOT NULL,\r\n    MEDIO_PAGO TEXT CHECK(MEDIO_PAGO IN ('Transferencia', 'Cheque', 'Efectivo', 'PSE')),\r\n    REFERENCIA_PAGO TEXT UNIQUE,\r\n    ESTADO_PAGO TEXT DEFAULT 'Pendiente' CHECK(ESTADO_PAGO IN ('Pendiente', 'Programado', 'Pagado', 'Rechazado', 'Anulado')),\r\n    MOTIVO_RECHAZO TEXT,\r\n    COMPROBANTE_PAGO TEXT,\r\n    OBSERVACIONES_PAGO TEXT,\r\n    FECHA_CONFIRMACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    FOREIGN KEY (ID_LIQUIDACION_ASESOR) REFERENCES LIQUIDACIONES_ASESORES(ID_LIQUIDACION_ASESOR),\r\n    FOREIGN KEY (ID_ASESOR) REFERENCES ASESORES(ID_ASESOR)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_PAGO_ASESOR",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_LIQUIDACION_ASESOR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_ASESOR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "VALOR_PAGO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_PROGRAMADA",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "MEDIO_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "REFERENCIA_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "ESTADO_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Pendiente'",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "MOTIVO_RECHAZO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "COMPROBANTE_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "OBSERVACIONES_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "FECHA_CONFIRMACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "ASESORES",
+          "from": "ID_ASESOR",
+          "to": "ID_ASESOR",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "LIQUIDACIONES_ASESORES",
+          "from": "ID_LIQUIDACION_ASESOR",
+          "to": "ID_LIQUIDACION_ASESOR",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "PAGOS_PROPIETARIOS": {
+      "create_sql": "CREATE TABLE PAGOS_PROPIETARIOS (\r\n    ID_PAGO_PROPIETARIO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_LIQUIDACION_PROPIETARIO INTEGER NOT NULL,\r\n    ID_PROPIETARIO INTEGER NOT NULL,\r\n    VALOR_PAGO INTEGER NOT NULL CHECK(VALOR_PAGO > 0),\r\n    FECHA_PAGO TEXT,\r\n    FECHA_PROGRAMADA TEXT NOT NULL,\r\n    MEDIO_PAGO TEXT CHECK(MEDIO_PAGO IN ('Transferencia', 'Cheque', 'Efectivo', 'PSE')),\r\n    REFERENCIA_PAGO TEXT UNIQUE,\r\n    BANCO_DESTINO TEXT,\r\n    CUENTA_DESTINO TEXT,\r\n    TIPO_CUENTA_DESTINO TEXT CHECK(TIPO_CUENTA_DESTINO IN ('Ahorros', 'Corriente')),\r\n    ESTADO_PAGO TEXT DEFAULT 'Pendiente' CHECK(ESTADO_PAGO IN ('Pendiente', 'Programado', 'Pagado', 'Rechazado', 'Anulado')),\r\n    MOTIVO_RECHAZO TEXT,\r\n    COMPROBANTE_PAGO TEXT,\r\n    OBSERVACIONES_PAGO TEXT,\r\n    FECHA_CONFIRMACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    FOREIGN KEY (ID_LIQUIDACION_PROPIETARIO) REFERENCES LIQUIDACIONES_PROPIETARIOS(ID_LIQUIDACION_PROPIETARIO),\r\n    FOREIGN KEY (ID_PROPIETARIO) REFERENCES PROPIETARIOS(ID_PROPIETARIO)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_PAGO_PROPIETARIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_LIQUIDACION_PROPIETARIO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_PROPIETARIO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "VALOR_PAGO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_PROGRAMADA",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "MEDIO_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "REFERENCIA_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "BANCO_DESTINO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "CUENTA_DESTINO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "TIPO_CUENTA_DESTINO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "ESTADO_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Pendiente'",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "MOTIVO_RECHAZO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "COMPROBANTE_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "OBSERVACIONES_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "FECHA_CONFIRMACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "PROPIETARIOS",
+          "from": "ID_PROPIETARIO",
+          "to": "ID_PROPIETARIO",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "LIQUIDACIONES_PROPIETARIOS",
+          "from": "ID_LIQUIDACION_PROPIETARIO",
+          "to": "ID_LIQUIDACION_PROPIETARIO",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "PARAMETROS_SISTEMA": {
+      "create_sql": "CREATE TABLE PARAMETROS_SISTEMA (\r\n    ID_PARAMETRO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    NOMBRE_PARAMETRO TEXT NOT NULL UNIQUE,\r\n    VALOR_PARAMETRO TEXT NOT NULL,\r\n    TIPO_DATO TEXT CHECK(TIPO_DATO IN ('INTEGER', 'TEXT', 'DECIMAL', 'BOOLEAN')),\r\n    DESCRIPCION TEXT,\r\n    CATEGORIA TEXT,\r\n    MODIFICABLE INTEGER DEFAULT 1 CHECK(MODIFICABLE IN (0, 1)),\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_PARAMETRO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "NOMBRE_PARAMETRO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "VALOR_PARAMETRO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "TIPO_DATO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "DESCRIPCION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "CATEGORIA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "MODIFICABLE",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "PERSONAS": {
+      "create_sql": "CREATE TABLE PERSONAS (\r\n    ID_PERSONA INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    TIPO_DOCUMENTO TEXT CHECK(TIPO_DOCUMENTO IN ('CC', 'CE', 'NIT', 'PASAPORTE')) DEFAULT 'CC',\r\n    NUMERO_DOCUMENTO TEXT NOT NULL,\r\n    NOMBRE_COMPLETO TEXT NOT NULL,\r\n    TELEFONO_PRINCIPAL TEXT,\r\n    CORREO_ELECTRONICO TEXT,\r\n    DIRECCION_PRINCIPAL TEXT,\r\n    ESTADO_REGISTRO INTEGER DEFAULT 1 CHECK(ESTADO_REGISTRO IN (0, 1)),\r\n    MOTIVO_INACTIVACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    UNIQUE(TIPO_DOCUMENTO, NUMERO_DOCUMENTO)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_PERSONA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "TIPO_DOCUMENTO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'CC'",
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "NUMERO_DOCUMENTO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "NOMBRE_COMPLETO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "TELEFONO_PRINCIPAL",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "CORREO_ELECTRONICO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "DIRECCION_PRINCIPAL",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "ESTADO_REGISTRO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "MOTIVO_INACTIVACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "PLANTILLAS_NOTIFICACIONES": {
+      "create_sql": "CREATE TABLE PLANTILLAS_NOTIFICACIONES (\r\n    ID_PLANTILLA INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    TIPO_ALERTA TEXT NOT NULL,\r\n    CANAL TEXT NOT NULL CHECK(CANAL IN ('WhatsApp', 'Email', 'Sistema')),\r\n    ASUNTO TEXT,\r\n    MENSAJE_PLANTILLA TEXT NOT NULL,\r\n    VARIABLES_DISPONIBLES TEXT,\r\n    ESTADO INTEGER DEFAULT 1 CHECK(ESTADO IN (0, 1)),\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    UNIQUE(TIPO_ALERTA, CANAL)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_PLANTILLA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "TIPO_ALERTA",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "CANAL",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "ASUNTO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "MENSAJE_PLANTILLA",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "VARIABLES_DISPONIBLES",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "ESTADO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "POLIZAS": {
+      "create_sql": "CREATE TABLE POLIZAS (\n                    ID_POLIZA INTEGER PRIMARY KEY AUTOINCREMENT,\n                    ID_CONTRATO INTEGER NOT NULL,\n                    ID_SEGURO INTEGER NOT NULL,\n                    FECHA_INICIO TEXT NOT NULL,\n                    FECHA_FIN TEXT NOT NULL,\n                    NUMERO_POLIZA TEXT,\n                    ESTADO TEXT DEFAULT 'Activa',\n                    CREATED_AT TEXT,\n                    CREATED_BY TEXT,\n                    UPDATED_AT TEXT,\n                    UPDATED_BY TEXT,\n                    FOREIGN KEY(ID_CONTRATO) REFERENCES CONTRATOS_ARRENDAMIENTO(ID_CONTRATO_A),\n                    FOREIGN KEY(ID_SEGURO) REFERENCES SEGUROS(ID_SEGURO)\n                )",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_POLIZA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_CONTRATO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_SEGURO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "FECHA_INICIO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_FIN",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "NUMERO_POLIZA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "ESTADO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Activa'",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "SEGUROS",
+          "from": "ID_SEGURO",
+          "to": "ID_SEGURO",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "CONTRATOS_ARRENDAMIENTO",
+          "from": "ID_CONTRATO",
+          "to": "ID_CONTRATO_A",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "PROPIEDADES": {
+      "create_sql": "CREATE TABLE PROPIEDADES (\r\n    ID_PROPIEDAD INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    MATRICULA_INMOBILIARIA TEXT NOT NULL UNIQUE,\r\n    ID_MUNICIPIO INTEGER NOT NULL,\r\n    DIRECCION_PROPIEDAD TEXT NOT NULL,\r\n    TIPO_PROPIEDAD TEXT NOT NULL,\r\n    DISPONIBILIDAD_PROPIEDAD INTEGER DEFAULT 1 CHECK(DISPONIBILIDAD_PROPIEDAD IN (0, 1)),\r\n    AREA_M2 REAL NOT NULL CHECK(AREA_M2 > 0),\r\n    HABITACIONES INTEGER DEFAULT 0 CHECK(HABITACIONES >= 0),\r\n    BANO INTEGER DEFAULT 0 CHECK(BANO >= 0),\r\n    PARQUEADERO INTEGER DEFAULT 0 CHECK(PARQUEADERO >= 0),\r\n    ESTRATO INTEGER CHECK(ESTRATO BETWEEN 1 AND 6),\r\n    VALOR_ADMINISTRACION INTEGER DEFAULT 0 CHECK(VALOR_ADMINISTRACION >= 0),\r\n    -- CORRECCIÓN: Se agrega columna faltante para la vista de reportes\r\n    CANON_ARRENDAMIENTO_ESTIMADO INTEGER DEFAULT 0 CHECK(CANON_ARRENDAMIENTO_ESTIMADO >= 0),\r\n    VALOR_VENTA_PROPIEDAD INTEGER DEFAULT 0 CHECK(VALOR_VENTA_PROPIEDAD >= 0),\r\n    COMISION_VENTA_PROPIEDAD INTEGER DEFAULT 0 CHECK(COMISION_VENTA_PROPIEDAD >= 0),\r\n    OBSERVACIONES_PROPIEDAD TEXT,\r\n    FECHA_INGRESO_PROPIEDAD TEXT DEFAULT (date('now')),\r\n    ESTADO_REGISTRO INTEGER DEFAULT 1 CHECK(ESTADO_REGISTRO IN (0, 1)),\r\n    MOTIVO_INACTIVACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT, CODIGO_ENERGIA TEXT, CODIGO_AGUA TEXT, CODIGO_GAS TEXT, TELEFONO_ADMINISTRACION TEXT, TIPO_CUENTA_ADMINISTRACION TEXT, NUMERO_CUENTA_ADMINISTRACION TEXT,\r\n    FOREIGN KEY (ID_MUNICIPIO) REFERENCES MUNICIPIOS(ID_MUNICIPIO)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_PROPIEDAD",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "MATRICULA_INMOBILIARIA",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_MUNICIPIO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "DIRECCION_PROPIEDAD",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "TIPO_PROPIEDAD",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "DISPONIBILIDAD_PROPIEDAD",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "AREA_M2",
+          "type": "REAL",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "HABITACIONES",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "BANO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "PARQUEADERO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "ESTRATO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "VALOR_ADMINISTRACION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "CANON_ARRENDAMIENTO_ESTIMADO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "VALOR_VENTA_PROPIEDAD",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "COMISION_VENTA_PROPIEDAD",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "OBSERVACIONES_PROPIEDAD",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 16,
+          "name": "FECHA_INGRESO_PROPIEDAD",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "date('now')",
+          "pk": 0
+        },
+        {
+          "cid": 17,
+          "name": "ESTADO_REGISTRO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 18,
+          "name": "MOTIVO_INACTIVACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 19,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 20,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 21,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 22,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 23,
+          "name": "CODIGO_ENERGIA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 24,
+          "name": "CODIGO_AGUA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 25,
+          "name": "CODIGO_GAS",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 26,
+          "name": "TELEFONO_ADMINISTRACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 27,
+          "name": "TIPO_CUENTA_ADMINISTRACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 28,
+          "name": "NUMERO_CUENTA_ADMINISTRACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "MUNICIPIOS",
+          "from": "ID_MUNICIPIO",
+          "to": "ID_MUNICIPIO",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "PROPIETARIOS": {
+      "create_sql": "CREATE TABLE PROPIETARIOS (\r\n    ID_PROPIETARIO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_PERSONA INTEGER NOT NULL UNIQUE,\r\n    BANCO_PROPIETARIO TEXT,\r\n    NUMERO_CUENTA_PROPIETARIO TEXT,\r\n    TIPO_CUENTA TEXT CHECK(TIPO_CUENTA IN ('Ahorros', 'Corriente')),\r\n    OBSERVACIONES_PROPIETARIO TEXT,\r\n    ESTADO_PROPIETARIO INTEGER DEFAULT 1 CHECK(ESTADO_PROPIETARIO IN (0, 1)),\r\n    FECHA_INGRESO_PROPIETARIO TEXT DEFAULT (date('now')),\r\n    MOTIVO_INACTIVACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    FOREIGN KEY (ID_PERSONA) REFERENCES PERSONAS(ID_PERSONA)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_PROPIETARIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_PERSONA",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "BANCO_PROPIETARIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "NUMERO_CUENTA_PROPIETARIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "TIPO_CUENTA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "OBSERVACIONES_PROPIETARIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "ESTADO_PROPIETARIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "FECHA_INGRESO_PROPIETARIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "date('now')",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "MOTIVO_INACTIVACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "PERSONAS",
+          "from": "ID_PERSONA",
+          "to": "ID_PERSONA",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "PROVEEDORES": {
+      "create_sql": "CREATE TABLE PROVEEDORES (\n    ID_PROVEEDOR INTEGER PRIMARY KEY AUTOINCREMENT,\n    ID_PERSONA INTEGER NOT NULL UNIQUE,\n    ESPECIALIDAD TEXT NOT NULL CHECK(ESPECIALIDAD IN ('Plomería', 'Electricidad', 'Obra Civil', 'Pintura', 'Cerrajería', 'Aseo', 'Otros')),\n    CALIFICACION REAL DEFAULT 5.0 CHECK(CALIFICACION >= 0 AND CALIFICACION <= 5),\n    OBSERVACIONES TEXT,\n    ESTADO_REGISTRO INTEGER DEFAULT 1 CHECK(ESTADO_REGISTRO IN (0, 1)),\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n    CREATED_BY TEXT,\n    FOREIGN KEY (ID_PERSONA) REFERENCES PERSONAS(ID_PERSONA)\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_PROVEEDOR",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_PERSONA",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ESPECIALIDAD",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "CALIFICACION",
+          "type": "REAL",
+          "not_null": 0,
+          "default_value": "5.0",
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "OBSERVACIONES",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "ESTADO_REGISTRO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "PERSONAS",
+          "from": "ID_PERSONA",
+          "to": "ID_PERSONA",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "RECAUDOS": {
+      "create_sql": "CREATE TABLE RECAUDOS (\n                ID_RECAUDO INTEGER PRIMARY KEY AUTOINCREMENT,\n                ID_CONTRATO_A INTEGER NOT NULL,\n                FECHA_PAGO TEXT NOT NULL,\n                VALOR_TOTAL INTEGER NOT NULL CHECK(VALOR_TOTAL > 0),\n                METODO_PAGO TEXT NOT NULL CHECK(METODO_PAGO IN ('Efectivo', 'Transferencia', 'PSE', 'Consignación')),\n                REFERENCIA_BANCARIA TEXT,\n                ESTADO_RECAUDO TEXT DEFAULT 'Pendiente' CHECK(ESTADO_RECAUDO IN ('Pendiente', 'Aplicado', 'Reversado')),\n                OBSERVACIONES TEXT,\n                CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n                CREATED_BY TEXT,\n                UPDATED_AT TEXT,\n                UPDATED_BY TEXT,\n                FOREIGN KEY (ID_CONTRATO_A) REFERENCES CONTRATOS_ARRENDAMIENTOS(ID_CONTRATO_A)\n            )",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_RECAUDO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_CONTRATO_A",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "FECHA_PAGO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "VALOR_TOTAL",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "METODO_PAGO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "REFERENCIA_BANCARIA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "ESTADO_RECAUDO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Pendiente'",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "OBSERVACIONES",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "CONTRATOS_ARRENDAMIENTOS",
+          "from": "ID_CONTRATO_A",
+          "to": "ID_CONTRATO_A",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "RECAUDO_ARRENDAMIENTO": {
+      "create_sql": "CREATE TABLE RECAUDO_ARRENDAMIENTO (\r\n    ID_RECAUDO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_CONTRATO_A INTEGER NOT NULL,\r\n    VALOR_RECAUDO INTEGER NOT NULL CHECK(VALOR_RECAUDO > 0),\r\n    FECHA_RECAUDO TEXT DEFAULT (datetime('now')),\r\n    FECHA_VENCIMIENTO_RECAUDO TEXT NOT NULL,\r\n    MEDIO_PAGO TEXT NOT NULL CHECK(MEDIO_PAGO IN ('Transferencia', 'Efectivo', 'Cheque', 'Consignación', 'PSE')),\r\n    REFERENCIA_RECAUDO TEXT UNIQUE,\r\n    PERIODO_RECAUDO TEXT NOT NULL,\r\n    DIRECCION_CONTRATO_A TEXT,\r\n    ESTADO_RECAUDO TEXT DEFAULT 'Pendiente' CHECK(ESTADO_RECAUDO IN ('Pendiente', 'Pagado', 'Mora', 'Anulado')),\r\n    DIAS_MORA INTEGER DEFAULT 0 CHECK(DIAS_MORA >= 0),\r\n    MOTIVO_ANULACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    FOREIGN KEY (ID_CONTRATO_A) REFERENCES \"CONTRATOS_ARRENDAMIENTOS_OLD\"(ID_CONTRATO_A)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_RECAUDO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_CONTRATO_A",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "VALOR_RECAUDO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "FECHA_RECAUDO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now')",
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_VENCIMIENTO_RECAUDO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "MEDIO_PAGO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "REFERENCIA_RECAUDO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "PERIODO_RECAUDO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "DIRECCION_CONTRATO_A",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "ESTADO_RECAUDO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Pendiente'",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "DIAS_MORA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "MOTIVO_ANULACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "CONTRATOS_ARRENDAMIENTOS_OLD",
+          "from": "ID_CONTRATO_A",
+          "to": "ID_CONTRATO_A",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "RECAUDO_CONCEPTOS": {
+      "create_sql": "CREATE TABLE RECAUDO_CONCEPTOS (\n                ID_RECAUDO_CONCEPTO INTEGER PRIMARY KEY AUTOINCREMENT,\n                ID_RECAUDO INTEGER NOT NULL,\n                TIPO_CONCEPTO TEXT NOT NULL CHECK(TIPO_CONCEPTO IN ('Canon', 'Administración', 'Mora', 'Servicios', 'Otro')),\n                PERIODO TEXT NOT NULL,\n                VALOR INTEGER NOT NULL CHECK(VALOR > 0),\n                CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n                FOREIGN KEY (ID_RECAUDO) REFERENCES RECAUDOS(ID_RECAUDO) ON DELETE CASCADE\n            )",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_RECAUDO_CONCEPTO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_RECAUDO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "TIPO_CONCEPTO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "PERIODO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "VALOR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "RECAUDOS",
+          "from": "ID_RECAUDO",
+          "to": "ID_RECAUDO",
+          "on_update": "NO ACTION",
+          "on_delete": "CASCADE"
+        }
+      ]
+    },
+    "RECIBOS_PUBLICOS": {
+      "create_sql": "CREATE TABLE RECIBOS_PUBLICOS (\r\n    ID_RECIBO_PUBLICO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_PROPIEDAD INTEGER NOT NULL,\r\n    PERIODO_RECIBO TEXT NOT NULL,\r\n    TIPO_SERVICIO TEXT NOT NULL CHECK(TIPO_SERVICIO IN ('Agua', 'Luz', 'Gas', 'Internet', 'Teléfono', 'Aseo', 'Otros')),\r\n    VALOR_RECIBO INTEGER NOT NULL CHECK(VALOR_RECIBO >= 0),\r\n    FECHA_VENCIMIENTO TEXT,\r\n    FECHA_PAGO TEXT,\r\n    COMPROBANTE TEXT,\r\n    ESTADO TEXT DEFAULT 'Pendiente' CHECK(ESTADO IN ('Pendiente', 'Pagado', 'Vencido')),\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    FOREIGN KEY (ID_PROPIEDAD) REFERENCES PROPIEDADES(ID_PROPIEDAD),\r\n    UNIQUE(ID_PROPIEDAD, PERIODO_RECIBO, TIPO_SERVICIO)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_RECIBO_PUBLICO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_PROPIEDAD",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "PERIODO_RECIBO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "TIPO_SERVICIO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "VALOR_RECIBO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_VENCIMIENTO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "FECHA_PAGO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "COMPROBANTE",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "ESTADO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Pendiente'",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "PROPIEDADES",
+          "from": "ID_PROPIEDAD",
+          "to": "ID_PROPIEDAD",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "RENOVACIONES_CONTRATOS": {
+      "create_sql": "CREATE TABLE RENOVACIONES_CONTRATOS (\n            ID_RENOVACION INTEGER PRIMARY KEY AUTOINCREMENT,\n            ID_CONTRATO_M INTEGER,\n            ID_CONTRATO_A INTEGER,\n            TIPO_CONTRATO TEXT NOT NULL CHECK(TIPO_CONTRATO IN ('Mandato', 'Arrendamiento')),\n            FECHA_INICIO_ORIGINAL TEXT NOT NULL,\n            FECHA_FIN_ORIGINAL TEXT NOT NULL,\n            FECHA_INICIO_RENOVACION TEXT NOT NULL,\n            FECHA_FIN_RENOVACION TEXT NOT NULL,\n            CANON_ANTERIOR INTEGER NOT NULL,\n            CANON_NUEVO INTEGER NOT NULL,\n            PORCENTAJE_INCREMENTO INTEGER,\n            MOTIVO_RENOVACION TEXT,\n            FECHA_RENOVACION TEXT DEFAULT (date('now')),\n            CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n            CREATED_BY TEXT,\n            \n            -- FKs corrected to point to MAIN tables\n            FOREIGN KEY (ID_CONTRATO_M) REFERENCES CONTRATOS_MANDATOS(ID_CONTRATO_M),\n            FOREIGN KEY (ID_CONTRATO_A) REFERENCES CONTRATOS_ARRENDAMIENTOS(ID_CONTRATO_A),\n            \n            CHECK((ID_CONTRATO_M IS NOT NULL AND ID_CONTRATO_A IS NULL) OR (ID_CONTRATO_M IS NULL AND ID_CONTRATO_A IS NOT NULL))\n        )",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_RENOVACION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_CONTRATO_M",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_CONTRATO_A",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "TIPO_CONTRATO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "FECHA_INICIO_ORIGINAL",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_FIN_ORIGINAL",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "FECHA_INICIO_RENOVACION",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "FECHA_FIN_RENOVACION",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "CANON_ANTERIOR",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "CANON_NUEVO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "PORCENTAJE_INCREMENTO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "MOTIVO_RENOVACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "FECHA_RENOVACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "date('now')",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "CONTRATOS_ARRENDAMIENTOS",
+          "from": "ID_CONTRATO_A",
+          "to": "ID_CONTRATO_A",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "CONTRATOS_MANDATOS",
+          "from": "ID_CONTRATO_M",
+          "to": "ID_CONTRATO_M",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "SALDOS_FAVOR": {
+      "create_sql": "CREATE TABLE SALDOS_FAVOR (\r\n    ID_SALDO_FAVOR INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_PROPIETARIO INTEGER,\r\n    ID_ASESOR INTEGER,\r\n    TIPO_BENEFICIARIO TEXT NOT NULL CHECK(TIPO_BENEFICIARIO IN ('Propietario', 'Asesor')),\r\n    VALOR_SALDO INTEGER NOT NULL CHECK(VALOR_SALDO > 0),\r\n    MOTIVO TEXT NOT NULL,\r\n    FECHA_GENERACION TEXT DEFAULT (date('now')),\r\n    ESTADO TEXT DEFAULT 'Pendiente' CHECK(ESTADO IN ('Pendiente', 'Aplicado', 'Devuelto')),\r\n    FECHA_RESOLUCION TEXT,\r\n    OBSERVACIONES TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    FOREIGN KEY (ID_PROPIETARIO) REFERENCES PROPIETARIOS(ID_PROPIETARIO),\r\n    FOREIGN KEY (ID_ASESOR) REFERENCES ASESORES(ID_ASESOR),\r\n    CHECK((ID_PROPIETARIO IS NOT NULL AND ID_ASESOR IS NULL) OR (ID_PROPIETARIO IS NULL AND ID_ASESOR IS NOT NULL))\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_SALDO_FAVOR",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_PROPIETARIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "ID_ASESOR",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "TIPO_BENEFICIARIO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "VALOR_SALDO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "MOTIVO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "FECHA_GENERACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "date('now')",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "ESTADO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "'Pendiente'",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "FECHA_RESOLUCION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "OBSERVACIONES",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 11,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 12,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "ASESORES",
+          "from": "ID_ASESOR",
+          "to": "ID_ASESOR",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        },
+        {
+          "table": "PROPIETARIOS",
+          "from": "ID_PROPIETARIO",
+          "to": "ID_PROPIETARIO",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "SEGUROS": {
+      "create_sql": "CREATE TABLE SEGUROS (\r\n    ID_SEGURO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    NOMBRE_SEGURO TEXT NOT NULL UNIQUE,\r\n    FECHA_INICIO_SEGURO TEXT,\r\n    PORCENTAJE_SEGURO INTEGER NOT NULL DEFAULT 200 CHECK(PORCENTAJE_SEGURO >= 0 AND PORCENTAJE_SEGURO <= 10000),\r\n    ESTADO_SEGURO INTEGER DEFAULT 1 CHECK(ESTADO_SEGURO IN (0, 1)),\r\n    FECHA_INGRESO_SEGURO TEXT DEFAULT (date('now')),\r\n    MOTIVO_INACTIVACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_SEGURO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "NOMBRE_SEGURO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "FECHA_INICIO_SEGURO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "PORCENTAJE_SEGURO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": "200",
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "ESTADO_SEGURO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_INGRESO_SEGURO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "date('now')",
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "MOTIVO_INACTIVACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CREATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 10,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    },
+    "SESIONES_USUARIO": {
+      "create_sql": "CREATE TABLE SESIONES_USUARIO (\r\n    ID_SESION INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_USUARIO INTEGER NOT NULL,\r\n    FECHA_INICIO TEXT DEFAULT (datetime('now', 'localtime')),\r\n    FECHA_FIN TEXT,\r\n    TOKEN_SESION TEXT UNIQUE,\r\n    FOREIGN KEY (ID_USUARIO) REFERENCES USUARIOS(ID_USUARIO)\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_SESION",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_USUARIO",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "FECHA_INICIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "FECHA_FIN",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "TOKEN_SESION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "USUARIOS",
+          "from": "ID_USUARIO",
+          "to": "ID_USUARIO",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "TAREAS_DESOCUPACION": {
+      "create_sql": "CREATE TABLE TAREAS_DESOCUPACION (\n                    ID_TAREA INTEGER PRIMARY KEY AUTOINCREMENT,\n                    ID_DESOCUPACION INTEGER NOT NULL,\n                    DESCRIPCION TEXT NOT NULL,\n                    ORDEN INTEGER NOT NULL,\n                    COMPLETADA INTEGER DEFAULT 0,\n                    FECHA_COMPLETADA TEXT,\n                    RESPONSABLE TEXT,\n                    OBSERVACIONES TEXT,\n                    FOREIGN KEY(ID_DESOCUPACION) REFERENCES DESOCUPACIONES(ID_DESOCUPACION)\n                )",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_TAREA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "ID_DESOCUPACION",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "DESCRIPCION",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "ORDEN",
+          "type": "INTEGER",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "COMPLETADA",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "FECHA_COMPLETADA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "RESPONSABLE",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "OBSERVACIONES",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": [
+        {
+          "table": "DESOCUPACIONES",
+          "from": "ID_DESOCUPACION",
+          "to": "ID_DESOCUPACION",
+          "on_update": "NO ACTION",
+          "on_delete": "NO ACTION"
+        }
+      ]
+    },
+    "USUARIOS": {
+      "create_sql": "CREATE TABLE USUARIOS (\r\n    ID_USUARIO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    NOMBRE_USUARIO TEXT NOT NULL UNIQUE,\r\n    CONTRASENA_HASH TEXT NOT NULL,\r\n    ROL TEXT NOT NULL CHECK(ROL IN ('Administrador', 'Asesor')),\r\n    ESTADO_USUARIO INTEGER DEFAULT 1 CHECK(ESTADO_USUARIO IN (0, 1)),\r\n    ULTIMO_ACCESO TEXT,\r\n    FECHA_CREACION TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT\r\n)",
+      "columns": [
+        {
+          "cid": 0,
+          "name": "ID_USUARIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 1
+        },
+        {
+          "cid": 1,
+          "name": "NOMBRE_USUARIO",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 2,
+          "name": "CONTRASENA_HASH",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 3,
+          "name": "ROL",
+          "type": "TEXT",
+          "not_null": 1,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 4,
+          "name": "ESTADO_USUARIO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "1",
+          "pk": 0
+        },
+        {
+          "cid": 5,
+          "name": "ULTIMO_ACCESO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 6,
+          "name": "FECHA_CREACION",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 7,
+          "name": "CREATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 8,
+          "name": "UPDATED_AT",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": "datetime('now', 'localtime')",
+          "pk": 0
+        },
+        {
+          "cid": 9,
+          "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        }
+      ],
+      "foreign_keys": []
+    }
+  },
+  "views": [
+    {
+      "name": "VW_ALERTA_MORA_DIARIA",
+      "sql": "CREATE VIEW VW_ALERTA_MORA_DIARIA AS\n            SELECT \n                r.ID_RECAUDO,\n                ca.ID_CONTRATO_A,\n                p.DIRECCION_PROPIEDAD,\n                arr_p.NOMBRE_COMPLETO AS ARRENDATARIO,\n                arr_p.TELEFONO_PRINCIPAL,\n                r.VALOR_RECAUDO,\n                r.FECHA_VENCIMIENTO_RECAUDO,\n                date('now') AS FECHA_HOY,\n                CAST((julianday('now') - julianday(r.FECHA_VENCIMIENTO_RECAUDO)) AS INTEGER) AS DIAS_RETRASO\n            FROM RECAUDO_ARRENDAMIENTO r\n            JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A\n            JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD\n            JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO\n            JOIN PERSONAS arr_p ON arr.ID_PERSONA = arr_p.ID_PERSONA\n            WHERE r.ESTADO_RECAUDO IN ('Pendiente', 'Mora')\n            AND r.FECHA_VENCIMIENTO_RECAUDO < date('now')"
+    },
+    {
+      "name": "VW_ALERTA_VENCIMIENTO_CONTRATOS",
+      "sql": "CREATE VIEW VW_ALERTA_VENCIMIENTO_CONTRATOS AS SELECT 'Arrendamiento' AS TIPO_CONTRATO, ca.ID_CONTRATO_A AS ID_CONTRATO, ca.ID_PROPIEDAD, p.DIRECCION_PROPIEDAD AS DIRECCION, arr_p.NOMBRE_COMPLETO AS INQUILINO_PROPIETARIO, ca.FECHA_FIN_CONTRATO_A AS FECHA_FIN, CAST((julianday(ca.FECHA_FIN_CONTRATO_A) - julianday('now')) AS INTEGER) AS DIAS_RESTANTES FROM CONTRATOS_ARRENDAMIENTOS ca JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO JOIN PERSONAS arr_p ON arr.ID_PERSONA = arr_p.ID_PERSONA WHERE ca.ESTADO_CONTRATO_A = 'Activo' AND ca.FECHA_FIN_CONTRATO_A <= date('now', '+90 days') UNION ALL SELECT 'Mandato' AS TIPO_CONTRATO, cm.ID_CONTRATO_M AS ID_CONTRATO, cm.ID_PROPIEDAD, p.DIRECCION_PROPIEDAD AS DIRECCION, prop_p.NOMBRE_COMPLETO AS INQUILINO_PROPIETARIO, cm.FECHA_FIN_CONTRATO_M AS FECHA_FIN, CAST((julianday(cm.FECHA_FIN_CONTRATO_M) - julianday('now')) AS INTEGER) AS  DIAS_RESTANTES FROM CONTRATOS_MANDATOS cm JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO JOIN PERSONAS prop_p ON prop.ID_PERSONA = prop_p.ID_PERSONA WHERE cm.ESTADO_CONTRATO_M = 'Activo' AND cm.FECHA_FIN_CONTRATO_M <= date('now', '+90 days') ORDER BY DIAS_RESTANTES ASC"
+    },
+    {
+      "name": "VW_REPORTE_DISPONIBLES",
+      "sql": "CREATE VIEW VW_REPORTE_DISPONIBLES AS\n            SELECT \n                p.ID_PROPIEDAD,\n                m.NOMBRE_MUNICIPIO AS CIUDAD,\n                p.DIRECCION_PROPIEDAD,\n                p.ESTRATO,\n                p.CANON_ARRENDAMIENTO_ESTIMADO AS CANON,\n                p.AREA_M2,\n                p.HABITACIONES,\n                p.BANO\n            FROM PROPIEDADES p\n            JOIN MUNICIPIOS m ON p.ID_MUNICIPIO = m.ID_MUNICIPIO\n            WHERE p.DISPONIBILIDAD_PROPIEDAD = 1\n            AND p.ESTADO_REGISTRO = 1"
+    }
+  ],
+  "triggers": [
+    {
+      "name": "TRG_ACTUALIZAR_DISPONIBILIDAD_OCUPADA",
+      "table": "CONTRATOS_ARRENDAMIENTOS",
+      "sql": "CREATE TRIGGER TRG_ACTUALIZAR_DISPONIBILIDAD_OCUPADA\n        AFTER INSERT ON CONTRATOS_ARRENDAMIENTOS\n        WHEN NEW.ESTADO_CONTRATO_A = 'Activo'\n        BEGIN\n            UPDATE PROPIEDADES \n            SET DISPONIBILIDAD_PROPIEDAD = 0,\n                UPDATED_BY = NEW.CREATED_BY,\n                UPDATED_AT = datetime('now', 'localtime')\n            WHERE ID_PROPIEDAD = NEW.ID_PROPIEDAD;\n        END"
+    },
+    {
+      "name": "TRG_EVITAR_SOLAPAMIENTO_ARRIENDO",
+      "table": "CONTRATOS_ARRENDAMIENTOS",
+      "sql": "CREATE TRIGGER TRG_EVITAR_SOLAPAMIENTO_ARRIENDO\n            BEFORE INSERT ON CONTRATOS_ARRENDAMIENTOS\n            BEGIN\n                SELECT RAISE(ABORT, 'Error: Esta propiedad ya tiene un contrato de arrendamiento ACTIVO. Debe finalizar el anterior primero.')\n                WHERE EXISTS (\n                    SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS \n                    WHERE ID_PROPIEDAD = NEW.ID_PROPIEDAD \n                    AND ESTADO_CONTRATO_A = 'Activo'\n                );\n            END"
+    },
+    {
+      "name": "TRG_EVITAR_SOLAPAMIENTO_MANDATO",
+      "table": "CONTRATOS_MANDATOS",
+      "sql": "CREATE TRIGGER TRG_EVITAR_SOLAPAMIENTO_MANDATO\n            BEFORE INSERT ON CONTRATOS_MANDATOS\n            BEGIN\n                SELECT RAISE(ABORT, 'Error: Esta propiedad ya tiene un contrato de mandato ACTIVO.')\n                WHERE EXISTS (\n                    SELECT 1 FROM CONTRATOS_MANDATOS \n                    WHERE ID_PROPIEDAD = NEW.ID_PROPIEDAD \n                    AND ESTADO_CONTRATO_M = 'Activo'\n                );\n            END"
+    },
+    {
+      "name": "TRG_EXIGIR_MOTIVO_CANCELACION",
+      "table": "CONTRATOS_ARRENDAMIENTOS",
+      "sql": "CREATE TRIGGER TRG_EXIGIR_MOTIVO_CANCELACION\n            BEFORE UPDATE ON CONTRATOS_ARRENDAMIENTOS\n            WHEN NEW.ESTADO_CONTRATO_A = 'Cancelado' \n            AND (NEW.MOTIVO_CANCELACION IS NULL OR NEW.MOTIVO_CANCELACION = '')\n            BEGIN\n                SELECT RAISE(ABORT, 'Error: Para cancelar un contrato es OBLIGATORIO ingresar un motivo de cancelación.');\n            END"
+    },
+    {
+      "name": "TRG_PREVENIR_DELETE_CONTRATOS",
+      "table": "CONTRATOS_ARRENDAMIENTOS",
+      "sql": "CREATE TRIGGER TRG_PREVENIR_DELETE_CONTRATOS\n            BEFORE DELETE ON CONTRATOS_ARRENDAMIENTOS\n            BEGIN\n                SELECT RAISE(ABORT, 'Error: No está permitido eliminar contratos físicamente. Debe cambiar su estado a \"Cancelado\" o \"Finalizado\" para mantener el histórico.');\n            END"
+    },
+    {
+      "name": "TRG_VALIDAR_FECHAS_CONTRATO",
+      "table": "CONTRATOS_ARRENDAMIENTOS",
+      "sql": "CREATE TRIGGER TRG_VALIDAR_FECHAS_CONTRATO\n            BEFORE INSERT ON CONTRATOS_ARRENDAMIENTOS\n            BEGIN\n                SELECT RAISE(ABORT, 'Error: La fecha de finalización no puede ser anterior a la fecha de inicio.')\n                WHERE NEW.FECHA_FIN_CONTRATO_A <= NEW.FECHA_INICIO_CONTRATO_A;\n            END"
+    }
+  ],
+  "indices": [
+    {
+      "name": "idx_alertas_entidad",
+      "table": "ALERTAS",
+      "sql": "CREATE INDEX idx_alertas_entidad ON ALERTAS(TIPO_ENTIDAD, ID_ENTIDAD_RELACIONADA)"
+    },
+    {
+      "name": "idx_alertas_estado",
+      "table": "ALERTAS",
+      "sql": "CREATE INDEX idx_alertas_estado ON ALERTAS(ESTADO_ALERTA)"
+    },
+    {
+      "name": "idx_alertas_prioridad",
+      "table": "ALERTAS",
+      "sql": "CREATE INDEX idx_alertas_prioridad ON ALERTAS(PRIORIDAD, ESTADO_ALERTA)"
+    },
+    {
+      "name": "idx_alertas_tipo",
+      "table": "ALERTAS",
+      "sql": "CREATE INDEX idx_alertas_tipo ON ALERTAS(TIPO_ALERTA, ESTADO_ALERTA)"
+    },
+    {
+      "name": "idx_alertas_usuario",
+      "table": "ALERTAS",
+      "sql": "CREATE INDEX idx_alertas_usuario ON ALERTAS(USUARIO_ASIGNADO, ESTADO_ALERTA)"
+    },
+    {
+      "name": "idx_archivos_entidad",
+      "table": "ARCHIVOS_ADJUNTOS",
+      "sql": "CREATE INDEX idx_archivos_entidad ON ARCHIVOS_ADJUNTOS(TIPO_ENTIDAD, ID_ENTIDAD_RELACIONADA)"
+    },
+    {
+      "name": "idx_archivos_tipo",
+      "table": "ARCHIVOS_ADJUNTOS",
+      "sql": "CREATE INDEX idx_archivos_tipo ON ARCHIVOS_ADJUNTOS(TIPO_ARCHIVO, ESTADO)"
+    },
+    {
+      "name": "idx_arriendo_activo",
+      "table": "CONTRATOS_ARRENDAMIENTOS",
+      "sql": "CREATE UNIQUE INDEX idx_arriendo_activo ON CONTRATOS_ARRENDAMIENTOS(ID_PROPIEDAD) WHERE ESTADO_CONTRATO_A = 'Activo'"
+    },
+    {
+      "name": "idx_auditoria_fecha",
+      "table": "AUDITORIA_CAMBIOS",
+      "sql": "CREATE INDEX idx_auditoria_fecha ON AUDITORIA_CAMBIOS(FECHA_CAMBIO)"
+    },
+    {
+      "name": "idx_auditoria_tabla",
+      "table": "AUDITORIA_CAMBIOS",
+      "sql": "CREATE INDEX idx_auditoria_tabla ON AUDITORIA_CAMBIOS(TABLA, ID_REGISTRO)"
+    },
+    {
+      "name": "idx_auditoria_usuario",
+      "table": "AUDITORIA_CAMBIOS",
+      "sql": "CREATE INDEX idx_auditoria_usuario ON AUDITORIA_CAMBIOS(USUARIO, FECHA_CAMBIO)"
+    },
+    {
+      "name": "idx_documentos_entidad",
+      "table": "DOCUMENTOS",
+      "sql": "CREATE INDEX idx_documentos_entidad ON DOCUMENTOS (ENTIDAD_TIPO, ENTIDAD_ID)"
+    },
+    {
+      "name": "idx_documentos_vigente",
+      "table": "DOCUMENTOS",
+      "sql": "CREATE INDEX idx_documentos_vigente ON DOCUMENTOS (ES_VIGENTE)"
+    },
+    {
+      "name": "idx_historial_entidad",
+      "table": "HISTORIAL_ESTADOS",
+      "sql": "CREATE INDEX idx_historial_entidad ON HISTORIAL_ESTADOS(TIPO_ENTIDAD, ID_ENTIDAD)"
+    },
+    {
+      "name": "idx_historial_fecha",
+      "table": "HISTORIAL_ESTADOS",
+      "sql": "CREATE INDEX idx_historial_fecha ON HISTORIAL_ESTADOS(FECHA_CAMBIO)"
+    },
+    {
+      "name": "idx_incidentes_estado",
+      "table": "INCIDENTES",
+      "sql": "CREATE INDEX idx_incidentes_estado ON INCIDENTES(ESTADO)"
+    },
+    {
+      "name": "idx_incidentes_fecha",
+      "table": "INCIDENTES",
+      "sql": "CREATE INDEX idx_incidentes_fecha ON INCIDENTES(ID_PROPIEDAD, FECHA_INCIDENTE)"
+    },
+    {
+      "name": "idx_incidentes_pendientes",
+      "table": "INCIDENTES",
+      "sql": "CREATE INDEX idx_incidentes_pendientes ON INCIDENTES(ESTADO, DIAS_SIN_RESOLVER) WHERE ESTADO IN ('Reportado', 'En Revision', 'Cotizado', 'Aprobado', 'En Reparacion')"
+    },
+    {
+      "name": "idx_liq_contratos_contrato",
+      "table": "LIQUIDACIONES_CONTRATOS",
+      "sql": "CREATE INDEX idx_liq_contratos_contrato ON LIQUIDACIONES_CONTRATOS(ID_CONTRATO_A)"
+    },
+    {
+      "name": "idx_liq_contratos_liquidacion",
+      "table": "LIQUIDACIONES_CONTRATOS",
+      "sql": "CREATE INDEX idx_liq_contratos_liquidacion ON LIQUIDACIONES_CONTRATOS(ID_LIQUIDACION_ASESOR)"
+    },
+    {
+      "name": "idx_liquidaciones_asesor",
+      "table": "LIQUIDACIONES_ASESORES",
+      "sql": "CREATE INDEX idx_liquidaciones_asesor ON LIQUIDACIONES_ASESORES(ID_ASESOR)"
+    },
+    {
+      "name": "idx_liquidaciones_contrato",
+      "table": "LIQUIDACIONES_ASESORES",
+      "sql": "CREATE INDEX idx_liquidaciones_contrato ON LIQUIDACIONES_ASESORES(ID_CONTRATO_A)"
+    },
+    {
+      "name": "idx_liquidaciones_estado",
+      "table": "LIQUIDACIONES_ASESORES",
+      "sql": "CREATE INDEX idx_liquidaciones_estado ON LIQUIDACIONES_ASESORES(ESTADO_LIQUIDACION)"
+    },
+    {
+      "name": "idx_liquidaciones_periodo",
+      "table": "LIQUIDACIONES_ASESORES",
+      "sql": "CREATE INDEX idx_liquidaciones_periodo ON LIQUIDACIONES_ASESORES(PERIODO_LIQUIDACION)"
+    },
+    {
+      "name": "idx_liquidaciones_propietarios_estado",
+      "table": "LIQUIDACIONES_PROPIETARIOS",
+      "sql": "CREATE INDEX idx_liquidaciones_propietarios_estado ON LIQUIDACIONES_PROPIETARIOS(ESTADO_LIQUIDACION)"
+    },
+    {
+      "name": "idx_liquidaciones_propietarios_mora",
+      "table": "LIQUIDACIONES_PROPIETARIOS",
+      "sql": "CREATE INDEX idx_liquidaciones_propietarios_mora ON LIQUIDACIONES_PROPIETARIOS(ESTADO_LIQUIDACION, DIAS_MORA) WHERE ESTADO_LIQUIDACION = 'Mora'"
+    },
+    {
+      "name": "idx_liquidaciones_propietarios_periodo",
+      "table": "LIQUIDACIONES_PROPIETARIOS",
+      "sql": "CREATE INDEX idx_liquidaciones_propietarios_periodo ON LIQUIDACIONES_PROPIETARIOS(PERIODO_LIQUIDACION)"
+    },
+    {
+      "name": "idx_liquidaciones_propietarios_propietario",
+      "table": "LIQUIDACIONES_PROPIETARIOS",
+      "sql": "CREATE INDEX idx_liquidaciones_propietarios_propietario ON LIQUIDACIONES_PROPIETARIOS(ID_PROPIETARIO, ESTADO_LIQUIDACION)"
+    },
+    {
+      "name": "idx_mandato_activo",
+      "table": "CONTRATOS_MANDATOS",
+      "sql": "CREATE UNIQUE INDEX idx_mandato_activo ON CONTRATOS_MANDATOS(ID_PROPIEDAD) WHERE ESTADO_CONTRATO_M = 'Activo'"
+    },
+    {
+      "name": "idx_notificaciones_alerta",
+      "table": "NOTIFICACIONES_ENVIADAS",
+      "sql": "CREATE INDEX idx_notificaciones_alerta ON NOTIFICACIONES_ENVIADAS(ID_ALERTA)"
+    },
+    {
+      "name": "idx_notificaciones_estado",
+      "table": "NOTIFICACIONES_ENVIADAS",
+      "sql": "CREATE INDEX idx_notificaciones_estado ON NOTIFICACIONES_ENVIADAS(ESTADO_ENVIO)"
+    },
+    {
+      "name": "idx_notificaciones_fecha",
+      "table": "NOTIFICACIONES_ENVIADAS",
+      "sql": "CREATE INDEX idx_notificaciones_fecha ON NOTIFICACIONES_ENVIADAS(FECHA_ENVIO)"
+    },
+    {
+      "name": "idx_pagos_asesores_estado",
+      "table": "PAGOS_ASESORES",
+      "sql": "CREATE INDEX idx_pagos_asesores_estado ON PAGOS_ASESORES(ESTADO_PAGO)"
+    },
+    {
+      "name": "idx_pagos_asesores_fecha",
+      "table": "PAGOS_ASESORES",
+      "sql": "CREATE INDEX idx_pagos_asesores_fecha ON PAGOS_ASESORES(FECHA_PROGRAMADA, ESTADO_PAGO)"
+    },
+    {
+      "name": "idx_pagos_propietarios_estado",
+      "table": "PAGOS_PROPIETARIOS",
+      "sql": "CREATE INDEX idx_pagos_propietarios_estado ON PAGOS_PROPIETARIOS(ESTADO_PAGO)"
+    },
+    {
+      "name": "idx_pagos_propietarios_fecha",
+      "table": "PAGOS_PROPIETARIOS",
+      "sql": "CREATE INDEX idx_pagos_propietarios_fecha ON PAGOS_PROPIETARIOS(FECHA_PROGRAMADA, ESTADO_PAGO)"
+    },
+    {
+      "name": "idx_personas_documento",
+      "table": "PERSONAS",
+      "sql": "CREATE INDEX idx_personas_documento ON PERSONAS(TIPO_DOCUMENTO, NUMERO_DOCUMENTO)"
+    },
+    {
+      "name": "idx_personas_estado",
+      "table": "PERSONAS",
+      "sql": "CREATE INDEX idx_personas_estado ON PERSONAS(ESTADO_REGISTRO)"
+    },
+    {
+      "name": "idx_propiedades_disponibilidad",
+      "table": "PROPIEDADES",
+      "sql": "CREATE INDEX idx_propiedades_disponibilidad ON PROPIEDADES(DISPONIBILIDAD_PROPIEDAD)"
+    },
+    {
+      "name": "idx_propiedades_estado",
+      "table": "PROPIEDADES",
+      "sql": "CREATE INDEX idx_propiedades_estado ON PROPIEDADES(ESTADO_REGISTRO)"
+    },
+    {
+      "name": "idx_propiedades_municipio",
+      "table": "PROPIEDADES",
+      "sql": "CREATE INDEX idx_propiedades_municipio ON PROPIEDADES(ID_MUNICIPIO, ESTADO_REGISTRO)"
+    },
+    {
+      "name": "idx_recaudo_contrato",
+      "table": "RECAUDO_ARRENDAMIENTO",
+      "sql": "CREATE INDEX idx_recaudo_contrato ON RECAUDO_ARRENDAMIENTO(ID_CONTRATO_A, PERIODO_RECAUDO)"
+    },
+    {
+      "name": "idx_recaudo_estado",
+      "table": "RECAUDO_ARRENDAMIENTO",
+      "sql": "CREATE INDEX idx_recaudo_estado ON RECAUDO_ARRENDAMIENTO(ESTADO_RECAUDO)"
+    },
+    {
+      "name": "idx_recaudo_mora",
+      "table": "RECAUDO_ARRENDAMIENTO",
+      "sql": "CREATE INDEX idx_recaudo_mora ON RECAUDO_ARRENDAMIENTO(ESTADO_RECAUDO, DIAS_MORA) WHERE ESTADO_RECAUDO = 'Mora'"
+    },
+    {
+      "name": "idx_recaudo_periodo",
+      "table": "RECAUDO_ARRENDAMIENTO",
+      "sql": "CREATE INDEX idx_recaudo_periodo ON RECAUDO_ARRENDAMIENTO(PERIODO_RECAUDO)"
+    },
+    {
+      "name": "idx_recibos_publicos_estado",
+      "table": "RECIBOS_PUBLICOS",
+      "sql": "CREATE INDEX idx_recibos_publicos_estado ON RECIBOS_PUBLICOS(ESTADO)"
+    },
+    {
+      "name": "idx_recibos_publicos_periodo",
+      "table": "RECIBOS_PUBLICOS",
+      "sql": "CREATE INDEX idx_recibos_publicos_periodo ON RECIBOS_PUBLICOS(PERIODO_RECIBO)"
+    },
+    {
+      "name": "idx_recibos_publicos_propiedad",
+      "table": "RECIBOS_PUBLICOS",
+      "sql": "CREATE INDEX idx_recibos_publicos_propiedad ON RECIBOS_PUBLICOS(ID_PROPIEDAD, PERIODO_RECIBO)"
+    },
+    {
+      "name": "idx_sesiones_usuario",
+      "table": "SESIONES_USUARIO",
+      "sql": "CREATE INDEX idx_sesiones_usuario ON SESIONES_USUARIO(ID_USUARIO, FECHA_INICIO)"
+    },
+    {
+      "name": "idx_usuarios_rol",
+      "table": "USUARIOS",
+      "sql": "CREATE INDEX idx_usuarios_rol ON USUARIOS(ROL, ESTADO_USUARIO)"
+    }
+  ]
+}

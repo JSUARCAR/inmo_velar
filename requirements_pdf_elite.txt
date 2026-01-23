@@ -1,0 +1,28 @@
+# ============================================================================
+# Sistema PDF de Élite - Dependencias Adicionales
+# ============================================================================
+# Fecha: 2026-01-18
+# Propósito: Dependencias para módulo PDF élite con ReportLab
+# ============================================================================
+
+# === PDF Core Élite ===
+reportlab>=4.2.5          # Motor principal de generación PDF avanzado
+pypdf>=4.3.1              # Manipulación y merge de PDFs
+
+# === Imágenes y Procesamiento ===
+pillow>=10.4.0            # Procesamiento de imágenes (PIL)
+svglib>=1.5.1             # Soporte para gráficos SVG
+
+# === Códigos de Verificación ===
+qrcode[pil]>=7.4.2        # Generación de códigos QR con PIL
+python-barcode>=0.15.1    # Generación de códigos de barra
+
+# === Gráficos y Visualización ===
+matplotlib>=3.9.2         # Gráficos científicos
+seaborn>=0.13.2           # Visualizaciones estadísticas avanzadas
+
+# === Optimización y Compresión ===
+PyPDF2>=3.0.1             # Compresión y optimización de PDFs
+
+# === Utilidades ===
+typing-extensions>=4.12.0 # Extensiones de typing para Python 3.10
