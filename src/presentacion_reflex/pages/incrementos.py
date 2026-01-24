@@ -121,6 +121,6 @@ def incrementos_content() -> rx.Component:
         on_mount=IPCState.load_ipcs
     )
 
-@rx.page(route="/incrementos", title="IPC e Incrementos | Inmobiliaria Velar")
+@rx.page(route="/incrementos", title="IPC e Incrementos | Inmobiliaria Velar", on_load=[AuthState.require_login, IPCState.load_ipcs])
 def incrementos_page() -> rx.Component:
     return dashboard_layout(incrementos_content())

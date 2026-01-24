@@ -106,6 +106,8 @@ def auditoria_content() -> rx.Component:
         on_mount=AuditoriaState.load_logs
     )
 
-@rx.page(route="/auditoria", title="Auditoría | Inmobiliaria Velar")
+from src.presentacion_reflex.state.auth_state import AuthState
+
+@rx.page(route="/auditoria", title="Auditoría | Inmobiliaria Velar", on_load=[AuthState.require_login, AuditoriaState.load_logs])
 def auditoria_page() -> rx.Component:
     return dashboard_layout(auditoria_content())

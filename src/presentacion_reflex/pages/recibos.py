@@ -174,6 +174,6 @@ def recibos_content() -> rx.Component:
         align="stretch"
     )
 
-@rx.page(route="/recibos-publicos", title="Recibos Públicos | Inmobiliaria Velar", on_load=RecibosState.on_load)
+@rx.page(route="/recibos-publicos", title="Recibos Públicos | Inmobiliaria Velar", on_load=[AuthState.require_login, RecibosState.on_load])
 def recibos_publicos_page() -> rx.Component:
     return dashboard_layout(recibos_content())

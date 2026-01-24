@@ -11,9 +11,12 @@ class AuthState(rx.State):
     Maneja la sesión del usuario, login y logout.
     """
     
-    # Usuario autenticado
-    # Usuario autenticado
-    user: Optional[Dict[str, Any]] = None
+    # Usuario autenticado (Persistente)
+    user: str = rx.Cookie(name="user_data", secure=False) # Store as JSON string in cookie/local storage
+    
+    # In-memory parsed user data for easier access
+    _user_data: Optional[Dict[str, Any]] = None
+
     allowed_modules: List[str] = []  # Lista de módulos que el usuario puede VER
     permissions_map: Dict[str, List[str]] = {} # Mapa {Modulo: [Lista de Acciones]}
     
@@ -21,10 +24,26 @@ class AuthState(rx.State):
     is_loading: bool = False
     error_message: str = ""
     
+    @rx.var(cache=False)
+    def user_info(self) -> Optional[Dict[str, Any]]:
+        """Parses the user JSON string from cookie/storage if available."""
+        if self._user_data:
+             return self._user_data
+        
+        if self.user:
+            import json
+            try:
+                # If it's a cookie string, parse it
+                data = json.loads(self.user)
+                return data
+            except:
+                return None
+        return None
+
     @rx.var(cache=True)
     def is_authenticated(self) -> bool:
-        """Verifica si hay un usuario autenticado."""
-        return self.user is not None
+        """Verifica si hay un usuario autenticado checking the cookie/storage."""
+        return self.user != "" and self.user is not None
 
     def login(self, form_data: dict):
         """
@@ -52,31 +71,21 @@ class AuthState(rx.State):
             usuario_autenticado = servicio_auth.autenticar(username, password)
             
             if usuario_autenticado:
+                import json
                 # Serializar usuario para el estado
-                self.user = {
+                user_dict = {
                     "id_usuario": usuario_autenticado.id_usuario,
                     "nombre_usuario": usuario_autenticado.nombre_usuario,
                     "rol": usuario_autenticado.rol,
                     "ultimo_acceso": usuario_autenticado.ultimo_acceso,
                 }
-                # Cargar permisos del usuario
-                servicio_permisos = ServicioPermisos(db_manager)
-                permisos = servicio_permisos.obtener_permisos_rol(usuario_autenticado.rol)
+                # Save as JSON string in Cookie (LocalStorage wrapper in Reflex)
+                self.user = json.dumps(user_dict)
+                self._user_data = user_dict
+                # Cargar permisos y módulos permitidos
+                self._sync_permissions(usuario_autenticado.rol)
                 
-                # Construir mapa de permisos granular {Modulo: [Acciones]}
-                permits_map = {}
-                allowed_mods = set()
-                
-                for p in permisos:
-                    if p.modulo not in permits_map:
-                        permits_map[p.modulo] = []
-                    permits_map[p.modulo].append(p.accion)
-                    
-                    if p.accion == "VER":
-                        allowed_mods.add(p.modulo)
-                
-                self.permissions_map = permits_map
-                self.allowed_modules = list(allowed_mods)
+                self.error_message = ""
                 
                 # Si es Admin, asegurar que tiene acceso a todo (aunque el servicio lo haga, un fallback)
                 if usuario_autenticado.rol == "Administrador":
@@ -97,7 +106,8 @@ class AuthState(rx.State):
 
     def logout(self):
         """Cierra la sesión del usuario."""
-        self.user = None
+        self.user = "" # Clear cookie
+        self._user_data = None
         self.allowed_modules = []
         self.permissions_map = {}
         return rx.redirect("/login")
@@ -106,7 +116,8 @@ class AuthState(rx.State):
     def check_module_access(cls, module_name: str) -> rx.Var:
         """Verifica si el usuario tiene acceso a un módulo (Frontend safe)."""
         # Admin siempre tiene acceso
-        is_admin = cls.user["rol"] == "Administrador"
+        # Access the computed user_info var
+        is_admin = cls.user_info["rol"] == "Administrador"
         # Verificar en lista de permitidos
         has_access = cls.allowed_modules.contains(module_name)
         
@@ -119,7 +130,7 @@ class AuthState(rx.State):
         Retorna un rx.Var booleano compatible con rx.cond().
         """
         # Admin siempre tiene acceso
-        is_admin = cls.user["rol"] == "Administrador"
+        is_admin = cls.user_info["rol"] == "Administrador"
             
         # Verificar si el módulo existe y si la acción está permitida
         # Usamos lógica booleana de Vars: (Existe Modulo) AND (Existe Accion en Modulo)
@@ -134,7 +145,37 @@ class AuthState(rx.State):
         
         return is_admin | (module_exists & action_allowed)
 
+    def _sync_permissions(self, rol: str = None):
+        """Recarga los permisos del usuario desde la base de datos."""
+        try:
+            target_rol = rol or (self.user_info["rol"] if self.user_info else None)
+            if not target_rol:
+                return
+
+            servicio_permisos = ServicioPermisos(db_manager)
+            permisos = servicio_permisos.obtener_permisos_rol(target_rol)
+            
+            permits_map = {}
+            allowed_mods = set()
+            
+            for p in permisos:
+                if p.modulo not in permits_map:
+                    permits_map[p.modulo] = []
+                permits_map[p.modulo].append(p.accion)
+                
+                if p.accion == "VER":
+                    allowed_mods.add(p.modulo)
+            
+            self.permissions_map = permits_map
+            self.allowed_modules = list(allowed_mods)
+        except Exception as e:
+            print(f"Error syncing permissions: {e}")
+
     def require_login(self):
         """Protector de rutas. Redirige a login si no está autenticado."""
         if not self.is_authenticated:
             return rx.redirect("/login")
+        
+        # Sincronizar permisos si el estado está vacío (ej. después de un F5)
+        if not self.allowed_modules and self.user_info:
+            self._sync_permissions()

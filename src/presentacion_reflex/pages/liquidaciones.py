@@ -513,7 +513,7 @@ def liquidaciones_page() -> rx.Component:
     )
 
 
-@rx.page(route="/liquidaciones", title="Liquidaciones", on_load=LiquidacionesState.on_load)
+@rx.page(route="/liquidaciones", title="Liquidaciones", on_load=[AuthState.require_login, LiquidacionesState.on_load])
 def liquidaciones() -> rx.Component:
     """Página de liquidaciones con layout."""
     return rx.fragment(

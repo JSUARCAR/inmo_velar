@@ -300,6 +300,6 @@ def proveedores_content() -> rx.Component:
         width="100%"
     )
 
-@rx.page(route="/proveedores", title="Proveedores | Inmobiliaria Velar", on_load=ProveedoresState.on_load)
+@rx.page(route="/proveedores", title="Proveedores | Inmobiliaria Velar", on_load=[AuthState.require_login, ProveedoresState.on_load])
 def proveedores_page() -> rx.Component:
     return dashboard_layout(proveedores_content())
