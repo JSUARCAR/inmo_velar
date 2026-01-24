@@ -138,7 +138,7 @@ class IncidentesState(DocumentosStateMixin):
             async with self:
                 self.propiedades_options = options
         except Exception as e:
-            print(f"Error cargando propiedades: {e}")
+            pass  # print(f"Error cargando propiedades: {e}") [OpSec Removed]
 
     @rx.event(background=True)
     async def load_incidentes(self):
@@ -252,7 +252,7 @@ class IncidentesState(DocumentosStateMixin):
                  self.proveedores_options = options
 
         except Exception as e:
-            print(f"Error cargando proveedores: {e}")
+            pass  # print(f"Error cargando proveedores: {e}") [OpSec Removed]
 
     def toggle_view_mode(self):
         """Alterna entre vista lista y kanban."""
@@ -405,7 +405,7 @@ class IncidentesState(DocumentosStateMixin):
                 self.cotizaciones = cotizaciones_data
                 
         except Exception as e:
-            print(f"Error cargando detalle incidente: {e}")
+            pass  # print(f"Error cargando detalle incidente: {e}") [OpSec Removed]
             # Fallback a datos básicos si falla
             async with self:
                 self.cotizaciones = []

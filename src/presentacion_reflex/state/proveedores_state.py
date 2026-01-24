@@ -126,7 +126,7 @@ class ProveedoresState(rx.State):
             async with self:
                 self.personas_disponibles = options
         except Exception as e:
-            print(f"Error loading personas: {e}")
+            pass  # print(f"Error loading personas: {e}") [OpSec Removed]
 
     # Setters y Helpers
     def set_search(self, value: str):

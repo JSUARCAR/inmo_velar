@@ -24,7 +24,7 @@ class AlertasState(rx.State):
                 self.notifications = items
                 self.unread_count = len(items)
         except Exception as e:
-            print(f"Error checking alerts: {e}")
+            pass  # print(f"Error checking alerts: {e}") [OpSec Removed]
 
     def toggle_list(self):
         self.show_list = not self.show_list

@@ -374,7 +374,7 @@ class LiquidacionesState(DocumentosStateMixin):
         
         except Exception as e:
             # En producción loguearíamos esto, por ahora silencioso o print en consola
-            print(f"Error fetching contract details: {e}")
+            pass  # print(f"Error fetching contract details: {e}") [OpSec Removed]
     
     @rx.event(background=True)
     async def open_edit_modal(self, id_liquidacion: int):

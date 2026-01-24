@@ -41,16 +41,16 @@ class DocumentosStateMixin(rx.State):
         entidad_tipo = getattr(self, "current_entidad_tipo", None)
         entidad_id = getattr(self, "current_entidad_id", None)
         
-        print(f"DEBUG: handle_upload called. Tipo: '{entidad_tipo}', ID: '{entidad_id}'")
+        pass  # print(f"DEBUG: handle_upload called. Tipo: '{entidad_tipo}', ID: '{entidad_id}'") [OpSec Removed]
 
 
         if not entidad_tipo or not entidad_id:
-            print("Error: Entidad tipo/id no definidos para upload")
+            pass  # print("Error: Entidad tipo/id no definidos para upload") [OpSec Removed]
             self.is_uploading = False
             return
             
         try:
-            print(f"DEBUG: Processing upload. Files count: {len(files)}")
+            pass  # print(f"DEBUG: Processing upload. Files count: {len(files)}") [OpSec Removed]
             
             # Usar método optimizado del servicio que incluye validación
             await servicio_documental.procesar_upload_multiple(
@@ -68,8 +68,8 @@ class DocumentosStateMixin(rx.State):
             # Errores de validación de negocio
             yield rx.toast.warning(str(ve), duration=5000)
         except Exception as e:
-            print(f"Error subiendo documentos type: {type(e)}")
-            print(f"Error subiendo documentos str: {e}")
+            pass  # print(f"Error subiendo documentos type: {type(e)}") [OpSec Removed]
+            pass  # print(f"Error subiendo documentos str: {e}") [OpSec Removed]
             traceback.print_exc()
             yield rx.toast.error(f"Error técnico al subir: {str(e)}")
             

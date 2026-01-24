@@ -11,8 +11,12 @@ class AuthState(rx.State):
     Maneja la sesión del usuario, login y logout.
     """
     
-    # Usuario autenticado (Persistente)
-    user: str = rx.Cookie(name="user_data", secure=False) # Store as JSON string in cookie/local storage
+    # Token de Sesión (Persistente)
+    # En producción cambiar secure=True
+    session_token: str = rx.Cookie(name="session_token", secure=False)
+    
+    # Legacy: user cookie removed
+    # user: str = rx.Cookie(name="user_data", secure=False)
     
     # In-memory parsed user data for easier access
     _user_data: Optional[Dict[str, Any]] = None
@@ -26,24 +30,34 @@ class AuthState(rx.State):
     
     @rx.var(cache=False)
     def user_info(self) -> Optional[Dict[str, Any]]:
-        """Parses the user JSON string from cookie/storage if available."""
+        """Recupera la información del usuario validando el token de sesión."""
         if self._user_data:
              return self._user_data
         
-        if self.user:
-            import json
+        if self.session_token:
             try:
-                # If it's a cookie string, parse it
-                data = json.loads(self.user)
-                return data
-            except:
+                # Validar token contra BD
+                servicio_auth = ServicioAutenticacion(db_manager)
+                usuario = servicio_auth.validar_sesion(self.session_token)
+                
+                if usuario:
+                    user_dict = {
+                        "id_usuario": usuario.id_usuario,
+                        "nombre_usuario": usuario.nombre_usuario,
+                        "rol": usuario.rol,
+                        "ultimo_acceso": usuario.ultimo_acceso,
+                    }
+                    self._user_data = user_dict
+                    return user_dict
+            except Exception as e:
+                pass  # print(f"Error validating session: {e}") [OpSec Removed]
                 return None
         return None
 
     @rx.var(cache=True)
     def is_authenticated(self) -> bool:
-        """Verifica si hay un usuario autenticado checking the cookie/storage."""
-        return self.user != "" and self.user is not None
+        """Verifica si hay un usuario autenticado."""
+        return self.user_info is not None
 
     def login(self, form_data: dict):
         """
@@ -71,17 +85,21 @@ class AuthState(rx.State):
             usuario_autenticado = servicio_auth.autenticar(username, password)
             
             if usuario_autenticado:
-                import json
-                # Serializar usuario para el estado
+                # Crear sesión persistente
+                sesion = servicio_auth.crear_sesion(usuario_autenticado)
+                
+                # Guardar token en cookie
+                self.session_token = sesion.token_sesion
+                
+                # Cache local para esta ejecución
                 user_dict = {
                     "id_usuario": usuario_autenticado.id_usuario,
                     "nombre_usuario": usuario_autenticado.nombre_usuario,
                     "rol": usuario_autenticado.rol,
                     "ultimo_acceso": usuario_autenticado.ultimo_acceso,
                 }
-                # Save as JSON string in Cookie (LocalStorage wrapper in Reflex)
-                self.user = json.dumps(user_dict)
                 self._user_data = user_dict
+                
                 # Cargar permisos y módulos permitidos
                 self._sync_permissions(usuario_autenticado.rol)
                 
@@ -99,14 +117,14 @@ class AuthState(rx.State):
                 self.error_message = "Credenciales incorrectas o usuario inactivo."
                 
         except Exception as e:
-            print(f"Error login reflex: {e}")
+            pass  # print(f"Error login reflex: {e}") [OpSec Removed]
             self.error_message = f"Error del sistema: {str(e)}"
         finally:
             self.is_loading = False
 
     def logout(self):
         """Cierra la sesión del usuario."""
-        self.user = "" # Clear cookie
+        self.session_token = "" # Clear cookie
         self._user_data = None
         self.allowed_modules = []
         self.permissions_map = {}
@@ -169,7 +187,7 @@ class AuthState(rx.State):
             self.permissions_map = permits_map
             self.allowed_modules = list(allowed_mods)
         except Exception as e:
-            print(f"Error syncing permissions: {e}")
+            pass  # print(f"Error syncing permissions: {e}") [OpSec Removed]
 
     def require_login(self):
         """Protector de rutas. Redirige a login si no está autenticado."""

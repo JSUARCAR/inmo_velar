@@ -139,7 +139,7 @@ class DesocupacionesState(DocumentosStateMixin):
             async with self:
                 self.contratos_candidatos = opciones
         except Exception as e:
-            print(f"Error cargando candidatos: {e}")
+            pass  # print(f"Error cargando candidatos: {e}") [OpSec Removed]
 
     # --- Acciones CRUD ---
 
