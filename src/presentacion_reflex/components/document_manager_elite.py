@@ -1,20 +1,19 @@
 import reflex as rx
-from typing import List, Callable, Dict, Any
+from typing import List, Callable, Dict, Any, Type
 
 def document_manager_elite(
-    entidad_tipo: str,
-    entidad_id: str,
-    tipos_permitidos: List[str],
-    on_upload_handler: Callable,
+    state_class: Type[rx.State],
     max_files: int = 10,
     allow_multiple: bool = True
 ) -> rx.Component:
     """
-    Componente elite para gestión documental con:
-    - Drag & drop múltiple
-    - Preview de imágenes (placeholder en upload)
-    - Progreso individual por archivo (simulado visualmente)
-    - Categorización automática
+    Componente elite para gestión documental que se conecta automáticamente
+    con un Estado que herede de DocumentosStateMixin.
+    
+    Args:
+        state_class: Clase del estado (ej: RecaudosState)
+        max_files: Máximo de archivos permitidos
+        allow_multiple: Si permite múltiples archivos
     """
     
     return rx.vstack(
@@ -29,7 +28,7 @@ def document_manager_elite(
                     color="var(--gray-12)"
                 ),
                 rx.text(
-                    f"Formatos permitidos: {', '.join(tipos_permitidos)}", 
+                    "Formatos soportados: PDF, JPG, PNG",
                     size="1",
                     color="var(--gray-10)"
                 ),
@@ -85,30 +84,81 @@ def document_manager_elite(
             ),
             multiple=allow_multiple,
             max_files=max_files,
-            accept={f"image/*": tipos_permitidos, "application/pdf": tipos_permitidos} if tipos_permitidos else None,
+            # Aceptamos tipos comunes por defecto
+            accept={
+                "image/jpeg": [".jpg", ".jpeg"],
+                "image/png": [".png"],
+                "application/pdf": [".pdf"]
+            },
             border="0px",
             padding="0px",
-            id=f"upload_{entidad_tipo}_{entidad_id}", # ID único para el componente upload
+            id=f"upload_manager_{state_class.__name__}", # ID único por State Class
         ),
         
         # Action Bar (Upload Button & File List Status)
         rx.hstack(
-            rx.text("Archivos seleccionados listos para subir...", size="1", color="var(--gray-10)"),
+            rx.text(
+                rx.cond(
+                    state_class.is_uploading,
+                    "Subiendo archivos...",
+                    "Archivos listos para subir"
+                ),
+                size="1", 
+                color="var(--gray-10)"
+            ),
             rx.spacer(),
             rx.button(
                 "Subir Documentos",
-                on_click=on_upload_handler(
+                on_click=state_class.handle_upload(
                    rx.upload_files(
-                       upload_id=f"upload_{entidad_tipo}_{entidad_id}",
-                       on_upload_progress=None # Podríamos añadir handler de progreso aquí
+                       upload_id=f"upload_manager_{state_class.__name__}",
                    )
                 ),
+                loading=state_class.is_uploading,
                 variant="solid",
                 color_scheme="blue",
             ),
             width="100%",
             padding_top="3",
             align="center",
+        ),
+        
+        # Lista de documentos ya cargados
+        rx.cond(
+            state_class.documentos,
+            rx.vstack(
+                 rx.text("Documentos Cargados", weight="bold", size="2", margin_top="4"),
+                 rx.foreach(
+                     state_class.documentos,
+                     lambda doc: rx.hstack(
+                         rx.icon("file-text", size=16),
+                         rx.text(doc["nombre_archivo"], size="2", flex="1"),
+                         rx.icon_button(
+                             rx.icon("arrow-down-to-line", size=18),
+                             on_click=lambda: state_class.descargar_documento(doc["id_documento"]),
+                             variant="soft", 
+                             color_scheme="blue",
+                             size="2",
+                             cursor="pointer"
+                         ),
+                         rx.icon_button(
+                             rx.icon("trash-2", size=16),
+                             on_click=lambda: state_class.eliminar_documento(doc["id_documento"]),
+                             variant="ghost",
+                             color_scheme="red",
+                             size="1"
+                         ),
+                         width="100%",
+                         padding="2",
+                         border="1px solid var(--gray-4)",
+                         border_radius="8px",
+                         align="center",
+                         spacing="2"
+                     )
+                 ),
+                 width="100%",
+                 spacing="2"
+            )
         ),
         
         width="100%",
