@@ -42,9 +42,9 @@ class RepositorioDocumentoSQLite:
         if include_content:
              # Check for content in keys or index 11
              if hasattr(row, 'keys'):
-                 doc.contenido = row.get('CONTENIDO')
+                 doc.contenido = bytes(row.get('CONTENIDO')) if row.get('CONTENIDO') else None
              elif len(row) > 11:
-                 doc.contenido = row[11]
+                 doc.contenido = bytes(row[11]) if row[11] else None
              
         return doc
 

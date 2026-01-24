@@ -73,6 +73,10 @@ app = rx.App()
 from src.presentacion_reflex.api.pdf_download_api import register_pdf_routes
 register_pdf_routes(app)
 
+# Registrar API routes para visualización y descarga de documentos (Imágenes/Archivos BD)
+from src.presentacion_reflex.api.document_download_api import register_document_routes
+register_document_routes(app)
+
 # 1. Login (Pública)
 app.add_page(login.login_page, route="/login", title="Login - Inmobiliaria Velar")
 

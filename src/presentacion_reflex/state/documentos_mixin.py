@@ -97,7 +97,7 @@ class DocumentosStateMixin(rx.State):
                     "extension": d.extension,
                     "mime_type": d.mime_type,
                     "version": d.version,
-                    "fecha_creacion": str(d.fecha_creacion)
+                    "fecha_creacion": str(d.created_at)
                 }
                 for d in docs
             ]
