@@ -5,7 +5,9 @@ from src.aplicacion.servicios.servicio_incidentes import ServicioIncidentes
 from datetime import datetime
 from src.dominio.entidades.incidente import Incidente
 
-class IncidentesState(rx.State):
+from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+
+class IncidentesState(DocumentosStateMixin):
     """Estado para gestión de Incidentes."""
     
     # Datos
@@ -327,6 +329,11 @@ class IncidentesState(rx.State):
             self.show_quote_form = False
             self.error_message = ""
             self.is_loading = True
+            
+            # Configurar identidad de documentos
+            self.current_entidad_tipo = "INCIDENTE"
+            self.current_entidad_id = str(incidente["id"])
+            self.cargar_documentos()
             
         try:
             servicio = ServicioIncidentes(db_manager)

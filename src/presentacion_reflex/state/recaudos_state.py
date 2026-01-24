@@ -6,8 +6,9 @@ from src.infraestructura.persistencia.repositorio_recaudo_sqlite import Reposito
 from src.dominio.entidades.recaudo import Recaudo
 from src.dominio.entidades.recaudo_concepto import RecaudoConcepto
 
+from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 
-class RecaudosState(rx.State):
+class RecaudosState(DocumentosStateMixin):
     """Estado para gestión de recaudos (pagos de arrendatarios).
     Maneja paginación, filtros, CRUD y validaciones.
     """
@@ -347,6 +348,11 @@ class RecaudosState(rx.State):
         async with self:
             self.is_loading = True
             self.error_message = ""
+            
+            # Contexto Documental
+            self.current_entidad_tipo = "RECAUDO"
+            self.current_entidad_id = str(id_recaudo)
+            self.cargar_documentos()
         
         try:
             repo = RepositorioRecaudoSQLite(db_manager)

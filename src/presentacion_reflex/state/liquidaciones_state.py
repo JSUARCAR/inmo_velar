@@ -4,7 +4,9 @@ from src.infraestructura.persistencia.database import db_manager
 from src.aplicacion.servicios.servicio_financiero import ServicioFinanciero
 
 
-class LiquidacionesState(rx.State):
+from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+
+class LiquidacionesState(DocumentosStateMixin):
     """Estado para gestión de liquidaciones de propietarios.
     Maneja paginación, filtros, CRUD y transiciones de estado.
     """
@@ -423,6 +425,11 @@ class LiquidacionesState(rx.State):
             self.error_message = ""
             # Limpiar propiedades consolidadas para vista individual
             self.propiedades_consolidadas = []
+            
+            # Contexto Documental
+            self.current_entidad_tipo = "LIQUIDACION"
+            self.current_entidad_id = str(id_liquidacion)
+            self.cargar_documentos()
         
         try:
             servicio = ServicioFinanciero(db_manager)

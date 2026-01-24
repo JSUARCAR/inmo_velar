@@ -1,10 +1,11 @@
 """
 Modal de Detalle de Liquidación
-Muestra el breakdown completo de ingresos y egresos
+Muestra el breakdown completo de ingresos y egresos y gestión de documentos.
 """
 
 import reflex as rx
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
+from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
 
 
 def format_money(amount: int) -> str:
@@ -237,6 +238,18 @@ def liquidacion_detail_modal() -> rx.Component:
                             width="100%",
                         ),
                         rx.box(),
+                    ),
+                    
+                    # Sección: Documentos y Soportes (NUEVA)
+                    section_header("Soportes y Comprobantes", "file_text"),
+                    rx.card(
+                        rx.vstack(
+                            rx.text("Gestión de soportes de la liquidación.", size="2", color="gray"),
+                            document_manager_elite(LiquidacionesState),
+                            width="100%"
+                        ),
+                        width="100%",
+                        variant="surface"
                     ),
                     
                     # Observaciones

@@ -1,5 +1,6 @@
 import reflex as rx
 from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
+from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
 
 def detail_modal() -> rx.Component:
     """Modal para ver detalles de una liquidación."""
@@ -160,11 +161,11 @@ def detail_modal() -> rx.Component:
                                                     rx.cond(
                                                         LiquidacionAsesoresState.liquidacion_actual["estado"] == "Pendiente",
                                                          rx.icon_button(
-                                                             rx.icon("trash-2", size=16),
-                                                             on_click=lambda _, id_desc=d["id_descuento"]: LiquidacionAsesoresState.eliminar_descuento(id_desc),
-                                                             size="1",
-                                                             variant="ghost",
-                                                             color_scheme="red"
+                                                              rx.icon("trash-2", size=16),
+                                                              on_click=lambda _, id_desc=d["id_descuento"]: LiquidacionAsesoresState.eliminar_descuento(id_desc),
+                                                              size="1",
+                                                              variant="ghost",
+                                                              color_scheme="red"
                                                          ),
                                                         rx.box()
                                                     )
@@ -187,6 +188,19 @@ def detail_modal() -> rx.Component:
                                     width="100%"
                                 ),
                                 rx.text("No hay descuentos ni bonificaciones aplicados.", color="gray", size="2")
+                            ),
+                            width="100%"
+                        ),
+
+                        rx.separator(size="4", margin_y="4"),
+
+                        # Documentos y Soportes (NUEVA)
+                        rx.box(
+                            rx.heading("Soportes y Comprobantes", size="3", margin_bottom="2"),
+                            rx.text("Adjunte comprobantes de pago y soportes de descuentos.", size="2", color="gray", margin_bottom="2"),
+                            rx.card(
+                                document_manager_elite(LiquidacionAsesoresState),
+                                width="100%",
                             ),
                             width="100%"
                         ),

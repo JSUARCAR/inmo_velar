@@ -9,7 +9,9 @@ from src.infraestructura.persistencia.database import DatabaseManager, db_manage
 from src.infraestructura.repositorios.repositorio_recibo_publico_sqlite import RepositorioReciboPublicoSQLite
 from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
 
-class RecibosState(rx.State):
+from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+
+class RecibosState(DocumentosStateMixin):
     """Estado para la gestión de Recibos Públicos."""
     
     # Datos Principales
@@ -300,9 +302,20 @@ class RecibosState(rx.State):
     show_detail_modal: bool = False
     detail_data: Dict[str, Any] = {}
     
-    def open_detail_modal(self, recibo: Dict):
-        self.detail_data = recibo
-        self.show_detail_modal = True
+    @rx.event(background=True)
+    async def open_detail_modal(self, recibo: Dict):
+        """Abre el modal de detalle y carga documentos."""
+        async with self:
+            self.detail_data = recibo
+            self.is_loading = True
+            
+            # Contexto Documental
+            self.current_entidad_tipo = "RECIBO_PUBLICO"
+            self.current_entidad_id = str(recibo["id_recibo_publico"])
+            self.cargar_documentos()
+            
+            self.show_detail_modal = True
+            self.is_loading = False
         
     def handle_detail_open_change(self, is_open: bool):
         if not is_open:
@@ -346,4 +359,3 @@ class RecibosState(rx.State):
         
     def set_search(self, value: str):
         self.search_text = value
-        
