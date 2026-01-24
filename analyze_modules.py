@@ -1,5 +1,9 @@
 """
 Script para extraer información sobre la estructura de módulos y tablas del sistema.
+
+Autores: 
+    - JSUARCARDEV
+    - 
 """
 from src.infraestructura.persistencia.database import db_manager
 
