@@ -2,7 +2,7 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Reflex](https://img.shields.io/badge/framework-Reflex-orange.svg)](https://reflex.dev/)
-[![SQLite](https://img.shields.io/badge/database-SQLite-green.svg)](https://www.sqlite.org/)
+[![PostgreSQL](https://img.shields.io/badge/database-PostgreSQL-green.svg)](https://www.postgresql.org/)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
 
 Un sistema integral de gestión inmobiliaria de nivel empresarial construido con tecnologías Python modernas, siguiendo los principios de Arquitectura Limpia y patrones de diseño SOLID. Este sistema proporciona capacidades completas de gestión de propiedades, manejo de contratos, operaciones financieras y gestión de usuarios para empresas inmobiliarias.
@@ -140,7 +140,7 @@ Este proyecto implementa **Arquitectura Limpia** con estricta separación de res
 - **Servicios de Aplicación**: Orquestación de operaciones de dominio
 
 ### Capa de Infraestructura
-- **Implementaciones de Repositorio**: Acceso a base de datos SQLite
+- **Implementaciones de Repositorio**: Acceso a base de datos PostgreSQL
 - **Servicios Externos**: Generación de PDF, email, almacenamiento de archivos
 - **Gestión de Configuración**: Configuraciones basadas en entorno
 - **Logging y Monitoreo**: Logging estructurado y métricas
@@ -156,7 +156,7 @@ Este proyecto implementa **Arquitectura Limpia** con estricta separación de res
 ### Backend
 - **Python 3.10+**: Lenguaje principal
 - **Reflex**: Framework web moderno para Python
-- **SQLite**: Base de datos primaria (con soporte de migración a PostgreSQL)
+- **PostgreSQL**: Base de datos primaria
 - **Pydantic**: Validación de datos y gestión de configuraciones
 - **SQLAlchemy**: ORM para consultas complejas (planeado)
 
@@ -184,7 +184,7 @@ Este proyecto implementa **Arquitectura Limpia** con estricta separación de res
 - **Python**: 3.10 o superior
 - **Node.js**: 16+ (para desarrollo Reflex)
 - **Git**: 2.30+
-- **SQLite**: 3.35+ (generalmente preinstalado)
+- **PostgreSQL**: 13+ (requiere instalación)
 
 ### Requisitos de Hardware
 - **RAM**: Mínimo 4GB, recomendado 8GB+
@@ -236,21 +236,24 @@ pip install -r requirements-dev.txt
 cp .env.example .env
 
 # Editar .env con tus configuraciones
-# DATABASE_PATH=./DB_Inmo_Velar.db
+# DATABASE_URL=postgresql://user:password@localhost/inmobiliaria_velar
 # SECRET_KEY=your-secret-key-here
 # DEBUG=True
 ```
 
 ### 5. Inicialización de Base de Datos
 
-La base de datos está preconfigurada e incluida en el repositorio:
+La base de datos PostgreSQL debe estar configurada y ejecutándose:
 
 ```bash
-# Verificar que la base de datos existe
-ls -la DB_Inmo_Velar.db
+# Verificar que PostgreSQL está ejecutándose
+pg_isready -h localhost -p 5432
+
+# Crear base de datos (si no existe)
+createdb inmobiliaria_velar
 ```
 
-> **Nota**: El archivo `DB_Inmo_Velar.db` contiene el esquema completo y datos iniciales. No se requieren migraciones para configuración básica.
+> **Nota**: El esquema de base de datos se crea automáticamente al iniciar la aplicación. Asegúrate de que las credenciales en `.env` sean correctas.
 
 ### 6. Verificar Instalación
 
@@ -265,7 +268,7 @@ python -c "import reflex as rx; print('Versión de Reflex:', rx.__version__)"
 
 | Variable | Descripción | Predeterminado | Requerido |
 |----------|-------------|---------------|-----------|
-| `DATABASE_PATH` | Ruta del archivo de base de datos SQLite | `./DB_Inmo_Velar.db` | Sí |
+| `DATABASE_URL` | URL de conexión a base de datos PostgreSQL | `postgresql://localhost/inmobiliaria_velar` | Sí |
 | `SECRET_KEY` | Clave secreta de la aplicación | Auto-generada | Sí |
 | `DEBUG` | Habilitar modo debug | `False` | No |
 | `HOST` | Host del servidor | `0.0.0.0` | No |
@@ -277,7 +280,7 @@ python -c "import reflex as rx; print('Versión de Reflex:', rx.__version__)"
 #### Configuración de Base de Datos
 ```python
 # En .env
-DATABASE_PATH=./data/production.db
+DATABASE_URL=postgresql://user:password@host:port/database
 DATABASE_BACKUP_DIR=./backups/
 DATABASE_MAX_CONNECTIONS=10
 ```
@@ -495,14 +498,14 @@ web: reflex run --env prod --port $PORT
 
 #### Errores de Conexión a Base de Datos
 ```bash
-# Verificar archivo de base de datos
-ls -la DB_Inmo_Velar.db
+# Verificar conexión a PostgreSQL
+psql -h localhost -U user -d inmobiliaria_velar -c "SELECT version();"
 
-# Verificar permisos
-chmod 644 DB_Inmo_Velar.db
+# Verificar que el servicio está ejecutándose
+pg_isready -h localhost -p 5432
 
-# Verificar integridad de base de datos
-python -c "import sqlite3; conn = sqlite3.connect('DB_Inmo_Velar.db'); print('OK')"
+# Verificar credenciales
+python -c "import psycopg2; conn = psycopg2.connect('DATABASE_URL'); print('OK')"
 ```
 
 #### Puerto Ya en Uso
