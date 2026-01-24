@@ -14,19 +14,25 @@ Instrucciones de uso:
 # OPCIÓN 1: URL de Conexión Simple (para la mayoría de casos)
 # =====================================================
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Para usar con SQLAlchemy o conexiones estándar
-DATABASE_URL = "postgresql://inmo_user:7323@localhost:5432/db_inmo_velar"
+# Construir URL desde variables de entorno
+DATABASE_URL = f"postgresql://{os.getenv('DB_USER', 'inmo_user')}:{os.getenv('DB_PASSWORD', '7323')}@{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'db_inmo_velar')}"
 
 # =====================================================
 # OPCIÓN 2: Diccionario de Configuración (más flexible)
 # =====================================================
 
 POSTGRES_CONFIG = {
-    'host': 'localhost',
-    'port': 5432,
-    'database': 'db_inmo_velar',
-    'user': 'inmo_user',
-    'password': '7323',
+    'host': os.getenv('DB_HOST', 'localhost'),
+    'port': int(os.getenv('DB_PORT', 5432)),
+    'database': os.getenv('DB_NAME', 'db_inmo_velar'),
+    'user': os.getenv('DB_USER', 'inmo_user'),
+    'password': os.getenv('DB_PASSWORD', '7323'),
     'connect_timeout': 10,
     'application_name': 'InmobiliariaVelar'
 }

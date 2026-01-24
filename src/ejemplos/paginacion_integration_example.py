@@ -121,7 +121,7 @@ class ServicioPersonasConPaginacion:
             return result
             
         except Exception as e:
-            print(f"Error en listar_personas_paginado: {e}")
+            pass  # print(f"Error en listar_personas_paginado: {e}") [OpSec Removed]
             return create_empty_result(page, page_size)
     
     # Métodos de escritura invalidan cache
@@ -218,7 +218,7 @@ class PersonasListView(ft.Container):
             self._schedule_ui_update(0, None)
             
         except Exception as e:
-            print(f"Error: {e}")
+            pass  # print(f"Error: {e}") [OpSec Removed]
             self._schedule_ui_update(0, str(e))
 """
 

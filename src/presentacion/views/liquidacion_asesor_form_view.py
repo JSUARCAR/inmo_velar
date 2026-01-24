@@ -90,7 +90,7 @@ def crear_liquidacion_asesor_form_view(
             page.update()
             
         except (ValueError, TypeError) as e:
-            print(f"Error calculando valor neto: {e}")
+            pass  # print(f"Error calculando valor neto: {e}") [OpSec Removed]
             txt_valor_neto.current.value = "$0"
             page.update()
     
@@ -102,8 +102,8 @@ def crear_liquidacion_asesor_form_view(
     
     def agregar_descuento_click(e):
         """Muestra modal para agregar descuento"""
-        print("[DEBUG] ===== AGREGAR DESCUENTO CLICK =====")
-        print(f"[DEBUG] Evento recibido: {e}")
+        pass  # print("[DEBUG] ===== AGREGAR DESCUENTO CLICK =====") [OpSec Removed]
+        pass  # print(f"[DEBUG] Evento recibido: {e}") [OpSec Removed]
         
         # Referencias del modal
         dropdown_tipo =ft.Ref[ft.Dropdown]()
@@ -111,16 +111,16 @@ def crear_liquidacion_asesor_form_view(
         txt_valor = ft.Ref[ft.TextField]()
         
         def guardar_descuento(e):
-            print("[DEBUG] Guardando descuento...")
+            pass  # print("[DEBUG] Guardando descuento...") [OpSec Removed]
             try:
                 tipo = dropdown_tipo.current.value
                 descripcion = txt_descripcion.current.value
                 valor = int(txt_valor.current.value or 0)
                 
-                print(f"[DEBUG] Tipo: {tipo}, Descripcion: {descripcion}, Valor: {valor}")
+                pass  # print(f"[DEBUG] Tipo: {tipo}, Descripcion: {descripcion}, Valor: {valor}") [OpSec Removed]
                 
                 if not tipo or not descripcion or valor <= 0:
-                    print("[DEBUG] ERROR: Validación fallida")
+                    pass  # print("[DEBUG] ERROR: Validación fallida") [OpSec Removed]
                     mostrar_error("Todos los campos son obligatorios y el valor debe ser mayor a 0")
                     return
                 
@@ -130,7 +130,7 @@ def crear_liquidacion_asesor_form_view(
                     'descripcion': descripcion,
                     'valor': valor
                 })
-                print(f"[DEBUG] Descuento agregado. Total descuentos: {len(descuentos_lista)}")
+                pass  # print(f"[DEBUG] Descuento agregado. Total descuentos: {len(descuentos_lista)}") [OpSec Removed]
                 
                 # Actualizar vista
                 renderizar_descuentos()
@@ -139,10 +139,10 @@ def crear_liquidacion_asesor_form_view(
                 # Cerrar modal
                 dialog.open = False
                 page.update()
-                print("[DEBUG] Modal cerrado y página actualizada")
+                pass  # print("[DEBUG] Modal cerrado y página actualizada") [OpSec Removed]
                 
             except ValueError as ve:
-                print(f"[DEBUG] ERROR ValueError: {ve}")
+                pass  # print(f"[DEBUG] ERROR ValueError: {ve}") [OpSec Removed]
                 mostrar_error("El valor debe ser un número válido")
         
         # Crear modal
@@ -194,15 +194,15 @@ def crear_liquidacion_asesor_form_view(
         )
         
         def cerrar_dialog():
-            print("[DEBUG] Cerrando diálogo...")
+            pass  # print("[DEBUG] Cerrando diálogo...") [OpSec Removed]
             dialog.open = False
             page.update()
         
-        print("[DEBUG] Asignando diálogo a página...")
+        pass  # print("[DEBUG] Asignando diálogo a página...") [OpSec Removed]
         page.overlay.append(dialog)
         dialog.open = True
         page.update()
-        print("[DEBUG] Diálogo abierto")
+        pass  # print("[DEBUG] Diálogo abierto") [OpSec Removed]
     
     def eliminar_descuento(index: int):
         """Elimina un descuento de la lista"""
@@ -279,17 +279,17 @@ def crear_liquidacion_asesor_form_view(
     
     def handle_guardar_click(e):
         """Maneja el evento de guardar"""
-        print("\n" + "="*80)
-        print("[DEBUG LAYER 1: FORM] ===== GUARDAR LIQUIDACIÓN CLICK =====")
-        print(f"[DEBUG LAYER 1: FORM] Evento recibido: {e}")
-        print(f"[DEBUG LAYER 1: FORM] Es edición: {es_edicion}")
-        print("="*80 + "\n")
+        pass  # print("\n" + "="*80) [OpSec Removed]
+        pass  # print("[DEBUG LAYER 1: FORM] ===== GUARDAR LIQUIDACIÓN CLICK =====") [OpSec Removed]
+        pass  # print(f"[DEBUG LAYER 1: FORM] Evento recibido: {e}") [OpSec Removed]
+        pass  # print(f"[DEBUG LAYER 1: FORM] Es edición: {es_edicion}") [OpSec Removed]
+        pass  # print("="*80 + "\n") [OpSec Removed]
         
         try:
             # Validaciones
-            print("[DEBUG LAYER 1: FORM] Iniciando validaciones...")
+            pass  # print("[DEBUG LAYER 1: FORM] Iniciando validaciones...") [OpSec Removed]
             if not dropdown_asesor.current.value:
-                print("[DEBUG LAYER 1: FORM] ERROR: No hay asesor seleccionado")
+                pass  # print("[DEBUG LAYER 1: FORM] ERROR: No hay asesor seleccionado") [OpSec Removed]
                 mostrar_error("Debe seleccionar un asesor")
                 return
             
@@ -297,25 +297,25 @@ def crear_liquidacion_asesor_form_view(
             # Se usa la lista completa de contratos activos del asesor
             
             if not txt_periodo.current.value:
-                print("[DEBUG LAYER 1: FORM] ERROR: No hay período")
+                pass  # print("[DEBUG LAYER 1: FORM] ERROR: No hay período") [OpSec Removed]
                 mostrar_error("Debe especificar el período")
                 return
             
             # Validar formato YYYY-MM
             if not validar_formato_periodo(txt_periodo.current.value):
-                print(f"[DEBUG LAYER 1: FORM] ERROR: Formato de período inválido: {txt_periodo.current.value}")
+                pass  # print(f"[DEBUG LAYER 1: FORM] ERROR: Formato de período inválido: {txt_periodo.current.value}") [OpSec Removed]
                 mostrar_error(f"Formato de período inválido: '{txt_periodo.current.value}'. Use formato YYYY-MM (ejemplo: 2025-12)")
                 return
             
             if not txt_porcentaje.current.value:
-                print("[DEBUG LAYER 1: FORM] ERROR: No hay porcentaje")
+                pass  # print("[DEBUG LAYER 1: FORM] ERROR: No hay porcentaje") [OpSec Removed]
                 mostrar_error("Debe especificar el porcentaje de comisión")
                 return
             
-            print("[DEBUG LAYER 1: FORM] ✓ Validaciones pasadas")
+            pass  # print("[DEBUG LAYER 1: FORM] ✓ Validaciones pasadas") [OpSec Removed]
             
             # Recopilar datos
-            print("[DEBUG LAYER 1: FORM] Recopilando datos...")
+            pass  # print("[DEBUG LAYER 1: FORM] Recopilando datos...") [OpSec Removed]
             
             # Obtener lista de contratos activos del asesor seleccionado
             id_asesor = int(dropdown_asesor.current.value)
@@ -339,43 +339,43 @@ def crear_liquidacion_asesor_form_view(
             if es_edicion:
                 datos['id_liquidacion'] = liquidacion_id
             
-            print("[DEBUG LAYER 1: FORM] Datos recopilados:")
-            print(f"[DEBUG LAYER 1: FORM]   - id_asesor: {datos['id_asesor']}")
-            print(f"[DEBUG LAYER 1: FORM]   - contratos_lista: {len(datos['contratos_lista'])} contratos")
-            print(f"[DEBUG LAYER 1: FORM]   - periodo: {datos['periodo']}")
-            print(f"[DEBUG LAYER 1: FORM]   - porcentaje_comision: {datos['porcentaje_comision']}")
-            print(f"[DEBUG LAYER 1: FORM]   - descuentos: {len(datos['descuentos'])} descuentos")
-            print(f"[DEBUG LAYER 1: FORM]   - observaciones: {datos.get('observaciones', 'N/A')}")
+            pass  # print("[DEBUG LAYER 1: FORM] Datos recopilados:") [OpSec Removed]
+            pass  # print(f"[DEBUG LAYER 1: FORM]   - id_asesor: {datos['id_asesor']}") [OpSec Removed]
+            pass  # print(f"[DEBUG LAYER 1: FORM]   - contratos_lista: {len(datos['contratos_lista'])} contratos") [OpSec Removed]
+            pass  # print(f"[DEBUG LAYER 1: FORM]   - periodo: {datos['periodo']}") [OpSec Removed]
+            pass  # print(f"[DEBUG LAYER 1: FORM]   - porcentaje_comision: {datos['porcentaje_comision']}") [OpSec Removed]
+            pass  # print(f"[DEBUG LAYER 1: FORM]   - descuentos: {len(datos['descuentos'])} descuentos") [OpSec Removed]
+            pass  # print(f"[DEBUG LAYER 1: FORM]   - observaciones: {datos.get('observaciones', 'N/A')}") [OpSec Removed]
             
             # Llamar callback
-            print("[DEBUG LAYER 1: FORM] ===== LLAMANDO CALLBACK on_guardar =====")
-            print(f"[DEBUG LAYER 1: FORM] Callback: {on_guardar}")
+            pass  # print("[DEBUG LAYER 1: FORM] ===== LLAMANDO CALLBACK on_guardar =====") [OpSec Removed]
+            pass  # print(f"[DEBUG LAYER 1: FORM] Callback: {on_guardar}") [OpSec Removed]
             
             try:
                 on_guardar(datos)
-                print("[DEBUG LAYER 1: FORM] ===== CALLBACK on_guardar COMPLETADO =====")
+                pass  # print("[DEBUG LAYER 1: FORM] ===== CALLBACK on_guardar COMPLETADO =====") [OpSec Removed]
             except ValueError as ve:
                 # Errores de validación de negocio (duplicados, etc.)
-                print(f"[DEBUG LAYER 1: FORM] ❌ ValueError capturado del servicio: {str(ve)}")
+                pass  # print(f"[DEBUG LAYER 1: FORM] ❌ ValueError capturado del servicio: {str(ve)}") [OpSec Removed]
                 mostrar_error(str(ve))
                 raise  # Re-lanzar para que main.py también lo maneje si es necesario
             except Exception as ex:
                 # Otros errores inesperados
-                print(f"[DEBUG LAYER 1: FORM] ❌ Excepción inesperada: {type(ex).__name__}: {str(ex)}")
+                pass  # print(f"[DEBUG LAYER 1: FORM] ❌ Excepción inesperada: {type(ex).__name__}: {str(ex)}") [OpSec Removed]
                 mostrar_error(f"Error inesperado: {str(ex)}")
                 raise
             
         except ValueError as ve:
             # ValueError ya fue mostrado en Banner arriba, no hacer nada más
-            print(f"[DEBUG LAYER 1: FORM] ValueError ya manejado: {str(ve)}")
+            pass  # print(f"[DEBUG LAYER 1: FORM] ValueError ya manejado: {str(ve)}") [OpSec Removed]
             
         except Exception as e:
-            print("\n" + "!"*80)
-            print(f"[DEBUG LAYER 1: FORM] ❌ EXCEPCIÓN CAPTURADA: {type(e).__name__}")
-            print(f"[DEBUG LAYER 1: FORM] ❌ Mensaje: {str(e)}")
-            print("!"*80 + "\n")
+            pass  # print("\n" + "!"*80) [OpSec Removed]
+            pass  # print(f"[DEBUG LAYER 1: FORM] ❌ EXCEPCIÓN CAPTURADA: {type(e).__name__}") [OpSec Removed]
+            pass  # print(f"[DEBUG LAYER 1: FORM] ❌ Mensaje: {str(e)}") [OpSec Removed]
+            pass  # print("!"*80 + "\n") [OpSec Removed]
             mostrar_error(f"Error al guardar: {str(e)}")
-            print(f"Error detallado: {e}")
+            pass  # print(f"Error detallado: {e}") [OpSec Removed]
             import traceback
             traceback.print_exc()
     
@@ -388,14 +388,14 @@ def crear_liquidacion_asesor_form_view(
             # Pre-llenar campos (será async en el futuro)
             # Por ahora solo guardamos la referencia
         except Exception as e:
-            print(f"Error cargando liquidación: {e}")
+            pass  # print(f"Error cargando liquidación: {e}") [OpSec Removed]
     
     # Cargar asesores
-    print("[DEBUG] ===== CARGANDO ASESORES =====")
+    pass  # print("[DEBUG] ===== CARGANDO ASESORES =====") [OpSec Removed]
     asesores_cache = {}  # Cache: id_persona -> {nombre, comision_arriendo, comision_venta}
     try:
         asesores = servicio_personas.listar_personas(filtro_rol="Asesor")
-        print(f"[DEBUG] Asesores encontrados: {len(asesores)}")
+        pass  # print(f"[DEBUG] Asesores encontrados: {len(asesores)}") [OpSec Removed]
         opciones_asesores = []
         for a in asesores:
             # Obtener datos del rol Asesor
@@ -423,10 +423,10 @@ def crear_liquidacion_asesor_form_view(
                         text=a.nombre_completo
                     )
                 )
-                print(f"[DEBUG]   - ID ASESOR: {id_asesor_real} (Persona {a.persona.id_persona}), Nombre: {a.nombre_completo}")
-        print(f"[DEBUG] Opciones de asesores creadas: {len(opciones_asesores)}")
+                pass  # print(f"[DEBUG]   - ID ASESOR: {id_asesor_real} (Persona {a.persona.id_persona}), Nombre: {a.nombre_completo}") [OpSec Removed]
+        pass  # print(f"[DEBUG] Opciones de asesores creadas: {len(opciones_asesores)}") [OpSec Removed]
     except Exception as e:
-        print(f"[DEBUG] ERROR cargando asesores: {e}")
+        pass  # print(f"[DEBUG] ERROR cargando asesores: {e}") [OpSec Removed]
         import traceback
         traceback.print_exc()
         opciones_asesores = []
@@ -438,11 +438,11 @@ def crear_liquidacion_asesor_form_view(
         2. Filtra los contratos para mostrar solo los del asesor
         3. Calcula y muestra la suma de todos los cánones
         """
-        print(f"[DEBUG] ===== ASESOR SELECCIONADO =====")
-        print(f"[DEBUG] Valor dropdown: {dropdown_asesor.current.value}")
+        pass  # print(f"[DEBUG] ===== ASESOR SELECCIONADO =====") [OpSec Removed]
+        pass  # print(f"[DEBUG] Valor dropdown: {dropdown_asesor.current.value}") [OpSec Removed]
         try:
             if not dropdown_asesor.current.value:
-                print("[DEBUG] No hay asesor seleccionado")
+                pass  # print("[DEBUG] No hay asesor seleccionado") [OpSec Removed]
                 # Reset
                 dropdown_contrato.current.options = []
                 dropdown_contrato.current.value = None
@@ -452,20 +452,20 @@ def crear_liquidacion_asesor_form_view(
                 return
             
             id_asesor = int(dropdown_asesor.current.value)
-            print(f"[DEBUG] ID Asesor: {id_asesor}")
+            pass  # print(f"[DEBUG] ID Asesor: {id_asesor}") [OpSec Removed]
             
             # 1. Auto-llenar porcentaje de comisión
             asesor_info = asesores_cache.get(id_asesor)
-            print(f"[DEBUG] Info asesor en cache: {asesor_info}")
+            pass  # print(f"[DEBUG] Info asesor en cache: {asesor_info}") [OpSec Removed]
             
             if asesor_info:
                 comision_porcentaje = asesor_info['comision_arriendo']
                 txt_porcentaje.current.value = str(comision_porcentaje)
-                print(f"[DEBUG] Porcentaje comisión establecido: {comision_porcentaje}%")
+                pass  # print(f"[DEBUG] Porcentaje comisión establecido: {comision_porcentaje}%") [OpSec Removed]
             
             # 2. Filtrar contratos del asesor
             contratos_asesor = servicio_contratos.listar_arrendamientos_por_asesor(id_asesor)
-            print(f"[DEBUG] Contratos del asesor: {len(contratos_asesor)}")
+            pass  # print(f"[DEBUG] Contratos del asesor: {len(contratos_asesor)}") [OpSec Removed]
             
             # 3. Actualizar dropdown de contratos
             num_contratos = len(contratos_asesor)
@@ -485,14 +485,14 @@ def crear_liquidacion_asesor_form_view(
             # 4. Calcular suma total de cánones
             total_canon = sum(c['canon'] for c in contratos_asesor)
             txt_canon.current.value = str(total_canon)
-            print(f"[DEBUG] Canon total establecido: ${total_canon:,}")
+            pass  # print(f"[DEBUG] Canon total establecido: ${total_canon:,}") [OpSec Removed]
             
             # 5. Recalcular comisión
             calcular_comision()
             page.update()
             
         except Exception as ex:
-            print(f"[DEBUG] ERROR en on_asesor_change: {ex}")
+            pass  # print(f"[DEBUG] ERROR en on_asesor_change: {ex}") [OpSec Removed]
             import traceback
             traceback.print_exc()
 

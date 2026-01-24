@@ -125,7 +125,7 @@ def crear_recaudo_form_view(
     
     def handle_guardar(e):
         """Maneja el guardado del recaudo"""
-        print("\n=== INICIO GUARDAR RECAUDO ===")
+        pass  # print("\n=== INICIO GUARDAR RECAUDO ===") [OpSec Removed]
         try:
             # Validaciones
             if not dd_contrato.current.value:
@@ -149,7 +149,7 @@ def crear_recaudo_form_view(
             # Validar que la suma de conceptos = valor total
             suma_conceptos = calcular_total_conceptos()
             valor_total = int(txt_valor_total.current.value)
-            print(f"DEBUG: Suma conceptos={suma_conceptos}, Valor total={valor_total}")
+            pass  # print(f"DEBUG: Suma conceptos={suma_conceptos}, Valor total={valor_total}") [OpSec Removed]
             
             if suma_conceptos != valor_total:
                 raise ValueError(
@@ -175,11 +175,11 @@ def crear_recaudo_form_view(
                 })
             
             # Guardar en la base de datos
-            print(f"DEBUG: Guardando recaudo con datos: {datos_recaudo}")
-            print(f"DEBUG: Conceptos: {conceptos_list}")
+            pass  # print(f"DEBUG: Guardando recaudo con datos: {datos_recaudo}") [OpSec Removed]
+            pass  # print(f"DEBUG: Conceptos: {conceptos_list}") [OpSec Removed]
             
             recaudo_guardado = servicio_financiero.registrar_recaudo(datos_recaudo, conceptos_list, "admin")
-            print(f"DEBUG: Recaudo guardado exitosamente con ID={recaudo_guardado.id_recaudo}")
+            pass  # print(f"DEBUG: Recaudo guardado exitosamente con ID={recaudo_guardado.id_recaudo}") [OpSec Removed]
             
             # Mostrar confirmación al usuario
             page.snack_bar = ft.SnackBar(
@@ -190,12 +190,12 @@ def crear_recaudo_form_view(
             page.snack_bar.open = True
             page.update()
             
-            print("DEBUG: Navegando a lista de recaudos...")
+            pass  # print("DEBUG: Navegando a lista de recaudos...") [OpSec Removed]
             on_guardar()
-            print("=== FIN GUARDAR RECAUDO EXITOSO ===\n")
+            pass  # print("=== FIN GUARDAR RECAUDO EXITOSO ===\n") [OpSec Removed]
             
         except ValueError as ve:
-            print(f"ERROR DE VALIDACIÓN: {ve}")
+            pass  # print(f"ERROR DE VALIDACIÓN: {ve}") [OpSec Removed]
             page.snack_bar = ft.SnackBar(
                 content=ft.Text(f"❌ {str(ve)}"),
                 bgcolor=ft.Colors.RED,
@@ -204,7 +204,7 @@ def crear_recaudo_form_view(
             page.snack_bar.open = True
             page.update()
         except Exception as ex:
-            print(f"ERROR INESPERADO: {ex}")
+            pass  # print(f"ERROR INESPERADO: {ex}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             page.snack_bar = ft.SnackBar(
@@ -214,7 +214,7 @@ def crear_recaudo_form_view(
             )
             page.snack_bar.open = True
             page.update()
-            print("=== FIN GUARDAR RECAUDO CON ERROR ===\n")
+            pass  # print("=== FIN GUARDAR RECAUDO CON ERROR ===\n") [OpSec Removed]
     
     def handle_cancelar(e):
         """Maneja la cancelación del formulario"""
@@ -233,7 +233,7 @@ def crear_recaudo_form_view(
             ) for c in contratos_activos
         ]
     except Exception as e:
-        print(f"Error cargando contratos: {e}")
+        pass  # print(f"Error cargando contratos: {e}") [OpSec Removed]
         # Fallback vacío o error visual
         contratos_options = []
     
@@ -255,7 +255,7 @@ def crear_recaudo_form_view(
                         page.update()
                     break
         except Exception as ex:
-            print(f"Error auto-completando valor: {ex}")
+            pass  # print(f"Error auto-completando valor: {ex}") [OpSec Removed]
 
     # Crear concepto inicial (será agregado al Column más adelante)
     concepto_inicial = {

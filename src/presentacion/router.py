@@ -49,20 +49,20 @@ class Router:
         nombre_vista = nombre_vista.lower()
         
         if nombre_vista not in self._view_builders:
-            print(f"⚠️ No se puede pre-construir '{nombre_vista}': vista no registrada")
+            pass  # print(f"⚠️ No se puede pre-construir '{nombre_vista}': vista no registrada") [OpSec Removed]
             return
         
         try:
             # Solo pre-construir si no tiene kwargs (vistas sin parámetros)
             if not kwargs:
-                print(f"🔨 Pre-construyendo vista: {nombre_vista}")
+                pass  # print(f"🔨 Pre-construyendo vista: {nombre_vista}") [OpSec Removed]
                 vista = self._view_builders[nombre_vista](**kwargs)
                 self._view_cache[nombre_vista] = vista
-                print(f"✅ Vista '{nombre_vista}' pre-construida y cacheada")
+                pass  # print(f"✅ Vista '{nombre_vista}' pre-construida y cacheada") [OpSec Removed]
             else:
-                print(f"⏭️ Saltando '{nombre_vista}': requiere parámetros")
+                pass  # print(f"⏭️ Saltando '{nombre_vista}': requiere parámetros") [OpSec Removed]
         except Exception as e:
-            print(f"❌ Error pre-construyendo '{nombre_vista}': {e}")
+            pass  # print(f"❌ Error pre-construyendo '{nombre_vista}': {e}") [OpSec Removed]
     
     def refrescar_vista(self, nombre_vista: str):
         """
@@ -76,7 +76,7 @@ class Router:
         
         if nombre_vista in self._view_cache:
             del self._view_cache[nombre_vista]
-            print(f"🔄 Caché invalidado para: {nombre_vista}")
+            pass  # print(f"🔄 Caché invalidado para: {nombre_vista}") [OpSec Removed]
     
     def navegar_a(self, nombre_vista: str, **kwargs):
         """
@@ -87,19 +87,19 @@ class Router:
             nombre_vista: Nombre de la vista registrada
             **kwargs: Argumentos adicionales para pasar al constructor de vista
         """
-        print(f"\n=== ROUTER DEBUG: Navegando a '{nombre_vista}' ===")
+        pass  # print(f"\n=== ROUTER DEBUG: Navegando a '{nombre_vista}' ===") [OpSec Removed]
         
         # Normalizar a minúsculas
         nombre_vista = nombre_vista.lower()
-        print(f"ROUTER DEBUG: Nombre normalizado: '{nombre_vista}'")
-        print(f"ROUTER DEBUG: Vistas registradas: {list(self._view_builders.keys())}")
+        pass  # print(f"ROUTER DEBUG: Nombre normalizado: '{nombre_vista}'") [OpSec Removed]
+        pass  # print(f"ROUTER DEBUG: Vistas registradas: {list(self._view_builders.keys())}") [OpSec Removed]
         
         if nombre_vista not in self._view_builders:
-            print(f"❌ ROUTER ERROR: Vista '{nombre_vista}' no registrada")
-            print(f"Vistas disponibles: {list(self._view_builders.keys())}")
+            pass  # print(f"❌ ROUTER ERROR: Vista '{nombre_vista}' no registrada") [OpSec Removed]
+            pass  # print(f"Vistas disponibles: {list(self._view_builders.keys())}") [OpSec Removed]
             return
         
-        print(f"✅ ROUTER DEBUG: Vista encontrada, construyendo...")
+        pass  # print(f"✅ ROUTER DEBUG: Vista encontrada, construyendo...") [OpSec Removed]
         
         # Guardar en historial
         if self.vista_actual != nombre_vista:
@@ -121,40 +121,40 @@ class Router:
             )
             
             if use_cache:
-                print(f"⚡ ROUTER DEBUG: Usando vista cacheada para '{nombre_vista}'")
+                pass  # print(f"⚡ ROUTER DEBUG: Usando vista cacheada para '{nombre_vista}'") [OpSec Removed]
                 nueva_vista = self._view_cache[nombre_vista]
             else:
-                print(f"ROUTER DEBUG: Llamando view builder para '{nombre_vista}'...")
+                pass  # print(f"ROUTER DEBUG: Llamando view builder para '{nombre_vista}'...") [OpSec Removed]
                 nueva_vista = self._view_builders[nombre_vista](**kwargs)
             
-            print(f"ROUTER DEBUG: Vista construida: {type(nueva_vista).__name__}")
+            pass  # print(f"ROUTER DEBUG: Vista construida: {type(nueva_vista).__name__}") [OpSec Removed]
             
             # Actualizar vista usando Shell (preserva Sidebar/Navbar) o método legacy
             if self.shell:
-                print(f"ROUTER DEBUG: Actualizando solo content_area del Shell...")
+                pass  # print(f"ROUTER DEBUG: Actualizando solo content_area del Shell...") [OpSec Removed]
                 self.shell.update_content(nueva_vista)
                 # Actualizar estado activo del Sidebar
                 if hasattr(self.shell, 'sidebar') and hasattr(self.shell.sidebar, 'set_active_route'):
                     try:
                         self.shell.sidebar.set_active_route(nombre_vista)
                     except Exception as e:
-                        print(f"Advertencia: No se pudo actualizar Sidebar active route: {e}")
+                        pass  # print(f"Advertencia: No se pudo actualizar Sidebar active route: {e}") [OpSec Removed]
             else:
                 # Método legacy (destruye todo)
-                print(f"ROUTER DEBUG: Limpiando página (método legacy)...")
+                pass  # print(f"ROUTER DEBUG: Limpiando página (método legacy)...") [OpSec Removed]
                 self.page.clean()
-                print(f"ROUTER DEBUG: Agregando vista a página...")
+                pass  # print(f"ROUTER DEBUG: Agregando vista a página...") [OpSec Removed]
                 self.page.add(nueva_vista)
-                print(f"ROUTER DEBUG: Actualizando página...")
+                pass  # print(f"ROUTER DEBUG: Actualizando página...") [OpSec Removed]
                 self.page.update()
             
             # Quitar ProgressBar
             self.page.splash = None
-            print(f"✅ ROUTER DEBUG: Navegación completada exitosamente")
-            print(f"=== FIN ROUTER DEBUG ===\n")
+            pass  # print(f"✅ ROUTER DEBUG: Navegación completada exitosamente") [OpSec Removed]
+            pass  # print(f"=== FIN ROUTER DEBUG ===\n") [OpSec Removed]
             
         except Exception as e:
-            print(f"Error cargando vista '{nombre_vista}': {e}")
+            pass  # print(f"Error cargando vista '{nombre_vista}': {e}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             

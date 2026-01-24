@@ -32,7 +32,7 @@ class DashboardView(ft.Container):
             self.db_manager = DatabaseManager()
             self.servicio_dashboard = ServicioDashboard(self.db_manager)
         except Exception as e:
-            print(f"ERROR Servicios Dashboard: {e}")
+            pass  # print(f"ERROR Servicios Dashboard: {e}") [OpSec Removed]
             raise e
             
         # Estado
@@ -104,7 +104,7 @@ class DashboardView(ft.Container):
     def _fetch_data_thread(self, mes, anio, id_asesor):
         try:
             # --- OBTENCIÓN DE DATOS (Pesado) ---
-            print(f"DEBUG DASHBOARD: Fetching data (mes={mes}, anio={anio}, asesor={id_asesor})")
+            pass  # print(f"DEBUG DASHBOARD: Fetching data (mes={mes}, anio={anio}, asesor={id_asesor})") [OpSec Removed]
             
             # 1. KPIs Financieros y Operativos
             datos_flujo = self.servicio_dashboard.obtener_flujo_caja_mes(mes=mes, anio=anio, id_asesor=id_asesor)
@@ -135,7 +135,7 @@ class DashboardView(ft.Container):
             self._schedule_ui_update(data_package)
 
         except Exception as e:
-            print(f"Error fetching dashboard data: {e}")
+            pass  # print(f"Error fetching dashboard data: {e}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             self._schedule_ui_update(None, error=str(e))

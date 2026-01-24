@@ -148,7 +148,7 @@ class DesocupacionesListView(ft.Container):
             self.total_items = result.total
             self._schedule_ui_update()
         except Exception as e:
-            print(f"Error desocupaciones: {e}")
+            pass  # print(f"Error desocupaciones: {e}") [OpSec Removed]
             self._schedule_ui_update(error=str(e))
     
     def _schedule_ui_update(self, error=None):

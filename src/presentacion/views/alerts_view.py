@@ -120,7 +120,7 @@ class AlertsView(ft.NavigationDrawer):
             self._schedule_ui_update(alertas, error=None)
             
         except Exception as e:
-            print(f"Error cargando alertas: {e}")
+            pass  # print(f"Error cargando alertas: {e}") [OpSec Removed]
             self._schedule_ui_update([], error=str(e))
 
     def _schedule_ui_update(self, alertas, error):

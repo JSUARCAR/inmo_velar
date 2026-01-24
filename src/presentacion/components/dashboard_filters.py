@@ -105,7 +105,7 @@ class DashboardFilters(ft.Container):
                 nombre_mostrar = getattr(a, 'nombre_completo', f"Asesor {a.id_asesor}")
                 options.append(ft.dropdown.Option(str(a.id_asesor), nombre_mostrar))
         except Exception as e:
-            print(f"Error cargando asesores: {e}")
+            pass  # print(f"Error cargando asesores: {e}") [OpSec Removed]
             options = []
             
         return ft.Dropdown(

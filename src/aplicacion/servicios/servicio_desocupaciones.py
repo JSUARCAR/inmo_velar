@@ -252,7 +252,7 @@ class ServicioDesocupaciones:
                 
                 # 3. Actualizar contrato a Finalizado
                 # El trigger TRG_ACTUALIZAR_DISPONIBILIDAD_LIBRE se encargará de liberar la propiedad.
-                print(f"[DEBUG] Finalizando contrato {desocupacion.id_contrato}")
+                pass  # print(f"[DEBUG] Finalizando contrato {desocupacion.id_contrato}") [OpSec Removed]
                 
                 # Verificar primero si el contrato ya está finalizado para evitar updates redundantes
                 check_contrato_query = f"SELECT ESTADO_CONTRATO_A FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_CONTRATO_A = {placeholder}"
@@ -269,15 +269,15 @@ class ServicioDesocupaciones:
                         WHERE ID_CONTRATO_A = {placeholder}
                     """
                     cursor.execute(update_contrato_query, (timestamp, usuario, desocupacion.id_contrato))
-                    print(f"[SUCCESS] Contrato {desocupacion.id_contrato} finalizado.")
+                    pass  # print(f"[SUCCESS] Contrato {desocupacion.id_contrato} finalizado.") [OpSec Removed]
                 else:
-                    print(f"[INFO] Contrato {desocupacion.id_contrato} ya estaba en estado {contrato_row['ESTADO_CONTRATO_A'] if contrato_row else 'No encontrado'}")
+                    pass  # print(f"[INFO] Contrato {desocupacion.id_contrato} ya estaba en estado {contrato_row['ESTADO_CONTRATO_A'] if contrato_row else 'No encontrado'}") [OpSec Removed]
 
                 conn.commit()
-                print(f"[SUCCESS] Desocupación {id_desocupacion} procesada exitosamente.")
+                pass  # print(f"[SUCCESS] Desocupación {id_desocupacion} procesada exitosamente.") [OpSec Removed]
                 
         except Exception as e:
-            print(f"[ERROR] Transacción fallida al finalizar desocupación: {str(e)}")
+            pass  # print(f"[ERROR] Transacción fallida al finalizar desocupación: {str(e)}") [OpSec Removed]
             raise e
     
     def cancelar_desocupacion(self, id_desocupacion: int, motivo: str, usuario: str):
@@ -354,10 +354,10 @@ class ServicioDesocupaciones:
         Returns:
             Dict con datos de desocupacion, contrato, propiedad y arrendatario
         """
-        print(f"[DEBUG PDF] Servicio: Buscando datos para desocupación {id_desocupacion}")
+        pass  # print(f"[DEBUG PDF] Servicio: Buscando datos para desocupación {id_desocupacion}") [OpSec Removed]
         desocupacion = self.obtener_desocupacion(id_desocupacion)
         if not desocupacion:
-            print(f"[DEBUG PDF] ERROR: Desocupación {id_desocupacion} no encontrada en DB")
+            pass  # print(f"[DEBUG PDF] ERROR: Desocupación {id_desocupacion} no encontrada en DB") [OpSec Removed]
             raise ValueError(f"Desocupación {id_desocupacion} no encontrada")
             
         with self.db_manager.obtener_conexion() as conn:
@@ -382,10 +382,10 @@ class ServicioDesocupaciones:
             
             row = cursor.fetchone()
             if not row:
-                print(f"[DEBUG PDF] ERROR: Contrato {desocupacion.id_contrato} no encontrado para desocupación {id_desocupacion}")
+                pass  # print(f"[DEBUG PDF] ERROR: Contrato {desocupacion.id_contrato} no encontrado para desocupación {id_desocupacion}") [OpSec Removed]
                 raise ValueError(f"Contrato {desocupacion.id_contrato} no encontrado")
              
-            print(f"[DEBUG PDF] Datos encontrados. Inquilino: {row['inquilino']}")   
+            pass  # print(f"[DEBUG PDF] Datos encontrados. Inquilino: {row['inquilino']}") [OpSec Removed]
             return {
                 'id_desocupacion': desocupacion.id_desocupacion,
                 'fecha_solicitud': desocupacion.fecha_solicitud,

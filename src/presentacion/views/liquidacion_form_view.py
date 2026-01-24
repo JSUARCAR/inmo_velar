@@ -108,7 +108,7 @@ def crear_liquidacion_form_view(
                     if result:
                         nombre_propietario = result[0]
             except Exception as e:
-                print(f"⚠️ Error obteniendo nombre propietario: {e}")
+                pass  # print(f"⚠️ Error obteniendo nombre propietario: {e}") [OpSec Removed]
             
             # Almacenar la info para usarla después
             liquidacion_propietario_info = {
@@ -126,11 +126,11 @@ def crear_liquidacion_form_view(
                 'cantidad_contratos': len(liquidaciones)
             }
             
-            print(f"✅ Datos de edición cargados: {len(liquidaciones)} liquidación(es) para propietario {id_propietario}, periodo {liquidacion_base.periodo}")
-            print(f"   Canon total sumado: ${suma_canon_bruto:,}")
+            pass  # print(f"✅ Datos de edición cargados: {len(liquidaciones)} liquidación(es) para propietario {id_propietario}, periodo {liquidacion_base.periodo}") [OpSec Removed]
+            pass  # print(f"   Canon total sumado: ${suma_canon_bruto:,}") [OpSec Removed]
             
         except Exception as ex:
-            print(f"❌ Error cargando datos para edición: {ex}")
+            pass  # print(f"❌ Error cargando datos para edición: {ex}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             # No lanzar excepción aquí, simplemente mostrar el formulario vacío
@@ -190,7 +190,7 @@ def crear_liquidacion_form_view(
             page.update()
             
         except Exception as ex:
-            print(f"Error calculando totales: {ex}")
+            pass  # print(f"Error calculando totales: {ex}") [OpSec Removed]
     
     def cargar_canon_contrato(e):
         """Carga el canon del contrato seleccionado"""
@@ -204,15 +204,15 @@ def crear_liquidacion_form_view(
                 txt_canon_bruto.current.value = str(contrato.canon_mandato)
                 txt_comision_porcentaje.current.value = str(contrato.comision_porcentaje_contrato_m)
             else:
-                 print(f"Error: No se encontró contrato ID {dd_contrato.current.value}")
+                 pass  # print(f"Error: No se encontró contrato ID {dd_contrato.current.value}") [OpSec Removed]
             
             calcular_totales()
         except Exception as ex:
-            print(f"Error cargando canon: {ex}")
+            pass  # print(f"Error cargando canon: {ex}") [OpSec Removed]
     
     def show_banner(mensaje: str, is_error: bool = True):
         """Muestra un banner con mensaje de error o éxito"""
-        print(f"DEBUG: show_banner llamado - mensaje: '{mensaje}', is_error: {is_error}")
+        pass  # print(f"DEBUG: show_banner llamado - mensaje: '{mensaje}', is_error: {is_error}") [OpSec Removed]
         
         # CORRECCIÓN: Usar page.open() en lugar de page.snack_bar =
         snackbar = ft.SnackBar(
@@ -221,36 +221,36 @@ def crear_liquidacion_form_view(
             duration=4000
         )
         
-        print(f"DEBUG: Llamando page.open(SnackBar)...")
+        pass  # print(f"DEBUG: Llamando page.open(SnackBar)...") [OpSec Removed]
         page.open(snackbar)
-        print(f"DEBUG: SnackBar mostrado con page.open()")
+        pass  # print(f"DEBUG: SnackBar mostrado con page.open()") [OpSec Removed]
     
     def handle_guardar(e):
         """Maneja el guardado de la liquidación"""
-        print("\n=== DEBUG: handle_guardar INICIADO ===")
+        pass  # print("\n=== DEBUG: handle_guardar INICIADO ===") [OpSec Removed]
         try:
-            print("DEBUG: Validando campos...")
+            pass  # print("DEBUG: Validando campos...") [OpSec Removed]
             # Validaciones
             if not dd_contrato.current.value:
-                print("DEBUG: ERROR - No hay contrato seleccionado")
+                pass  # print("DEBUG: ERROR - No hay contrato seleccionado") [OpSec Removed]
                 raise ValueError("Debe seleccionar un contrato")
             
-            print(f"DEBUG: Contrato seleccionado: {dd_contrato.current.value}")
+            pass  # print(f"DEBUG: Contrato seleccionado: {dd_contrato.current.value}") [OpSec Removed]
             
             if not txt_periodo.current.value:
-                print("DEBUG: ERROR - No hay período ingresado")
+                pass  # print("DEBUG: ERROR - No hay período ingresado") [OpSec Removed]
                 raise ValueError("Debe ingresar el período (YYYY-MM)")
             
-            print(f"DEBUG: Período: {txt_periodo.current.value}")
+            pass  # print(f"DEBUG: Período: {txt_periodo.current.value}") [OpSec Removed]
             
             if not txt_canon_bruto.current.value or int(txt_canon_bruto.current.value) <= 0:
-                print("DEBUG: ERROR - Canon bruto inválido")
+                pass  # print("DEBUG: ERROR - Canon bruto inválido") [OpSec Removed]
                 raise ValueError("El canon bruto debe ser mayor a cero")
             
-            print(f"DEBUG: Canon bruto: {txt_canon_bruto.current.value}")
+            pass  # print(f"DEBUG: Canon bruto: {txt_canon_bruto.current.value}") [OpSec Removed]
             
             # Preparar datos
-            print("DEBUG: Preparando datos adicionales...")
+            pass  # print("DEBUG: Preparando datos adicionales...") [OpSec Removed]
             datos_adicionales = {
                 'otros_ingresos': int(txt_otros_ingresos.current.value or 0),
                 'gastos_administracion': int(txt_gastos_admin.current.value or 0),
@@ -260,35 +260,35 @@ def crear_liquidacion_form_view(
                 'observaciones': txt_observaciones.current.value,
                 'comision_porcentaje': int(txt_comision_porcentaje.current.value)
             }
-            print(f"DEBUG: Datos adicionales: {datos_adicionales}")
+            pass  # print(f"DEBUG: Datos adicionales: {datos_adicionales}") [OpSec Removed]
             
             # Guardar en la base de datos
-            print("DEBUG: Llamando servicio_financiero.generar_liquidacion_mensual...")
+            pass  # print("DEBUG: Llamando servicio_financiero.generar_liquidacion_mensual...") [OpSec Removed]
             servicio_financiero.generar_liquidacion_mensual(
                 id_contrato_m=int(dd_contrato.current.value),
                 periodo=txt_periodo.current.value,
                 datos_adicionales=datos_adicionales,
                 usuario_sistema="admin"
             )
-            print("DEBUG: ✅ Liquidación guardada en BD exitosamente")
+            pass  # print("DEBUG: ✅ Liquidación guardada en BD exitosamente") [OpSec Removed]
             
-            print("DEBUG: Mostrando banner de éxito...")
+            pass  # print("DEBUG: Mostrando banner de éxito...") [OpSec Removed]
             show_banner("Liquidación generada exitosamente", is_error=False)
             
-            print("DEBUG: Llamando on_guardar() callback...")
+            pass  # print("DEBUG: Llamando on_guardar() callback...") [OpSec Removed]
             on_guardar()
-            print("DEBUG: ✅ Callback on_guardar() ejecutado")
+            pass  # print("DEBUG: ✅ Callback on_guardar() ejecutado") [OpSec Removed]
             
         except ValueError as ve:
-            print(f"DEBUG: ValueError capturado: {ve}")
+            pass  # print(f"DEBUG: ValueError capturado: {ve}") [OpSec Removed]
             show_banner(str(ve))
         except Exception as ex:
-            print(f"DEBUG: Exception capturado: {ex}")
+            pass  # print(f"DEBUG: Exception capturado: {ex}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             show_banner(f"Error inesperado: {ex}")
         
-        print("=== DEBUG: handle_guardar FINALIZADO ===\n")
+        pass  # print("=== DEBUG: handle_guardar FINALIZADO ===\n") [OpSec Removed]
     
     def handle_cancelar(e):
         """Maneja la cancelación del formulario"""
@@ -304,7 +304,7 @@ def crear_liquidacion_form_view(
             for m in mandatos
         ]
     except Exception as e:
-        print(f"Error cargando contratos: {e}")
+        pass  # print(f"Error cargando contratos: {e}") [OpSec Removed]
     
     # --- Breadcrumbs ---
     breadcrumbs_text = "Editar Liquidación Masiva" if es_edicion else "Nueva Liquidación"
@@ -602,7 +602,7 @@ def crear_liquidacion_form_view(
             try:
                 calcular_totales()
             except Exception as ex:
-                print(f"Error calculando totales iniciales: {ex}")
+                pass  # print(f"Error calculando totales iniciales: {ex}") [OpSec Removed]
         
         # Usar page.run_task para asegurar que los controles están inicializados
         page.run_task(_calcular_despues_de_montar)

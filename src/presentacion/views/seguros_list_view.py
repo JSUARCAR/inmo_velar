@@ -142,7 +142,7 @@ class SegurosListView(ft.Container):
             
             self._update_ui()
         except Exception as e:
-            print(f"Error seguros/polizas: {e}")
+            pass  # print(f"Error seguros/polizas: {e}") [OpSec Removed]
             self._schedule_error(str(e))
 
     def _schedule_error(self, error):
@@ -205,7 +205,7 @@ class SegurosListView(ft.Container):
             self.servicio.cambiar_estado_poliza(id_poliza, "Cancelada", "admin")
             self.cargar_datos()
         except Exception as e:
-            print(e)
+            pass  # print(e) [OpSec Removed]
 
 def crear_seguros_list_view(page, on_nuevo_seguro, on_editar_seguro, on_nueva_poliza=None):
     return SegurosListView(page, on_nuevo_seguro, on_editar_seguro, on_nueva_poliza)

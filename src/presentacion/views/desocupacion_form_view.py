@@ -117,7 +117,7 @@ class DesocupacionFormView(ft.Container):
                 for c in contratos_data
             ]
         except Exception as e:
-            print(f"Error cargando contratos: {e}")
+            pass  # print(f"Error cargando contratos: {e}") [OpSec Removed]
             return []
     
     def _on_date_selected(self, e):
@@ -147,7 +147,7 @@ class DesocupacionFormView(ft.Container):
             page.snack_bar.open = True
             page.update()
         except Exception as e:
-            print(f"Error mostrando SnackBar: {e}")
+            pass  # print(f"Error mostrando SnackBar: {e}") [OpSec Removed]
 
     def _handle_guardar(self, e):
         """Valida y guarda la nueva desocupación."""
@@ -165,27 +165,27 @@ class DesocupacionFormView(ft.Container):
         
         # Crear desocupación
         try:
-            print(f"[DEBUG PDF] Iniciando desocupación para contrato {self.dd_contrato.current.value}")
+            pass  # print(f"[DEBUG PDF] Iniciando desocupación para contrato {self.dd_contrato.current.value}") [OpSec Removed]
             nuevo_des = self.servicio.iniciar_desocupacion(
                 id_contrato=int(self.dd_contrato.current.value),
                 fecha_programada=self.fecha_programada.current.value,
                 observaciones=self.txt_observaciones.current.value,
                 usuario="admin"  # TODO: Get from session
             )
-            print(f"[DEBUG PDF] Desocupación creada. ID: {nuevo_des.id_desocupacion}")
+            pass  # print(f"[DEBUG PDF] Desocupación creada. ID: {nuevo_des.id_desocupacion}") [OpSec Removed]
             
             # Generar PDF Checklist
             try:
-                print("[DEBUG PDF] Intentando generar PDF...")
+                pass  # print("[DEBUG PDF] Intentando generar PDF...") [OpSec Removed]
                 from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
                 servicio_pdf = ServicioDocumentosPDF()
                 
-                print(f"[DEBUG PDF] Recuperando datos para checklist ID: {nuevo_des.id_desocupacion}")
+                pass  # print(f"[DEBUG PDF] Recuperando datos para checklist ID: {nuevo_des.id_desocupacion}") [OpSec Removed]
                 datos_checklist = self.servicio.obtener_datos_para_checklist(nuevo_des.id_desocupacion)
-                print(f"[DEBUG PDF] Datos recuperados: {datos_checklist.keys()}")
+                pass  # print(f"[DEBUG PDF] Datos recuperados: {datos_checklist.keys()}") [OpSec Removed]
                 
                 path_pdf = servicio_pdf.generar_checklist_desocupacion(datos_checklist)
-                print(f"[DEBUG PDF] PDF generado exitosamente en: {path_pdf}")
+                pass  # print(f"[DEBUG PDF] PDF generado exitosamente en: {path_pdf}") [OpSec Removed]
                 
                 # --- AUTO-DOWNLOAD (Copiar a Descargas) ---
                 try:
@@ -193,15 +193,15 @@ class DesocupacionFormView(ft.Container):
                     filename = os.path.basename(path_pdf)
                     dest_path = os.path.join(user_downloads, filename)
                     shutil.copy2(path_pdf, dest_path)
-                    print(f"[DEBUG PDF] Archivo copiado a: {dest_path}")
+                    pass  # print(f"[DEBUG PDF] Archivo copiado a: {dest_path}") [OpSec Removed]
                     
                     msg_exito = f"Desocupación iniciada. PDF descargado en: {dest_path}"
                 except Exception as e_copy:
-                    print(f"[ERROR PDF] No se pudo copiar a Descargas: {e_copy}")
+                    pass  # print(f"[ERROR PDF] No se pudo copiar a Descargas: {e_copy}") [OpSec Removed]
                     msg_exito = f"Desocupación iniciada. PDF guardado en: {path_pdf}"
 
             except Exception as e_pdf:
-                print(f"[DEBUG PDF] ERROR CRÍTICO generando PDF: {e_pdf}")
+                pass  # print(f"[DEBUG PDF] ERROR CRÍTICO generando PDF: {e_pdf}") [OpSec Removed]
                 import traceback
                 traceback.print_exc()
                 msg_exito = "Desocupación iniciada, pero hubo error generando el PDF."

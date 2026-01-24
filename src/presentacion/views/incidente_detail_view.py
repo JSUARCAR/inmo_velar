@@ -461,32 +461,32 @@ class IncidenteDetailView(ft.Column):
                 self.page.close(modal_container[0])
         
         def confirmar_rechazo(e):
-            print("DEBUG: confirmar_rechazo INICIADO")
-            print(f"DEBUG: id_incidente={self.id_incidente}, id_cotizacion={id_cotizacion}")
-            print(f"DEBUG: motivo='{txt_motivo.value}'")
+            pass  # print("DEBUG: confirmar_rechazo INICIADO") [OpSec Removed]
+            pass  # print(f"DEBUG: id_incidente={self.id_incidente}, id_cotizacion={id_cotizacion}") [OpSec Removed]
+            pass  # print(f"DEBUG: motivo='{txt_motivo.value}'") [OpSec Removed]
             try:
-                print("DEBUG: Llamando servicio.rechazar_cotizacion...")
+                pass  # print("DEBUG: Llamando servicio.rechazar_cotizacion...") [OpSec Removed]
                 self.servicio.rechazar_cotizacion(
                     self.id_incidente, 
                     id_cotizacion, 
                     "Sistema", 
                     txt_motivo.value
                 )
-                print("DEBUG: rechazar_cotizacion completado exitosamente")
-                print("DEBUG: Cerrando modal...")
+                pass  # print("DEBUG: rechazar_cotizacion completado exitosamente") [OpSec Removed]
+                pass  # print("DEBUG: Cerrando modal...") [OpSec Removed]
                 if modal_container[0]:
                     self.page.close(modal_container[0])
-                print("DEBUG: Modal cerrado")
+                pass  # print("DEBUG: Modal cerrado") [OpSec Removed]
                 self.page.snack_bar = ft.SnackBar(ft.Text("❌ Cotización rechazada."), bgcolor=ft.Colors.ORANGE_600)
                 self.page.snack_bar.open = True
                 # Invalidar caché del tablero kanban
                 if self.on_refrescar_incidentes:
                     self.on_refrescar_incidentes()
-                print("DEBUG: Navegando a incidente_detalle...")
+                pass  # print("DEBUG: Navegando a incidente_detalle...") [OpSec Removed]
                 self.on_navigate("incidente_detalle", id_incidente=self.id_incidente)
-                print("DEBUG: confirmar_rechazo COMPLETADO")
+                pass  # print("DEBUG: confirmar_rechazo COMPLETADO") [OpSec Removed]
             except Exception as ex:
-                print(f"DEBUG: EXCEPCIÓN en confirmar_rechazo: {type(ex).__name__}: {ex}")
+                pass  # print(f"DEBUG: EXCEPCIÓN en confirmar_rechazo: {type(ex).__name__}: {ex}") [OpSec Removed]
                 import traceback
                 traceback.print_exc()
                 self.page.snack_bar = ft.SnackBar(ft.Text(f"Error: {str(ex)}"), bgcolor=ft.Colors.RED_600)

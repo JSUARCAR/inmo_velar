@@ -197,7 +197,7 @@ class IncidenteFormView(ft.Column):
                 ) for p in props
             ]
         except Exception as ex:
-            print(f"Error cargando propiedades: {ex}")
+            pass  # print(f"Error cargando propiedades: {ex}") [OpSec Removed]
             self.dd_propiedad.options = []
 
     def cargar_proveedores(self):
@@ -213,7 +213,7 @@ class IncidenteFormView(ft.Column):
                 ) for p in proveedores
             ]
         except Exception as ex:
-            print(f"Error cargando proveedores: {ex}")
+            pass  # print(f"Error cargando proveedores: {ex}") [OpSec Removed]
             self.dd_proveedor.options = [ft.dropdown.Option(key="", text="Sin asignar")]
 
     def validar_formulario(self) -> tuple[bool, str]:

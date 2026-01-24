@@ -237,7 +237,7 @@ class LiquidacionesAsesoresListView(ft.Container):
                             )
                     self.opciones_asesores_dd = opciones
                 except Exception as e:
-                    print(f"Error cargando asesores opciones: {e}")
+                    pass  # print(f"Error cargando asesores opciones: {e}") [OpSec Removed]
             
             # 2. Cargar cache de noms asesores para la tabla (siempre necesario para mapear ID -> Nombre)
             # Para optimizar, podríamos reusar lo de arriba, pero por seguridad cargamos todo el mapa
@@ -249,7 +249,7 @@ class LiquidacionesAsesoresListView(ft.Container):
                         cache_map[a.datos_roles["Asesor"].id_asesor] = a.nombre_completo
                 self.cache_asesores = cache_map
             except Exception as e:
-                print(f"Error cache asesores: {e}")
+                pass  # print(f"Error cache asesores: {e}") [OpSec Removed]
 
             # 3. Cargar Liquidaciones con filtros (PAGINADO)
             id_asesor = int(filtros['asesor']) if filtros['asesor'] else None
@@ -283,7 +283,7 @@ class LiquidacionesAsesoresListView(ft.Container):
             self._schedule_ui_update(resumen, update_dropdown=not mantener_opciones)
             
         except Exception as e:
-            print(f"Error fetch liquidaciones: {e}")
+            pass  # print(f"Error fetch liquidaciones: {e}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             self.data_liquidaciones = []

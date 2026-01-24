@@ -281,7 +281,7 @@ class ContratosListView(ft.Container):
             self._schedule_ui_update()
             
         except Exception as e:
-            print(f"Error cargando contratos: {e}")
+            pass  # print(f"Error cargando contratos: {e}") [OpSec Removed]
             self.contratos_actuales = []
             self.total_items = 0
             self._schedule_ui_update()

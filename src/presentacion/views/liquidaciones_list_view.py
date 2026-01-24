@@ -233,7 +233,7 @@ class LiquidacionesListView(ft.Container):
             self._schedule_ui_update()
             
         except Exception as e:
-            print(f"Error loadings liquidaciones: {e}")
+            pass  # print(f"Error loadings liquidaciones: {e}") [OpSec Removed]
             self.liquidaciones_data = []
             self.total_items = 0
             self._schedule_ui_update(error=str(e))

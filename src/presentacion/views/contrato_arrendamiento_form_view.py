@@ -225,9 +225,9 @@ def crear_contrato_arrendamiento_form_view(
             page.update()
 
     def handle_guardar(e):
-        print(">>> DEBUG: Inicio handle_guardar")
+        pass  # print(">>> DEBUG: Inicio handle_guardar") [OpSec Removed]
         try:
-            print(f"valores actuales: Propiedad={dd_propiedad.value}, Arrendatario={dd_arrendatario.value}, Inicio={txt_fecha_inicio.value}, Fin={txt_fecha_fin.value}, Canon={txt_canon.value}")
+            pass  # print(f"valores actuales: Propiedad={dd_propiedad.value}, Arrendatario={dd_arrendatario.value}, Inicio={txt_fecha_inicio.value}, Fin={txt_fecha_fin.value}, Canon={txt_canon.value}") [OpSec Removed]
             
             # Validar campos obligatorios
             if not dd_propiedad.value: raise ValueError("Debe seleccionar una propiedad")
@@ -235,7 +235,7 @@ def crear_contrato_arrendamiento_form_view(
             if not txt_fecha_inicio.value: raise ValueError("Fecha inicio requerida")
             if not txt_fecha_fin.value: raise ValueError("Fecha fin requerida")
             
-            print(">>> DEBUG: Validaciones básicas pasadas")
+            pass  # print(">>> DEBUG: Validaciones básicas pasadas") [OpSec Removed]
 
             # Conversión de tipos explícita para debug
             try:
@@ -245,9 +245,9 @@ def crear_contrato_arrendamiento_form_view(
                 dur = int(txt_duracion.value)
                 can = int(txt_canon.value)
                 dep = int(txt_deposito.value or 0)
-                print(f">>> DEBUG: Tipos convertidos: {p_id}, {a_id}, {c_id}, {dur}, {can}, {dep}")
+                pass  # print(f">>> DEBUG: Tipos convertidos: {p_id}, {a_id}, {c_id}, {dur}, {can}, {dep}") [OpSec Removed]
             except Exception as e_conv:
-                print(f">>> DEBUG: Error en conversión de tipos: {e_conv}")
+                pass  # print(f">>> DEBUG: Error en conversión de tipos: {e_conv}") [OpSec Removed]
                 raise ValueError(f"Error en datos numéricos: {e_conv}")
 
             datos = {
@@ -261,28 +261,28 @@ def crear_contrato_arrendamiento_form_view(
                 "deposito": dep
             }
             
-            print(f">>> DEBUG: Datos a enviar al servicio: {datos}")
+            pass  # print(f">>> DEBUG: Datos a enviar al servicio: {datos}") [OpSec Removed]
             
             try:
                 if es_edicion:
-                    print(">>> DEBUG: Llamando a servicio_contratos.actualizar_arrendamiento...")
+                    pass  # print(">>> DEBUG: Llamando a servicio_contratos.actualizar_arrendamiento...") [OpSec Removed]
                     servicio_contratos.actualizar_arrendamiento(contrato_id, datos, "admin")
                     msg = "Contrato de Arrendamiento actualizado exitosamente"
                 else:
-                    print(">>> DEBUG: Llamando a servicio_contratos.crear_arrendamiento...")
+                    pass  # print(">>> DEBUG: Llamando a servicio_contratos.crear_arrendamiento...") [OpSec Removed]
                     servicio_contratos.crear_arrendamiento(datos, "admin") 
                     msg = "Contrato de Arrendamiento creado exitosamente"
                 
-                print(f">>> DEBUG: Éxito: {msg}")
+                pass  # print(f">>> DEBUG: Éxito: {msg}") [OpSec Removed]
                 
                  # Feedback de éxito
                 show_banner(msg, is_error=False)
                 
-                print(">>> DEBUG: Ejecutando on_guardar callback...")
+                pass  # print(">>> DEBUG: Ejecutando on_guardar callback...") [OpSec Removed]
                 on_guardar()
                 
             except sqlite3.IntegrityError as ie:
-                print(f">>> DEBUG: IntegrityError capturado: {ie}")
+                pass  # print(f">>> DEBUG: IntegrityError capturado: {ie}") [OpSec Removed]
                 error_msg = str(ie)
                 if "CHECK constraint failed: CANON_ARRENDAMIENTO" in error_msg:
                     detalle = "El Canon debe estar entre $500.000 y $200.000.000 (Restricción de BD)."
@@ -294,19 +294,19 @@ def crear_contrato_arrendamiento_form_view(
                 show_banner(f"Error de Base de Datos: {detalle}")
                 
             except ValueError as ve:
-                print(f">>> DEBUG: ValueError capturado en servicio: {ve}")
+                pass  # print(f">>> DEBUG: ValueError capturado en servicio: {ve}") [OpSec Removed]
                 show_banner(str(ve))
             except Exception as ex:
-                print(f"DEBUG: Exception general en servicio capturada: {type(ex).__name__}: {ex}")
+                pass  # print(f"DEBUG: Exception general en servicio capturada: {type(ex).__name__}: {ex}") [OpSec Removed]
                 import traceback
                 traceback.print_exc()
                 show_banner(f"Error inesperado: {ex}")
 
         except ValueError as ex:
-            print(f">>> DEBUG: ValueError de validación capturado: {ex}")
+            pass  # print(f">>> DEBUG: ValueError de validación capturado: {ex}") [OpSec Removed]
             show_banner(f"Error de validación: {ex}")
         except Exception as e_gral:
-            print(f">>> DEBUG: Error crítico no manejado en handle_guardar: {e_gral}")
+            pass  # print(f">>> DEBUG: Error crítico no manejado en handle_guardar: {e_gral}") [OpSec Removed]
             import traceback
             traceback.print_exc()
 

@@ -286,7 +286,7 @@ class PropiedadesListView(ft.Container):
             self._schedule_ui_update(elapsed, error=None)
             
         except Exception as e:
-            print(f"Error cargando propiedades: {e}")
+            pass  # print(f"Error cargando propiedades: {e}") [OpSec Removed]
             self._schedule_ui_update(0, error=str(e))
 
     def _schedule_ui_update(self, elapsed, error):
