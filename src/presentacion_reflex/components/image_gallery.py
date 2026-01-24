@@ -37,11 +37,12 @@ def image_gallery(
                                     rx.cond(
                                         doc.get("mime_type", "").to_string().contains("image"),
                                         rx.image(
-                                            src=f"/api/documentos/{doc.get('id_documento')}/download", # URL simulada
+                                            src=f"http://127.0.0.1:8000/api/storage/{doc.get('id_documento')}/download", # IP explícita para evitar problemas de resolución
                                             object_fit="cover",
                                             width="100%",
                                             height="140px",
                                             background="var(--gray-3)",
+                                            loading="eager",
                                         ),
                                         # Placeholder para PDFs u otros archivos
                                         rx.center(
@@ -68,6 +69,16 @@ def image_gallery(
                                             color_scheme="gray",
                                             size="1",
                                         ),
+                                        rx.link(
+                                            rx.icon_button(
+                                                rx.icon("download", size=14),
+                                                size="1",
+                                                variant="ghost",
+                                                color_scheme="blue",
+                                            ),
+                                            href=f"http://127.0.0.1:8000/api/storage/{doc.get('id_documento')}/download?force_download=true",
+                                            is_external=True
+                                        ),
                                         rx.spacer(),
                                         rx.icon_button(
                                             rx.icon("trash-2", size=14),
@@ -90,7 +101,7 @@ def image_gallery(
                         rx.context_menu.content(
                             rx.context_menu.item(
                                 "Descargar",
-                                # on_select=... (Implementar descarga)
+                                on_select=rx.redirect(path=f"http://127.0.0.1:8000/api/storage/{doc.get('id_documento')}/download?force_download=true"),
                             ),
                             rx.context_menu.separator(),
                             rx.context_menu.item(
