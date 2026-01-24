@@ -87,7 +87,7 @@ def _data_table() -> rx.Component:
 from src.presentacion_reflex.components.desocupaciones.checklist_modal import checklist_modal
 from src.presentacion_reflex.components.desocupaciones.finalize_modal import finalize_confirm_modal
 
-@rx.page(route="/desocupaciones", on_load=DesocupacionesState.on_load)
+@rx.page(route="/desocupaciones", on_load=[AuthState.require_login, DesocupacionesState.on_load])
 def desocupaciones() -> rx.Component:
     return dashboard_layout(
         rx.vstack(

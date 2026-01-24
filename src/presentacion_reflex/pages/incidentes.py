@@ -81,7 +81,7 @@ def _list_view() -> rx.Component:
 from src.presentacion_reflex.components.incidentes.modal_form import modal_form
 from src.presentacion_reflex.components.incidentes.modal_details import modal_details
 
-@rx.page(route="/incidentes", on_load=IncidentesState.on_load)
+@rx.page(route="/incidentes", on_load=[AuthState.require_login, IncidentesState.on_load])
 def incidentes() -> rx.Component:
     return dashboard_layout(
         rx.vstack(

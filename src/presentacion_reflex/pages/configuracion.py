@@ -503,6 +503,8 @@ def configuracion_content() -> rx.Component:
         on_mount=ConfiguracionState.on_load
     )
 
-@rx.page(route="/configuracion", title="Configuración | Inmobiliaria Velar")
+from src.presentacion_reflex.state.auth_state import AuthState
+
+@rx.page(route="/configuracion", title="Configuración | Inmobiliaria Velar", on_load=[AuthState.require_login, ConfiguracionState.on_load])
 def configuracion_page() -> rx.Component:
     return dashboard_layout(configuracion_content())

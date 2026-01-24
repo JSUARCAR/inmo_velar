@@ -374,6 +374,7 @@ def liquidacion_asesores_content() -> rx.Component:
     )
 
 
+@rx.page(route="/liquidacion-asesores", title="Liquidación Asesores - Inmobiliaria Velar", on_load=[AuthState.require_login, LiquidacionAsesoresState.on_load])
 def liquidacion_asesores_page() -> rx.Component:
     """Página de liquidaciones de asesores con layout."""
     return dashboard_layout(liquidacion_asesores_content())

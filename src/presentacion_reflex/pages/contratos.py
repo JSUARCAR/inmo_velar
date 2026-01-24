@@ -711,7 +711,7 @@ def contratos_page() -> rx.Component:
 
 
 # Ruta protegida
-@rx.page(route="/contratos", on_load=ContratosState.on_load)
+@rx.page(route="/contratos", on_load=[AuthState.require_login, ContratosState.on_load])
 def contratos() -> rx.Component:
     return rx.fragment(
         rx.toast.provider(),

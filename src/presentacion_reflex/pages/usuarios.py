@@ -158,6 +158,6 @@ def usuarios_content() -> rx.Component:
         align="stretch"
     )
 
-@rx.page(route="/usuarios", title="Usuarios | Inmobiliaria Velar", on_load=UsuariosState.load_users)
+@rx.page(route="/usuarios", title="Usuarios | Inmobiliaria Velar", on_load=[AuthState.require_login, UsuariosState.load_users])
 def usuarios_page() -> rx.Component:
     return dashboard_layout(usuarios_content())

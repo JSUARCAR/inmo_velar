@@ -184,6 +184,6 @@ def saldos_content() -> rx.Component:
         on_mount=SaldosState.load_saldos
     )
 
-@rx.page(route="/saldos-favor", title="Saldos a Favor | Inmobiliaria Velar")
+@rx.page(route="/saldos-favor", title="Saldos a Favor | Inmobiliaria Velar", on_load=[AuthState.require_login, SaldosState.load_saldos])
 def saldos_page() -> rx.Component:
     return dashboard_layout(saldos_content())

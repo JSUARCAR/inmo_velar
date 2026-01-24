@@ -17,7 +17,7 @@ def index() -> rx.Component:
     return dashboard_layout(
         rx.vstack(
             rx.heading("Bienvenido al Sistema", size="8", color="#111827"),
-            rx.text(f"Hola, {AuthState.user['nombre_usuario']}", size="4", color="gray"),
+            rx.text(f"Hola, {AuthState.user_info['nombre_usuario']}", size="4", color="gray"),
             
             rx.divider(margin_y="4"),
             
@@ -36,19 +36,18 @@ def index() -> rx.Component:
                 ),
                 rx.card(
                     rx.vstack(
-                        rx.icon("loader_circle", color="blue", size=32),
+                        rx.icon("check_check", color="green", size=32),
                         rx.text("Fase 1: Autenticación", weight="bold", size="4"),
-                        rx.progress(value=80, color_scheme="blue", width="100%"),
-                        rx.text("En Progreso", color="blue", size="1"),
+                        rx.badge("Completado", color_scheme="green"),
                         align="center",
                         spacing="2",
                     ),
                 ),
                 rx.card(
                     rx.vstack(
-                        rx.icon("layout-template", color="gray", size=32),
+                        rx.icon("layout-template", color="green", size=32),
                         rx.text("Fase 2: Layout Base", weight="bold", size="4"),
-                        rx.text("Pendiente", color="gray", size="2"),
+                        rx.badge("Completado", color_scheme="green"),
                         align="center",
                         spacing="2",
                     ),
@@ -81,43 +80,44 @@ register_document_routes(app)
 app.add_page(login.login_page, route="/login", title="Login - Inmobiliaria Velar")
 
 # 2. Home/Dashboard (Protegida)
+# 2. Home/Dashboard (Protegida)
 from src.presentacion_reflex.pages import personas
-app.add_page(personas.personas_page, route="/personas", title="Personas - Inmobiliaria Velar")
+# app.add_page(personas.personas_page, route="/personas", title="Personas - Inmobiliaria Velar")
 
 # 4. Dashboard (Protegida)
 from src.presentacion_reflex.pages import dashboard
-app.add_page(dashboard.dashboard, route="/dashboard", title="Dashboard - Inmobiliaria Velar")
+# app.add_page(dashboard.dashboard, route="/dashboard", title="Dashboard - Inmobiliaria Velar")
 
 # 5. Propiedades (Protegida)
 from src.presentacion_reflex.pages import propiedades
-app.add_page(propiedades.propiedades, route="/propiedades", title="Propiedades - Inmobiliaria Velar")
+# app.add_page(propiedades.propiedades, route="/propiedades", title="Propiedades - Inmobiliaria Velar")
 
 # 6. Contratos (Protegida)
 from src.presentacion_reflex.pages import contratos
-app.add_page(contratos.contratos, route="/contratos", title="Contratos - Inmobiliaria Velar")
+# app.add_page(contratos.contratos, route="/contratos", title="Contratos - Inmobiliaria Velar")
 
 # 7. Liquidaciones (Protegida)
 from src.presentacion_reflex.pages import liquidaciones
-app.add_page(liquidaciones.liquidaciones, route="/liquidaciones", title="Liquidaciones - Inmobiliaria Velar")
+# app.add_page(liquidaciones.liquidaciones, route="/liquidaciones", title="Liquidaciones - Inmobiliaria Velar")
 
 # 8. Desocupaciones (Protegida)
 from src.presentacion_reflex.pages import desocupaciones
-app.add_page(desocupaciones.desocupaciones, route="/desocupaciones", title="Desocupaciones - Inmobiliaria Velar")
+# app.add_page(desocupaciones.desocupaciones, route="/desocupaciones", title="Desocupaciones - Inmobiliaria Velar")
 
 # 9. Incidentes (Protegida)
 from src.presentacion_reflex.pages import incidentes
-app.add_page(incidentes.incidentes, route="/incidentes", title="Incidentes - Inmobiliaria Velar")
+# app.add_page(incidentes.incidentes, route="/incidentes", title="Incidentes - Inmobiliaria Velar")
 
 # 10. Seguros (Placeholder)
 from src.presentacion_reflex.pages import seguros
-app.add_page(seguros.seguros, route="/seguros", title="Seguros - Inmobiliaria Velar")
+# app.add_page(seguros.seguros, route="/seguros", title="Seguros - Inmobiliaria Velar")
 
 # 11. Recaudos - Uses @rx.page decorator in file, auto-registers on import via __init__.py
 
 # 12. Liquidación Asesores
 from src.presentacion_reflex.pages import liquidacion_asesores
-app.add_page(liquidacion_asesores.liquidacion_asesores_page, route="/liquidacion-asesores", title="Liquidación Asesores - Inmobiliaria Velar")
+# app.add_page(liquidacion_asesores.liquidacion_asesores_page, route="/liquidacion-asesores", title="Liquidación Asesores - Inmobiliaria Velar")
 
 # 13. Proveedores
 from src.presentacion_reflex.pages import proveedores
-app.add_page(proveedores.proveedores_page, route="/proveedores", title="Proveedores - Inmobiliaria Velar")
+# app.add_page(proveedores.proveedores_page, route="/proveedores", title="Proveedores - Inmobiliaria Velar")
