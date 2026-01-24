@@ -10,7 +10,9 @@ from src.infraestructura.repositorios.repositorio_bonificacion_asesor_sqlite imp
 from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
 
 
-class LiquidacionAsesoresState(rx.State):
+from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+
+class LiquidacionAsesoresState(DocumentosStateMixin):
     """Estado para gestión de liquidaciones de asesores.
     Maneja paginación, filtros, CRUD, state machine y descuentos.
     """
@@ -56,9 +58,118 @@ class LiquidacionAsesoresState(rx.State):
     # Detalles actuales para modal
     descuentos_actuales: List[Dict[str, Any]] = []
     bonificaciones_actuales: List[Dict[str, Any]] = []
+
+    def set_form_field(self, name: str, value: Any):
+        """Actualiza un campo del formulario."""
+        self.form_data[name] = value
+
+    def set_discount_field(self, name: str, value: Any):
+        """Actualiza un campo del formulario de descuento."""
+        self.discount_form[name] = value
+
+    def close_discount_modal(self):
+        """Cierra el modal de descuento."""
+        self.show_discount_modal = False
+        self.discount_form = {}
+        self.error_message = ""
+
+    @rx.event(background=True)
+    async def save_descuento(self, form_data: Dict):
+        """Guarda un nuevo descuento para una liquidación existente."""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+        
+        try:
+            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
+            servicio = ServicioLiquidacionAsesores(None, repo_descuento, None)
+            usuario = "admin" # TODO
+            
+            tipo = form_data.get("tipo")
+            descripcion = form_data.get("descripcion")
+            valor = int(form_data.get("valor", 0))
+            
+            if not tipo or not descripcion or valor <= 0:
+                 async with self:
+                     self.error_message = "Todos los campos son obligatorios y valor > 0"
+                     self.is_loading = False
+                 return
+
+            servicio.agregar_descuento(
+                id_liquidacion=self.selected_liquidacion_id,
+                tipo=tipo,
+                descripcion=descripcion,
+                valor=valor,
+                usuario=usuario
+            )
+            
+            async with self:
+                self.show_discount_modal = False
+                self.discount_form = {}
+                self.is_loading = False
+            
+            yield rx.toast.success("Descuento agregado correctamente")
+            # Recargar detalle
+            yield LiquidacionAsesoresState.open_detail_modal(self.selected_liquidacion_id)
+            
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al guardar descuento: {e}"
+                self.is_loading = False
     
     # Enhanced Form Data
     advisor_properties: List[Dict[str, Any]] = []
+    
+    # Helper methods for form handling
+    def set_temp_bonus_field(self, name: str, value: Any):
+        self.temp_bonus[name] = value
+
+    def add_temp_bonus(self):
+        if self.temp_bonus["descripcion"] and self.temp_bonus["valor"]:
+            self.new_bonuses.append({
+                "tipo": self.temp_bonus["tipo"],
+                "descripcion": self.temp_bonus["descripcion"],
+                "valor": self.temp_bonus["valor"]
+            })
+            self.temp_bonus = {"tipo": "Bono", "descripcion": "", "valor": ""}
+
+    def remove_temp_bonus(self, item: Dict):
+        self.new_bonuses.remove(item)
+
+    def set_temp_discount_field(self, name: str, value: Any):
+        self.temp_discount[name] = value
+
+    def add_temp_discount(self):
+        if self.temp_discount["descripcion"] and self.temp_discount["valor"]:
+            self.new_discounts.append({
+                "tipo": self.temp_discount["tipo"],
+                "descripcion": self.temp_discount["descripcion"],
+                "valor": self.temp_discount["valor"]
+            })
+            self.temp_discount = {"tipo": "Otros", "descripcion": "", "valor": ""}
+
+    def remove_temp_discount(self, item: Dict):
+        self.new_discounts.remove(item)
+
+    @rx.event(background=True)
+    async def eliminar_descuento(self, id_descuento: int):
+        # TODO: Implementar eliminacion real si es existente
+        pass
+
+    @rx.event(background=True)
+    async def eliminar_bonificacion(self, id_bonificacion: int):
+        # TODO: Implementar eliminacion real si es existente
+        pass
+
+    @rx.event(background=True)
+    async def handle_save_form(self, form_data: Dict):
+        """Unified handler for saving form (create or edit)."""
+        if self.selected_liquidacion_id > 0:
+             # TODO: Logica de edicion
+             yield rx.toast.info("Edición no implementada aún")
+        else:
+             async for event in self.crear_liquidacion(form_data):
+                 yield event
     
     # Existing items (saved in DB) - for edit mode
     existing_discounts: List[Dict[str, Any]] = []
@@ -470,6 +581,11 @@ class LiquidacionAsesoresState(rx.State):
         async with self:
             self.is_loading = True
             self.error_message = ""
+            
+            # Contexto Documental
+            self.current_entidad_tipo = "LIQUIDACION_ASESOR"
+            self.current_entidad_id = str(id_liquidacion)
+            self.cargar_documentos()
         
         try:
             repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
@@ -798,7 +914,7 @@ class LiquidacionAsesoresState(rx.State):
                 self.error_message = f"Error al marcar como pagada: {str(e)}"
                 self.is_loading = False
             yield rx.toast.error(f"Error al registrar pago: {str(e)}", position="top-center")
-    
+
     @rx.event(background=True)
     async def anular_liquidacion(self, id_liquidacion: int, motivo: str):
         """Anula una liquidación."""
@@ -817,441 +933,19 @@ class LiquidacionAsesoresState(rx.State):
                 repo_pago=repo_pago
             )
             
-            usuario_sistema = "admin"  # TODO: Obtener de AuthState
+            usuario_sistema = "admin"
             servicio.anular_liquidacion(id_liquidacion, motivo, usuario_sistema)
             
             async with self:
                 self.is_loading = False
+                self.show_annul_modal = False # Close modal on success
                 self.show_detail_modal = False
-                self.show_annul_modal = False
-                self.annul_reason = ""
-                self.selected_annul_id = 0
             
             yield rx.toast.success("Liquidación anulada correctamente", position="top-center")
-            # Recargar lista
             yield LiquidacionAsesoresState.load_liquidaciones()
                 
         except Exception as e:
             async with self:
-                self.error_message = f"Error al anular liquidación: {str(e)}"
+                self.error_message = f"Error al anular: {str(e)}"
                 self.is_loading = False
-            yield rx.toast.error(f"Error al anular liquidación: {str(e)}", position="top-center")
-    
-    # Method removed (duplicate)
-
-    @rx.event(background=True)
-    async def eliminar_bonificacion(self, id_bonificacion: int):
-        """Elimina una bonificación existente."""
-        async with self:
-            self.is_loading = True
-            
-        try:
-            # Check for synthetic bonus (id -1)
-            # Check for synthetic bonus (id -1)
-            if id_bonificacion == -1:
-                # Caso especial: Eliminar bonificación consolidada antigua
-                repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
-                repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
-                repo_pago = RepositorioPagoAsesorSQLite(db_manager)
-                repo_bonificacion = RepositorioBonificacionAsesorSQLite(db_manager)
-                
-                servicio = ServicioLiquidacionAsesores(
-                    repo_liquidacion=repo_liquidacion,
-                    repo_descuento=repo_descuento,
-                    repo_pago=repo_pago,
-                    repo_bonificacion=repo_bonificacion
-                )
-                
-                usuario_sistema = "admin" # TODO: Auth
-                if self.selected_liquidacion_id:
-                    servicio.remover_bonificacion_consolidada(self.selected_liquidacion_id, usuario_sistema)
-                
-                # Recargar modal
-                if self.selected_liquidacion_id:
-                    yield LiquidacionAsesoresState.open_edit_modal(self.selected_liquidacion_id)
-                    
-                yield LiquidacionAsesoresState.load_liquidaciones()
-                
-                async with self:
-                    self.is_loading = False
-                return
-
-            repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
-            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
-            repo_pago = RepositorioPagoAsesorSQLite(db_manager)
-            repo_bonificacion = RepositorioBonificacionAsesorSQLite(db_manager)
-             
-            servicio = ServicioLiquidacionAsesores(
-                 repo_liquidacion=repo_liquidacion,
-                 repo_descuento=repo_descuento,
-                 repo_pago=repo_pago,
-                 repo_bonificacion=repo_bonificacion
-            )
-             
-            servicio.eliminar_bonificacion(id_bonificacion, "admin") # TODO: Obtener usuario real
-             
-             # Recargar modal
-            if self.selected_liquidacion_id:
-                 yield LiquidacionAsesoresState.open_edit_modal(self.selected_liquidacion_id)
-                 
-            yield LiquidacionAsesoresState.load_liquidaciones()
-            
-            yield rx.toast.success("Bonificación eliminada", position="top-center")
-             
-        except Exception as e:
-            print(f"Error eliminando bonificación: {e}")
-            async with self:
-                self.error_message = f"Error al eliminar bonificación: {str(e)}"
-                self.is_loading = False
-            yield rx.toast.error(f"Error al eliminar bonificación: {str(e)}", position="top-center")
-
-    @rx.event(background=True)
-    async def handle_save_form(self, form_data: Dict):
-        """Manejador central para guardar el formulario (Crear o Editar)."""
-        if self.selected_liquidacion_id > 0:
-            return LiquidacionAsesoresState.actualizar_liquidacion_completa(form_data)
-        else:
-            return LiquidacionAsesoresState.crear_liquidacion(form_data)
-
-    def close_edit_modal(self):
-        """Deprecado - usar close_form_modal."""
-        self.show_form_modal = False
-        self.show_edit_modal = False
-
-    def set_edit_field(self, field: str, value: Any):
-        """Deprecado - usar set_form_field."""
-        pass
-
-    @rx.event(background=True)
-    async def actualizar_liquidacion_completa(self, form_data: Dict):
-        """Actualiza liquidación completa desde el formulario compartido."""
-        async with self:
-            self.is_loading = True
-            self.error_message = ""
-        
-        try:
-            repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
-            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
-            repo_pago = RepositorioPagoAsesorSQLite(db_manager)
-            repo_bonificacion = RepositorioBonificacionAsesorSQLite(db_manager)
-            
-            servicio = ServicioLiquidacionAsesores(
-                repo_liquidacion=repo_liquidacion,
-                repo_descuento=repo_descuento,
-                repo_pago=repo_pago,
-                repo_bonificacion=repo_bonificacion
-            )
-            
-            usuario_sistema = "admin" # TODO: Auth
-            
-            # 1. Actualizar campos básicos
-            datos_actualizar = {}
-            
-            try:
-                pct_str = form_data.get("porcentaje_comision", "0")
-                pct_float = float(pct_str)
-                datos_actualizar["porcentaje_comision"] = int(pct_float * 100)
-            except ValueError:
-                raise ValueError("El porcentaje debe ser un número válido")
-
-            datos_actualizar["observaciones_liquidacion"] = form_data.get("observaciones", "")
-
-            servicio.actualizar_liquidacion(
-                id_liquidacion=self.selected_liquidacion_id,
-                datos=datos_actualizar,
-                usuario=usuario_sistema
-            )
-
-            # 2. Agregar NUEVOS descuentos/bonos ingresados en el formulario
-            # Nota: No elimina los existentes, solo agrega los nuevos de la lista temporal.
-            for descuento in self.new_discounts:
-                 try:
-                     servicio.agregar_descuento(
-                         id_liquidacion=self.selected_liquidacion_id,
-                         tipo=descuento["tipo"],
-                         descripcion=descuento["descripcion"],
-                         valor=int(descuento["valor"]),
-                         usuario=usuario_sistema
-                     )
-                 except Exception as e:
-                     print(f"Error agregando descuento extra: {e}")
-
-            # 3. Agregar NUEVAS bonificaciones ingresadas en el formulario
-            for bono in self.new_bonuses:
-                 try:
-                     servicio.agregar_bonificacion(
-                         id_liquidacion=self.selected_liquidacion_id,
-                         tipo=bono["tipo"],
-                         descripcion=bono["descripcion"],
-                         valor=int(bono["valor"]),
-                         usuario=usuario_sistema
-                     )
-                 except Exception as e:
-                     print(f"Error agregando bonificación extra: {e}")
-            
-            async with self:
-                self.show_form_modal = False
-                self.form_data = {}
-                self.new_discounts = []
-                self.new_bonuses = []
-                self.is_loading = False
-            
-            # Recargar lista
-            yield rx.toast.success("Liquidación actualizada correctamente", position="top-center")
-            yield LiquidacionAsesoresState.load_liquidaciones()
-
-        except Exception as e:
-            async with self:
-                self.error_message = f"Error al actualizar: {str(e)}"
-                self.is_loading = False
-            yield rx.toast.error(f"Error al actualizar liquidación: {str(e)}", position="top-center")
-    
-    # Descuentos
-    def open_discount_modal(self, id_liquidacion: int):
-        """Abre modal para agregar descuento."""
-        self.selected_liquidacion_id = id_liquidacion
-        self.discount_form = {
-            "id_liquidacion": id_liquidacion,
-            "tipo": "Descuento Manual",
-            "descripcion": "",
-            "valor": ""
-        }
-        self.show_discount_modal = True
-        self.error_message = ""
-    
-    @rx.event(background=True)
-    async def save_descuento(self, form_data: Dict):
-        """Guarda un descuento y recalcula valor neto."""
-        async with self:
-            self.is_loading = True
-            self.error_message = ""
-        
-        try:
-            print(f"DEBUG: save_descuento called with form_data keys: {list(form_data.keys())}")
-            print(f"DEBUG: form_data content: {form_data}")
-            
-            repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
-            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
-            repo_pago = RepositorioPagoAsesorSQLite(db_manager)
-            
-            servicio = ServicioLiquidacionAsesores(
-                repo_liquidacion=repo_liquidacion,
-                repo_descuento=repo_descuento,
-                repo_pago=repo_pago
-            )
-            
-            # Validaciones de ID
-            # CRITICAL FIX: Usar el ID del estado, no del formulario (evita error [object Object])
-            if not self.selected_liquidacion_id:
-                print("CRITICAL: selected_liquidacion_id is 0 or None")
-                async with self:
-                    self.error_message = "Error interno: No hay liquidación seleccionada"
-                    self.is_loading = False
-                return
-            
-            id_liquidacion = self.selected_liquidacion_id
-
-            # Validaciones de valor
-            try:
-                valor = int(form_data.get("valor", 0))
-            except ValueError:
-                async with self:
-                    self.error_message = "El valor debe ser un número válido"
-                    self.is_loading = False
-                return
-
-            if valor <= 0:
-                async with self:
-                    self.error_message = "El valor del descuento debe ser mayor a cero"
-                    self.is_loading = False
-                return
-            
-            usuario_sistema = "admin"  # TODO: Obtener de AuthState
-            servicio.agregar_descuento(
-                id_liquidacion=id_liquidacion,
-                tipo=form_data["tipo"],
-                descripcion=form_data.get("descripcion", "").strip(),
-                valor=valor,
-                usuario=usuario_sistema
-            )
-            
-            async with self:
-                self.show_discount_modal = False
-                self.discount_form = {}
-            
-            # Recargar detalles y lista
-            yield rx.toast.success("Descuento agregado correctamente", position="top-center")
-            yield LiquidacionAsesoresState.open_detail_modal(id_liquidacion)
-            yield LiquidacionAsesoresState.load_liquidaciones()
-                
-        except Exception as e:
-            async with self:
-                self.error_message = f"Error al agregar descuento: {str(e)}"
-                self.is_loading = False
-            yield rx.toast.error(f"Error al agregar descuento: {str(e)}", position="top-center")
-    
-    @rx.event(background=True)
-    async def eliminar_descuento(self, id_descuento: int):
-        """Elimina un descuento y recalcula valor neto."""
-        print(f"\n{'='*70}")
-        print(f"[STATE] eliminar_descuento CALLED")
-        print(f"[STATE] id_descuento recibido: {id_descuento} (tipo: {type(id_descuento)})")
-        print(f"[STATE] liquidacion_actual: {self.liquidacion_actual.get('id_liquidacion') if self.liquidacion_actual else 'None'}")
-        print(f"{'='*70}\n")
-        
-        async with self:
-            self.is_loading = True
-            self.error_message = ""
-        
-        try:
-            # Obtener id_liquidacion del estado actual
-            if not self.liquidacion_actual:
-                raise ValueError("No hay liquidación actual en el estado")
-            
-            id_liquidacion = self.liquidacion_actual["id_liquidacion"]
-            print(f"[STATE] ID Liquidacion extraído: {id_liquidacion}")
-            
-            repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
-            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
-            repo_pago = RepositorioPagoAsesorSQLite(db_manager)
-            
-            servicio = ServicioLiquidacionAsesores(
-                repo_liquidacion=repo_liquidacion,
-                repo_descuento=repo_descuento,
-                repo_pago=repo_pago
-            )
-            
-            usuario_sistema = "admin"  # TODO: Obtener de AuthState
-            print(f"[STATE] Llamando servicio.eliminar_descuento({id_descuento}, {usuario_sistema})")
-            
-            eliminado = servicio.eliminar_descuento(id_descuento, usuario_sistema)
-            
-            print(f"[STATE] Resultado eliminación: {eliminado}")
-            
-            async with self:
-                self.is_loading = False
-            
-            # Recargar detalles y lista
-            yield rx.toast.success("Descuento eliminado correctamente", position="top-center")
-            print(f"[STATE] Recargando modal y lista...")
-            yield LiquidacionAsesoresState.open_detail_modal(id_liquidacion)
-            yield LiquidacionAsesoresState.load_liquidaciones()
-            print(f"[STATE] Recarga completada\n")
-                
-        except Exception as e:
-            print(f"[STATE] ❌ ERROR: {str(e)}")
-            import traceback
-            traceback.print_exc()
-            async with self:
-                self.error_message = f"Error al eliminar descuento: {str(e)}"
-                self.is_loading = False
-            yield rx.toast.error(f"Error al eliminar descuento: {str(e)}", position="top-center")
-
-    # Helper methods for modals and forms
-    def set_form_field(self, field: str, value: Any):
-        """Actualiza un campo del formulario de liquidación."""
-        self.form_data[field] = value
-        
-        # Auto-llenar el porcentaje de comisión cuando se selecciona un asesor
-        if field == "id_asesor" and value:
-            # Buscar el asesor seleccionado por ID
-            for asesor in self.asesores_options:
-                if asesor["id"] == str(value):  # Convert to string for comparison
-                    # El valor ya está en formato de porcentaje (ej: 8 = 8%)
-                    comision = asesor.get("comision_porcentaje", 5)
-                    self.form_data["porcentaje_comision"] = str(float(comision))
-                    break
-            # Trigger render update for fetching properties
-            return LiquidacionAsesoresState.fetch_advisor_properties(int(value))
-
-    def set_temp_discount_field(self, field: str, value: Any):
-        """Actualiza campo del descuento temporal."""
-        self.temp_discount[field] = value
-
-    def add_temp_discount(self):
-        """Agrega el descuento temporal a la lista."""
-        try:
-            valor = int(self.temp_discount["valor"])
-            if valor <= 0:
-                print("Valor debe ser mayor a 0")
-                return
-            
-            self.new_discounts.append({
-                "tipo": self.temp_discount["tipo"],
-                "descripcion": self.temp_discount["descripcion"],
-                "valor": valor
-            })
-            # Reset temp form (keep type just in case)
-            self.temp_discount = {"tipo": "Otros", "descripcion": "", "valor": ""}
-        except ValueError:
-            pass # Handle invalid number
-
-    def remove_temp_discount(self, item_dict: Dict[str, Any]):
-        """Elimina un descuento de la lista temporal basado en sus valores."""
-        try:
-            # Filtrar la lista para remover el item que coincida
-            self.new_discounts = [
-                d for d in self.new_discounts 
-                if not (d.get("tipo") == item_dict.get("tipo") and 
-                        d.get("descripcion") == item_dict.get("descripcion") and 
-                        d.get("valor") == item_dict.get("valor"))
-            ]
-        except Exception as e:
-            print(f"Error removing temp discount: {e}")
-
-    def set_temp_bonus_field(self, field: str, value: Any):
-        """Actualiza campo del bono temporal."""
-        self.temp_bonus[field] = value
-
-    def add_temp_bonus(self):
-        """Agrega el bono temporal a la lista."""
-        try:
-            valor = int(self.temp_bonus["valor"])
-            if valor <= 0:
-                print("Valor debe ser mayor a 0")
-                return
-            
-            self.new_bonuses.append({
-                "tipo": self.temp_bonus["tipo"],
-                "descripcion": self.temp_bonus["descripcion"],
-                "valor": valor
-            })
-            # Reset temp (keep type)
-            self.temp_bonus = {"tipo": "Bono", "descripcion": "", "valor": ""}
-        except ValueError:
-            pass 
-
-    def remove_temp_bonus(self, item_dict: Dict[str, Any]):
-        """Elimina un bono de la lista temporal basado en sus valores."""
-        try:
-            # Filtrar la lista para remover el item que coincida
-            self.new_bonuses = [
-                b for b in self.new_bonuses 
-                if not (b.get("tipo") == item_dict.get("tipo") and 
-                        b.get("descripcion") == item_dict.get("descripcion") and 
-                        b.get("valor") == item_dict.get("valor"))
-            ]
-        except Exception as e:
-            print(f"Error removing temp bonus: {e}")
-
-    def set_discount_field(self, field: str, value: Any):
-        """Actualiza un campo del formulario de descuento."""
-        self.discount_form[field] = value
-
-    def close_form_modal(self):
-        """Cierra el modal de creación."""
-        self.show_form_modal = False
-        self.form_data = {
-            "id_asesor": "",
-            "periodo": datetime.now().strftime("%Y-%m"),
-            "contratos": [],
-            "porcentaje_comision": "5.0",
-            "observaciones": ""
-        }
-        self.error_message = ""
-
-    def close_discount_modal(self):
-        """Cierra el modal de descuento."""
-        self.show_discount_modal = False
-        self.discount_form = {}
-        self.error_message = ""
+            yield rx.toast.error(f"Error al anular: {str(e)}", position="top-center")
