@@ -337,12 +337,7 @@ def contrato_mandato_form() -> rx.Component:
                                 width="100%"
                             ),
                             rx.vstack(
-                                document_manager_elite(
-                                    entidad_tipo="CONTRATO_MANDATO",
-                                    entidad_id=ContratosState.current_entidad_id,
-                                    tipos_permitidos=[".pdf", ".jpg", ".png"],
-                                    on_upload_handler=ContratosState.handle_upload
-                                ),
+                                document_manager_elite(ContratosState),
                                 rx.separator(),
                                 image_gallery(
                                     documentos=ContratosState.documentos,

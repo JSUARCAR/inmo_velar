@@ -4,6 +4,7 @@ Implementación premium con visualización avanzada del progreso.
 """
 import reflex as rx
 from src.presentacion_reflex.state.desocupaciones_state import DesocupacionesState
+from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
 
 
 def _header_section() -> rx.Component:
@@ -259,52 +260,90 @@ def checklist_modal() -> rx.Component:
     """Modal de checklist con diseño élite."""
     return rx.dialog.root(
         rx.dialog.content(
-            # Título con icono
-            rx.hstack(
-                rx.icon("clipboard_list", size=24, color="var(--accent-9)"),
-                rx.dialog.title("Checklist de Desocupación"),
-                align_items="center",
-                spacing="2"
-            ),
-            rx.dialog.description(
-                "Verifique cada item antes de finalizar el proceso de entrega."
-            ),
-            
-            # Loading state
-            rx.cond(
-                DesocupacionesState.is_loading,
-                rx.center(
-                    rx.spinner(size="3"),
-                    padding="2em"
+             rx.vstack(
+                # Título con icono
+                rx.hstack(
+                    rx.icon("clipboard_list", size=24, color="var(--accent-9)"),
+                    rx.dialog.title("Checklist de Desocupación"),
+                    align_items="center",
+                    spacing="2"
                 ),
-                rx.vstack(
-                    # Header con info
-                    _header_section(),
-                    
-                    # Lista de tareas
-                    rx.scroll_area(
-                        rx.vstack(
-                            rx.foreach(
-                                DesocupacionesState.checklist_actual,
-                                _checklist_item
+                
+                # Loading state
+                rx.cond(
+                    DesocupacionesState.is_loading,
+                    rx.center(
+                        rx.spinner(size="3"),
+                        padding="2em"
+                    ),
+                    rx.vstack(
+                        # Header con info (Siempre visible)
+                        _header_section(),
+                        
+                        # Tabs
+                        rx.tabs.root(
+                            rx.tabs.list(
+                                rx.tabs.trigger("Checklist", value="tab1"),
+                                rx.tabs.trigger("Evidencia (Fotos)", value="tab2"),
                             ),
-                            spacing="2",
+                            
+                            # TAB 1: Checklist de Tareas
+                            rx.tabs.content(
+                                rx.vstack(
+                                     rx.dialog.description(
+                                        "Verifique cada item antes de finalizar el proceso de entrega.",
+                                        margin_bottom="0.5em"
+                                    ),
+                                    rx.scroll_area(
+                                        rx.vstack(
+                                            rx.foreach(
+                                                DesocupacionesState.checklist_actual,
+                                                _checklist_item
+                                            ),
+                                            spacing="2",
+                                            width="100%"
+                                        ),
+                                        type="auto",
+                                        scrollbars="vertical",
+                                        style={"max_height": "350px"}
+                                    ),
+                                    width="100%"
+                                ),
+                                value="tab1"
+                            ),
+                            
+                            # TAB 2: Evidencia (Documentos/Fotos)
+                            rx.tabs.content(
+                                rx.scroll_area(
+                                    rx.vstack(
+                                        rx.heading("Registro Fotográfico y Documentos", size="3", margin_bottom="0.5em"),
+                                        rx.text("Suba fotos del estado del inmueble o documentos firmados.", size="2", color="gray", margin_bottom="1em"),
+                                        
+                                        document_manager_elite(DesocupacionesState),
+                                        
+                                        padding="0.5em",
+                                        width="100%"
+                                    ),
+                                    style={"max_height": "400px"}
+                                ),
+                                value="tab2"
+                            ),
+                            
+                            default_value="tab1",
                             width="100%"
                         ),
-                        type="auto",
-                        scrollbars="vertical",
-                        style={"max_height": "350px"}
-                    ),
-                    
-                    # Footer
-                    _footer_section(),
-                    
-                    spacing="3",
-                    width="100%"
-                )
+                        
+                        # Footer
+                        _footer_section(),
+                        
+                        spacing="3",
+                        width="100%"
+                    )
+                ),
+                width="100%"
             ),
             
-            width="600px",
+            width="700px", # Wider
             max_width="95vw",
             padding="1.5em"
         ),

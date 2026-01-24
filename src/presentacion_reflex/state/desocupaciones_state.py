@@ -3,7 +3,9 @@ from typing import Optional, Dict, Any, List
 from src.infraestructura.persistencia.database import db_manager
 from src.aplicacion.servicios.servicio_desocupaciones import ServicioDesocupaciones
 
-class DesocupacionesState(rx.State):
+from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+
+class DesocupacionesState(DocumentosStateMixin):
     """Estado para gestión de Desocupaciones."""
     
     # Paginación
@@ -207,6 +209,11 @@ class DesocupacionesState(rx.State):
         async with self:
             self.id_desocupacion_seleccionada = id_desocupacion
             self.is_loading = True
+            
+            # Contexto Documental
+            self.current_entidad_tipo = "DESOCUPACION"
+            self.current_entidad_id = str(id_desocupacion)
+            self.cargar_documentos()
         
         try:
             servicio = ServicioDesocupaciones(db_manager)
