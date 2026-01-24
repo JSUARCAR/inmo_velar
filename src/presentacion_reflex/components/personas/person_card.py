@@ -94,7 +94,7 @@ def person_card(persona: dict) -> rx.Component:
                                     ("Arrendatario", "user-check"),
                                     ("Asesor", "briefcase"),
                                     ("Codeudor", "shield"),
-                                    ("Proveedor", "tool"),
+                                    ("Proveedor", "wrench"),
                                     "user"
                                 ),
                                 size=12,

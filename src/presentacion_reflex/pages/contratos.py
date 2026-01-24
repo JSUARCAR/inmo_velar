@@ -224,7 +224,7 @@ def contratos_page() -> rx.Component:
             ContratosState.error_message != "",
             rx.callout(
                 ContratosState.error_message,
-                icon="alert-circle",
+                icon="circle-alert",
                 color="red",
                 role="alert",
                 margin_bottom="1rem",
@@ -365,7 +365,7 @@ def contratos_page() -> rx.Component:
                                                         # Botón 2: Borrador
                                                         rx.tooltip(
                                                             rx.icon_button(
-                                                                rx.icon("file-edit", size=16),
+                                                                rx.icon("file-pen-line", size=16),
                                                                 on_click=lambda: PDFState.generar_contrato_arrendamiento_elite(
                                                                     contrato["id"],
                                                                     True
@@ -421,7 +421,7 @@ def contratos_page() -> rx.Component:
                                                         # Botón 2: Borrador
                                                         rx.tooltip(
                                                             rx.icon_button(
-                                                                rx.icon("file-edit", size=16),
+                                                                rx.icon("file-pen-line", size=16),
                                                                 on_click=lambda: PDFState.generar_contrato_mandato_elite(
                                                                     contrato["id"],
                                                                     True
