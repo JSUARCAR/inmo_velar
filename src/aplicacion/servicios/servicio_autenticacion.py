@@ -5,12 +5,14 @@ Implementa lógica de autenticación, hash de contraseñas y gestión de sesione
 
 import hashlib
 import secrets
+import bcrypt
 from typing import Optional, Tuple
 from datetime import datetime
 
 from src.dominio.entidades.usuario import Usuario
 from src.dominio.entidades.sesion_usuario import SesionUsuario
 from src.infraestructura.persistencia.repositorio_usuario_sqlite import RepositorioUsuarioSQLite
+from src.infraestructura.persistencia.repositorio_sesion_sqlite import RepositorioSesionSQLite
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
@@ -23,41 +25,38 @@ class ServicioAutenticacion:
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
         self.repo_usuario = RepositorioUsuarioSQLite(db_manager)
+        self.repo_sesion = RepositorioSesionSQLite(db_manager)
     
     @staticmethod
-    def hashear_contraseña(contraseña_plana: str, sal: Optional[str] = None) -> Tuple[str, str]:
+    def hashear_contraseña(contraseña_plana: str) -> str:
         """
-        Hashea una contraseña usando SHA256 + salt.
+        Hashea una contraseña usando Bcrypt.
         
         Args:
             contraseña_plana: Contraseña en texto plano
-            sal: Salt opcional (se genera si no se provee)
             
         Returns:
-            Tupla (hash, sal)
+            Hash Bcrypt (incluye salt)
         """
-        if not sal:
-            sal = secrets.token_hex(16)
-        
-        combinacion = f"{contraseña_plana}{sal}".encode('utf-8')
-        hash_obj = hashlib.sha256(combinacion)
-        
-        return hash_obj.hexdigest(), sal
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(contraseña_plana.encode('utf-8'), salt)
+        return hashed.decode('utf-8')
     
-    def verificar_contraseña(self, contraseña_plana: str, contraseña_hash: str, sal: str) -> bool:
+    def verificar_contraseña(self, contraseña_plana: str, contraseña_hash: str) -> bool:
         """
         Verifica si una contraseña plana coincide con el hash almacenado.
-        
-        Args:
-            contraseña_plana: Contraseña a verificar
-            contraseña_hash: Hash almacenado
-            sal: Salt del usuario
-            
-        Returns:
-            True si la contraseña es correcta
+        Soporta migración transparente de SHA256 a Bcrypt.
         """
-        hash_calculado, _ = self.hashear_contraseña(contraseña_plana, sal)
-        return hash_calculado == contraseña_hash
+        try:
+            # Intentar verificar como Bcrypt
+            return bcrypt.checkpw(contraseña_plana.encode('utf-8'), contraseña_hash.encode('utf-8'))
+        except ValueError:
+            # Fallback a SHA256 (Legacy)
+            # Asumimos que el hash SHA256 almacenado no tiene salt o es hash simple
+            hash_sha256 = hashlib.sha256(contraseña_plana.encode('utf-8')).hexdigest()
+            return hash_sha256 == contraseña_hash
+    
+
     
     def autenticar(self, nombre_usuario: str, contraseña: str) -> Optional[Usuario]:
         """
@@ -80,12 +79,17 @@ class ServicioAutenticacion:
         if not usuario.es_activo():
             return None
         
-        # Nota: El hash en BD no tiene sal separada, necesitamos ajustar la estrategia
-        # Para simplificar en esta fase, asumimos que la BD ya tiene contraseña hasheada
-        # y hacemos comparación directa con hash simple
-        hash_ingresado = hashlib.sha256(contraseña.encode('utf-8')).hexdigest()
+        # Verificar contraseña (automigración incluida)
+        es_valida = self.verificar_contraseña(contraseña, usuario.contrasena_hash)
         
-        if hash_ingresado == usuario.contrasena_hash:
+        if es_valida:
+            # Si el hash era SHA256 (no empieza con $2b$), actualizar a Bcrypt
+            if not usuario.contrasena_hash.startswith('$2b$'):
+                nuevo_hash = self.hashear_contraseña(contraseña)
+                usuario.contrasena_hash = nuevo_hash
+                # Guardar actualización de hash
+                self.repo_usuario.actualizar(usuario, nombre_usuario)
+
             # Actualizar último acceso
             usuario.ultimo_acceso = datetime.now().isoformat()
             self.repo_usuario.actualizar(usuario, nombre_usuario)
@@ -109,8 +113,31 @@ class ServicioAutenticacion:
             token_sesion=secrets.token_urlsafe(32)
         )
         
-        # Aquí iría la lógica para guardar en BD si tuviéramos repo de sesiones
-        return sesion
+        # Guardar en BD
+        return self.repo_sesion.guardar(sesion)
+    
+    def validar_sesion(self, token_sesion: str) -> Optional[Usuario]:
+        """
+        Valida un token de sesión y retorna el usuario asociado.
+        
+        Args:
+            token_sesion: Token de la cookie
+            
+        Returns:
+            Usuario sicorresponde a una sesión válida
+        """
+        sesion = self.repo_sesion.obtener_por_token(token_sesion)
+        
+        if not sesion:
+            return None
+            
+        # Verificar si está finalizada (active check)
+        if not sesion.esta_activa():
+            return None
+            
+        # (Opcional) Verificar timeout aquí si tuviéramos TTL
+        
+        return self.repo_usuario.obtener_por_id(sesion.id_usuario)
     
     def cambiar_contraseña(
         self,
@@ -130,16 +157,15 @@ class ServicioAutenticacion:
             True si se cambió exitosamente
         """
         # Verificar contraseña actual
-        hash_actual = hashlib.sha256(contraseña_actual.encode('utf-8')).hexdigest()
-        if hash_actual != usuario.contrasena_hash:
+        if not self.verificar_contraseña(contraseña_actual, usuario.contrasena_hash):
             return False
         
         # Validar nueva contraseña
-        if len(contraseña_nueva) < 6:
-            raise ValueError("La nueva contraseña debe tener al menos 6 caracteres")
+        if len(contraseña_nueva) < 8:
+            raise ValueError("La nueva contraseña debe tener al menos 8 caracteres")
         
         # Hashear nueva contraseña
-        nuevo_hash = hashlib.sha256(contraseña_nueva.encode('utf-8')).hexdigest()
+        nuevo_hash = self.hashear_contraseña(contraseña_nueva)
         usuario.contrasena_hash = nuevo_hash
         
         # Actualizar en BD
@@ -165,11 +191,12 @@ class ServicioAutenticacion:
             Usuario creado
         """
         # Validar contraseña
-        if len(contraseña) < 6:
-            raise ValueError("La contraseña debe tener al menos 6 caracteres")
+        if len(contraseña) < 8:
+            raise ValueError("La contraseña debe tener al menos 8 caracteres")
         
         # Hashear contraseña
-        contraseña_hash = hashlib.sha256(contraseña.encode('utf-8')).hexdigest()
+        # Hashear contraseña
+        contraseña_hash = self.hashear_contraseña(contraseña)
         
         # Crear usuario
         usuario = Usuario(
