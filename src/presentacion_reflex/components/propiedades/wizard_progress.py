@@ -80,6 +80,8 @@ def wizard_progress() -> rx.Component:
             step_indicator(2, current_step, "Detalles", "layout-dashboard"),
             connector_line(current_step > 2),
             step_indicator(3, current_step, "Financiero", "dollar-sign"),
+            connector_line(current_step > 3),
+            step_indicator(4, current_step, "Documentos", "files"),
             
             width="100%",
             spacing="0",

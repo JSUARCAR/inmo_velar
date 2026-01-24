@@ -160,23 +160,47 @@ class ServicioDocumentalElite(ServicioDocumental):
                                      entidad_tipo: str, entidad_id: str,
                                      usuario: str) -> List[Documento]:
         """
-        Procesa múltiples archivos con optimizaciones.
-        Nota: En Reflex, los UploadFiles son async, se debe leer su contenido.
+        Procesa múltiples archivos con validación y optimizaciones.
         """
-        documentos_procesados = []
+        from src.dominio.servicios.validador_documentos import ValidadorDocumentos
         
+        documentos_procesados = []
+        errores = []
+        
+        # 1. Fase de Lectura y Validación
+        files_content = []
         for file in files:
             content = await file.read()
             filename = file.filename
             
-            # Validar e identificar tipo podría hacerse aquí si se pasa metadata
-            # Por ahora subimos genéricamente
+            # Validar reglas de negocio
+            resultado = ValidadorDocumentos.validar_archivo_generico(
+                entidad_tipo=entidad_tipo,
+                nombre_archivo=filename,
+                tamano_bytes=len(content)
+            )
             
+            if not resultado['valido']:
+                errores.append(f"{filename}: {resultado['mensaje']}")
+                continue
+                
+            files_content.append({
+                'filename': filename,
+                'content': content
+            })
+            
+        if errores:
+            # Si hay errores, no subimos NADA (Atomicidad de lote por UI)
+            # O podríamos subir los válidos. Para mejor UX, lanzamos excepción con resumen.
+            raise ValueError("Errores de validación:\n" + "\n".join(errores))
+            
+        # 2. Fase de Procesamiento
+        for file_data in files_content:
             doc = self.subir_documento(
                 entidad_tipo=entidad_tipo,
                 entidad_id=entidad_id,
-                nombre_archivo=filename,
-                contenido_bytes=content,
+                nombre_archivo=file_data['filename'],
+                contenido_bytes=file_data['content'],
                 usuario=usuario
             )
             documentos_procesados.append(doc)

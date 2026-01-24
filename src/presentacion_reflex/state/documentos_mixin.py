@@ -51,32 +51,27 @@ class DocumentosStateMixin(rx.State):
             
         try:
             print(f"DEBUG: Processing upload. Files count: {len(files)}")
-            # Procesar archivos
-            for file in files:
-                content = await file.read()
-                filename = file.filename
-                
-                # Validación básica o llamada al servicio elite
-                # Aquí simplificamos, idealmente mapeamos tipos según filename o metadata
-                
-                servicio_documental.subir_documento(
-                    entidad_tipo=entidad_tipo,
-                    entidad_id=str(entidad_id),
-                    nombre_archivo=filename,
-                    contenido_bytes=content,
-                    usuario="USER_APP" # TODO: Obtener usuario real
-                )
-                self.upload_progress += (90 // len(files))
-                
+            
+            # Usar método optimizado del servicio que incluye validación
+            await servicio_documental.procesar_upload_multiple(
+                files=files,
+                entidad_tipo=entidad_tipo,
+                entidad_id=str(entidad_id),
+                usuario="USER_APP" # TODO: Obtener usuario real
+            )
+            
             # Recargar lista
             self.cargar_documentos()
             yield rx.toast.success("Documentos cargados exitosamente")
             
+        except ValueError as ve:
+            # Errores de validación de negocio
+            yield rx.toast.warning(str(ve), duration=5000)
         except Exception as e:
             print(f"Error subiendo documentos type: {type(e)}")
             print(f"Error subiendo documentos str: {e}")
             traceback.print_exc()
-            yield rx.toast.error(f"Error al subir documentos: {str(e)}")
+            yield rx.toast.error(f"Error técnico al subir: {str(e)}")
             
         finally:
             self.is_uploading = False
