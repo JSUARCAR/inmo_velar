@@ -355,10 +355,10 @@ def crear_propiedad_form_view(
             datos["codigo_gas"] = txt_codigo_gas.value.strip()
         
         # 🔍 DEBUG: Verificar códigos CIU recopilados
-        print(f"🔍 [UI] Códigos CIU recopilados en formulario:")
-        print(f"   - Energía: {datos.get('codigo_energia', 'NO CAPTURADO')}")
-        print(f"   - Agua: {datos.get('codigo_agua', 'NO CAPTURADO')}")
-        print(f"   - Gas: {datos.get('codigo_gas', 'NO CAPTURADO')}")
+        pass  # print(f"🔍 [UI] Códigos CIU recopilados en formulario:") [OpSec Removed]
+        pass  # print(f"   - Energía: {datos.get('codigo_energia', 'NO CAPTURADO')}") [OpSec Removed]
+        pass  # print(f"   - Agua: {datos.get('codigo_agua', 'NO CAPTURADO')}") [OpSec Removed]
+        pass  # print(f"   - Gas: {datos.get('codigo_gas', 'NO CAPTURADO')}") [OpSec Removed]
         
         # Campos de administración (opcionales)
         if txt_telefono_admin.value and txt_telefono_admin.value.strip():

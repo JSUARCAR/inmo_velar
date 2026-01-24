@@ -256,7 +256,7 @@ class RecibosPublicosListView(ft.Container):
             )
             
         except Exception as e:
-            print(f"Error recibos: {e}")
+            pass  # print(f"Error recibos: {e}") [OpSec Removed]
             self._schedule_ui_update(error=str(e))
 
     def _calcular_resumen_propiedad(self, recibos):

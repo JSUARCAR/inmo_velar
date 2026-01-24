@@ -117,7 +117,7 @@ def ejecutar_todos_los_triggers(db_manager):
         
         conn.commit()
     
-    print(f"[OK] Se crearon {len(TODOS_LOS_TRIGGERS)} triggers de auditoria exitosamente.")
+    pass  # print(f"[OK] Se crearon {len(TODOS_LOS_TRIGGERS)} triggers de auditoria exitosamente.") [OpSec Removed]
 
 
 if __name__ == "__main__":

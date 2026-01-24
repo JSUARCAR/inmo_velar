@@ -55,9 +55,9 @@ class ServicioLiquidacionAsesores:
             invalidate_cache('liq_asesores:list_paginated')
             # Invalidate metrics
             invalidate_cache('liq_asesores:metrics')
-            print("[CACHE] Caches de liquidaciones invalidados")
+            pass  # print("[CACHE] Caches de liquidaciones invalidados") [OpSec Removed]
         except Exception as e:
-            print(f"[CACHE] Error invalidando caches: {e}")
+            pass  # print(f"[CACHE] Error invalidando caches: {e}") [OpSec Removed]
 
     def listar_liquidaciones_paginado(
         self,
@@ -125,7 +125,7 @@ class ServicioLiquidacionAsesores:
                         nombre_asesor = persona.nombre_completo
                         documento_asesor = persona.numero_documento
         except Exception as e:
-            print(f"Advertencia: No se pudo obtener datos detallados del asesor: {e}")
+            pass  # print(f"Advertencia: No se pudo obtener datos detallados del asesor: {e}") [OpSec Removed]
 
         datos_pdf = {
             "id_liquidacion": liquidacion['id_liquidacion_asesor'],
@@ -453,39 +453,39 @@ class ServicioLiquidacionAsesores:
         Raises:
             ValueError: Si el descuento no existe o la liquidación no puede editarse
         """
-        print(f"\n[SERVICE] eliminar_descuento CALLED")
-        print(f"[SERVICE] id_descuento: {id_descuento}, usuario: {usuario}")
+        pass  # print(f"\n[SERVICE] eliminar_descuento CALLED") [OpSec Removed]
+        pass  # print(f"[SERVICE] id_descuento: {id_descuento}, usuario: {usuario}") [OpSec Removed]
         
         descuento = self.repo_descuento.obtener_por_id(id_descuento)
-        print(f"[SERVICE] Descuento obtenido: {descuento}")
+        pass  # print(f"[SERVICE] Descuento obtenido: {descuento}") [OpSec Removed]
         
         if not descuento:
             error_msg = f"No se encontró el descuento con ID {id_descuento}"
-            print(f"[SERVICE] ❌ {error_msg}")
+            pass  # print(f"[SERVICE] ❌ {error_msg}") [OpSec Removed]
             raise ValueError(error_msg)
         
         # Verificar que la liquidación puede editarse
         liquidacion = self.repo_liquidacion.obtener_por_id(descuento.id_liquidacion_asesor)
-        print(f"[SERVICE] Liquidación: ID={descuento.id_liquidacion_asesor}, puede_editarse={liquidacion.puede_editarse if liquidacion else 'N/A'}")
+        pass  # print(f"[SERVICE] Liquidación: ID={descuento.id_liquidacion_asesor}, puede_editarse={liquidacion.puede_editarse if liquidacion else 'N/A'}") [OpSec Removed]
         
         if not liquidacion or not liquidacion.puede_editarse:
             error_msg = "Solo se pueden eliminar descuentos de liquidaciones pendientes"
-            print(f"[SERVICE] ❌ {error_msg}")
+            pass  # print(f"[SERVICE] ❌ {error_msg}") [OpSec Removed]
             raise ValueError(error_msg)
         
         id_liquidacion = descuento.id_liquidacion_asesor
         
-        print(f"[SERVICE] Llamando repo.eliminar({id_descuento})")
+        pass  # print(f"[SERVICE] Llamando repo.eliminar({id_descuento})") [OpSec Removed]
         eliminado = self.repo_descuento.eliminar(id_descuento)
-        print(f"[SERVICE] Repo retornó: {eliminado}")
+        pass  # print(f"[SERVICE] Repo retornó: {eliminado}") [OpSec Removed]
         
         if eliminado:
-            print(f"[SERVICE] Recalculando valor neto para liquidación {id_liquidacion}")
+            pass  # print(f"[SERVICE] Recalculando valor neto para liquidación {id_liquidacion}") [OpSec Removed]
         self._recalcular_valor_neto(id_liquidacion, usuario)
         self._invalidar_caches()
-        print(f"[SERVICE] Recálculo completado")
+        pass  # print(f"[SERVICE] Recálculo completado") [OpSec Removed]
         
-        print(f"[SERVICE] Retornando: {eliminado}\n")
+        pass  # print(f"[SERVICE] Retornando: {eliminado}\n") [OpSec Removed]
         return eliminado
     
     def _recalcular_valor_neto(self, id_liquidacion: int, usuario: str) -> None:
@@ -1006,7 +1006,7 @@ class ServicioLiquidacionAsesores:
                     for b in bonif_entities
                 ]
             except Exception as e:
-                print(f"Error obteniendo bonificaciones del repositorio: {e}")
+                pass  # print(f"Error obteniendo bonificaciones del repositorio: {e}") [OpSec Removed]
                 bonificaciones = []
         else:
              # Fallback manual query if repo not provided
@@ -1029,7 +1029,7 @@ class ServicioLiquidacionAsesores:
                         for row in bonif_rows
                     ]
              except Exception as e:
-                print(f"Error obteniendo bonificaciones: {e}")
+                pass  # print(f"Error obteniendo bonificaciones: {e}") [OpSec Removed]
                 bonificaciones = []
 
         # FIX: Si no hay bonificaciones detalladas pero el total es > 0, crear una sintética
@@ -1072,7 +1072,7 @@ class ServicioLiquidacionAsesores:
                                 "matricula_inmobiliaria": propiedad.matricula_inmobiliaria,
                             }
             except Exception as e:
-                print(f"Error obteniendo detalles de contrato/propiedad legacy: {e}")
+                pass  # print(f"Error obteniendo detalles de contrato/propiedad legacy: {e}") [OpSec Removed]
         
         return {
             "liquidacion": self._liquidacion_to_dict(liquidacion),

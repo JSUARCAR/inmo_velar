@@ -144,15 +144,15 @@ class ServicioContratos:
         """
         Actualiza un contrato de mandato existente.
         """
-        print(f">>> DEBUG [ServicioContratos]: actualizar_mandato(id={id_contrato})")
-        print(f">>> DEBUG [ServicioContratos]: Datos recibidos: {datos}")
+        pass  # print(f">>> DEBUG [ServicioContratos]: actualizar_mandato(id={id_contrato})") [OpSec Removed]
+        pass  # print(f">>> DEBUG [ServicioContratos]: Datos recibidos: {datos}") [OpSec Removed]
         
         mandato = self.repo_mandato.obtener_por_id(id_contrato)
         if not mandato:
-            print(f">>> DEBUG [ServicioContratos]: Contrato no encontrado")
+            pass  # print(f">>> DEBUG [ServicioContratos]: Contrato no encontrado") [OpSec Removed]
             raise ValueError(f"No existe el contrato de mandato con ID {id_contrato}")
         
-        print(f">>> DEBUG [ServicioContratos]: Estado previo: {mandato}")
+        pass  # print(f">>> DEBUG [ServicioContratos]: Estado previo: {mandato}") [OpSec Removed]
 
         # Actualizar campos (IDs pueden cambiar en edición)
         mandato.id_propiedad = datos.get("id_propiedad", mandato.id_propiedad)
@@ -170,10 +170,10 @@ class ServicioContratos:
         mandato.updated_by = usuario_sistema
         mandato.updated_at = datetime.now().isoformat()
         
-        print(f">>> DEBUG [ServicioContratos]: Estado actualizado: {mandato}")
-        print(f">>> DEBUG [ServicioContratos]: Llamando repo.actualizar...")
+        pass  # print(f">>> DEBUG [ServicioContratos]: Estado actualizado: {mandato}") [OpSec Removed]
+        pass  # print(f">>> DEBUG [ServicioContratos]: Llamando repo.actualizar...") [OpSec Removed]
         self.repo_mandato.actualizar(mandato, usuario_sistema)
-        print(f">>> DEBUG [ServicioContratos]: repo.actualizar finalizado.")
+        pass  # print(f">>> DEBUG [ServicioContratos]: repo.actualizar finalizado.") [OpSec Removed]
 
     def listar_mandatos(self) -> List[Dict[str, Any]]:
         """
@@ -424,7 +424,7 @@ class ServicioContratos:
         3. Extiende fecha fin por la misma duración original.
         4. Registra historial de renovación.
         """
-        print(f">>> DEBUG: Iniciando renovación contrato {id_contrato}")
+        pass  # print(f">>> DEBUG: Iniciando renovación contrato {id_contrato}") [OpSec Removed]
         
         # 1. Verificar existencia y estado
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
@@ -474,8 +474,8 @@ class ServicioContratos:
             porcentaje_ipc = 0.0
             motivo_ren = "Prórroga Automática - Sin IPC (Duración < 1 año)"
         
-        print(f">>> DEBUG: Renovación - Canon Anterior: {arriendo.canon_arrendamiento}, Nuevo: {nuevo_canon} (IPC {porcentaje_ipc}%)")
-        print(f">>> DEBUG: Renovación - Fin Actual: {arriendo.fecha_fin_contrato_a} -> Nueva Fin: {nueva_fecha_fin_str}")
+        pass  # print(f">>> DEBUG: Renovación - Canon Anterior: {arriendo.canon_arrendamiento}, Nuevo: {nuevo_canon} (IPC {porcentaje_ipc}%)") [OpSec Removed]
+        pass  # print(f">>> DEBUG: Renovación - Fin Actual: {arriendo.fecha_fin_contrato_a} -> Nueva Fin: {nueva_fecha_fin_str}") [OpSec Removed]
 
         # 5. Guardar Historial Renovación
         renovacion = RenovacionContrato(
@@ -519,7 +519,7 @@ class ServicioContratos:
             return arriendo
             
         except Exception as e:
-            print(f">>> ERROR en renovación: {e}")
+            pass  # print(f">>> ERROR en renovación: {e}") [OpSec Removed]
             raise e
 
     @cache_manager.invalidates('mandatos:list_paginated')
@@ -530,7 +530,7 @@ class ServicioContratos:
         2. Mantiene el mismo canon y comisión (Incremento 0% - SIN IPC).
         3. Registra historial de renovación.
         """
-        print(f">>> DEBUG: Iniciando renovación MANDATO {id_contrato}")
+        pass  # print(f">>> DEBUG: Iniciando renovación MANDATO {id_contrato}") [OpSec Removed]
         
         # 1. Verificar existencia y estado
         mandato = self.repo_mandato.obtener_por_id(id_contrato)
@@ -564,7 +564,7 @@ class ServicioContratos:
         nuevo_canon = canon_actual # Regla de negocio: NO IPC
         porcentaje_ipc = 0
 
-        print(f">>> DEBUG: Renovación Mandato - Fin Actual: {mandato.fecha_fin_contrato_m} -> Nueva Fin: {nueva_fecha_fin_str}")
+        pass  # print(f">>> DEBUG: Renovación Mandato - Fin Actual: {mandato.fecha_fin_contrato_m} -> Nueva Fin: {nueva_fecha_fin_str}") [OpSec Removed]
 
         # 4. Guardar Historial Renovación
         renovacion = RenovacionContrato(
@@ -599,8 +599,8 @@ class ServicioContratos:
             return mandato
             
         except Exception as e:
-            print(f">>> ERROR en renovación mandato: {e}")
-            print(f">>> ERROR en renovación mandato: {e}")
+            pass  # print(f">>> ERROR en renovación mandato: {e}") [OpSec Removed]
+            pass  # print(f">>> ERROR en renovación mandato: {e}") [OpSec Removed]
             raise e
 
     @cache_manager.invalidates('arriendos:list_paginated')
@@ -621,7 +621,7 @@ class ServicioContratos:
         if not arriendo:
             raise ValueError(f"Contrato {id_contrato} no existe")
             
-        print(f">>> DEBUG: Terminando Arrendamiento {id_contrato}. Motivo: {motivo}")
+        pass  # print(f">>> DEBUG: Terminando Arrendamiento {id_contrato}. Motivo: {motivo}") [OpSec Removed]
 
         # Update Contrato
         arriendo.estado_contrato_a = "Cancelado"
@@ -644,7 +644,7 @@ class ServicioContratos:
                 if propiedad:
                     self.repo_propiedad.actualizar(propiedad, usuario_sistema)
         except Exception as e:
-            print(f">>> ERROR terminando arriendo: {e}")
+            pass  # print(f">>> ERROR terminando arriendo: {e}") [OpSec Removed]
             raise e
 
     @cache_manager.invalidates('mandatos:list_paginated')
@@ -663,7 +663,7 @@ class ServicioContratos:
         if not mandato:
             raise ValueError(f"Contrato {id_contrato} no existe")
 
-        print(f">>> DEBUG: Terminando Mandato {id_contrato}. Motivo: {motivo}")
+        pass  # print(f">>> DEBUG: Terminando Mandato {id_contrato}. Motivo: {motivo}") [OpSec Removed]
 
         mandato.estado_contrato_m = "Cancelado"
         mandato.motivo_cancelacion = motivo
@@ -675,7 +675,7 @@ class ServicioContratos:
             with self.db.transaccion() as conn:
                 self.repo_mandato.actualizar(mandato, usuario_sistema)
         except Exception as e:
-            print(f">>> ERROR terminando mandato: {e}")
+            pass  # print(f">>> ERROR terminando mandato: {e}") [OpSec Removed]
             raise e
 
     def _verificar_paz_y_salvo(self, id_contrato: int) -> bool:
@@ -692,7 +692,7 @@ class ServicioContratos:
         """
         ipc = self.repo_ipc.obtener_ultimo()
         if not ipc:
-            print(">>> WARNING: No hay IPC registrado. Incremento 0%.")
+            pass  # print(">>> WARNING: No hay IPC registrado. Incremento 0%.") [OpSec Removed]
             return canon_actual, 0.0
         
         # IPC.valor_ipc viene como entero/float. Asumimos que viene "4.5" para 4.5% o "13" para 13%
@@ -1743,7 +1743,7 @@ class ServicioContratos:
                 # MANUAL ROLLBACK (Compensating Transaction)
                 # Restaurar valores anteriores si falla algo a mitad de camino para mantener consistencia
                 try:
-                    print(f"ERROR IPC: {str(e)} - Iniciando rollback manual...")
+                    pass  # print(f"ERROR IPC: {str(e)} - Iniciando rollback manual...") [OpSec Removed]
                     # Restaurar Contrato
                     cursor.execute("""
                         UPDATE CONTRATOS_ARRENDAMIENTOS 
@@ -1761,9 +1761,9 @@ class ServicioContratos:
                         UPDATE CONTRATOS_MANDATOS SET CANON_MANDATO=%s 
                         WHERE ID_PROPIEDAD=%s AND ESTADO_CONTRATO_M='Activo'
                     """, (canon_anterior, id_propiedad))
-                    print("Rollback manual completado.")
+                    pass  # print("Rollback manual completado.") [OpSec Removed]
                 except Exception as e_roll:
-                    print(f"FALLO FATAL ROLLBACK: {str(e_roll)}")
+                    pass  # print(f"FALLO FATAL ROLLBACK: {str(e_roll)}") [OpSec Removed]
                 
                 raise e
             finally:

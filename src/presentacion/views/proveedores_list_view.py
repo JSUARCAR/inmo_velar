@@ -64,7 +64,7 @@ class ProveedoresListView(ft.Column):
             self.proveedores = self.servicio.listar_proveedores()
             self._update_table()
         except Exception as e:
-            print(f"Error loading proveedores: {e}")
+            pass  # print(f"Error loading proveedores: {e}") [OpSec Removed]
             self.loading.visible = False
             self.update()
 

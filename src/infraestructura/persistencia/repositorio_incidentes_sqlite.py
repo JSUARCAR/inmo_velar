@@ -159,8 +159,8 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
 
     # Cotizaciones
     def guardar_cotizacion(self, cotizacion: Cotizacion) -> int:
-        print("\n" + "="*80)
-        print("DEBUG REPOSITORIO: guardar_cotizacion INICIADO")
+        pass  # print("\n" + "="*80) [OpSec Removed]
+        pass  # print("DEBUG REPOSITORIO: guardar_cotizacion INICIADO") [OpSec Removed]
         # ... (skipping generic types print for brevity, keeping SQL fix)
         
         placeholder = self.db.get_placeholder()

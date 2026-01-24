@@ -113,10 +113,10 @@ def register_pdf_routes(app):
         try:
             if hasattr(fastapi_app, "mount"):
                 fastapi_app.mount("/api/pdf", pdf_api)
-                print("✅ Rutas PDF montadas exitosamente en /api/pdf")
+                pass  # print("✅ Rutas PDF montadas exitosamente en /api/pdf") [OpSec Removed]
             else:
-                print("❌ Error: La app backend no soporta 'mount'")
+                pass  # print("❌ Error: La app backend no soporta 'mount'") [OpSec Removed]
         except Exception as e:
-            print(f"❌ Error registrando rutas PDF: {e}")
+            pass  # print(f"❌ Error registrando rutas PDF: {e}") [OpSec Removed]
     else:
-        print("WARNING: No se pudo obtener la instancia FastAPI de app. No se registraron rutas PDF.")
+        pass  # print("WARNING: No se pudo obtener la instancia FastAPI de app. No se registraron rutas PDF.") [OpSec Removed]

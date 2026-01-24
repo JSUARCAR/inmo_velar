@@ -239,7 +239,7 @@ def crear_contrato_mandato_form_view(
     def handle_guardar(e):
         # Recolectar datos
         try:
-            print(f">>> DEBUG [FormMandato]: Valores UI -> Propiedad={dd_propiedad.value}, Inicio={txt_fecha_inicio.value}, Canon={txt_canon.value}, Duracion={txt_duracion.value}")
+            pass  # print(f">>> DEBUG [FormMandato]: Valores UI -> Propiedad={dd_propiedad.value}, Inicio={txt_fecha_inicio.value}, Canon={txt_canon.value}, Duracion={txt_duracion.value}") [OpSec Removed]
             
             # Validar campos obligatorios
             if not dd_propiedad.value: raise ValueError("Debe seleccionar una propiedad")
@@ -267,7 +267,7 @@ def crear_contrato_mandato_form_view(
                 "comision_porcentaje": int(float(txt_comision.value) * 100),
                 "iva_porcentaje": 1900
             }
-            print(f">>> DEBUG [FormMandato]: Datos preliminares: {datos}")
+            pass  # print(f">>> DEBUG [FormMandato]: Datos preliminares: {datos}") [OpSec Removed]
 
             # RESOLUCIÓN DE IDS (Persona -> Rol)
             # Buscar en las listas cargadas
@@ -283,29 +283,29 @@ def crear_contrato_mandato_form_view(
                  raise ValueError("El asesor seleccionado no tiene el rol activo.")
             datos["id_asesor"] = asesor_obj.datos_roles["Asesor"].id_asesor
             
-            print(f">>> DEBUG [FormMandato]: Datos finales (IDs resueltos): {datos}")
+            pass  # print(f">>> DEBUG [FormMandato]: Datos finales (IDs resueltos): {datos}") [OpSec Removed]
 
             try:
                 if es_edicion:
-                    print(f">>> DEBUG [FormMandato]: Llamando actualizar_mandato(id={contrato_id})...")
+                    pass  # print(f">>> DEBUG [FormMandato]: Llamando actualizar_mandato(id={contrato_id})...") [OpSec Removed]
                     servicio_contratos.actualizar_mandato(contrato_id, datos, "admin")
                     msg = "Contrato de Mandato actualizado exitosamente"
-                    print(">>> DEBUG [FormMandato]: actualizar_mandato RETORNO OK")
+                    pass  # print(">>> DEBUG [FormMandato]: actualizar_mandato RETORNO OK") [OpSec Removed]
                 else:
-                    print(f">>> DEBUG [FormMandato]: Llamando crear_mandato...")
+                    pass  # print(f">>> DEBUG [FormMandato]: Llamando crear_mandato...") [OpSec Removed]
                     servicio_contratos.crear_mandato(datos, "admin") # TODO: Pasar usuario real
                     msg = "Contrato de Mandato creado exitosamente"
-                    print(">>> DEBUG [FormMandato]: crear_mandato RETORNO OK")
+                    pass  # print(">>> DEBUG [FormMandato]: crear_mandato RETORNO OK") [OpSec Removed]
                 
                 # Feedback de éxito
                 show_banner(msg, is_error=False)
                 
                 # Navegar
-                print(">>> DEBUG [FormMandato]: Ejecutando callback on_guardar()...")
+                pass  # print(">>> DEBUG [FormMandato]: Ejecutando callback on_guardar()...") [OpSec Removed]
                 on_guardar()
                 
             except sqlite3.IntegrityError as ie:
-                print(f">>> DEBUG [FormMandato]: IntegrityError: {ie}")
+                pass  # print(f">>> DEBUG [FormMandato]: IntegrityError: {ie}") [OpSec Removed]
                 error_msg = str(ie)
                 if "CHECK constraint failed: CANON_MANDATO" in error_msg:
                     detalle = "El Canon debe estar entre $500.000 y $200.000.000 (Restricción de BD)."
@@ -317,19 +317,19 @@ def crear_contrato_mandato_form_view(
                 show_banner(f"Error de Base de Datos: {detalle}")
                 
             except ValueError as ve:
-                print(f">>> DEBUG [FormMandato]: ValueError servicio: {ve}")
+                pass  # print(f">>> DEBUG [FormMandato]: ValueError servicio: {ve}") [OpSec Removed]
                 show_banner(str(ve))
             except Exception as ex:
-                print(f">>> DEBUG [FormMandato]: Exception General servicio: {ex}")
+                pass  # print(f">>> DEBUG [FormMandato]: Exception General servicio: {ex}") [OpSec Removed]
                 import traceback
                 traceback.print_exc()
                 show_banner(f"Error inesperado: {ex}")
             
         except ValueError as ex:
-            print(f">>> DEBUG [FormMandato]: ValueError Validación UI: {ex}")
+            pass  # print(f">>> DEBUG [FormMandato]: ValueError Validación UI: {ex}") [OpSec Removed]
             show_banner(f"Error de validación: {ex}")
         except Exception as e:
-             print(f">>> DEBUG [FormMandato]: Exception CRITICA no manejada: {e}")
+             pass  # print(f">>> DEBUG [FormMandato]: Exception CRITICA no manejada: {e}") [OpSec Removed]
              import traceback
              traceback.print_exc()
     

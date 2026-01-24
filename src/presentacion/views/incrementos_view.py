@@ -258,7 +258,7 @@ class IncrementosView(ft.Container):
         
         msg = f"Proceso finalizado. Exitos: {exitos}. Errores: {len(errores)}"
         if errores:
-            print(f"Errores en masivo: {errores}")
+            pass  # print(f"Errores en masivo: {errores}") [OpSec Removed]
         
         self._show_snack(msg, color="green" if not errores else "orange")
 

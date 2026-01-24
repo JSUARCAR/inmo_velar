@@ -35,7 +35,7 @@ async def download_document(id_documento: int, force_download: bool = False):
         )
             
     except Exception as e:
-        print(f"Error sirviendo documento {id_documento}: {e}")
+        pass  # print(f"Error sirviendo documento {id_documento}: {e}") [OpSec Removed]
         raise HTTPException(status_code=500, detail=str(e))
 
 def register_document_routes(app):
@@ -62,8 +62,8 @@ def register_document_routes(app):
         try:
             if hasattr(fastapi_app, "mount"):
                 fastapi_app.mount("/api/storage", doc_api)
-                print("✅ Rutas de Documentos montadas exitosamente en /api/storage")
+                pass  # print("✅ Rutas de Documentos montadas exitosamente en /api/storage") [OpSec Removed]
             else:
-                print("❌ Error: La app backend no soporta 'mount'")
+                pass  # print("❌ Error: La app backend no soporta 'mount'") [OpSec Removed]
         except Exception as e:
-            print(f"❌ Error registrando rutas de documentos: {e}")
+            pass  # print(f"❌ Error registrando rutas de documentos: {e}") [OpSec Removed]

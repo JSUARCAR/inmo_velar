@@ -248,7 +248,7 @@ class PersonasListView(ft.Container):
             self._schedule_ui_update(elapsed, error=None)
             
         except Exception as e:
-            print(f"Error cargando personas: {e}")
+            pass  # print(f"Error cargando personas: {e}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             self._schedule_ui_update(0, error=str(e))
@@ -259,7 +259,7 @@ class PersonasListView(ft.Container):
         if self.page:
             self._actualizar_tabla(elapsed, error)
         else:
-            print("⚠️ Advertencia: Intento de actualizar PersonasListView sin estar montado en página")
+            pass  # print("⚠️ Advertencia: Intento de actualizar PersonasListView sin estar montado en página") [OpSec Removed]
 
     def _actualizar_tabla(self, elapsed, error):
         """Renderiza los datos obtenidos."""

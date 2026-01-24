@@ -80,7 +80,7 @@ def crear_login_view(page: ft.Page, on_login_success):
         except Exception as ex:
             import traceback
             traceback.print_exc()
-            print(f"DEBUG: on_login_success type: {type(on_login_success)}")
+            pass  # print(f"DEBUG: on_login_success type: {type(on_login_success)}") [OpSec Removed]
             txt_error.value = f"Error al iniciar sesión: {str(ex)}"
             txt_error.visible = True
         

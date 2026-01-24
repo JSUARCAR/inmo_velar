@@ -22,6 +22,28 @@ class Settings(BaseSettings):
         default="migraciones/DB_Inmo_Velar.db",
         description="Ruta al archivo SQLite"
     )
+
+    # === PostgreSQL ===
+    db_host: str = Field(
+        default="localhost",
+        description="Host de PostgreSQL"
+    )
+    db_port: int = Field(
+        default=5432,
+        description="Puerto de PostgreSQL"
+    )
+    db_user: str = Field(
+        default="postgres",
+        description="Usuario de PostgreSQL"
+    )
+    db_password: str = Field(
+        default="",
+        description="Contraseña de PostgreSQL"
+    )
+    db_name: str = Field(
+        default="db_inmo_velar",
+        description="Nombre de la base de datos PostgreSQL"
+    )
     
     # === Aplicación ===
     app_name: str = Field(

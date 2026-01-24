@@ -62,7 +62,7 @@ class IncidentesListView(ft.Column):
             self.incidentes = self.servicio.listar_incidentes()
             self._update_ui()
         except Exception as e:
-            print(f"Error loading incidentes: {e}")
+            pass  # print(f"Error loading incidentes: {e}") [OpSec Removed]
             self.loading.visible = False
             self.update()
 

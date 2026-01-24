@@ -78,7 +78,7 @@ class RepositorioDocumentoSQLite:
             conn.commit()
             return documento
         except sqlite3.Error as e:
-            print(f"Error al crear documento: {e}")
+            pass  # print(f"Error al crear documento: {e}") [OpSec Removed]
             raise
 
     def listar_por_entidad(self, entidad_tipo: str, entidad_id: str) -> List[Documento]:
@@ -143,7 +143,7 @@ class RepositorioDocumentoSQLite:
             cursor.execute(sql, ("0", entidad_tipo, str(entidad_id), nombre_archivo, "1"))
             conn.commit()
         except sqlite3.Error as e:
-            print(f"Error al anular versiones anteriores: {e}")
+            pass  # print(f"Error al anular versiones anteriores: {e}") [OpSec Removed]
             raise
 
     def obtener_ultima_version(self, entidad_tipo: str, entidad_id: str, nombre_archivo: str) -> int:
@@ -184,5 +184,5 @@ class RepositorioDocumentoSQLite:
             cursor.execute(sql, ("0", id_documento))
             conn.commit()
         except sqlite3.Error as e:
-            print(f"Error al eliminar documento: {e}")
+            pass  # print(f"Error al eliminar documento: {e}") [OpSec Removed]
             raise

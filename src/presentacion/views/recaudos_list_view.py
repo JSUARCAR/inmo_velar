@@ -259,13 +259,13 @@ class RecaudosListView(ft.Container):
             self._schedule_ui_update()
             
         except Exception as e:
-            print(f"Error fetch recaudos: {e}")
+            pass  # print(f"Error fetch recaudos: {e}") [OpSec Removed]
             self.recaudos = []
             self.total_items = 0
             self._schedule_ui_update(error=str(e))
             
         except Exception as e:
-            print(f"Error fetch recaudos: {e}")
+            pass  # print(f"Error fetch recaudos: {e}") [OpSec Removed]
             self._schedule_ui_update(error=str(e))
 
     def _schedule_ui_update(self, error=None):

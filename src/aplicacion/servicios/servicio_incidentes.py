@@ -154,27 +154,27 @@ class ServicioIncidentes:
         """
         Registra una cotización y pasa el incidente a 'Cotizado'.
         """
-        print("\n" + "="*80)
-        print("DEBUG SERVICIO: registrar_cotizacion INICIADO")
-        print("="*80)
-        print(f"DEBUG SERVICIO: id_incidente = {id_incidente}")
-        print(f"DEBUG SERVICIO: datos_cotizacion = {datos_cotizacion}")
-        print(f"DEBUG SERVICIO: usuario_sistema = {usuario_sistema}")
+        pass  # print("\n" + "="*80) [OpSec Removed]
+        pass  # print("DEBUG SERVICIO: registrar_cotizacion INICIADO") [OpSec Removed]
+        pass  # print("="*80) [OpSec Removed]
+        pass  # print(f"DEBUG SERVICIO: id_incidente = {id_incidente}") [OpSec Removed]
+        pass  # print(f"DEBUG SERVICIO: datos_cotizacion = {datos_cotizacion}") [OpSec Removed]
+        pass  # print(f"DEBUG SERVICIO: usuario_sistema = {usuario_sistema}") [OpSec Removed]
         
-        print("DEBUG SERVICIO: Obteniendo incidente...")
+        pass  # print("DEBUG SERVICIO: Obteniendo incidente...") [OpSec Removed]
         incidente = self.repo_incidentes.obtener_por_id(id_incidente)
-        print(f"DEBUG SERVICIO: Incidente obtenido = {incidente}")
+        pass  # print(f"DEBUG SERVICIO: Incidente obtenido = {incidente}") [OpSec Removed]
         
         if not incidente:
-            print("DEBUG SERVICIO: ERROR - Incidente no encontrado")
+            pass  # print("DEBUG SERVICIO: ERROR - Incidente no encontrado") [OpSec Removed]
             raise ValueError("Incidente no encontrado")
         
-        print("DEBUG SERVICIO: Creando objeto Cotizacion...")
-        print(f"DEBUG SERVICIO: - id_proveedor de datos = {datos_cotizacion.get('id_proveedor')}")
-        print(f"DEBUG SERVICIO: - materiales (buscando 'materiales') = {datos_cotizacion.get('materiales', 'NO_ENCONTRADO')}")
-        print(f"DEBUG SERVICIO: - materiales (buscando 'costo_materiales') = {datos_cotizacion.get('costo_materiales', 'NO_ENCONTRADO')}")
-        print(f"DEBUG SERVICIO: - mano_obra (buscando 'mano_obra') = {datos_cotizacion.get('mano_obra', 'NO_ENCONTRADO')}")
-        print(f"DEBUG SERVICIO: - mano_obra (buscando 'costo_mano_obra') = {datos_cotizacion.get('costo_mano_obra', 'NO_ENCONTRADO')}")
+        pass  # print("DEBUG SERVICIO: Creando objeto Cotizacion...") [OpSec Removed]
+        pass  # print(f"DEBUG SERVICIO: - id_proveedor de datos = {datos_cotizacion.get('id_proveedor')}") [OpSec Removed]
+        pass  # print(f"DEBUG SERVICIO: - materiales (buscando 'materiales') = {datos_cotizacion.get('materiales', 'NO_ENCONTRADO')}") [OpSec Removed]
+        pass  # print(f"DEBUG SERVICIO: - materiales (buscando 'costo_materiales') = {datos_cotizacion.get('costo_materiales', 'NO_ENCONTRADO')}") [OpSec Removed]
+        pass  # print(f"DEBUG SERVICIO: - mano_obra (buscando 'mano_obra') = {datos_cotizacion.get('mano_obra', 'NO_ENCONTRADO')}") [OpSec Removed]
+        pass  # print(f"DEBUG SERVICIO: - mano_obra (buscando 'costo_mano_obra') = {datos_cotizacion.get('costo_mano_obra', 'NO_ENCONTRADO')}") [OpSec Removed]
         
         cotizacion = Cotizacion(
             id_incidente=id_incidente,
@@ -185,34 +185,34 @@ class ServicioIncidentes:
             dias_estimados=datos_cotizacion.get('dias', 1),
             created_by=usuario_sistema
         )
-        print(f"DEBUG SERVICIO: Cotizacion creada = {cotizacion}")
+        pass  # print(f"DEBUG SERVICIO: Cotizacion creada = {cotizacion}") [OpSec Removed]
         
-        print("DEBUG SERVICIO: Calculando total...")
+        pass  # print("DEBUG SERVICIO: Calculando total...") [OpSec Removed]
         cotizacion.calcular_total() # Suma materiales + mano de obra
-        print(f"DEBUG SERVICIO: Total calculado = {cotizacion.valor_total}")
+        pass  # print(f"DEBUG SERVICIO: Total calculado = {cotizacion.valor_total}") [OpSec Removed]
         
-        print("DEBUG SERVICIO: Llamando repo_incidentes.guardar_cotizacion...")
+        pass  # print("DEBUG SERVICIO: Llamando repo_incidentes.guardar_cotizacion...") [OpSec Removed]
         resultado = self.repo_incidentes.guardar_cotizacion(cotizacion)
-        print(f"DEBUG SERVICIO: Resultado de guardar = {resultado}")
+        pass  # print(f"DEBUG SERVICIO: Resultado de guardar = {resultado}") [OpSec Removed]
         
         # Actualizar estado incidente si estaba en Reportado o En Revision
-        print(f"DEBUG SERVICIO: Estado actual del incidente = {incidente.estado}")
+        pass  # print(f"DEBUG SERVICIO: Estado actual del incidente = {incidente.estado}") [OpSec Removed]
         # Actualizar estado incidente si estaba en Reportado
         if incidente.estado == "Reportado":
-            print("DEBUG SERVICIO: Actualizando estado Reportado -> En Revision...")
+            pass  # print("DEBUG SERVICIO: Actualizando estado Reportado -> En Revision...") [OpSec Removed]
             incidente.avanzar_estado("En Revision", usuario_sistema)
             self.repo_incidentes.actualizar(incidente)
-            print("DEBUG SERVICIO: Estado actualizado a En Revision")
+            pass  # print("DEBUG SERVICIO: Estado actualizado a En Revision") [OpSec Removed]
         
         # NOTA: Ya no pasamos automáticamente a "Cotizado". 
         # El usuario debe hacerlo explícitamente desde el UI cuando termine de cargar cotizaciones.
         
-        print("DEBUG SERVICIO: registrar_cotizacion COMPLETADO")
-        print("="*80 + "\n")
+        pass  # print("DEBUG SERVICIO: registrar_cotizacion COMPLETADO") [OpSec Removed]
+        pass  # print("="*80 + "\n") [OpSec Removed]
         return cotizacion
         
-        print("DEBUG SERVICIO: registrar_cotizacion COMPLETADO")
-        print("="*80 + "\n")
+        pass  # print("DEBUG SERVICIO: registrar_cotizacion COMPLETADO") [OpSec Removed]
+        pass  # print("="*80 + "\n") [OpSec Removed]
         return cotizacion
 
     def iniciar_reparacion(self, id_incidente: int, usuario_sistema: str) -> None:

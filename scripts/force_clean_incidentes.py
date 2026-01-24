@@ -1,11 +1,22 @@
 import psycopg2
 import os
 
-DB_HOST = "localhost"
-DB_PORT = "5432"
-DB_NAME = "db_inmo_velar"
-DB_USER = "inmo_user"
-DB_PASSWORD = "7323" 
+# Config from shared_db_config
+try:
+    import sys
+    import os
+    # Add root to sys.path if running from subdir
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    from shared_db_config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
+except ImportError:
+    # Fallback
+    from dotenv import load_dotenv
+    load_dotenv()
+    DB_HOST = os.getenv("DB_HOST", "localhost")
+    DB_PORT = os.getenv("DB_PORT", "5432")
+    DB_NAME = os.getenv("DB_NAME", "db_inmo_velar")
+    DB_USER = os.getenv("DB_USER", "inmo_user")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "7323") 
 
 def force_clean():
     print("Iniciando vaciado FORZADO de tablas...")

@@ -185,7 +185,7 @@ class PagosAsesoresListView(ft.Container):
             )
 
         except Exception as e:
-            print(f"Error pagos: {e}")
+            pass  # print(f"Error pagos: {e}") [OpSec Removed]
             self._schedule_ui_update(error=str(e))
 
     def _schedule_ui_update(self, resumen=None, update_opciones=False, error=None):

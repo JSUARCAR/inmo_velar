@@ -390,7 +390,7 @@ class ServicioDocumentosPDF:
         Returns:
             Ruta absoluta del archivo generado.
         """
-        print(f"[DEBUG PDF] Generando PDF para Desocupación {datos.get('id_desocupacion')}")
+        pass  # print(f"[DEBUG PDF] Generando PDF para Desocupación {datos.get('id_desocupacion')}") [OpSec Removed]
         pdf = PDFGenerator("CHECKLIST DE ENTREGA DE INMUEBLE")
         pdf.add_page()
         

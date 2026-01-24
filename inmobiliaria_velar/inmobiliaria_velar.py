@@ -66,7 +66,23 @@ def index() -> rx.Component:
 # --- CONFIGURACIÓN DE LA APP ---
 
 # Crear la app (toast provider incluido automáticamente)
+# Crear la app (toast provider incluido automáticamente)
 app = rx.App()
+
+# Middleware de Seguridad (Headers)
+from fastapi import Request
+
+@app._api.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    # Procesar request
+    response = await call_next(request)
+    # Añadir headers de seguridad
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    # Note: HSTS handled by host/proxy usually, but can be added here if HTTPS enforced
+    return response
 
 # Registrar API routes para descargas de PDF con nombres correctos
 from src.presentacion_reflex.api.pdf_download_api import register_pdf_routes

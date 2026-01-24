@@ -331,7 +331,7 @@ def crear_modal_detalle_liquidacion(
         )
         
     except Exception as e:
-        print(f"Error cargando detalle de liquidación: {e}")
+        pass  # print(f"Error cargando detalle de liquidación: {e}") [OpSec Removed]
         import traceback
         traceback.print_exc()
         
@@ -347,36 +347,36 @@ def crear_modal_detalle_liquidacion(
 
     def handle_enviar_whatsapp(e):
         """Envía la liquidación por WhatsApp al asesor (automático)"""
-        print("[DEBUG WHATSAPP] ========== INICIO handle_enviar_whatsapp ==========")
-        print(f"[DEBUG WHATSAPP] Event: {e}")
-        print(f"[DEBUG WHATSAPP] ID Liquidación: {id_liquidacion}")
+        pass  # print("[DEBUG WHATSAPP] ========== INICIO handle_enviar_whatsapp ==========") [OpSec Removed]
+        pass  # print(f"[DEBUG WHATSAPP] Event: {e}") [OpSec Removed]
+        pass  # print(f"[DEBUG WHATSAPP] ID Liquidación: {id_liquidacion}") [OpSec Removed]
         try:
-            print("[DEBUG WHATSAPP] Step 1: Mostrando SnackBar inicial...")
+            pass  # print("[DEBUG WHATSAPP] Step 1: Mostrando SnackBar inicial...") [OpSec Removed]
             page.snack_bar = ft.SnackBar(ft.Text("⏳ Obteniendo datos del asesor..."))
             page.snack_bar.open = True
             page.update()
-            print("[DEBUG WHATSAPP] Step 1: SnackBar mostrado OK")
+            pass  # print("[DEBUG WHATSAPP] Step 1: SnackBar mostrado OK") [OpSec Removed]
             
             # 1. Obtener datos del asesor desde la base de datos
             try:
-                print("[DEBUG WHATSAPP] Step 2: Obteniendo asesor...")
+                pass  # print("[DEBUG WHATSAPP] Step 2: Obteniendo asesor...") [OpSec Removed]
                 asesor = servicio_liquidacion_asesores.repo_asesor.obtener_por_id(liquidacion['id_asesor'])
-                print(f"[DEBUG WHATSAPP] Asesor obtenido: {asesor}")
+                pass  # print(f"[DEBUG WHATSAPP] Asesor obtenido: {asesor}") [OpSec Removed]
                 if not asesor:
                     raise Exception("Asesor no encontrado")
                     
-                print("[DEBUG WHATSAPP] Step 3: Obteniendo persona...")
+                pass  # print("[DEBUG WHATSAPP] Step 3: Obteniendo persona...") [OpSec Removed]
                 persona = servicio_liquidacion_asesores.repo_persona.obtener_por_id(asesor.id_persona)
-                print(f"[DEBUG WHATSAPP] Persona obtenida: {persona}")
+                pass  # print(f"[DEBUG WHATSAPP] Persona obtenida: {persona}") [OpSec Removed]
                 if not persona:
                     raise Exception("Datos de persona no encontrados")
                     
                 telefono = persona.telefono_principal
                 nombre_asesor = persona.nombre_completo
-                print(f"[DEBUG WHATSAPP] Teléfono: {telefono}, Nombre: {nombre_asesor}")
+                pass  # print(f"[DEBUG WHATSAPP] Teléfono: {telefono}, Nombre: {nombre_asesor}") [OpSec Removed]
                     
             except Exception as ex:
-                print(f"[DEBUG WHATSAPP] ERROR en obtención de datos: {ex}")
+                pass  # print(f"[DEBUG WHATSAPP] ERROR en obtención de datos: {ex}") [OpSec Removed]
                 page.snack_bar = ft.SnackBar(
                     ft.Text(f"❌ No se pudo obtener datos del asesor: {str(ex)}"),
                     bgcolor="red",
@@ -392,19 +392,19 @@ def crear_modal_detalle_liquidacion(
                 
                 try:
                     # 2. Generar PDF
-                    print("[DEBUG WHATSAPP] Step 4: Generando PDF...")
+                    pass  # print("[DEBUG WHATSAPP] Step 4: Generando PDF...") [OpSec Removed]
                     page.snack_bar = ft.SnackBar(ft.Text("⏳ Generando PDF..."))
                     page.snack_bar.open = True
                     page.update()
                     
                     try:
                         ruta_pdf = servicio_liquidacion_asesores.generar_pdf_comprobante(id_liquidacion)
-                        print(f"[DEBUG WHATSAPP] PDF generado: {ruta_pdf}")
+                        pass  # print(f"[DEBUG WHATSAPP] PDF generado: {ruta_pdf}") [OpSec Removed]
                         
                         if not ruta_pdf or not os.path.exists(ruta_pdf):
                             raise Exception("No se pudo generar el comprobante PDF.")
                     except Exception as ex:
-                        print(f"[DEBUG WHATSAPP] ERROR generando PDF: {ex}")
+                        pass  # print(f"[DEBUG WHATSAPP] ERROR generando PDF: {ex}") [OpSec Removed]
                         page.snack_bar = ft.SnackBar(
                             ft.Text(f"❌ Error generando PDF: {str(ex)}"),
                             bgcolor="red"
@@ -414,28 +414,28 @@ def crear_modal_detalle_liquidacion(
                         return
 
                     # 3. Preparar objeto para servicio de notificaciones
-                    print("[DEBUG WHATSAPP] Step 5: Preparando objeto liquidación...")
+                    pass  # print("[DEBUG WHATSAPP] Step 5: Preparando objeto liquidación...") [OpSec Removed]
                     class LiquidacionObj:
                         def __init__(self, data):
                             self.periodo_liquidacion = data['periodo_liquidacion']
                             self.valor_neto_asesor = data['valor_neto_asesor']
 
                     liquidacion_obj = LiquidacionObj(liquidacion)
-                    print("[DEBUG WHATSAPP] Objeto preparado OK")
+                    pass  # print("[DEBUG WHATSAPP] Objeto preparado OK") [OpSec Removed]
 
                     # 4. Enviar mensaje por WhatsApp automáticamente
-                    print("[DEBUG WHATSAPP] Step 6: Enviando WhatsApp...")
+                    pass  # print("[DEBUG WHATSAPP] Step 6: Enviando WhatsApp...") [OpSec Removed]
                     page.snack_bar = ft.SnackBar(ft.Text(f"⏳ Abriendo WhatsApp para {nombre_asesor}..."))
                     page.snack_bar.open = True
                     page.update()
                     
-                    print(f"[DEBUG WHATSAPP] Enviando WhatsApp automático a: {telefono} ({nombre_asesor})")
+                    pass  # print(f"[DEBUG WHATSAPP] Enviando WhatsApp automático a: {telefono} ({nombre_asesor})") [OpSec Removed]
                     exito = servicio_notificaciones.notificar_liquidacion_asesor_whatsapp(
                         liquidacion=liquidacion_obj, 
                         telefono_asesor=telefono, 
                         nombre_asesor=nombre_asesor
                     )
-                    print(f"[DEBUG WHATSAPP] Resultado envío: {'EXITOSO' if exito else 'FALLIDO'}")
+                    pass  # print(f"[DEBUG WHATSAPP] Resultado envío: {'EXITOSO' if exito else 'FALLIDO'}") [OpSec Removed]
                     
                     if exito:
                         page.snack_bar = ft.SnackBar(
@@ -454,7 +454,7 @@ def crear_modal_detalle_liquidacion(
                     page.update()
                         
                 except Exception as ex:
-                    print(f"[DEBUG WHATSAPP] ERROR en continuar_envio_whatsapp: {ex}")
+                    pass  # print(f"[DEBUG WHATSAPP] ERROR en continuar_envio_whatsapp: {ex}") [OpSec Removed]
                     import traceback
                     traceback.print_exc()
                     page.snack_bar = ft.SnackBar(ft.Text(f"❌ Error: {str(ex)}"), bgcolor="red", duration=5000)
@@ -463,7 +463,7 @@ def crear_modal_detalle_liquidacion(
             
             # Si no hay teléfono en BD, pedir manualmente
             if not telefono:
-                print("[DEBUG WHATSAPP] Teléfono no encontrado en BD, solicitando manualmente...")
+                pass  # print("[DEBUG WHATSAPP] Teléfono no encontrado en BD, solicitando manualmente...") [OpSec Removed]
                 
                 def confirmar_envio_whatsapp_manual(ev):
                     nonlocal telefono
@@ -508,14 +508,14 @@ def crear_modal_detalle_liquidacion(
                 continuar_envio_whatsapp()
                 
         except Exception as ex:
-            print(f"[DEBUG WHATSAPP] ERROR GENERAL: {ex}")
+            pass  # print(f"[DEBUG WHATSAPP] ERROR GENERAL: {ex}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             page.snack_bar = ft.SnackBar(ft.Text(f"❌ Error: {str(ex)}"), bgcolor="red", duration=5000)
             page.snack_bar.open = True
             page.update()
 
-        print("[DEBUG WHATSAPP] ========== FIN handle_enviar_whatsapp ==========")
+        pass  # print("[DEBUG WHATSAPP] ========== FIN handle_enviar_whatsapp ==========") [OpSec Removed]
 
     def handle_descargar_pdf(e):
         try:
@@ -530,7 +530,7 @@ def crear_modal_detalle_liquidacion(
             page.snack_bar.open = True
             page.update()
         except Exception as ex:
-            print(f"Error generando PDF: {ex}")
+            pass  # print(f"Error generando PDF: {ex}") [OpSec Removed]
             page.snack_bar = ft.SnackBar(ft.Text(f"❌ Error generando PDF: {str(ex)}"), bgcolor="red")
             page.snack_bar.open = True
             page.update()

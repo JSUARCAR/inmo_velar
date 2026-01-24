@@ -125,7 +125,7 @@ class SaldosFavorListView(ft.Container):
             self._schedule_ui_update({'pend': t_pend, 'res': t_res, 'cant': len(saldos)})
             
         except Exception as e:
-            print(f"Error saldos: {e}")
+            pass  # print(f"Error saldos: {e}") [OpSec Removed]
             self._schedule_ui_update(error=str(e))
 
     def _schedule_ui_update(self, resumen=None, error=None):

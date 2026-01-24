@@ -25,7 +25,7 @@ class DocumentManager(ft.Column):
         
         # UI Elements
         if not isinstance(self.page, ft.Page):
-             print(">>> WARNING [DocumentManager]: 'page' argument is not an ft.Page instance.")
+             pass  # print(">>> WARNING [DocumentManager]: 'page' argument is not an ft.Page instance.") [OpSec Removed]
 
         # UI Elements
         self.tabla_docs = ft.DataTable(
@@ -97,7 +97,7 @@ class DocumentManager(ft.Column):
             if self.tabla_docs.page:
                 self.tabla_docs.update()
         except Exception as e:
-            print(f"[ERROR] cargar_documentos: {e}")
+            pass  # print(f"[ERROR] cargar_documentos: {e}") [OpSec Removed]
 
     def _on_file_result(self, e: ft.FilePickerResultEvent):
         if not e.files:
@@ -129,7 +129,7 @@ class DocumentManager(ft.Column):
                 threading.Thread(target=self._procesar_subida_directa).start()
             else:
                 # MODO WEB - Use signed upload URL
-                print(f"[DEBUG] Iniciando carga Web para: {self.archivo_temporal.name}")
+                pass  # print(f"[DEBUG] Iniciando carga Web para: {self.archivo_temporal.name}") [OpSec Removed]
                 upload_url = self.page.get_upload_url(self.archivo_temporal.name, 60)
                 upload_file = ft.FilePickerUploadFile(
                     name=self.archivo_temporal.name,
@@ -159,7 +159,7 @@ class DocumentManager(ft.Column):
     def _procesar_subida_directa(self):
         """Sube archivo leyendo directamente del path (Escritorio)."""
         try:
-            print(f"[DEBUG] Subida Directa: {self.archivo_temporal.path}")
+            pass  # print(f"[DEBUG] Subida Directa: {self.archivo_temporal.path}") [OpSec Removed]
             with open(self.archivo_temporal.path, "rb") as f:
                 contenido = f.read()
             self._guardar_documento(contenido)
@@ -173,18 +173,18 @@ class DocumentManager(ft.Column):
             file_path = os.path.join(upload_dir, e.file_name)
             
             # Enhanced debugging
-            print(f"[DEBUG] === UPLOAD EVENT DEBUG ===")
-            print(f"[DEBUG] Event: {e}")
-            print(f"[DEBUG] File name: {e.file_name}")
-            print(f"[DEBUG] Progress: {e.progress}")
-            print(f"[DEBUG] Error (if any): {e.error}")
-            print(f"[DEBUG] Looking for file at: {file_path}")
-            print(f"[DEBUG] Upload dir exists: {os.path.exists(upload_dir)}")
+            pass  # print(f"[DEBUG] === UPLOAD EVENT DEBUG ===") [OpSec Removed]
+            pass  # print(f"[DEBUG] Event: {e}") [OpSec Removed]
+            pass  # print(f"[DEBUG] File name: {e.file_name}") [OpSec Removed]
+            pass  # print(f"[DEBUG] Progress: {e.progress}") [OpSec Removed]
+            pass  # print(f"[DEBUG] Error (if any): {e.error}") [OpSec Removed]
+            pass  # print(f"[DEBUG] Looking for file at: {file_path}") [OpSec Removed]
+            pass  # print(f"[DEBUG] Upload dir exists: {os.path.exists(upload_dir)}") [OpSec Removed]
             if os.path.exists(upload_dir):
-                print(f"[DEBUG] Upload dir contents: {os.listdir(upload_dir)}")
+                pass  # print(f"[DEBUG] Upload dir contents: {os.listdir(upload_dir)}") [OpSec Removed]
             else:
-                print(f"[DEBUG] Upload dir NOT FOUND")
-            print(f"[DEBUG] === END DEBUG ===")
+                pass  # print(f"[DEBUG] Upload dir NOT FOUND") [OpSec Removed]
+            pass  # print(f"[DEBUG] === END DEBUG ===") [OpSec Removed]
             
             if os.path.exists(file_path):
                 with open(file_path, "rb") as f:
@@ -225,7 +225,7 @@ class DocumentManager(ft.Column):
         self.page.update()
 
     def _mostrar_error(self, mensaje):
-        print(f"[ERROR] {mensaje}")
+        pass  # print(f"[ERROR] {mensaje}") [OpSec Removed]
         self.page.snack_bar = ft.SnackBar(ft.Text(str(mensaje)), bgcolor="red")
         self.page.snack_bar.open = True
         self.page.update()

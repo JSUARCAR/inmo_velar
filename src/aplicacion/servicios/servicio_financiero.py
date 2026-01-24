@@ -1387,10 +1387,10 @@ class ServicioFinanciero:
             except Exception as e:
                 # Log error pero continuar con los demás
                 errores.append({'id_propietario': id_prop, 'error': str(e)})
-                print(f"Error generando liquidación para propietario {id_prop}: {e}")
+                pass  # print(f"Error generando liquidación para propietario {id_prop}: {e}") [OpSec Removed]
         
         if errores:
-            print(f"Se generaron {len(liquidaciones_generadas)} liquidaciones. {len(errores)} fallaron.")
+            pass  # print(f"Se generaron {len(liquidaciones_generadas)} liquidaciones. {len(errores)} fallaron.") [OpSec Removed]
         
         return liquidaciones_generadas
     

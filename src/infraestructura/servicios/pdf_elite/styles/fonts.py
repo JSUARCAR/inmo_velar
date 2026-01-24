@@ -41,7 +41,7 @@ class FontManager:
             cls._registered_fonts[font_name] = True
             return True
         except Exception as e:
-            print(f"Error registrando fuente {font_name}: {e}")
+            pass  # print(f"Error registrando fuente {font_name}: {e}") [OpSec Removed]
             return False
     
     @classmethod
@@ -85,7 +85,7 @@ def _auto_register_fonts():
     if config.fonts_dir.exists():
         count = FontManager.register_fonts_from_directory(config.fonts_dir)
         if count > 0:
-            print(f"✓ Registradas {count} fuentes personalizadas")
+            pass  # print(f"✓ Registradas {count} fuentes personalizadas") [OpSec Removed]
 
 
 # Ejecutar auto-registro

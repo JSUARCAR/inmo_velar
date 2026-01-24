@@ -217,7 +217,7 @@ def crear_recibo_publico_form_view(
                 )
             )
     except Exception as e:
-        print(f"Error cargando propiedades en form: {e}")
+        pass  # print(f"Error cargando propiedades en form: {e}") [OpSec Removed]
         opciones_propiedades = []
     
     # Si es edición, cargar datos del recibo

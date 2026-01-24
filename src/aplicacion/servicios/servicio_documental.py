@@ -128,7 +128,7 @@ class ServicioDocumentalElite(ServicioDocumental):
             img.save(thumb_io, format='JPEG', quality=85)
             return thumb_io.getvalue()
         except Exception as e:
-            print(f"Error generando thumbnail: {e}")
+            pass  # print(f"Error generando thumbnail: {e}") [OpSec Removed]
             return None
 
     def extraer_texto_ocr(self, imagen_bytes: bytes) -> str:
@@ -153,7 +153,7 @@ class ServicioDocumentalElite(ServicioDocumental):
              # Retornar comprimido solo si es menor
              return compressed if len(compressed) < len(imagen_bytes) else imagen_bytes
         except Exception as e:
-            print(f"Error comprimiendo imagen: {e}")
+            pass  # print(f"Error comprimiendo imagen: {e}") [OpSec Removed]
             return imagen_bytes
 
     async def procesar_upload_multiple(self, files: List[rx.UploadFile], 

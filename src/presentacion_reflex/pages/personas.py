@@ -99,8 +99,8 @@ def persona_row(persona: dict) -> rx.Component:
 
 @rx.page(route="/personas", on_load=[AuthState.require_login, PersonasState.load_personas])
 def personas_page() -> rx.Component:
-    print("\n🌐 === PERSONAS PAGE RENDERING ===")
-    print("✅ Toast provider will be included in this page")
+    pass  # print("\n🌐 === PERSONAS PAGE RENDERING ===") [OpSec Removed]
+    pass  # print("✅ Toast provider will be included in this page") [OpSec Removed]
     return rx.fragment(
         rx.toast.provider(),
         dashboard_layout(
