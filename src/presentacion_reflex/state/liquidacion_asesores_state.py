@@ -287,7 +287,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             async with self:
                 self.advisor_properties = props
         except Exception as e:
-            print(f"Error fetching properties: {e}")
+            pass  # print(f"Error fetching properties: {e}") [OpSec Removed]
             async with self:
                 self.advisor_properties = []
     
@@ -499,7 +499,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             ]
             
             # Log para depuración (opcional, pero útil)
-            print(f"Liquidando asesor {id_asesor}: {len(contratos)} contratos encontrados. Total canon: {sum(c['canon'] for c in contratos)}")
+            pass  # print(f"Liquidando asesor {id_asesor}: {len(contratos)} contratos encontrados. Total canon: {sum(c['canon'] for c in contratos)}") [OpSec Removed]
             
             usuario_sistema = "admin" # TODO: Obtener de AuthState
             
@@ -532,7 +532,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                          usuario=usuario_sistema
                      )
                  except Exception as e:
-                     print(f"Error agregando descuento {descuento}: {e}")
+                     pass  # print(f"Error agregando descuento {descuento}: {e}") [OpSec Removed]
                      async with self:
                          self.error_message = f"Se creó la liquidación pero falló al agregar descuento '{descuento['tipo']}': {str(e)}"
             
@@ -547,7 +547,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                          usuario=usuario_sistema
                      )
                  except Exception as e:
-                     print(f"Error agregando bonificacion {bonificacion}: {e}")
+                     pass  # print(f"Error agregando bonificacion {bonificacion}: {e}") [OpSec Removed]
                      # No fallamos todo el proceso, pero logueamos
 
             

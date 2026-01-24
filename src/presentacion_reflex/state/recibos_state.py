@@ -77,7 +77,7 @@ class RecibosState(DocumentosStateMixin):
             async with self:
                 self.propiedades_disponibles = options
         except Exception as e:
-            print(f"Error cargando propiedades: {e}")
+            pass  # print(f"Error cargando propiedades: {e}") [OpSec Removed]
 
     @rx.event(background=True)
     async def load_data(self):

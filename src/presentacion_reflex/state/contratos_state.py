@@ -569,7 +569,7 @@ class ContratosState(DocumentosStateMixin):
                         # Set Document Context for Mandato
                         self.current_entidad_tipo = "CONTRATO_MANDATO"
                         self.current_entidad_id = str(id_contrato)
-                        print(f"DEBUG: open_edit_modal Mandato. Set ID: {self.current_entidad_id}")
+                        pass  # print(f"DEBUG: open_edit_modal Mandato. Set ID: {self.current_entidad_id}") [OpSec Removed]
                         self.cargar_documentos()
                         
                         self.modal_open = True
@@ -592,7 +592,7 @@ class ContratosState(DocumentosStateMixin):
                         # Set Document Context for Arrendamiento
                         self.current_entidad_tipo = "CONTRATO_ARRENDAMIENTO"
                         self.current_entidad_id = str(id_contrato)
-                        print(f"DEBUG: open_edit_modal Arrendamiento. Set ID: {self.current_entidad_id}")
+                        pass  # print(f"DEBUG: open_edit_modal Arrendamiento. Set ID: {self.current_entidad_id}") [OpSec Removed]
                         self.cargar_documentos()
                         
                         self.modal_open = True
@@ -793,7 +793,7 @@ class ContratosState(DocumentosStateMixin):
             yield rx.toast.success("Descarga iniciada", position="bottom-right")
             
         except Exception as e:
-            print(f"Error exportando CSV: {e}")
+            pass  # print(f"Error exportando CSV: {e}") [OpSec Removed]
             yield rx.toast.error(f"Error al exportar: {str(e)}", position="bottom-right")
 
     @rx.event(background=True)

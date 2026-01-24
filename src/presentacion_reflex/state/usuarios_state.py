@@ -111,7 +111,7 @@ class UsuariosState(rx.State):
                 self.is_loading = False
             
             # Mostrar toast de error solo si hay usuarios esperados
-            print(f"Error al cargar usuarios: {error_msg}")
+            pass  # print(f"Error al cargar usuarios: {error_msg}") [OpSec Removed]
 
     # --- ACTIONS ---
     

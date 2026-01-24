@@ -104,7 +104,7 @@ class PropiedadesState(DocumentosStateMixin):
             self.tipos_options = ["Todos"] + tipos
             
         except Exception as e:
-            print(f"Error cargando opciones: {e}")
+            pass  # print(f"Error cargando opciones: {e}") [OpSec Removed]
             self.municipios_options = [{"value": "0", "label": "Todos"}]
             self.tipos_options = ["Todos"]
     
@@ -142,9 +142,9 @@ class PropiedadesState(DocumentosStateMixin):
                 solo_activas=solo_activas,
                 busqueda=busqueda
             )
-            print(f"Propiedades Loaded from Service: {len(result.items)} items")
+            pass  # print(f"Propiedades Loaded from Service: {len(result.items)} items") [OpSec Removed]
             if len(result.items) > 0:
-                print(f"First Item Availability: {result.items[0].disponibilidad_propiedad}")
+                pass  # print(f"First Item Availability: {result.items[0].disponibilidad_propiedad}") [OpSec Removed]
             
             # Crear mapa de municipios para lookup rápido
             municipios_map = {m["value"]: m["label"] for m in self.municipios_options}
@@ -179,7 +179,7 @@ class PropiedadesState(DocumentosStateMixin):
                 self.is_loading = False
                 
         except Exception as e:
-            print(f"Error cargando propiedades: {e}")
+            pass  # print(f"Error cargando propiedades: {e}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             async with self:
@@ -340,7 +340,7 @@ class PropiedadesState(DocumentosStateMixin):
                 self.cargar_documentos()
 
         except Exception as e:
-            print(f"Error cargando propiedad: {e}")
+            pass  # print(f"Error cargando propiedad: {e}") [OpSec Removed]
             self.error_message = f"Error al cargar propiedad: {str(e)}"
     
     def close_modal(self):
@@ -357,8 +357,8 @@ class PropiedadesState(DocumentosStateMixin):
     
     def save_propiedad(self, form_data: Dict):
         """Guarda propiedad (crear o editar)."""
-        print("\n🔍 === SAVE_PROPIEDAD INICIADO ===")
-        print(f"📝 Form Data Recibido: {form_data}")
+        pass  # print("\n🔍 === SAVE_PROPIEDAD INICIADO ===") [OpSec Removed]
+        pass  # print(f"📝 Form Data Recibido: {form_data}") [OpSec Removed]
         
         self.is_loading = True
         self.error_message = ""
@@ -385,7 +385,7 @@ class PropiedadesState(DocumentosStateMixin):
                 if not val: return default
                 try: return float(val)
                 except: 
-                    print(f"⚠️ Error convirtiendo float para {key}: {val}")
+                    pass  # print(f"⚠️ Error convirtiendo float para {key}: {val}") [OpSec Removed]
                     return default
 
             def safe_int(key, default=0):
@@ -398,7 +398,7 @@ class PropiedadesState(DocumentosStateMixin):
                     if str(val) == "0": return 0
                 try: return int(val)
                 except:
-                    print(f"⚠️ Error convirtiendo int para {key}: {val}") 
+                    pass  # print(f"⚠️ Error convirtiendo int para {key}: {val}") [OpSec Removed]
                     return default
 
             datos = {
@@ -434,21 +434,21 @@ class PropiedadesState(DocumentosStateMixin):
                 "numero_cuenta_administracion": form_data.get("numero_cuenta_administracion", "")
             }
             
-            print(f"📦 Datos Procesados para Servicio: {datos}")
+            pass  # print(f"📦 Datos Procesados para Servicio: {datos}") [OpSec Removed]
             
             if self.is_editing:
                 # Actualizar
                 id_prop = form_data.get("id_propiedad")
                 if not id_prop:
-                    print("❌ Error: ID de propiedad no encontrado en form_data durante edición")
+                    pass  # print("❌ Error: ID de propiedad no encontrado en form_data durante edición") [OpSec Removed]
                     raise ValueError("ID de propiedad no encontrado")
                 
-                print(f"🔄 Actualizando propiedad ID: {id_prop}")
+                pass  # print(f"🔄 Actualizando propiedad ID: {id_prop}") [OpSec Removed]
                 servicio.actualizar_propiedad(int(id_prop), datos, usuario_sistema="admin")
                 msg = "Propiedad actualizada correctamente"
             else:
                 # Crear nueva
-                print("✨ Creando nueva propiedad")
+                pass  # print("✨ Creando nueva propiedad") [OpSec Removed]
                 servicio.crear_propiedad(datos, usuario_sistema="admin")
                 msg = "Propiedad creada correctamente"
             
@@ -460,7 +460,7 @@ class PropiedadesState(DocumentosStateMixin):
             yield PropiedadesState.load_propiedades
             
         except Exception as e:
-            print(f"❌ Error guardando propiedad: {e}")
+            pass  # print(f"❌ Error guardando propiedad: {e}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             self.error_message = f"Error: {str(e)}"
@@ -480,7 +480,7 @@ class PropiedadesState(DocumentosStateMixin):
             yield rx.toast.success(f"Estado actualizado a {est_str}", position="bottom-right")
             yield PropiedadesState.load_propiedades
         except Exception as e:
-            print(f"Error cambiando disponibilidad: {e}")
+            pass  # print(f"Error cambiando disponibilidad: {e}") [OpSec Removed]
             self.error_message = f"Error al cambiar disponibilidad: {str(e)}"
             yield rx.toast.error(f"Error: {e}", position="bottom-right")
 
@@ -523,5 +523,5 @@ class PropiedadesState(DocumentosStateMixin):
             yield rx.toast.success("Descarga iniciada", position="bottom-right")
             
         except Exception as e:
-            print(f"Error al exportar: {e}")
+            pass  # print(f"Error al exportar: {e}") [OpSec Removed]
             yield rx.toast.error(f"Error al exportar: {str(e)}", position="bottom-right")

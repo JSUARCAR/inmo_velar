@@ -98,7 +98,7 @@ class SegurosState(rx.State):
                 self.is_loading = False
                 
         except Exception as e:
-            print(f"Error cargando seguros: {e}")
+            pass  # print(f"Error cargando seguros: {e}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             async with self:
@@ -130,7 +130,7 @@ class SegurosState(rx.State):
                 self.polizas = polizas_data
                 
         except Exception as e:
-            print(f"Error cargando pólizas: {e}")
+            pass  # print(f"Error cargando pólizas: {e}") [OpSec Removed]
             async with self:
                 self.error_message = f"Error al cargar pólizas: {str(e)}"
     
@@ -148,7 +148,7 @@ class SegurosState(rx.State):
                 for c in contratos
             ]
         except Exception as e:
-            print(f"Error cargando contratos: {e}")
+            pass  # print(f"Error cargando contratos: {e}") [OpSec Removed]
             self.contratos_candidatos = []
     
     # Filtros y búsqueda
@@ -194,7 +194,7 @@ class SegurosState(rx.State):
                 self.show_seguro_modal = True
                 self.error_message = ""
         except Exception as e:
-            print(f"Error cargando seguro: {e}")
+            pass  # print(f"Error cargando seguro: {e}") [OpSec Removed]
             self.error_message = f"Error al cargar seguro: {str(e)}"
     
     def close_seguro_modal(self):
@@ -237,7 +237,7 @@ class SegurosState(rx.State):
             return SegurosState.load_seguros
             
         except Exception as e:
-            print(f"Error guardando seguro: {e}")
+            pass  # print(f"Error guardando seguro: {e}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             self.error_message = f"Error: {str(e)}"
@@ -259,7 +259,7 @@ class SegurosState(rx.State):
             
             return SegurosState.load_seguros
         except Exception as e:
-            print(f"Error cambiando estado: {e}")
+            pass  # print(f"Error cambiando estado: {e}") [OpSec Removed]
             self.error_message = f"Error al cambiar estado: {str(e)}"
     
     # Modal CRUD - Pólizas
@@ -316,7 +316,7 @@ class SegurosState(rx.State):
             return SegurosState.load_polizas
             
         except Exception as e:
-            print(f"Error guardando póliza: {e}")
+            pass  # print(f"Error guardando póliza: {e}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             self.error_message = f"Error: {str(e)}"
@@ -358,7 +358,7 @@ class SegurosState(rx.State):
                 self.show_detail_modal = True
                 self.error_message = ""
         except Exception as e:
-            print(f"Error cargando detalle: {e}")
+            pass  # print(f"Error cargando detalle: {e}") [OpSec Removed]
             self.error_message = f"Error al cargar detalle: {str(e)}"
     
     def close_detail_modal(self):

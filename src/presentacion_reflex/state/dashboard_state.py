@@ -102,7 +102,7 @@ class DashboardState(rx.State):
                 for a in asesores
             ]
         except Exception as e:
-            print(f"Error cargando asesores: {e}")
+            pass  # print(f"Error cargando asesores: {e}") [OpSec Removed]
             self.advisor_options = []
     
     @rx.event(background=True)
@@ -162,7 +162,7 @@ class DashboardState(rx.State):
                 self.is_loading = False
                 
         except Exception as e:
-            print(f"Error cargando dashboard: {e}")
+            pass  # print(f"Error cargando dashboard: {e}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             async with self:

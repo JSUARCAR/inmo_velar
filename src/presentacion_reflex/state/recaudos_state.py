@@ -641,20 +641,20 @@ class RecaudosState(DocumentosStateMixin):
         - Tipo de concepto = Canon
         - Período = mes actual en español
         """
-        print("=" * 60)
-        print("[DEBUG] === INICIO generar_pagos_masivos ===")
-        print("=" * 60)
+        pass  # print("=" * 60) [OpSec Removed]
+        pass  # print("[DEBUG] === INICIO generar_pagos_masivos ===") [OpSec Removed]
+        pass  # print("=" * 60) [OpSec Removed]
         
         async with self:
             self.is_loading = True
             self.error_message = ""
         
         try:
-            print("[DEBUG] Creando repositorio...")
+            pass  # print("[DEBUG] Creando repositorio...") [OpSec Removed]
             repo = RepositorioRecaudoSQLite(db_manager)
             usuario_sistema = "admin"
             fecha_hoy = datetime.now().date().isoformat()
-            print(f"[DEBUG] Fecha hoy: {fecha_hoy}")
+            pass  # print(f"[DEBUG] Fecha hoy: {fecha_hoy}") [OpSec Removed]
             
             # Calcular período: YYYY-MM para BD, español para observaciones
             mes_actual = datetime.now().month
@@ -663,7 +663,7 @@ class RecaudosState(DocumentosStateMixin):
             meses_espanol = ["enero", "febrero", "marzo", "abril", "mayo", "junio",
                              "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
             periodo_display = f"{meses_espanol[mes_actual - 1]} de {anio_actual}"  # Para observaciones
-            print(f"[DEBUG] Periodo BD: {periodo_bd}, Display: {periodo_display}")
+            pass  # print(f"[DEBUG] Periodo BD: {periodo_bd}, Display: {periodo_display}") [OpSec Removed]
             
             # Obtener todos los contratos activos con su canon
             query = """
@@ -676,16 +676,16 @@ class RecaudosState(DocumentosStateMixin):
                 WHERE ca.ESTADO_CONTRATO_A = 'Activo'
             """
             
-            print("[DEBUG] Ejecutando query para obtener contratos activos...")
+            pass  # print("[DEBUG] Ejecutando query para obtener contratos activos...") [OpSec Removed]
             with db_manager.obtener_conexion() as conn:
                 cursor = db_manager.get_dict_cursor(conn)
                 cursor.execute(query)
                 contratos_activos = cursor.fetchall()
             
-            print(f"[DEBUG] Contratos activos encontrados: {len(contratos_activos)}")
+            pass  # print(f"[DEBUG] Contratos activos encontrados: {len(contratos_activos)}") [OpSec Removed]
             
             if not contratos_activos:
-                print("[DEBUG] No hay contratos activos - SALIENDO")
+                pass  # print("[DEBUG] No hay contratos activos - SALIENDO") [OpSec Removed]
                 async with self:
                     self.error_message = "No hay contratos activos para generar pagos"
                     self.is_loading = False
@@ -693,7 +693,7 @@ class RecaudosState(DocumentosStateMixin):
             
             # Mostrar detalle de contratos
             for i, c in enumerate(contratos_activos):
-                print(f"[DEBUG] Contrato {i+1}: ID={c.get('ID_CONTRATO_A')}, Canon={c.get('CANON_ARRENDAMIENTO')}")
+                pass  # print(f"[DEBUG] Contrato {i+1}: ID={c.get('ID_CONTRATO_A')}, Canon={c.get('CANON_ARRENDAMIENTO')}") [OpSec Removed]
             
             pagos_generados = 0
             errores = []
@@ -702,15 +702,15 @@ class RecaudosState(DocumentosStateMixin):
                 try:
                     id_contrato = contrato['ID_CONTRATO_A']
                     canon = contrato['CANON_ARRENDAMIENTO']
-                    print(f"[DEBUG] Procesando contrato {id_contrato} con canon {canon}")
+                    pass  # print(f"[DEBUG] Procesando contrato {id_contrato} con canon {canon}") [OpSec Removed]
                     
                     if not canon or canon <= 0:
-                        print(f"[DEBUG] Contrato {id_contrato}: Canon inválido ({canon})")
+                        pass  # print(f"[DEBUG] Contrato {id_contrato}: Canon inválido ({canon})") [OpSec Removed]
                         errores.append(f"Contrato {id_contrato}: Canon inválido")
                         continue
                     
                     # Crear entidad Recaudo
-                    print(f"[DEBUG] Creando entidad Recaudo para contrato {id_contrato}...")
+                    pass  # print(f"[DEBUG] Creando entidad Recaudo para contrato {id_contrato}...") [OpSec Removed]
                     recaudo = Recaudo(
                         id_recaudo=None,
                         id_contrato_a=id_contrato,
@@ -722,53 +722,53 @@ class RecaudosState(DocumentosStateMixin):
                         observaciones=f"Pago masivo generado - {periodo_display}",
                         created_by=usuario_sistema
                     )
-                    print(f"[DEBUG] Recaudo creado: {recaudo.__dict__}")
+                    pass  # print(f"[DEBUG] Recaudo creado: {recaudo.__dict__}") [OpSec Removed]
                     
                     # Crear concepto (Canon completo)
-                    print(f"[DEBUG] Creando concepto para contrato {id_contrato}...")
+                    pass  # print(f"[DEBUG] Creando concepto para contrato {id_contrato}...") [OpSec Removed]
                     concepto = RecaudoConcepto(
                         id_recaudo=None,
                         tipo_concepto="Canon",
                         periodo=periodo_bd,  # Usar formato YYYY-MM
                         valor=canon
                     )
-                    print(f"[DEBUG] Concepto creado: {concepto.__dict__}")
+                    pass  # print(f"[DEBUG] Concepto creado: {concepto.__dict__}") [OpSec Removed]
                     
-                    print(f"[DEBUG] Guardando en BD contrato {id_contrato}...")
+                    pass  # print(f"[DEBUG] Guardando en BD contrato {id_contrato}...") [OpSec Removed]
                     repo.crear(recaudo, [concepto], usuario_sistema)
-                    print(f"[DEBUG] Contrato {id_contrato} guardado exitosamente!")
+                    pass  # print(f"[DEBUG] Contrato {id_contrato} guardado exitosamente!") [OpSec Removed]
                     pagos_generados += 1
                     
                 except Exception as e:
-                    print(f"[DEBUG] ERROR en contrato {id_contrato}: {str(e)}")
+                    pass  # print(f"[DEBUG] ERROR en contrato {id_contrato}: {str(e)}") [OpSec Removed]
                     import traceback
                     traceback.print_exc()
                     errores.append(f"Contrato {id_contrato}: {str(e)}")
             
-            print(f"[DEBUG] Pagos generados: {pagos_generados}, Errores: {len(errores)}")
+            pass  # print(f"[DEBUG] Pagos generados: {pagos_generados}, Errores: {len(errores)}") [OpSec Removed]
             
             async with self:
                 self.is_loading = False
                 if errores:
                     self.error_message = f"Generados {pagos_generados} pagos. Errores: {len(errores)}"
-                    print(f"[DEBUG] Errores: {errores}")
+                    pass  # print(f"[DEBUG] Errores: {errores}") [OpSec Removed]
                 else:
                     self.error_message = ""
             
             # Mostrar toast de éxito
-            print(f"[DEBUG] Mostrando toast de éxito...")
+            pass  # print(f"[DEBUG] Mostrando toast de éxito...") [OpSec Removed]
             yield rx.toast.success(f"Se generaron {pagos_generados} pagos masivos exitosamente")
             
             # Recargar lista
-            print("[DEBUG] Recargando lista de recaudos...")
+            pass  # print("[DEBUG] Recargando lista de recaudos...") [OpSec Removed]
             yield RecaudosState.load_recaudos()
             
-            print("=" * 60)
-            print("[DEBUG] === FIN generar_pagos_masivos ===")
-            print("=" * 60)
+            pass  # print("=" * 60) [OpSec Removed]
+            pass  # print("[DEBUG] === FIN generar_pagos_masivos ===") [OpSec Removed]
+            pass  # print("=" * 60) [OpSec Removed]
                 
         except Exception as e:
-            print(f"[DEBUG] ERROR GENERAL: {str(e)}")
+            pass  # print(f"[DEBUG] ERROR GENERAL: {str(e)}") [OpSec Removed]
             import traceback
             traceback.print_exc()
             async with self:
