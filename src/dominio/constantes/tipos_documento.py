@@ -48,6 +48,14 @@ TIPOS_DOCUMENTO_MODULO: Dict[str, Dict[str, Any]] = {
     "RECIBO_PUBLICO": {
         "factura_servicio": {"label": "Factura Servicio", "tipos": [".pdf"], "max_size": 2*1024*1024},
         "comprobante_pago": {"label": "Comprobante de Pago", "tipos": [".pdf", ".jpg", ".png"], "max_size": 1*1024*1024}
+    },
+    "PROPIEDAD": {
+        "certificado_libertad": {"label": "Certificado de Libertad", "tipos": [".pdf"], "max_size": 5*1024*1024},
+        "escritura_publica": {"label": "Escritura Pública", "tipos": [".pdf"], "max_size": 20*1024*1024},
+        "fotos": {"label": "Fotografías", "tipos": [".jpg", ".png", ".jpeg", ".webp"], "max_size": 10*1024*1024, "multiple": True},
+        "video_recorrido": {"label": "Video Recorrido", "tipos": [".mp4"], "max_size": 50*1024*1024},
+        "impuesto_predial": {"label": "Impuesto Predial", "tipos": [".pdf"], "max_size": 5*1024*1024},
+        "mandato_administracion": {"label": "Contrato Mandato", "tipos": [".pdf"], "max_size": 5*1024*1024}
     }
 }
 

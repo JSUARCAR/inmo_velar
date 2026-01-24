@@ -134,3 +134,7 @@ app = rx.App()
 # Registrar páginas
 app.add_page(index, route="/", title="Inmobiliaria Velar - Migración")
 app.add_page(progreso_page, route="/progreso", title="Progreso de Migración")
+
+# Configurar API REST Externa
+from src.presentacion_reflex.api.documentos_api import documentos_router
+app.api.include_router(documentos_router)

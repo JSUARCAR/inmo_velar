@@ -19,6 +19,7 @@ def property_card(
     codigo_energia: str,
     codigo_agua: str,
     codigo_gas: str,
+    imagen_id: int,
     on_edit: callable,
     on_toggle_disponibilidad: callable,
 ) -> rx.Component:
@@ -31,25 +32,49 @@ def property_card(
         rx.vstack(
             # Header Area (Icon + Status)
             rx.hstack(
-                rx.center(
-                    rx.icon(
-                        rx.match(
-                            tipo.to(str),
-                            ("Apartamento", "building"),
-                            ("Casa", "home"),
-                            ("Bodega", "warehouse"),
-                            ("Local", "store"),
-                            ("Lote", "map"),
-                            "home"
+                rx.hover_card.root(
+                    rx.hover_card.trigger(
+                        rx.center(
+                            rx.icon(
+                                rx.match(
+                                    tipo.to(str),
+                                    ("Apartamento", "building"),
+                                    ("Casa", "home"),
+                                    ("Bodega", "warehouse"),
+                                    ("Local", "store"),
+                                    ("Lote", "map"),
+                                    "home"
+                                ),
+                                size=24,
+                                color="white",
+                            ),
+                            width="40px",
+                            height="40px",
+                            border_radius="12px",
+                            background="linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            box_shadow="0 4px 10px rgba(102, 126, 234, 0.3)",
+                            cursor="pointer",
                         ),
-                        size=24,
-                        color="white",
                     ),
-                    width="40px",
-                    height="40px",
-                    border_radius="12px",
-                    background="linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    box_shadow="0 4px 10px rgba(102, 126, 234, 0.3)",
+                    rx.hover_card.content(
+                        rx.cond(
+                            imagen_id,
+                            rx.image(
+                                src="http://localhost:8000/api/storage/" + imagen_id.to(str) + "/download",
+                                width="280px",
+                                height="200px",
+                                border_radius="8px",
+                                object_fit="cover",
+                                alt="Vista previa propiedad"
+                            ),
+                            rx.box(
+                                rx.text("Sin imagen", size="1", color="var(--gray-11)"),
+                                padding="2",
+                            )
+                        ),
+                        side="top",
+                        align="start", 
+                    ),
                 ),
                 rx.vstack(
                     rx.text(

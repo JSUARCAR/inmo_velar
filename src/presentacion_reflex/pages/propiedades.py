@@ -265,6 +265,7 @@ def propiedades_page() -> rx.Component:
                                             codigo_energia=prop["codigo_energia"],
                                             codigo_agua=prop["codigo_agua"],
                                             codigo_gas=prop["codigo_gas"],
+                                            imagen_id=prop["imagen_id"],
                                             on_edit=PropiedadesState.open_edit_modal,
                                             on_toggle_disponibilidad=PropiedadesState.toggle_disponibilidad,
                                         )

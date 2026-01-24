@@ -176,8 +176,16 @@ class ServicioPropiedades:
 
             
             # 3. Obtener items paginados
+            # Subquery para obtener la primera imagen (fotos)
+            # Asume tabla DOCUMENTOS con columnas ENTIDAD_TIPO, ENTIDAD_ID, TIPO_DOCUMENTO/MIME_TYPE
             query = f"""
-                SELECT p.*
+                SELECT p.*,
+                (SELECT ID FROM DOCUMENTOS d 
+                 WHERE d.ENTIDAD_TIPO = 'PROPIEDAD' 
+                 AND d.ENTIDAD_ID = CAST(p.ID_PROPIEDAD AS TEXT) 
+                 AND d.MIME_TYPE LIKE 'image/%%' 
+                 AND d.ES_VIGENTE = '1' 
+                 ORDER BY d.ID ASC LIMIT 1) as IMAGEN_PRINCIPAL_ID
                 FROM PROPIEDADES p
                 {where_clause}
                 ORDER BY p.MATRICULA_INMOBILIARIA
@@ -191,7 +199,15 @@ class ServicioPropiedades:
             rows = cursor.fetchall()
             
             # Use Repository's mapper which handles keys correctly
-            items = [self.repo._row_to_entity(row) for row in rows]
+            items = []
+            for row in rows:
+                p = self.repo._row_to_entity(row)
+                # Populate transient field for UI
+                # Check for both upper and lower case key depending on driver
+                img_id = row.get('IMAGEN_PRINCIPAL_ID') or row.get('imagen_principal_id')
+                if img_id:
+                    p.imagen_principal_id = img_id
+                items.append(p)
             
             return PaginatedResult(
                 items=items,

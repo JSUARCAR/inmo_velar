@@ -2,9 +2,10 @@ import reflex as rx
 from typing import Optional, Dict, Any, List
 from src.infraestructura.persistencia.database import db_manager
 from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
+from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 
 
-class PropiedadesState(rx.State):
+class PropiedadesState(DocumentosStateMixin):
     """
     Estado para gestión de propiedades.
     Maneja paginación, filtros avanzados y CRUD operations.
@@ -43,8 +44,11 @@ class PropiedadesState(rx.State):
     
     # Wizard state
     modal_step: int = 1
-    total_steps: int = 3
+    total_steps: int = 4
     form_validation_errors: Dict[str, str] = {}
+    
+    # Documentos
+    current_entidad_tipo: str = "PROPIEDAD"
     
     def on_load(self):
         """Carga inicial al montar la página."""
@@ -164,6 +168,7 @@ class PropiedadesState(rx.State):
                     "codigo_energia": getattr(p, 'codigo_energia', ""),
                     "codigo_agua": getattr(p, 'codigo_agua', ""),
                     "codigo_gas": getattr(p, 'codigo_gas', ""),
+                    "imagen_id": getattr(p, 'imagen_principal_id', None),
                 }
                 for p in result.items
             ]
@@ -279,6 +284,11 @@ class PropiedadesState(rx.State):
         self.show_modal = True
         self.error_message = ""
         self.reset_wizard()
+        # Reset documentos config
+        self.current_entidad_id = ""
+        self.current_entidad_tipo = "PROPIEDAD"
+        self.documentos = []
+        self.upload_progress = 0
     
     def open_edit_modal(self, id_propiedad: int):
         """Abre modal para editar propiedad existente."""
@@ -323,6 +333,12 @@ class PropiedadesState(rx.State):
                 self.show_modal = True
                 self.error_message = ""
                 self.reset_wizard()
+                
+                # Cargar documentos
+                self.current_entidad_id = str(propiedad.id_propiedad)
+                self.current_entidad_tipo = "PROPIEDAD"
+                self.cargar_documentos()
+
         except Exception as e:
             print(f"Error cargando propiedad: {e}")
             self.error_message = f"Error al cargar propiedad: {str(e)}"

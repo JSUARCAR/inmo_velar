@@ -78,3 +78,6 @@ class Propiedad:
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
+
+    # Transient / UI
+    imagen_principal_id: Optional[int] = None

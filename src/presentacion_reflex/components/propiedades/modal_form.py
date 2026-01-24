@@ -342,6 +342,63 @@ def step_3_content() -> rx.Component:
         width="100%",
     )
 
+from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+
+def step_4_content() -> rx.Component:
+    """Paso 4: Documentos y Multimedia"""
+    return rx.vstack(
+        rx.cond(
+            PropiedadesState.is_editing,
+            rx.vstack(
+                rx.text(
+                    "Gestionar Documentos y Multimedia", 
+                    size="3", 
+                    weight="bold", 
+                    color="var(--accent-9)"
+                ),
+                rx.text(
+                    "Cargue escritura, libertad, fotos y video.", 
+                    size="2", 
+                    color="var(--gray-10)"
+                ),
+                document_manager_elite(
+                    state_class=PropiedadesState,
+                    max_files=15, # Permitir más fotos
+                    allow_multiple=True
+                ),
+                spacing="4",
+                width="100%",
+            ),
+            # Mensaje para modo creación
+            rx.center(
+                rx.vstack(
+                     rx.icon("save", size=48, color="var(--gray-8)"),
+                     rx.text(
+                         "Guarde la propiedad para habilitar carga", 
+                         weight="bold", 
+                         size="4",
+                         color="var(--gray-11)"
+                     ),
+                     rx.text(
+                         "Primero debe finalizar el registro básico. Luego podrá editar la propiedad para cargar fotos y documentos.",
+                         text_align="center",
+                         color="var(--gray-10)",
+                     ),
+                     spacing="4",
+                     align="center",
+                     max_width="400px",
+                ),
+                height="300px",
+                width="100%",
+                border="2px dashed var(--gray-6)",
+                border_radius="16px",
+                background="var(--gray-2)",
+            )
+        ),
+        width="100%",
+        padding="4",
+    )
+
 def modal_propiedad() -> rx.Component:
     return rx.dialog.root(
         rx.dialog.content(
@@ -385,6 +442,7 @@ def modal_propiedad() -> rx.Component:
                         rx.cond(PropiedadesState.modal_step == 1, step_1_content()),
                         rx.cond(PropiedadesState.modal_step == 2, step_2_content()),
                         rx.cond(PropiedadesState.modal_step == 3, step_3_content()),
+                        rx.cond(PropiedadesState.modal_step == 4, step_4_content()),
                         padding_y="2",
                     ),
                     type="always",
@@ -432,7 +490,7 @@ def modal_propiedad() -> rx.Component:
                                     "color": "white",
                                 },
                             ),
-                            # Save Button on last step
+                            # Save Button always visible on last step
                             rx.button(
                                 "Guardar Propiedad",
                                 rx.icon("save", size=16),
