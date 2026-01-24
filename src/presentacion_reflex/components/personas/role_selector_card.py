@@ -27,7 +27,7 @@ def role_selector_card(rol: str) -> rx.Component:
             "description": "Garante de contrato"
         },
         "Proveedor": {
-            "icon": "tool",
+            "icon": "wrench",
             "color": "cyan",
             "description": "Proveedor de servicios"
         },
@@ -65,7 +65,7 @@ def role_selector_card(rol: str) -> rx.Component:
                 # Check icon when selected
                 rx.cond(
                     is_selected,
-                    rx.icon("check-circle", size=20, color=f"var(--{config['color']}-9)"),
+                    rx.icon("circle-check", size=20, color=f"var(--{config['color']}-9)"),
                     rx.box(
                         width="20px",
                         height="20px",

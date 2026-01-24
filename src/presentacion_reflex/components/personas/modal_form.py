@@ -145,7 +145,7 @@ def proveedor_fields() -> rx.Component:
             rx.text("Información Profesional", size="3", weight="bold", color="var(--cyan-11)"),
             spacing="2",
         ),
-        form_field("Especialidad", "especialidad", "Ej: Plomería, Electricidad", default_value=PersonasState.form_data["especialidad"], icon="tool"),
+        form_field("Especialidad", "especialidad", "Ej: Plomería, Electricidad", default_value=PersonasState.form_data["especialidad"], icon="wrench"),
         form_field("Calificación (1-5)", "calificacion", "Ej: 5", type="number", default_value=PersonasState.form_data["calificacion"], icon="star"),
         form_textarea("Observaciones", "observaciones", "Ej: Disponible fines de semana", default_value=PersonasState.form_data["observaciones"]),
         spacing="3",
@@ -255,7 +255,7 @@ def step_3_role_details() -> rx.Component:
             # No roles selected message
             rx.center(
                 rx.vstack(
-                    rx.icon("alert-circle", size=32, color="var(--gray-8)"),
+                    rx.icon("circle-alert", size=32, color="var(--gray-8)"),
                     rx.text("No hay roles seleccionados", size="3", weight="medium", color="var(--gray-11)"),
                     rx.text("Selecciona al menos un rol en el paso anterior", size="2", color="var(--gray-10)"),
                     spacing="2",
@@ -303,7 +303,7 @@ def modal_persona() -> rx.Component:
                     PersonasState.error_message != "",
                     rx.callout(
                         PersonasState.error_message,
-                        icon="triangle_alert",
+                        icon="triangle-alert",
                         color_scheme="red",
                         role="alert",
                         width="100%",

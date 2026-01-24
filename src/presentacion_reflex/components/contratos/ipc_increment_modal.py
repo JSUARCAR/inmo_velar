@@ -21,7 +21,7 @@ def ipc_increment_modal() -> rx.Component:
                 ContratosState.error_message != "",
                 rx.callout(
                     ContratosState.error_message,
-                    icon="alert-circle",
+                    icon="circle-alert",
                     color="red",
                     margin_bottom="1rem"
                 )

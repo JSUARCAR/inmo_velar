@@ -96,7 +96,7 @@ def modal_form() -> rx.Component:
                                 on_change=IncidentesState.set_prioridad,
                                 width="100%"
                             ),
-                            icon="alert-circle"
+                            icon="circle-alert"
                         ),
                         _form_field(
                             "Responsable de Pago (Sugerido)",

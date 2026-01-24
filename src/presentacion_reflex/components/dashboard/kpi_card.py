@@ -22,7 +22,7 @@ def kpi_card(
     Args:
         titulo: Título del KPI (ej: "Cartera en Mora")
         valor: Valor principal a mostrar (ej: "$1,500,000")
-        icono: Nombre del icono de Lucide (ej: "alert-circle")
+        icono: Nombre del icono de Lucide (ej: "circle-alert")
         color_icono: Color del icono (blue, green, red, amber, etc.)
         subtitulo: Texto descriptivo adicional
         es_critico: Si es True, muestra fondo rojo de alerta

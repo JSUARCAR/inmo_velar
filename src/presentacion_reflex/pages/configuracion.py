@@ -440,7 +440,7 @@ def system_tab_content() -> rx.Component:
                                             size="2",
                                             variant="soft"
                                         ),
-                                        rx.icon("edit-2", size=14, color="#cbd5e1")
+                                        rx.icon("pencil", size=14, color="#cbd5e1")
                                     ),
                                     rx.text(param.valor_parametro, weight="bold", font_family="monospace")
                                 )
@@ -448,7 +448,7 @@ def system_tab_content() -> rx.Component:
                             rx.table.cell(
                                 rx.cond(
                                     param.modificable == 1,
-                                    rx.icon("unlock", size=16, color="#10b981", tooltip="Editable"),
+                                    rx.icon("lock-open", size=16, color="#10b981", tooltip="Editable"),
                                     rx.icon("lock", size=16, color="#ef4444", tooltip="Solo Lectura de Sistema")
                                 )
                             ),
