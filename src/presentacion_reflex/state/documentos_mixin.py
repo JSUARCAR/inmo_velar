@@ -110,3 +110,18 @@ class DocumentosStateMixin(rx.State):
             yield rx.toast.success("Documento eliminado")
         except Exception as e:
              yield rx.toast.error(f"Error eliminando documento: {str(e)}")
+
+    @rx.event
+    def descargar_documento(self, id_documento: int):
+        """Descarga un documento."""
+        try:
+            doc = servicio_documental.descargar_documento(id_documento)
+            if doc and doc.contenido:
+                return rx.download(
+                    data=doc.contenido,
+                    filename=doc.nombre_archivo
+                )
+            else:
+                return rx.toast.error("No se pudo obtener el contenido del documento")
+        except Exception as e:
+            return rx.toast.error(f"Error al descargar: {str(e)}")
