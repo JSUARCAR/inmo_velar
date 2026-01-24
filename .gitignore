@@ -67,3 +67,6 @@ Desktop.ini
 temp_*
 tmp/
 *.tmp
+
+# Generados por la app
+documentos_generados/
