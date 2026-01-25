@@ -194,3 +194,13 @@ class RepositorioAsesorSQLite:
 
         conn.commit()
         return cursor.rowcount > 0
+
+    def eliminar_por_persona(self, id_persona: int) -> bool:
+        """Elimina físicamente el registro de asesor asociado a una persona."""
+        conn = self.db.obtener_conexion()
+        cursor = conn.cursor()
+        placeholder = self.db.get_placeholder()
+
+        cursor.execute(f"DELETE FROM ASESORES WHERE ID_PERSONA = {placeholder}", (id_persona,))
+        conn.commit()
+        return cursor.rowcount > 0

@@ -99,26 +99,144 @@ class RepositorioPropiedadSQLite:
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
-    def listar_disponibles(self) -> List[Propiedad]:
-        """Lista todas las propiedades disponibles."""
+    def listar_con_filtros(
+        self,
+        filtro_tipo: Optional[str] = None,
+        filtro_disponibilidad: Optional[int] = None,
+        filtro_municipio: Optional[int] = None,
+        solo_activas: bool = True,
+        busqueda: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: int = 0
+    ) -> List[Propiedad]:
+        """Lista propiedades con filtros aplicados."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        # CAMBIO: SQL Compatible Postgres/SQLite
-        # booleanos deben compararse con True/False en Python que el driver adaptará
-        # (psycopg2 adapta True -> true, sqlite3 adapta True -> 1)
-        cursor.execute(
-            f"""
-            SELECT * FROM PROPIEDADES 
-            WHERE DISPONIBILIDAD_PROPIEDAD = {placeholder} 
-              AND ESTADO_REGISTRO = {placeholder}
-            ORDER BY MATRICULA_INMOBILIARIA
-            """,
-            (True, True),
-        )
+        query = """
+            SELECT p.*,
+            (SELECT ID FROM DOCUMENTOS d 
+             WHERE d.ENTIDAD_TIPO = 'PROPIEDAD' 
+             AND d.ENTIDAD_ID = CAST(p.ID_PROPIEDAD AS TEXT) 
+             AND d.MIME_TYPE LIKE 'image/%%' 
+             AND d.ES_VIGENTE = '1' 
+             ORDER BY d.ID ASC LIMIT 1) as IMAGEN_PRINCIPAL_ID
+            FROM PROPIEDADES p
+        """
 
-        return [self._row_to_entity(row) for row in cursor.fetchall()]
+        conditions = []
+        params = []
+
+        if filtro_tipo and filtro_tipo != "Todos":
+            conditions.append(f"p.TIPO_PROPIEDAD = {placeholder}")
+            params.append(filtro_tipo)
+
+        if filtro_disponibilidad is not None:
+            conditions.append(f"p.DISPONIBILIDAD_PROPIEDAD = {placeholder}")
+            params.append(bool(filtro_disponibilidad))
+
+        if filtro_municipio:
+            conditions.append(f"p.ID_MUNICIPIO = {placeholder}")
+            params.append(filtro_municipio)
+
+        if solo_activas:
+            conditions.append(f"p.ESTADO_REGISTRO = {placeholder}")
+            params.append(True)
+
+        if busqueda:
+            conditions.append(
+                f"(p.MATRICULA_INMOBILIARIA LIKE {placeholder} OR p.DIRECCION_PROPIEDAD LIKE {placeholder})"
+            )
+            busqueda_param = f"%{busqueda}%"
+            params.extend([busqueda_param, busqueda_param])
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY p.MATRICULA_INMOBILIARIA"
+
+        if limit is not None:
+            query += f" LIMIT {placeholder} OFFSET {placeholder}"
+            params.extend([limit, offset])
+
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+
+        propiedades = []
+        for row in rows:
+            p = self._row_to_entity(row)
+            img_id = row.get("IMAGEN_PRINCIPAL_ID") or row.get("imagen_principal_id")
+            if img_id:
+                p.imagen_principal_id = img_id
+            propiedades.append(p)
+
+        return propiedades
+
+    def contar_con_filtros(
+        self,
+        filtro_tipo: Optional[str] = None,
+        filtro_disponibilidad: Optional[int] = None,
+        filtro_municipio: Optional[int] = None,
+        solo_activas: bool = True,
+        busqueda: Optional[str] = None
+    ) -> int:
+        """Cuenta total de propiedades con filtros."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        query = "SELECT COUNT(*) as TOTAL FROM PROPIEDADES p"
+        conditions = []
+        params = []
+
+        if filtro_tipo and filtro_tipo != "Todos":
+            conditions.append(f"p.TIPO_PROPIEDAD = {placeholder}")
+            params.append(filtro_tipo)
+
+        if filtro_disponibilidad is not None:
+            conditions.append(f"p.DISPONIBILIDAD_PROPIEDAD = {placeholder}")
+            params.append(bool(filtro_disponibilidad))
+
+        if filtro_municipio:
+            conditions.append(f"p.ID_MUNICIPIO = {placeholder}")
+            params.append(filtro_municipio)
+
+        if solo_activas:
+            conditions.append(f"p.ESTADO_REGISTRO = {placeholder}")
+            params.append(True)
+
+        if busqueda:
+            conditions.append(
+                f"(p.MATRICULA_INMOBILIARIA LIKE {placeholder} OR p.DIRECCION_PROPIEDAD LIKE {placeholder})"
+            )
+            busqueda_param = f"%{busqueda}%"
+            params.extend([busqueda_param, busqueda_param])
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        cursor.execute(query, params)
+        row = cursor.fetchone()
+        if row:
+            # Soporte robusto para sqlite3.Row (acceso key/index) y dict (Postgres wrapper, keys may be Upper)
+            # Primero intentar acceso por llave estándar (TOTAL)
+            try:
+                return row["TOTAL"]
+            except (KeyError, TypeError):
+                # Fallbacks
+                try:
+                    return row["total"]
+                except (KeyError, TypeError):
+                    # Si es dict y no tiene las llaves, devolver primer value
+                    if isinstance(row, dict):
+                        return list(row.values())[0] if row else 0
+                    # Si es tupla o sqlite3.Row, acceso por índice
+                    try:
+                        return row[0]
+                    except (IndexError, TypeError):
+                        pass
+        return 0
 
     def listar_sin_mandato(self) -> List[dict]:
         """Retorna propiedades que no tienen mandato activo."""

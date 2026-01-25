@@ -4,7 +4,7 @@ Implementa persistencia para pagos recibidos de inquilinos.
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 
 from src.dominio.entidades.recaudo import Recaudo
 from src.dominio.entidades.recaudo_concepto import RecaudoConcepto
@@ -326,3 +326,120 @@ class RepositorioRecaudoSQLite:
         )
 
         conn.commit()
+
+    def listar_paginado(
+        self,
+        limit: int,
+        offset: int,
+        estado: Optional[str] = None,
+        fecha_desde: Optional[str] = None,
+        fecha_hasta: Optional[str] = None,
+        busqueda: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Lista recaudos con paginación y filtros complejos."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        base_from = """
+            FROM RECAUDOS r
+            JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
+            JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+        """
+
+        conditions = []
+        query_params = []
+
+        if estado and estado != "Todos":
+            conditions.append(f"r.ESTADO_RECAUDO = {placeholder}")
+            query_params.append(estado)
+
+        if fecha_desde:
+            conditions.append(f"r.FECHA_PAGO >= {placeholder}")
+            query_params.append(fecha_desde)
+
+        if fecha_hasta:
+            conditions.append(f"r.FECHA_PAGO <= {placeholder}")
+            query_params.append(fecha_hasta)
+
+        if busqueda:
+            conditions.append(
+                f"(r.REFERENCIA_BANCARIA LIKE {placeholder} OR p.DIRECCION_PROPIEDAD LIKE {placeholder} OR CAST(r.ID_RECAUDO AS TEXT) LIKE {placeholder})"
+            )
+            term = f"%{busqueda}%"
+            query_params.extend([term, term, term])
+
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+
+        query = f"""
+            SELECT 
+                r.ID_RECAUDO, r.FECHA_PAGO, r.ESTADO_RECAUDO, r.VALOR_TOTAL, r.METODO_PAGO,
+                p.DIRECCION_PROPIEDAD
+            {base_from} {where_clause}
+            ORDER BY r.FECHA_PAGO DESC, r.ID_RECAUDO DESC
+            LIMIT {placeholder} OFFSET {placeholder}
+        """
+
+        cursor.execute(query, query_params + [limit, offset])
+        return [
+            {
+                "id": row["ID_RECAUDO"],
+                "fecha": row["FECHA_PAGO"],
+                "estado": row["ESTADO_RECAUDO"],
+                "valor": row["VALOR_TOTAL"],
+                "metodo": row["METODO_PAGO"],
+                "contrato": row["DIRECCION_PROPIEDAD"]
+            }
+            for row in cursor.fetchall()
+        ]
+
+    def contar_con_filtros(
+        self,
+        estado: Optional[str] = None,
+        fecha_desde: Optional[str] = None,
+        fecha_hasta: Optional[str] = None,
+        busqueda: Optional[str] = None
+    ) -> int:
+        """Cuenta total de recaudos filtrados."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        base_from = """
+            FROM RECAUDOS r
+            JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
+            JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+        """
+
+        conditions = []
+        query_params = []
+
+        if estado and estado != "Todos":
+            conditions.append(f"r.ESTADO_RECAUDO = {placeholder}")
+            query_params.append(estado)
+
+        if fecha_desde:
+            conditions.append(f"r.FECHA_PAGO >= {placeholder}")
+            query_params.append(fecha_desde)
+
+        if fecha_hasta:
+            conditions.append(f"r.FECHA_PAGO <= {placeholder}")
+            query_params.append(fecha_hasta)
+
+        if busqueda:
+            conditions.append(
+                f"(r.REFERENCIA_BANCARIA LIKE {placeholder} OR p.DIRECCION_PROPIEDAD LIKE {placeholder} OR CAST(r.ID_RECAUDO AS TEXT) LIKE {placeholder})"
+            )
+            term = f"%{busqueda}%"
+            query_params.extend([term, term, term])
+
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+        query = f"SELECT COUNT(*) AS total {base_from} {where_clause}"
+
+        cursor.execute(query, query_params)
+        row = cursor.fetchone()
+        if row:
+            if hasattr(row, "keys"):
+                return row["total"]
+            return row[0]
+        return 0

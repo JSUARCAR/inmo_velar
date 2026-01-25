@@ -183,3 +183,13 @@ class RepositorioPropietarioSQLite:
 
             conn.commit()
             return cursor.rowcount > 0
+
+    def eliminar_por_persona(self, id_persona: int) -> bool:
+        """Elimina físicamente el registro de propietario asociado a una persona."""
+        with self.db.obtener_conexion() as conn:
+            cursor = conn.cursor()
+            placeholder = self.db.get_placeholder()
+
+            cursor.execute(f"DELETE FROM PROPIETARIOS WHERE ID_PERSONA = {placeholder}", (id_persona,))
+            conn.commit()
+            return cursor.rowcount > 0

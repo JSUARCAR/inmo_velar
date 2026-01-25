@@ -4,7 +4,7 @@ Implementa persistencia para estados de cuenta del propietario.
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 
 from src.dominio.entidades.liquidacion import Liquidacion
 from src.infraestructura.persistencia.database import DatabaseManager
@@ -892,5 +892,144 @@ class RepositorioLiquidacionSQLite:
 
         affected = cursor.rowcount
         conn.commit()
-
         return affected
+
+    def listar_paginado(
+        self,
+        limit: int,
+        offset: int,
+        estado: Optional[str] = None,
+        periodo: Optional[str] = None,
+        busqueda: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """Lista liquidaciones con paginación y filtros complejos."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        base_from = """
+            FROM LIQUIDACIONES l
+            JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+            JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+            JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
+            JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+        """
+
+        conditions = []
+        query_params = []
+
+        if estado and estado != "Todos":
+            conditions.append(f"l.ESTADO_LIQUIDACION = {placeholder}")
+            query_params.append(estado)
+
+        if periodo:
+            conditions.append(f"l.PERIODO LIKE {placeholder}")
+            query_params.append(f"%{periodo}%")
+
+        if busqueda:
+            conditions.append(
+                f"(p.DIRECCION_PROPIEDAD LIKE {placeholder} OR per.NOMBRE_COMPLETO LIKE {placeholder} OR per.NUMERO_DOCUMENTO LIKE {placeholder} OR CAST(l.ID_CONTRATO_M AS TEXT) LIKE {placeholder})"
+            )
+            term = f"%{busqueda}%"
+            query_params.extend([term, term, term, term])
+
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+
+        query = f"""
+            SELECT 
+                l.ID_LIQUIDACION, l.PERIODO, l.ESTADO_LIQUIDACION, l.CANON_BRUTO,
+                l.OTROS_INGRESOS, l.COMISION_MONTO, l.IVA_COMISION, l.IMPUESTO_4X1000,
+                l.GASTOS_ADMINISTRACION, l.GASTOS_SERVICIOS, l.GASTOS_REPARACIONES, l.OTROS_EGRESOS,
+                p.DIRECCION_PROPIEDAD
+            {base_from} {where_clause}
+            ORDER BY l.PERIODO DESC, l.ID_LIQUIDACION DESC
+            LIMIT {placeholder} OFFSET {placeholder}
+        """
+
+        cursor.execute(query, query_params + [limit, offset])
+
+        items = []
+        for row in cursor.fetchall():
+            ingresos = (row["CANON_BRUTO"] or 0) + (row["OTROS_INGRESOS"] or 0)
+            egresos = (
+                (row["COMISION_MONTO"] or 0)
+                + (row["IVA_COMISION"] or 0)
+                + (row["IMPUESTO_4X1000"] or 0)
+                + (row["GASTOS_ADMINISTRACION"] or 0)
+                + (row["GASTOS_SERVICIOS"] or 0)
+                + (row["GASTOS_REPARACIONES"] or 0)
+                + (row["OTROS_EGRESOS"] or 0)
+            )
+            items.append(
+                {
+                    "id": row["ID_LIQUIDACION"],
+                    "periodo": row["PERIODO"],
+                    "estado": row["ESTADO_LIQUIDACION"],
+                    "canon": row["CANON_BRUTO"],
+                    "neto": ingresos - egresos,
+                    "contrato": row["DIRECCION_PROPIEDAD"],
+                }
+            )
+        return items
+
+    def contar_con_filtros(
+        self,
+        estado: Optional[str] = None,
+        periodo: Optional[str] = None,
+        busqueda: Optional[str] = None,
+    ) -> int:
+        """Cuenta total de liquidaciones filtradas."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        base_from = """
+            FROM LIQUIDACIONES l
+            JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+            JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+            JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
+            JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+        """
+
+        conditions = []
+        query_params = []
+
+        if estado and estado != "Todos":
+            conditions.append(f"l.ESTADO_LIQUIDACION = {placeholder}")
+            query_params.append(estado)
+
+        if periodo:
+            conditions.append(f"l.PERIODO LIKE {placeholder}")
+            query_params.append(f"%{periodo}%")
+
+        if busqueda:
+            conditions.append(
+                f"(p.DIRECCION_PROPIEDAD LIKE {placeholder} OR per.NOMBRE_COMPLETO LIKE {placeholder} OR per.NUMERO_DOCUMENTO LIKE {placeholder} OR CAST(l.ID_CONTRATO_M AS TEXT) LIKE {placeholder})"
+            )
+            term = f"%{busqueda}%"
+            query_params.extend([term, term, term, term])
+
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+        query = f"SELECT COUNT(*) as TOTAL {base_from} {where_clause}"
+
+        cursor.execute(query, query_params)
+        row = cursor.fetchone()
+        if row:
+            # Soporte robusto para sqlite3.Row (acceso key/index) y dict (Postgres wrapper/Uppercase)
+            try:
+                # Intento 1: Alias explícito (Uppercase común en Postgres wrapper)
+                return row["TOTAL"]
+            except (KeyError, TypeError):
+                try:
+                    # Intento 2: Lowercase (SQLite dict factory a veces)
+                    return row["total"]
+                except (KeyError, TypeError):
+                    # Intento 3: Index access (sqlite3.Row o Tuple)
+                    try:
+                        return row[0]
+                    except (IndexError, TypeError):
+                        pass
+                    # Intento 4: Primer valor de dict (si las keys son raras)
+                    if isinstance(row, dict):
+                        return list(row.values())[0] if row else 0
+        return 0

@@ -79,21 +79,143 @@ class RepositorioPersonaSQLite:
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
-    def listar_activos(self) -> List[Persona]:
-        """Lista todas las personas activas."""
+    def obtener_todos(
+        self,
+        filtro_rol: Optional[str] = None,
+        solo_activos: bool = True,
+        busqueda: Optional[str] = None,
+        fecha_inicio: Optional[str] = None,
+        fecha_fin: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: int = 0,
+    ) -> List[Persona]:
+        """Obtiene personas con filtros y paginación."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
-        self.db.get_placeholder()
+        placeholder = self.db.get_placeholder()
 
-        cursor.execute(
-            """
-            SELECT * FROM PERSONAS 
-            WHERE ESTADO_REGISTRO = TRUE
-            ORDER BY NOMBRE_COMPLETO
-            """
-        )
+        query = "SELECT DISTINCT p.* FROM PERSONAS p"
+        join_clause = ""
+        if filtro_rol:
+            if filtro_rol == "Propietario":
+                join_clause = " INNER JOIN PROPIETARIOS pr ON p.ID_PERSONA = pr.ID_PERSONA"
+            elif filtro_rol == "Arrendatario":
+                join_clause = " INNER JOIN ARRENDATARIOS ar ON p.ID_PERSONA = ar.ID_PERSONA"
+            elif filtro_rol == "Codeudor":
+                join_clause = " INNER JOIN CODEUDORES co ON p.ID_PERSONA = co.ID_PERSONA"
+            elif filtro_rol == "Asesor":
+                join_clause = " INNER JOIN ASESORES ase ON p.ID_PERSONA = ase.ID_PERSONA"
+            elif filtro_rol == "Proveedor":
+                join_clause = " INNER JOIN PROVEEDORES prov ON p.ID_PERSONA = prov.ID_PERSONA"
+        
+        query += join_clause
+        conditions = []
+        params = []
 
+        if solo_activos:
+            conditions.append("p.ESTADO_REGISTRO = TRUE")
+
+        if busqueda:
+            conditions.append(
+                f"(p.NOMBRE_COMPLETO LIKE {placeholder} OR p.NUMERO_DOCUMENTO LIKE {placeholder})"
+            )
+            busqueda_param = f"%{busqueda}%"
+            params.extend([busqueda_param, busqueda_param])
+
+        if fecha_inicio:
+            conditions.append(f"DATE(p.CREATED_AT) >= {placeholder}")
+            params.append(fecha_inicio)
+
+        if fecha_fin:
+            conditions.append(f"DATE(p.CREATED_AT) <= {placeholder}")
+            params.append(fecha_fin)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY p.NOMBRE_COMPLETO"
+
+        if limit is not None:
+            query += f" LIMIT {placeholder} OFFSET {placeholder}"
+            params.extend([limit, offset])
+
+        cursor.execute(query, params)
         return [self._row_to_entity(row) for row in cursor.fetchall()]
+
+    def contar_todos(
+        self,
+        filtro_rol: Optional[str] = None,
+        solo_activos: bool = True,
+        busqueda: Optional[str] = None,
+        fecha_inicio: Optional[str] = None,
+        fecha_fin: Optional[str] = None,
+    ) -> int:
+        """Cuenta total de personas con filtros."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        # Usar alias TOTAL en mayúsculas para consistencia
+        query = "SELECT COUNT(DISTINCT p.ID_PERSONA) as TOTAL FROM PERSONAS p"
+        join_clause = ""
+        if filtro_rol:
+            if filtro_rol == "Propietario":
+                join_clause = " INNER JOIN PROPIETARIOS pr ON p.ID_PERSONA = pr.ID_PERSONA"
+            elif filtro_rol == "Arrendatario":
+                join_clause = " INNER JOIN ARRENDATARIOS ar ON p.ID_PERSONA = ar.ID_PERSONA"
+            elif filtro_rol == "Codeudor":
+                join_clause = " INNER JOIN CODEUDORES co ON p.ID_PERSONA = co.ID_PERSONA"
+            elif filtro_rol == "Asesor":
+                join_clause = " INNER JOIN ASESORES ase ON p.ID_PERSONA = ase.ID_PERSONA"
+            elif filtro_rol == "Proveedor":
+                join_clause = " INNER JOIN PROVEEDORES prov ON p.ID_PERSONA = prov.ID_PERSONA"
+        
+        query += join_clause
+        conditions = []
+        params = []
+
+        if solo_activos:
+            conditions.append("p.ESTADO_REGISTRO = TRUE")
+
+        if busqueda:
+            conditions.append(
+                f"(p.NOMBRE_COMPLETO LIKE {placeholder} OR p.NUMERO_DOCUMENTO LIKE {placeholder})"
+            )
+            busqueda_param = f"%{busqueda}%"
+            params.extend([busqueda_param, busqueda_param])
+
+        if fecha_inicio:
+            conditions.append(f"DATE(p.CREATED_AT) >= {placeholder}")
+            params.append(fecha_inicio)
+
+        if fecha_fin:
+            conditions.append(f"DATE(p.CREATED_AT) <= {placeholder}")
+            params.append(fecha_fin)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        cursor.execute(query, params)
+        row = cursor.fetchone()
+        if row:
+            # Soporte robusto para sqlite3.Row (acceso key/index) y dict (Postgres wrapper/Uppercase)
+            try:
+                # Intento 1: Alias explícito (Uppercase común en Postgres wrapper)
+                return row["TOTAL"]
+            except (KeyError, TypeError):
+                try:
+                    # Intento 2: Lowercase (SQLite dict factory a veces)
+                    return row["total"]
+                except (KeyError, TypeError):
+                    # Intento 3: Index access (sqlite3.Row o Tuple)
+                    try:
+                        return row[0]
+                    except (IndexError, TypeError):
+                        pass
+                    # Intento 4: Primer valor de dict (si las keys son raras)
+                    if isinstance(row, dict):
+                        return list(row.values())[0] if row else 0
+        return 0
 
     def crear(self, persona: Persona, usuario_sistema: str) -> Persona:
         """Crea una nueva persona en la BD."""
