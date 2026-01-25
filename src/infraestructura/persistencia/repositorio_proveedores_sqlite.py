@@ -123,3 +123,13 @@ class RepositorioProveedoresSQLite(RepositorioProveedores):
             cursor = conn.cursor()
             cursor.execute(query, (id_proveedor,))
             conn.commit()
+
+    def eliminar_por_persona(self, id_persona: int) -> bool:
+        """Elimina físicamente el registro de proveedor asociado a una persona."""
+        placeholder = self.db.get_placeholder()
+        query = f"DELETE FROM PROVEEDORES WHERE ID_PERSONA = {placeholder}"
+        with self.db.obtener_conexion() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (id_persona,))
+            conn.commit()
+            return cursor.rowcount > 0
