@@ -4,8 +4,16 @@ Wrappers para gráficos usando Recharts con datos del estado.
 """
 
 import reflex as rx
+from reflex.vars.base import Var
+from src.presentacion_reflex.utils.formatters import format_currency
 
 from src.presentacion_reflex.state.dashboard_state import DashboardState
+
+# Formateador nativo JS para tooltips (usando formato alemán para separador de miles por punto)
+# Reemplaza el símbolo de moneda de DE para mantener consistencia con el estilo local
+js_number_formatter = Var(
+    _js_expr='(value) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value).replace("$\xa0", "$")'
+)
 
 
 def vencimientos_chart() -> rx.Component:
@@ -30,16 +38,14 @@ def vencimientos_chart() -> rx.Component:
                         stroke_dasharray="3 3", vertical=False, stroke="#f1f5f9"
                     ),
                     rx.recharts.tooltip(
-                        cursor={"fill": "rgba(0,0,0,0.04)"},
+                        cursor={"stroke": "#e2e8f0", "strokeWidth": 1},
                         content_style={
-                            "backgroundColor": "#1e293b",
-                            "borderRadius": "12px",
+                            "backgroundColor": "rgba(15, 23, 42, 0.9)",
                             "border": "none",
-                            "boxShadow": "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                            "padding": "12px",
+                            "borderRadius": "8px",
+                            "color": "#fff",
                         },
-                        label_style={"color": "#94a3b8", "fontSize": "12px", "marginBottom": "4px"},
-                        item_style={"color": "#f8fafc", "fontSize": "14px", "fontWeight": "bold"},
+                        custom_attrs={"formatter": js_number_formatter},
                     ),
                     data=DashboardState.vencimiento_chart_data,
                     height=250,
@@ -71,6 +77,7 @@ def evolucion_chart() -> rx.Component:
                         fill="url(#colorRecaudo)",
                         fill_opacity=0.3,
                         type_="monotone",
+                        label={"dataKey": "recaudo_view", "position": "top", "fontSize": 10, "fill": "#10b981"},
                     ),
                     rx.el.svg.defs(
                         rx.el.svg.linear_gradient(
@@ -105,6 +112,7 @@ def evolucion_chart() -> rx.Component:
                         },
                         label_style={"color": "#94a3b8", "fontSize": "12px", "marginBottom": "4px"},
                         item_style={"color": "#10b981", "fontSize": "14px", "fontWeight": "bold"},
+                        custom_attrs={"formatter": js_number_formatter},
                     ),
                     data=DashboardState.evolucion_chart_data,
                     height=250,
@@ -162,6 +170,7 @@ def propiedades_tipo_chart() -> rx.Component:
                         },
                         label_style={"color": "#94a3b8", "fontSize": "12px", "marginBottom": "4px"},
                         item_style={"color": "#6366f1", "fontSize": "14px", "fontWeight": "bold"},
+                        custom_attrs={"formatter": js_number_formatter},
                     ),
                     data=DashboardState.propiedades_tipo_chart_data,
                     height=250,
@@ -207,6 +216,7 @@ def incidentes_pie_chart() -> rx.Component:
                         },
                         label_style={"color": "#94a3b8", "fontSize": "12px", "marginBottom": "4px"},
                         item_style={"color": "#f8fafc", "fontSize": "14px", "fontWeight": "bold"},
+                        custom_attrs={"formatter": js_number_formatter},
                     ),
                     rx.recharts.legend(vertical_align="bottom", height=36, icon_type="circle"),
                     height=250,
@@ -241,6 +251,7 @@ def top_asesores_chart() -> rx.Component:
                             "fill": "#10b981",
                             "fontSize": 10,
                             "fontWeight": "bold",
+                            "dataKey": "revenue_view",
                         },
                     ),
                     rx.recharts.x_axis(type_="number", hide=True),
@@ -263,6 +274,7 @@ def top_asesores_chart() -> rx.Component:
                         },
                         label_style={"color": "#94a3b8", "fontSize": "12px", "marginBottom": "4px"},
                         item_style={"color": "#10b981", "fontSize": "14px", "fontWeight": "bold"},
+                        custom_attrs={"formatter": js_number_formatter},
                     ),
                     layout="vertical",
                     data=DashboardState.top_asesores_chart_data,
@@ -293,6 +305,7 @@ def tunel_vencimientos_chart() -> rx.Component:
                         fill="url(#colorRiesgo)",
                         fill_opacity=0.4,
                         type_="monotone",
+                        label={"dataKey": "riesgo_view", "position": "top", "fontSize": 10, "fill": "#f59e0b"},
                     ),
                     rx.el.svg.defs(
                         rx.el.svg.linear_gradient(
@@ -324,6 +337,7 @@ def tunel_vencimientos_chart() -> rx.Component:
                         },
                         label_style={"color": "#94a3b8", "fontSize": "12px", "marginBottom": "4px"},
                         item_style={"color": "#f59e0b", "fontSize": "14px", "fontWeight": "bold"},
+                        custom_attrs={"formatter": js_number_formatter},
                     ),
                     data=DashboardState.tunel_chart_data,
                     height=250,

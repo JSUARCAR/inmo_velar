@@ -136,7 +136,7 @@ def recaudos_table() -> rx.Component:
                     rx.table.cell(rec["arrendatario"]),
                     rx.table.cell(
                         rx.text(
-                            f"${rec['valor_total']:,}",
+                            rec["valor_total_view"],
                             weight="bold",
                             color="green",
                         )

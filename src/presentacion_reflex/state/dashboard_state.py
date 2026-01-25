@@ -7,6 +7,7 @@ from src.aplicacion.servicios.servicio_dashboard import ServicioDashboard
 from src.infraestructura.persistencia.database import db_manager
 from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
 from src.infraestructura.persistencia.repositorio_dashboard_sqlite import RepositorioDashboardSQLite
+from src.presentacion_reflex.utils.formatters import format_currency, format_number
 
 
 class DashboardState(rx.State):
@@ -204,6 +205,48 @@ class DashboardState(rx.State):
         self.selected_advisor_id = None
         yield DashboardState.load_dashboard_data
 
+    # --- Variables Formateadas para UI ---
+
+    @rx.var
+    def kpi_ocupacion_financiera_view(self) -> str:
+        return format_number(self.kpi_financiero.get("ocupacion_financiera", 0))
+
+    @rx.var
+    def kpi_eficiencia_recaudo_view(self) -> str:
+        return format_number(self.kpi_financiero.get("eficiencia_recaudo", 0))
+
+    @rx.var
+    def kpi_potencial_total_view(self) -> str:
+        return format_currency(self.kpi_financiero.get("potencial_total", 0))
+
+    @rx.var
+    def kpi_recaudo_real_view(self) -> str:
+        return format_currency(self.kpi_financiero.get("recaudo_real", 0))
+
+    @rx.var
+    def mora_monto_total_view(self) -> str:
+        return format_currency(self.mora_data.get("monto_total", 0))
+
+    @rx.var
+    def recaudo_mes_view(self) -> str:
+        return format_currency(self.flujo_data.get("recaudado", 0))
+
+    @rx.var
+    def comisiones_monto_total_view(self) -> str:
+        return format_currency(self.comisiones_data.get("monto_total", 0))
+
+    @rx.var
+    def recibos_monto_total_view(self) -> str:
+        return format_currency(self.recibos_data.get("monto_total", 0))
+
+    @rx.var
+    def recaudo_porcentaje_view(self) -> str:
+        return format_number(self.flujo_data.get("porcentaje", 0))
+
+    @rx.var
+    def ocupacion_porcentaje_view(self) -> str:
+        return format_number(self.ocupacion_data.get("porcentaje_ocupacion", 0))
+
     @rx.var
     def vencimiento_chart_data(self) -> List[Dict[str, Any]]:
         """Transforma datos de vencimiento para el gráfico de barras."""
@@ -233,7 +276,11 @@ class DashboardState(rx.State):
 
         data = []
         for i in range(len(etiquetas)):
-            data.append({"name": etiquetas[i], "recaudo": valores[i]})
+            data.append({
+                "name": etiquetas[i], 
+                "recaudo": valores[i],
+                "recaudo_view": format_currency(valores[i])
+            })
         return data
 
     @rx.var
@@ -267,6 +314,7 @@ class DashboardState(rx.State):
             {
                 "name": row["nombre"].split()[0],  # Primer nombre para ahorrar espacio
                 "revenue": row["revenue"],
+                "revenue_view": format_currency(row["revenue"]),
                 "contratos": row["contratos"],
             }
             for row in self.top_asesores_data
@@ -276,7 +324,11 @@ class DashboardState(rx.State):
     def tunel_chart_data(self) -> List[Dict[str, Any]]:
         """Transforma datos de tunel de vencimientos."""
         return [
-            {"name": row["mes"], "riesgo": row["valor_riesgo"]}
+            {
+                "name": row["mes"], 
+                "riesgo": row["valor_riesgo"],
+                "riesgo_view": format_currency(row["valor_riesgo"])
+            }
             for row in self.tunel_vencimientos_data
         ]
 

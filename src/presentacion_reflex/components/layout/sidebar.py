@@ -295,6 +295,14 @@ def sidebar_items() -> rx.Component:
                 module_name="Auditoría",
                 icon_color="#8b5cf6",  # Purple
             ),
+            sidebar_item(
+                "Reportes",
+                "file-bar-chart",
+                "/reportes",
+                "Generación y exportación de reportes detallados en CSV.",
+                module_name="Reportes",
+                icon_color="#8b5cf6",  # Purple
+            ),
         ),
         spacing="0",
         width="100%",

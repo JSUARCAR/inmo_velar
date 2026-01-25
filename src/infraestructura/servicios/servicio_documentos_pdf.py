@@ -5,7 +5,7 @@ Utiliza fpdf2 para crear comprobantes de recaudo y estados de cuenta.
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from fpdf import FPDF
 
@@ -684,3 +684,61 @@ class ServicioDocumentosPDF:
         pdf.output(str(output_path))
 
         return str(output_path.absolute())
+
+    def generar_lote_estados_cuenta_zip(
+        self, lista_datos: List[Dict[str, Any]], filename_prefix: str = "lote_liquidaciones"
+    ) -> str:
+        """
+        Genera un lote de estados de cuenta y los comprime en un ZIP.
+        Utiliza ThreadPoolExecutor para generar los PDFs en paralelo.
+
+        Args:
+            lista_datos: Lista de diccionarios con datos para generar_estado_cuenta
+            filename_prefix: Prefijo para el archivo ZIP
+
+        Returns:
+            Ruta absoluta del archivo ZIP generado
+        """
+        import zipfile
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        zip_filename = f"{filename_prefix}_{datetime.now().strftime('%Y%m%d%H%M%S')}.zip"
+        zip_path = self.output_dir / zip_filename
+
+        generated_files = []
+
+        # Función helper para paralelización
+        def _generate_one(datos):
+            try:
+                # Reutilizamos la lógica de generación individual
+                # Esto es seguro en hilos porque cada llamada crea su propia instancia FPDF
+                path = self.generar_estado_cuenta(datos)
+                return path
+            except Exception as e:
+                pass  # print(f"Error generando PDF para ID {datos.get('id')}: {e}") [OpSec Removed]
+                return None
+
+        # Ejecutar en paralelo (I/O bound writing files)
+        # Ajustar max_workers según CPU, pero 4-8 suele ser razonable para archivos
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_id = {
+                executor.submit(_generate_one, d): d.get("id") for d in lista_datos
+            }
+
+            for future in as_completed(future_to_id):
+                path = future.result()
+                if path:
+                    generated_files.append(Path(path))
+
+        # Crear ZIP
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            for file_path in generated_files:
+                if file_path.exists():
+                    zf.write(file_path, arcname=file_path.name)
+                    # Opcional: Eliminar el archivo individual para ahorrar espacio
+                    try:
+                        file_path.unlink()
+                    except Exception:
+                        pass
+
+        return str(zip_path.absolute())

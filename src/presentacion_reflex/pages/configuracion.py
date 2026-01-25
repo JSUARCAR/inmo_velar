@@ -486,7 +486,7 @@ def system_tab_content() -> rx.Component:
                             rx.table.cell(parameter_badge(param.categoria)),
                             rx.table.cell(
                                 rx.cond(
-                                    param.modificable == 1,
+                                    (param.modificable == 1) & (ConfiguracionState.parametros_desbloqueados.contains(param.id_parametro)),
                                     rx.hstack(
                                         rx.input(
                                             default_value=param.valor_parametro,
@@ -496,27 +496,42 @@ def system_tab_content() -> rx.Component:
                                             width="120px",
                                             size="2",
                                             variant="soft",
+                                            auto_focus=True,
                                         ),
-                                        rx.icon("pencil", size=14, color="#cbd5e1"),
+                                        rx.icon("pencil", size=14, color="#3b82f6"),
                                     ),
                                     rx.text(
                                         param.valor_parametro,
                                         weight="bold",
                                         font_family="monospace",
+                                        color=rx.cond(param.modificable != 1, "#94a3b8", "#1e293b"),
                                     ),
                                 )
                             ),
                             rx.table.cell(
                                 rx.cond(
                                     param.modificable == 1,
-                                    rx.icon(
-                                        "lock-open", size=16, color="#10b981", tooltip="Editable"
+                                    rx.icon_button(
+                                        rx.cond(
+                                            ConfiguracionState.parametros_desbloqueados.contains(param.id_parametro),
+                                            rx.icon("lock-open", size=16),
+                                            rx.icon("lock", size=16),
+                                        ),
+                                        color_scheme=rx.cond(
+                                            ConfiguracionState.parametros_desbloqueados.contains(param.id_parametro),
+                                            "blue",
+                                            "gray"
+                                        ),
+                                        variant="soft",
+                                        size="1",
+                                        on_click=lambda: ConfiguracionState.toggle_lock(param.id_parametro),
+                                        cursor="pointer",
                                     ),
                                     rx.icon(
-                                        "lock",
+                                        "shield-alert",
                                         size=16,
                                         color="#ef4444",
-                                        tooltip="Solo Lectura de Sistema",
+                                        tooltip="Protegido por el Sistema",
                                     ),
                                 )
                             ),

@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
 from src.aplicacion.servicios.servicio_recibos_publicos import ServicioRecibosPublicos
+from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
 from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
@@ -35,6 +36,9 @@ class ServicioAlertas:
         repo_codeudor = RepositorioCodeudorSQLite(db_manager)
         repo_recibos = RepositorioReciboPublicoSQLite(db_manager)
 
+        # Servicio de Configuración para parámetros globales
+        self.servicio_config = ServicioConfiguracion(db_manager)
+
         # Inicializar Servicios con dependencias
         self.servicio_contratos = ServicioContratos(
             db_manager,
@@ -63,9 +67,10 @@ class ServicioAlertas:
         """
         alertas = []
 
-        # 1. Contratos próximos a vencer (60 días)
+        # 1. Contratos próximos a vencer (según parámetro o 60 días def)
+        dias_cnt = self.servicio_config.obtener_valor_parametro("DIAS_ALERTA_ARRENDAMIENTO", 60)
         contratos_vencen = self.servicio_contratos.listar_arrendamientos_por_vencer(
-            dias_antelacion=60
+            dias_antelacion=dias_cnt
         )
         for c in contratos_vencen:
             dias = c["dias_restantes"]
@@ -95,8 +100,9 @@ class ServicioAlertas:
                 }
             )
 
-        # 3. Recibos Próximos a Vencer (5 días)
-        recibos_proximos = self.servicio_recibos.listar_recibos_proximos_vencer(dias=5)
+        # 3. Recibos Próximos a Vencer (según parámetro o 5 días def)
+        dias_rcb = self.servicio_config.obtener_valor_parametro("DIAS_VENCIMIENTO_PAGO", 5)
+        recibos_proximos = self.servicio_recibos.listar_recibos_proximos_vencer(dias=dias_rcb)
         for r in recibos_proximos:
             # Calcular días
             try:

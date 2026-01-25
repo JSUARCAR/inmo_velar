@@ -117,9 +117,9 @@ def liquidacion_detail_modal() -> rx.Component:
                                         lambda prop: rx.table.row(
                                             rx.table.cell(prop["direccion"], max_width="200px"),
                                             rx.table.cell(prop["matricula"]),
-                                            rx.table.cell(format_money(prop["canon"])),
+                                            rx.table.cell(prop["canon_view"]),
                                             rx.table.cell(
-                                                format_money(prop["neto"]),
+                                                prop["neto_view"],
                                                 weight="bold",
                                                 color="green.600",
                                             ),
@@ -148,7 +148,7 @@ def liquidacion_detail_modal() -> rx.Component:
                                 LiquidacionesState.detalles_ingresos,
                                 lambda item: rx.table.row(
                                     rx.table.cell(item["concepto"]),
-                                    rx.table.cell(format_money(item["valor"])),
+                                    rx.table.cell(item["valor_view"]),
                                 ),
                             )
                         ),
@@ -160,39 +160,37 @@ def liquidacion_detail_modal() -> rx.Component:
                     rx.box(
                         info_row(
                             f"Comisión ({LiquidacionesState.liquidacion_actual['comision_pct_view']}%):",
-                            format_money(LiquidacionesState.liquidacion_actual["comision_monto"]),
+                            LiquidacionesState.liquidacion_actual["comision_monto_view"],
                         ),
                         info_row(
                             "IVA Comisión (19%):",
-                            format_money(LiquidacionesState.liquidacion_actual["iva_comision"]),
+                            LiquidacionesState.liquidacion_actual["iva_comision_view"],
                         ),
                         info_row(
                             "4x1000:",
-                            format_money(LiquidacionesState.liquidacion_actual["impuesto_4x1000"]),
+                            LiquidacionesState.liquidacion_actual["impuesto_4x1000_view"],
                         ),
                         info_row(
                             "Gastos Administración:",
-                            format_money(LiquidacionesState.liquidacion_actual["gastos_admin"]),
+                            LiquidacionesState.liquidacion_actual["gastos_admin_view"],
                         ),
                         info_row(
                             "Gastos Servicios:",
-                            format_money(LiquidacionesState.liquidacion_actual["gastos_serv"]),
+                            LiquidacionesState.liquidacion_actual["gastos_serv_view"],
                         ),
                         info_row(
                             "Gastos Reparaciones:",
-                            format_money(LiquidacionesState.liquidacion_actual["gastos_rep"]),
+                            LiquidacionesState.liquidacion_actual["gastos_rep_view"],
                         ),
                         info_row(
                             "Otros Egresos:",
-                            format_money(LiquidacionesState.liquidacion_actual["otros_egr"]),
+                            LiquidacionesState.liquidacion_actual["otros_egr_view"],
                         ),
                         rx.divider(),
                         info_row(
                             "Total Egresos:",
                             rx.text(
-                                format_money(
-                                    LiquidacionesState.liquidacion_actual["total_egresos"]
-                                ),
+                                LiquidacionesState.liquidacion_actual["total_egresos_view"],
                                 weight="bold",
                                 size="4",
                                 color="red",
@@ -211,9 +209,7 @@ def liquidacion_detail_modal() -> rx.Component:
                                     "NETO A PAGAR", size="2", color="gray.600", weight="medium"
                                 ),
                                 rx.text(
-                                    format_money(
-                                        LiquidacionesState.liquidacion_actual["neto_pagar"]
-                                    ),
+                                    LiquidacionesState.liquidacion_actual["neto_pagar_view"],
                                     size="8",
                                     weight="bold",
                                     color="blue.600",

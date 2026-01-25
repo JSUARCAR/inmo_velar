@@ -22,3 +22,4 @@ from . import (
 )
 from .auditoria import auditoria_page
 from .saldos_favor import saldos_page
+from .reportes import reportes_page

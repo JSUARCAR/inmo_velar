@@ -145,10 +145,10 @@ def liquidaciones_table() -> rx.Component:
                     rx.table.cell(liq["id"]),
                     rx.table.cell(liq["periodo"]),
                     rx.table.cell(liq["contrato"]),
-                    rx.table.cell(f"${liq['canon']:,}"),
+                    rx.table.cell(liq["canon_view"]),
                     rx.table.cell(
                         rx.text(
-                            f"${liq['neto']:,}",
+                            liq["neto_view"],
                             weight="bold",
                             color="green",
                         )
@@ -287,10 +287,10 @@ def liquidaciones_table_agrupada() -> rx.Component:
                             rx.badge(liq["cantidad_propiedades"], color_scheme="blue"),
                             text_align="center",
                         ),
-                        rx.table.cell(f"${liq['canon']:,}"),
+                        rx.table.cell(liq["canon_view"]),
                         rx.table.cell(
                             rx.text(
-                                f"${liq['neto']:,}",
+                                liq["neto_view"],
                                 weight="bold",
                                 color="green",
                             ),

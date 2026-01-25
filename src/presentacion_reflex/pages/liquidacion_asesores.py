@@ -2,6 +2,7 @@ import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.components.liquidacion_asesores.annul_modal import annul_modal
+from src.presentacion_reflex.components.liquidacion_asesores.bulk_modal_form import bulk_modal_form
 from src.presentacion_reflex.components.liquidacion_asesores.detail_modal import detail_modal
 from src.presentacion_reflex.components.liquidacion_asesores.discount_modal import discount_modal
 from src.presentacion_reflex.components.liquidacion_asesores.modal_form import modal_form
@@ -89,6 +90,17 @@ def liquidacion_asesores_content() -> rx.Component:
                     "Nueva Liquidación",
                     on_click=LiquidacionAsesoresState.open_create_modal,
                     color_scheme="blue",
+                ),
+            ),
+            # Botón Generación Masiva
+            rx.cond(
+                AuthState.check_action("Liquidación Asesores", "CREAR"),
+                rx.button(
+                    rx.icon("layers", size=18),
+                    "Generación Masiva",
+                    on_click=LiquidacionAsesoresState.open_bulk_modal,
+                    color_scheme="violet",
+                    variant="surface",
                 ),
             ),
             # Refresh
@@ -364,6 +376,16 @@ def liquidacion_asesores_content() -> rx.Component:
         detail_modal(),
         discount_modal(),
         annul_modal(),
+        
+        # Modal Masivo
+        bulk_modal_form(
+            is_open=LiquidacionAsesoresState.show_bulk_modal,
+            on_open_change=LiquidacionAsesoresState.set_show_bulk_modal,
+            form_data=LiquidacionAsesoresState.form_data,
+            on_submit=LiquidacionAsesoresState.generar_liquidacion_masiva,
+            is_loading=LiquidacionAsesoresState.is_loading,
+        ),
+        
         padding="2rem",
         width="100%",
         on_mount=LiquidacionAsesoresState.on_load,

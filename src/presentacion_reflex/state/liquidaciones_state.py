@@ -5,6 +5,7 @@ import reflex as rx
 from src.aplicacion.servicios.servicio_financiero import ServicioFinanciero
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+from src.presentacion_reflex.utils.formatters import format_currency, format_number
 
 
 class LiquidacionesState(DocumentosStateMixin):
@@ -230,7 +231,16 @@ class LiquidacionesState(DocumentosStateMixin):
                 )
 
             async with self:
-                self.liquidaciones = resultado.items
+                # Aplicar formateo a los items de la lista
+                formatted_items = []
+                for item in resultado.items:
+                    new_item = item.copy()
+                    # Guardamos versiones formateadas para la UI
+                    new_item["canon_view"] = format_currency(item.get("canon", 0))
+                    new_item["neto_view"] = format_currency(item.get("neto", 0))
+                    formatted_items.append(new_item)
+                
+                self.liquidaciones = formatted_items
                 self.total_items = resultado.total
                 self.is_loading = False
 
@@ -544,8 +554,28 @@ class LiquidacionesState(DocumentosStateMixin):
             liquidacion = servicio.obtener_detalle_liquidacion_ui(id_liquidacion)
 
             if liquidacion:
+                # Formatear valores financieros para el detalle
+                l_fmt = liquidacion.copy()
+                l_fmt["canon_view"] = format_currency(liquidacion.get("canon", 0))
+                l_fmt["neto_pagar_view"] = format_currency(liquidacion.get("neto_pagar", 0))
+                l_fmt["total_ingresos_view"] = format_currency(liquidacion.get("total_ingresos", 0))
+                l_fmt["total_egresos_view"] = format_currency(liquidacion.get("total_egresos", 0))
+                l_fmt["comision_monto_view"] = format_currency(liquidacion.get("comision_monto", 0))
+                l_fmt["iva_comision_view"] = format_currency(liquidacion.get("iva_comision", 0))
+                l_fmt["impuesto_4x1000_view"] = format_currency(liquidacion.get("impuesto_4x1000", 0))
+                
+                # Formatear listas internas si existen
+                if "propiedades_detalle" in l_fmt:
+                    for p in l_fmt["propiedades_detalle"]:
+                        p["canon_view"] = format_currency(p.get("canon", 0))
+                        p["neto_view"] = format_currency(p.get("neto", 0))
+                
+                if "ingresos" in l_fmt:
+                    for ing in l_fmt["ingresos"]:
+                        ing["valor_view"] = format_currency(ing.get("valor", 0))
+
                 async with self:
-                    self.liquidacion_actual = liquidacion
+                    self.liquidacion_actual = l_fmt
                     self.show_detail_modal = True
                     self.show_create_modal = False
                     self.show_edit_modal = False
