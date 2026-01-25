@@ -6,6 +6,7 @@ import reflex as rx
 from src.aplicacion.servicios.servicio_dashboard import ServicioDashboard
 from src.infraestructura.persistencia.database import db_manager
 from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
+from src.infraestructura.persistencia.repositorio_dashboard_sqlite import RepositorioDashboardSQLite
 
 
 class DashboardState(rx.State):
@@ -98,7 +99,8 @@ class DashboardState(rx.State):
             id_asesor = self.selected_advisor_id
 
             # Inicializar servicio
-            servicio = ServicioDashboard(db_manager)
+            repo_dashboard = RepositorioDashboardSQLite(db_manager)
+            servicio = ServicioDashboard(repo_dashboard=repo_dashboard)
 
             # Fetch all data (estas llamadas son síncronas, pero estamos en background thread)
             datos_flujo = servicio.obtener_flujo_caja_mes(mes=mes, anio=anio, id_asesor=id_asesor)

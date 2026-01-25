@@ -148,8 +148,12 @@ class IncidentesState(DocumentosStateMixin):
             # TODO: Usar repositorio o servicio adecuado
             # Por simplicidad query directa o servicio propiedades si disponible
             from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
 
-            servicio = ServicioPropiedades(db_manager)
+            repo_prop = RepositorioPropiedadSQLite(db_manager)
+            servicio = ServicioPropiedades(repo_prop)
             props = servicio.listar_propiedades()  # Limit removed as not supported by service
 
             options = [
@@ -199,8 +203,12 @@ class IncidentesState(DocumentosStateMixin):
 
             # Cargar propiedades para mapeo de direcciones
             from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
 
-            servicio_props = ServicioPropiedades(db_manager)
+            repo_prop = RepositorioPropiedadSQLite(db_manager)
+            servicio_props = ServicioPropiedades(repo_prop)
             props = servicio_props.listar_propiedades()
             props_map = {p.id_propiedad: p.direccion_propiedad for p in props}
 
