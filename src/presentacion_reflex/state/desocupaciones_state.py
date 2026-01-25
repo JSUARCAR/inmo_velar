@@ -1,36 +1,38 @@
-import reflex as rx
-from typing import Optional, Dict, Any, List
-from src.infraestructura.persistencia.database import db_manager
-from src.aplicacion.servicios.servicio_desocupaciones import ServicioDesocupaciones
+from typing import Any, Dict, List, Optional
 
+import reflex as rx
+
+from src.aplicacion.servicios.servicio_desocupaciones import ServicioDesocupaciones
+from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+
 
 class DesocupacionesState(DocumentosStateMixin):
     """Estado para gestión de Desocupaciones."""
-    
+
     # Paginación
     current_page: int = 1
     page_size: int = 25
     total_items: int = 0
-    
+
     # Datos
     desocupaciones: List[Dict[str, Any]] = []
     contratos_candidatos: List[Dict[str, Any]] = []
     checklist_actual: List[Dict[str, Any]] = []
-    
+
     # UI State
     is_loading: bool = False
     error_message: str = ""
-    
+
     # Filtros
     filter_estado: str = "Todos"
     estado_options: List[str] = ["Todos", "En Proceso", "Completada", "Cancelada"]
-    
+
     # Modales
     modal_create_open: bool = False
     modal_checklist_open: bool = False
     modal_confirm_finalize_open: bool = False
-    
+
     # Finalize Info
     finalize_info: Dict[str, Any] = {
         "id": 0,
@@ -38,9 +40,9 @@ class DesocupacionesState(DocumentosStateMixin):
         "inquilino": "",
         "progreso": 0,
         "puede_finalizar": False,
-        "mensaje_validacion": ""
+        "mensaje_validacion": "",
     }
-    
+
     # Checklist Modal Info
     checklist_info: Dict[str, Any] = {
         "direccion": "",
@@ -49,25 +51,25 @@ class DesocupacionesState(DocumentosStateMixin):
         "estado": "",
         "progreso": 0,
         "tareas_completadas": 0,
-        "tareas_total": 0
+        "tareas_total": 0,
     }
-    
+
     # Form Data
     id_desocupacion_seleccionada: Optional[int] = None
     form_create_data: Dict[str, Any] = {
         "id_contrato": "",
         "fecha_programada": "",
-        "observaciones": ""
+        "observaciones": "",
     }
-    
+
     observacion_cancelacion: str = ""
-    
+
     @rx.event(background=True)
     async def on_load(self):
         """Carga inicial."""
         async with self:
             self.is_loading = True
-            
+
         try:
             yield DesocupacionesState.load_desocupaciones()
             yield DesocupacionesState.load_contratos_candidatos()
@@ -81,17 +83,15 @@ class DesocupacionesState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-            
+
         try:
             servicio = ServicioDesocupaciones(db_manager)
             estado_filtro = self.filter_estado if self.filter_estado != "Todos" else None
-            
+
             resultado = servicio.listar_desocupaciones_paginado(
-                page=self.current_page,
-                page_size=self.page_size,
-                estado=estado_filtro
+                page=self.current_page, page_size=self.page_size, estado=estado_filtro
             )
-            
+
             # Convertir objetos a dicts para serialización
             items = []
             for d in resultado.items:
@@ -104,15 +104,15 @@ class DesocupacionesState(DocumentosStateMixin):
                     "fecha_solicitud": d.fecha_solicitud,
                     "fecha_programada": d.fecha_programada,
                     "estado": d.estado,
-                    "progreso": progreso['porcentaje'],
-                    "puede_finalizar": progreso['puede_finalizar']
+                    "progreso": progreso["porcentaje"],
+                    "puede_finalizar": progreso["puede_finalizar"],
                 }
                 items.append(item_dict)
-            
+
             async with self:
                 self.desocupaciones = items
                 self.total_items = resultado.total
-                
+
         except Exception as e:
             async with self:
                 self.error_message = f"Error al cargar desocupaciones: {str(e)}"
@@ -126,19 +126,19 @@ class DesocupacionesState(DocumentosStateMixin):
         try:
             servicio = ServicioDesocupaciones(db_manager)
             contratos = servicio.listar_contratos_candidatos()
-            
+
             # Formatear para select
             opciones = [
                 {
                     "id": str(c["id_contrato"]),
-                    "texto": f"#{c['id_contrato']} - {c['direccion']} ({c['inquilino']})"
+                    "texto": f"#{c['id_contrato']} - {c['direccion']} ({c['inquilino']})",
                 }
                 for c in contratos
             ]
-            
+
             async with self:
                 self.contratos_candidatos = opciones
-        except Exception as e:
+        except Exception:
             pass  # print(f"Error cargando candidatos: {e}") [OpSec Removed]
 
     # --- Acciones CRUD ---
@@ -148,11 +148,7 @@ class DesocupacionesState(DocumentosStateMixin):
 
     def open_create_modal(self):
         self.modal_create_open = True
-        self.form_create_data = {
-            "id_contrato": "",
-            "fecha_programada": "",
-            "observaciones": ""
-        }
+        self.form_create_data = {"id_contrato": "", "fecha_programada": "", "observaciones": ""}
         return DesocupacionesState.load_contratos_candidatos
 
     def close_create_modal(self):
@@ -172,24 +168,24 @@ class DesocupacionesState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-            
+
         try:
             servicio = ServicioDesocupaciones(db_manager)
-            usuario = "admin" # TODO: Auth
-            
+            usuario = "admin"  # TODO: Auth
+
             servicio.iniciar_desocupacion(
                 id_contrato=int(form_data["id_contrato"]),
                 fecha_programada=form_data["fecha_programada"],
                 observaciones=form_data.get("observaciones"),
-                usuario=usuario
+                usuario=usuario,
             )
-            
+
             async with self:
                 self.modal_create_open = False
-            
+
             yield rx.toast.success("Proceso de desocupación iniciado exitosamente")
             yield DesocupacionesState.load_desocupaciones()
-            
+
         except ValueError as e:
             # Error de validación (contrato duplicado, etc.)
             yield rx.toast.error(str(e))
@@ -209,26 +205,26 @@ class DesocupacionesState(DocumentosStateMixin):
         async with self:
             self.id_desocupacion_seleccionada = id_desocupacion
             self.is_loading = True
-            
+
             # Contexto Documental
             self.current_entidad_tipo = "DESOCUPACION"
             self.current_entidad_id = str(id_desocupacion)
             self.cargar_documentos()
-        
+
         try:
             servicio = ServicioDesocupaciones(db_manager)
-            
+
             # Obtener información de la desocupación
             desocupacion = servicio.obtener_desocupacion(id_desocupacion)
             if not desocupacion:
                 raise ValueError(f"Desocupación {id_desocupacion} no encontrada")
-            
+
             # Obtener tareas
             tareas = servicio.obtener_checklist(id_desocupacion)
-            
+
             # Calcular progreso
             progreso = servicio.calcular_progreso(id_desocupacion)
-            
+
             # Mapear tareas a diccionarios
             checklist_data = [
                 {
@@ -238,11 +234,11 @@ class DesocupacionesState(DocumentosStateMixin):
                     "completada": bool(t.completada),
                     "fecha_completada": t.fecha_completada or "",
                     "responsable": t.responsable or "",
-                    "observaciones": t.observaciones or ""
+                    "observaciones": t.observaciones or "",
                 }
                 for t in tareas
             ]
-            
+
             async with self:
                 self.checklist_actual = checklist_data
                 self.checklist_info = {
@@ -250,12 +246,12 @@ class DesocupacionesState(DocumentosStateMixin):
                     "inquilino": desocupacion.nombre_inquilino or "Sin inquilino",
                     "fecha_programada": desocupacion.fecha_programada or "",
                     "estado": desocupacion.estado or "",
-                    "progreso": progreso['porcentaje'],
-                    "tareas_completadas": progreso['completadas'],
-                    "tareas_total": progreso['total']
+                    "progreso": progreso["porcentaje"],
+                    "tareas_completadas": progreso["completadas"],
+                    "tareas_total": progreso["total"],
                 }
                 self.modal_checklist_open = True
-                
+
         except Exception as e:
             yield rx.toast.error(f"Error cargando checklist: {str(e)}")
             async with self:
@@ -276,7 +272,7 @@ class DesocupacionesState(DocumentosStateMixin):
             "estado": "",
             "progreso": 0,
             "tareas_completadas": 0,
-            "tareas_total": 0
+            "tareas_total": 0,
         }
 
     def set_modal_checklist_open(self, value: bool):
@@ -294,16 +290,16 @@ class DesocupacionesState(DocumentosStateMixin):
             servicio = ServicioDesocupaciones(db_manager)
             usuario = "admin"
             servicio.completar_tarea(id_tarea, usuario)
-            
+
             yield rx.toast.success("✓ Tarea completada")
-            
+
             # Recargar checklist para actualizar estado visual
             if self.id_desocupacion_seleccionada:
                 yield DesocupacionesState.open_checklist(self.id_desocupacion_seleccionada)
-            
+
             # También recargar la lista principal para actualizar progreso
             yield DesocupacionesState.load_desocupaciones()
-            
+
         except Exception as e:
             yield rx.toast.error(f"Error al completar tarea: {str(e)}")
             async with self:
@@ -315,23 +311,27 @@ class DesocupacionesState(DocumentosStateMixin):
         async with self:
             self.id_desocupacion_seleccionada = id_desocupacion
             self.is_loading = True
-            
+
         try:
             servicio = ServicioDesocupaciones(db_manager)
             desocupacion = servicio.obtener_desocupacion(id_desocupacion)
             progreso = servicio.calcular_progreso(id_desocupacion)
-            
+
             async with self:
                 self.finalize_info = {
                     "id": id_desocupacion,
                     "direccion": desocupacion.direccion_propiedad or "",
                     "inquilino": desocupacion.nombre_inquilino or "",
-                    "progreso": progreso['porcentaje'],
-                    "puede_finalizar": progreso['puede_finalizar'],
-                    "mensaje_validacion": "" if progreso['puede_finalizar'] else f"Faltan {progreso['total'] - progreso['completadas']} tareas por completar"
+                    "progreso": progreso["porcentaje"],
+                    "puede_finalizar": progreso["puede_finalizar"],
+                    "mensaje_validacion": (
+                        ""
+                        if progreso["puede_finalizar"]
+                        else f"Faltan {progreso['total'] - progreso['completadas']} tareas por completar"
+                    ),
                 }
                 self.modal_confirm_finalize_open = True
-                
+
         except Exception as e:
             yield rx.toast.error(f"Error al preparar finalización: {str(e)}")
         finally:
@@ -347,24 +347,26 @@ class DesocupacionesState(DocumentosStateMixin):
         """Ejecuta la finalización del proceso."""
         async with self:
             self.is_loading = True
-            
+
         try:
             servicio = ServicioDesocupaciones(db_manager)
-            
+
             # Nota: Ahora permitimos finalizar aunque haya tareas pendientes (Forzado)
             # El servicio se encargará de autocompletarlas.
-            
+
             servicio.finalizar_desocupacion(self.id_desocupacion_seleccionada, "admin")
-            
+
             async with self:
                 self.modal_confirm_finalize_open = False
-            
-            yield rx.toast.success("Proceso finalizado exitosamente. Contrato cerrado y propiedad disponible.")
+
+            yield rx.toast.success(
+                "Proceso finalizado exitosamente. Contrato cerrado y propiedad disponible."
+            )
             yield DesocupacionesState.load_desocupaciones()
-            
+
         except Exception as e:
-             yield rx.toast.error(f"Error al finalizar: {str(e)}")
-             async with self:
+            yield rx.toast.error(f"Error al finalizar: {str(e)}")
+            async with self:
                 self.error_message = f"Error al finalizar: {str(e)}"
         finally:
             async with self:

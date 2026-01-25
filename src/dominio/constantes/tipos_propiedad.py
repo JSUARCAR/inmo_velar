@@ -10,7 +10,7 @@ from enum import Enum
 class TipoPropiedad(str, Enum):
     """
     Clasificación de inmuebles.
-    
+
     - APARTAMENTO: Apartamento residencial
     - CASA: Casa residencial
     - LOCAL_COMERCIAL: Local para comercio
@@ -19,7 +19,7 @@ class TipoPropiedad(str, Enum):
     - LOTE: Terreno sin construcción
     - FINCA: Propiedad rural
     """
-    
+
     APARTAMENTO = "APARTAMENTO"
     CASA = "CASA"
     LOCAL_COMERCIAL = "LOCAL_COMERCIAL"
@@ -32,12 +32,12 @@ class TipoPropiedad(str, Enum):
 class TipoNegocio(str, Enum):
     """
     Tipo de negocio inmobiliario.
-    
+
     - ARRIENDO: Arrendamiento/alquiler
     - VENTA: Venta del inmueble
     - ARRIENDO_VENTA: Disponible para ambos
     """
-    
+
     ARRIENDO = "ARRIENDO"
     VENTA = "VENTA"
     ARRIENDO_VENTA = "ARRIENDO_VENTA"

@@ -1,18 +1,24 @@
 import reflex as rx
-from src.presentacion_reflex.state.personas_state import PersonasState
-from src.presentacion_reflex.components.personas.wizard_progress import wizard_progress
-from src.presentacion_reflex.components.personas.role_selector_card import role_selector_card
 
-def form_field(label: str, name: str, placeholder: str, type: str = "text", required: bool = False, default_value: str = "", icon: str = "") -> rx.Component:
+from src.presentacion_reflex.components.personas.role_selector_card import role_selector_card
+from src.presentacion_reflex.components.personas.wizard_progress import wizard_progress
+from src.presentacion_reflex.state.personas_state import PersonasState
+
+
+def form_field(
+    label: str,
+    name: str,
+    placeholder: str,
+    type: str = "text",
+    required: bool = False,
+    default_value: str = "",
+    icon: str = "",
+) -> rx.Component:
     """Elite form field with icon and enhanced styling."""
     return rx.vstack(
         rx.text(label, size="2", weight="bold", color="var(--gray-12)"),
         rx.input(
-            rx.cond(
-                icon != "",
-                rx.input.slot(rx.icon(icon, size=16)),
-                rx.fragment()
-            ),
+            rx.cond(icon != "", rx.input.slot(rx.icon(icon, size=16)), rx.fragment()),
             name=name,
             placeholder=placeholder,
             type=type,
@@ -25,11 +31,12 @@ def form_field(label: str, name: str, placeholder: str, type: str = "text", requ
             },
             _focus={
                 "box_shadow": "0 0 0 2px rgba(102, 126, 234, 0.2)",
-            }
+            },
         ),
         spacing="1",
         width="100%",
     )
+
 
 def form_textarea(label: str, name: str, placeholder: str, default_value: str = "") -> rx.Component:
     """Elite textarea field."""
@@ -46,6 +53,7 @@ def form_textarea(label: str, name: str, placeholder: str, default_value: str = 
         width="100%",
     )
 
+
 def propietario_fields() -> rx.Component:
     """Campos específicos de Propietario - Elite version."""
     return rx.vstack(
@@ -54,9 +62,21 @@ def propietario_fields() -> rx.Component:
             rx.text("Información Bancaria", size="3", weight="bold", color="var(--blue-11)"),
             spacing="2",
         ),
-        form_field("Banco", "banco_propietario", "Ej: Bancolombia", default_value=PersonasState.form_data["banco_propietario"], icon="landmark"),
+        form_field(
+            "Banco",
+            "banco_propietario",
+            "Ej: Bancolombia",
+            default_value=PersonasState.form_data["banco_propietario"],
+            icon="landmark",
+        ),
         rx.hstack(
-            form_field("Número de Cuenta", "numero_cuenta_propietario", "Ej: 123456789", default_value=PersonasState.form_data["numero_cuenta_propietario"], icon="hash"),
+            form_field(
+                "Número de Cuenta",
+                "numero_cuenta_propietario",
+                "Ej: 123456789",
+                default_value=PersonasState.form_data["numero_cuenta_propietario"],
+                icon="hash",
+            ),
             rx.vstack(
                 rx.text("Tipo de Cuenta", size="2", weight="bold", color="var(--gray-12)"),
                 rx.select(
@@ -65,7 +85,7 @@ def propietario_fields() -> rx.Component:
                     default_value=rx.cond(
                         PersonasState.form_data["tipo_cuenta"] != "",
                         PersonasState.form_data["tipo_cuenta"],
-                        "Ahorros"
+                        "Ahorros",
                     ),
                     width="100%",
                     size="3",
@@ -76,7 +96,12 @@ def propietario_fields() -> rx.Component:
             spacing="3",
             width="100%",
         ),
-        form_textarea("Observaciones", "observaciones_propietario", "Notas adicionales...", default_value=PersonasState.form_data["observaciones_propietario"]),
+        form_textarea(
+            "Observaciones",
+            "observaciones_propietario",
+            "Notas adicionales...",
+            default_value=PersonasState.form_data["observaciones_propietario"],
+        ),
         spacing="3",
         width="100%",
         padding="4",
@@ -84,8 +109,9 @@ def propietario_fields() -> rx.Component:
         style={
             "background": "var(--blue-2)",
             "border": "1px solid var(--blue-6)",
-        }
+        },
     )
+
 
 def arrendatario_fields() -> rx.Component:
     """Campos específicos de Arrendatario - Elite version."""
@@ -95,10 +121,29 @@ def arrendatario_fields() -> rx.Component:
             rx.text("Información de Seguro", size="3", weight="bold", color="var(--green-11)"),
             spacing="2",
         ),
-        form_field("Dirección de Referencia", "direccion_referencia", "Ej: Calle 456 # 78-90", default_value=PersonasState.form_data["direccion_referencia"], icon="map-pin"),
+        form_field(
+            "Dirección de Referencia",
+            "direccion_referencia",
+            "Ej: Calle 456 # 78-90",
+            default_value=PersonasState.form_data["direccion_referencia"],
+            icon="map-pin",
+        ),
         rx.hstack(
-            form_field("Código Aprobación Seguro", "codigo_aprobacion_seguro", "Ej: AB-123", default_value=PersonasState.form_data["codigo_aprobacion_seguro"], icon="file-check"),
-            form_field("ID Seguro (Opcional)", "id_seguro", "ID numérico", type="number", default_value=PersonasState.form_data["id_seguro"], icon="hash"),
+            form_field(
+                "Código Aprobación Seguro",
+                "codigo_aprobacion_seguro",
+                "Ej: AB-123",
+                default_value=PersonasState.form_data["codigo_aprobacion_seguro"],
+                icon="file-check",
+            ),
+            form_field(
+                "ID Seguro (Opcional)",
+                "id_seguro",
+                "ID numérico",
+                type="number",
+                default_value=PersonasState.form_data["id_seguro"],
+                icon="hash",
+            ),
             spacing="3",
             width="100%",
         ),
@@ -109,8 +154,9 @@ def arrendatario_fields() -> rx.Component:
         style={
             "background": "var(--green-2)",
             "border": "1px solid var(--green-6)",
-        }
+        },
     )
+
 
 def asesor_fields() -> rx.Component:
     """Campos específicos de Asesor - Elite version."""
@@ -121,12 +167,33 @@ def asesor_fields() -> rx.Component:
             spacing="2",
         ),
         rx.hstack(
-            form_field("Comisión % Arriendo", "comision_porcentaje_arriendo", "Ej: 10", type="number", default_value=PersonasState.form_data["comision_porcentaje_arriendo"], icon="percent"),
-            form_field("Comisión % Venta", "comision_porcentaje_venta", "Ej: 3", type="number", default_value=PersonasState.form_data["comision_porcentaje_venta"], icon="percent"),
+            form_field(
+                "Comisión % Arriendo",
+                "comision_porcentaje_arriendo",
+                "Ej: 10",
+                type="number",
+                default_value=PersonasState.form_data["comision_porcentaje_arriendo"],
+                icon="percent",
+            ),
+            form_field(
+                "Comisión % Venta",
+                "comision_porcentaje_venta",
+                "Ej: 3",
+                type="number",
+                default_value=PersonasState.form_data["comision_porcentaje_venta"],
+                icon="percent",
+            ),
             spacing="3",
             width="100%",
         ),
-        form_field("Fecha Vinculación", "fecha_vinculacion", "YYYY-MM-DD", type="date", default_value=PersonasState.form_data["fecha_vinculacion"], icon="calendar"),
+        form_field(
+            "Fecha Vinculación",
+            "fecha_vinculacion",
+            "YYYY-MM-DD",
+            type="date",
+            default_value=PersonasState.form_data["fecha_vinculacion"],
+            icon="calendar",
+        ),
         spacing="3",
         width="100%",
         padding="4",
@@ -134,8 +201,9 @@ def asesor_fields() -> rx.Component:
         style={
             "background": "var(--purple-2)",
             "border": "1px solid var(--purple-6)",
-        }
+        },
     )
+
 
 def proveedor_fields() -> rx.Component:
     """Campos específicos de Proveedor - Elite version."""
@@ -145,9 +213,27 @@ def proveedor_fields() -> rx.Component:
             rx.text("Información Profesional", size="3", weight="bold", color="var(--cyan-11)"),
             spacing="2",
         ),
-        form_field("Especialidad", "especialidad", "Ej: Plomería, Electricidad", default_value=PersonasState.form_data["especialidad"], icon="wrench"),
-        form_field("Calificación (1-5)", "calificacion", "Ej: 5", type="number", default_value=PersonasState.form_data["calificacion"], icon="star"),
-        form_textarea("Observaciones", "observaciones", "Ej: Disponible fines de semana", default_value=PersonasState.form_data["observaciones"]),
+        form_field(
+            "Especialidad",
+            "especialidad",
+            "Ej: Plomería, Electricidad",
+            default_value=PersonasState.form_data["especialidad"],
+            icon="wrench",
+        ),
+        form_field(
+            "Calificación (1-5)",
+            "calificacion",
+            "Ej: 5",
+            type="number",
+            default_value=PersonasState.form_data["calificacion"],
+            icon="star",
+        ),
+        form_textarea(
+            "Observaciones",
+            "observaciones",
+            "Ej: Disponible fines de semana",
+            default_value=PersonasState.form_data["observaciones"],
+        ),
         spacing="3",
         width="100%",
         padding="4",
@@ -155,8 +241,9 @@ def proveedor_fields() -> rx.Component:
         style={
             "background": "var(--cyan-2)",
             "border": "1px solid var(--cyan-6)",
-        }
+        },
     )
+
 
 # Wizard Steps
 def step_1_basic_info() -> rx.Component:
@@ -168,34 +255,67 @@ def step_1_basic_info() -> rx.Component:
                 rx.select(
                     ["CC", "NIT", "CE", "PAS"],
                     name="tipo_documento",
-                    default_value=rx.cond(PersonasState.is_editing, PersonasState.form_data["tipo_documento"], "CC"),
+                    default_value=rx.cond(
+                        PersonasState.is_editing, PersonasState.form_data["tipo_documento"], "CC"
+                    ),
                     width="100%",
                     size="3",
                 ),
                 width="25%",
             ),
             rx.box(
-                form_field("Número Documento", "numero_documento", "Ej: 123456789", required=True, default_value=PersonasState.form_data["numero_documento"], icon="credit-card"),
+                form_field(
+                    "Número Documento",
+                    "numero_documento",
+                    "Ej: 123456789",
+                    required=True,
+                    default_value=PersonasState.form_data["numero_documento"],
+                    icon="credit-card",
+                ),
                 width="75%",
             ),
             width="100%",
             spacing="3",
         ),
-        
-        form_field("Nombre Completo / Razón Social", "nombre_completo", "Ej: Juan Pérez S.A.S", required=True, default_value=PersonasState.form_data["nombre_completo"], icon="user"),
-        
+        form_field(
+            "Nombre Completo / Razón Social",
+            "nombre_completo",
+            "Ej: Juan Pérez S.A.S",
+            required=True,
+            default_value=PersonasState.form_data["nombre_completo"],
+            icon="user",
+        ),
         rx.hstack(
-            form_field("Teléfono Principal", "telefono_principal", "Ej: 3001234567", required=True, default_value=PersonasState.form_data["telefono_principal"], icon="phone"),
-            form_field("Correo Electrónico", "correo_electronico", "Ej: contacto@empresa.com", type="email", default_value=PersonasState.form_data["correo_electronico"], icon="mail"),
+            form_field(
+                "Teléfono Principal",
+                "telefono_principal",
+                "Ej: 3001234567",
+                required=True,
+                default_value=PersonasState.form_data["telefono_principal"],
+                icon="phone",
+            ),
+            form_field(
+                "Correo Electrónico",
+                "correo_electronico",
+                "Ej: contacto@empresa.com",
+                type="email",
+                default_value=PersonasState.form_data["correo_electronico"],
+                icon="mail",
+            ),
             spacing="3",
             width="100%",
         ),
-        
-        form_field("Dirección Principal", "direccion_principal", "Ej: Calle 123 # 45-67", default_value=PersonasState.form_data["direccion_principal"], icon="map-pin"),
-        
+        form_field(
+            "Dirección Principal",
+            "direccion_principal",
+            "Ej: Calle 123 # 45-67",
+            default_value=PersonasState.form_data["direccion_principal"],
+            icon="map-pin",
+        ),
         spacing="4",
         width="100%",
     )
+
 
 def step_2_roles() -> rx.Component:
     """Step 2: Role Selection with Elite Cards."""
@@ -207,10 +327,7 @@ def step_2_roles() -> rx.Component:
             text_align="center",
         ),
         rx.box(
-            rx.foreach(
-                PersonasState.available_roles,
-                role_selector_card
-            ),
+            rx.foreach(PersonasState.available_roles, role_selector_card),
             display="grid",
             grid_template_columns=[
                 "repeat(1, 1fr)",  # mobile
@@ -222,6 +339,7 @@ def step_2_roles() -> rx.Component:
         spacing="3",
         width="100%",
     )
+
 
 def step_3_role_details() -> rx.Component:
     """Step 3: Role-specific details."""
@@ -256,12 +374,21 @@ def step_3_role_details() -> rx.Component:
             rx.center(
                 rx.vstack(
                     rx.icon("circle-alert", size=32, color="var(--gray-8)"),
-                    rx.text("No hay roles seleccionados", size="3", weight="medium", color="var(--gray-11)"),
-                    rx.text("Selecciona al menos un rol en el paso anterior", size="2", color="var(--gray-10)"),
+                    rx.text(
+                        "No hay roles seleccionados",
+                        size="3",
+                        weight="medium",
+                        color="var(--gray-11)",
+                    ),
+                    rx.text(
+                        "Selecciona al menos un rol en el paso anterior",
+                        size="2",
+                        color="var(--gray-10)",
+                    ),
                     spacing="2",
                 ),
                 padding="6",
-            )
+            ),
         ),
         width="100%",
     )
@@ -269,7 +396,7 @@ def step_3_role_details() -> rx.Component:
 
 def modal_persona() -> rx.Component:
     """Elite Multi-Step Wizard Modal for creating/editing Persona."""
-    
+
     return rx.dialog.root(
         rx.dialog.content(
             rx.vstack(
@@ -282,11 +409,7 @@ def modal_persona() -> rx.Component:
                             color="var(--purple-9)",
                         ),
                         rx.text(
-                            rx.cond(
-                                PersonasState.is_editing,
-                                "Editar Persona",
-                                "Nueva Persona"
-                            ),
+                            rx.cond(PersonasState.is_editing, "Editar Persona", "Nueva Persona"),
                             size="6",
                             weight="bold",
                         ),
@@ -294,10 +417,8 @@ def modal_persona() -> rx.Component:
                         align="center",
                     )
                 ),
-                
                 # Wizard Progress Indicator
                 wizard_progress(),
-                
                 # Error message
                 rx.cond(
                     PersonasState.error_message != "",
@@ -309,7 +430,6 @@ def modal_persona() -> rx.Component:
                         width="100%",
                     ),
                 ),
-                
                 # Form with conditional step content
                 rx.form(
                     rx.vstack(
@@ -324,7 +444,6 @@ def modal_persona() -> rx.Component:
                             min_height="300px",
                             width="100%",
                         ),
-                        
                         # Navigation Buttons
                         rx.hstack(
                             # Back button
@@ -341,7 +460,6 @@ def modal_persona() -> rx.Component:
                                 ),
                                 rx.fragment(),
                             ),
-                            
                             rx.dialog.close(
                                 rx.button(
                                     "Cancelar",
@@ -352,9 +470,7 @@ def modal_persona() -> rx.Component:
                                     size="3",
                                 ),
                             ),
-                            
                             rx.spacer(),
-                            
                             # Next / Save button
                             rx.cond(
                                 PersonasState.modal_step < 3,
@@ -380,13 +496,11 @@ def modal_persona() -> rx.Component:
                                     },
                                 ),
                             ),
-                            
                             spacing="2",
                             width="100%",
                             justify="between",
                             margin_top="4",
                         ),
-                        
                         spacing="4",
                         width="100%",
                     ),
@@ -394,11 +508,9 @@ def modal_persona() -> rx.Component:
                     on_submit=PersonasState.handle_form_submit,
                     width="100%",
                 ),
-                
                 spacing="4",
                 width="100%",
             ),
-            
             max_width="700px",
             width="100%",
             padding="6",

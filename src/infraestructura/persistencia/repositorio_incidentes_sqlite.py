@@ -1,12 +1,12 @@
+import sqlite3
 from typing import List, Optional
-from datetime import datetime
-from src.dominio.entidades.incidente import Incidente
+
 from src.dominio.entidades.cotizacion import Cotizacion
 from src.dominio.entidades.historial_incidente import HistorialIncidente
+from src.dominio.entidades.incidente import Incidente
 from src.dominio.interfaces.repositorio_incidentes import RepositorioIncidentes
 from src.infraestructura.persistencia.database import DatabaseManager
-import sqlite3
-import json
+
 
 class RepositorioIncidentesSQLite(RepositorioIncidentes):
     def __init__(self, db: DatabaseManager):
@@ -16,45 +16,45 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
         if not row:
             return None
         return Incidente(
-            id_incidente=row['ID_INCIDENTE'],
-            id_propiedad=row['ID_PROPIEDAD'],
-            id_contrato_m=row['ID_CONTRATO_M'],
-            descripcion_incidente=row['DESCRIPCION_INCIDENTE'],
-            costo_incidente=row['COSTO_INCIDENTE'],
-            fecha_incidente=row['FECHA_INCIDENTE'],
-            prioridad=row['PRIORIDAD'],
-            origen_reporte=row['ORIGEN_REPORTE'],
-            responsable_pago=row['RESPONSABLE_PAGO'],
-            id_proveedor_asignado=row['ID_PROVEEDOR_ASIGNADO'],
-            id_cotizacion_aprobada=row['ID_COTIZACION_APROBADA'],
-            quien_arregla=row['QUIEN_ARREGLA'],
-            aprobado_por=row['APROBADO_POR'],
-            fecha_arreglo=row['FECHA_ARREGLO'],
-            estado=row['ESTADO'],
-            dias_sin_resolver=row['DIAS_SIN_RESOLVER'],
-            motivo_cancelacion=row['MOTIVO_CANCELACION'],
-            created_at=row['CREATED_AT'],
-            created_by=row['CREATED_BY'],
-            updated_at=row['UPDATED_AT'],
-            updated_by=row['UPDATED_BY']
+            id_incidente=row["ID_INCIDENTE"],
+            id_propiedad=row["ID_PROPIEDAD"],
+            id_contrato_m=row["ID_CONTRATO_M"],
+            descripcion_incidente=row["DESCRIPCION_INCIDENTE"],
+            costo_incidente=row["COSTO_INCIDENTE"],
+            fecha_incidente=row["FECHA_INCIDENTE"],
+            prioridad=row["PRIORIDAD"],
+            origen_reporte=row["ORIGEN_REPORTE"],
+            responsable_pago=row["RESPONSABLE_PAGO"],
+            id_proveedor_asignado=row["ID_PROVEEDOR_ASIGNADO"],
+            id_cotizacion_aprobada=row["ID_COTIZACION_APROBADA"],
+            quien_arregla=row["QUIEN_ARREGLA"],
+            aprobado_por=row["APROBADO_POR"],
+            fecha_arreglo=row["FECHA_ARREGLO"],
+            estado=row["ESTADO"],
+            dias_sin_resolver=row["DIAS_SIN_RESOLVER"],
+            motivo_cancelacion=row["MOTIVO_CANCELACION"],
+            created_at=row["CREATED_AT"],
+            created_by=row["CREATED_BY"],
+            updated_at=row["UPDATED_AT"],
+            updated_by=row["UPDATED_BY"],
         )
-        
+
     def _mapear_cotizacion(self, row: sqlite3.Row) -> Cotizacion:
         if not row:
             return None
         return Cotizacion(
-            id_cotizacion=row['ID_COTIZACION'],
-            id_incidente=row['ID_INCIDENTE'],
-            id_proveedor=row['ID_PROVEEDOR'],
-            valor_materiales=row['VALOR_MATERIALES'],
-            valor_mano_obra=row['VALOR_MANO_OBRA'],
-            valor_total=row['VALOR_TOTAL'],
-            descripcion_trabajo=row['DESCRIPCION_TRABAJO'],
-            dias_estimados=row['DIAS_ESTIMADOS'],
-            fecha_cotizacion=row['FECHA_COTIZACION'],
-            estado_cotizacion=row['ESTADO_COTIZACION'],
-            created_at=row['CREATED_AT'],
-            created_by=row['CREATED_BY']
+            id_cotizacion=row["ID_COTIZACION"],
+            id_incidente=row["ID_INCIDENTE"],
+            id_proveedor=row["ID_PROVEEDOR"],
+            valor_materiales=row["VALOR_MATERIALES"],
+            valor_mano_obra=row["VALOR_MANO_OBRA"],
+            valor_total=row["VALOR_TOTAL"],
+            descripcion_trabajo=row["DESCRIPCION_TRABAJO"],
+            dias_estimados=row["DIAS_ESTIMADOS"],
+            fecha_cotizacion=row["FECHA_COTIZACION"],
+            estado_cotizacion=row["ESTADO_COTIZACION"],
+            created_at=row["CREATED_AT"],
+            created_by=row["CREATED_BY"],
         )
 
     def guardar(self, incidente: Incidente) -> int:
@@ -82,13 +82,13 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
             incidente.aprobado_por,
             incidente.fecha_arreglo,
             incidente.estado,
-            incidente.created_by
+            incidente.created_by,
         )
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
             conn.commit()
-            return self.db.get_last_insert_id(cursor, 'INCIDENTES', 'ID_INCIDENTE')
+            return self.db.get_last_insert_id(cursor, "INCIDENTES", "ID_INCIDENTE")
 
     def actualizar(self, incidente: Incidente) -> None:
         placeholder = self.db.get_placeholder()
@@ -116,7 +116,7 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
             incidente.motivo_cancelacion,
             incidente.updated_at,
             incidente.updated_by,
-            incidente.id_incidente
+            incidente.id_incidente,
         )
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
@@ -132,7 +132,9 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
         row = cursor.fetchone()
         return self._mapear_incidente(row) if row else None
 
-    def listar(self, id_propiedad: Optional[int] = None, estado: Optional[str] = None) -> List[Incidente]:
+    def listar(
+        self, id_propiedad: Optional[int] = None, estado: Optional[str] = None
+    ) -> List[Incidente]:
         placeholder = self.db.get_placeholder()
         query = "SELECT * FROM INCIDENTES WHERE 1=1"
         params = []
@@ -143,7 +145,7 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
             query += f" AND ESTADO = {placeholder}"
             params.append(estado)
         query += " ORDER BY FECHA_INCIDENTE DESC"
-        
+
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         cursor.execute(query, tuple(params))
@@ -162,7 +164,7 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
         pass  # print("\n" + "="*80) [OpSec Removed]
         pass  # print("DEBUG REPOSITORIO: guardar_cotizacion INICIADO") [OpSec Removed]
         # ... (skipping generic types print for brevity, keeping SQL fix)
-        
+
         placeholder = self.db.get_placeholder()
         query = f"""
         INSERT INTO COTIZACIONES (
@@ -180,20 +182,21 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
             cotizacion.dias_estimados,
             cotizacion.fecha_cotizacion,
             cotizacion.estado_cotizacion,
-            cotizacion.created_by
+            cotizacion.created_by,
         )
-        
+
         try:
             with self.db.obtener_conexion() as conn:
                 cursor = conn.cursor()
                 cursor.execute(query, params)
                 conn.commit()
                 return cursor.lastrowid
-        except Exception as ex:
+        except Exception:
             import traceback
+
             traceback.print_exc()
             raise
-            
+
     def obtener_cotizaciones(self, id_incidente: int) -> List[Cotizacion]:
         placeholder = self.db.get_placeholder()
         query = f"SELECT * FROM COTIZACIONES WHERE ID_INCIDENTE = {placeholder}"
@@ -201,7 +204,7 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
         cursor = self.db.get_dict_cursor(conn)
         cursor.execute(query, (id_incidente,))
         return [self._mapear_cotizacion(row) for row in cursor.fetchall()]
-        
+
     def actualizar_cotizacion(self, cotizacion: Cotizacion) -> None:
         placeholder = self.db.get_placeholder()
         query = f"""
@@ -216,7 +219,7 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
             conn.commit()
 
     # ==================== HISTORIAL DE INCIDENTES ====================
-    
+
     def crear_tabla_historial(self) -> None:
         """Crea la tabla de historial si no existe."""
         query = """
@@ -238,28 +241,28 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
             cursor = conn.cursor()
             cursor.execute(query)
             conn.commit()
-    
+
     def _mapear_historial(self, row: sqlite3.Row) -> HistorialIncidente:
         """Mapea una fila de BD a entidad HistorialIncidente."""
         if not row:
             return None
         return HistorialIncidente(
-            id_historial=row['ID_HISTORIAL'],
-            id_incidente=row['ID_INCIDENTE'],
-            estado_anterior=row['ESTADO_ANTERIOR'],
-            estado_nuevo=row['ESTADO_NUEVO'],
-            fecha_cambio=row['FECHA_CAMBIO'],
-            usuario=row['USUARIO'],
-            comentario=row['COMENTARIO'],
-            tipo_accion=row['TIPO_ACCION'],
-            datos_adicionales=row['DATOS_ADICIONALES'],
-            created_at=row['CREATED_AT']
+            id_historial=row["ID_HISTORIAL"],
+            id_incidente=row["ID_INCIDENTE"],
+            estado_anterior=row["ESTADO_ANTERIOR"],
+            estado_nuevo=row["ESTADO_NUEVO"],
+            fecha_cambio=row["FECHA_CAMBIO"],
+            usuario=row["USUARIO"],
+            comentario=row["COMENTARIO"],
+            tipo_accion=row["TIPO_ACCION"],
+            datos_adicionales=row["DATOS_ADICIONALES"],
+            created_at=row["CREATED_AT"],
         )
-    
+
     def guardar_historial(self, historial: HistorialIncidente) -> int:
         """Guarda un registro de historial de incidente."""
         # Se asume que la tabla existe (migración ejecutada)
-        
+
         placeholder = self.db.get_placeholder()
         query = f"""
         INSERT INTO HISTORIAL_INCIDENTES (
@@ -274,17 +277,17 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
             historial.usuario,
             historial.comentario,
             historial.tipo_accion,
-            historial.datos_adicionales
+            historial.datos_adicionales,
         )
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
             conn.commit()
             return cursor.lastrowid
-    
+
     def obtener_historial(self, id_incidente: int) -> List[HistorialIncidente]:
         """Obtiene el historial completo de un incidente ordenado por fecha."""
-        
+
         placeholder = self.db.get_placeholder()
         query = f"""
         SELECT * FROM HISTORIAL_INCIDENTES 
@@ -295,4 +298,3 @@ class RepositorioIncidentesSQLite(RepositorioIncidentes):
         cursor = self.db.get_dict_cursor(conn)
         cursor.execute(query, (id_incidente,))
         return [self._mapear_historial(row) for row in cursor.fetchall()]
-

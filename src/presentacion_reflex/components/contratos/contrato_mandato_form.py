@@ -3,10 +3,10 @@ Formulario modal para Contratos de Mandato - Reflex
 """
 
 import reflex as rx
-from typing import Dict, Any
-from src.presentacion_reflex.state.contratos_state import ContratosState
+
 from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
 from src.presentacion_reflex.components.image_gallery import image_gallery
+from src.presentacion_reflex.state.contratos_state import ContratosState
 
 
 def contrato_mandato_form() -> rx.Component:
@@ -16,7 +16,7 @@ def contrato_mandato_form() -> rx.Component:
     """
     return rx.dialog.root(
         rx.dialog.content(
-             # --- ELITE HEADER ---
+            # --- ELITE HEADER ---
             rx.vstack(
                 rx.hstack(
                     rx.icon("file-text", size=24, color="var(--blue-9)"),
@@ -24,7 +24,7 @@ def contrato_mandato_form() -> rx.Component:
                         rx.cond(
                             ContratosState.modal_mode == "crear_mandato",
                             "Nuevo Contrato de Mandato",
-                            "Editar Contrato de Mandato"
+                            "Editar Contrato de Mandato",
                         ),
                         size="6",
                         weight="bold",
@@ -41,7 +41,6 @@ def contrato_mandato_form() -> rx.Component:
                 spacing="3",
                 padding_bottom="4",
             ),
-            
             # Mensaje de error
             rx.cond(
                 ContratosState.error_message != "",
@@ -53,14 +52,12 @@ def contrato_mandato_form() -> rx.Component:
                     margin_bottom="1rem",
                 ),
             ),
-            
             # Tabs Structure
             rx.tabs.root(
                 rx.tabs.list(
                     rx.tabs.trigger("Datos del Contrato", value="datos"),
                     rx.tabs.trigger("Documentos", value="documentos"),
                 ),
-                
                 # TAB 1: DATOS (Formulario Existente)
                 rx.tabs.content(
                     rx.form(
@@ -72,7 +69,7 @@ def contrato_mandato_form() -> rx.Component:
                                     rx.select.trigger(
                                         rx.icon("home", size=16),
                                         placeholder="Seleccione una propiedad",
-                                        variant="surface"
+                                        variant="surface",
                                     ),
                                     rx.select.content(
                                         rx.select.group(
@@ -80,9 +77,11 @@ def contrato_mandato_form() -> rx.Component:
                                                 rx.cond(
                                                     ContratosState.modal_mode == "crear_mandato",
                                                     ContratosState.propiedades_mandato_libre_select_options,
-                                                    ContratosState.propiedades_select_options
+                                                    ContratosState.propiedades_select_options,
                                                 ),
-                                                lambda opcion: rx.select.item(opcion[0], value=opcion[1])
+                                                lambda opcion: rx.select.item(
+                                                    opcion[0], value=opcion[1]
+                                                ),
                                             )
                                         )
                                     ),
@@ -95,7 +94,6 @@ def contrato_mandato_form() -> rx.Component:
                                 align="start",
                                 width="100%",
                             ),
-                            
                             # Propietario y Asesor (2 columnas)
                             rx.grid(
                                 rx.vstack(
@@ -104,20 +102,24 @@ def contrato_mandato_form() -> rx.Component:
                                         rx.select.trigger(
                                             rx.icon("user", size=16),
                                             placeholder="Seleccione el propietario",
-                                            variant="surface"
+                                            variant="surface",
                                         ),
                                         rx.select.content(
                                             rx.select.group(
                                                 rx.foreach(
                                                     ContratosState.propietarios_select_options,
-                                                    lambda opcion: rx.select.item(opcion[0], value=opcion[1])
+                                                    lambda opcion: rx.select.item(
+                                                        opcion[0], value=opcion[1]
+                                                    ),
                                                 )
                                             )
                                         ),
                                         name="id_propietario",
                                         required=True,
                                         value=ContratosState.form_data.get("id_propietario", ""),
-                                        on_change=lambda v: ContratosState.set_form_field("id_propietario", v),
+                                        on_change=lambda v: ContratosState.set_form_field(
+                                            "id_propietario", v
+                                        ),
                                     ),
                                     spacing="1",
                                     width="100%",
@@ -128,20 +130,24 @@ def contrato_mandato_form() -> rx.Component:
                                         rx.select.trigger(
                                             rx.icon("briefcase", size=16),
                                             placeholder="Seleccione el asesor",
-                                            variant="surface"
+                                            variant="surface",
                                         ),
                                         rx.select.content(
                                             rx.select.group(
                                                 rx.foreach(
                                                     ContratosState.asesores_select_options,
-                                                    lambda opcion: rx.select.item(opcion[0], value=opcion[1])
+                                                    lambda opcion: rx.select.item(
+                                                        opcion[0], value=opcion[1]
+                                                    ),
                                                 )
                                             )
                                         ),
                                         name="id_asesor",
                                         required=True,
                                         value=ContratosState.form_data.get("id_asesor", ""),
-                                        on_change=lambda v: ContratosState.set_form_field("id_asesor", v),
+                                        on_change=lambda v: ContratosState.set_form_field(
+                                            "id_asesor", v
+                                        ),
                                     ),
                                     spacing="1",
                                     width="100%",
@@ -150,7 +156,6 @@ def contrato_mandato_form() -> rx.Component:
                                 spacing="4",
                                 width="100%",
                             ),
-                            
                             # Fechas (2 columnas)
                             rx.grid(
                                 rx.vstack(
@@ -162,7 +167,7 @@ def contrato_mandato_form() -> rx.Component:
                                         required=True,
                                         value=ContratosState.form_data.get("fecha_inicio", ""),
                                         on_change=ContratosState.on_change_fecha_inicio,
-                                        variant="surface"
+                                        variant="surface",
                                     ),
                                     spacing="1",
                                     width="100%",
@@ -176,7 +181,7 @@ def contrato_mandato_form() -> rx.Component:
                                         required=True,
                                         value=ContratosState.form_data.get("fecha_fin", ""),
                                         on_change=ContratosState.on_change_fecha_fin,
-                                        variant="surface"
+                                        variant="surface",
                                     ),
                                     spacing="1",
                                     width="100%",
@@ -185,7 +190,6 @@ def contrato_mandato_form() -> rx.Component:
                                 spacing="4",
                                 width="100%",
                             ),
-                            
                             # Duración y Canon (2 columnas)
                             rx.grid(
                                 rx.vstack(
@@ -199,7 +203,7 @@ def contrato_mandato_form() -> rx.Component:
                                         min=1,
                                         read_only=True,
                                         value=ContratosState.form_data.get("duracion_meses", "12"),
-                                        variant="surface"
+                                        variant="surface",
                                     ),
                                     spacing="1",
                                     width="100%",
@@ -215,7 +219,7 @@ def contrato_mandato_form() -> rx.Component:
                                         min=0,
                                         read_only=True,
                                         value=ContratosState.form_data.get("canon", ""),
-                                        variant="surface"
+                                        variant="surface",
                                     ),
                                     spacing="1",
                                     width="100%",
@@ -224,7 +228,6 @@ def contrato_mandato_form() -> rx.Component:
                                 spacing="4",
                                 width="100%",
                             ),
-                            
                             # Comisión e IVA (2 columnas)
                             rx.grid(
                                 rx.vstack(
@@ -238,9 +241,13 @@ def contrato_mandato_form() -> rx.Component:
                                         min=0,
                                         max=100,
                                         step="0.01",
-                                        value=ContratosState.form_data.get("comision_porcentaje", "10"),
-                                        on_change=lambda v: ContratosState.set_form_field("comision_porcentaje", v),
-                                        variant="surface"
+                                        value=ContratosState.form_data.get(
+                                            "comision_porcentaje", "10"
+                                        ),
+                                        on_change=lambda v: ContratosState.set_form_field(
+                                            "comision_porcentaje", v
+                                        ),
+                                        variant="surface",
                                     ),
                                     rx.text(
                                         "Base 100 (10 = 10%)",
@@ -261,8 +268,10 @@ def contrato_mandato_form() -> rx.Component:
                                         max=100,
                                         step="0.01",
                                         value=ContratosState.form_data.get("iva_porcentaje", "19"),
-                                        on_change=lambda v: ContratosState.set_form_field("iva_porcentaje", v),
-                                        variant="surface"
+                                        on_change=lambda v: ContratosState.set_form_field(
+                                            "iva_porcentaje", v
+                                        ),
+                                        variant="surface",
                                     ),
                                     rx.text(
                                         "Base 100 (19 = 19%)",
@@ -276,11 +285,9 @@ def contrato_mandato_form() -> rx.Component:
                                 spacing="4",
                                 width="100%",
                             ),
-                            
                             spacing="4",
                             width="100%",
                         ),
-                        
                         # Botones (Footer)
                         rx.flex(
                             rx.dialog.close(
@@ -298,7 +305,7 @@ def contrato_mandato_form() -> rx.Component:
                                     rx.hstack(
                                         rx.icon("save", size=18),
                                         rx.text("Guardar Contrato"),
-                                        spacing="2"
+                                        spacing="2",
                                     ),
                                 ),
                                 type="submit",
@@ -309,66 +316,63 @@ def contrato_mandato_form() -> rx.Component:
                                     "_hover": {
                                         "opacity": 0.9,
                                         "transform": "translateY(-1px)",
-                                    }
-                                }
+                                    },
+                                },
                             ),
                             spacing="3",
                             margin_top="2rem",
                             justify="end",
                             width="100%",
                         ),
-                        
                         on_submit=ContratosState.save_contrato,
                         reset_on_submit=True,
                     ),
                     value="datos",
                     padding_top="4",
                 ),
-
                 # TAB 2: DOCUMENTOS
                 rx.tabs.content(
                     rx.vstack(
                         rx.cond(
                             ContratosState.modal_mode == "crear_mandato",
-                             rx.callout(
+                            rx.callout(
                                 "Guarde el contrato primero para subir documentos.",
                                 icon="info",
                                 color_scheme="blue",
-                                width="100%"
+                                width="100%",
                             ),
                             rx.vstack(
                                 document_manager_elite(ContratosState),
                                 rx.separator(),
                                 image_gallery(
                                     documentos=ContratosState.documentos,
-                                    on_delete=ContratosState.eliminar_documento
+                                    on_delete=ContratosState.eliminar_documento,
                                 ),
                                 spacing="4",
-                                width="100%"
-                            )
+                                width="100%",
+                            ),
                         ),
                         spacing="4",
-                        width="100%"
+                        width="100%",
                     ),
                     value="documentos",
                     padding_top="4",
                 ),
-                
                 default_value="datos",
                 width="100%",
             ),
-
             max_width="750px",
             border_radius="16px",
             padding="2rem",
         ),
         open=rx.cond(
-            (ContratosState.modal_open) & (
-                (ContratosState.modal_mode == "crear_mandato") |
-                (ContratosState.modal_mode == "editar_mandato")
+            (ContratosState.modal_open)
+            & (
+                (ContratosState.modal_mode == "crear_mandato")
+                | (ContratosState.modal_mode == "editar_mandato")
             ),
             True,
-            False
+            False,
         ),
         on_open_change=ContratosState.close_modal,
     )

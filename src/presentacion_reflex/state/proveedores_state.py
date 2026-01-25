@@ -1,30 +1,31 @@
+from typing import Any, Dict, List
+
 import reflex as rx
-from typing import List, Dict, Any, Optional
+
 from src.aplicacion.servicios.servicio_proveedores import ServicioProveedores
-from src.aplicacion.servicios.servicio_personas import ServicioPersonas
-from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
-from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
 from src.infraestructura.persistencia.database import db_manager
-
-
+from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
+from src.infraestructura.persistencia.repositorio_proveedores_sqlite import (
+    RepositorioProveedoresSQLite,
+)
 
 
 class ProveedoresState(rx.State):
     """Estado para la gestión de proveedores."""
-    
+
     # Datos
     proveedores: List[Dict[str, Any]] = []
-    personas_disponibles: List[Dict[str, Any]] = [] # Para el select de crear
-    
+    personas_disponibles: List[Dict[str, Any]] = []  # Para el select de crear
+
     # Filtros y Búsqueda
     search_text: str = ""
     filter_especialidad: str = "Todas"
-    
+
     # Paginación
     current_page: int = 1
     page_size: int = 10
     total_items: int = 0
-    
+
     # Modal y Formulario
     show_form_modal: bool = False
     is_editing: bool = False
@@ -33,43 +34,40 @@ class ProveedoresState(rx.State):
         "id_persona": "",
         "especialidad": "Otros",
         "calificacion": 5.0,
-        "observaciones": ""
+        "observaciones": "",
     }
-    
+
     # UI State
     is_loading: bool = False
     error_message: str = ""
-    
+
     def on_load(self):
         """Carga inicial de datos."""
-        return [
-            ProveedoresState.load_data,
-            ProveedoresState.load_personas_options
-        ]
-        
+        return [ProveedoresState.load_data, ProveedoresState.load_personas_options]
+
     @rx.event(background=True)
     async def load_data(self):
         """Carga la lista de proveedores."""
         async with self:
             self.is_loading = True
             self.error_message = ""
-            
+
         try:
             repo = RepositorioProveedoresSQLite(db_manager)
             servicio = ServicioProveedores(db_manager)
             servicio.repo = repo
-            
+
             # Obtener todos (el servicio filtra por estado_registro=1)
             # Nota: El servicio actual devuelve objetos Proveedor.
             # Necesitamos filtrar en memoria o mejorar el repositorio para paginación/filtros SQL.
             # Por simplicidad y tamaño esperado, filtramos en memoria por ahora.
-            
+
             todos = servicio.listar_proveedores()
-            
+
             # Convertir a dicts y filtrar
             filtered = []
             search_lower = self.search_text.lower()
-            
+
             for p in todos:
                 # Mapear objeto a dict para UI
                 p_dict = {
@@ -79,22 +77,22 @@ class ProveedoresState(rx.State):
                     "contacto": p.contacto or "Sin Contacto",
                     "especialidad": p.especialidad,
                     "calificacion": p.calificacion,
-                    "observaciones": p.observaciones or ""
+                    "observaciones": p.observaciones or "",
                 }
-                
+
                 # Filtros
                 match_text = (
-                    search_lower in p_dict["nombre"].lower() or 
-                    search_lower in p_dict["especialidad"].lower()
+                    search_lower in p_dict["nombre"].lower()
+                    or search_lower in p_dict["especialidad"].lower()
                 )
                 match_spec = (
-                    self.filter_especialidad == "Todas" or 
-                    self.filter_especialidad == p_dict["especialidad"]
+                    self.filter_especialidad == "Todas"
+                    or self.filter_especialidad == p_dict["especialidad"]
                 )
-                
+
                 if match_text and match_spec:
                     filtered.append(p_dict)
-            
+
             async with self:
                 self.total_items = len(filtered)
                 # Paginación en memoria
@@ -102,7 +100,7 @@ class ProveedoresState(rx.State):
                 end = start + self.page_size
                 self.proveedores = filtered[start:end]
                 self.is_loading = False
-                
+
         except Exception as e:
             async with self:
                 self.error_message = f"Error carga: {str(e)}"
@@ -114,10 +112,10 @@ class ProveedoresState(rx.State):
         try:
             repo_personas = RepositorioPersonaSQLite(db_manager)
             personas = repo_personas.listar_activos()
-            
+
             # TODO: Idealmente solo cargar personas que NO son proveedores aún.
             # O mostrar todos y validar en backend.
-            
+
             # Simple conversion for select
             options = [
                 {"value": str(p.id_persona), "label": f"{p.nombre_completo} ({p.numero_documento})"}
@@ -125,7 +123,7 @@ class ProveedoresState(rx.State):
             ]
             async with self:
                 self.personas_disponibles = options
-        except Exception as e:
+        except Exception:
             pass  # print(f"Error loading personas: {e}") [OpSec Removed]
 
     # Setters y Helpers
@@ -133,7 +131,7 @@ class ProveedoresState(rx.State):
         self.search_text = value
         self.current_page = 1
         return ProveedoresState.load_data
-        
+
     def set_filter_especialidad(self, value: str):
         self.filter_especialidad = value
         self.current_page = 1
@@ -143,7 +141,7 @@ class ProveedoresState(rx.State):
         if self.current_page * self.page_size < self.total_items:
             self.current_page += 1
             return ProveedoresState.load_data
-            
+
     def prev_page(self):
         if self.current_page > 1:
             self.current_page -= 1
@@ -157,10 +155,10 @@ class ProveedoresState(rx.State):
             "id_persona": "",
             "especialidad": "Otros",
             "calificacion": 5.0,
-            "observaciones": ""
+            "observaciones": "",
         }
         self.show_form_modal = True
-        
+
     def open_edit_modal(self, proveedor: Dict):
         self.is_editing = True
         self.form_data = {
@@ -168,10 +166,10 @@ class ProveedoresState(rx.State):
             "id_persona": str(proveedor["id_persona"]),
             "especialidad": proveedor["especialidad"],
             "calificacion": float(proveedor["calificacion"]),
-            "observaciones": proveedor["observaciones"]
+            "observaciones": proveedor["observaciones"],
         }
         self.show_form_modal = True
-        
+
     def close_modal(self):
         self.show_form_modal = False
         self.error_message = ""
@@ -189,32 +187,32 @@ class ProveedoresState(rx.State):
         async with self:
             self.is_loading = True
             self.error_message = ""
-            
+
         try:
             repo = RepositorioProveedoresSQLite(db_manager)
             servicio = ServicioProveedores(db_manager)
             servicio.repo = repo
-            
+
             datos = self.form_data.copy()
-            
+
             # Validaciones simples
             if not datos["id_persona"]:
                 raise ValueError("Debe seleccionar una persona")
-            
-            usuario = "admin" # TODO: Auth
-            
+
+            usuario = "admin"  # TODO: Auth
+
             if self.is_editing:
                 servicio.actualizar_proveedor(datos["id_proveedor"], datos)
             else:
                 datos["id_persona"] = int(datos["id_persona"])
                 servicio.crear_proveedor(datos, usuario)
-            
+
             async with self:
                 self.show_form_modal = False
                 self.is_loading = False
-            
+
             yield ProveedoresState.load_data
-            
+
         except Exception as e:
             async with self:
                 self.error_message = str(e)

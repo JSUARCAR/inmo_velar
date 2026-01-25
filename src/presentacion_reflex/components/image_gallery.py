@@ -1,11 +1,13 @@
+from typing import Any, Callable, Dict, List
+
 import reflex as rx
-from typing import List, Callable, Dict, Any
+
 
 def image_gallery(
     documentos: List[Dict[str, Any]],
     on_delete: Callable,
     allow_lightbox: bool = True,
-    grid_cols: int = 4
+    grid_cols: int = 4,
 ) -> rx.Component:
     """
     Galería de imágenes con:
@@ -13,7 +15,7 @@ def image_gallery(
     - Lightbox para vista completa (usando Dialog)
     - Acciones de descarga/eliminar
     """
-    
+
     return rx.box(
         rx.cond(
             documentos.length() == 0,
@@ -37,7 +39,7 @@ def image_gallery(
                                     rx.cond(
                                         doc.get("mime_type", "").to_string().contains("image"),
                                         rx.image(
-                                            src=f"http://127.0.0.1:8000/api/storage/{doc.get('id_documento')}/download", # IP explícita para evitar problemas de resolución
+                                            src=f"http://127.0.0.1:8000/api/storage/{doc.get('id_documento')}/download",  # IP explícita para evitar problemas de resolución
                                             object_fit="cover",
                                             width="100%",
                                             height="140px",
@@ -50,7 +52,7 @@ def image_gallery(
                                             width="100%",
                                             height="140px",
                                             background="var(--gray-3)",
-                                        )
+                                        ),
                                     ),
                                     side="top",
                                     pb="current",
@@ -64,7 +66,10 @@ def image_gallery(
                                     ),
                                     rx.hstack(
                                         rx.badge(
-                                            doc.get("extension", "").to_string().upper().replace(".", ""),
+                                            doc.get("extension", "")
+                                            .to_string()
+                                            .upper()
+                                            .replace(".", ""),
                                             variant="soft",
                                             color_scheme="gray",
                                             size="1",
@@ -77,7 +82,7 @@ def image_gallery(
                                                 color_scheme="blue",
                                             ),
                                             href=f"http://127.0.0.1:8000/api/storage/{doc.get('id_documento')}/download?force_download=true",
-                                            is_external=True
+                                            is_external=True,
                                         ),
                                         rx.spacer(),
                                         rx.icon_button(
@@ -94,14 +99,19 @@ def image_gallery(
                                     padding="2",
                                 ),
                                 variant="classic",
-                                _hover={"transform": "translateY(-2px)", "box_shadow": "0 4px 8px rgba(0,0,0,0.1)"},
+                                _hover={
+                                    "transform": "translateY(-2px)",
+                                    "box_shadow": "0 4px 8px rgba(0,0,0,0.1)",
+                                },
                                 transition="all 0.2s ease",
                             ),
                         ),
                         rx.context_menu.content(
                             rx.context_menu.item(
                                 "Descargar",
-                                on_select=rx.redirect(path=f"http://127.0.0.1:8000/api/storage/{doc.get('id_documento')}/download?force_download=true"),
+                                on_select=rx.redirect(
+                                    path=f"http://127.0.0.1:8000/api/storage/{doc.get('id_documento')}/download?force_download=true"
+                                ),
                             ),
                             rx.context_menu.separator(),
                             rx.context_menu.item(

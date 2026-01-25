@@ -1,11 +1,15 @@
+from typing import Dict, List, Optional, TypedDict
+
 import reflex as rx
-from typing import List, Dict, Any, Optional, TypedDict
+
+from src.aplicacion.servicios.servicio_personas import ServicioPersonas
 from src.infraestructura.persistencia.database import db_manager
-from src.aplicacion.servicios.servicio_personas import ServicioPersonas, PersonaConRoles
 from src.presentacion_reflex.state.auth_state import AuthState
+
 
 class PersonaDict(TypedDict):
     """Estructura tipada para serialización de Persona en Reflex."""
+
     id: int
     nombre: str
     documento: str
@@ -19,52 +23,53 @@ class PersonaDict(TypedDict):
     estado: str
     fecha_creacion: str
 
+
 class PersonasState(rx.State):
     """Estado para la gestión de Personas."""
-    
+
     # --- Datos de la Tabla ---
     personas: List[PersonaDict] = []
     total_items: int = 0
     page: int = 1
     page_size: int = 10
     total_pages: int = 1
-    
+
     # --- Filtros ---
     search_query: str = ""
     filtro_rol: str = "Todos"
     fecha_inicio: str = ""
     fecha_fin: str = ""
-    
+
     # --- UI State ---
     is_loading: bool = False
-    
+
     # --- Modal State ---
     show_modal: bool = False
     is_editing: bool = False
     current_persona_id: Optional[int] = None
-    
+
     # --- Form State ---
     form_data: Dict[str, str] = {}
     error_message: str = ""
-    
+
     # --- Role Management ---
     selected_roles: List[str] = []  # Changed from single string to List
     available_roles: List[str] = ["Propietario", "Arrendatario", "Codeudor", "Asesor", "Proveedor"]
-    
+
     # --- Elite UX Features ---
     view_mode: str = "table"  # "table" or "cards"
     modal_step: int = 1  # Wizard step (1, 2, 3)
     form_validation_errors: Dict[str, str] = {}  # Field-level validation errors
-    
+
     def load_personas(self):
         """Carga la lista de personas aplicando filtros y paginación."""
         self.is_loading = True
         try:
             servicio = ServicioPersonas(db_manager)
-            
+
             # Mapear filtro "Todos" a None
             rol_filter = self.filtro_rol if self.filtro_rol != "Todos" else None
-            
+
             # Obtener resultado paginado
             resultado = servicio.listar_personas_paginado(
                 page=self.page,
@@ -72,11 +77,11 @@ class PersonasState(rx.State):
                 filtro_rol=rol_filter,
                 busqueda=self.search_query if self.search_query else None,
                 fecha_inicio=self.fecha_inicio if self.fecha_inicio else None,
-                fecha_fin=self.fecha_fin if self.fecha_fin else None
+                fecha_fin=self.fecha_fin if self.fecha_fin else None,
             )
-            
+
             self.total_items = resultado.total
-            
+
             # Convertir objetos a diccionarios para serialización Reflex
             self.personas = [
                 {
@@ -95,12 +100,13 @@ class PersonasState(rx.State):
                 }
                 for p in resultado.items
             ]
-            
+
             # Calcular total páginas
             self.total_pages = (self.total_items + self.page_size - 1) // self.page_size
-            if self.total_pages < 1: self.total_pages = 1
-            
-        except Exception as e:
+            if self.total_pages < 1:
+                self.total_pages = 1
+
+        except Exception:
             pass  # print(f"Error cargando personas: {e}") [OpSec Removed]
             self.personas = []
         finally:
@@ -109,7 +115,7 @@ class PersonasState(rx.State):
     def set_search(self, query: str):
         """Actualiza búsqueda y recarga."""
         self.search_query = query
-        self.page = 1 
+        self.page = 1
         self.load_personas()
 
     def set_filtro_rol(self, rol: str):
@@ -117,13 +123,13 @@ class PersonasState(rx.State):
         self.filtro_rol = rol
         self.page = 1
         self.load_personas()
-        
+
     def set_fecha_inicio(self, fecha: str):
         """Actualiza fecha inicio y recarga."""
         self.fecha_inicio = fecha
         self.page = 1
         self.load_personas()
-        
+
     def set_fecha_fin(self, fecha: str):
         """Actualiza fecha fin y recarga."""
         self.fecha_fin = fecha
@@ -135,29 +141,31 @@ class PersonasState(rx.State):
         pass  # print("[DEBUG_EXPORT] Iniciando proceso de exportación CSV") [OpSec Removed]
         try:
             yield rx.toast.info("Generando archivo...", position="bottom-right")
-            
+
             servicio = ServicioPersonas(db_manager)
             rol_filter = self.filtro_rol if self.filtro_rol != "Todos" else None
-            
+
             pass  # print(f"[DEBUG_EXPORT] Filtros - Rol: {rol_filter}, Busqueda: {self.search_query}") [OpSec Removed]
-            
+
             # Obtener datos CSV
             csv_data = servicio.exportar_personas_csv(
                 filtro_rol=rol_filter,
                 busqueda=self.search_query if self.search_query else None,
                 fecha_inicio=self.fecha_inicio if self.fecha_inicio else None,
-                fecha_fin=self.fecha_fin if self.fecha_fin else None
+                fecha_fin=self.fecha_fin if self.fecha_fin else None,
             )
-            
+
             data_len = len(csv_data)
             pass  # print(f"[DEBUG_EXPORT] Datos CSV generados. Longitud: {data_len} bytes") [OpSec Removed]
-            
-            if data_len < 10: # Simple check for empty or header-only file issues (less likely with stringio but good to print)
+
+            if (
+                data_len < 10
+            ):  # Simple check for empty or header-only file issues (less likely with stringio but good to print)
                 pass  # print("[DEBUG_EXPORT] ADVERTENCIA: El archivo CSV parece muy pequeño.") [OpSec Removed]
 
             # Use direct data download to avoid static file serving issues
             # We skip writing to disk completely to prevent 404/HTML errors
-            
+
             # Encode to bytes with BOM for Excel compatibility if it's a string
             if isinstance(csv_data, str):
                 data_bytes = csv_data.encode("utf-8-sig")
@@ -166,24 +174,26 @@ class PersonasState(rx.State):
 
             data_len = len(data_bytes)
             pass  # print(f"[DEBUG_EXPORT] Iniciando descarga directa ({data_len} bytes)") [OpSec Removed]
-            
+
             if data_len < 10:
-                 pass  # print("[DEBUG_EXPORT] ADVERTENCIA: El archivo a descargar parece vacio.") [OpSec Removed]
+                pass  # print("[DEBUG_EXPORT] ADVERTENCIA: El archivo a descargar parece vacio.") [OpSec Removed]
 
             # Usar rx.download con DATA para enviar el contenido directamente
             # Esto evita depender de la carpeta .web/public o assets
-            
+
             import time
+
             timestamp = int(time.time())
             filename = f"personas_export_{timestamp}.csv"
-            
+
             yield rx.download(data=data_bytes, filename=filename)
-            
+
             yield rx.toast.success("Descarga iniciada", position="bottom-right")
-            
+
         except Exception as e:
             pass  # print(f"[DEBUG_EXPORT] ERROR: {e}") [OpSec Removed]
             import traceback
+
             traceback.print_exc()
             yield rx.toast.error(f"Error al exportar: {str(e)}", position="bottom-right")
 
@@ -213,50 +223,49 @@ class PersonasState(rx.State):
     def is_rol_selected(self, rol: str) -> bool:
         """Helper for UI to check if role is selected."""
         return rol in self.selected_roles
-    
+
     # --- Computed vars for role checking (for UI conditional rendering) ---
-    
+
     @rx.var
     def is_propietario_selected(self) -> bool:
         """Check if Propietario role is selected."""
         return "Propietario" in self.selected_roles
-    
+
     @rx.var
     def is_arrendatario_selected(self) -> bool:
         """Check if Arrendatario role is selected."""
         return "Arrendatario" in self.selected_roles
-    
+
     @rx.var
     def is_asesor_selected(self) -> bool:
         """Check if Asesor role is selected."""
         return "Asesor" in self.selected_roles
-    
+
     @rx.var
     def is_proveedor_selected(self) -> bool:
         """Check if Proveedor role is selected."""
         return "Proveedor" in self.selected_roles
 
-
     # --- Elite UX Methods ---
-    
+
     def toggle_view_mode(self):
         """Toggle between table and cards view."""
         self.view_mode = "cards" if self.view_mode == "table" else "table"
-    
+
     def next_modal_step(self):
         """Advance to next wizard step."""
         if self.modal_step < 3:
             self.modal_step += 1
-    
+
     def handle_form_submit(self, form_data: dict):
         """Handle form submission for all wizard steps."""
         pass  # print(f"📝 Form submitted at step {self.modal_step}") [OpSec Removed]
         pass  # print(f"Received form data: {form_data}") [OpSec Removed]
-        
+
         # Merge new form data with existing data
         self.form_data.update(form_data)
         pass  # print(f"Updated form_data: {self.form_data}") [OpSec Removed]
-        
+
         # Decide what to do based on current step
         if self.modal_step < 3:
             # Steps 1-2: Save data and advance to next step
@@ -266,13 +275,12 @@ class PersonasState(rx.State):
             # Step 3: Final save to database (background task requires yield)
             pass  # print("💾 Calling save_persona for final save") [OpSec Removed]
             yield PersonasState.save_persona(self.form_data)
-    
-    
+
     def prev_modal_step(self):
         """Go back to previous wizard step."""
         if self.modal_step > 1:
             self.modal_step -= 1
-    
+
     def reset_wizard(self):
         """Reset wizard to step 1."""
         self.modal_step = 1
@@ -297,18 +305,18 @@ class PersonasState(rx.State):
         try:
             self.is_editing = True
             self.current_persona_id = persona["id"]
-            
+
             # 1. Obtener datos completos desde el servicio (incluyendo roles)
             servicio = ServicioPersonas(db_manager)
             persona_completa = servicio.obtener_persona_completa(self.current_persona_id)
-            
+
             if not persona_completa:
                 self.error_message = "Error: La persona no se encuentra en la base de datos."
                 self.show_modal = True
                 return
 
             p_entidad = persona_completa.persona
-            
+
             # 2. Cargar datos básicos
             self.form_data = {
                 "nombre_completo": p_entidad.nombre_completo,
@@ -318,50 +326,58 @@ class PersonasState(rx.State):
                 "correo_electronico": p_entidad.correo_electronico or "",
                 "direccion_principal": p_entidad.direccion_principal or "",
             }
-            
+
             # 3. Cargar roles activos
             self.selected_roles = persona_completa.roles if persona_completa.roles else []
             pass  # print(f"Loaded roles: {self.selected_roles}") [OpSec Removed]
-            
+
             # Cargar datos de cada rol al form_data
             datos_roles = persona_completa.datos_roles
-            
+
             if "Propietario" in datos_roles:
                 prop = datos_roles["Propietario"]
-                self.form_data.update({
-                    "banco_propietario": prop.banco_propietario or "",
-                    "numero_cuenta_propietario": prop.numero_cuenta_propietario or "",
-                    "tipo_cuenta": prop.tipo_cuenta or "",
-                    "observaciones_propietario": prop.observaciones_propietario or "",
-                })
-                
+                self.form_data.update(
+                    {
+                        "banco_propietario": prop.banco_propietario or "",
+                        "numero_cuenta_propietario": prop.numero_cuenta_propietario or "",
+                        "tipo_cuenta": prop.tipo_cuenta or "",
+                        "observaciones_propietario": prop.observaciones_propietario or "",
+                    }
+                )
+
             if "Arrendatario" in datos_roles:
                 arr = datos_roles["Arrendatario"]
-                self.form_data.update({
-                    "direccion_referencia": arr.direccion_referencia or "",
-                    "codigo_aprobacion_seguro": arr.codigo_aprobacion_seguro or "",
-                    "id_seguro": str(arr.id_seguro) if arr.id_seguro else "",
-                })
-                
+                self.form_data.update(
+                    {
+                        "direccion_referencia": arr.direccion_referencia or "",
+                        "codigo_aprobacion_seguro": arr.codigo_aprobacion_seguro or "",
+                        "id_seguro": str(arr.id_seguro) if arr.id_seguro else "",
+                    }
+                )
+
             if "Asesor" in datos_roles:
                 ase = datos_roles["Asesor"]
-                self.form_data.update({
-                    "comision_porcentaje_arriendo": str(ase.comision_porcentaje_arriendo),
-                    "comision_porcentaje_venta": str(ase.comision_porcentaje_venta),
-                    "fecha_vinculacion": ase.fecha_ingreso or "",
-                })
-                
+                self.form_data.update(
+                    {
+                        "comision_porcentaje_arriendo": str(ase.comision_porcentaje_arriendo),
+                        "comision_porcentaje_venta": str(ase.comision_porcentaje_venta),
+                        "fecha_vinculacion": ase.fecha_ingreso or "",
+                    }
+                )
+
             if "Proveedor" in datos_roles:
                 prov = datos_roles["Proveedor"]
-                self.form_data.update({
-                    "especialidad": prov.especialidad or "",
-                    "calificacion": str(prov.calificacion) if prov.calificacion else "",
-                    "observaciones": prov.observaciones or "",
-                })
+                self.form_data.update(
+                    {
+                        "especialidad": prov.especialidad or "",
+                        "calificacion": str(prov.calificacion) if prov.calificacion else "",
+                        "observaciones": prov.observaciones or "",
+                    }
+                )
 
             self.error_message = ""
             self.show_modal = True
-            
+
         except Exception as e:
             pass  # print(f"Error opening edit modal: {e}") [OpSec Removed]
             self.error_message = f"Error al cargar datos: {str(e)}"
@@ -374,43 +390,45 @@ class PersonasState(rx.State):
         self.selected_roles = []
         self.current_persona_id = None
 
-    def validate_form_data(self, form_data: dict, is_editing: bool, selected_roles: List[str]) -> tuple[bool, str]:
+    def validate_form_data(
+        self, form_data: dict, is_editing: bool, selected_roles: List[str]
+    ) -> tuple[bool, str]:
         """Validate form data before saving."""
         pass  # print("\n🔍 === VALIDATE_FORM START ===") [OpSec Removed]
-        
+
         # Required fields for all personas
         if not form_data.get("nombre_completo", "").strip():
             return False, "El nombre completo es obligatorio"
-        
+
         if not form_data.get("numero_documento", "").strip():
             return False, "El número de documento es obligatorio"
-        
+
         if not form_data.get("telefono_principal", "").strip():
             return False, "El teléfono principal es obligatorio"
-        
+
         # Email format validation
         correo = form_data.get("correo_electronico", "")
         if correo and "@" not in correo:
             return False, "El formato del correo electrónico no es válido"
-        
+
         # Must select at least one role (optional requirement, enforcing for consistency)
         if not selected_roles:
-             # It is allowed to have a person without roles in some contexts, 
-             # but usually via UI we want at least one.
-             # Relaxing this constraint if user wants just a contact, 
-             # but let's enforce 1 for now to match previous logic?
-             # For now, let's allow saving without roles if that's the intention, 
-             # or warn. Let's warn.
-             pass 
+            # It is allowed to have a person without roles in some contexts,
+            # but usually via UI we want at least one.
+            # Relaxing this constraint if user wants just a contact,
+            # but let's enforce 1 for now to match previous logic?
+            # For now, let's allow saving without roles if that's the intention,
+            # or warn. Let's warn.
+            pass
 
         # Validate specific fields for EACH selected role
         for rol in selected_roles:
             pass  # print(f"ℹ️ Validating for role: {rol}") [OpSec Removed]
-            
+
             if rol == "Proveedor":
                 if not form_data.get("especialidad", "").strip():
                     return False, "La especialidad es obligatoria para Proveedores"
-                
+
                 cal = form_data.get("calificacion", "")
                 if cal:
                     try:
@@ -428,7 +446,7 @@ class PersonasState(rx.State):
                         return False, "Los porcentajes de comisión deben estar entre 0 y 100"
                 except ValueError:
                     return False, "Los porcentajes deben ser números enteros"
-            
+
         pass  # print("✅ Validation PASSED") [OpSec Removed]
         return True, ""
 
@@ -436,7 +454,7 @@ class PersonasState(rx.State):
     async def save_persona(self, form_data: dict):
         """Guarda la persona (Crear o Actualizar) con roles múltiples."""
         pass  # print("\n=== SAVE_PERSONA MULTI-ROLE CALLED ===") [OpSec Removed]
-        
+
         # CRITICAL: ALL state access must be inside async with self
         async with self:
             self.is_loading = True
@@ -444,20 +462,20 @@ class PersonasState(rx.State):
             is_editing = self.is_editing
             current_persona_id = self.current_persona_id
             selected_roles = self.selected_roles
-            
+
             auth_state = await self.get_state(AuthState)
             user_system = auth_state.user["nombre_usuario"] if auth_state.user else "sistema"
-        
+
         # Validate
         is_valid, error_msg = self.validate_form_data(form_data, is_editing, selected_roles)
-        
+
         if not is_valid:
             async with self:
                 self.is_loading = False
                 self.error_message = error_msg
             yield rx.toast.error(error_msg, duration=4000)
             return
-        
+
         try:
             servicio = ServicioPersonas(db_manager)
             success_message = ""
@@ -478,18 +496,28 @@ class PersonasState(rx.State):
                         "direccion_referencia": form_data.get("direccion_referencia", ""),
                         "codigo_aprobacion_seguro": form_data.get("codigo_aprobacion_seguro", ""),
                         # Convertir a entero solo si hay valor
-                        "id_seguro": int(form_data.get("id_seguro")) if form_data.get("id_seguro") else None,
+                        "id_seguro": (
+                            int(form_data.get("id_seguro")) if form_data.get("id_seguro") else None
+                        ),
                     }
                 elif rol == "Asesor":
                     datos_rol = {
-                        "comision_porcentaje_arriendo": int(form_data.get("comision_porcentaje_arriendo", 0)),
-                        "comision_porcentaje_venta": int(form_data.get("comision_porcentaje_venta", 0)),
+                        "comision_porcentaje_arriendo": int(
+                            form_data.get("comision_porcentaje_arriendo", 0)
+                        ),
+                        "comision_porcentaje_venta": int(
+                            form_data.get("comision_porcentaje_venta", 0)
+                        ),
                         "fecha_vinculacion": form_data.get("fecha_vinculacion", ""),
                     }
                 elif rol == "Proveedor":
                     datos_rol = {
                         "especialidad": form_data.get("especialidad", ""),
-                        "calificacion": int(form_data.get("calificacion")) if form_data.get("calificacion") else None,
+                        "calificacion": (
+                            int(form_data.get("calificacion"))
+                            if form_data.get("calificacion")
+                            else None
+                        ),
                         "observaciones": form_data.get("observaciones", ""),
                     }
                 datos_extras_map[rol] = datos_rol
@@ -497,26 +525,24 @@ class PersonasState(rx.State):
             if is_editing:
                 pass  # print(f"Updating persona {current_persona_id}") [OpSec Removed]
                 servicio.actualizar_persona(
-                    id_persona=current_persona_id,
-                    datos=form_data,
-                    usuario_sistema=user_system
+                    id_persona=current_persona_id, datos=form_data, usuario_sistema=user_system
                 )
-                
+
                 # Gestión de Roles en Edición
                 persona_completa = servicio.obtener_persona_completa(current_persona_id)
                 roles_actuales = persona_completa.roles
-                
+
                 # 1. Añadir/Actualizar roles seleccionados
                 for rol in selected_roles:
                     datos_extra = datos_extras_map.get(rol, {})
-                    
+
                     if rol in roles_actuales:
                         pass  # print(f"Updating existing role: {rol}") [OpSec Removed]
                         servicio.actualizar_datos_rol(
                             id_persona=current_persona_id,
                             nombre_rol=rol,
                             datos_extra=datos_extra,
-                            usuario_sistema=user_system
+                            usuario_sistema=user_system,
                         )
                     else:
                         pass  # print(f"Assigning new role: {rol}") [OpSec Removed]
@@ -524,18 +550,18 @@ class PersonasState(rx.State):
                             id_persona=current_persona_id,
                             nombre_rol=rol,
                             datos_extra=datos_extra,
-                            usuario_sistema=user_system
+                            usuario_sistema=user_system,
                         )
-                
+
                 # 2. Remover roles desmarcados
                 for rol_existente in roles_actuales:
                     if rol_existente not in selected_roles:
                         pass  # print(f"Removing unselected role: {rol_existente}") [OpSec Removed]
                         try:
                             servicio.remover_rol(current_persona_id, rol_existente)
-                        except ValueError as e:
+                        except ValueError:
                             pass  # print(f"Warning removing role: {e}") [OpSec Removed]
-                            # Could happen if trying to remove the last role, 
+                            # Could happen if trying to remove the last role,
                             # but we might want to allow it if logical delete?
                             # Backend says "cannot remove last role".
                             # user might be unchecking everything, which would fail here if processed sequentially.
@@ -549,19 +575,19 @@ class PersonasState(rx.State):
                     datos_persona=form_data,
                     roles=selected_roles,
                     datos_extras=datos_extras_map,
-                    usuario_sistema=user_system
+                    usuario_sistema=user_system,
                 )
                 success_message = "Persona creada correctamente"
-            
+
             # Update state on success
             async with self:
                 self.show_modal = False
                 self.selected_roles = []
                 self.is_loading = False
-            
+
             yield rx.toast.success(success_message, duration=4000)
             yield PersonasState.load_personas
-            
+
         except ValueError as e:
             async with self:
                 self.error_message = str(e)
@@ -570,6 +596,7 @@ class PersonasState(rx.State):
         except Exception as e:
             pass  # print(f"Error saving persona: {e}") [OpSec Removed]
             import traceback
+
             traceback.print_exc()
             async with self:
                 self.error_message = f"Error inesperado: {str(e)}"

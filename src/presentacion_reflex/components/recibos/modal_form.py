@@ -1,6 +1,7 @@
-
 import reflex as rx
+
 from src.presentacion_reflex.state.recibos_state import RecibosState
+
 
 def modal_form() -> rx.Component:
     return rx.dialog.root(
@@ -12,9 +13,7 @@ def modal_form() -> rx.Component:
                     "Registrar Nuevo Recibo",
                 )
             ),
-            rx.dialog.description(
-                "Ingrese los detalles del recibo de servicio público."
-            ),
+            rx.dialog.description("Ingrese los detalles del recibo de servicio público."),
             rx.flex(
                 rx.vstack(
                     rx.text("Propiedad", weight="bold"),
@@ -24,7 +23,7 @@ def modal_form() -> rx.Component:
                             rx.select.group(
                                 rx.foreach(
                                     RecibosState.propiedades_disponibles,
-                                    lambda x: rx.select.item(x["label"], value=x["value"])
+                                    lambda x: rx.select.item(x["label"], value=x["value"]),
                                 )
                             )
                         ),
@@ -123,8 +122,8 @@ def modal_form() -> rx.Component:
                         icon="triangle_alert",
                         color_scheme="red",
                         role="alert",
-                        width="100%"
-                    )
+                        width="100%",
+                    ),
                 ),
                 direction="column",
                 spacing="4",
@@ -134,9 +133,7 @@ def modal_form() -> rx.Component:
                     rx.button("Cancelar", variant="soft", color_scheme="gray"),
                 ),
                 rx.button(
-                    "Guardar", 
-                    on_click=RecibosState.save_recibo,
-                    loading=RecibosState.is_loading
+                    "Guardar", on_click=RecibosState.save_recibo, loading=RecibosState.is_loading
                 ),
                 spacing="3",
                 margin_top="16px",

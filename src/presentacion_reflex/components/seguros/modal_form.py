@@ -3,6 +3,7 @@ Modal Form para Crear/Editar Seguros
 """
 
 import reflex as rx
+
 from src.presentacion_reflex.state.seguros_state import SegurosState
 
 
@@ -11,18 +12,13 @@ def modal_seguro() -> rx.Component:
     return rx.dialog.root(
         rx.dialog.content(
             rx.dialog.title(
-                rx.cond(
-                    SegurosState.is_editing_seguro,
-                    "Editar Seguro",
-                    "Nuevo Seguro"
-                )
+                rx.cond(SegurosState.is_editing_seguro, "Editar Seguro", "Nuevo Seguro")
             ),
             rx.dialog.description(
                 "Ingrese los datos del seguro. Los campos marcados con * son obligatorios.",
                 size="2",
                 margin_bottom="4",
             ),
-            
             rx.form(
                 rx.vstack(
                     # Error message
@@ -36,7 +32,6 @@ def modal_seguro() -> rx.Component:
                             width="100%",
                         ),
                     ),
-                    
                     # Nombre del Seguro *
                     rx.vstack(
                         rx.text("Nombre del Seguro *", size="2", weight="bold"),
@@ -50,7 +45,6 @@ def modal_seguro() -> rx.Component:
                         spacing="1",
                         width="100%",
                     ),
-                    
                     # Porcentaje y Fecha Inicio (en fila)
                     rx.hstack(
                         rx.vstack(
@@ -80,7 +74,6 @@ def modal_seguro() -> rx.Component:
                         spacing="3",
                         width="100%",
                     ),
-                    
                     # Botones
                     rx.hstack(
                         rx.dialog.close(
@@ -102,14 +95,12 @@ def modal_seguro() -> rx.Component:
                         margin_top="4",
                         width="100%",
                     ),
-                    
                     spacing="4",
                     width="100%",
                 ),
                 on_submit=SegurosState.save_seguro,
                 width="100%",
             ),
-            
             max_width="500px",
             width="100%",
         ),

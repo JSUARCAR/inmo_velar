@@ -1,15 +1,14 @@
 import reflex as rx
+
 from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
+
 
 def discount_modal() -> rx.Component:
     """Modal para agregar un nuevo descuento."""
     return rx.dialog.root(
         rx.dialog.content(
             rx.dialog.title("Agregar Descuento"),
-            rx.dialog.description(
-                "Ingrese los detalles del descuento a aplicar."
-            ),
-            
+            rx.dialog.description("Ingrese los detalles del descuento a aplicar."),
             rx.form.root(
                 rx.flex(
                     # Tipo
@@ -22,11 +21,12 @@ def discount_modal() -> rx.Component:
                             required=True,
                             width="100%",
                             value=LiquidacionAsesoresState.discount_form["tipo"],
-                            on_change=lambda val: LiquidacionAsesoresState.set_discount_field("tipo", val)
+                            on_change=lambda val: LiquidacionAsesoresState.set_discount_field(
+                                "tipo", val
+                            ),
                         ),
-                        width="100%"
+                        width="100%",
                     ),
-                    
                     # Descripción
                     rx.box(
                         rx.text("Descripción", size="2", weight="bold", margin_bottom="1"),
@@ -36,11 +36,12 @@ def discount_modal() -> rx.Component:
                             required=True,
                             width="100%",
                             value=LiquidacionAsesoresState.discount_form["descripcion"],
-                            on_change=lambda val: LiquidacionAsesoresState.set_discount_field("descripcion", val)
+                            on_change=lambda val: LiquidacionAsesoresState.set_discount_field(
+                                "descripcion", val
+                            ),
                         ),
-                        width="100%"
+                        width="100%",
                     ),
-                    
                     # Valor
                     rx.box(
                         rx.text("Valor", size="2", weight="bold", margin_bottom="1"),
@@ -52,40 +53,37 @@ def discount_modal() -> rx.Component:
                             min="0",
                             width="100%",
                             value=LiquidacionAsesoresState.discount_form["valor"],
-                            on_change=lambda val: LiquidacionAsesoresState.set_discount_field("valor", val)
+                            on_change=lambda val: LiquidacionAsesoresState.set_discount_field(
+                                "valor", val
+                            ),
                         ),
-                        width="100%"
+                        width="100%",
                     ),
-                    
                     direction="column",
-                    spacing="4"
+                    spacing="4",
                 ),
-                
                 # Campo oculto eliminado - ID se maneja por estado
-                
                 rx.flex(
                     rx.dialog.close(
                         rx.button(
-                            "Cancelar", 
-                            variant="soft", 
-                            color_scheme="gray", 
+                            "Cancelar",
+                            variant="soft",
+                            color_scheme="gray",
                             type="button",
-                            on_click=LiquidacionAsesoresState.close_discount_modal
+                            on_click=LiquidacionAsesoresState.close_discount_modal,
                         )
                     ),
                     rx.button(
-                        "Guardar Descuento", 
+                        "Guardar Descuento",
                         type="submit",
-                        loading=LiquidacionAsesoresState.is_loading
+                        loading=LiquidacionAsesoresState.is_loading,
                     ),
                     spacing="3",
                     justify="end",
-                    margin_top="4"
+                    margin_top="4",
                 ),
-                
                 on_submit=LiquidacionAsesoresState.save_descuento,
             ),
-            
             # Error Message
             rx.cond(
                 LiquidacionAsesoresState.error_message != "",
@@ -94,8 +92,8 @@ def discount_modal() -> rx.Component:
                     icon="triangle_alert",
                     color_scheme="red",
                     role="alert",
-                    margin_top="2"
-                )
+                    margin_top="2",
+                ),
             ),
         ),
         open=LiquidacionAsesoresState.show_discount_modal,

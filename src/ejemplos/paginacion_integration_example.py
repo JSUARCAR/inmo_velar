@@ -9,33 +9,37 @@ Fecha: 2025-12-29
 """
 
 from typing import Optional
+
 from src.dominio.modelos.pagination import PaginatedResult, PaginationParams, create_empty_result
 from src.infraestructura.cache.cache_manager import cache_manager
-
 
 # ====================================================================
 # EJEMPLO: Método paginado en ServicioPersonas
 # ====================================================================
 
+
 class ServicioPersonasConPaginacion:
     """
     Ejemplo de ServicioPersonas con soporte para paginación.
-    
+
     NOTA: Este es un ejemplo de referencia. La integración real debe
     hacerse en src/aplicacion/servicios/servicio_personas.py
     """
-    
+
     def __init__(self, db_manager):
         self.db_manager = db_manager
-        from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
+        from src.infraestructura.persistencia.repositorio_persona_sqlite import (
+            RepositorioPersonaSQLite,
+        )
+
         self.repo = RepositorioPersonaSQLite(db_manager)
-    
+
     # Método existente (mantener por compatibilidad)
     def listar_personas(
         self,
         filtro_rol: Optional[str] = None,
         solo_activos: bool = True,
-        busqueda: Optional[str] = None
+        busqueda: Optional[str] = None,
     ):
         """
         Método original sin paginación.
@@ -43,9 +47,9 @@ class ServicioPersonasConPaginacion:
         """
         # Implementación existente...
         pass
-    
+
     # Nuevo método con paginación
-    @cache_manager.cached('personas:paginated', level=1)
+    @cache_manager.cached("personas:paginated", level=1)
     def listar_personas_paginado(
         self,
         page: int = 1,
@@ -54,11 +58,11 @@ class ServicioPersonasConPaginacion:
         solo_activos: bool = True,
         busqueda: Optional[str] = None,
         sort_by: Optional[str] = None,
-        sort_desc: bool = False
+        sort_desc: bool = False,
     ) -> PaginatedResult:
         """
         Lista personas con paginación.
-        
+
         Args:
             page: Número de página (1-indexed)
             page_size: Items por página
@@ -67,30 +71,25 @@ class ServicioPersonasConPaginacion:
             busqueda: Búsqueda por nombre/documento
             sort_by: Campo para ordenar
             sort_desc: Ordenar descendente
-            
+
         Returns:
             PaginatedResult con personas y metadata
         """
         try:
             # Crear parámetros de paginación
             params = PaginationParams(
-                page=page,
-                page_size=page_size,
-                sort_by=sort_by,
-                sort_desc=sort_desc
+                page=page, page_size=page_size, sort_by=sort_by, sort_desc=sort_desc
             )
-            
+
             # Preparar filtros
-            filtros = {
-                'solo_activos': solo_activos
-            }
-            
+            filtros = {"solo_activos": solo_activos}
+
             if filtro_rol:
-                filtros['rol'] = filtro_rol
-            
+                filtros["rol"] = filtro_rol
+
             if busqueda:
-                filtros['busqueda'] = busqueda
-            
+                filtros["busqueda"] = busqueda
+
             # OPCIÓN 1: Si el repositorio NO tiene método paginado
             # (implementación manual)
             """
@@ -114,27 +113,27 @@ class ServicioPersonasConPaginacion:
                 page_size=page_size
             )
             """
-            
+
             # OPCIÓN 2: Si el repositorio tiene método paginado
             # (recomendado - más eficiente)
             result = self.repo.obtener_paginado(params, filtros)
             return result
-            
-        except Exception as e:
+
+        except Exception:
             pass  # print(f"Error en listar_personas_paginado: {e}") [OpSec Removed]
             return create_empty_result(page, page_size)
-    
+
     # Métodos de escritura invalidan cache
-    def crear_persona(self, ...):
+    def crear_persona(self, *args, **kwargs):
         """Crea persona e invalida cache."""
-        result = self.repo.crear(...)
-        cache_manager.invalidate('personas')
+        result = self.repo.crear(*args, **kwargs)
+        cache_manager.invalidate("personas")
         return result
-    
-    def actualizar_persona(self, ...):
+
+    def actualizar_persona(self, *args, **kwargs):
         """Actualiza persona e invalida cache."""
-        result = self.repo.actualizar(...)
-        cache_manager.invalidate('personas')
+        result = self.repo.actualizar(*args, **kwargs)
+        cache_manager.invalidate("personas")
         return result
 
 
@@ -167,7 +166,7 @@ class PersonasListView(ft.Container):
             items_per_page=25,
             current_page=1,
             on_page_change=self._on_page_change,
-            on_page_size_change=self._on_page_size_change
+            on_page_size_change=self._on_page_size_change,
         )
         
         # Layout incluye paginación

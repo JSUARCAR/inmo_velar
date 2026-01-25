@@ -4,7 +4,9 @@ Wrappers para gráficos usando Recharts con datos del estado.
 """
 
 import reflex as rx
+
 from src.presentacion_reflex.state.dashboard_state import DashboardState
+
 
 def vencimientos_chart() -> rx.Component:
     """
@@ -24,7 +26,9 @@ def vencimientos_chart() -> rx.Component:
                     ),
                     rx.recharts.x_axis(data_key="name", axis_line=False, tick_line=False),
                     rx.recharts.y_axis(hide=True),
-                    rx.recharts.cartesian_grid(stroke_dasharray="3 3", vertical=False, stroke="#f1f5f9"),
+                    rx.recharts.cartesian_grid(
+                        stroke_dasharray="3 3", vertical=False, stroke="#f1f5f9"
+                    ),
                     rx.recharts.tooltip(
                         cursor={"fill": "rgba(0,0,0,0.04)"},
                         content_style={
@@ -73,12 +77,24 @@ def evolucion_chart() -> rx.Component:
                             rx.el.svg.stop(offset="5%", stop_color="#10b981", stop_opacity=0.8),
                             rx.el.svg.stop(offset="95%", stop_color="#10b981", stop_opacity=0),
                             id="colorRecaudo",
-                            x1="0", y1="0", x2="0", y2="1",
+                            x1="0",
+                            y1="0",
+                            x2="0",
+                            y2="1",
                         )
                     ),
-                    rx.recharts.x_axis(data_key="name", axis_line=False, tick_line=False, tick={"fontSize": 11, "fill": "#94a3b8"}),
-                    rx.recharts.y_axis(axis_line=False, tick_line=False, tick={"fontSize": 11, "fill": "#94a3b8"}),
-                    rx.recharts.cartesian_grid(stroke_dasharray="3 3", vertical=False, stroke="#f1f5f9"),
+                    rx.recharts.x_axis(
+                        data_key="name",
+                        axis_line=False,
+                        tick_line=False,
+                        tick={"fontSize": 11, "fill": "#94a3b8"},
+                    ),
+                    rx.recharts.y_axis(
+                        axis_line=False, tick_line=False, tick={"fontSize": 11, "fill": "#94a3b8"}
+                    ),
+                    rx.recharts.cartesian_grid(
+                        stroke_dasharray="3 3", vertical=False, stroke="#f1f5f9"
+                    ),
                     rx.recharts.tooltip(
                         content_style={
                             "backgroundColor": "#1e293b",
@@ -119,17 +135,27 @@ def propiedades_tipo_chart() -> rx.Component:
                         data_key="value",
                         stroke="#6366f1",
                         fill="#6366f1",
-                        radius=[4, 4, 0, 0], 
+                        radius=[4, 4, 0, 0],
                         label={"position": "top", "fill": "#64748b", "fontSize": 10},
                     ),
-                    rx.recharts.x_axis(data_key="name", stroke="#94a3b8", font_size=10, axis_line=False, tick_line=False),
-                    rx.recharts.y_axis(stroke="#94a3b8", font_size=10, axis_line=False, tick_line=False),
-                    rx.recharts.cartesian_grid(stroke_dasharray="3 3", vertical=False, stroke="#f1f5f9"),
+                    rx.recharts.x_axis(
+                        data_key="name",
+                        stroke="#94a3b8",
+                        font_size=10,
+                        axis_line=False,
+                        tick_line=False,
+                    ),
+                    rx.recharts.y_axis(
+                        stroke="#94a3b8", font_size=10, axis_line=False, tick_line=False
+                    ),
+                    rx.recharts.cartesian_grid(
+                        stroke_dasharray="3 3", vertical=False, stroke="#f1f5f9"
+                    ),
                     rx.recharts.tooltip(
                         cursor={"fill": "rgba(99, 102, 241, 0.04)"},
                         content_style={
-                            "backgroundColor": "#1e293b", 
-                            "borderRadius": "12px", 
+                            "backgroundColor": "#1e293b",
+                            "borderRadius": "12px",
                             "border": "none",
                             "boxShadow": "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
                             "padding": "12px",
@@ -198,6 +224,7 @@ def incidentes_pie_chart() -> rx.Component:
         width="100%",
     )
 
+
 def top_asesores_chart() -> rx.Component:
     """Gráfico de ranking de asesores por revenue."""
     return rx.card(
@@ -209,12 +236,17 @@ def top_asesores_chart() -> rx.Component:
                         data_key="revenue",
                         fill="#10b981",
                         radius=[0, 4, 4, 0],
-                        label={"position": "right", "fill": "#10b981", "fontSize": 10, "fontWeight": "bold"},
+                        label={
+                            "position": "right",
+                            "fill": "#10b981",
+                            "fontSize": 10,
+                            "fontWeight": "bold",
+                        },
                     ),
                     rx.recharts.x_axis(type_="number", hide=True),
                     rx.recharts.y_axis(
-                        data_key="name", 
-                        type_="category", 
+                        data_key="name",
+                        type_="category",
                         width=80,
                         tick={"fontSize": 11, "fill": "#64748b"},
                         axis_line=False,
@@ -223,7 +255,7 @@ def top_asesores_chart() -> rx.Component:
                     rx.recharts.tooltip(
                         cursor={"fill": "rgba(16, 185, 129, 0.04)"},
                         content_style={
-                            "backgroundColor": "#1e293b", 
+                            "backgroundColor": "#1e293b",
                             "borderRadius": "12px",
                             "border": "none",
                             "boxShadow": "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
@@ -247,6 +279,7 @@ def top_asesores_chart() -> rx.Component:
         width="100%",
     )
 
+
 def tunel_vencimientos_chart() -> rx.Component:
     """Gráfico de túnel de vencimientos (Riesgo)."""
     return rx.card(
@@ -266,11 +299,21 @@ def tunel_vencimientos_chart() -> rx.Component:
                             rx.el.svg.stop(offset="5%", stop_color="#f59e0b", stop_opacity=0.6),
                             rx.el.svg.stop(offset="95%", stop_color="#f59e0b", stop_opacity=0),
                             id="colorRiesgo",
-                            x1="0", y1="0", x2="0", y2="1",
+                            x1="0",
+                            y1="0",
+                            x2="0",
+                            y2="1",
                         )
                     ),
-                    rx.recharts.x_axis(data_key="name", axis_line=False, tick_line=False, tick={"fontSize": 10, "fill": "#94a3b8"}),
-                    rx.recharts.y_axis(axis_line=False, tick_line=False, tick={"fontSize": 10, "fill": "#94a3b8"}),
+                    rx.recharts.x_axis(
+                        data_key="name",
+                        axis_line=False,
+                        tick_line=False,
+                        tick={"fontSize": 10, "fill": "#94a3b8"},
+                    ),
+                    rx.recharts.y_axis(
+                        axis_line=False, tick_line=False, tick={"fontSize": 10, "fill": "#94a3b8"}
+                    ),
                     rx.recharts.tooltip(
                         content_style={
                             "backgroundColor": "#1e293b",

@@ -4,6 +4,7 @@ Permite ingresar el motivo de cancelación
 """
 
 import reflex as rx
+
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 
 
@@ -22,7 +23,6 @@ def cancel_modal() -> rx.Component:
                 "Ingrese el motivo de cancelación. Esta acción no se puede deshacer.",
                 color="gray",
             ),
-            
             rx.vstack(
                 rx.text(
                     "Motivo de cancelación:",
@@ -46,7 +46,6 @@ def cancel_modal() -> rx.Component:
                     ),
                     rx.box(),
                 ),
-                
                 rx.hstack(
                     rx.dialog.close(
                         rx.button(
@@ -67,11 +66,9 @@ def cancel_modal() -> rx.Component:
                     width="100%",
                     padding_top="1em",
                 ),
-                
                 spacing="3",
                 width="100%",
             ),
-            
             max_width="500px",
         ),
         open=LiquidacionesState.show_cancel_modal,

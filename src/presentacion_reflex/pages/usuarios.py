@@ -1,10 +1,11 @@
-
 import reflex as rx
+
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
-from src.presentacion_reflex.state.usuarios_state import UsuariosState
 from src.presentacion_reflex.components.usuarios import modal_form
 from src.presentacion_reflex.components.usuarios.gestion_permisos import gestion_permisos_modal
 from src.presentacion_reflex.state.auth_state import AuthState
+from src.presentacion_reflex.state.usuarios_state import UsuariosState
+
 
 def filtros_bar() -> rx.Component:
     return rx.flex(
@@ -25,7 +26,7 @@ def filtros_bar() -> rx.Component:
                 )
             ),
             value=UsuariosState.filter_role,
-            on_change=lambda val: UsuariosState.set_filter_role(val)
+            on_change=lambda val: UsuariosState.set_filter_role(val),
         ),
         rx.select.root(
             rx.select.trigger(placeholder="Estado"),
@@ -37,7 +38,7 @@ def filtros_bar() -> rx.Component:
                 )
             ),
             value=UsuariosState.filter_status,
-            on_change=lambda val: UsuariosState.set_filter_status(val)
+            on_change=lambda val: UsuariosState.set_filter_status(val),
         ),
         rx.spacer(),
         rx.cond(
@@ -46,7 +47,7 @@ def filtros_bar() -> rx.Component:
                 rx.icon("user_plus"),
                 "Nuevo Usuario",
                 on_click=UsuariosState.open_create_modal,
-            )
+            ),
         ),
         width="100%",
         gap="3",
@@ -54,6 +55,7 @@ def filtros_bar() -> rx.Component:
         wrap="wrap",
         padding_bottom="4",
     )
+
 
 def usuarios_table() -> rx.Component:
     return rx.table.root(
@@ -71,13 +73,11 @@ def usuarios_table() -> rx.Component:
                 UsuariosState.usuarios,
                 lambda u: rx.table.row(
                     rx.table.cell(u["nombre_usuario"], font_weight="bold"),
-                    rx.table.cell(
-                        rx.badge(u["rol"], variant="soft", color_scheme="blue")
-                    ),
+                    rx.table.cell(rx.badge(u["rol"], variant="soft", color_scheme="blue")),
                     rx.table.cell(
                         rx.badge(
-                            u["estado_label"], 
-                            color_scheme=rx.cond(u["estado_usuario"], "green", "gray")
+                            u["estado_label"],
+                            color_scheme=rx.cond(u["estado_usuario"], "green", "gray"),
                         )
                     ),
                     rx.table.cell(u["ultimo_acceso"]),
@@ -88,7 +88,9 @@ def usuarios_table() -> rx.Component:
                                 rx.tooltip(
                                     rx.switch(
                                         checked=u["estado_usuario"],
-                                        on_change=lambda val: UsuariosState.toggle_status(u["id_usuario"], u["estado_usuario"]),
+                                        on_change=lambda val: UsuariosState.toggle_status(
+                                            u["id_usuario"], u["estado_usuario"]
+                                        ),
                                         color_scheme="green",
                                         style={
                                             "&[data-state='unchecked']": {
@@ -98,21 +100,24 @@ def usuarios_table() -> rx.Component:
                                         },
                                         cursor="pointer",
                                     ),
-                                    content="Activar/Desactivar usuario"
-                                )
+                                    content="Activar/Desactivar usuario",
+                                ),
                             ),
                             # Botón de permisos (solo para roles != Administrador)
                             rx.cond(
-                                (u["rol"] != "Administrador") & AuthState.check_action("Usuarios", "EDITAR"),
+                                (u["rol"] != "Administrador")
+                                & AuthState.check_action("Usuarios", "EDITAR"),
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("shield-check", size=16),
                                         size="2",
                                         variant="ghost",
                                         color_scheme="violet",
-                                        on_click=lambda: UsuariosState.open_permissions_modal(u["rol"]),
+                                        on_click=lambda: UsuariosState.open_permissions_modal(
+                                            u["rol"]
+                                        ),
                                     ),
-                                    content="Gestionar permisos del rol"
+                                    content="Gestionar permisos del rol",
                                 ),
                             ),
                             rx.cond(
@@ -122,22 +127,23 @@ def usuarios_table() -> rx.Component:
                                         rx.icon("pencil", size=16),
                                         size="2",
                                         variant="ghost",
-                                        on_click=lambda: UsuariosState.open_edit_modal(u)
+                                        on_click=lambda: UsuariosState.open_edit_modal(u),
                                     ),
-                                    content="Editar usuario"
-                                )
+                                    content="Editar usuario",
+                                ),
                             ),
                             justify="end",
-                            spacing="2"
+                            spacing="2",
                         ),
-                        text_align="right"
+                        text_align="right",
                     ),
-                )
+                ),
             )
         ),
         width="100%",
         variant="surface",
     )
+
 
 def usuarios_content() -> rx.Component:
     return rx.vstack(
@@ -155,9 +161,14 @@ def usuarios_content() -> rx.Component:
         spacing="5",
         padding="6",
         width="100%",
-        align="stretch"
+        align="stretch",
     )
 
-@rx.page(route="/usuarios", title="Usuarios | Inmobiliaria Velar", on_load=[AuthState.require_login, UsuariosState.load_users])
+
+@rx.page(
+    route="/usuarios",
+    title="Usuarios | Inmobiliaria Velar",
+    on_load=[AuthState.require_login, UsuariosState.load_users],
+)
 def usuarios_page() -> rx.Component:
     return dashboard_layout(usuarios_content())

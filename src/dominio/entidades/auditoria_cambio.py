@@ -6,17 +6,19 @@ Aunque se implementa principalmente con Triggers, esta entidad permite
 mapear y consultar el historial desde la aplicación.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional
+
 
 @dataclass
 class AuditoriaCambio:
     """
     Entidad: Registro de Auditoría
-    
+
     Mapea la tabla AUDITORIA_CAMBIOS.
     """
+
     id_auditoria: int
     tabla: str
     id_registro: int
@@ -28,7 +30,7 @@ class AuditoriaCambio:
     fecha_cambio: str  # Se recibe como string desde BD
     motivo_cambio: Optional[str]
     ip_origen: Optional[str]
-    
+
     @property
     def fecha_dt(self) -> Optional[datetime]:
         """Convierte la fecha string a datetime si es posible."""

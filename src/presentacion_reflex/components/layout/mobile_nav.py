@@ -1,5 +1,7 @@
 import reflex as rx
-from src.presentacion_reflex.components.layout.sidebar import sidebar_items, sidebar_footer
+
+from src.presentacion_reflex.components.layout.sidebar import sidebar_footer, sidebar_items
+
 
 def mobile_nav() -> rx.Component:
     """
@@ -22,7 +24,9 @@ def mobile_nav() -> rx.Component:
                         transition="all 0.2s ease",
                     )
                 ),
-                rx.drawer.overlay(background_color="rgba(0, 0, 0, 0.7)", backdrop_filter="blur(2px)"),
+                rx.drawer.overlay(
+                    background_color="rgba(0, 0, 0, 0.7)", backdrop_filter="blur(2px)"
+                ),
                 rx.drawer.portal(
                     rx.drawer.content(
                         rx.vstack(
@@ -32,9 +36,9 @@ def mobile_nav() -> rx.Component:
                                     rx.hstack(
                                         rx.icon("building", size=26, color="white"),
                                         rx.heading(
-                                            "Inmobiliaria Velar", 
-                                            size="5", 
-                                            color="white", 
+                                            "Inmobiliaria Velar",
+                                            size="5",
+                                            color="white",
                                             weight="bold",
                                             letter_spacing="-0.5px",
                                         ),
@@ -48,8 +52,8 @@ def mobile_nav() -> rx.Component:
                                             variant="ghost",
                                             size="2",
                                             _hover={
-                                                "background": "rgba(255, 255, 255, 0.2)", 
-                                                "transform": "rotate(90deg)"
+                                                "background": "rgba(255, 255, 255, 0.2)",
+                                                "transform": "rotate(90deg)",
                                             },
                                             transition="all 0.3s ease",
                                         )
@@ -61,7 +65,6 @@ def mobile_nav() -> rx.Component:
                                 background="linear-gradient(135deg, #1f2937 0%, #111827 100%)",
                                 border_bottom="1px solid rgba(255, 255, 255, 0.05)",
                             ),
-                            
                             # Drawer Content (Reused Sidebar Items)
                             rx.box(
                                 sidebar_items(),
@@ -70,24 +73,22 @@ def mobile_nav() -> rx.Component:
                                 overflow_y="auto",
                                 flex="1",
                                 width="100%",
-                                class_name="scrollbar-hide", # Optional: hide scrollbar if configured
+                                class_name="scrollbar-hide",  # Optional: hide scrollbar if configured
                             ),
-                            
                             # Drawer Footer (Reused Sidebar Footer)
                             rx.box(
                                 sidebar_footer(),
                                 width="100%",
                             ),
-                            
                             height="100%",
                             width="100%",
                             spacing="0",
-                            background="#111827", 
+                            background="#111827",
                         ),
-                        top="0", 
+                        top="0",
                         left="0",
                         height="100%",
-                        width="85%", 
+                        width="85%",
                         max_width="320px",
                         background="#111827",
                         position="fixed",
@@ -98,17 +99,16 @@ def mobile_nav() -> rx.Component:
                 ),
                 direction="left",
             ),
-            
             # Title / Logo with Gradient Text
             rx.hstack(
-                rx.icon("building", size=22, color="#60a5fa"), # Lighter blue icon
+                rx.icon("building", size=22, color="#60a5fa"),  # Lighter blue icon
                 rx.heading(
-                    "Inmobiliaria Velar", 
-                    size="4", 
+                    "Inmobiliaria Velar",
+                    size="4",
                     weight="bold",
                     background="linear-gradient(to right, #ffffff, #93c5fd)",
                     background_clip="text",
-                    color="transparent", # Fallback handled by background_clip usually, or use darker bg
+                    color="transparent",  # Fallback handled by background_clip usually, or use darker bg
                     _hover={"background": "linear-gradient(to right, #93c5fd, #ffffff)"},
                     transition="all 0.5s ease",
                     cursor="default",
@@ -116,14 +116,12 @@ def mobile_nav() -> rx.Component:
                 align="center",
                 spacing="2",
             ),
-            
             rx.spacer(),
-            
             # User Avatar (Mini) with Ring
             rx.box(
                 rx.avatar(
-                    fallback="IV", 
-                    size="2", 
+                    fallback="IV",
+                    size="2",
                     radius="full",
                     color="white",
                     background="linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
@@ -132,22 +130,20 @@ def mobile_nav() -> rx.Component:
                 _hover={"transform": "scale(1.1)"},
                 transition="all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
             ),
-            
             width="100%",
             align="center",
             padding_x="5",
             padding_y="3",
             spacing="4",
         ),
-        
         # Container styles
         width="100%",
         position="sticky",
         top="0",
         z_index="50",
-        background="rgba(17, 24, 39, 0.75)", # More slightly transparent
-        backdrop_filter="blur(16px) saturate(180%)", # Advanced glass effect
+        background="rgba(17, 24, 39, 0.75)",  # More slightly transparent
+        backdrop_filter="blur(16px) saturate(180%)",  # Advanced glass effect
         border_bottom="1px solid rgba(255, 255, 255, 0.08)",
         box_shadow="0 4px 30px rgba(0, 0, 0, 0.1)",
-        display=["block", "block", "none", "none"], 
+        display=["block", "block", "none", "none"],
     )

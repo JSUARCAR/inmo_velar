@@ -11,7 +11,7 @@ from typing import Optional
 class Seguro:
     """
     Entidad de dominio para Seguros de Arrendamiento.
-    
+
     Attributes:
         id_seguro: Identificador único del seguro
         nombre_seguro: Nombre del seguro (ej: "Seguro Básico", "Seguro Plus")
@@ -25,6 +25,7 @@ class Seguro:
         updated_at: Timestamp de última actualización
         updated_by: Usuario que actualizó el registro
     """
+
     id_seguro: Optional[int]
     nombre_seguro: str
     fecha_inicio_seguro: Optional[str]
@@ -36,11 +37,11 @@ class Seguro:
     created_by: Optional[str]
     updated_at: Optional[str]
     updated_by: Optional[str]
-    
+
     def esta_activo(self) -> bool:
         """Verifica si el seguro está activo."""
         return self.estado_seguro == 1
-    
+
     def obtener_porcentaje_decimal(self) -> float:
         """Retorna el porcentaje en formato decimal (ej: 2.0 para 200)."""
         return self.porcentaje_seguro / 100.0

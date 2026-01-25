@@ -1,13 +1,15 @@
 import reflex as rx
-from src.presentacion_reflex.state.personas_state import PersonasState
+
 from src.presentacion_reflex.state.auth_state import AuthState
+from src.presentacion_reflex.state.personas_state import PersonasState
+
 
 def person_card(persona: dict) -> rx.Component:
     """Elite card component for persona display in cards view."""
-    
+
     # Get initials for avatar
     initials = persona["nombre"][:2]
-    
+
     return rx.card(
         rx.vstack(
             # Avatar section with gradient background
@@ -25,9 +27,9 @@ def person_card(persona: dict) -> rx.Component:
                             ("Asesor", "purple"),
                             ("Codeudor", "orange"),
                             ("Proveedor", "cyan"),
-                            "gray"
+                            "gray",
                         ),
-                        "gray"
+                        "gray",
                     ),
                 ),
                 rx.vstack(
@@ -49,17 +51,12 @@ def person_card(persona: dict) -> rx.Component:
                 width="100%",
                 align="center",
             ),
-            
             # Contact info
             rx.vstack(
                 rx.hstack(
                     rx.icon("mail", size=14, color="var(--gray-9)"),
                     rx.text(
-                        rx.cond(
-                            persona["correo"] != "",
-                            persona["correo"],
-                            "No especificado"
-                        ),
+                        rx.cond(persona["correo"] != "", persona["correo"], "No especificado"),
                         size="1",
                         color="var(--gray-11)",
                     ),
@@ -80,7 +77,6 @@ def person_card(persona: dict) -> rx.Component:
                 width="100%",
                 padding_y="2",
             ),
-            
             # Roles badges
             rx.box(
                 rx.foreach(
@@ -95,7 +91,7 @@ def person_card(persona: dict) -> rx.Component:
                                     ("Asesor", "briefcase"),
                                     ("Codeudor", "shield"),
                                     ("Proveedor", "wrench"),
-                                    "user"
+                                    "user",
                                 ),
                                 size=12,
                             ),
@@ -110,19 +106,17 @@ def person_card(persona: dict) -> rx.Component:
                             ("Asesor", "purple"),
                             ("Codeudor", "orange"),
                             ("Proveedor", "cyan"),
-                            "gray"
+                            "gray",
                         ),
                         variant="soft",
                         margin_right="1",
                         margin_bottom="1",
                         radius="full",
-                    )
+                    ),
                 ),
                 width="100%",
             ),
-            
             rx.spacer(),
-
             # Footer: Status, Date & Actions
             rx.hstack(
                 rx.badge(
@@ -150,8 +144,8 @@ def person_card(persona: dict) -> rx.Component:
                                 color_scheme="gray",
                                 _hover={"background": "var(--gray-3)", "color": "var(--accent-9)"},
                             ),
-                            content="Editar persona"
-                        )
+                            content="Editar persona",
+                        ),
                     ),
                     rx.cond(
                         AuthState.check_action("Personas", "ELIMINAR"),
@@ -164,8 +158,8 @@ def person_card(persona: dict) -> rx.Component:
                                 color_scheme="red",
                                 _hover={"background": "var(--red-3)", "color": "var(--red-9)"},
                             ),
-                            content="Eliminar persona"
-                        )
+                            content="Eliminar persona",
+                        ),
                     ),
                     spacing="1",
                     align="center",
@@ -174,19 +168,16 @@ def person_card(persona: dict) -> rx.Component:
                 align="center",
                 padding_top="1",
             ),
-            
             spacing="3",
             width="100%",
             height="100%",
         ),
-        
         # Card styling
         padding="4",
         width="99%",
         height="98",
         margin="auto",
         variant="ghost",
-        
         # Hover effects
         _hover={
             "transform": "translateY(-4px)",
@@ -195,7 +186,6 @@ def person_card(persona: dict) -> rx.Component:
             "cursor": "pointer",
         },
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        
         # Glassmorphism effect
         style={
             "background": "var(--color-panel-solid)",
@@ -203,5 +193,5 @@ def person_card(persona: dict) -> rx.Component:
             "border_radius": "16px",
             "overflow": "hidden",
             "min_height": "200px",
-        }
+        },
     )

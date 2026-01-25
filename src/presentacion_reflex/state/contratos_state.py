@@ -1,19 +1,23 @@
-import reflex as rx
-from typing import Optional, Dict, Any, List
-from src.infraestructura.persistencia.database import db_manager
-from src.aplicacion.servicios.servicio_contratos import ServicioContratos
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import reflex as rx
+
+from src.aplicacion.servicios.servicio_contratos import ServicioContratos
+from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+
 
 class ContratosState(DocumentosStateMixin):
     """Estado para gestión de contratos (Mandatos y Arrendamientos).
     Maneja paginación, filtros y CRUD operations.
     """
+
     # Paginación
     current_page: int = 1
     page_size: int = 25
     total_items: int = 0
-    
+
     # Datos
     contratos: List[Dict[str, Any]] = []
     is_loading: bool = False
@@ -21,8 +25,8 @@ class ContratosState(DocumentosStateMixin):
     contratos: List[Dict[str, Any]] = []
     is_loading: bool = False
     error_message: str = ""
-    is_grid_view: bool = False # Default to Table, or True for Elite default
-    
+    is_grid_view: bool = False  # Default to Table, or True for Elite default
+
     # Búsqueda y Filtros
     search_text: str = ""
     filter_tipo: str = "Todos"  # Todos, Mandato, Arrendamiento
@@ -30,13 +34,13 @@ class ContratosState(DocumentosStateMixin):
     filter_propiedad_id: str = ""
     filter_persona_id: str = ""
     filter_asesor_id: str = ""
-    
+
     # Opciones de filtros (para dropdowns)
     tipo_options: List[str] = ["Todos", "Mandato", "Arrendamiento"]
     estado_options: List[str] = ["Todos", "Activo", "Cancelado"]
     propiedades_options: List[Dict[str, Any]] = []
     personas_options: List[Dict[str, Any]] = []
-    
+
     # Opciones para selects (listas simples de strings)
     # Opciones para selects (listas de listas ["label", "value"])
     propiedades_select_options: List[List[str]] = []
@@ -52,20 +56,20 @@ class ContratosState(DocumentosStateMixin):
     propiedades_mandato_libre_select_options: List[List[str]] = []
     arrendatarios_select_options: List[List[str]] = []
     codeudores_select_options: List[List[str]] = []
-    
+
     # Mapas de datos adicionales
     propiedades_canon_map: Dict[str, float] = {}
-    
+
     # Modal CRUD
     modal_open: bool = False
     modal_mode: str = "crear_mandato"  # crear_mandato, crear_arrendamiento, editar
     editing_id: Optional[int] = None
     form_data: Dict[str, Any] = {}
-    
+
     # Modal Detalle
     show_detail_modal: bool = False
     contrato_detalle: Dict[str, Any] = {}
-    
+
     # Modal IPC Increment
     show_ipc_modal: bool = False
     ipc_target_contrato_id: int = 0
@@ -104,7 +108,7 @@ class ContratosState(DocumentosStateMixin):
         else:
             self.form_data["canon"] = ""
             self.form_data["deposito"] = "0"
-            
+
     def on_change_canon_arriendo(self, canon: str):
         """Recalcula deposito si cambia el canon manual."""
         self.form_data["canon"] = canon
@@ -118,28 +122,28 @@ class ContratosState(DocumentosStateMixin):
         """Calcula la duración en meses entre fecha inicio y fin."""
         f_inicio = self.form_data.get("fecha_inicio")
         f_fin = self.form_data.get("fecha_fin")
-        
+
         if f_inicio and f_fin:
             try:
                 d_inicio = datetime.strptime(f_inicio, "%Y-%m-%d")
                 d_fin = datetime.strptime(f_fin, "%Y-%m-%d")
-                
+
                 # Calcular diferencia en meses
                 # Formula: (Años * 12) + Meses
                 diff_years = d_fin.year - d_inicio.year
                 diff_months = d_fin.month - d_inicio.month
-                
+
                 total_meses = (diff_years * 12) + diff_months
-                
+
                 # Ajuste basico: si el dia de fin es menor al de inicio, no ha completado el mes?
                 # Usualmente en contratos se cuenta la diferencia de meses calendario.
                 # Si total_meses < 0, poner 0.
                 if total_meses < 0:
                     total_meses = 0
-                    
+
                 self.form_data["duracion_meses"] = str(total_meses)
             except ValueError:
-                pass # Formato de fecha invalido
+                pass  # Formato de fecha invalido
 
     def on_change_fecha_inicio(self, fecha: str):
         """Actualiza fecha inicio y recalcula duración."""
@@ -156,7 +160,7 @@ class ContratosState(DocumentosStateMixin):
         """Carga inicial al montar la página."""
         async with self:
             self.is_loading = True
-        
+
         try:
             # Cargar opciones de filtros
             yield ContratosState.load_filter_options()
@@ -169,8 +173,8 @@ class ContratosState(DocumentosStateMixin):
     @rx.event(background=True)
     async def load_filter_options(self):
         """Carga opciones para dropdowns de filtros."""
-        servicio = ServicioContratos(db_manager)
-        
+        ServicioContratos(db_manager)
+
         # 1. Cargar TODAS las Propiedades activas
         # NOTE: Load ALL properties (not just those without contracts) to support edit mode
         query_propiedades = """
@@ -179,7 +183,7 @@ class ContratosState(DocumentosStateMixin):
         WHERE P.ESTADO_REGISTRO = TRUE
         ORDER BY P.DIRECCION_PROPIEDAD
         """
-        
+
         # 2. Cargar Propietarios: Unir PERSONAS con PROPIETARIOS
         query_propietarios = """
         SELECT PR.ID_PROPIETARIO, P.NOMBRE_COMPLETO, P.NUMERO_DOCUMENTO
@@ -188,7 +192,7 @@ class ContratosState(DocumentosStateMixin):
         WHERE P.ESTADO_REGISTRO = TRUE AND PR.ESTADO_PROPIETARIO = TRUE
         ORDER BY P.NOMBRE_COMPLETO
         """
-        
+
         # 3. Cargar Asesores: Unir PERSONAS con ASESORES
         query_asesores = """
         SELECT A.ID_ASESOR, P.NOMBRE_COMPLETO, P.NUMERO_DOCUMENTO
@@ -207,7 +211,7 @@ class ContratosState(DocumentosStateMixin):
         WHERE ESTADO_REGISTRO = TRUE
         ORDER BY NOMBRE_COMPLETO
         """
-        
+
         # Helper local para acceso seguro a diccionarios (Case Insensitive)
         def get_val(row: dict, field: str) -> str:
             """Intenta obtener valor con clave en mayúscula o minúscula."""
@@ -221,37 +225,46 @@ class ContratosState(DocumentosStateMixin):
 
         with db_manager.obtener_conexion() as conn:
             cursor = db_manager.get_dict_cursor(conn)
-            
+
             # Propiedades
             cursor.execute(query_propiedades)
             rows_propiedades = cursor.fetchall()
             # Formato para Reflex Select: [Label, Value]
             propiedades_select = [
-                [f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}", get_val(row, 'ID_PROPIEDAD')] 
+                [
+                    f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}",
+                    get_val(row, "ID_PROPIEDAD"),
+                ]
                 for row in rows_propiedades
             ]
-            
+
             # Crear mapa de canones: ID -> Canon (float/int)
             canon_map = {}
             for row in rows_propiedades:
                 # Intentar obtener el canon con manejo de mayusculas/minusculas
-                canon_str = get_val(row, 'CANON_ARRENDAMIENTO_ESTIMADO')
-                id_prop = get_val(row, 'ID_PROPIEDAD')
+                canon_str = get_val(row, "CANON_ARRENDAMIENTO_ESTIMADO")
+                id_prop = get_val(row, "ID_PROPIEDAD")
                 canon_map[id_prop] = float(canon_str) if canon_str else 0.0
-            
+
             # Propietarios
             cursor.execute(query_propietarios)
             rows_propietarios = cursor.fetchall()
             propietarios_select = [
-                [f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}", get_val(row, 'ID_PROPIETARIO')]
+                [
+                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
+                    get_val(row, "ID_PROPIETARIO"),
+                ]
                 for row in rows_propietarios
             ]
-            
+
             # Asesores
             cursor.execute(query_asesores)
             rows_asesores = cursor.fetchall()
             asesores_select = [
-                [f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}", get_val(row, 'ID_ASESOR')]
+                [
+                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
+                    get_val(row, "ID_ASESOR"),
+                ]
                 for row in rows_asesores
             ]
 
@@ -259,7 +272,10 @@ class ContratosState(DocumentosStateMixin):
             cursor.execute(query_personas)
             rows_personas = cursor.fetchall()
             personas_select = [
-                [f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}", get_val(row, 'ID_PERSONA')]
+                [
+                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
+                    get_val(row, "ID_PERSONA"),
+                ]
                 for row in rows_personas
             ]
 
@@ -279,7 +295,10 @@ class ContratosState(DocumentosStateMixin):
             cursor.execute(query_propiedades_libre_mandato)
             rows_prop_libre = cursor.fetchall()
             propiedades_libre_select = [
-                [f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}", get_val(row, 'ID_PROPIEDAD')] 
+                [
+                    f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}",
+                    get_val(row, "ID_PROPIEDAD"),
+                ]
                 for row in rows_prop_libre
             ]
 
@@ -305,14 +324,17 @@ class ContratosState(DocumentosStateMixin):
             cursor.execute(query_propiedades_arriendo)
             rows_prop_arriendo = cursor.fetchall()
             propiedades_arriendo_select = [
-                [f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}", get_val(row, 'ID_PROPIEDAD')] 
+                [
+                    f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}",
+                    get_val(row, "ID_PROPIEDAD"),
+                ]
                 for row in rows_prop_arriendo
             ]
-            
+
             # Actualizar mapa de canones con estas propiedades tambien
             for row in rows_prop_arriendo:
-                canon_str = get_val(row, 'CANON_ARRENDAMIENTO_ESTIMADO')
-                id_prop = get_val(row, 'ID_PROPIEDAD')
+                canon_str = get_val(row, "CANON_ARRENDAMIENTO_ESTIMADO")
+                id_prop = get_val(row, "ID_PROPIEDAD")
                 if id_prop:
                     canon_map[id_prop] = float(canon_str) if canon_str else 0.0
 
@@ -327,7 +349,10 @@ class ContratosState(DocumentosStateMixin):
             cursor.execute(query_arrendatarios)
             rows_arrendatarios = cursor.fetchall()
             arrendatarios_select = [
-                 [f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}", get_val(row, 'ID_ARRENDATARIO')]
+                [
+                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
+                    get_val(row, "ID_ARRENDATARIO"),
+                ]
                 for row in rows_arrendatarios
             ]
 
@@ -342,10 +367,13 @@ class ContratosState(DocumentosStateMixin):
             cursor.execute(query_codeudores)
             rows_codeudores = cursor.fetchall()
             codeudores_select = [
-                 [f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}", get_val(row, 'ID_CODEUDOR')]
+                [
+                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
+                    get_val(row, "ID_CODEUDOR"),
+                ]
                 for row in rows_codeudores
             ]
-        
+
         async with self:
             # self.propiedades_options = ... # Ya no usamos listas de dicts viejas si no se necesitan
             self.propiedades_select_options = propiedades_select
@@ -365,12 +393,16 @@ class ContratosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-        
+
         try:
             servicio = ServicioContratos(db_manager)
-            
+
             # Helper para el filtro de asesor (manejar "todos" o vacio)
-            asesor_filter = self.filter_asesor_id if self.filter_asesor_id and self.filter_asesor_id != "todos" else None
+            asesor_filter = (
+                self.filter_asesor_id
+                if self.filter_asesor_id and self.filter_asesor_id != "todos"
+                else None
+            )
 
             # Determinar qué tipo de contratos cargar
             if self.filter_tipo == "Mandato":
@@ -380,11 +412,11 @@ class ContratosState(DocumentosStateMixin):
                     page_size=self.page_size,
                     estado=self.filter_estado if self.filter_estado != "Todos" else None,
                     busqueda=self.search_text if self.search_text else None,
-                    id_asesor=asesor_filter
+                    id_asesor=asesor_filter,
                 )
                 # Agregar campo 'tipo' para distinguir en la UI
                 items = [{"tipo": "Mandato", **item} for item in resultado.items]
-                
+
             elif self.filter_tipo == "Arrendamiento":
                 # Solo arrendamientos
                 resultado = servicio.listar_arrendamientos_paginado(
@@ -392,10 +424,10 @@ class ContratosState(DocumentosStateMixin):
                     page_size=self.page_size,
                     estado=self.filter_estado if self.filter_estado != "Todos" else None,
                     busqueda=self.search_text if self.search_text else None,
-                    id_asesor=asesor_filter
+                    id_asesor=asesor_filter,
                 )
                 items = [{"tipo": "Arrendamiento", **item} for item in resultado.items]
-                
+
             else:
                 # Todos: combinar mandatos y arrendamientos
                 resultado_mandatos = servicio.listar_mandatos_paginado(
@@ -403,31 +435,33 @@ class ContratosState(DocumentosStateMixin):
                     page_size=self.page_size,
                     estado=self.filter_estado if self.filter_estado != "Todos" else None,
                     busqueda=self.search_text if self.search_text else None,
-                    id_asesor=asesor_filter
+                    id_asesor=asesor_filter,
                 )
-                
+
                 resultado_arrendamientos = servicio.listar_arrendamientos_paginado(
                     page=self.current_page,
                     page_size=self.page_size,
                     estado=self.filter_estado if self.filter_estado != "Todos" else None,
                     busqueda=self.search_text if self.search_text else None,
-                    id_asesor=asesor_filter
+                    id_asesor=asesor_filter,
                 )
-                
+
                 mandatos = [{"tipo": "Mandato", **item} for item in resultado_mandatos.items]
-                arrendamientos = [{"tipo": "Arrendamiento", **item} for item in resultado_arrendamientos.items]
-                
+                arrendamientos = [
+                    {"tipo": "Arrendamiento", **item} for item in resultado_arrendamientos.items
+                ]
+
                 items = mandatos + arrendamientos
                 # Total combinado
                 resultado = resultado_mandatos  # Para paginación usamos uno como base
                 resultado.items = items
                 resultado.total = resultado_mandatos.total + resultado_arrendamientos.total
-            
+
             async with self:
                 self.contratos = items
                 self.total_items = resultado.total
                 self.is_loading = False
-                
+
         except Exception as e:
             async with self:
                 self.error_message = f"Error al cargar contratos: {str(e)}"
@@ -471,7 +505,6 @@ class ContratosState(DocumentosStateMixin):
         """
         if key == "Enter":
             return self.search_contratos()
-
 
     def set_filter_tipo(self, value: str):
         """Cambia filtro de tipo."""
@@ -517,7 +550,7 @@ class ContratosState(DocumentosStateMixin):
             "duracion_meses": 12,
             "canon": 0,
             "comision_porcentaje": 10,  # 10% Predeterminado
-            "iva_porcentaje": 19, # 19% Predeterminado
+            "iva_porcentaje": 19,  # 19% Predeterminado
         }
         self.modal_open = True
         self.error_message = ""
@@ -545,10 +578,10 @@ class ContratosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-        
+
         try:
             servicio = ServicioContratos(db_manager)
-            
+
             if tipo == "Mandato":
                 contrato = servicio.obtener_mandato_por_id(id_contrato)
                 if contrato:
@@ -565,13 +598,13 @@ class ContratosState(DocumentosStateMixin):
                             "canon": contrato.canon_mandato,
                             "comision_porcentaje": contrato.comision_porcentaje_contrato_m,
                         }
-                        
+
                         # Set Document Context for Mandato
                         self.current_entidad_tipo = "CONTRATO_MANDATO"
                         self.current_entidad_id = str(id_contrato)
                         pass  # print(f"DEBUG: open_edit_modal Mandato. Set ID: {self.current_entidad_id}") [OpSec Removed]
                         self.cargar_documentos()
-                        
+
                         self.modal_open = True
             else:
                 contrato = servicio.obtener_arrendamiento_por_id(id_contrato)
@@ -582,21 +615,23 @@ class ContratosState(DocumentosStateMixin):
                         self.form_data = {
                             "id_propiedad": str(contrato.id_propiedad),
                             "id_arrendatario": str(contrato.id_arrendatario),
-                            "id_codeudor": str(contrato.id_codeudor) if contrato.id_codeudor else "",
+                            "id_codeudor": (
+                                str(contrato.id_codeudor) if contrato.id_codeudor else ""
+                            ),
                             "fecha_inicio": contrato.fecha_inicio_contrato_a,
                             "fecha_fin": contrato.fecha_fin_contrato_a,
                             "canon": contrato.canon_arrendamiento,
                             "deposito": contrato.deposito,
                         }
-                        
+
                         # Set Document Context for Arrendamiento
                         self.current_entidad_tipo = "CONTRATO_ARRENDAMIENTO"
                         self.current_entidad_id = str(id_contrato)
                         pass  # print(f"DEBUG: open_edit_modal Arrendamiento. Set ID: {self.current_entidad_id}") [OpSec Removed]
                         self.cargar_documentos()
-                        
+
                         self.modal_open = True
-                        
+
         except Exception as e:
             async with self:
                 self.error_message = f"Error al cargar contrato: {str(e)}"
@@ -617,11 +652,11 @@ class ContratosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-        
+
         try:
             servicio = ServicioContratos(db_manager)
             detalle = servicio.obtener_detalle_contrato_ui(id_contrato, tipo)
-            
+
             if detalle:
                 async with self:
                     self.contrato_detalle = detalle
@@ -647,60 +682,73 @@ class ContratosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-        
+
         try:
             servicio = ServicioContratos(db_manager)
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
-            
+
             # Procesar datos del formulario según el tipo
             if self.modal_mode == "crear_mandato" or self.modal_mode == "editar_mandato":
                 # Convertir tipos para mandato
                 datos_procesados = {
-                   "id_propiedad": int(form_data["id_propiedad"]),
+                    "id_propiedad": int(form_data["id_propiedad"]),
                     "id_propietario": int(form_data["id_propietario"]),
                     "id_asesor": int(form_data["id_asesor"]),
                     "fecha_inicio": form_data["fecha_inicio"],
                     "fecha_fin": form_data["fecha_fin"],
                     "duracion_meses": int(form_data["duracion_meses"]),
                     "canon": int(form_data["canon"]),
-                    "comision_porcentaje": int(float(form_data["comision_porcentaje"]) * 100),  # Convertir % a base 10000
-                    "iva_porcentaje": int(float(form_data.get("iva_porcentaje", 19)) * 100),  # Convertir % a base 10000
+                    "comision_porcentaje": int(
+                        float(form_data["comision_porcentaje"]) * 100
+                    ),  # Convertir % a base 10000
+                    "iva_porcentaje": int(
+                        float(form_data.get("iva_porcentaje", 19)) * 100
+                    ),  # Convertir % a base 10000
                 }
-                
+
                 if self.modal_mode == "crear_mandato":
                     servicio.crear_mandato(datos_procesados, usuario_sistema)
                 else:
                     servicio.actualizar_mandato(self.editing_id, datos_procesados, usuario_sistema)
-                    
-            elif self.modal_mode == "crear_arrendamiento" or self.modal_mode == "editar_arrendamiento":
+
+            elif (
+                self.modal_mode == "crear_arrendamiento"
+                or self.modal_mode == "editar_arrendamiento"
+            ):
                 # Convertir tipos para arrendamiento
                 datos_procesados = {
                     "id_propiedad": int(form_data["id_propiedad"]),
                     "id_arrendatario": int(form_data["id_arrendatario"]),
-                    "id_codeudor": int(form_data["id_codeudor"]) if form_data.get("id_codeudor") else None,
+                    "id_codeudor": (
+                        int(form_data["id_codeudor"]) if form_data.get("id_codeudor") else None
+                    ),
                     "fecha_inicio": form_data["fecha_inicio"],
                     "fecha_fin": form_data["fecha_fin"],
                     "duracion_meses": int(form_data["duracion_meses"]),
                     "canon": int(form_data["canon"]),
                     "deposito": int(form_data.get("deposito", 0)),
                 }
-                
+
                 if self.modal_mode == "crear_arrendamiento":
                     servicio.crear_arrendamiento(datos_procesados, usuario_sistema)
                 else:
-                    servicio.actualizar_arrendamiento(self.editing_id, datos_procesados, usuario_sistema)
-            
+                    servicio.actualizar_arrendamiento(
+                        self.editing_id, datos_procesados, usuario_sistema
+                    )
+
             async with self:
                 self.modal_open = False
                 self.editing_id = None
                 self.form_data = {}
-            
+
             # Recargar lista
             yield ContratosState.load_contratos()
-            
+
             # Notificación de éxito
-            yield rx.toast.success("El contrato ha sido guardado exitosamente.", position="bottom-right")
-                
+            yield rx.toast.success(
+                "El contrato ha sido guardado exitosamente.", position="bottom-right"
+            )
+
         except ValueError as e:
             async with self:
                 self.error_message = str(e)
@@ -734,32 +782,32 @@ class ContratosState(DocumentosStateMixin):
     async def execute_renewal(self):
         """Ejecuta la renovación del contrato seleccionado."""
         async with self:
-            self.show_renewal_confirm = False # Cerrar dialogo inmediatamente
+            self.show_renewal_confirm = False  # Cerrar dialogo inmediatamente
             self.is_loading = True
-            
+
         try:
             servicio = ServicioContratos(db_manager)
-            usuario_sistema = "admin" # TODO: Auth
-            
+            usuario_sistema = "admin"  # TODO: Auth
+
             tipo = self.selected_contract_type_renew
             id_contrato = self.selected_contract_id_renew
-            
+
             resultado_msg = ""
-            
+
             if tipo == "Arrendamiento":
                 contrato_renovado = servicio.renovar_arrendamiento(id_contrato, usuario_sistema)
                 resultado_msg = f"Arrendamiento renovado. Nuevo Canon: ${contrato_renovado.canon_arrendamiento}, Fin: {contrato_renovado.fecha_fin_contrato_a}"
             elif tipo == "Mandato":
                 contrato_renovado = servicio.renovar_mandato(id_contrato, usuario_sistema)
                 resultado_msg = f"Mandato renovado. Fin: {contrato_renovado.fecha_fin_contrato_m}"
-            
+
             # Recargar lista
             yield ContratosState.load_contratos()
             yield rx.toast.success(resultado_msg, position="bottom-right")
-            
+
         except Exception as e:
             yield rx.toast.error(f"Error al renovar: {str(e)}", position="bottom-right")
-            
+
         finally:
             async with self:
                 self.is_loading = False
@@ -770,28 +818,29 @@ class ContratosState(DocumentosStateMixin):
         """Genera y descarga el CSV de contratos."""
         try:
             servicio = ServicioContratos(db_manager)
-            
+
             # Obtener datos CSV usando los filtros actuales
             csv_data = servicio.exportar_contratos_csv(
                 filtro_tipo=self.filter_tipo,
                 estado=self.filter_estado if self.filter_estado != "Todos" else None,
-                busqueda=self.search_text if self.search_text else None
+                busqueda=self.search_text if self.search_text else None,
             )
-            
+
             # Preparar descarga
             import time
+
             timestamp = int(time.time())
             filename = f"reporte_contratos_{timestamp}.csv"
-            
+
             # Convertir a bytes para descarga
             if isinstance(csv_data, str):
                 data_bytes = csv_data.encode("utf-8-sig")
             else:
                 data_bytes = csv_data
-                
+
             yield rx.download(data=data_bytes, filename=filename)
             yield rx.toast.success("Descarga iniciada", position="bottom-right")
-            
+
         except Exception as e:
             pass  # print(f"Error exportando CSV: {e}") [OpSec Removed]
             yield rx.toast.error(f"Error al exportar: {str(e)}", position="bottom-right")
@@ -802,11 +851,11 @@ class ContratosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-        
+
         try:
             servicio = ServicioContratos(db_manager)
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
-            
+
             if estado_actual == "Activo":
                 # Cancelar contrato
                 motivo = "Cancelación manual desde interfaz"
@@ -821,11 +870,13 @@ class ContratosState(DocumentosStateMixin):
                     self.error_message = "No se puede reactivar un contrato cancelado"
                     self.is_loading = False
                 return
-            
+
             # Recargar lista
             yield ContratosState.load_contratos()
-            yield rx.toast.info(f"Contrato {estado_actual.lower()} desactivado/cancelado.", position="bottom-right")
-                
+            yield rx.toast.info(
+                f"Contrato {estado_actual.lower()} desactivado/cancelado.", position="bottom-right"
+            )
+
         except Exception as e:
             async with self:
                 self.error_message = f"Error al cambiar estado: {str(e)}"
@@ -837,63 +888,64 @@ class ContratosState(DocumentosStateMixin):
     # =========================================================================
     # IPC INCREMENT HANDLERS
     # =========================================================================
-    
+
     def open_ipc_modal(self, id_contrato: int):
         """Abre modal para aplicar incremento IPC."""
         from datetime import datetime
+
         self.ipc_target_contrato_id = id_contrato
         self.form_data = {
             "porcentaje_ipc": "5.62",
             "fecha_aplicacion": datetime.now().strftime("%Y-%m-%d"),
-            "observaciones": ""
+            "observaciones": "",
         }
         self.show_ipc_modal = True
-    
+
     def close_ipc_modal(self):
         """Cierra modal de IPC."""
         self.show_ipc_modal = False
         self.ipc_target_contrato_id = 0
         self.form_data = {}
         self.error_message = ""
-    
+
     @rx.event(background=True)
     async def apply_ipc_increment(self, form_data: Dict):
         """Aplica incremento IPC al contrato seleccionado."""
         async with self:
             self.is_loading = True
             self.error_message = ""
-        
+
         try:
             porcentaje = float(form_data.get("porcentaje_ipc", 0))
             fecha = form_data.get("fecha_aplicacion", "")
             observaciones = form_data.get("observaciones", "")
-            
+
             from src.aplicacion.servicios.servicio_contratos import ServicioContratos
             from src.infraestructura.persistencia.database import db_manager
-            
+
             servicio = ServicioContratos(db_manager)
             resultado = servicio.aplicar_incremento_ipc(
                 id_contrato=self.ipc_target_contrato_id,
                 porcentaje_ipc=porcentaje,
                 fecha_aplicacion=fecha,
                 observaciones=observaciones,
-                usuario="admin"
+                usuario="admin",
             )
-            
-            if resultado['success']:
+
+            if resultado["success"]:
                 async with self:
                     self.show_ipc_modal = False
                     self.ipc_target_contrato_id = 0
                     self.form_data = {}
-                
+
                 # Recargar contratos
                 yield ContratosState.load_contratos()
-                yield rx.toast.success(resultado['message'], position="bottom-right")
+                yield rx.toast.success(resultado["message"], position="bottom-right")
             else:
                 async with self:
-                    self.error_message = resultado['message']
-                yield rx.toast.error(resultado['message'], position="bottom-right")
-        
+                    self.error_message = resultado["message"]
+                yield rx.toast.error(resultado["message"], position="bottom-right")
+
         except Exception as e:
             async with self:
                 self.error_message = f"Error al aplicar IPC: {str(e)}"

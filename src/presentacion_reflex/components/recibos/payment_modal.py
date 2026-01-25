@@ -1,14 +1,13 @@
-
 import reflex as rx
+
 from src.presentacion_reflex.state.recibos_state import RecibosState
+
 
 def payment_modal() -> rx.Component:
     return rx.dialog.root(
         rx.dialog.content(
             rx.dialog.title("Registrar Pago"),
-            rx.dialog.description(
-                "Ingrese los detalles del pago realizado."
-            ),
+            rx.dialog.description("Ingrese los detalles del pago realizado."),
             rx.flex(
                 rx.vstack(
                     rx.text("Fecha de Pago", weight="bold"),
@@ -37,22 +36,22 @@ def payment_modal() -> rx.Component:
                         icon="triangle_alert",
                         color_scheme="red",
                         role="alert",
-                        width="100%"
-                    )
+                        width="100%",
+                    ),
                 ),
                 direction="column",
                 spacing="4",
-                margin_y="4"
+                margin_y="4",
             ),
             rx.flex(
                 rx.dialog.close(
                     rx.button("Cancelar", variant="soft", color_scheme="gray"),
                 ),
                 rx.button(
-                    "Confirmar Pago", 
+                    "Confirmar Pago",
                     on_click=RecibosState.register_payment,
                     loading=RecibosState.is_loading,
-                    color_scheme="green"
+                    color_scheme="green",
                 ),
                 spacing="3",
                 justify="end",

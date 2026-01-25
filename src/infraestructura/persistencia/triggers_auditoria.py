@@ -90,38 +90,40 @@ TODOS_LOS_TRIGGERS = [
     TRIGGER_USUARIOS_UPDATE,
     TRIGGER_PERSONAS_UPDATE,
     TRIGGER_PROPIEDADES_UPDATE,
-    TRIGGER_CONTRATOS_UPDATE
+    TRIGGER_CONTRATOS_UPDATE,
 ]
 
 
 def ejecutar_todos_los_triggers(db_manager):
     """
     Ejecuta todos los triggers de auditoria en la base de datos.
-    
+
     Args:
         db_manager: Instancia de DatabaseManager
     """
     with db_manager.obtener_conexion() as conn:
         cursor = conn.cursor()
-        
+
         # Primero eliminar triggers existentes si hay
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='trigger' AND name LIKE 'trg_audit_%'")
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='trigger' AND name LIKE 'trg_audit_%'"
+        )
         triggers_existentes = cursor.fetchall()
-        
+
         for trigger in triggers_existentes:
             cursor.execute(f"DROP TRIGGER IF EXISTS {trigger[0]}")
-        
+
         # Crear nuevos triggers
         for trigger_sql in TODOS_LOS_TRIGGERS:
             cursor.execute(trigger_sql)
-        
+
         conn.commit()
-    
+
     pass  # print(f"[OK] Se crearon {len(TODOS_LOS_TRIGGERS)} triggers de auditoria exitosamente.") [OpSec Removed]
 
 
 if __name__ == "__main__":
     from src.infraestructura.persistencia.database import DatabaseManager
-    
+
     db = DatabaseManager()
     ejecutar_todos_los_triggers(db)

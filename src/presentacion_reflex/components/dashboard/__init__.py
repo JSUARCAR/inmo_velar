@@ -2,16 +2,16 @@
 Componentes del Dashboard para Reflex.
 """
 
-from .kpi_card import kpi_card
 from .chart_components import (
-    vencimientos_chart,
     evolucion_chart,
-    propiedades_tipo_chart,
     incidentes_pie_chart,
+    propiedades_tipo_chart,
     top_asesores_chart,
     tunel_vencimientos_chart,
+    vencimientos_chart,
 )
 from .dashboard_filters import dashboard_filters
+from .kpi_card import kpi_card
 
 __all__ = [
     "kpi_card",

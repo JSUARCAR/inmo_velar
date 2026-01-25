@@ -1,5 +1,7 @@
 import reflex as rx
+
 from src.presentacion_reflex.state.alertas_state import AlertasState
+
 
 def notification_item(item: dict) -> rx.Component:
     return rx.box(
@@ -7,13 +9,13 @@ def notification_item(item: dict) -> rx.Component:
             rx.icon(
                 rx.cond(item["nivel"] == "danger", "circle_alert", "info"),
                 color=rx.cond(item["nivel"] == "danger", "var(--red-9)", "var(--blue-9)"),
-                size=20
+                size=20,
             ),
             rx.vstack(
                 rx.text(item["mensaje"], size="2", weight="medium", color="#1f2937"),
                 rx.text(f"Fecha: {item['fecha']}", size="1", color="#6b7280"),
                 spacing="1",
-                align="start"
+                align="start",
             ),
             align="start",
             spacing="3",
@@ -25,9 +27,11 @@ def notification_item(item: dict) -> rx.Component:
         transition="all 0.2s ease",
     )
 
+
 def bell_icon() -> rx.Component:
     return rx.box(
-        rx.html("""
+        rx.html(
+            """
             <style>
                 @keyframes bell-ring {
                     0% { transform: rotate(0); }
@@ -67,7 +71,8 @@ def bell_icon() -> rx.Component:
                     opacity: 0.6;
                 }
             </style>
-        """),
+        """
+        ),
         rx.popover.root(
             rx.popover.trigger(
                 rx.box(
@@ -78,15 +83,18 @@ def bell_icon() -> rx.Component:
                                 rx.icon(
                                     "bell",
                                     size=22,
-                                    color=rx.cond(AlertasState.unread_count > 0, "#1f2937", "#6b7280"), # Darker when active
+                                    color=rx.cond(
+                                        AlertasState.unread_count > 0, "#1f2937", "#6b7280"
+                                    ),  # Darker when active
                                 ),
                                 bg="#fbbf24",  # Yellow background (amber-400)
                                 border_radius="full",
                                 padding="2",
-                                class_name=rx.cond(AlertasState.unread_count > 0, "bell-ringing", ""),
+                                class_name=rx.cond(
+                                    AlertasState.unread_count > 0, "bell-ringing", ""
+                                ),
                                 style={"transition": "color 0.3s ease"},
                             ),
-                            
                             # Badge de Notificaciones
                             rx.cond(
                                 AlertasState.unread_count > 0,
@@ -96,13 +104,13 @@ def bell_icon() -> rx.Component:
                                     # Badge principal
                                     rx.center(
                                         rx.text(
-                                            AlertasState.unread_count, 
-                                            color="white", 
-                                            size="1", 
+                                            AlertasState.unread_count,
+                                            color="white",
+                                            size="1",
                                             weight="bold",
-                                            style={"font-size": "10px", "line-height": "1"}
+                                            style={"font-size": "10px", "line-height": "1"},
                                         ),
-                                        bg="linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)", # Red gradient
+                                        bg="linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",  # Red gradient
                                         border_radius="full",
                                         width="16px",
                                         height="16px",
@@ -119,14 +127,14 @@ def bell_icon() -> rx.Component:
                                             "height": "4px",
                                             "background": "rgba(255,255,255,0.4)",
                                             "border_radius": "50%",
-                                        }
+                                        },
                                     ),
                                     position="absolute",
                                     top="-4px",
                                     right="-4px",
                                     width="16px",
                                     height="16px",
-                                )
+                                ),
                             ),
                             position="relative",
                             display="flex",
@@ -147,22 +155,22 @@ def bell_icon() -> rx.Component:
                 )
             ),
             rx.popover.content(
-                 rx.vstack(
+                rx.vstack(
                     rx.hstack(
                         rx.icon("bell-ring", size=18, color="#ef4444"),
                         rx.text("Notificaciones", weight="bold", size="3", color="#111827"),
                         rx.spacer(),
                         rx.badge(
-                            f"{AlertasState.unread_count} nuevas", 
-                            color_scheme="red", 
+                            f"{AlertasState.unread_count} nuevas",
+                            color_scheme="red",
                             variant="surface",
-                            radius="full"
+                            radius="full",
                         ),
                         width="100%",
                         padding="4",
                         border_bottom="1px solid #e5e7eb",
                         align="center",
-                        bg="#f9fafb"
+                        bg="#f9fafb",
                     ),
                     rx.scroll_area(
                         rx.vstack(
@@ -174,18 +182,18 @@ def bell_icon() -> rx.Component:
                                         rx.icon("circle_check", size=48, color="#e5e7eb"),
                                         rx.text("¡Todo al día!", color="#9ca3af", weight="medium"),
                                         spacing="2",
-                                        align="center"
+                                        align="center",
                                     ),
                                     padding="8",
-                                    width="100%"
-                                )
+                                    width="100%",
+                                ),
                             ),
                             width="100%",
-                            gap="0"
+                            gap="0",
                         ),
                         type="auto",
                         scrollbars="vertical",
-                        style={"height": "320px", "max-height": "400px"}
+                        style={"height": "320px", "max-height": "400px"},
                     ),
                     gap="0",
                     width="340px",
@@ -193,9 +201,9 @@ def bell_icon() -> rx.Component:
                     border_radius="16px",
                     box_shadow="0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                     border="1px solid #e5e7eb",
-                    overflow="hidden"
+                    overflow="hidden",
                 ),
-                side_offset=15
-            )
-        )
+                side_offset=15,
+            ),
+        ),
     )

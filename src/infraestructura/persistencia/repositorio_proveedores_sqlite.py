@@ -1,8 +1,10 @@
-from typing import List, Optional
 import sqlite3
+from typing import List, Optional
+
 from src.dominio.entidades.proveedor import Proveedor
 from src.dominio.interfaces.repositorio_proveedores import RepositorioProveedores
 from src.infraestructura.persistencia.database import DatabaseManager
+
 
 class RepositorioProveedoresSQLite(RepositorioProveedores):
     def __init__(self, db: DatabaseManager):
@@ -12,17 +14,17 @@ class RepositorioProveedoresSQLite(RepositorioProveedores):
         if not row:
             return None
         return Proveedor(
-            id_proveedor=row['ID_PROVEEDOR'],
-            id_persona=row['ID_PERSONA'],
-            especialidad=row['ESPECIALIDAD'],
-            calificacion=row['CALIFICACION'],
-            observaciones=row['OBSERVACIONES'],
-            estado_registro=row['ESTADO_REGISTRO'],
-            created_at=row['CREATED_AT'],
-            created_by=row['CREATED_BY'],
+            id_proveedor=row["ID_PROVEEDOR"],
+            id_persona=row["ID_PERSONA"],
+            especialidad=row["ESPECIALIDAD"],
+            calificacion=row["CALIFICACION"],
+            observaciones=row["OBSERVACIONES"],
+            estado_registro=row["ESTADO_REGISTRO"],
+            created_at=row["CREATED_AT"],
+            created_by=row["CREATED_BY"],
             # Datos de persona (si hay join)
-            nombre_completo=row['NOMBRE_COMPLETO'] if 'NOMBRE_COMPLETO' in row.keys() else None,
-            contacto=row['TELEFONO_PRINCIPAL'] if 'TELEFONO_PRINCIPAL' in row.keys() else None
+            nombre_completo=row["NOMBRE_COMPLETO"] if "NOMBRE_COMPLETO" in row.keys() else None,
+            contacto=row["TELEFONO_PRINCIPAL"] if "TELEFONO_PRINCIPAL" in row.keys() else None,
         )
 
     def guardar(self, proveedor: Proveedor) -> int:
@@ -36,13 +38,13 @@ class RepositorioProveedoresSQLite(RepositorioProveedores):
             proveedor.especialidad,
             proveedor.calificacion,
             proveedor.observaciones,
-            proveedor.created_by
+            proveedor.created_by,
         )
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
             conn.commit()
-            return self.db.get_last_insert_id(cursor, 'PROVEEDORES', 'ID_PROVEEDOR')
+            return self.db.get_last_insert_id(cursor, "PROVEEDORES", "ID_PROVEEDOR")
 
     def obtener_por_id(self, id_proveedor: int) -> Optional[Proveedor]:
         placeholder = self.db.get_placeholder()
@@ -89,7 +91,7 @@ class RepositorioProveedoresSQLite(RepositorioProveedores):
         if especialidad:
             query += " AND P.ESPECIALIDAD = ?"
             params.append(especialidad)
-            
+
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         cursor.execute(query, tuple(params))
@@ -107,7 +109,7 @@ class RepositorioProveedoresSQLite(RepositorioProveedores):
             proveedor.calificacion,
             proveedor.observaciones,
             proveedor.estado_registro,
-            proveedor.id_proveedor
+            proveedor.id_proveedor,
         )
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()

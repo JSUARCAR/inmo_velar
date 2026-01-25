@@ -1,7 +1,9 @@
 import sqlite3
 from typing import List, Optional
+
 from src.dominio.entidades.documento import Documento
 from src.infraestructura.persistencia.database import DatabaseManager
+
 
 class RepositorioDocumentoSQLite:
     def __init__(self, db_manager: DatabaseManager = None):
@@ -11,41 +13,45 @@ class RepositorioDocumentoSQLite:
         """Conversión de fila SQL a entidad Documento."""
         # Estructura de row esperada depende de la query (con o sin contenido)
         # ID, ENTIDAD_TIPO, ENTIDAD_ID, NOMBRE_ARCHIVO, EXTENSION, MIME_TYPE, DESCRIPCION, VERSION, ES_VIGENTE, CONTENIDO (opc)
-        
+
         # Como usamos indices fijos, debemos tener cuidado con el orden en las queries
         # Asumiremos que las queries de listar SIEMPRE traen la metadata base en orden fijo
-        
+
         # Support for both sqlite3.Row (index/name) and RealDictCursor (name only)
         # Using uppercase keys as enforced by UpperCaseCursorWrapper in database.py
-        
+
         # Helper to get value securely
         def get_val(key, idx):
-            if hasattr(row, 'keys'): # Dict-like (Postgres)
+            if hasattr(row, "keys"):  # Dict-like (Postgres)
                 return row.get(key)
-            return row[idx] # Tuple-like or sqlite3.Row (SQLite)
+            return row[idx]  # Tuple-like or sqlite3.Row (SQLite)
 
         doc = Documento(
-            id=get_val('ID', 0),
-            entidad_tipo=get_val('ENTIDAD_TIPO', 1),
-            entidad_id=get_val('ENTIDAD_ID', 2),
-            nombre_archivo=get_val('NOMBRE_ARCHIVO', 3),
-            extension=get_val('EXTENSION', 4),
-            mime_type=get_val('MIME_TYPE', 5),
-            descripcion=get_val('DESCRIPCION', 6),
-            version=get_val('VERSION', 7),
+            id=get_val("ID", 0),
+            entidad_tipo=get_val("ENTIDAD_TIPO", 1),
+            entidad_id=get_val("ENTIDAD_ID", 2),
+            nombre_archivo=get_val("NOMBRE_ARCHIVO", 3),
+            extension=get_val("EXTENSION", 4),
+            mime_type=get_val("MIME_TYPE", 5),
+            descripcion=get_val("DESCRIPCION", 6),
+            version=get_val("VERSION", 7),
             # Logic fixed in previous step, ensuring boolean consistency
-            es_vigente=(str(get_val('ES_VIGENTE', 8)) == '1' or get_val('ES_VIGENTE', 8) == 1 or get_val('ES_VIGENTE', 8) is True),
-            created_at=get_val('CREATED_AT', 9),
-            created_by=get_val('CREATED_BY', 10)
+            es_vigente=(
+                str(get_val("ES_VIGENTE", 8)) == "1"
+                or get_val("ES_VIGENTE", 8) == 1
+                or get_val("ES_VIGENTE", 8) is True
+            ),
+            created_at=get_val("CREATED_AT", 9),
+            created_by=get_val("CREATED_BY", 10),
         )
-        
+
         if include_content:
-             # Check for content in keys or index 11
-             if hasattr(row, 'keys'):
-                 doc.contenido = bytes(row.get('CONTENIDO')) if row.get('CONTENIDO') else None
-             elif len(row) > 11:
-                 doc.contenido = bytes(row[11]) if row[11] else None
-             
+            # Check for content in keys or index 11
+            if hasattr(row, "keys"):
+                doc.contenido = bytes(row.get("CONTENIDO")) if row.get("CONTENIDO") else None
+            elif len(row) > 11:
+                doc.contenido = bytes(row[11]) if row[11] else None
+
         return doc
 
     def crear(self, documento: Documento) -> Documento:
@@ -66,10 +72,10 @@ class RepositorioDocumentoSQLite:
             documento.descripcion,
             documento.contenido,
             documento.version,
-            "1" if documento.es_vigente else "0", # Store as string '1'/'0' to match DB TEXT column
-            documento.created_by
+            "1" if documento.es_vigente else "0",  # Store as string '1'/'0' to match DB TEXT column
+            documento.created_by,
         )
-        
+
         try:
             conn = self.db.obtener_conexion()
             cursor = conn.cursor()
@@ -77,7 +83,7 @@ class RepositorioDocumentoSQLite:
             documento.id = cursor.lastrowid
             conn.commit()
             return documento
-        except sqlite3.Error as e:
+        except sqlite3.Error:
             pass  # print(f"Error al crear documento: {e}") [OpSec Removed]
             raise
 
@@ -120,7 +126,7 @@ class RepositorioDocumentoSQLite:
         cursor = conn.cursor()
         cursor.execute(sql, (id_documento,))
         row = cursor.fetchone()
-        
+
         if row:
             return self._row_to_entity(row, include_content=True)
         return None
@@ -142,11 +148,13 @@ class RepositorioDocumentoSQLite:
             # Set to '0' where is '1'
             cursor.execute(sql, ("0", entidad_tipo, str(entidad_id), nombre_archivo, "1"))
             conn.commit()
-        except sqlite3.Error as e:
+        except sqlite3.Error:
             pass  # print(f"Error al anular versiones anteriores: {e}") [OpSec Removed]
             raise
 
-    def obtener_ultima_version(self, entidad_tipo: str, entidad_id: str, nombre_archivo: str) -> int:
+    def obtener_ultima_version(
+        self, entidad_tipo: str, entidad_id: str, nombre_archivo: str
+    ) -> int:
         """Retorna el número de la última versión registrada para ese archivo."""
         ph = self.db.get_placeholder()
         sql = f"""
@@ -161,12 +169,12 @@ class RepositorioDocumentoSQLite:
         cursor = conn.cursor()
         cursor.execute(sql, (entidad_tipo, str(entidad_id), nombre_archivo))
         row = cursor.fetchone()
-        
+
         if row is None:
             return 0
-            
+
         # Handle dict (Postgres) vs tuple/Row (SQLite)
-        if hasattr(row, 'values'): 
+        if hasattr(row, "values"):
             # RealDictCursor return dict, get the first value regardless of key name (max, MAX(version), etc)
             return list(row.values())[0] if list(row.values())[0] else 0
         else:
@@ -183,6 +191,6 @@ class RepositorioDocumentoSQLite:
             # Set to '0'
             cursor.execute(sql, ("0", id_documento))
             conn.commit()
-        except sqlite3.Error as e:
+        except sqlite3.Error:
             pass  # print(f"Error al eliminar documento: {e}") [OpSec Removed]
             raise

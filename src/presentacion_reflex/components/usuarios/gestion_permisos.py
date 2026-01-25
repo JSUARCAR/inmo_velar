@@ -2,8 +2,10 @@
 Componente de Gestión de Permisos por Rol
 """
 
+from typing import Any
+
 import reflex as rx
-from typing import Dict, List, Any
+
 from src.presentacion_reflex.state.usuarios_state import UsuariosState
 
 
@@ -22,18 +24,18 @@ def permission_checkbox_row(permiso: Any) -> rx.Component:
 
 def module_permissions_table(module_data: Any) -> rx.Component:
     """Tabla de permisos para un módulo específico."""
-    
+
     # module_data es objeto PermissionModule
     modulo = module_data.name
     permisos = module_data.permissions
-    
+
     # Encontrar permisos por acción - iterar sobre la lista de permisos
     # Nota: Como es Var en tiempo de ejecución, usamos condicionales o mapeo en backend
     # Pero aquí necesitamos representarlo visualmente.
     # Dado que "permisos" es una lista, podemos iterar con foreach para ponerlos en orden
     # O, mejor, como sabemos que son 4 acciones fijas, podemos intentar buscarlas.
     # El problema es que "permisos" es una lista y necesitamos extraer items específicos.
-    
+
     # Solución simplificada: Mostrar todos los permisos del módulo en una fila horizontal
     return rx.table.row(
         rx.table.cell(
@@ -49,30 +51,26 @@ def module_permissions_table(module_data: Any) -> rx.Component:
                 gap="2",
                 align="center",
             ),
-            width="200px"
+            width="200px",
         ),
         # Iterar sobre los permisos de este módulo para mostrarlos
         # Esto asumirá que vienen en orden o simplemente los mostrará todos
         rx.table.cell(
             rx.flex(
-                rx.foreach(
-                    permisos,
-                    lambda p: permission_checkbox_row(p)
-                ),
+                rx.foreach(permisos, lambda p: permission_checkbox_row(p)),
                 gap="4",
             ),
-            col_span=4 
-        )
+            col_span=4,
+        ),
     )
 
 
 def category_permissions_section(category_data: Any) -> rx.Component:
     """Sección de permisos por categoría."""
-    
+
     # category_data es objeto PermissionCategory
     return rx.box(
         rx.heading(category_data.category, size="4", margin_bottom="12px"),
-        
         rx.table.root(
             rx.table.header(
                 rx.table.row(
@@ -126,7 +124,7 @@ def preset_buttons() -> rx.Component:
 
 def gestion_permisos_modal() -> rx.Component:
     """Modal principal de gestión de permisos."""
-    
+
     return rx.dialog.root(
         rx.dialog.content(
             rx.dialog.title(
@@ -137,18 +135,14 @@ def gestion_permisos_modal() -> rx.Component:
                     align="center",
                 ),
             ),
-            
             rx.dialog.description(
                 "Selecciona los permisos que este rol tendrá en el sistema. El rol Administrador siempre tiene acceso total.",
                 size="2",
                 margin_bottom="16px",
             ),
-            
             # Presets
             preset_buttons(),
-            
             rx.divider(margin="16px 0"),
-            
             # Contenido scrolleable
             rx.scroll_area(
                 rx.cond(
@@ -173,7 +167,6 @@ def gestion_permisos_modal() -> rx.Component:
                 max_height="500px",
                 scrollbars="vertical",
             ),
-            
             # Error message
             rx.cond(
                 UsuariosState.permissions_error != "",
@@ -184,7 +177,6 @@ def gestion_permisos_modal() -> rx.Component:
                     margin_top="12px",
                 ),
             ),
-            
             # Botones de acción
             rx.flex(
                 rx.dialog.close(
@@ -208,11 +200,9 @@ def gestion_permisos_modal() -> rx.Component:
                 margin_top="16px",
                 justify="end",
             ),
-            
             max_width="900px",
             padding="24px",
         ),
-        
         open=UsuariosState.show_permissions_modal,
         on_open_change=UsuariosState.close_permissions_modal,
     )

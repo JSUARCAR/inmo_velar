@@ -1,12 +1,13 @@
-
-from typing import List, Optional, Dict
 from datetime import datetime
+from typing import List, Optional
+
 from src.dominio.entidades.ipc import IPC
-from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
 from src.infraestructura.persistencia.database import DatabaseManager
+from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+
 
 class ServicioIPC:
-    
+
     def __init__(self, db_manager: DatabaseManager):
         self.repo = RepositorioIPCSQLite(db_manager)
 
@@ -24,7 +25,7 @@ class ServicioIPC:
         """
         if not anio or anio < 2000 or anio > 2100:
             raise ValueError("Año inválido")
-            
+
         if valor is None or valor < 0:
             raise ValueError("Valor de IPC inválido")
 
@@ -34,10 +35,10 @@ class ServicioIPC:
 
         ipc = IPC(
             anio=anio,
-            valor_ipc=valor, # Guardamos tal cual (ej: 5.5 o 5)
+            valor_ipc=valor,  # Guardamos tal cual (ej: 5.5 o 5)
             fecha_publicacion=datetime.now().strftime("%Y-%m-%d"),
             estado_registro=1,
-            created_by=usuario
+            created_by=usuario,
         )
 
         return self.repo.crear(ipc, usuario)
@@ -51,7 +52,7 @@ class ServicioIPC:
             raise ValueError("Registro IPC no encontrado")
 
         ipc.valor_ipc = valor
-        ipc.fecha_publicacion = datetime.now().strftime("%Y-%m-%d") # Actualizamos fecha referencia
-        
+        ipc.fecha_publicacion = datetime.now().strftime("%Y-%m-%d")  # Actualizamos fecha referencia
+
         self.repo.actualizar(ipc, usuario)
         return ipc

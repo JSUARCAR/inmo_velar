@@ -4,8 +4,9 @@ Muestra el breakdown completo de ingresos y egresos y gestión de documentos.
 """
 
 import reflex as rx
-from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
+
 from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 
 
 def format_money(amount: int) -> str:
@@ -61,7 +62,6 @@ def liquidacion_detail_modal() -> rx.Component:
                     spacing="2",
                 )
             ),
-            
             rx.dialog.description(
                 rx.cond(
                     LiquidacionesState.liquidacion_actual,
@@ -76,7 +76,6 @@ def liquidacion_detail_modal() -> rx.Component:
                     rx.box(),
                 )
             ),
-            
             rx.cond(
                 LiquidacionesState.liquidacion_actual,
                 rx.vstack(
@@ -85,15 +84,19 @@ def liquidacion_detail_modal() -> rx.Component:
                     rx.box(
                         info_row("Propiedad:", LiquidacionesState.liquidacion_actual["propiedad"]),
                         info_row("Matrícula:", LiquidacionesState.liquidacion_actual["matricula"]),
-                        info_row("Propietario:", LiquidacionesState.liquidacion_actual["propietario"]),
+                        info_row(
+                            "Propietario:", LiquidacionesState.liquidacion_actual["propietario"]
+                        ),
                         info_row("Documento:", LiquidacionesState.liquidacion_actual["documento"]),
                         info_row("Período:", LiquidacionesState.liquidacion_actual["periodo"]),
-                        info_row("Fecha Generación:", LiquidacionesState.liquidacion_actual["fecha_generacion"]),
+                        info_row(
+                            "Fecha Generación:",
+                            LiquidacionesState.liquidacion_actual["fecha_generacion"],
+                        ),
                         padding="1em",
                         background="gray.50",
                         border_radius="8px",
                     ),
-                    
                     # Sección: Propiedades (solo si es consolidado)
                     rx.cond(
                         LiquidacionesState.propiedades_consolidadas,
@@ -118,9 +121,9 @@ def liquidacion_detail_modal() -> rx.Component:
                                             rx.table.cell(
                                                 format_money(prop["neto"]),
                                                 weight="bold",
-                                                color="green.600"
+                                                color="green.600",
                                             ),
-                                        )
+                                        ),
                                     )
                                 ),
                                 width="100%",
@@ -131,7 +134,6 @@ def liquidacion_detail_modal() -> rx.Component:
                         ),
                         rx.box(),
                     ),
-                    
                     # Sección: Ingresos
                     section_header("Ingresos", "circle_arrow_down"),
                     rx.table.root(
@@ -147,67 +149,71 @@ def liquidacion_detail_modal() -> rx.Component:
                                 lambda item: rx.table.row(
                                     rx.table.cell(item["concepto"]),
                                     rx.table.cell(format_money(item["valor"])),
-                                )
+                                ),
                             )
                         ),
                         width="100%",
-                        variant="surface"
+                        variant="surface",
                     ),
-                    
                     # Egresos
                     section_header("Egresos", "circle_arrow_up"),
                     rx.box(
                         info_row(
                             f"Comisión ({LiquidacionesState.liquidacion_actual['comision_pct_view']}%):",
-                            format_money(LiquidacionesState.liquidacion_actual["comision_monto"])
+                            format_money(LiquidacionesState.liquidacion_actual["comision_monto"]),
                         ),
                         info_row(
                             "IVA Comisión (19%):",
-                            format_money(LiquidacionesState.liquidacion_actual["iva_comision"])
+                            format_money(LiquidacionesState.liquidacion_actual["iva_comision"]),
                         ),
                         info_row(
                             "4x1000:",
-                            format_money(LiquidacionesState.liquidacion_actual["impuesto_4x1000"])
+                            format_money(LiquidacionesState.liquidacion_actual["impuesto_4x1000"]),
                         ),
                         info_row(
                             "Gastos Administración:",
-                            format_money(LiquidacionesState.liquidacion_actual["gastos_admin"])
+                            format_money(LiquidacionesState.liquidacion_actual["gastos_admin"]),
                         ),
                         info_row(
                             "Gastos Servicios:",
-                            format_money(LiquidacionesState.liquidacion_actual["gastos_serv"])
+                            format_money(LiquidacionesState.liquidacion_actual["gastos_serv"]),
                         ),
                         info_row(
                             "Gastos Reparaciones:",
-                            format_money(LiquidacionesState.liquidacion_actual["gastos_rep"])
+                            format_money(LiquidacionesState.liquidacion_actual["gastos_rep"]),
                         ),
                         info_row(
                             "Otros Egresos:",
-                            format_money(LiquidacionesState.liquidacion_actual["otros_egr"])
+                            format_money(LiquidacionesState.liquidacion_actual["otros_egr"]),
                         ),
                         rx.divider(),
                         info_row(
                             "Total Egresos:",
                             rx.text(
-                                format_money(LiquidacionesState.liquidacion_actual["total_egresos"]),
+                                format_money(
+                                    LiquidacionesState.liquidacion_actual["total_egresos"]
+                                ),
                                 weight="bold",
                                 size="4",
                                 color="red",
-                            )
+                            ),
                         ),
                         padding="1em",
                         background="red.50",
                         border_radius="8px",
                     ),
-                    
                     # Sección: Resultado Final
                     section_header("Resultado", "dollar_sign"),
                     rx.box(
                         rx.center(
                             rx.vstack(
-                                rx.text("NETO A PAGAR", size="2", color="gray.600", weight="medium"),
                                 rx.text(
-                                    format_money(LiquidacionesState.liquidacion_actual["neto_pagar"]),
+                                    "NETO A PAGAR", size="2", color="gray.600", weight="medium"
+                                ),
+                                rx.text(
+                                    format_money(
+                                        LiquidacionesState.liquidacion_actual["neto_pagar"]
+                                    ),
                                     size="8",
                                     weight="bold",
                                     color="blue.600",
@@ -221,16 +227,23 @@ def liquidacion_detail_modal() -> rx.Component:
                         border="2px solid",
                         border_color="blue.300",
                     ),
-                    
                     # Sección: Información de Pago (solo si está pagada)
                     rx.cond(
                         LiquidacionesState.liquidacion_actual["estado"] == "Pagada",
                         rx.vstack(
                             section_header("Información de Pago", "circle_check"),
                             rx.box(
-                                info_row("Fecha de Pago:", LiquidacionesState.liquidacion_actual["fecha_pago"]),
-                                info_row("Método:", LiquidacionesState.liquidacion_actual["metodo_pago"]),
-                                info_row("Referencia:", LiquidacionesState.liquidacion_actual["referencia_pago"]),
+                                info_row(
+                                    "Fecha de Pago:",
+                                    LiquidacionesState.liquidacion_actual["fecha_pago"],
+                                ),
+                                info_row(
+                                    "Método:", LiquidacionesState.liquidacion_actual["metodo_pago"]
+                                ),
+                                info_row(
+                                    "Referencia:",
+                                    LiquidacionesState.liquidacion_actual["referencia_pago"],
+                                ),
                                 padding="1em",
                                 background="green.50",
                                 border_radius="8px",
@@ -239,22 +252,23 @@ def liquidacion_detail_modal() -> rx.Component:
                         ),
                         rx.box(),
                     ),
-                    
                     # Sección: Documentos y Soportes (NUEVA)
                     section_header("Soportes y Comprobantes", "file_text"),
                     rx.card(
                         rx.vstack(
-                            rx.text("Gestión de soportes de la liquidación.", size="2", color="gray"),
+                            rx.text(
+                                "Gestión de soportes de la liquidación.", size="2", color="gray"
+                            ),
                             document_manager_elite(LiquidacionesState),
-                            width="100%"
+                            width="100%",
                         ),
                         width="100%",
-                        variant="surface"
+                        variant="surface",
                     ),
-                    
                     # Observaciones
                     rx.cond(
-                        LiquidacionesState.liquidacion_actual["observaciones"] != "Sin observaciones",
+                        LiquidacionesState.liquidacion_actual["observaciones"]
+                        != "Sin observaciones",
                         rx.vstack(
                             section_header("Observaciones", "message_square"),
                             rx.box(
@@ -270,7 +284,6 @@ def liquidacion_detail_modal() -> rx.Component:
                         ),
                         rx.box(),
                     ),
-                    
                     # Botones de Acción
                     rx.hstack(
                         rx.dialog.close(
@@ -331,8 +344,8 @@ def liquidacion_detail_modal() -> rx.Component:
                         ),
                         # Cancelar (solo En Proceso o Aprobada)
                         rx.cond(
-                            (LiquidacionesState.liquidacion_actual["estado"] == "En Proceso") | 
-                            (LiquidacionesState.liquidacion_actual["estado"] == "Aprobada"),
+                            (LiquidacionesState.liquidacion_actual["estado"] == "En Proceso")
+                            | (LiquidacionesState.liquidacion_actual["estado"] == "Aprobada"),
                             rx.button(
                                 rx.icon("circle_x"),
                                 "Cancelar",
@@ -347,7 +360,6 @@ def liquidacion_detail_modal() -> rx.Component:
                         width="100%",
                         padding_top="1em",
                     ),
-                    
                     spacing="3",
                     width="100%",
                 ),
@@ -356,7 +368,6 @@ def liquidacion_detail_modal() -> rx.Component:
                     min_height="300px",
                 ),
             ),
-            
             max_width="700px",
             max_height="80vh",
             overflow_y="auto",
