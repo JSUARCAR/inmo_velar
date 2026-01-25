@@ -23,38 +23,47 @@ class IRepositorioPersona(Protocol):
         ...
 
     def obtener_todos(
-        self, solo_activos: bool = True, limite: Optional[int] = None, offset: int = 0
+        self,
+        filtro_rol: Optional[str] = None,
+        solo_activos: bool = True,
+        busqueda: Optional[str] = None,
+        fecha_inicio: Optional[str] = None,
+        fecha_fin: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: int = 0
     ) -> List[Persona]:
-        """Obtiene todas las personas."""
+        """Obtiene personas con filtros y paginación."""
         ...
 
-    def agregar(self, persona: Persona) -> Persona:
+    def contar_todos(
+        self,
+        filtro_rol: Optional[str] = None,
+        solo_activos: bool = True,
+        busqueda: Optional[str] = None,
+        fecha_inicio: Optional[str] = None,
+        fecha_fin: Optional[str] = None
+    ) -> int:
+        """Cuenta total de personas con filtros."""
+        ...
+
+    def agregar(self, persona: Persona, usuario_sistema: str) -> Persona:
         """Agrega una nueva persona."""
         ...
 
-    def actualizar(self, persona: Persona) -> Persona:
+    def actualizar(self, persona: Persona, usuario_sistema: str) -> bool:
         """Actualiza una persona existente."""
         ...
 
-    def eliminar(self, id: int) -> bool:
-        """Elimina una persona."""
+    def inactivar(self, id_persona: int, motivo: str, usuario_sistema: str) -> bool:
+        """Inactiva una persona."""
         ...
 
     # ---- Operaciones Especializadas ----
 
     def obtener_por_documento(
-        self, tipo_documento: str, numero_documento: str
+        self, numero_documento: str
     ) -> Optional[Persona]:
-        """
-        Busca una persona por su documento.
-
-        Args:
-            tipo_documento: Tipo (CC, NIT, etc.)
-            numero_documento: Número del documento
-
-        Returns:
-            La persona o None
-        """
+        """Busca una persona por su documento."""
         ...
 
     def obtener_por_email(self, email: str) -> Optional[Persona]:
