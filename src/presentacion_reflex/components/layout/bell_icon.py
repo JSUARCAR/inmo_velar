@@ -206,4 +206,5 @@ def bell_icon() -> rx.Component:
                 side_offset=15,
             ),
         ),
+        on_mount=AlertasState.check_alerts,
     )
