@@ -167,7 +167,38 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
 
             # Preparar filtros
             periodo = (
@@ -397,7 +428,38 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
             liquidacion = servicio.obtener_detalle_liquidacion_ui(id_liquidacion)
 
             if liquidacion:
@@ -447,7 +509,38 @@ class LiquidacionesState(DocumentosStateMixin):
             self.cargar_documentos()
 
         try:
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
             liquidacion = servicio.obtener_detalle_liquidacion_ui(id_liquidacion)
 
             if liquidacion:
@@ -482,7 +575,38 @@ class LiquidacionesState(DocumentosStateMixin):
 
             if liquidaciones and len(liquidaciones) > 0:
                 # Obtener detalles de TODAS las liquidaciones y consolidar
-                servicio = ServicioFinanciero(db_manager)
+                from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                    RepositorioRecaudoSQLite,
+                )
+                from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                    RepositorioLiquidacionSQLite,
+                )
+                from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                    RepositorioPropiedadSQLite,
+                )
+                from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                    RepositorioContratoArrendamientoSQLite,
+                )
+                from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                    RepositorioContratoMandatoSQLite,
+                )
+                from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+                repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+                repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+                repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+                repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+                repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+                pdf_service = ServicioDocumentosPDF()
+
+                servicio = ServicioFinanciero(
+                    repo_recaudo=repo_recaudo,
+                    repo_liquidacion=repo_liquidacion,
+                    repo_propiedad=repo_propiedad,
+                    repo_arriendo=repo_contrato_arriendo,
+                    repo_mandato=repo_contrato_mandato,
+                    pdf_service=pdf_service,
+                )
                 detalles_lista = []
 
                 for liq in liquidaciones:
@@ -638,7 +762,38 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             # Parsear id_propietario que viene como "NOMBRE - DOCUMENTO"
@@ -714,7 +869,38 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             affected = servicio.aprobar_liquidacion_propietario(
@@ -745,7 +931,38 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             affected = servicio.marcar_liquidacion_propietario_pagada(
@@ -784,7 +1001,38 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             # Procesar datos del formulario
@@ -849,7 +1097,38 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             servicio.aprobar_liquidacion(id_liquidacion, usuario_sistema)
@@ -878,7 +1157,38 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             servicio.marcar_liquidacion_pagada(
@@ -914,7 +1224,38 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             if not motivo or len(motivo.strip()) < 10:
@@ -958,7 +1299,38 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
             servicio.reversar_liquidacion(self.liquidacion_id_for_action, "admin")
 
             async with self:
@@ -1009,7 +1381,38 @@ class LiquidacionesState(DocumentosStateMixin):
                 yield rx.toast.warning("El motivo es muy corto", position="bottom-right")
                 return
 
-            servicio = ServicioFinanciero(db_manager)
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
+                RepositorioRecaudoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            pdf_service = ServicioDocumentosPDF()
+
+            servicio = ServicioFinanciero(
+                repo_recaudo=repo_recaudo,
+                repo_liquidacion=repo_liquidacion,
+                repo_propiedad=repo_propiedad,
+                repo_arriendo=repo_contrato_arriendo,
+                repo_mandato=repo_contrato_mandato,
+                pdf_service=pdf_service,
+            )
             servicio.cancelar_liquidacion(
                 self.liquidacion_id_for_action, self.cancel_motivo, "admin"
             )

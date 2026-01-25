@@ -68,8 +68,8 @@ class RecibosState(DocumentosStateMixin):
     async def load_propiedades_options(self):
         """Carga opciones de propiedades para selects."""
         try:
-            RepositorioPropiedadSQLite(db_manager)
-            servicio_prop = ServicioPropiedades(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            servicio_prop = ServicioPropiedades(repo_propiedad=repo_propiedad)
             props = servicio_prop.listar_propiedades()
 
             options = [
