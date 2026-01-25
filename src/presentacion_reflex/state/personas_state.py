@@ -65,7 +65,40 @@ class PersonasState(rx.State):
         """Carga la lista de personas aplicando filtros y paginación."""
         self.is_loading = True
         try:
-            servicio = ServicioPersonas(db_manager)
+            from src.infraestructura.persistencia.repositorio_persona_sqlite import (
+                RepositorioPersonaSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propietario_sqlite import (
+                RepositorioPropietarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
+                RepositorioArrendatarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
+                RepositorioCodeudorSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_asesor_sqlite import (
+                RepositorioAsesorSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_proveedores_sqlite import (
+                RepositorioProveedoresSQLite,
+            )
+
+            repo_persona = RepositorioPersonaSQLite(db_manager)
+            repo_propietario = RepositorioPropietarioSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+            repo_asesor = RepositorioAsesorSQLite(db_manager)
+            repo_proveedor = RepositorioProveedoresSQLite(db_manager)
+
+            servicio = ServicioPersonas(
+                repo_persona=repo_persona,
+                repo_propietario=repo_propietario,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+                repo_asesor=repo_asesor,
+                repo_proveedor=repo_proveedor,
+            )
 
             # Mapear filtro "Todos" a None
             rol_filter = self.filtro_rol if self.filtro_rol != "Todos" else None
@@ -142,7 +175,40 @@ class PersonasState(rx.State):
         try:
             yield rx.toast.info("Generando archivo...", position="bottom-right")
 
-            servicio = ServicioPersonas(db_manager)
+            from src.infraestructura.persistencia.repositorio_persona_sqlite import (
+                RepositorioPersonaSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propietario_sqlite import (
+                RepositorioPropietarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
+                RepositorioArrendatarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
+                RepositorioCodeudorSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_asesor_sqlite import (
+                RepositorioAsesorSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_proveedores_sqlite import (
+                RepositorioProveedoresSQLite,
+            )
+
+            repo_persona = RepositorioPersonaSQLite(db_manager)
+            repo_propietario = RepositorioPropietarioSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+            repo_asesor = RepositorioAsesorSQLite(db_manager)
+            repo_proveedor = RepositorioProveedoresSQLite(db_manager)
+
+            servicio = ServicioPersonas(
+                repo_persona=repo_persona,
+                repo_propietario=repo_propietario,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+                repo_asesor=repo_asesor,
+                repo_proveedor=repo_proveedor,
+            )
             rol_filter = self.filtro_rol if self.filtro_rol != "Todos" else None
 
             pass  # print(f"[DEBUG_EXPORT] Filtros - Rol: {rol_filter}, Busqueda: {self.search_query}") [OpSec Removed]
@@ -307,7 +373,40 @@ class PersonasState(rx.State):
             self.current_persona_id = persona["id"]
 
             # 1. Obtener datos completos desde el servicio (incluyendo roles)
-            servicio = ServicioPersonas(db_manager)
+            from src.infraestructura.persistencia.repositorio_persona_sqlite import (
+                RepositorioPersonaSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propietario_sqlite import (
+                RepositorioPropietarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
+                RepositorioArrendatarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
+                RepositorioCodeudorSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_asesor_sqlite import (
+                RepositorioAsesorSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_proveedores_sqlite import (
+                RepositorioProveedoresSQLite,
+            )
+
+            repo_persona = RepositorioPersonaSQLite(db_manager)
+            repo_propietario = RepositorioPropietarioSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+            repo_asesor = RepositorioAsesorSQLite(db_manager)
+            repo_proveedor = RepositorioProveedoresSQLite(db_manager)
+
+            servicio = ServicioPersonas(
+                repo_persona=repo_persona,
+                repo_propietario=repo_propietario,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+                repo_asesor=repo_asesor,
+                repo_proveedor=repo_proveedor,
+            )
             persona_completa = servicio.obtener_persona_completa(self.current_persona_id)
 
             if not persona_completa:
@@ -477,7 +576,40 @@ class PersonasState(rx.State):
             return
 
         try:
-            servicio = ServicioPersonas(db_manager)
+            from src.infraestructura.persistencia.repositorio_persona_sqlite import (
+                RepositorioPersonaSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propietario_sqlite import (
+                RepositorioPropietarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
+                RepositorioArrendatarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
+                RepositorioCodeudorSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_asesor_sqlite import (
+                RepositorioAsesorSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_proveedores_sqlite import (
+                RepositorioProveedoresSQLite,
+            )
+
+            repo_persona = RepositorioPersonaSQLite(db_manager)
+            repo_propietario = RepositorioPropietarioSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+            repo_asesor = RepositorioAsesorSQLite(db_manager)
+            repo_proveedor = RepositorioProveedoresSQLite(db_manager)
+
+            servicio = ServicioPersonas(
+                repo_persona=repo_persona,
+                repo_propietario=repo_propietario,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+                repo_asesor=repo_asesor,
+                repo_proveedor=repo_proveedor,
+            )
             success_message = ""
 
             # Preparar datos extras para todos los roles seleccionados
