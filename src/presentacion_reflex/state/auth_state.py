@@ -11,6 +11,12 @@ from src.dominio.excepciones.excepciones_base import (
 )
 from src.infraestructura.logging.logger import logger
 from src.infraestructura.persistencia.database import db_manager
+from src.infraestructura.persistencia.repositorio_sesion_sqlite import (
+    RepositorioSesionSQLite,
+)
+from src.infraestructura.persistencia.repositorio_usuario_sqlite import (
+    RepositorioUsuarioSQLite,
+)
 
 
 class AuthState(rx.State):
@@ -45,7 +51,9 @@ class AuthState(rx.State):
         if self.session_token:
             try:
                 # Validar token contra BD
-                servicio_auth = ServicioAutenticacion(db_manager)
+                repo_u = RepositorioUsuarioSQLite(db_manager)
+                repo_s = RepositorioSesionSQLite(db_manager)
+                servicio_auth = ServicioAutenticacion(repo_u, repo_s)
                 usuario = servicio_auth.validar_sesion(self.session_token)
 
                 user_dict = {
@@ -88,8 +96,10 @@ class AuthState(rx.State):
             return
 
         try:
-            # Inicializar servicio (DB Manager ya está configurado globalmente)
-            servicio_auth = ServicioAutenticacion(db_manager)
+            # Inicializar servicio con repositorios inyectados
+            repo_u = RepositorioUsuarioSQLite(db_manager)
+            repo_s = RepositorioSesionSQLite(db_manager)
+            servicio_auth = ServicioAutenticacion(repo_u, repo_s)
 
             # Autenticar
             usuario_autenticado = servicio_auth.autenticar(username, password)

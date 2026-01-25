@@ -11,10 +11,12 @@ class ServicioUsuarios:
     Servicio para la gestión administrativa de usuarios (CRUD).
     """
 
-    def __init__(self, db_manager: DatabaseManager):
+    def __init__(
+        self, db_manager: DatabaseManager, auth_service: Optional[ServicioAutenticacion] = None
+    ):
         self.db = db_manager
         self.repo = RepositorioUsuarioSQLite(db_manager)
-        self.auth_service = ServicioAutenticacion(db_manager)
+        self.auth_service = auth_service or ServicioAutenticacion(db_manager)
 
     def listar_usuarios(self) -> List[Usuario]:
         """Obtiene todos los usuarios registrados."""

@@ -18,14 +18,8 @@ from src.dominio.excepciones.excepciones_base import (
     ErrorValidacion,
     SesionInvalida,
 )
+from src.dominio.repositorios.interfaces import RepositorioSesion, RepositorioUsuario
 from src.infraestructura.logging.logger import logger
-from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_sesion_sqlite import (
-    RepositorioSesionSQLite,
-)
-from src.infraestructura.persistencia.repositorio_usuario_sqlite import (
-    RepositorioUsuarioSQLite,
-)
 
 
 class ServicioAutenticacion:
@@ -34,10 +28,9 @@ class ServicioAutenticacion:
     Maneja login, logout, hash de contraseñas y sesiones.
     """
 
-    def __init__(self, db_manager: DatabaseManager):
-        self.db = db_manager
-        self.repo_usuario = RepositorioUsuarioSQLite(db_manager)
-        self.repo_sesion = RepositorioSesionSQLite(db_manager)
+    def __init__(self, repo_usuario: RepositorioUsuario, repo_sesion: RepositorioSesion):
+        self.repo_usuario = repo_usuario
+        self.repo_sesion = repo_sesion
 
     @staticmethod
     def hashear_contraseña(contraseña_plana: str) -> str:
