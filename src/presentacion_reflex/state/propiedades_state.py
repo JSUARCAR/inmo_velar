@@ -90,7 +90,12 @@ class PropiedadesState(DocumentosStateMixin):
     def load_filter_options(self):
         """Carga opciones para dropdowns de filtros."""
         try:
-            servicio = ServicioPropiedades(db_manager)
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
 
             # Cargar municipios
             municipios = servicio.obtener_municipios_disponibles()
@@ -131,7 +136,12 @@ class PropiedadesState(DocumentosStateMixin):
             busqueda = search.strip() if search else None
 
             # Servicio
-            servicio = ServicioPropiedades(db_manager)
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
             result = servicio.listar_propiedades_paginado(
                 page=page,
                 page_size=page_size,
@@ -289,7 +299,12 @@ class PropiedadesState(DocumentosStateMixin):
     def open_edit_modal(self, id_propiedad: int):
         """Abre modal para editar propiedad existente."""
         try:
-            servicio = ServicioPropiedades(db_manager)
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
             propiedad = servicio.obtener_propiedad(id_propiedad)
 
             if propiedad:
@@ -380,7 +395,12 @@ class PropiedadesState(DocumentosStateMixin):
         self.error_message = ""
 
         try:
-            servicio = ServicioPropiedades(db_manager)
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
 
             # Validaciones básicas
             if not form_data.get("matricula_inmobiliaria"):
@@ -491,7 +511,12 @@ class PropiedadesState(DocumentosStateMixin):
     def toggle_disponibilidad(self, id_propiedad: int, nueva_disponibilidad: int):
         """Cambia disponibilidad de una propiedad."""
         try:
-            servicio = ServicioPropiedades(db_manager)
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
             servicio.cambiar_disponibilidad(
                 id_propiedad, nueva_disponibilidad, usuario_sistema="admin"
             )
@@ -508,7 +533,12 @@ class PropiedadesState(DocumentosStateMixin):
         try:
             yield rx.toast.info("Generando archivo...", position="bottom-right")
 
-            servicio = ServicioPropiedades(db_manager)
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
 
             # Preparar filtros
             filtro_disp = None
