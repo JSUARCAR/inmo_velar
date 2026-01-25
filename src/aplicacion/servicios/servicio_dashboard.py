@@ -77,7 +77,9 @@ class ServicioDashboard:
 
     @cache_manager.cached("dashboard:metricas_expertas", level=1, ttl=60)
     def obtener_metricas_expertas(self, id_asesor: int = None) -> Dict[str, float]:
-        return self.repo.obtener_metricas_expertas(id_asesor)
+        data = self.repo.obtener_metricas_expertas(id_asesor)
+        # Asegurar que los valores sean float para evitar errores de tipo en Reflex
+        return {k: float(v) for k, v in data.items()}
 
     @cache_manager.cached("dashboard:top_asesores", level=1, ttl=60)
     def obtener_top_asesores_revenue(self) -> List[Dict]:

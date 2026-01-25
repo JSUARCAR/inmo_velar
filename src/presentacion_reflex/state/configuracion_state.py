@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Any
 
 import reflex as rx
 
@@ -34,6 +34,9 @@ class ConfiguracionState(rx.State):
 
     # Parámetros del Sistema
     parametros: List[ParametroSistema] = []
+
+    # Control de edición de parámetros (por ID)
+    parametros_desbloqueados: List[int] = []
 
     def on_load(self):
         """Carga los datos al iniciar la página."""
@@ -73,6 +76,7 @@ class ConfiguracionState(rx.State):
         """Carga la lista de parámetros."""
         servicio = ServicioConfiguracion(db_manager)
         self.parametros = servicio.listar_parametros()
+
 
     def set_empresa_field(self, field: str, value: str):
         """Actualiza un campo específico de la empresa."""
@@ -155,6 +159,19 @@ class ConfiguracionState(rx.State):
             servicio = ServicioConfiguracion(db_manager)
             servicio.actualizar_parametro(id_parametro, nuevo_valor, "USUARIO_WEB")
             self.cargar_parametros()
+            
+            # Bloquear de nuevo tras guardar (opcional, por seguridad)
+            if id_parametro in self.parametros_desbloqueados:
+                self.parametros_desbloqueados.remove(id_parametro)
+                
             return rx.toast.success("Parámetro actualizado.")
         except Exception as e:
             return rx.toast.error(f"Error al actualizar parámetro: {str(e)}")
+
+    def toggle_lock(self, id_parametro: int):
+        """Alterna el bloqueo de un parámetro."""
+        if id_parametro in self.parametros_desbloqueados:
+            self.parametros_desbloqueados.remove(id_parametro)
+        else:
+            self.parametros_desbloqueados.append(id_parametro)
+

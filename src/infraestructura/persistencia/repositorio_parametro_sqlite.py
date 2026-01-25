@@ -43,7 +43,7 @@ class RepositorioParametroSQLite:
             tipo_dato=(row_dict.get("tipo_dato") or row_dict.get("TIPO_DATO")),
             descripcion=(row_dict.get("descripcion") or row_dict.get("DESCRIPCION")),
             categoria=(row_dict.get("categoria") or row_dict.get("CATEGORIA")),
-            modificable=(row_dict.get("modificable") or row_dict.get("MODIFICABLE")),
+            modificable=1 if (row_dict.get("modificable") or row_dict.get("MODIFICABLE")) == 1 else 0,
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),
             updated_by=(row_dict.get("updated_by") or row_dict.get("UPDATED_BY")),
@@ -147,11 +147,12 @@ class RepositorioParametroSQLite:
 
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
+            placeholder = self.db.get_placeholder()
 
             cursor.execute(
-                """
+                f"""
                 UPDATE PARAMETROS_SISTEMA SET
-                    VALOR_PARAMETRO = ?,
+                    VALOR_PARAMETRO = {placeholder},
                     UPDATED_AT = {placeholder},
                     UPDATED_BY = {placeholder}
                 WHERE ID_PARAMETRO = {placeholder}

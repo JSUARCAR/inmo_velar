@@ -11,6 +11,7 @@ from src.dominio.entidades.liquidacion import Liquidacion
 from src.dominio.entidades.recaudo import Recaudo
 from src.dominio.entidades.recaudo_concepto import RecaudoConcepto
 
+from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
 from src.dominio.interfaces.repositorio_recaudo import IRepositorioRecaudo
 from src.dominio.interfaces.repositorio_liquidacion import IRepositorioLiquidacion
 from src.dominio.interfaces.repositorio_propiedad import IRepositorioPropiedad
@@ -31,7 +32,8 @@ class ServicioFinanciero:
         repo_propiedad: IRepositorioPropiedad,
         repo_arriendo: Any, # Podría ser IRepositorioContratoArriendo
         repo_mandato: Any,  # Podría ser IRepositorioContratoMandato
-        pdf_service: ServicioDocumentosPDF
+        pdf_service: ServicioDocumentosPDF,
+        servicio_configuracion: Optional[ServicioConfiguracion] = None
     ):
         self.repo_recaudo = repo_recaudo
         self.repo_liquidacion = repo_liquidacion
@@ -39,6 +41,7 @@ class ServicioFinanciero:
         self.repo_arriendo = repo_arriendo
         self.repo_mandato = repo_mandato
         self.pdf_service = pdf_service
+        self.servicio_config = servicio_configuracion
 
     def registrar_recaudo(
         self, datos: Dict[str, Any], conceptos_data: List[Dict[str, Any]], usuario_sistema: str
@@ -117,8 +120,17 @@ class ServicioFinanciero:
 
         comision_porcentaje = datos_adicionales.get("comision_porcentaje", contrato.comision_porcentaje_contrato_m)
         comision_monto = int((canon_bruto * comision_porcentaje) / 10000)
-        iva_comision = int(comision_monto * 0.19)
-        impuesto_4x1000 = int(total_ingresos * 0.004)
+        
+        # Sincronización de Parámetros Globales
+        iva_val = 1900
+        imp_4x1000_val = 4
+        
+        if self.servicio_config:
+            iva_val = self.servicio_config.obtener_valor_parametro("IVA_DEFAULT", 1900)
+            imp_4x1000_val = self.servicio_config.obtener_valor_parametro("IMPUESTO_4X1000", 4)
+            
+        iva_comision = int(comision_monto * (iva_val / 10000.0))
+        impuesto_4x1000 = int(total_ingresos * (imp_4x1000_val / 1000.0))
 
         liquidacion = Liquidacion(
             id_contrato_m=id_contrato_m,

@@ -60,6 +60,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
     selected_annul_id: int = 0
     annul_reason: str = ""
     show_edit_modal: bool = False
+    show_bulk_modal: bool = False
 
     # Form data
     selected_liquidacion_id: int = 0
@@ -747,6 +748,114 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             return
 
         yield LiquidacionAsesoresState.anular_liquidacion(self.selected_annul_id, self.annul_reason)
+
+    @rx.event(background=True)
+    async def open_bulk_modal(self):
+        """Abre el modal de generación masiva."""
+        async with self:
+            self.show_bulk_modal = True
+            self.form_data["periodo"] = datetime.now().strftime("%Y-%m")
+            self.error_message = ""
+
+    def close_bulk_modal(self):
+        """Cierra el modal de generación masiva."""
+        self.show_bulk_modal = False
+
+    @rx.event(background=True)
+    async def generar_liquidacion_masiva(self, form_data: Dict):
+        """Genera liquidaciones para todos los asesores activos."""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+        
+        try:
+            periodo = form_data.get("periodo")
+            if not periodo:
+                raise ValueError("Debe seleccionar un período")
+
+            # Inicializar repositorios y servicios
+            repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
+            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
+            repo_pago = RepositorioPagoAsesorSQLite(db_manager)
+            repo_contrato = RepositorioContratoArrendamientoSQLite(db_manager)
+            
+            servicio = ServicioLiquidacionAsesores(
+                repo_liquidacion=repo_liquidacion,
+                repo_descuento=repo_descuento,
+                repo_pago=repo_pago,
+            )
+
+            stats = {"creadas": 0, "omitidas": 0, "errores": 0, "total": 0}
+            
+            # Iterar sobre todos los asesores activos
+            # Usamos self.asesores_options que ya tiene ID y Comision
+            # Si está vacío, intentar recargar
+            if not self.asesores_options:
+                await self.load_filter_options()
+            
+            # Iterar asesores
+            for asesor_opt in self.asesores_options:
+                id_asesor = int(asesor_opt["id"])
+                
+                # Obtener porcentaje de comisión (default 5.0 si no existe)
+                comision_pct = float(asesor_opt.get("comision_porcentaje", 5.0))
+                basis_points = int(comision_pct * 100)
+                
+                stats["total"] += 1
+                
+                try:
+                    # 1. Verificar si ya tiene liquidación en este periodo
+                    existente = repo_liquidacion.obtener_por_asesor_periodo(id_asesor, periodo)
+                    if existente:
+                        stats["omitidas"] += 1
+                        continue
+                        
+                    # 2. Buscar contratos activos
+                    contratos_activos = repo_contrato.obtener_activos_por_asesor(id_asesor)
+                    
+                    if not contratos_activos:
+                        stats["omitidas"] += 1 # Sin contratos no se liquida
+                        continue
+                        
+                    # Preparar lista de contratos
+                    contratos_data = [
+                        {"id": c.id_contrato_a, "canon": c.canon_arrendamiento} 
+                        for c in contratos_activos
+                    ]
+                    
+                    # 3. Generar liquidación
+                    servicio.generar_liquidacion_multi_contrato(
+                        id_asesor=id_asesor,
+                        periodo=periodo,
+                        contratos_lista=contratos_data,
+                        porcentaje_comision=basis_points,
+                        total_bonificaciones=0,
+                        datos_adicionales={"observaciones": "Generación Masiva"},
+                        usuario="admin" # TODO: Auth
+                    )
+                    
+                    stats["creadas"] += 1
+                    
+                except Exception as e:
+                    stats["errores"] += 1
+                    pass # print(f"Error liquidando asesor {id_asesor}: {e}")
+            
+            async with self:
+                self.show_bulk_modal = False
+                self.is_loading = False
+                
+            yield rx.toast.success(
+                f"Proceso completado. Creadas: {stats['creadas']}, Omitidas: {stats['omitidas']}, Errores: {stats['errores']}",
+                duration=5000
+            )
+            
+            yield LiquidacionAsesoresState.load_liquidaciones()
+
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error en proceso masivo: {str(e)}"
+                self.is_loading = False
+            yield rx.toast.error(f"Error crítico: {str(e)}")
 
     @rx.event(background=True)
     async def open_create_modal(self):

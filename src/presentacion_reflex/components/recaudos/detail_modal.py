@@ -102,7 +102,7 @@ def modal_detalle_recaudo() -> rx.Component:
                                         rx.vstack(
                                             rx.text("Valor Total", size="1", color="gray"),
                                             rx.text(
-                                                f"${RecaudosState.recaudo_actual['valor_total']:,}",
+                                                RecaudosState.recaudo_actual["valor_total_view"],
                                                 weight="bold",
                                                 color="green",
                                                 size="4",

@@ -10,6 +10,9 @@ from typing import Dict, List, Optional
 
 from src.dominio.entidades.propiedad import Propiedad
 from src.dominio.interfaces.repositorio_propiedad import IRepositorioPropiedad
+from src.infraestructura.persistencia.repositorio_municipio_sqlite import (
+    RepositorioMunicipioSQLite,
+)
 
 # Integración Fase 3: CacheManager
 from src.infraestructura.cache.cache_manager import cache_manager
@@ -23,8 +26,13 @@ class ServicioPropiedades:
 
     TIPOS_PROPIEDAD = ["Casa", "Apartamento", "Local Comercial", "Bodega", "Oficina", "Lote"]
 
-    def __init__(self, repo_propiedad: IRepositorioPropiedad):
+    def __init__(
+        self,
+        repo_propiedad: IRepositorioPropiedad,
+        repo_municipio: Optional[RepositorioMunicipioSQLite] = None,
+    ):
         self.repo = repo_propiedad
+        self.repo_municipio = repo_municipio
 
     @cache_manager.cached("propiedades:list", level=1)
     def listar_propiedades(
@@ -269,3 +277,17 @@ class ServicioPropiedades:
             )
 
         return output.getvalue()
+
+    def obtener_municipios_disponibles(self) -> List[Dict]:
+        """Obtiene la lista de municipios con estado_registro activo."""
+        if not self.repo_municipio:
+            from src.infraestructura.persistencia.database import db_manager
+
+            self.repo_municipio = RepositorioMunicipioSQLite(db_manager)
+
+        municipios = self.repo_municipio.listar_todos()
+        return [{"id": m.id_municipio, "nombre": m.nombre_municipio} for m in municipios]
+
+    def obtener_tipos_propiedad(self) -> List[str]:
+        """Retorna los tipos de propiedad permitidos."""
+        return self.TIPOS_PROPIEDAD

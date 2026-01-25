@@ -137,3 +137,7 @@ from src.presentacion_reflex.pages import liquidacion_asesores
 # 13. Proveedores
 from src.presentacion_reflex.pages import proveedores
 # app.add_page(proveedores.proveedores_page, route="/proveedores", title="Proveedores - Inmobiliaria Velar")
+
+# 14. Reportes
+from src.presentacion_reflex.pages import reportes
+# app.add_page(reportes.reportes_page, route="/reportes", title="Reportes - Inmobiliaria Velar")

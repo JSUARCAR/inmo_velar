@@ -8,6 +8,7 @@ from src.dominio.entidades.recaudo_concepto import RecaudoConcepto
 from src.infraestructura.persistencia.database import db_manager
 from src.infraestructura.persistencia.repositorio_recaudo_sqlite import RepositorioRecaudoSQLite
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+from src.presentacion_reflex.utils.formatters import format_currency, format_number
 
 
 class RecaudosState(DocumentosStateMixin):
@@ -204,7 +205,14 @@ class RecaudosState(DocumentosStateMixin):
                 ]
 
             async with self:
-                self.recaudos = recaudos_list
+                # Aplicar formateo a los items de la lista
+                formatted_list = []
+                for row in recaudos_list:
+                    new_item = row.copy()
+                    new_item["valor_total_view"] = format_currency(row.get("valor_total", 0))
+                    formatted_list.append(new_item)
+                
+                self.recaudos = formatted_list
                 self.total_items = total
                 self.is_loading = False
 
@@ -406,6 +414,7 @@ class RecaudosState(DocumentosStateMixin):
                     "arrendatario": arrendatario,
                     "fecha_pago": recaudo.fecha_pago,
                     "valor_total": recaudo.valor_total,
+                    "valor_total_view": format_currency(recaudo.valor_total),
                     "metodo_pago": recaudo.metodo_pago,
                     "referencia": recaudo.referencia_bancaria or "",
                     "estado": recaudo.estado_recaudo,
@@ -413,7 +422,12 @@ class RecaudosState(DocumentosStateMixin):
                     "created_at": recaudo.created_at or "",
                     "created_by": recaudo.created_by or "",
                     "conceptos": [
-                        {"tipo": c.tipo_concepto, "periodo": c.periodo, "valor": c.valor}
+                        {
+                            "tipo": c.tipo_concepto, 
+                            "periodo": c.periodo, 
+                            "valor": c.valor,
+                            "valor_view": format_currency(c.valor)
+                        }
                         for c in conceptos
                     ],
                 }

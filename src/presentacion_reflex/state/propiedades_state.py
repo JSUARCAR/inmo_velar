@@ -94,8 +94,15 @@ class PropiedadesState(DocumentosStateMixin):
                 RepositorioPropiedadSQLite,
             )
 
+            from src.infraestructura.persistencia.repositorio_municipio_sqlite import (
+                RepositorioMunicipioSQLite,
+            )
+
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-            servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
+            repo_municipio = RepositorioMunicipioSQLite(db_manager)
+            servicio = ServicioPropiedades(
+                repo_propiedad=repo_propiedad, repo_municipio=repo_municipio
+            )
 
             # Cargar municipios
             municipios = servicio.obtener_municipios_disponibles()

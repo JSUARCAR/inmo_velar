@@ -85,7 +85,7 @@ def dashboard_page() -> rx.Component:
                         rx.grid(
                             kpi_card(
                                 "Ocupación Financiera",
-                                rx.text(DashboardState.kpi_financiero["ocupacion_financiera"], "%"),
+                                rx.text(DashboardState.kpi_ocupacion_financiera_view, "%"),
                                 "bar-chart-2",
                                 "blue",
                                 "Ingresos vs Potencial",
@@ -101,8 +101,7 @@ def dashboard_page() -> rx.Component:
                                     rx.hstack(
                                         rx.text("Recaudo Real:", weight="medium", size="2"),
                                         rx.text(
-                                            "$",
-                                            DashboardState.kpi_financiero["recaudo_real"],
+                                            DashboardState.kpi_recaudo_real_view,
                                             weight="bold",
                                             color="blue.9",
                                         ),
@@ -112,8 +111,7 @@ def dashboard_page() -> rx.Component:
                                     rx.hstack(
                                         rx.text("Potencial Total:", weight="medium", size="2"),
                                         rx.text(
-                                            "$",
-                                            DashboardState.kpi_financiero["potencial_total"],
+                                            DashboardState.kpi_potencial_total_view,
                                             weight="bold",
                                             color="gray.9",
                                         ),
@@ -124,57 +122,35 @@ def dashboard_page() -> rx.Component:
                                     width="100%",
                                 ),
                             ),
-                            kpi_card(
+                             kpi_card(
                                 "Eficiencia Recaudo",
-                                rx.text(DashboardState.kpi_financiero["eficiencia_recaudo"], "%"),
+                                rx.text(DashboardState.kpi_eficiencia_recaudo_view, "%"),
                                 "wallet",
                                 "green",
                                 "Recaudado este mes",
                                 variant="elite",
                                 hover_content=rx.vstack(
-                                    rx.text("Desempeño de Cobranza", weight="bold", size="3"),
+                                    rx.text("Recaudo Mensual", weight="bold", size="2"),
                                     rx.separator(),
                                     rx.text(
-                                        "Porcentaje de cánones esperados para el mes actual que ya han sido recaudados.",
-                                        size="2",
-                                        color="gray.11",
+                                        f"Total recaudado en el mes actual: {DashboardState.recaudo_mes_view}",
+                                        size="1",
                                     ),
-                                    rx.progress(
-                                        value=DashboardState.kpi_financiero[
-                                            "eficiencia_recaudo"
-                                        ].to(int),
-                                        color_scheme="green",
-                                        width="100%",
+                                    rx.text(
+                                        f"Meta de recaudo: {DashboardState.kpi_potencial_total_view}",
+                                        size="1",
                                     ),
-                                    spacing="2",
-                                    width="100%",
+                                    spacing="1",
                                 ),
                             ),
                             kpi_card(
                                 "Potencial Total",
-                                rx.text(
-                                    "$",
-                                    DashboardState.kpi_financiero["potencial_total"],
-                                    format_number=True,
-                                ),
+                                DashboardState.kpi_potencial_total_view,
                                 "banknote",
                                 "indigo",
                                 "Cartera Total Estimada",
                                 variant="elite",
                                 hover_content=rx.vstack(
-                                    rx.text("Valor de Cartera", weight="bold", size="3"),
-                                    rx.separator(),
-                                    rx.text(
-                                        "Suma total proyectada de todos los contratos de arrendamiento activos actualmente.",
-                                        size="2",
-                                        color="gray.11",
-                                    ),
-                                    rx.text(
-                                        "Indicador de tamaño de negocio.",
-                                        size="1",
-                                        color="gray.9",
-                                        style={"font_style": "italic"},
-                                    ),
                                     spacing="2",
                                     width="100%",
                                 ),
@@ -241,7 +217,7 @@ def dashboard_page() -> rx.Component:
                             rx.grid(
                                 kpi_card(
                                     "Cartera Mora",
-                                    rx.text("$", DashboardState.mora_data["monto_total"].to(str)),
+                                    DashboardState.mora_monto_total_view,
                                     "circle_alert",
                                     "red",
                                     rx.text(
@@ -273,10 +249,10 @@ def dashboard_page() -> rx.Component:
                                 ),
                                 kpi_card(
                                     "Recaudo Mes",
-                                    rx.text("$", DashboardState.flujo_data["recaudado"].to(str)),
+                                    DashboardState.recaudo_mes_view,
                                     "wallet",
                                     "green",
-                                    rx.text(DashboardState.flujo_data["porcentaje"].to(str), "%"),
+                                    rx.text(DashboardState.recaudo_porcentaje_view, "%"),
                                     variant="compact",
                                     hover_content=rx.vstack(
                                         rx.text("Recaudo Mensual", weight="bold", size="2"),
@@ -297,9 +273,7 @@ def dashboard_page() -> rx.Component:
                                 kpi_card(
                                     "Ocupación",
                                     rx.text(
-                                        DashboardState.ocupacion_data["porcentaje_ocupacion"].to(
-                                            str
-                                        ),
+                                        DashboardState.ocupacion_porcentaje_view,
                                         "%",
                                     ),
                                     "home",
@@ -317,9 +291,7 @@ def dashboard_page() -> rx.Component:
                                 ),
                                 kpi_card(
                                     "Comisiones",
-                                    rx.text(
-                                        "$", DashboardState.comisiones_data["monto_total"].to(str)
-                                    ),
+                                    DashboardState.comisiones_monto_total_view,
                                     "credit-card",
                                     "amber",
                                     rx.text(
@@ -347,9 +319,7 @@ def dashboard_page() -> rx.Component:
                                 ),
                                 kpi_card(
                                     "Recibos Pend.",
-                                    rx.text(
-                                        "$", DashboardState.recibos_data["monto_total"].to(str)
-                                    ),
+                                    DashboardState.recibos_monto_total_view,
                                     "receipt",
                                     "rose",
                                     rx.text(
