@@ -5,6 +5,12 @@ from src.aplicacion.servicios.servicio_contratos import ServicioContratos
 from src.aplicacion.servicios.servicio_recibos_publicos import ServicioRecibosPublicos
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
+from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
+from src.infraestructura.persistencia.repositorio_renovacion_sqlite import RepositorioRenovacionSQLite
+from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
+from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
 from src.infraestructura.repositorios.repositorio_recibo_publico_sqlite import (
     RepositorioReciboPublicoSQLite,
 )
@@ -18,11 +24,29 @@ class ServicioAlertas:
 
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
-        self.servicio_contratos = ServicioContratos(db_manager)
-
-        # Instanciamos dependencias para recibos
-        repo_recibos = RepositorioReciboPublicoSQLite(db_manager)
+        
+        # Instanciar Repositorios
         repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+        repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+        repo_ipc = RepositorioIPCSQLite(db_manager)
+        repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+        repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+        repo_recibos = RepositorioReciboPublicoSQLite(db_manager)
+
+        # Inicializar Servicios con dependencias
+        self.servicio_contratos = ServicioContratos(
+            db_manager,
+            repo_mandato=repo_mandato,
+            repo_arriendo=repo_arriendo,
+            repo_propiedad=repo_propiedad,
+            repo_renovacion=repo_renovacion,
+            repo_ipc=repo_ipc,
+            repo_arrendatario=repo_arrendatario,
+            repo_codeudor=repo_codeudor
+        )
+
         self.servicio_recibos = ServicioRecibosPublicos(repo_recibos, repo_propiedad)
 
     def obtener_alertas(self) -> List[Dict[str, Any]]:

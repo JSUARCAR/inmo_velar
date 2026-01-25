@@ -198,12 +198,20 @@ class RepositorioReciboPublicoSQLite:
         """
         Lista recibos vencidos.
         """
-        query = """
-            SELECT * FROM RECIBOS_PUBLICOS
-            WHERE CAST(FECHA_VENCIMIENTO AS DATE) < CURRENT_DATE
-              AND ESTADO != 'Pagado'
-            ORDER BY FECHA_VENCIMIENTO ASC
-        """
+        if self.db_manager.use_postgresql:
+            query = """
+                SELECT * FROM RECIBOS_PUBLICOS
+                WHERE CAST(FECHA_VENCIMIENTO AS DATE) < CURRENT_DATE
+                  AND ESTADO != 'Pagado'
+                ORDER BY FECHA_VENCIMIENTO ASC
+            """
+        else:
+            query = """
+                SELECT * FROM RECIBOS_PUBLICOS
+                WHERE FECHA_VENCIMIENTO < date('now')
+                  AND ESTADO != 'Pagado'
+                ORDER BY FECHA_VENCIMIENTO ASC
+            """
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
@@ -215,21 +223,23 @@ class RepositorioReciboPublicoSQLite:
         """
         Lista recibos pendientes que vencen en los próximos N días.
         No incluye recibos ya vencidos ni pagados.
-
-        Args:
-            dias: Número de días de anticipación (default: 5)
-
-        Returns:
-            Lista de recibos que vencen entre hoy y hoy+dias
         """
-        # PostgreSQL: CAST TEXT to DATE before date arithmetic
-        query = f"""
-            SELECT * FROM RECIBOS_PUBLICOS
-            WHERE CAST(FECHA_VENCIMIENTO AS DATE) > CURRENT_DATE
-              AND CAST(FECHA_VENCIMIENTO AS DATE) <= CURRENT_DATE + INTERVAL '{dias} day'
-              AND ESTADO != 'Pagado'
-            ORDER BY FECHA_VENCIMIENTO ASC
-        """
+        if self.db_manager.use_postgresql:
+            query = f"""
+                SELECT * FROM RECIBOS_PUBLICOS
+                WHERE CAST(FECHA_VENCIMIENTO AS DATE) > CURRENT_DATE
+                  AND CAST(FECHA_VENCIMIENTO AS DATE) <= CURRENT_DATE + INTERVAL '{dias} day'
+                  AND ESTADO != 'Pagado'
+                ORDER BY FECHA_VENCIMIENTO ASC
+            """
+        else:
+            query = f"""
+                SELECT * FROM RECIBOS_PUBLICOS
+                WHERE FECHA_VENCIMIENTO > date('now')
+                  AND FECHA_VENCIMIENTO <= date('now', '+{dias} days')
+                  AND ESTADO != 'Pagado'
+                ORDER BY FECHA_VENCIMIENTO ASC
+            """
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
