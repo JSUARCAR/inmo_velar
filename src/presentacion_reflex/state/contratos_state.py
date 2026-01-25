@@ -173,7 +173,38 @@ class ContratosState(DocumentosStateMixin):
     @rx.event(background=True)
     async def load_filter_options(self):
         """Carga opciones para dropdowns de filtros."""
-        ServicioContratos(db_manager)
+        # Instanciar repositorios y servicio
+        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+            RepositorioContratoMandatoSQLite,
+        )
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+            RepositorioContratoArrendamientoSQLite,
+        )
+        from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
+            RepositorioRenovacionSQLite,
+        )
+        from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+        from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
+            RepositorioArrendatarioSQLite,
+        )
+        from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
+            RepositorioCodeudorSQLite,
+        )
+
+        repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+        repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+        repo_ipc = RepositorioIPCSQLite(db_manager)
+        repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+        repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+
+        # Como solo cargamos opciones SQL directas aqui, no necesitamos el servicio completo, 
+        # pero mantenemos la estructura por si acaso se usa logica de negocio luego.
+        # De hecho, el código original INSTANCIABA el servicio pero NO LO USABA en load_filter_options
+        # porque hacía queries directos con db_manager.
+        # Mantendremos la instanciación correcta si se quiere usar, pero el bloque de abajo usa db_manager directo.
 
         # 1. Cargar TODAS las Propiedades activas
         # NOTE: Load ALL properties (not just those without contracts) to support edit mode
@@ -395,7 +426,44 @@ class ContratosState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioContratos(db_manager)
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
+                RepositorioRenovacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
+                RepositorioArrendatarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
+                RepositorioCodeudorSQLite,
+            )
+
+            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+            repo_ipc = RepositorioIPCSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+
+            servicio = ServicioContratos(
+                db_manager,
+                repo_mandato=repo_mandato,
+                repo_arriendo=repo_arriendo,
+                repo_propiedad=repo_propiedad,
+                repo_renovacion=repo_renovacion,
+                repo_ipc=repo_ipc,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+            )
 
             # Helper para el filtro de asesor (manejar "todos" o vacio)
             asesor_filter = (
@@ -580,7 +648,45 @@ class ContratosState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioContratos(db_manager)
+            # Instanciar repositorios y servicio
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
+                RepositorioRenovacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
+                RepositorioArrendatarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
+                RepositorioCodeudorSQLite,
+            )
+
+            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+            repo_ipc = RepositorioIPCSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+
+            servicio = ServicioContratos(
+                db_manager,
+                repo_mandato=repo_mandato,
+                repo_arriendo=repo_arriendo,
+                repo_propiedad=repo_propiedad,
+                repo_renovacion=repo_renovacion,
+                repo_ipc=repo_ipc,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+            )
 
             if tipo == "Mandato":
                 contrato = servicio.obtener_mandato_por_id(id_contrato)
@@ -654,7 +760,45 @@ class ContratosState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioContratos(db_manager)
+            # Instanciar repositorios y servicio
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
+                RepositorioRenovacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
+                RepositorioArrendatarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
+                RepositorioCodeudorSQLite,
+            )
+
+            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+            repo_ipc = RepositorioIPCSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+
+            servicio = ServicioContratos(
+                db_manager,
+                repo_mandato=repo_mandato,
+                repo_arriendo=repo_arriendo,
+                repo_propiedad=repo_propiedad,
+                repo_renovacion=repo_renovacion,
+                repo_ipc=repo_ipc,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+            )
             detalle = servicio.obtener_detalle_contrato_ui(id_contrato, tipo)
 
             if detalle:
@@ -684,7 +828,45 @@ class ContratosState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioContratos(db_manager)
+            # Instanciar repositorios y servicio
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
+                RepositorioRenovacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
+                RepositorioArrendatarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
+                RepositorioCodeudorSQLite,
+            )
+
+            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+            repo_ipc = RepositorioIPCSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+
+            servicio = ServicioContratos(
+                db_manager,
+                repo_mandato=repo_mandato,
+                repo_arriendo=repo_arriendo,
+                repo_propiedad=repo_propiedad,
+                repo_renovacion=repo_renovacion,
+                repo_ipc=repo_ipc,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+            )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             # Procesar datos del formulario según el tipo
@@ -786,7 +968,32 @@ class ContratosState(DocumentosStateMixin):
             self.is_loading = True
 
         try:
-            servicio = ServicioContratos(db_manager)
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
+            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import RepositorioRenovacionSQLite
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
+
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+            repo_ipc = RepositorioIPCSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+
+            servicio = ServicioContratos(
+                db_manager,
+                repo_mandato=repo_mandato,
+                repo_arriendo=repo_arriendo,
+                repo_propiedad=repo_propiedad,
+                repo_renovacion=repo_renovacion,
+                repo_ipc=repo_ipc,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor
+            )
             usuario_sistema = "admin"  # TODO: Auth
 
             tipo = self.selected_contract_type_renew
@@ -817,7 +1024,44 @@ class ContratosState(DocumentosStateMixin):
     def exportar_csv(self):
         """Genera y descarga el CSV de contratos."""
         try:
-            servicio = ServicioContratos(db_manager)
+            # Instanciar repositorios y servicio
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
+                RepositorioRenovacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
+                RepositorioArrendatarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
+                RepositorioCodeudorSQLite,
+            )
+
+            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+            repo_ipc = RepositorioIPCSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+
+            servicio = ServicioContratos(
+                repo_mandato=repo_mandato,
+                repo_arriendo=repo_arriendo,
+                repo_propiedad=repo_propiedad,
+                repo_renovacion=repo_renovacion,
+                repo_ipc=repo_ipc,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+            )
 
             # Obtener datos CSV usando los filtros actuales
             csv_data = servicio.exportar_contratos_csv(
@@ -853,7 +1097,44 @@ class ContratosState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            servicio = ServicioContratos(db_manager)
+            # Instanciar repositorios y servicio
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
+                RepositorioRenovacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
+                RepositorioArrendatarioSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
+                RepositorioCodeudorSQLite,
+            )
+
+            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+            repo_ipc = RepositorioIPCSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+
+            servicio = ServicioContratos(
+                repo_mandato=repo_mandato,
+                repo_arriendo=repo_arriendo,
+                repo_propiedad=repo_propiedad,
+                repo_renovacion=repo_renovacion,
+                repo_ipc=repo_ipc,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+            )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             if estado_actual == "Activo":
