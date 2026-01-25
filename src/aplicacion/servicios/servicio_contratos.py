@@ -10,7 +10,11 @@ from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
 from src.dominio.entidades.contrato_mandato import ContratoMandato
 from src.dominio.entidades.renovacion_contrato import RenovacionContrato
 
-# Integración Fase 3: CacheManager
+# Integración Fase 3: CacheManager e Interfaces
+from src.aplicacion.servicios.servicio_contrato_arrendamiento import (
+    ServicioContratoArrendamiento,
+)
+from src.aplicacion.servicios.servicio_contrato_mandato import ServicioContratoMandato
 from src.infraestructura.cache.cache_manager import cache_manager
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
@@ -32,16 +36,25 @@ from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
 
 class ServicioContratos:
     def __init__(self, db_manager: DatabaseManager):
+        self.db = db_manager
+        # Instanciar repositorios concretos para inyectar en servicios especializados
         self.repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
         self.repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-        # Repositorios auxiliares para validación de roles y obtención de IDs
-        self.repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-        self.repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-        self.repo_codeudor = RepositorioCodeudorSQLite(db_manager)
         self.repo_propiedad = RepositorioPropiedadSQLite(db_manager)
         self.repo_renovacion = RepositorioRenovacionSQLite(db_manager)
         self.repo_ipc = RepositorioIPCSQLite(db_manager)
-        self.db = db_manager
+
+        # Servicios especializados (SRP)
+        self.servicio_mandato = ServicioContratoMandato(
+            self.repo_mandato, self.repo_propiedad, self.repo_renovacion
+        )
+        self.servicio_arriendo = ServicioContratoArrendamiento(
+            self.repo_arriendo, self.repo_propiedad, self.repo_renovacion, self.repo_ipc
+        )
+
+        # Repositorios auxiliares (se mantienen para métodos no migrados aún)
+        self.repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+        self.repo_codeudor = RepositorioCodeudorSQLite(db_manager)
 
     # =========================================================================
     # DROPDOWN HELPERS
@@ -109,48 +122,18 @@ class ServicioContratos:
     # GESTIÓN DE MANDATOS
     # =========================================================================
 
-    @cache_manager.invalidates("mandatos:list_paginated")
     def crear_mandato(self, datos: Dict, usuario_sistema: str) -> ContratoMandato:
-        """
-        Crea un nuevo contrato de mandato.
-
-        Reglas:
-        1. No puede existir otro mandato activo para la misma propiedad.
-        """
-        id_propiedad = datos["id_propiedad"]
-
-        # Validar unicidad
-        mandato_existente = self.repo_mandato.obtener_activo_por_propiedad(id_propiedad)
-        if mandato_existente:
-            raise ValueError(
-                f"La propiedad ya tiene un contrato de mandato activo (ID: {mandato_existente.id_contrato_m})"
-            )
-
-        # Crear entidad
-        contrato = ContratoMandato(
-            id_propiedad=datos["id_propiedad"],
-            id_propietario=datos["id_propietario"],
-            id_asesor=datos["id_asesor"],
-            fecha_inicio_contrato_m=datos["fecha_inicio"],
-            fecha_fin_contrato_m=datos["fecha_fin"],
-            duracion_contrato_m=datos["duracion_meses"],
-            canon_mandato=datos["canon"],
-            comision_porcentaje_contrato_m=datos["comision_porcentaje"],  # Base 10000
-            iva_contrato_m=datos.get("iva_porcentaje", 1900),
-            estado_contrato_m="Activo",
-            alerta_vencimiento_contrato_m=True,
-        )
-
-        return self.repo_mandato.crear(contrato, usuario_sistema)
+        return self.servicio_mandato.crear_mandato(datos, usuario_sistema)
 
     def obtener_mandato_activo(self, id_propiedad: int) -> Optional[ContratoMandato]:
-        return self.repo_mandato.obtener_activo_por_propiedad(id_propiedad)
+        return self.servicio_mandato.repo_mandato.obtener_activo_por_propiedad(id_propiedad)
 
     def obtener_mandato_por_id(self, id_contrato: int) -> Optional[ContratoMandato]:
-        return self.repo_mandato.obtener_por_id(id_contrato)
+        return self.servicio_mandato.obtener_mandato(id_contrato)
 
     @cache_manager.invalidates("mandatos:list_paginated")
     def actualizar_mandato(self, id_contrato: int, datos: Dict, usuario_sistema: str) -> None:
+        return self.servicio_mandato.actualizar_mandato(id_contrato, datos, usuario_sistema)
         """
         Actualiza un contrato de mandato existente.
         """
@@ -226,106 +209,8 @@ class ServicioContratos:
             ]
 
     # Integración Fase 4: Paginación
-    @cache_manager.cached("mandatos:list_paginated", level=1, ttl=300)
-    def listar_mandatos_paginado(
-        self,
-        page: int = 1,
-        page_size: int = 25,
-        estado: Optional[str] = None,
-        busqueda: Optional[str] = None,
-        id_asesor: Optional[str] = None,
-    ):
-        """
-        Lista contratos de mandato con paginación y filtros.
-        """
-        from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
-
-        params = PaginationParams(page=page, page_size=page_size)
-
-        with self.db.obtener_conexion() as conn:
-            cursor = self.db.get_dict_cursor(conn)
-
-            # Get database-specific placeholder
-            placeholder = self.db.get_placeholder()
-
-            # Base query parts
-            base_from = """
-                FROM CONTRATOS_MANDATOS cm
-                JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
-                JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
-                JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
-            """
-
-            conditions = []
-            query_params = []
-
-            if estado and estado != "Todos":
-                if estado == "Activo":
-                    conditions.append("cm.ESTADO_CONTRATO_M = 'Activo'")
-                elif estado == "Cancelado":
-                    conditions.append("cm.ESTADO_CONTRATO_M != 'Activo'")
-                else:
-                    conditions.append(f"cm.ESTADO_CONTRATO_M = {placeholder}")
-                    query_params.append(estado)
-
-            if busqueda:
-                conditions.append(
-                    f"""(
-                    p.DIRECCION_PROPIEDAD LIKE {placeholder} OR 
-                    per.NOMBRE_COMPLETO LIKE {placeholder} OR 
-                    per.NUMERO_DOCUMENTO LIKE {placeholder}
-                )"""
-                )
-                term = f"%{busqueda}%"
-                query_params.extend([term, term, term])
-
-            if id_asesor:
-                conditions.append(f"cm.ID_ASESOR = {placeholder}")
-                query_params.append(int(id_asesor))
-
-            where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
-
-            # Count
-            count_query = f"SELECT COUNT(*) as total {base_from} {where_clause}"
-            cursor.execute(count_query, query_params)
-            total = cursor.fetchone()["TOTAL"]
-
-            # Data
-            data_query = f"""
-                SELECT 
-                    cm.ID_CONTRATO_M,
-                    cm.ESTADO_CONTRATO_M,
-                    cm.CANON_MANDATO,
-                    cm.FECHA_INICIO_CONTRATO_M,
-                    cm.FECHA_FIN_CONTRATO_M,
-                    p.DIRECCION_PROPIEDAD,
-                    per.NOMBRE_COMPLETO as PROPIETARIO,
-                    per.NUMERO_DOCUMENTO
-                {base_from}
-                {where_clause}
-                ORDER BY cm.ID_CONTRATO_M DESC
-                LIMIT {placeholder} OFFSET {placeholder}
-            """
-
-            cursor.execute(data_query, query_params + [params.page_size, params.offset])
-
-            items = [
-                {
-                    "id": row["ID_CONTRATO_M"],
-                    "estado": row["ESTADO_CONTRATO_M"],
-                    "canon": row["CANON_MANDATO"],
-                    "fecha_inicio": row["FECHA_INICIO_CONTRATO_M"],
-                    "fecha_fin": row["FECHA_FIN_CONTRATO_M"],
-                    "propiedad": row["DIRECCION_PROPIEDAD"],
-                    "propietario": row["PROPIETARIO"],
-                    "documento_propietario": row["NUMERO_DOCUMENTO"],
-                }
-                for row in cursor.fetchall()
-            ]
-
-            return PaginatedResult(
-                items=items, total=total, page=params.page, page_size=params.page_size
-            )
+    def listar_mandatos_paginado(self, **kwargs) -> Any:
+        return self.servicio_mandato.listar_mandatos_paginado(**kwargs)
 
     def listar_mandatos_activos(self) -> List[Dict[str, Any]]:
         """
@@ -362,51 +247,18 @@ class ServicioContratos:
     # GESTIÓN DE ARRENDAMIENTOS
     # =========================================================================
 
-    @cache_manager.invalidates("arriendos:list_paginated")
     def crear_arrendamiento(self, datos: Dict, usuario_sistema: str) -> ContratoArrendamiento:
-        """
-        Crea un nuevo contrato de arrendamiento.
-
-        Reglas:
-        1. La propiedad debe tener un Mandato Activo (se asume validado por UI/Reglas de Negocio previas o se confía en el flujo).
-        2. No puede existir otro Arrendamiento Activo para la misma propiedad.
-        """
-        id_propiedad = datos["id_propiedad"]
-
-        # Validar si ya existe arriendo activo
-        arriendo_existente = self.repo_arriendo.obtener_activo_por_propiedad(id_propiedad)
-        if arriendo_existente:
-            raise ValueError(
-                f"La propiedad ya tiene un contrato de arrendamiento activo (ID: {arriendo_existente.id_contrato_a})"
-            )
-
-        # Crear entidad
-        contrato = ContratoArrendamiento(
-            id_propiedad=datos["id_propiedad"],
-            id_arrendatario=datos["id_arrendatario"],
-            id_codeudor=datos.get("id_codeudor"),  # Puede ser None
-            fecha_inicio_contrato_a=datos["fecha_inicio"],
-            fecha_fin_contrato_a=datos["fecha_fin"],
-            duracion_contrato_a=datos["duracion_meses"],
-            canon_arrendamiento=datos["canon"],
-            deposito=datos.get("deposito", 0),
-            estado_contrato_a="Activo",
-            alerta_vencimiento_contrato_a=True,
-            alerta_ipc=True,  # Default activada
-            fecha_renovacion_contrato_a=None,  # Se llena al renovar
-            fecha_incremento_ipc=None,  # Se calculará después o anualmente
-        )
-
-        return self.repo_arriendo.crear(contrato, usuario_sistema)
+        return self.servicio_arriendo.crear_arrendamiento(datos, usuario_sistema)
 
     def obtener_arrendamiento_activo(self, id_propiedad: int) -> Optional[ContratoArrendamiento]:
-        return self.repo_arriendo.obtener_activo_por_propiedad(id_propiedad)
+        return self.servicio_arriendo.repo_arriendo.obtener_activo_por_propiedad(id_propiedad)
 
     def obtener_arrendamiento_por_id(self, id_contrato: int) -> Optional[ContratoArrendamiento]:
-        return self.repo_arriendo.obtener_por_id(id_contrato)
+        return self.servicio_arriendo.obtener_arrendamiento(id_contrato)
 
     @cache_manager.invalidates("arriendos:list_paginated")
     def actualizar_arrendamiento(self, id_contrato: int, datos: Dict, usuario_sistema: str) -> None:
+        return self.servicio_arriendo.actualizar_arrendamiento(id_contrato, datos, usuario_sistema)
         """
         Actualiza un contrato de arrendamiento existente.
         Nota: No actualiza propiedad ni inquilinos, solo condiciones.
@@ -431,276 +283,19 @@ class ServicioContratos:
     def renovar_arrendamiento(
         self, id_contrato: int, usuario_sistema: str
     ) -> ContratoArrendamiento:
-        """
-        Renueva un arrendamiento automáticamente:
-        1. Verifica Paz y Salvo (Stub).
-        2. Calcula nuevo canon basado en IPC.
-        3. Extiende fecha fin por la misma duración original.
-        4. Registra historial de renovación.
-        """
-        pass  # print(f">>> DEBUG: Iniciando renovación contrato {id_contrato}") [OpSec Removed]
-
-        # 1. Verificar existencia y estado
-        arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
-        if not arriendo:
-            raise ValueError(f"No existe contrato {id_contrato}")
-        if arriendo.estado_contrato_a != "Activo":
-            raise ValueError(f"El contrato no está Activo ({arriendo.estado_contrato_a})")
-
-        # 2. Verificar Paz y Salvo (Bloqueante)
-        if not self._verificar_paz_y_salvo(id_contrato):
-            raise ValueError("No se puede renovar: El inquilino presenta mora (Simulado).")
-
-        # 3. Calcular Nueva Fecha
-        # Regla: Se extiende por la 'duracion_contrato_a' meses a partir de la fecha fin actual.
-        # NOTA: Simplificado. Idealmente sumar meses a 'fecha_fin_contrato_a' actual.
-        fecha_fin_actual = datetime.strptime(arriendo.fecha_fin_contrato_a, "%Y-%m-%d")
-
-        # Calcular meses a sumar (usando duración original)
-        meses_duracion = arriendo.duracion_contrato_a
-
-        # Lógica simple de suma de meses
-        anio_nuevo = fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
-        mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
-
-        # Ajuste de días (ej: 31 feb -> 28 feb)
-        # Por simplicidad en MVP, usamos librería o ajuste manual básico si falla date()
-        try:
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo)
-        except ValueError:
-            # Caso borde final de mes
-            if mes_nuevo == 2:
-                nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                    year=anio_nuevo, month=mes_nuevo, day=28
-                )
-            else:
-                nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                    year=anio_nuevo, month=mes_nuevo, day=30
-                )
-
-        nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
-        fecha_inicio_renovacion = (fecha_fin_actual).strftime(
-            "%Y-%m-%d"
-        )  # La renovación "inicia" donde termina el anterior para efectos de historial
-
-        # 4. Calcular Nuevo Canon (IPC)
-        # BUG FIX: Solo aplica si duracion >= 12 meses (1 año)
-        if meses_duracion >= 12:
-            nuevo_canon, porcentaje_ipc = self._calcular_incremento_ipc(
-                arriendo.canon_arrendamiento
-            )
-            motivo_ren = "Prórroga Automática - Renovación IPC"
-        else:
-            nuevo_canon = arriendo.canon_arrendamiento
-            porcentaje_ipc = 0.0
-            motivo_ren = "Prórroga Automática - Sin IPC (Duración < 1 año)"
-
-        pass  # print(f">>> DEBUG: Renovación - Canon Anterior: {arriendo.canon_arrendamiento}, Nuevo: {nuevo_canon} (IPC {porcentaje_ipc}%)") [OpSec Removed]
-        pass  # print(f">>> DEBUG: Renovación - Fin Actual: {arriendo.fecha_fin_contrato_a} -> Nueva Fin: {nueva_fecha_fin_str}") [OpSec Removed]
-
-        # 5. Guardar Historial Renovación
-        renovacion = RenovacionContrato(
-            id_contrato_a=arriendo.id_contrato_a,
-            id_contrato_m=None,  # Opcional si queremos linkear al mandato
-            tipo_contrato="Arrendamiento",
-            fecha_inicio_original=arriendo.fecha_inicio_contrato_a,  # O la fecha inicio del periodo anterior
-            fecha_fin_original=arriendo.fecha_fin_contrato_a,
-            fecha_inicio_renovacion=fecha_inicio_renovacion,  # Metadata informativa
-            fecha_fin_renovacion=nueva_fecha_fin_str,
-            canon_anterior=arriendo.canon_arrendamiento,
-            canon_nuevo=nuevo_canon,
-            porcentaje_incremento=int(porcentaje_ipc * 100),  # Guardar como entero x100 o directo
-            motivo_renovacion=motivo_ren,
-            fecha_renovacion=datetime.now().date().isoformat(),
-        )
-
-        # TRANSACCION
-        try:
-            with self.db.transaccion():
-                # A. Guardar Historial
-                self.repo_renovacion.crear(renovacion, usuario_sistema)
-
-                # B. Actualizar Contrato
-                arriendo.fecha_fin_contrato_a = nueva_fecha_fin_str
-                arriendo.canon_arrendamiento = nuevo_canon
-                arriendo.fecha_renovacion_contrato_a = datetime.now().date().isoformat()
-                arriendo.updated_by = usuario_sistema
-                arriendo.updated_at = datetime.now().isoformat()
-
-                # Usamos el repo para update (dentro de la misma transacción si repo usa la conex del context,
-                # PERO cuidado: repo.actualizar abre su propio 'obtener_conexion'.
-                # El DatabaseManager maneja thread-local connection, así que si estamos en el mismo thread debería ser la misma conex?
-                # Revisando DatabaseManager: _obtener_connection_thread_local devuelve la misma instancia.
-                # PERO repo.actualizar hace commit(). Si anidamos commits, SQLite lo maneja?
-                # Mejor: Actualizar manualmente aquí o confiar en el manager.
-                # Por seguridad con este patrón simple, llamamos al repo.
-                # OJO: Si repo hace commit, cierra la transaccion actual? No, solo commit.
-                self.repo_arriendo.actualizar(arriendo, usuario_sistema)
-
-            return arriendo
-
-        except Exception as e:
-            pass  # print(f">>> ERROR en renovación: {e}") [OpSec Removed]
-            raise e
+        return self.servicio_arriendo.renovar_arrendamiento(id_contrato, usuario_sistema)
 
     @cache_manager.invalidates("mandatos:list_paginated")
     def renovar_mandato(self, id_contrato: int, usuario_sistema: str) -> ContratoMandato:
-        """
-        Renueva un contrato de mandato automáticamente:
-        1. Extiende fecha fin por la misma duración original.
-        2. Mantiene el mismo canon y comisión (Incremento 0% - SIN IPC).
-        3. Registra historial de renovación.
-        """
-        pass  # print(f">>> DEBUG: Iniciando renovación MANDATO {id_contrato}") [OpSec Removed]
-
-        # 1. Verificar existencia y estado
-        mandato = self.repo_mandato.obtener_por_id(id_contrato)
-        if not mandato:
-            raise ValueError(f"No existe contrato de mandato {id_contrato}")
-        if mandato.estado_contrato_m != "Activo":
-            raise ValueError(f"El contrato no está Activo ({mandato.estado_contrato_m})")
-
-        # 2. Calcular Nueva Fecha
-        fecha_fin_actual = datetime.strptime(mandato.fecha_fin_contrato_m, "%Y-%m-%d")
-        meses_duracion = mandato.duracion_contrato_m
-
-        # Lógica simple de suma de meses
-        anio_nuevo = fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
-        mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
-
-        try:
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo)
-        except ValueError:
-            # Ajuste fin de mes
-            if mes_nuevo == 2:
-                nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                    year=anio_nuevo, month=mes_nuevo, day=28
-                )
-            else:
-                nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                    year=anio_nuevo, month=mes_nuevo, day=30
-                )
-
-        nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
-        fecha_inicio_renovacion = fecha_fin_actual.strftime("%Y-%m-%d")
-
-        # 3. Datos económicos (SIN CAMBIOS)
-        canon_actual = mandato.canon_mandato
-        nuevo_canon = canon_actual  # Regla de negocio: NO IPC
-
-        pass  # print(f">>> DEBUG: Renovación Mandato - Fin Actual: {mandato.fecha_fin_contrato_m} -> Nueva Fin: {nueva_fecha_fin_str}") [OpSec Removed]
-
-        # 4. Guardar Historial Renovación
-        renovacion = RenovacionContrato(
-            id_contrato_a=None,
-            id_contrato_m=mandato.id_contrato_m,
-            tipo_contrato="Mandato",
-            fecha_inicio_original=mandato.fecha_inicio_contrato_m,
-            fecha_fin_original=mandato.fecha_fin_contrato_m,
-            fecha_inicio_renovacion=fecha_inicio_renovacion,
-            fecha_fin_renovacion=nueva_fecha_fin_str,
-            canon_anterior=canon_actual,
-            canon_nuevo=nuevo_canon,
-            porcentaje_incremento=0,
-            motivo_renovacion="Prórroga Automática - Mandato (Sin IPC)",
-            fecha_renovacion=datetime.now().date().isoformat(),
-        )
-
-        # TRANSACCION
-        try:
-            with self.db.transaccion():
-                # A. Guardar Historial
-                self.repo_renovacion.crear(renovacion, usuario_sistema)
-
-                # B. Actualizar Contrato
-                mandato.fecha_fin_contrato_m = nueva_fecha_fin_str
-                mandato.fecha_renovacion_contrato_m = datetime.now().date().isoformat()
-                mandato.updated_by = usuario_sistema
-                mandato.updated_at = datetime.now().isoformat()
-
-                self.repo_mandato.actualizar(mandato, usuario_sistema)
-
-            return mandato
-
-        except Exception as e:
-            pass  # print(f">>> ERROR en renovación mandato: {e}") [OpSec Removed]
-            pass  # print(f">>> ERROR en renovación mandato: {e}") [OpSec Removed]
-            raise e
+        return self.servicio_mandato.renovar_mandato(id_contrato, usuario_sistema)
 
     @cache_manager.invalidates("arriendos:list_paginated")
     def terminar_arrendamiento(self, id_contrato: int, motivo: str, usuario_sistema: str) -> None:
-        """
-        Termina un contrato de arrendamiento (Cancelación / Finalización Anticipada).
-        1. Cambia estado a 'Cancelado'.
-        2. Establece Fecha Fin a HOY.
-        3. Registra Motivo.
-        4. Libera la Propiedad (Disponibilidad = 1).
-        """
-        from datetime import datetime  # Fix for NameError in runtime
-
-        if not motivo:
-            raise ValueError("El motivo de terminación es obligatorio")
-
-        arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
-        if not arriendo:
-            raise ValueError(f"Contrato {id_contrato} no existe")
-
-        pass  # print(f">>> DEBUG: Terminando Arrendamiento {id_contrato}. Motivo: {motivo}") [OpSec Removed]
-
-        # Update Contrato
-        arriendo.estado_contrato_a = "Cancelado"
-        arriendo.motivo_cancelacion = motivo
-        arriendo.fecha_fin_contrato_a = datetime.now().strftime("%Y-%m-%d")  # Terminación inmediata
-        arriendo.updated_by = usuario_sistema
-        arriendo.updated_at = datetime.now().isoformat()
-
-        # Update Propiedad
-        propiedad = self.repo_propiedad.obtener_por_id(arriendo.id_propiedad)
-        if propiedad:
-            propiedad.disponibilidad_propiedad = 1  # Libre
-            propiedad.updated_by = usuario_sistema
-            propiedad.updated_at = datetime.now().isoformat()
-
-        # Transacción
-        try:
-            with self.db.transaccion():
-                self.repo_arriendo.actualizar(arriendo, usuario_sistema)
-                if propiedad:
-                    self.repo_propiedad.actualizar(propiedad, usuario_sistema)
-        except Exception as e:
-            pass  # print(f">>> ERROR terminando arriendo: {e}") [OpSec Removed]
-            raise e
+        return self.servicio_arriendo.terminar_arrendamiento(id_contrato, motivo, usuario_sistema)
 
     @cache_manager.invalidates("mandatos:list_paginated")
     def terminar_mandato(self, id_contrato: int, motivo: str, usuario_sistema: str) -> None:
-        """
-        Termina un contrato de mandato.
-        1. Cambia estado a 'Cancelado'.
-        2. Establece Fecha Fin a HOY.
-        3. Registra Motivo.
-        """
-
-        if not motivo:
-            raise ValueError("El motivo de terminación es obligatorio")
-
-        mandato = self.repo_mandato.obtener_por_id(id_contrato)
-        if not mandato:
-            raise ValueError(f"Contrato {id_contrato} no existe")
-
-        pass  # print(f">>> DEBUG: Terminando Mandato {id_contrato}. Motivo: {motivo}") [OpSec Removed]
-
-        mandato.estado_contrato_m = "Cancelado"
-        mandato.motivo_cancelacion = motivo
-        mandato.fecha_fin_contrato_m = datetime.now().strftime("%Y-%m-%d")
-        mandato.updated_by = usuario_sistema
-        mandato.updated_at = datetime.now().isoformat()
-
-        try:
-            with self.db.transaccion():
-                self.repo_mandato.actualizar(mandato, usuario_sistema)
-        except Exception as e:
-            pass  # print(f">>> ERROR terminando mandato: {e}") [OpSec Removed]
-            raise e
+        return self.servicio_mandato.terminar_mandato(id_contrato, motivo, usuario_sistema)
 
     def _verificar_paz_y_salvo(self, id_contrato: int) -> bool:
         """
@@ -770,110 +365,8 @@ class ServicioContratos:
             ]
 
     # Integración Fase 4: Paginación
-    @cache_manager.cached("arriendos:list_paginated", level=1, ttl=300)
-    def listar_arrendamientos_paginado(
-        self,
-        page: int = 1,
-        page_size: int = 25,
-        estado: Optional[str] = None,
-        busqueda: Optional[str] = None,
-        id_asesor: Optional[str] = None,
-    ):
-        """
-        Lista contratos de arrendamiento con paginación y filtros.
-        """
-        from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
-
-        params = PaginationParams(page=page, page_size=page_size)
-
-        with self.db.obtener_conexion() as conn:
-            cursor = self.db.get_dict_cursor(conn)
-
-            # Get database-specific placeholder
-            placeholder = self.db.get_placeholder()
-
-            # Base query parts
-            base_from = """
-                FROM CONTRATOS_ARRENDAMIENTOS ca
-                JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-                JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
-                JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-            """
-
-            # Si filtramos por asesor, necesitamos unir con mandatos
-            if id_asesor:
-                base_from += " JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'Activo' "
-
-            conditions = []
-            query_params = []
-
-            if estado and estado != "Todos":
-                if estado == "Activo":
-                    conditions.append("ca.ESTADO_CONTRATO_A = 'Activo'")
-                elif estado == "Cancelado":
-                    conditions.append("ca.ESTADO_CONTRATO_A != 'Activo'")
-                else:
-                    conditions.append(f"ca.ESTADO_CONTRATO_A = {placeholder}")
-                    query_params.append(estado)
-
-            if busqueda:
-                conditions.append(
-                    f"""(
-                    p.DIRECCION_PROPIEDAD LIKE {placeholder} OR 
-                    per.NOMBRE_COMPLETO LIKE {placeholder} OR 
-                    per.NUMERO_DOCUMENTO LIKE {placeholder}
-                )"""
-                )
-                term = f"%{busqueda}%"
-                query_params.extend([term, term, term])
-
-            if id_asesor:
-                conditions.append(f"cm.ID_ASESOR = {placeholder}")
-                query_params.append(int(id_asesor))
-
-            where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
-
-            # Count
-            count_query = f"SELECT COUNT(*) as total {base_from} {where_clause}"
-            cursor.execute(count_query, query_params)
-            total = cursor.fetchone()["TOTAL"]
-
-            # Data
-            data_query = f"""
-                SELECT 
-                    ca.ID_CONTRATO_A,
-                    ca.ESTADO_CONTRATO_A,
-                    ca.CANON_ARRENDAMIENTO,
-                    ca.FECHA_INICIO_CONTRATO_A,
-                    ca.FECHA_FIN_CONTRATO_A,
-                    p.DIRECCION_PROPIEDAD,
-                    per.NOMBRE_COMPLETO as ARRENDATARIO,
-                    per.NUMERO_DOCUMENTO
-                {base_from}
-                {where_clause}
-                ORDER BY ca.ID_CONTRATO_A DESC
-                LIMIT {placeholder} OFFSET {placeholder}
-            """
-
-            cursor.execute(data_query, query_params + [params.page_size, params.offset])
-
-            items = [
-                {
-                    "id": row["ID_CONTRATO_A"],
-                    "estado": row["ESTADO_CONTRATO_A"],
-                    "canon": row["CANON_ARRENDAMIENTO"],
-                    "fecha_inicio": row["FECHA_INICIO_CONTRATO_A"],
-                    "fecha_fin": row["FECHA_FIN_CONTRATO_A"],
-                    "propiedad": row["DIRECCION_PROPIEDAD"],
-                    "arrendatario": row["ARRENDATARIO"],
-                    "documento_arrendatario": row["NUMERO_DOCUMENTO"],
-                }
-                for row in cursor.fetchall()
-            ]
-
-            return PaginatedResult(
-                items=items, total=total, page=params.page, page_size=params.page_size
-            )
+    def listar_arrendamientos_paginado(self, **kwargs) -> Any:
+        return self.servicio_arriendo.listar_arrendamientos_paginado(**kwargs)
 
     def listar_arrendamientos_por_vencer(self, dias_antelacion: int = 60) -> List[Dict[str, Any]]:
         """
