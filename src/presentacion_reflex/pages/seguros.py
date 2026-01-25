@@ -4,17 +4,22 @@ Gestión de seguros de arrendamiento y pólizas con filtros y CRUD completo.
 """
 
 import reflex as rx
-from src.presentacion_reflex.state.seguros_state import SegurosState
-from src.presentacion_reflex.state.auth_state import AuthState
+
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
-from src.presentacion_reflex.components.seguros import modal_seguro, modal_poliza, modal_detalle_seguro
+from src.presentacion_reflex.components.seguros import (
+    modal_detalle_seguro,
+    modal_poliza,
+    modal_seguro,
+)
+from src.presentacion_reflex.state.auth_state import AuthState
+from src.presentacion_reflex.state.seguros_state import SegurosState
 
 
 def seguros_page() -> rx.Component:
     """
     Página principal de Seguros con filtros y CRUD.
     """
-    
+
     return dashboard_layout(
         rx.vstack(
             # Header
@@ -24,7 +29,6 @@ def seguros_page() -> rx.Component:
                 spacing="1",
                 margin_bottom="6",
             ),
-            
             # Search bar
             rx.hstack(
                 rx.input(
@@ -42,7 +46,6 @@ def seguros_page() -> rx.Component:
                 width="100%",
                 margin_bottom="3",
             ),
-            
             # Filtros y Acciones
             rx.hstack(
                 # Filtro Estado
@@ -53,9 +56,7 @@ def seguros_page() -> rx.Component:
                     on_change=SegurosState.set_filter_estado,
                     size="2",
                 ),
-                
                 rx.spacer(),
-                
                 # Nueva Póliza
                 rx.cond(
                     AuthState.check_action("Seguros", "CREAR"),
@@ -66,9 +67,8 @@ def seguros_page() -> rx.Component:
                         size="3",
                         variant="soft",
                         color_scheme="blue",
-                    )
+                    ),
                 ),
-                
                 # Nuevo Seguro
                 rx.cond(
                     AuthState.check_action("Seguros", "CREAR"),
@@ -77,27 +77,24 @@ def seguros_page() -> rx.Component:
                         "Nuevo Seguro",
                         on_click=SegurosState.open_create_seguro_modal,
                         size="3",
-                    )
+                    ),
                 ),
-                
                 spacing="3",
                 width="100%",
                 margin_bottom="4",
                 wrap="wrap",
             ),
-            
             # Contador
             rx.text(
                 rx.cond(
                     SegurosState.total_items > 0,
                     f"{SegurosState.total_items} seguros encontrados",
-                    "0 seguros encontrados"
+                    "0 seguros encontrados",
                 ),
                 size="2",
                 color="gray.11",
                 margin_bottom="3",
             ),
-            
             # Loading / Error / Content
             rx.cond(
                 SegurosState.is_loading,
@@ -123,7 +120,9 @@ def seguros_page() -> rx.Component:
                             rx.vstack(
                                 rx.icon("shield", size=60, color="gray.8"),
                                 rx.text("No se encontraron seguros", size="4", color="gray.11"),
-                                rx.text("Crea un nuevo seguro para comenzar", size="2", color="gray.10"),
+                                rx.text(
+                                    "Crea un nuevo seguro para comenzar", size="2", color="gray.10"
+                                ),
                                 spacing="3",
                             ),
                             padding="50px",
@@ -159,20 +158,16 @@ def seguros_page() -> rx.Component:
                                             rx.cond(
                                                 seguro["fecha_inicio_seguro"] != "",
                                                 seguro["fecha_inicio_seguro"],
-                                                "N/A"
+                                                "N/A",
                                             )
                                         ),
                                         rx.table.cell(
                                             rx.badge(
                                                 rx.cond(
-                                                    seguro["estado_seguro"],
-                                                    "Activo",
-                                                    "Inactivo"
+                                                    seguro["estado_seguro"], "Activo", "Inactivo"
                                                 ),
                                                 color_scheme=rx.cond(
-                                                    seguro["estado_seguro"],
-                                                    "green",
-                                                    "gray"
+                                                    seguro["estado_seguro"], "green", "gray"
                                                 ),
                                             )
                                         ),
@@ -185,9 +180,11 @@ def seguros_page() -> rx.Component:
                                                         size="2",
                                                         variant="soft",
                                                         color_scheme="blue",
-                                                        on_click=lambda: SegurosState.open_detail_modal(seguro["id_seguro"]),
+                                                        on_click=lambda: SegurosState.open_detail_modal(
+                                                            seguro["id_seguro"]
+                                                        ),
                                                     ),
-                                                    content="Ver detalle"
+                                                    content="Ver detalle",
                                                 ),
                                                 # Editar
                                                 rx.cond(
@@ -197,10 +194,12 @@ def seguros_page() -> rx.Component:
                                                             rx.icon("square-pen", size=22),
                                                             size="2",
                                                             variant="soft",
-                                                            on_click=lambda: SegurosState.open_edit_seguro_modal(seguro["id_seguro"]),
+                                                            on_click=lambda: SegurosState.open_edit_seguro_modal(
+                                                                seguro["id_seguro"]
+                                                            ),
                                                         ),
-                                                        content="Editar seguro"
-                                                    )
+                                                        content="Editar seguro",
+                                                    ),
                                                 ),
                                                 # Toggle Estado
                                                 rx.cond(
@@ -211,25 +210,28 @@ def seguros_page() -> rx.Component:
                                                                 rx.cond(
                                                                     seguro["estado_seguro"],
                                                                     "shield-off",
-                                                                    "shield-check"
+                                                                    "shield-check",
                                                                 ),
-                                                                size=22
+                                                                size=22,
                                                             ),
                                                             size="2",
                                                             variant="soft",
                                                             color_scheme=rx.cond(
                                                                 seguro["estado_seguro"],
                                                                 "red",
-                                                                "green"
+                                                                "green",
                                                             ),
-                                                            on_click=lambda: SegurosState.toggle_estado_seguro(seguro["id_seguro"], seguro["estado_seguro"]),
+                                                            on_click=lambda: SegurosState.toggle_estado_seguro(
+                                                                seguro["id_seguro"],
+                                                                seguro["estado_seguro"],
+                                                            ),
                                                         ),
                                                         content=rx.cond(
                                                             seguro["estado_seguro"],
                                                             "Desactivar seguro",
-                                                            "Activar seguro"
-                                                        )
-                                                    )
+                                                            "Activar seguro",
+                                                        ),
+                                                    ),
                                                 ),
                                                 spacing="1",
                                             )
@@ -242,12 +244,10 @@ def seguros_page() -> rx.Component:
                     ),
                 ),
             ),
-            
             # Modales
             modal_seguro(),
             modal_poliza(),
             modal_detalle_seguro(),
-            
             spacing="4",
             width="100%",
             padding="20px",

@@ -1,5 +1,7 @@
 import reflex as rx
+
 from src.presentacion_reflex.state.auth_state import AuthState
+
 
 def login_page() -> rx.Component:
     """
@@ -10,17 +12,11 @@ def login_page() -> rx.Component:
         rx.vstack(
             # Logo / Título
             rx.heading("Inmobiliaria Velar", size="8", weight="bold", color="white"),
-            rx.text(
-                "Gestión Integral de Propiedades",
-                color="rgba(255,255,255, 0.8)",
-                size="4"
-            ),
-            
+            rx.text("Gestión Integral de Propiedades", color="rgba(255,255,255, 0.8)", size="4"),
             # Card de Login
             rx.card(
                 rx.vstack(
                     rx.heading("Iniciar Sesión", size="6", margin_bottom="4"),
-                    
                     rx.form(
                         rx.vstack(
                             rx.text("Usuario", size="2", weight="bold"),
@@ -30,7 +26,6 @@ def login_page() -> rx.Component:
                                 size="3",
                                 width="100%",
                             ),
-                            
                             rx.text("Contraseña", size="2", weight="bold"),
                             rx.input(
                                 type="password",
@@ -39,7 +34,6 @@ def login_page() -> rx.Component:
                                 size="3",
                                 width="100%",
                             ),
-                            
                             # Mensaje de error (condicional)
                             rx.cond(
                                 AuthState.error_message != "",
@@ -51,7 +45,6 @@ def login_page() -> rx.Component:
                                     width="100%",
                                 ),
                             ),
-                            
                             rx.button(
                                 "Ingresar",
                                 type="submit",
@@ -59,16 +52,13 @@ def login_page() -> rx.Component:
                                 width="100%",
                                 loading=AuthState.is_loading,
                             ),
-                            
                             spacing="4",
                             width="100%",
                         ),
                         on_submit=AuthState.login,
                         width="100%",
                     ),
-                    
                     rx.divider(margin_y="4"),
-                    
                     rx.text(
                         "¿Olvidó su contraseña?",
                         size="2",
@@ -76,7 +66,6 @@ def login_page() -> rx.Component:
                         cursor="pointer",
                         _hover={"text_decoration": "underline"},
                     ),
-                    
                     padding="6",
                     align="center",
                 ),
@@ -89,7 +78,6 @@ def login_page() -> rx.Component:
             align="center",
             z_index="10",
         ),
-        
         # Fondo decorativo
         background="linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), linear-gradient(135deg, #1A365D 0%, #2B6CB0 100%)",
         height="100vh",

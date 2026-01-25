@@ -1,10 +1,12 @@
-import smtplib
-import os
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication
 import logging
+import os
+import smtplib
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 from src.infraestructura.configuracion.settings import obtener_configuracion
+
 
 class ClienteEmailOffice365:
     """
@@ -23,7 +25,9 @@ class ClienteEmailOffice365:
         if not self.email or not self.password:
             self.logger.warning("Credenciales SMTP no configuradas (configuracion settings)")
 
-    def enviar_correo(self, destinatario: str, asunto: str, cuerpo: str, adjunto_path: str = None) -> bool:
+    def enviar_correo(
+        self, destinatario: str, asunto: str, cuerpo: str, adjunto_path: str = None
+    ) -> bool:
         """
         Envía un correo electrónico a través de Office 365.
 
@@ -48,7 +52,7 @@ class ClienteEmailOffice365:
             msg["Subject"] = asunto
 
             # Agregar cuerpo del mensaje
-            msg.attach(MIMEText(cuerpo, "html")) # Asumimos HTML por defecto para formatting
+            msg.attach(MIMEText(cuerpo, "html"))  # Asumimos HTML por defecto para formatting
 
             # Agregar adjunto si existe
             if adjunto_path:
@@ -57,7 +61,7 @@ class ClienteEmailOffice365:
                     try:
                         with open(adjunto_path, "rb") as f:
                             part = MIMEApplication(f.read(), Name=filename)
-                        
+
                         part["Content-Disposition"] = f'attachment; filename="{filename}"'
                         msg.attach(part)
                     except Exception as e:
@@ -70,7 +74,7 @@ class ClienteEmailOffice365:
                 server.starttls()  # Importante para Office 365
                 server.login(self.email, self.password)
                 server.send_message(msg)
-            
+
             self.logger.info(f"Correo enviado exitosamente a {destinatario}")
             return True
 

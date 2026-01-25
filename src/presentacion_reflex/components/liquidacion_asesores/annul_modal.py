@@ -1,6 +1,7 @@
-
 import reflex as rx
+
 from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
+
 
 def annul_modal() -> rx.Component:
     return rx.dialog.root(
@@ -25,7 +26,7 @@ def annul_modal() -> rx.Component:
                         "Cancelar",
                         color_scheme="gray",
                         variant="soft",
-                        on_click=LiquidacionAsesoresState.close_annul_modal
+                        on_click=LiquidacionAsesoresState.close_annul_modal,
                     ),
                 ),
                 rx.button(

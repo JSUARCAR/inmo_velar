@@ -1,6 +1,7 @@
 import reflex as rx
-from src.presentacion_reflex.state.propiedades_state import PropiedadesState
+
 from src.presentacion_reflex.state.auth_state import AuthState
+
 
 def property_card(
     id_propiedad: int,
@@ -27,7 +28,7 @@ def property_card(
     Elite Property Card Component.
     Displays property details with high-end UI, glassmorphism, and interactive elements.
     """
-    
+
     return rx.card(
         rx.vstack(
             # Header Area (Icon + Status)
@@ -43,7 +44,7 @@ def property_card(
                                     ("Bodega", "warehouse"),
                                     ("Local", "store"),
                                     ("Lote", "map"),
-                                    "home"
+                                    "home",
                                 ),
                                 size=24,
                                 color="white",
@@ -60,20 +61,22 @@ def property_card(
                         rx.cond(
                             imagen_id,
                             rx.image(
-                                src="http://localhost:8000/api/storage/" + imagen_id.to(str) + "/download",
+                                src="http://localhost:8000/api/storage/"
+                                + imagen_id.to(str)
+                                + "/download",
                                 width="280px",
                                 height="200px",
                                 border_radius="8px",
                                 object_fit="cover",
-                                alt="Vista previa propiedad"
+                                alt="Vista previa propiedad",
                             ),
                             rx.box(
                                 rx.text("Sin imagen", size="1", color="var(--gray-11)"),
                                 padding="2",
-                            )
+                            ),
                         ),
                         side="top",
-                        align="start", 
+                        align="start",
                     ),
                 ),
                 rx.vstack(
@@ -104,9 +107,7 @@ def property_card(
                 align="center",
                 spacing="3",
             ),
-            
             rx.divider(margin_y="2", color="var(--gray-4)"),
-            
             # Main Info
             rx.vstack(
                 rx.text(
@@ -125,20 +126,21 @@ def property_card(
                 align="start",
                 width="100%",
             ),
-
             # Stats Grid (Compact)
             rx.grid(
                 rx.hstack(
                     rx.icon("scan", size=14, color="var(--gray-9)"),
                     rx.text(f"{area_metros.to(float):.0f}m²", size="1", color="var(--gray-11)"),
-                    spacing="1", align="center",
+                    spacing="1",
+                    align="center",
                 ),
                 rx.cond(
                     habitaciones.to(int) > 0,
                     rx.hstack(
                         rx.icon("bed", size=14, color="var(--gray-9)"),
                         rx.text(f"{habitaciones.to(int)} Hab", size="1", color="var(--gray-11)"),
-                        spacing="1", align="center",
+                        spacing="1",
+                        align="center",
                     ),
                     rx.fragment(),
                 ),
@@ -147,7 +149,8 @@ def property_card(
                     rx.hstack(
                         rx.icon("bath", size=14, color="var(--gray-9)"),
                         rx.text(f"{banos.to(int)} Baños", size="1", color="var(--gray-11)"),
-                        spacing="1", align="center",
+                        spacing="1",
+                        align="center",
                     ),
                     rx.fragment(),
                 ),
@@ -156,10 +159,11 @@ def property_card(
                 width="100%",
                 padding_y="2",
             ),
-            
             # Utility Codes (Compact Row)
             rx.cond(
-                (codigo_energia.to(str) != "") | (codigo_agua.to(str) != "") | (codigo_gas.to(str) != ""),
+                (codigo_energia.to(str) != "")
+                | (codigo_agua.to(str) != "")
+                | (codigo_gas.to(str) != ""),
                 rx.hstack(
                     rx.cond(
                         codigo_energia.to(str) != "",
@@ -167,9 +171,10 @@ def property_card(
                             rx.hstack(
                                 rx.icon("zap", size=14, color="var(--yellow-9)"),
                                 rx.text(codigo_energia, size="1", color="var(--gray-11)"),
-                                spacing="1", align="center",
+                                spacing="1",
+                                align="center",
                             ),
-                            content="Energía"
+                            content="Energía",
                         ),
                     ),
                     rx.cond(
@@ -178,9 +183,10 @@ def property_card(
                             rx.hstack(
                                 rx.icon("droplet", size=14, color="var(--blue-9)"),
                                 rx.text(codigo_agua, size="1", color="var(--gray-11)"),
-                                spacing="1", align="center",
+                                spacing="1",
+                                align="center",
                             ),
-                            content="Acueducto"
+                            content="Acueducto",
                         ),
                     ),
                     rx.cond(
@@ -189,9 +195,10 @@ def property_card(
                             rx.hstack(
                                 rx.icon("flame", size=14, color="var(--orange-9)"),
                                 rx.text(codigo_gas, size="1", color="var(--gray-11)"),
-                                spacing="1", align="center",
+                                spacing="1",
+                                align="center",
                             ),
-                            content="Gas"
+                            content="Gas",
                         ),
                     ),
                     spacing="3",
@@ -202,7 +209,6 @@ def property_card(
                     margin_top="1",
                 ),
             ),
-            
             # Footer: Price & Actions
             rx.hstack(
                 rx.vstack(
@@ -221,13 +227,13 @@ def property_card(
                     rx.vstack(
                         rx.text("Venta / Comisión", size="1", color="var(--gray-9)"),
                         rx.hstack(
-                             rx.text(
+                            rx.text(
                                 f"${valor_venta.to(float):,.0f}",
                                 size="3",
                                 weight="bold",
                                 color="var(--green-9)",
                             ),
-                             rx.text(
+                            rx.text(
                                 f"(${valor_venta.to(float) * comision_venta.to(float) / 100:,.0f})",
                                 size="2",
                                 color="var(--red-8)",
@@ -237,23 +243,28 @@ def property_card(
                         ),
                         spacing="0",
                     ),
-                    rx.fragment()
+                    rx.fragment(),
                 ),
                 rx.spacer(),
                 rx.hstack(
                     rx.cond(
                         AuthState.check_action("Propiedades", "EDITAR"),
                         rx.hstack(
-                             rx.tooltip(
+                            rx.tooltip(
                                 rx.icon_button(
                                     rx.icon("refresh-ccw", size=16),
-                                    on_click=lambda: on_toggle_disponibilidad(id_propiedad, rx.cond(disponibilidad == 1, 0, 1)),
+                                    on_click=lambda: on_toggle_disponibilidad(
+                                        id_propiedad, rx.cond(disponibilidad == 1, 0, 1)
+                                    ),
                                     variant="ghost",
                                     size="2",
                                     color_scheme="blue",
-                                    _hover={"background": "var(--blue-3)", "color": "var(--blue-9)"},
+                                    _hover={
+                                        "background": "var(--blue-3)",
+                                        "color": "var(--blue-9)",
+                                    },
                                 ),
-                                content="Cambiar Estado"
+                                content="Cambiar Estado",
                             ),
                             rx.tooltip(
                                 rx.icon_button(
@@ -262,26 +273,26 @@ def property_card(
                                     variant="ghost",
                                     size="2",
                                     color_scheme="gray",
-                                    _hover={"background": "var(--gray-3)", "color": "var(--accent-9)"},
+                                    _hover={
+                                        "background": "var(--gray-3)",
+                                        "color": "var(--accent-9)",
+                                    },
                                 ),
-                                content="Editar"
+                                content="Editar",
                             ),
                             spacing="1",
-                        )
+                        ),
                     ),
-
                     spacing="1",
                 ),
                 width="100%",
                 align="center",
                 margin_top="1",
             ),
-            
             spacing="3",
             padding="4",
             width="100%",
         ),
-        
         # Elite Card Styling - White & Clean
         variant="ghost",
         width="99%",
@@ -298,5 +309,5 @@ def property_card(
             "transform": "translateY(-4px)",
             "box_shadow": "0 12px 24px -10px rgba(0, 0, 0, 0.1)",
             "border_color": "var(--accent-8)",
-        }
+        },
     )

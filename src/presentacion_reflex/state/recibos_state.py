@@ -1,37 +1,39 @@
+from datetime import date
+from typing import Any, Dict, List
 
 import reflex as rx
-from typing import List, Dict, Optional, Any
-from datetime import datetime, date
 
-from src.aplicacion.servicios.servicio_recibos_publicos import ServicioRecibosPublicos
 from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
-from src.infraestructura.persistencia.database import DatabaseManager, db_manager
-from src.infraestructura.repositorios.repositorio_recibo_publico_sqlite import RepositorioReciboPublicoSQLite
+from src.aplicacion.servicios.servicio_recibos_publicos import ServicioRecibosPublicos
+from src.infraestructura.persistencia.database import db_manager
 from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-
+from src.infraestructura.repositorios.repositorio_recibo_publico_sqlite import (
+    RepositorioReciboPublicoSQLite,
+)
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+
 
 class RecibosState(DocumentosStateMixin):
     """Estado para la gestión de Recibos Públicos."""
-    
+
     # Datos Principales
     recibos: List[Dict] = []
     total_items: int = 0
     is_loading: bool = False
     error_message: str = ""
-    
+
     # Filtros
-    filter_propiedad: str = "" # ID en string para buscar
+    filter_propiedad: str = ""  # ID en string para buscar
     filter_periodo_inicio: str = ""
     filter_periodo_fin: str = ""
     filter_servicio: str = "Todos"
     filter_estado: str = "Todos"
     search_text: str = ""
-    
+
     # Paginación
     current_page: int = 1
     page_size: int = 10
-    
+
     # Formulario (Crear/Editar)
     show_form_modal: bool = False
     is_editing: bool = False
@@ -42,20 +44,20 @@ class RecibosState(DocumentosStateMixin):
         "tipo_servicio": "",
         "valor_recibo": 0,
         "fecha_vencimiento": "",
-        "observaciones": ""
+        "observaciones": "",
     }
-    
+
     # Modal Pago
     show_payment_modal: bool = False
     payment_data: Dict[str, Any] = {
         "id_recibo": None,
         "fecha_pago": date.today().isoformat(),
-        "comprobante": ""
+        "comprobante": "",
     }
-    
+
     # Datos Auxiliares
-    propiedades_disponibles: List[Dict] = [] # Para selects: {label: "Calle 123", value: "1"}
-    
+    propiedades_disponibles: List[Dict] = []  # Para selects: {label: "Calle 123", value: "1"}
+
     @rx.event(background=True)
     async def on_load(self):
         """Carga inicial de datos."""
@@ -66,17 +68,20 @@ class RecibosState(DocumentosStateMixin):
     async def load_propiedades_options(self):
         """Carga opciones de propiedades para selects."""
         try:
-            repo_prop = RepositorioPropiedadSQLite(db_manager)
+            RepositorioPropiedadSQLite(db_manager)
             servicio_prop = ServicioPropiedades(db_manager)
             props = servicio_prop.listar_propiedades()
-            
+
             options = [
-                {"label": f"{p.direccion_propiedad} ({p.matricula_inmobiliaria})", "value": str(p.id_propiedad)}
+                {
+                    "label": f"{p.direccion_propiedad} ({p.matricula_inmobiliaria})",
+                    "value": str(p.id_propiedad),
+                }
                 for p in props
             ]
             async with self:
                 self.propiedades_disponibles = options
-        except Exception as e:
+        except Exception:
             pass  # print(f"Error cargando propiedades: {e}") [OpSec Removed]
 
     @rx.event(background=True)
@@ -85,62 +90,76 @@ class RecibosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-            
+
         try:
             repo_recibo = RepositorioReciboPublicoSQLite(db_manager)
             repo_prop = RepositorioPropiedadSQLite(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
-            
+
             # Preparar filtros
-            id_prop = int(self.filter_propiedad) if self.filter_propiedad and self.filter_propiedad != "Todos" else None
+            id_prop = (
+                int(self.filter_propiedad)
+                if self.filter_propiedad and self.filter_propiedad != "Todos"
+                else None
+            )
             tipo = self.filter_servicio if self.filter_servicio != "Todos" else None
             estado = self.filter_estado if self.filter_estado != "Todos" else None
             p_ini = self.filter_periodo_inicio if self.filter_periodo_inicio else None
             p_fin = self.filter_periodo_fin if self.filter_periodo_fin else None
-            
+
             # Obtener datos
             resultados = servicio.listar_con_filtros(
                 id_propiedad=id_prop,
                 periodo_inicio=p_ini,
                 periodo_fin=p_fin,
                 tipo_servicio=tipo,
-                estado=estado
+                estado=estado,
             )
-            
+
             # Enriquecer datos para UI (Propiedad nombre, etc)
             recibos_ui = []
             for r in resultados:
                 prop_nombre = "Desconocida"
                 # Optimización: Podríamos hacer un join en repo, pero por ahora buscamos en lista cargada o repo
                 # Buscar en self.propiedades_disponibles es más rápido si ya se cargaron
-                prop_item = next((p for p in self.propiedades_disponibles if p["value"] == str(r.id_propiedad)), None)
+                prop_item = next(
+                    (p for p in self.propiedades_disponibles if p["value"] == str(r.id_propiedad)),
+                    None,
+                )
                 if prop_item:
                     prop_nombre = prop_item["label"]
-                
-                recibos_ui.append({
-                    "id_recibo_publico": r.id_recibo_publico,
-                    "id_propiedad": r.id_propiedad,
-                    "propiedad_nombre": prop_nombre,
-                    "periodo_recibo": r.periodo_recibo,
-                    "tipo_servicio": r.tipo_servicio,
-                    "valor_recibo": r.valor_recibo,
-                    "valor_formato": f"${r.valor_recibo:,.0f}",
-                    "fecha_vencimiento": r.fecha_vencimiento,
-                    "fecha_pago": r.fecha_pago,
-                    "comprobante": r.comprobante,
-                    "estado": r.estado,
-                    "esta_vencido": r.esta_vencido,
-                    "fecha_desde": r.fecha_desde,
-                    "fecha_hasta": r.fecha_hasta,
-                    "dias_facturados": r.dias_facturados,
-                    "clase_estado": "red" if r.esta_vencido and r.estado != "Pagado" else ("green" if r.estado == "Pagado" else "yellow")
-                })
-            
+
+                recibos_ui.append(
+                    {
+                        "id_recibo_publico": r.id_recibo_publico,
+                        "id_propiedad": r.id_propiedad,
+                        "propiedad_nombre": prop_nombre,
+                        "periodo_recibo": r.periodo_recibo,
+                        "tipo_servicio": r.tipo_servicio,
+                        "valor_recibo": r.valor_recibo,
+                        "valor_formato": f"${r.valor_recibo:,.0f}",
+                        "fecha_vencimiento": r.fecha_vencimiento,
+                        "fecha_pago": r.fecha_pago,
+                        "comprobante": r.comprobante,
+                        "estado": r.estado,
+                        "esta_vencido": r.esta_vencido,
+                        "fecha_desde": r.fecha_desde,
+                        "fecha_hasta": r.fecha_hasta,
+                        "dias_facturados": r.dias_facturados,
+                        "clase_estado": (
+                            "red"
+                            if r.esta_vencido and r.estado != "Pagado"
+                            else ("green" if r.estado == "Pagado" else "yellow")
+                        ),
+                    }
+                )
+
             # Filtrado texto en memoria (si aplica)
             if self.search_text:
                 st = self.search_text.lower()
                 recibos_ui = [
-                    r for r in recibos_ui 
+                    r
+                    for r in recibos_ui
                     if st in r["propiedad_nombre"].lower() or st in r["comprobante"].lower()
                 ]
 
@@ -148,14 +167,14 @@ class RecibosState(DocumentosStateMixin):
                 self.recibos = recibos_ui
                 self.total_items = len(recibos_ui)
                 self.is_loading = False
-                
+
         except Exception as e:
             async with self:
                 self.error_message = f"Error cargando datos: {str(e)}"
                 self.is_loading = False
 
     # --- CRUD ACTIONS ---
-    
+
     def open_create_modal(self):
         self.is_editing = False
         self.form_data = {
@@ -173,8 +192,8 @@ class RecibosState(DocumentosStateMixin):
 
     def open_edit_modal(self, recibo: Dict):
         if recibo["estado"] == "Pagado":
-            return # No editar pagados
-            
+            return  # No editar pagados
+
         self.is_editing = True
         self.form_data = {
             "id_recibo": recibo["id_recibo_publico"],
@@ -188,18 +207,18 @@ class RecibosState(DocumentosStateMixin):
             "dias_facturados": recibo.get("dias_facturados", 0),
         }
         self.show_form_modal = True
-        
+
         self.show_form_modal = True
 
     def handle_form_open_change(self, is_open: bool):
         if not is_open:
             self.show_form_modal = False
-        
+
     def calculate_days(self):
         """Calcula diferencia de días en el form."""
         f_desde = self.form_data.get("fecha_desde")
         f_hasta = self.form_data.get("fecha_hasta")
-        
+
         if f_desde and f_hasta:
             try:
                 d1 = date.fromisoformat(f_desde)
@@ -208,26 +227,26 @@ class RecibosState(DocumentosStateMixin):
                 self.form_data["dias_facturados"] = diff
             except:
                 self.form_data["dias_facturados"] = 0
-                
+
     def set_form_field(self, field: str, value: Any):
         self.form_data[field] = value
         if field in ["fecha_desde", "fecha_hasta"]:
             self.calculate_days()
-        
+
     @rx.event(background=True)
     async def save_recibo(self):
         """Guarda o actualiza el recibo."""
         async with self:
             self.is_loading = True
-            
+
         try:
             repo_recibo = RepositorioReciboPublicoSQLite(db_manager)
             repo_prop = RepositorioPropiedadSQLite(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
-            
+
             datos = self.form_data.copy()
-            usuario = "admin" # TODO
-            
+            usuario = "admin"  # TODO
+
             # Convertir tipos
             if not datos["id_propiedad"]:
                 raise ValueError("Seleccione una propiedad")
@@ -241,25 +260,25 @@ class RecibosState(DocumentosStateMixin):
                 servicio.actualizar_recibo(datos["id_recibo"], datos, usuario)
             else:
                 servicio.registrar_recibo(datos, usuario)
-            
+
             async with self:
                 self.show_form_modal = False
                 self.is_loading = False
-            
+
             yield RecibosState.load_data
-            
+
         except Exception as e:
             async with self:
                 self.error_message = str(e)
                 self.is_loading = False
 
     # --- PAYMENT ACTIONS ---
-    
+
     def open_payment_modal(self, recibo: Dict):
         self.payment_data = {
             "id_recibo": recibo["id_recibo_publico"],
             "fecha_pago": date.today().isoformat(),
-            "comprobante": ""
+            "comprobante": "",
         }
         self.show_payment_modal = True
 
@@ -274,49 +293,49 @@ class RecibosState(DocumentosStateMixin):
     async def register_payment(self):
         async with self:
             self.is_loading = True
-            
+
         try:
             repo_recibo = RepositorioReciboPublicoSQLite(db_manager)
             repo_prop = RepositorioPropiedadSQLite(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
-            
+
             servicio.marcar_como_pagado(
                 self.payment_data["id_recibo"],
                 self.payment_data["fecha_pago"],
                 self.payment_data["comprobante"],
-                "admin"
+                "admin",
             )
-            
+
             async with self:
                 self.show_payment_modal = False
                 self.is_loading = False
             yield RecibosState.load_data
-            
+
         except Exception as e:
             async with self:
                 self.error_message = str(e)
                 self.is_loading = False
 
     # --- DETAIL & DELETE ACTIONS ---
-    
+
     show_detail_modal: bool = False
     detail_data: Dict[str, Any] = {}
-    
+
     @rx.event(background=True)
     async def open_detail_modal(self, recibo: Dict):
         """Abre el modal de detalle y carga documentos."""
         async with self:
             self.detail_data = recibo
             self.is_loading = True
-            
+
             # Contexto Documental
             self.current_entidad_tipo = "RECIBO_PUBLICO"
             self.current_entidad_id = str(recibo["id_recibo_publico"])
             self.cargar_documentos()
-            
+
             self.show_detail_modal = True
             self.is_loading = False
-        
+
     def handle_detail_open_change(self, is_open: bool):
         if not is_open:
             self.show_detail_modal = False
@@ -326,20 +345,20 @@ class RecibosState(DocumentosStateMixin):
         """Elimina un recibo dado su ID."""
         async with self:
             self.is_loading = True
-            
+
         try:
             repo_recibo = RepositorioReciboPublicoSQLite(db_manager)
             repo_prop = RepositorioPropiedadSQLite(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
-            
+
             servicio.eliminar_recibo(id_recibo)
-            
+
             async with self:
                 self.is_loading = False
                 rx.toast.success("Recibo eliminado correctamente")
-            
+
             yield RecibosState.load_data
-            
+
         except Exception as e:
             async with self:
                 self.error_message = str(e)
@@ -347,15 +366,15 @@ class RecibosState(DocumentosStateMixin):
                 rx.toast.error(f"Error al eliminar: {str(e)}")
 
     # --- FILTERS ---
-    
+
     def set_filter_propiedad(self, value: str):
         self.filter_propiedad = value
-        
+
     def set_filter_servicio(self, value: str):
         self.filter_servicio = value
 
     def set_filter_estado(self, value: str):
         self.filter_estado = value
-        
+
     def set_search(self, value: str):
         self.search_text = value

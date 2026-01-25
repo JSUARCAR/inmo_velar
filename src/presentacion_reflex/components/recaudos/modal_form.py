@@ -1,6 +1,7 @@
 """Modal form para crear/editar recaudos (pagos de arrendatarios)."""
 
 import reflex as rx
+
 from src.presentacion_reflex.state.recaudos_state import RecaudosState
 
 
@@ -12,16 +13,14 @@ def modal_recaudo() -> rx.Component:
                 rx.cond(
                     RecaudosState.form_data.get("id_recaudo"),
                     "Editar Recaudo",
-                    "Registrar Nuevo Pago"
+                    "Registrar Nuevo Pago",
                 )
             ),
-            
             rx.dialog.description(
                 "Complete los datos del pago recibido del arrendatar io.",
                 size="2",
                 margin_bottom="16px",
             ),
-            
             # Mensaje de Error
             rx.cond(
                 RecaudosState.error_message != "",
@@ -33,7 +32,6 @@ def modal_recaudo() -> rx.Component:
                     margin_bottom="16px",
                 ),
             ),
-            
             # Formulario
             rx.form.root(
                 rx.vstack(
@@ -47,7 +45,7 @@ def modal_recaudo() -> rx.Component:
                                 rx.select.content(
                                     rx.foreach(
                                         RecaudosState.contratos_select_options,
-                                        lambda option: rx.select.item(option, value=option)
+                                        lambda option: rx.select.item(option, value=option),
                                     )
                                 ),
                                 name="id_contrato_a",
@@ -59,7 +57,6 @@ def modal_recaudo() -> rx.Component:
                             width="100%",
                         ),
                     ),
-                    
                     # Fecha de Pago
                     rx.vstack(
                         rx.text("Fecha de Pago *", size="2", weight="bold"),
@@ -74,7 +71,6 @@ def modal_recaudo() -> rx.Component:
                         ),
                         width="100%",
                     ),
-                    
                     # Valor Total
                     rx.vstack(
                         rx.hstack(
@@ -100,7 +96,6 @@ def modal_recaudo() -> rx.Component:
                         ),
                         width="100%",
                     ),
-                    
                     # Método de Pago
                     rx.vstack(
                         rx.text("Método de Pago *", size="2", weight="bold"),
@@ -113,13 +108,14 @@ def modal_recaudo() -> rx.Component:
                                 rx.select.item("Efectivo", value="Efectivo"),
                             ),
                             name="metodo_pago",
-                            default_value=RecaudosState.form_data.get("metodo_pago", "Transferencia"),
+                            default_value=RecaudosState.form_data.get(
+                                "metodo_pago", "Transferencia"
+                            ),
                             size="2",
                             width="100%",
                         ),
                         width="100%",
                     ),
-                    
                     # Referencia Bancaria
                     rx.vstack(
                         rx.text("Referencia Bancaria", size="2", weight="bold"),
@@ -137,7 +133,6 @@ def modal_recaudo() -> rx.Component:
                         ),
                         width="100%",
                     ),
-                    
                     # Tipo de Concepto y Período (simplificado)
                     rx.hstack(
                         rx.vstack(
@@ -174,7 +169,6 @@ def modal_recaudo() -> rx.Component:
                         width="100%",
                         spacing="3",
                     ),
-                    
                     # Observaciones
                     rx.vstack(
                         rx.text("Observaciones", size="2", weight="bold"),
@@ -188,7 +182,6 @@ def modal_recaudo() -> rx.Component:
                         ),
                         width="100%",
                     ),
-                    
                     # Botones
                     rx.hstack(
                         rx.dialog.close(
@@ -200,11 +193,7 @@ def modal_recaudo() -> rx.Component:
                             ),
                         ),
                         rx.button(
-                            rx.cond(
-                                RecaudosState.is_loading,
-                                rx.spinner(size="1"),
-                                "Guardar Pago"
-                            ),
+                            rx.cond(RecaudosState.is_loading, rx.spinner(size="1"), "Guardar Pago"),
                             type="submit",
                             size="2",
                             disabled=RecaudosState.is_loading,
@@ -213,14 +202,12 @@ def modal_recaudo() -> rx.Component:
                         justify="end",
                         width="100%",
                     ),
-                    
                     spacing="4",
                     width="100%",
                 ),
                 on_submit=RecaudosState.save_recaudo,
                 reset_on_submit=False,
             ),
-            
             max_width="600px",
             padding="24px",
         ),

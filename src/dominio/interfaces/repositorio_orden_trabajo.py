@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import Optional
+
 from src.dominio.entidades.orden_trabajo import OrdenTrabajo
 
+
 class RepositorioOrdenTrabajo(ABC):
-    
+
     @abstractmethod
     def guardar(self, orden: OrdenTrabajo) -> int:
         pass
@@ -15,7 +17,7 @@ class RepositorioOrdenTrabajo(ABC):
     @abstractmethod
     def obtener_por_incidente(self, id_incidente: int) -> Optional[OrdenTrabajo]:
         pass
-    
+
     @abstractmethod
     def actualizar(self, orden: OrdenTrabajo) -> None:
         pass

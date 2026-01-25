@@ -1,24 +1,23 @@
 """Modal de detalle para recaudos (pagos de arrendatarios)."""
 
 import reflex as rx
-from src.presentacion_reflex.state.recaudos_state import RecaudosState
+
 from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+from src.presentacion_reflex.state.recaudos_state import RecaudosState
 
 
 def modal_detalle_recaudo() -> rx.Component:
     """Modal para ver detalle de un recaudo."""
     return rx.dialog.root(
         rx.dialog.content(
-             rx.scroll_area(
+            rx.scroll_area(
                 rx.vstack(
                     rx.dialog.title("Detalle del Recaudo"),
-                    
                     rx.dialog.description(
                         "Información completa del pago registrado.",
                         size="2",
                         margin_bottom="16px",
                     ),
-                    
                     # Contenido del detalle
                     rx.cond(
                         RecaudosState.recaudo_actual,
@@ -26,18 +25,29 @@ def modal_detalle_recaudo() -> rx.Component:
                             # Información del contrato
                             rx.card(
                                 rx.vstack(
-                                    rx.text("Información del Contrato", size="3", weight="bold", color="blue"),
+                                    rx.text(
+                                        "Información del Contrato",
+                                        size="3",
+                                        weight="bold",
+                                        color="blue",
+                                    ),
                                     rx.separator(),
                                     rx.hstack(
                                         rx.vstack(
                                             rx.text("Propiedad", size="1", color="gray"),
-                                            rx.text(RecaudosState.recaudo_actual["direccion"], weight="medium"),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual["direccion"],
+                                                weight="medium",
+                                            ),
                                             align="start",
                                             flex="1",
                                         ),
                                         rx.vstack(
                                             rx.text("Matrícula", size="1", color="gray"),
-                                            rx.text(RecaudosState.recaudo_actual["matricula"], weight="medium"),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual["matricula"],
+                                                weight="medium",
+                                            ),
                                             align="start",
                                             flex="1",
                                         ),
@@ -46,13 +56,19 @@ def modal_detalle_recaudo() -> rx.Component:
                                     rx.hstack(
                                         rx.vstack(
                                             rx.text("Arrendatario", size="1", color="gray"),
-                                            rx.text(RecaudosState.recaudo_actual["arrendatario"], weight="medium"),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual["arrendatario"],
+                                                weight="medium",
+                                            ),
                                             align="start",
                                             flex="1",
                                         ),
                                         rx.vstack(
                                             rx.text("ID Contrato", size="1", color="gray"),
-                                            rx.text(RecaudosState.recaudo_actual["id_contrato"], weight="medium"),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual["id_contrato"],
+                                                weight="medium",
+                                            ),
                                             align="start",
                                             flex="1",
                                         ),
@@ -63,16 +79,23 @@ def modal_detalle_recaudo() -> rx.Component:
                                 ),
                                 width="100%",
                             ),
-                            
                             # Información del pago
                             rx.card(
                                 rx.vstack(
-                                    rx.text("Información del Pago", size="3", weight="bold", color="green"),
+                                    rx.text(
+                                        "Información del Pago",
+                                        size="3",
+                                        weight="bold",
+                                        color="green",
+                                    ),
                                     rx.separator(),
                                     rx.hstack(
                                         rx.vstack(
                                             rx.text("Fecha de Pago", size="1", color="gray"),
-                                            rx.text(RecaudosState.recaudo_actual["fecha_pago"], weight="medium"),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual["fecha_pago"],
+                                                weight="medium",
+                                            ),
                                             align="start",
                                             flex="1",
                                         ),
@@ -92,7 +115,10 @@ def modal_detalle_recaudo() -> rx.Component:
                                     rx.hstack(
                                         rx.vstack(
                                             rx.text("Método de Pago", size="1", color="gray"),
-                                            rx.badge(RecaudosState.recaudo_actual["metodo_pago"], variant="soft"),
+                                            rx.badge(
+                                                RecaudosState.recaudo_actual["metodo_pago"],
+                                                variant="soft",
+                                            ),
                                             align="start",
                                             flex="1",
                                         ),
@@ -100,10 +126,34 @@ def modal_detalle_recaudo() -> rx.Component:
                                             rx.text("Estado", size="1", color="gray"),
                                             rx.match(
                                                 RecaudosState.recaudo_actual["estado"],
-                                                ("Pendiente", rx.badge("Pendiente", color_scheme="yellow", variant="solid")),
-                                                ("Aplicado", rx.badge("Aplicado", color_scheme="green", variant="solid")),
-                                                ("Reversado", rx.badge("Reversado", color_scheme="red", variant="solid")),
-                                                rx.badge(RecaudosState.recaudo_actual["estado"], color_scheme="gray"),
+                                                (
+                                                    "Pendiente",
+                                                    rx.badge(
+                                                        "Pendiente",
+                                                        color_scheme="yellow",
+                                                        variant="solid",
+                                                    ),
+                                                ),
+                                                (
+                                                    "Aplicado",
+                                                    rx.badge(
+                                                        "Aplicado",
+                                                        color_scheme="green",
+                                                        variant="solid",
+                                                    ),
+                                                ),
+                                                (
+                                                    "Reversado",
+                                                    rx.badge(
+                                                        "Reversado",
+                                                        color_scheme="red",
+                                                        variant="solid",
+                                                    ),
+                                                ),
+                                                rx.badge(
+                                                    RecaudosState.recaudo_actual["estado"],
+                                                    color_scheme="gray",
+                                                ),
                                             ),
                                             align="start",
                                             flex="1",
@@ -114,7 +164,10 @@ def modal_detalle_recaudo() -> rx.Component:
                                         RecaudosState.recaudo_actual["referencia"] != "",
                                         rx.vstack(
                                             rx.text("Referencia Bancaria", size="1", color="gray"),
-                                            rx.text(RecaudosState.recaudo_actual["referencia"], weight="medium"),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual["referencia"],
+                                                weight="medium",
+                                            ),
                                             align="start",
                                             width="100%",
                                         ),
@@ -133,21 +186,28 @@ def modal_detalle_recaudo() -> rx.Component:
                                 ),
                                 width="100%",
                             ),
-                            
                             # Soportes y Documentos
                             rx.card(
                                 rx.vstack(
-                                    rx.text("Soportes y Comprobantes", size="2", weight="bold", color="gray"),
-                                    rx.text("Adjunte aquí el comprobante de pago u otros documentos.", size="1", color="gray"),
+                                    rx.text(
+                                        "Soportes y Comprobantes",
+                                        size="2",
+                                        weight="bold",
+                                        color="gray",
+                                    ),
+                                    rx.text(
+                                        "Adjunte aquí el comprobante de pago u otros documentos.",
+                                        size="1",
+                                        color="gray",
+                                    ),
                                     rx.separator(),
                                     document_manager_elite(RecaudosState),
                                     spacing="2",
-                                    width="100%"
+                                    width="100%",
                                 ),
                                 width="100%",
-                                variant="surface"
+                                variant="surface",
                             ),
-                            
                             # Auditoría
                             rx.card(
                                 rx.vstack(
@@ -155,9 +215,13 @@ def modal_detalle_recaudo() -> rx.Component:
                                     rx.separator(),
                                     rx.hstack(
                                         rx.text("Creado por:", size="1", color="gray"),
-                                        rx.text(RecaudosState.recaudo_actual["created_by"], size="1"),
+                                        rx.text(
+                                            RecaudosState.recaudo_actual["created_by"], size="1"
+                                        ),
                                         rx.text("el", size="1", color="gray"),
-                                        rx.text(RecaudosState.recaudo_actual["created_at"], size="1"),
+                                        rx.text(
+                                            RecaudosState.recaudo_actual["created_at"], size="1"
+                                        ),
                                         spacing="2",
                                     ),
                                     spacing="2",
@@ -165,7 +229,6 @@ def modal_detalle_recaudo() -> rx.Component:
                                 ),
                                 width="100%",
                             ),
-                            
                             # Botón Cerrar
                             rx.hstack(
                                 rx.dialog.close(
@@ -178,7 +241,6 @@ def modal_detalle_recaudo() -> rx.Component:
                                 justify="end",
                                 width="100%",
                             ),
-                            
                             spacing="4",
                             width="100%",
                         ),
@@ -186,11 +248,10 @@ def modal_detalle_recaudo() -> rx.Component:
                             rx.spinner(size="3"),
                             min_height="200px",
                         ),
-                    )
+                    ),
                 ),
-                max_height="80vh"
+                max_height="80vh",
             ),
-            
             max_width="700px",
             padding="24px",
         ),

@@ -1,22 +1,17 @@
 import reflex as rx
+
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
-from src.presentacion_reflex.state.auth_state import AuthState
-from src.presentacion_reflex.state.personas_state import PersonasState
 from src.presentacion_reflex.components.personas.modal_form import modal_persona
 from src.presentacion_reflex.components.personas.person_card import person_card
+from src.presentacion_reflex.state.auth_state import AuthState
+from src.presentacion_reflex.state.personas_state import PersonasState
+
 
 def persona_row(persona: dict) -> rx.Component:
     """Fila individual de la tabla de personas."""
-    
+
     # Generar badges de roles
-    roles_badges = []
-    color_map = {
-        "Propietario": "blue",
-        "Arrendatario": "green", 
-        "Asesor": "purple",
-        "Codeudor": "orange",
-    }
-    
+
     # Nota: rx.foreach interno para roles simple
     return rx.table.row(
         rx.table.cell(
@@ -42,7 +37,7 @@ def persona_row(persona: dict) -> rx.Component:
                 rx.foreach(
                     persona["roles"],
                     lambda r: rx.badge(
-                        r, 
+                        r,
                         color_scheme=rx.match(
                             r,
                             ("Propietario", "blue"),
@@ -50,11 +45,11 @@ def persona_row(persona: dict) -> rx.Component:
                             ("Asesor", "purple"),
                             ("Codeudor", "orange"),
                             ("Proveedor", "cyan"),
-                            "gray"
+                            "gray",
                         ),
-                        variant="soft", 
-                        margin_right="1"
-                    )
+                        variant="soft",
+                        margin_right="1",
+                    ),
                 )
             )
         ),
@@ -62,7 +57,7 @@ def persona_row(persona: dict) -> rx.Component:
             rx.badge(
                 persona["estado"],
                 color_scheme=rx.cond(persona["estado"] == "Activo", "green", "red"),
-                variant="soft"
+                variant="soft",
             )
         ),
         rx.table.cell(
@@ -74,10 +69,10 @@ def persona_row(persona: dict) -> rx.Component:
                             rx.icon("pencil", size=16),
                             variant="ghost",
                             size="2",
-                            on_click=lambda: PersonasState.open_edit_modal(persona)
+                            on_click=lambda: PersonasState.open_edit_modal(persona),
                         ),
-                        content="Editar persona"
-                    )
+                        content="Editar persona",
+                    ),
                 ),
                 rx.cond(
                     AuthState.check_action("Personas", "ELIMINAR"),
@@ -89,13 +84,14 @@ def persona_row(persona: dict) -> rx.Component:
                             size="2",
                             # Pendiente: Implementar delete con confirmación
                         ),
-                        content="Eliminar persona"
-                    )
+                        content="Eliminar persona",
+                    ),
                 ),
                 spacing="2",
             )
         ),
     )
+
 
 @rx.page(route="/personas", on_load=[AuthState.require_login, PersonasState.load_personas])
 def personas_page() -> rx.Component:
@@ -107,13 +103,12 @@ def personas_page() -> rx.Component:
             rx.vstack(
                 # Modal Component
                 modal_persona(),
-                
                 # --- Elite Header with Gradient ---
                 rx.box(
                     rx.hstack(
                         rx.vstack(
                             rx.heading(
-                                "Gestión de Personas", 
+                                "Gestión de Personas",
                                 size="8",
                                 weight="bold",
                                 style={
@@ -121,10 +116,10 @@ def personas_page() -> rx.Component:
                                     "background_clip": "text",
                                     "-webkit-background-clip": "text",
                                     "-webkit-text-fill-color": "transparent",
-                                }
+                                },
                             ),
                             rx.text(
-                                "Administre propietarios, arrendatarios y asesores con facilidad.", 
+                                "Administre propietarios, arrendatarios y asesores con facilidad.",
                                 color="var(--gray-10)",
                                 size="3",
                             ),
@@ -161,8 +156,8 @@ def personas_page() -> rx.Component:
                                     },
                                     transition="all 0.2s ease",
                                 ),
-                                content="Crear nueva persona"
-                            )
+                                content="Crear nueva persona",
+                            ),
                         ),
                         width="100%",
                         padding="5",
@@ -174,9 +169,8 @@ def personas_page() -> rx.Component:
                     style={
                         "background": "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)",
                         "backdrop_filter": "blur(10px)",
-                    }
+                    },
                 ),
-                
                 # --- Elite Toolbar ---
                 rx.card(
                     rx.hstack(
@@ -193,17 +187,22 @@ def personas_page() -> rx.Component:
                             },
                             _focus={
                                 "box_shadow": "0 0 0 3px rgba(102, 126, 234, 0.2)",
-                            }
+                            },
                         ),
-                        
                         # Role filter with icon
                         rx.select(
-                            ["Todos", "Propietario", "Arrendatario", "Codeudor", "Asesor", "Proveedor"],
+                            [
+                                "Todos",
+                                "Propietario",
+                                "Arrendatario",
+                                "Codeudor",
+                                "Asesor",
+                                "Proveedor",
+                            ],
                             value=PersonasState.filtro_rol,
                             on_change=PersonasState.set_filtro_rol,
                             size="3",
                         ),
-                        
                         # Date filters
                         rx.input(
                             type="date",
@@ -217,17 +216,13 @@ def personas_page() -> rx.Component:
                             on_change=PersonasState.set_fecha_fin,
                             size="3",
                         ),
-                        
                         rx.spacer(),
-                        
                         # View toggle button
                         rx.tooltip(
                             rx.button(
                                 rx.icon(
                                     rx.cond(
-                                        PersonasState.view_mode == "table",
-                                        "layout-grid",
-                                        "table"
+                                        PersonasState.view_mode == "table", "layout-grid", "table"
                                     ),
                                     size=18,
                                 ),
@@ -239,10 +234,9 @@ def personas_page() -> rx.Component:
                             content=rx.cond(
                                 PersonasState.view_mode == "table",
                                 "Cambiar a vista de cards",
-                                "Cambiar a vista de tabla"
-                            )
+                                "Cambiar a vista de tabla",
+                            ),
                         ),
-                        
                         # Export button
                         rx.tooltip(
                             rx.button(
@@ -257,9 +251,8 @@ def personas_page() -> rx.Component:
                                 },
                                 transition="all 0.2s ease",
                             ),
-                            content="Exportar a Excel"
+                            content="Exportar a Excel",
                         ),
-                        
                         # Refresh button
                         rx.tooltip(
                             rx.icon_button(
@@ -272,9 +265,8 @@ def personas_page() -> rx.Component:
                                 },
                                 transition="transform 0.3s ease",
                             ),
-                            content="Recargar"
+                            content="Recargar",
                         ),
-                        
                         padding="4",
                         width="100%",
                         align="center",
@@ -283,9 +275,8 @@ def personas_page() -> rx.Component:
                     width="100%",
                     style={
                         "background": "var(--color-panel-solid)",
-                    }
+                    },
                 ),
-                
                 # --- Content Area: Table or Cards View ---
                 rx.cond(
                     PersonasState.is_loading,
@@ -305,13 +296,27 @@ def personas_page() -> rx.Component:
                                 rx.table.root(
                                     rx.table.header(
                                         rx.table.row(
-                                            rx.table.column_header_cell("Nombre", style={"font-weight": "600"}),
-                                            rx.table.column_header_cell("Documento", style={"font-weight": "600"}),
-                                            rx.table.column_header_cell("Contacto", style={"font-weight": "600"}),
-                                            rx.table.column_header_cell("Fecha Creación", style={"font-weight": "600"}),
-                                            rx.table.column_header_cell("Roles", style={"font-weight": "600"}),
-                                            rx.table.column_header_cell("Estado", style={"font-weight": "600"}),
-                                            rx.table.column_header_cell("Acciones", style={"font-weight": "600"}),
+                                            rx.table.column_header_cell(
+                                                "Nombre", style={"font-weight": "600"}
+                                            ),
+                                            rx.table.column_header_cell(
+                                                "Documento", style={"font-weight": "600"}
+                                            ),
+                                            rx.table.column_header_cell(
+                                                "Contacto", style={"font-weight": "600"}
+                                            ),
+                                            rx.table.column_header_cell(
+                                                "Fecha Creación", style={"font-weight": "600"}
+                                            ),
+                                            rx.table.column_header_cell(
+                                                "Roles", style={"font-weight": "600"}
+                                            ),
+                                            rx.table.column_header_cell(
+                                                "Estado", style={"font-weight": "600"}
+                                            ),
+                                            rx.table.column_header_cell(
+                                                "Acciones", style={"font-weight": "600"}
+                                            ),
                                         ),
                                     ),
                                     rx.table.body(
@@ -321,8 +326,8 @@ def personas_page() -> rx.Component:
                                                 rx.table.cell(
                                                     rx.hstack(
                                                         rx.avatar(
-                                                            fallback=p["nombre"][:2], 
-                                                            size="3", 
+                                                            fallback=p["nombre"][:2],
+                                                            size="3",
                                                             radius="full",
                                                             color_scheme=rx.cond(
                                                                 p["roles"].length() > 0,
@@ -333,29 +338,47 @@ def personas_page() -> rx.Component:
                                                                     ("Asesor", "purple"),
                                                                     ("Codeudor", "orange"),
                                                                     ("Proveedor", "cyan"),
-                                                                    "gray"
+                                                                    "gray",
                                                                 ),
-                                                                "gray"
+                                                                "gray",
                                                             ),
                                                         ),
-                                                        rx.text(p["nombre"], weight="medium", size="2"),
+                                                        rx.text(
+                                                            p["nombre"], weight="medium", size="2"
+                                                        ),
                                                         align="center",
                                                         spacing="3",
                                                     )
                                                 ),
                                                 rx.table.cell(
-                                                    rx.text(p["documento"], size="2", color="var(--gray-11)")
+                                                    rx.text(
+                                                        p["documento"],
+                                                        size="2",
+                                                        color="var(--gray-11)",
+                                                    )
                                                 ),
                                                 rx.table.cell(
                                                     rx.vstack(
                                                         rx.hstack(
-                                                            rx.icon("mail", size=12, color="var(--gray-9)"),
+                                                            rx.icon(
+                                                                "mail",
+                                                                size=12,
+                                                                color="var(--gray-9)",
+                                                            ),
                                                             rx.text(p["correo"], size="1"),
                                                             spacing="1",
                                                         ),
                                                         rx.hstack(
-                                                            rx.icon("phone", size=12, color="var(--gray-9)"),
-                                                            rx.text(p["contacto"], size="1", color="gray"),
+                                                            rx.icon(
+                                                                "phone",
+                                                                size=12,
+                                                                color="var(--gray-9)",
+                                                            ),
+                                                            rx.text(
+                                                                p["contacto"],
+                                                                size="1",
+                                                                color="gray",
+                                                            ),
                                                             spacing="1",
                                                         ),
                                                         spacing="1",
@@ -363,7 +386,11 @@ def personas_page() -> rx.Component:
                                                     )
                                                 ),
                                                 rx.table.cell(
-                                                    rx.text(p["fecha_creacion"], size="2", color="var(--gray-10)")
+                                                    rx.text(
+                                                        p["fecha_creacion"],
+                                                        size="2",
+                                                        color="var(--gray-10)",
+                                                    )
                                                 ),
                                                 rx.table.cell(
                                                     rx.box(
@@ -375,11 +402,14 @@ def personas_page() -> rx.Component:
                                                                         rx.match(
                                                                             r,
                                                                             ("Propietario", "home"),
-                                                                            ("Arrendatario", "user-check"),
+                                                                            (
+                                                                                "Arrendatario",
+                                                                                "user-check",
+                                                                            ),
                                                                             ("Asesor", "briefcase"),
                                                                             ("Codeudor", "shield"),
                                                                             ("Proveedor", "tool"),
-                                                                            "user"
+                                                                            "user",
                                                                         ),
                                                                         size=12,
                                                                     ),
@@ -394,19 +424,21 @@ def personas_page() -> rx.Component:
                                                                     ("Asesor", "purple"),
                                                                     ("Codeudor", "orange"),
                                                                     ("Proveedor", "cyan"),
-                                                                    "gray"
+                                                                    "gray",
                                                                 ),
-                                                                variant="soft", 
+                                                                variant="soft",
                                                                 margin_right="1",
                                                                 margin_bottom="1",
-                                                            )
+                                                            ),
                                                         )
                                                     )
                                                 ),
                                                 rx.table.cell(
                                                     rx.badge(
                                                         p["estado"],
-                                                        color_scheme=rx.cond(p["estado"] == "Activo", "green", "red"),
+                                                        color_scheme=rx.cond(
+                                                            p["estado"] == "Activo", "green", "red"
+                                                        ),
                                                         variant="soft",
                                                         size="2",
                                                     )
@@ -414,22 +446,28 @@ def personas_page() -> rx.Component:
                                                 rx.table.cell(
                                                     rx.hstack(
                                                         rx.cond(
-                                                            AuthState.check_action("Personas", "EDITAR"),
+                                                            AuthState.check_action(
+                                                                "Personas", "EDITAR"
+                                                            ),
                                                             rx.tooltip(
                                                                 rx.icon_button(
                                                                     rx.icon("pencil", size=16),
                                                                     variant="ghost",
                                                                     size="2",
-                                                                    on_click=lambda: PersonasState.open_edit_modal(p),
+                                                                    on_click=lambda: PersonasState.open_edit_modal(
+                                                                        p
+                                                                    ),
                                                                     _hover={
                                                                         "background": "var(--accent-3)",
                                                                     },
                                                                 ),
-                                                                content="Editar persona"
-                                                            )
+                                                                content="Editar persona",
+                                                            ),
                                                         ),
                                                         rx.cond(
-                                                            AuthState.check_action("Personas", "ELIMINAR"),
+                                                            AuthState.check_action(
+                                                                "Personas", "ELIMINAR"
+                                                            ),
                                                             rx.tooltip(
                                                                 rx.icon_button(
                                                                     rx.icon("trash-2", size=16),
@@ -440,8 +478,8 @@ def personas_page() -> rx.Component:
                                                                         "background": "var(--red-3)",
                                                                     },
                                                                 ),
-                                                                content="Eliminar persona"
-                                                            )
+                                                                content="Eliminar persona",
+                                                            ),
                                                         ),
                                                         spacing="1",
                                                     )
@@ -451,8 +489,8 @@ def personas_page() -> rx.Component:
                                                 },
                                                 style={
                                                     "transition": "background 0.2s ease",
-                                                }
-                                            )
+                                                },
+                                            ),
                                         ),
                                     ),
                                     width="100%",
@@ -469,10 +507,7 @@ def personas_page() -> rx.Component:
                             rx.cond(
                                 PersonasState.total_items > 0,
                                 rx.box(
-                                    rx.foreach(
-                                        PersonasState.personas,
-                                        person_card
-                                    ),
+                                    rx.foreach(PersonasState.personas, person_card),
                                     display="grid",
                                     grid_template_columns=[
                                         "repeat(1, 1fr)",  # mobile
@@ -488,18 +523,22 @@ def personas_page() -> rx.Component:
                                 rx.center(
                                     rx.vstack(
                                         rx.icon("users", size=48, color="var(--gray-8)"),
-                                        rx.heading("No hay personas", size="5", color="var(--gray-11)"),
-                                        rx.text("Crea tu primera persona haciendo clic en el botón superior", color="var(--gray-10)"),
+                                        rx.heading(
+                                            "No hay personas", size="5", color="var(--gray-11)"
+                                        ),
+                                        rx.text(
+                                            "Crea tu primera persona haciendo clic en el botón superior",
+                                            color="var(--gray-10)",
+                                        ),
                                         spacing="2",
                                     ),
                                     padding="8",
-                                )
+                                ),
                             ),
                             width="100%",
-                        )
-                    )
+                        ),
+                    ),
                 ),
-                
                 # --- Premium Pagination ---
                 rx.card(
                     rx.hstack(
@@ -552,14 +591,11 @@ def personas_page() -> rx.Component:
                     width="100%",
                     style={
                         "background": "var(--color-panel-solid)",
-                    }
+                    },
                 ),
-                
                 padding="6",
                 width="100%",
                 spacing="4",
             )
-        )
+        ),
     )
-
-

@@ -1,55 +1,66 @@
-
 import reflex as rx
+
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
-from src.presentacion_reflex.state.ipc_state import IPCState
 from src.presentacion_reflex.state.auth_state import AuthState
+from src.presentacion_reflex.state.ipc_state import IPCState
+
 
 def ipc_modal() -> rx.Component:
     return rx.dialog.root(
         rx.dialog.content(
-             rx.dialog.title(rx.cond(IPCState.is_editing, "Editar IPC", "Registrar IPC")),
-             rx.dialog.description("Ingrese los datos del índice para el año correspondiente."),
-             
-             rx.vstack(
-                 rx.cond(
-                     IPCState.error_message != "",
-                     rx.callout(IPCState.error_message, icon="triangle_alert", color_scheme="red", width="100%")
-                 ),
-                 
-                 rx.text("Año", size="2", weight="bold"),
-                 rx.input(
-                     value=IPCState.form_anio,
-                     on_change=IPCState.set_anio,
-                     type="number",
-                     disabled=IPCState.is_editing, # No editar año una vez creado
-                     placeholder="Ej: 2025"
-                 ),
-                 
-                 rx.text("Valor (%)", size="2", weight="bold"),
-                 rx.input(
-                     value=IPCState.form_valor,
-                     on_change=IPCState.set_valor,
-                     type="number",
-                     placeholder="Ej: 5.5"
-                 ),
-                 rx.text("Ingrese el valor porcentual (Ej: escriba 13.12 para 13.12%).", size="1", color="gray"),
-                 
-                 spacing="4",
-                 margin_y="4"
-             ),
-             
-             rx.flex(
-                 rx.dialog.close(
-                     rx.button("Cancelar", variant="soft", color_scheme="gray", on_click=IPCState.close_modal)
-                 ),
-                 rx.button("Guardar", on_click=IPCState.save_ipc, loading=IPCState.is_loading),
-                 spacing="3",
-                 justify="end",
-             ),
+            rx.dialog.title(rx.cond(IPCState.is_editing, "Editar IPC", "Registrar IPC")),
+            rx.dialog.description("Ingrese los datos del índice para el año correspondiente."),
+            rx.vstack(
+                rx.cond(
+                    IPCState.error_message != "",
+                    rx.callout(
+                        IPCState.error_message,
+                        icon="triangle_alert",
+                        color_scheme="red",
+                        width="100%",
+                    ),
+                ),
+                rx.text("Año", size="2", weight="bold"),
+                rx.input(
+                    value=IPCState.form_anio,
+                    on_change=IPCState.set_anio,
+                    type="number",
+                    disabled=IPCState.is_editing,  # No editar año una vez creado
+                    placeholder="Ej: 2025",
+                ),
+                rx.text("Valor (%)", size="2", weight="bold"),
+                rx.input(
+                    value=IPCState.form_valor,
+                    on_change=IPCState.set_valor,
+                    type="number",
+                    placeholder="Ej: 5.5",
+                ),
+                rx.text(
+                    "Ingrese el valor porcentual (Ej: escriba 13.12 para 13.12%).",
+                    size="1",
+                    color="gray",
+                ),
+                spacing="4",
+                margin_y="4",
+            ),
+            rx.flex(
+                rx.dialog.close(
+                    rx.button(
+                        "Cancelar",
+                        variant="soft",
+                        color_scheme="gray",
+                        on_click=IPCState.close_modal,
+                    )
+                ),
+                rx.button("Guardar", on_click=IPCState.save_ipc, loading=IPCState.is_loading),
+                spacing="3",
+                justify="end",
+            ),
         ),
         open=IPCState.show_modal,
         on_open_change=IPCState.set_show_modal,
     )
+
 
 def ipc_table() -> rx.Component:
     return rx.table.root(
@@ -76,17 +87,18 @@ def ipc_table() -> rx.Component:
                                     rx.icon("pencil", size=16),
                                     size="1",
                                     variant="ghost",
-                                    on_click=lambda: IPCState.open_edit_modal(ipc)
+                                    on_click=lambda: IPCState.open_edit_modal(ipc),
                                 ),
-                                content="Editar IPC"
-                            )
+                                content="Editar IPC",
+                            ),
                         )
-                    )
-                )
+                    ),
+                ),
             )
         ),
-        variant="surface"
+        variant="surface",
     )
+
 
 def incrementos_content() -> rx.Component:
     return rx.vstack(
@@ -96,31 +108,35 @@ def incrementos_content() -> rx.Component:
             rx.cond(
                 AuthState.check_action("Incrementos", "CREAR"),
                 rx.button(
-                    rx.icon("plus", size=18),
-                    "Nuevo Año",
-                    on_click=IPCState.open_create_modal
-                )
+                    rx.icon("plus", size=18), "Nuevo Año", on_click=IPCState.open_create_modal
+                ),
             ),
             width="100%",
-            align="center"
+            align="center",
         ),
-        rx.text("Configure los valores del IPC anual para el cálculo automático de incrementos en cánones.", color="gray"),
+        rx.text(
+            "Configure los valores del IPC anual para el cálculo automático de incrementos en cánones.",
+            color="gray",
+        ),
         rx.divider(),
-        
         rx.cond(
-            IPCState.is_loading & ~IPCState.show_modal, # Show spinner if loading and modal not open (initial load)
+            IPCState.is_loading
+            & ~IPCState.show_modal,  # Show spinner if loading and modal not open (initial load)
             rx.center(rx.spinner()),
-            ipc_table()
+            ipc_table(),
         ),
-        
         ipc_modal(),
-
         spacing="5",
         padding="6",
         width="100%",
-        on_mount=IPCState.load_ipcs
+        on_mount=IPCState.load_ipcs,
     )
 
-@rx.page(route="/incrementos", title="IPC e Incrementos | Inmobiliaria Velar", on_load=[AuthState.require_login, IPCState.load_ipcs])
+
+@rx.page(
+    route="/incrementos",
+    title="IPC e Incrementos | Inmobiliaria Velar",
+    on_load=[AuthState.require_login, IPCState.load_ipcs],
+)
 def incrementos_page() -> rx.Component:
     return dashboard_layout(incrementos_content())

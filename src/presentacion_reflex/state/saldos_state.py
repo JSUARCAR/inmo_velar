@@ -1,13 +1,15 @@
+from typing import List, Optional
 
 import reflex as rx
-from typing import List, Dict, Any, Optional
+
 from src.aplicacion.servicios.servicio_saldos_favor import ServicioSaldosFavor
 from src.infraestructura.persistencia.database import db_manager
-from src.dominio.entidades.saldo_favor import SaldoFavor
 from src.presentacion_reflex.state.auth_state import AuthState
+
 
 class SaldoModel(rx.Base):
     """Modelo serializable para Reflex."""
+
     id_saldo: int
     fecha_generacion: str
     tipo_beneficiario: str
@@ -18,20 +20,21 @@ class SaldoModel(rx.Base):
     estado: str
     valor_formateado: str
 
+
 class SaldosState(rx.State):
     """Estado para gestión de Saldos a Favor."""
-    
+
     saldos: List[SaldoModel] = []
     is_loading: bool = False
     error_message: str = ""
-    
+
     # Filters
-    filter_tipo: str = "Todos" # Todos, Propietario, Asesor
-    filter_estado: str = "Pendiente" # Pendiente, Historial (Aplicado/Devuelto), Todos
-    
+    filter_tipo: str = "Todos"  # Todos, Propietario, Asesor
+    filter_estado: str = "Pendiente"  # Pendiente, Historial (Aplicado/Devuelto), Todos
+
     # Form Modal State
     show_create_modal: bool = False
-    
+
     # Form Fields
     form_tipo_beneficiario: str = "Propietario"
     form_id_beneficiario: int = 0
@@ -45,29 +48,29 @@ class SaldosState(rx.State):
         async with self:
             self.is_loading = True
             self.error_message = ""
-            
+
         try:
             servicio = ServicioSaldosFavor(db_manager)
-            
+
             # Mapeo de filtros UI a Backend parameters
             tipo = None if self.filter_tipo == "Todos" else self.filter_tipo
             estado = None
             if self.filter_estado == "Pendiente":
-                estado = 'Pendiente'
-            
+                estado = "Pendiente"
+
             # Usamos listar_saldos base
             lista_entidades = servicio.listar_saldos(tipo_beneficiario=tipo, estado=estado)
-            
+
             # Refinamiento si es Historial (excluir pendientes)
             if self.filter_estado == "Historial":
-                lista_entidades = [s for s in lista_entidades if s.estado != 'Pendiente']
+                lista_entidades = [s for s in lista_entidades if s.estado != "Pendiente"]
 
             # MAPEO Entidad -> Modelo Reflex
             modelos = []
             for ent in lista_entidades:
                 modelos.append(
                     SaldoModel(
-                        id_saldo=ent.id_saldo_favor, # Mapeo clave
+                        id_saldo=ent.id_saldo_favor,  # Mapeo clave
                         fecha_generacion=ent.fecha_generacion or "",
                         tipo_beneficiario=ent.tipo_beneficiario,
                         id_propietario=ent.id_propietario,
@@ -75,7 +78,7 @@ class SaldosState(rx.State):
                         motivo=ent.motivo,
                         valor_saldo=ent.valor_saldo,
                         estado=ent.estado,
-                        valor_formateado=ent.valor_formateado
+                        valor_formateado=ent.valor_formateado,
                     )
                 )
 
@@ -97,10 +100,10 @@ class SaldosState(rx.State):
 
     def close_create_modal(self):
         self.show_create_modal = False
-        
+
     def set_filter_tipo(self, value: str):
         self.filter_tipo = value
-        
+
     def set_filter_estado(self, value: str):
         self.filter_estado = value
 
@@ -150,16 +153,16 @@ class SaldosState(rx.State):
                 valor=int(self.form_valor),
                 motivo=self.form_motivo,
                 observaciones=self.form_observaciones,
-                usuario=usuario
+                usuario=usuario,
             )
-            
+
             async with self:
                 self.show_create_modal = False
                 self.is_loading = False
-            
+
             # Reload
             await self.load_saldos()
-                
+
         except Exception as e:
             async with self:
                 self.error_message = str(e)
@@ -175,19 +178,19 @@ class SaldosState(rx.State):
             self.is_loading = True
             current_user = await self.get_state(AuthState)
             usuario = current_user.user["nombre_usuario"] if current_user.user else "sistema"
-            
+
         try:
             servicio = ServicioSaldosFavor(db_manager)
-            if action == 'aplicar':
+            if action == "aplicar":
                 servicio.aplicar_saldo(id_saldo, "Aplicado desde web", usuario)
-            elif action == 'devolver':
+            elif action == "devolver":
                 servicio.devolver_saldo(id_saldo, "Devolución registrada desde web", usuario)
-            elif action == 'eliminar':
+            elif action == "eliminar":
                 servicio.eliminar_saldo(id_saldo, usuario)
-            
+
             async with self:
                 self.is_loading = False
-            
+
             await self.load_saldos()
 
         except Exception as e:

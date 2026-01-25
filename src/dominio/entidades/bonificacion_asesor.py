@@ -1,10 +1,11 @@
-from typing import Optional
 from dataclasses import dataclass
-from datetime import datetime
+from typing import Optional
+
 
 @dataclass
 class BonificacionAsesor:
     """Entidad que representa una bonificación/ingreso adicional para un asesor."""
+
     id_bonificacion_asesor: Optional[int] = None
     id_liquidacion_asesor: Optional[int] = None
     tipo_bonificacion: str = ""

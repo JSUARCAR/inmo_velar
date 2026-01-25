@@ -1,14 +1,16 @@
 import reflex as rx
+
 from src.presentacion_reflex.state.personas_state import PersonasState
+
 
 def wizard_progress() -> rx.Component:
     """Premium progress indicator for multi-step wizard."""
-    
+
     def step_indicator(step_num: int, label: str) -> rx.Component:
         """Individual step circle with label."""
         is_current = PersonasState.modal_step == step_num
         is_completed = PersonasState.modal_step > step_num
-        
+
         return rx.vstack(
             # Step circle
             rx.box(
@@ -20,7 +22,7 @@ def wizard_progress() -> rx.Component:
                         size="3",
                         weight="bold",
                         color=rx.cond(is_current, "white", "var(--gray-9)"),
-                    )
+                    ),
                 ),
                 width="40px",
                 height="40px",
@@ -35,14 +37,12 @@ def wizard_progress() -> rx.Component:
                         rx.cond(
                             is_current,
                             "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            "var(--gray-4)"
-                        )
+                            "var(--gray-4)",
+                        ),
                     ),
                     "transition": "all 0.3s ease",
                     "box_shadow": rx.cond(
-                        is_current,
-                        "0 4px 12px rgba(102, 126, 234, 0.4)",
-                        "none"
+                        is_current, "0 4px 12px rgba(102, 126, 234, 0.4)", "none"
                     ),
                 },
             ),
@@ -57,10 +57,9 @@ def wizard_progress() -> rx.Component:
             spacing="2",
             align="center",
         )
-    
+
     return rx.hstack(
         step_indicator(1, "Información Básica"),
-        
         # Connector line 1-2
         rx.box(
             width=["40px", "60px", "80px"],
@@ -69,14 +68,12 @@ def wizard_progress() -> rx.Component:
                 "background": rx.cond(
                     PersonasState.modal_step > 1,
                     "linear-gradient(90deg, #11998e 0%, #38ef7d 100%)",
-                    "var(--gray-4)"
+                    "var(--gray-4)",
                 ),
                 "transition": "background 0.3s ease",
-            }
+            },
         ),
-        
         step_indicator(2, "Roles"),
-        
         # Connector line 2-3
         rx.box(
             width=["40px", "60px", "80px"],
@@ -85,14 +82,12 @@ def wizard_progress() -> rx.Component:
                 "background": rx.cond(
                     PersonasState.modal_step > 2,
                     "linear-gradient(90deg, #11998e 0%, #38ef7d 100%)",
-                    "var(--gray-4)"
+                    "var(--gray-4)",
                 ),
                 "transition": "background 0.3s ease",
-            }
+            },
         ),
-        
         step_indicator(3, "Detalles"),
-        
         justify="center",
         align="center",
         width="100%",

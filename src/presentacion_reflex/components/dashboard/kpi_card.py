@@ -18,7 +18,7 @@ def kpi_card(
 ) -> rx.Component:
     """
     Tarjeta KPI reutilizable.
-    
+
     Args:
         titulo: Título del KPI (ej: "Cartera en Mora")
         valor: Valor principal a mostrar (ej: "$1,500,000")
@@ -28,26 +28,26 @@ def kpi_card(
         es_critico: Si es True, muestra fondo rojo de alerta
         variant: Variante de visualización ("standard", "elite", "compact")
         hover_content: Contenido opcional para mostrar en hover card
-    
+
     Returns:
         rx.Component: Card con el KPI formateado
     """
-    
+
     # Manejo de colores según criticidad
     bg_color = "red.9" if es_critico else "white"  # Default a blanco para limpieza
     if variant == "elite":
         # Gradientes sutiles para elite
         bg_color = "linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(248,250,252,1) 100%)"
-        
+
     text_color = "white" if es_critico else "gray.12"
     subtitle_color = "red.11" if es_critico else "gray.10"
-    
+
     # Ajuste de colores de icono
     icon_bg = "red.10" if es_critico else f"{color_icono}.3"
     icon_color = "white" if es_critico else f"{color_icono}.9"
-    
+
     # --- RENDERIZADO SEGÚN VARIANTE ---
-    
+
     card_component = None
 
     # 1. COMPACT (Para listados laterales)
@@ -60,11 +60,21 @@ def kpi_card(
                     bg=icon_bg,
                     border_radius="6px",
                     padding="6px",
-                    display="flex", align_items="center", justify_content="center"
+                    display="flex",
+                    align_items="center",
+                    justify_content="center",
                 ),
                 rx.vstack(
-                    rx.text(titulo, size="1", font_size=["10px", "10px", "12px"], weight="medium", color="gray.10"),
-                    rx.text(valor, size="3", font_size=["14px", "16px"], weight="bold", color=text_color),
+                    rx.text(
+                        titulo,
+                        size="1",
+                        font_size=["10px", "10px", "12px"],
+                        weight="medium",
+                        color="gray.10",
+                    ),
+                    rx.text(
+                        valor, size="3", font_size=["14px", "16px"], weight="bold", color=text_color
+                    ),
                     spacing="0",
                     align="start",
                 ),
@@ -77,7 +87,7 @@ def kpi_card(
                 width="100%",
                 align="center",
             ),
-            size="1", # Card size 1 is smaller
+            size="1",  # Card size 1 is smaller
             bg=bg_color,
             width="100%",
             style={"box_shadow": "0 1px 3px rgba(0,0,0,0.05)"},
@@ -89,8 +99,23 @@ def kpi_card(
             rx.vstack(
                 rx.hstack(
                     rx.vstack(
-                        rx.text(titulo, size="1", weight="bold", color="gray.9", text_transform="uppercase", letter_spacing="0.05em"),
-                        rx.text(valor, size="8", font_size=["2em", "2.5em", "3em"], weight="bold", color=text_color, letter_spacing="-0.03em", line_height="1"),
+                        rx.text(
+                            titulo,
+                            size="1",
+                            weight="bold",
+                            color="gray.9",
+                            text_transform="uppercase",
+                            letter_spacing="0.05em",
+                        ),
+                        rx.text(
+                            valor,
+                            size="8",
+                            font_size=["2em", "2.5em", "3em"],
+                            weight="bold",
+                            color=text_color,
+                            letter_spacing="-0.03em",
+                            line_height="1",
+                        ),
                         spacing="2",
                         align="start",
                     ),
@@ -100,7 +125,9 @@ def kpi_card(
                         bg=icon_bg,
                         border_radius="12px",
                         padding="10px",
-                        display="flex", align_items="center", justify_content="center"
+                        display="flex",
+                        align_items="center",
+                        justify_content="center",
                     ),
                     width="100%",
                     align="start",
@@ -112,7 +139,7 @@ def kpi_card(
                         margin_top="12px",
                         padding_top="8px",
                         border_top="1px solid var(--gray-4)",
-                        width="100%"
+                        width="100%",
                     ),
                 ),
                 spacing="1",
@@ -123,7 +150,7 @@ def kpi_card(
             width="100%",
             style={
                 "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                "border": "1px solid rgba(0,0,0,0.03)"
+                "border": "1px solid rgba(0,0,0,0.03)",
             },
         )
 
@@ -137,14 +164,23 @@ def kpi_card(
                         bg=icon_bg,
                         border_radius="8px",
                         padding="8px",
-                        display="flex", align_items="center", justify_content="center"
+                        display="flex",
+                        align_items="center",
+                        justify_content="center",
                     ),
                     rx.text(titulo, size="2", weight="medium", color="gray.10"),
                     width="100%",
                     align="center",
                     spacing="3",
                 ),
-                rx.text(valor, size="6", font_size=["1.25em", "1.5em"], weight="bold", color=text_color, letter_spacing="-0.02em"),
+                rx.text(
+                    valor,
+                    size="6",
+                    font_size=["1.25em", "1.5em"],
+                    weight="bold",
+                    color=text_color,
+                    letter_spacing="-0.02em",
+                ),
                 rx.cond(
                     subtitulo != "",
                     rx.text(subtitulo, size="1", color=subtitle_color, margin_top="2px"),
@@ -158,7 +194,7 @@ def kpi_card(
             width="100%",
             style={
                 "box_shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-                "border": "1px solid rgba(0,0,0,0.03)"
+                "border": "1px solid rgba(0,0,0,0.03)",
             },
         )
 

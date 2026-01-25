@@ -9,6 +9,7 @@ Fecha: 2026-01-18
 
 from dataclasses import dataclass
 from typing import Tuple
+
 from ..core.config import Colors, Fonts
 
 
@@ -16,26 +17,27 @@ from ..core.config import Colors, Fonts
 class DocumentTheme:
     """
     Tema completo para un documento PDF
-    
+
     Agrupa colores, fuentes y otras configuraciones visuales.
     """
+
     # Identificación
     name: str
     description: str
-    
+
     # Colores principales
     primary_color: Tuple[float, float, float]
     secondary_color: Tuple[float, float, float]
     accent_color: Tuple[float, float, float]
-    
+
     # Colores de texto
     title_color: Tuple[float, float, float]
     body_color: Tuple[float, float, float]
-    
+
     # Colores de fondo
     header_bg: Tuple[float, float, float]
     table_header_bg: Tuple[float, float, float]
-    
+
     # Fuentes
     title_font: str
     body_font: str
@@ -44,10 +46,10 @@ class DocumentTheme:
 class Themes:
     """
     Colección de temas predefinidos
-    
+
     Proporciona temas listos para usar en diferentes tipos de documentos.
     """
-    
+
     # Tema corporativo por defecto
     CORPORATE = DocumentTheme(
         name="Corporate",
@@ -60,9 +62,9 @@ class Themes:
         header_bg=Colors.PRIMARY,
         table_header_bg=Colors.PRIMARY,
         title_font=Fonts.TITLE,
-        body_font=Fonts.BODY
+        body_font=Fonts.BODY,
     )
-    
+
     # Tema profesional (tonos azules/grises)
     PROFESSIONAL = DocumentTheme(
         name="Professional",
@@ -75,9 +77,9 @@ class Themes:
         header_bg=Colors.PRIMARY_DARK,
         table_header_bg=Colors.GRAY_DARK,
         title_font=Fonts.TITLE,
-        body_font=Fonts.BODY
+        body_font=Fonts.BODY,
     )
-    
+
     # Tema minimalista (blanco y negro con acentos)
     MINIMAL = DocumentTheme(
         name="Minimal",
@@ -90,9 +92,9 @@ class Themes:
         header_bg=Colors.GRAY_LIGHTEST,
         table_header_bg=Colors.GRAY_LIGHT,
         title_font=Fonts.TITLE,
-        body_font=Fonts.BODY
+        body_font=Fonts.BODY,
     )
-    
+
     # Tema para contratos (formal y legal)
     LEGAL = DocumentTheme(
         name="Legal",
@@ -105,9 +107,9 @@ class Themes:
         header_bg=Colors.GRAY_DARKEST,
         table_header_bg=Colors.GRAY_DARK,
         title_font=Fonts.FAMILY_SERIF_BOLD,
-        body_font=Fonts.FAMILY_SERIF
+        body_font=Fonts.FAMILY_SERIF,
     )
-    
+
     # Tema para certificados (elegante)
     CERTIFICATE = DocumentTheme(
         name="Certificate",
@@ -120,39 +122,39 @@ class Themes:
         header_bg=(0.1, 0.2, 0.4),
         table_header_bg=(0.7, 0.6, 0.3),
         title_font=Fonts.FAMILY_SERIF_BOLD,
-        body_font=Fonts.FAMILY_SERIF
+        body_font=Fonts.FAMILY_SERIF,
     )
-    
+
     @classmethod
     def get_theme(cls, name: str) -> DocumentTheme:
         """
         Obtiene un tema por nombre
-        
+
         Args:
             name: Nombre del tema
-            
+
         Returns:
             Tema solicitado o CORPORATE por defecto
         """
         themes = {
-            'CORPORATE': cls.CORPORATE,
-            'PROFESSIONAL': cls.PROFESSIONAL,
-            'MINIMAL': cls.MINIMAL,
-            'LEGAL': cls.LEGAL,
-            'CERTIFICATE': cls.CERTIFICATE,
+            "CORPORATE": cls.CORPORATE,
+            "PROFESSIONAL": cls.PROFESSIONAL,
+            "MINIMAL": cls.MINIMAL,
+            "LEGAL": cls.LEGAL,
+            "CERTIFICATE": cls.CERTIFICATE,
         }
-        
+
         return themes.get(name.upper(), cls.CORPORATE)
-    
+
     @classmethod
     def list_themes(cls) -> list[str]:
         """
         Lista nombres de temas disponibles
-        
+
         Returns:
             Lista de nombres de temas
         """
-        return ['CORPORATE', 'PROFESSIONAL', 'MINIMAL', 'LEGAL', 'CERTIFICATE']
+        return ["CORPORATE", "PROFESSIONAL", "MINIMAL", "LEGAL", "CERTIFICATE"]
 
 
-__all__ = ['DocumentTheme', 'Themes']
+__all__ = ["DocumentTheme", "Themes"]

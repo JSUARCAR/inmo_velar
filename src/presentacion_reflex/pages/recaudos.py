@@ -4,11 +4,12 @@ Gestión completa de pagos recibidos
 """
 
 import reflex as rx
-from src.presentacion_reflex.state.recaudos_state import RecaudosState
+
+from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
+from src.presentacion_reflex.components.recaudos import modal_detalle_recaudo, modal_recaudo
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.pdf_state import PDFState
-from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
-from src.presentacion_reflex.components.recaudos import modal_recaudo, modal_detalle_recaudo
+from src.presentacion_reflex.state.recaudos_state import RecaudosState
 
 
 def render_estado_badge(estado: rx.Var) -> rx.Component:
@@ -33,7 +34,6 @@ def recaudos_toolbar() -> rx.Component:
             on_key_down=lambda key: RecaudosState.handle_search_key_down(key),
             width="350px",
         ),
-        
         # Filtro Estado
         rx.select(
             RecaudosState.estado_options,
@@ -42,7 +42,6 @@ def recaudos_toolbar() -> rx.Component:
             on_change=RecaudosState.set_filter_estado,
             width="150px",
         ),
-        
         # Filtro Fecha Desde
         rx.input(
             placeholder="Desde",
@@ -51,7 +50,6 @@ def recaudos_toolbar() -> rx.Component:
             on_change=RecaudosState.set_filter_fecha_desde,
             width="150px",
         ),
-        
         # Filtro Fecha Hasta
         rx.input(
             placeholder="Hasta",
@@ -60,9 +58,7 @@ def recaudos_toolbar() -> rx.Component:
             on_change=RecaudosState.set_filter_fecha_hasta,
             width="150px",
         ),
-        
         rx.spacer(),
-        
         # Botón Registrar Pago
         rx.cond(
             AuthState.check_action("Recaudos", "CREAR"),
@@ -71,9 +67,8 @@ def recaudos_toolbar() -> rx.Component:
                 "Registrar Pago",
                 on_click=RecaudosState.open_create_modal,
                 color_scheme="green",
-            )
+            ),
         ),
-        
         # Botón Generar Pagos Masivos
         rx.cond(
             AuthState.check_action("Recaudos", "CREAR"),
@@ -86,16 +81,14 @@ def recaudos_toolbar() -> rx.Component:
                     variant="soft",
                 ),
                 content="Genera pagos para todos los contratos activos con fecha de hoy, valor del canon y método Efectivo",
-            )
+            ),
         ),
-        
         # Botón Refresh
         rx.button(
             rx.icon("refresh-cw"),
             on_click=RecaudosState.load_recaudos,
             variant="soft",
         ),
-        
         width="100%",
         padding="1em",
         background="white",
@@ -117,7 +110,9 @@ def recaudos_table() -> rx.Component:
                 rx.table.column_header_cell("Valor", style={"font-weight": "600"}),
                 rx.table.column_header_cell("Método", style={"font-weight": "600"}),
                 rx.table.column_header_cell("Estado", style={"font-weight": "600"}),
-                rx.table.column_header_cell("Acciones", width="150px", style={"font-weight": "600"}),
+                rx.table.column_header_cell(
+                    "Acciones", width="150px", style={"font-weight": "600"}
+                ),
             ),
         ),
         rx.table.body(
@@ -146,9 +141,7 @@ def recaudos_table() -> rx.Component:
                             color="green",
                         )
                     ),
-                    rx.table.cell(
-                        rx.badge(rec["metodo_pago"], variant="soft")
-                    ),
+                    rx.table.cell(rx.badge(rec["metodo_pago"], variant="soft")),
                     rx.table.cell(render_estado_badge(rec["estado"])),
                     rx.table.cell(
                         rx.hstack(
@@ -156,83 +149,99 @@ def recaudos_table() -> rx.Component:
                             rx.tooltip(
                                 rx.icon_button(
                                     rx.icon("file-text"),
-                                    on_click=lambda: PDFState.generar_recibo_pago_pdf(rec["id_recaudo"]),
+                                    on_click=lambda: PDFState.generar_recibo_pago_pdf(
+                                        rec["id_recaudo"]
+                                    ),
                                     size="2",
                                     variant="ghost",
                                     color_scheme="green",
                                     loading=PDFState.generating,
-                                    cursor="pointer"
+                                    cursor="pointer",
                                 ),
-                                content="Generar Recibo de Pago PDF"
+                                content="Generar Recibo de Pago PDF",
                             ),
                             # Ver Detalle (siempre visible)
                             rx.tooltip(
                                 rx.icon_button(
                                     rx.icon("eye"),
-                                    on_click=lambda: RecaudosState.open_detail_modal(rec["id_recaudo"]),
+                                    on_click=lambda: RecaudosState.open_detail_modal(
+                                        rec["id_recaudo"]
+                                    ),
                                     size="2",
                                     variant="ghost",
                                     color_scheme="gray",
                                 ),
-                                content="Ver detalle"
+                                content="Ver detalle",
                             ),
                             # Aplicar Pago (solo Pendientes)
                             rx.cond(
-                                (rec["estado"] == "Pendiente") & AuthState.check_action("Recaudos", "APLICAR"),
+                                (rec["estado"] == "Pendiente")
+                                & AuthState.check_action("Recaudos", "APLICAR"),
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("thumbs-up"),
-                                        on_click=lambda: RecaudosState.aplicar_pago(rec["id_recaudo"]),
+                                        on_click=lambda: RecaudosState.aplicar_pago(
+                                            rec["id_recaudo"]
+                                        ),
                                         size="2",
                                         variant="ghost",
                                         color_scheme="green",
                                     ),
-                                    content="Aplicar pago"
+                                    content="Aplicar pago",
                                 ),
                                 rx.box(),
                             ),
                             # Reversar Pago (solo Aplicados)
                             rx.cond(
-                                (rec["estado"] == "Aplicado") & AuthState.check_action("Recaudos", "REVERSAR"),
+                                (rec["estado"] == "Aplicado")
+                                & AuthState.check_action("Recaudos", "REVERSAR"),
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("rotate-ccw"),
-                                        on_click=lambda: RecaudosState.reversar_pago(rec["id_recaudo"]),
+                                        on_click=lambda: RecaudosState.reversar_pago(
+                                            rec["id_recaudo"]
+                                        ),
                                         size="2",
                                         variant="ghost",
                                         color_scheme="orange",
                                     ),
-                                    content="Reversar pago"
+                                    content="Reversar pago",
                                 ),
                                 rx.box(),
                             ),
                             # Editar (solo Pendientes)
                             rx.cond(
-                                (rec["estado"] == "Pendiente") & AuthState.check_action("Recaudos", "EDITAR"),
+                                (rec["estado"] == "Pendiente")
+                                & AuthState.check_action("Recaudos", "EDITAR"),
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("pencil"),
-                                        on_click=lambda: RecaudosState.open_edit_modal(rec["id_recaudo"]),
+                                        on_click=lambda: RecaudosState.open_edit_modal(
+                                            rec["id_recaudo"]
+                                        ),
                                         size="2",
                                         variant="ghost",
                                         color_scheme="blue",
                                     ),
-                                    content="Editar recaudo"
+                                    content="Editar recaudo",
                                 ),
                                 rx.box(),
                             ),
                             # Eliminar (solo Pendientes)
                             rx.cond(
-                                (rec["estado"] == "Pendiente") & AuthState.check_action("Recaudos", "ELIMINAR"),
+                                (rec["estado"] == "Pendiente")
+                                & AuthState.check_action("Recaudos", "ELIMINAR"),
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("trash-2"),
-                                        on_click=lambda: RecaudosState.eliminar_recaudo(rec["id_recaudo"]),
+                                        on_click=lambda: RecaudosState.eliminar_recaudo(
+                                            rec["id_recaudo"]
+                                        ),
                                         size="2",
                                         variant="ghost",
                                         color_scheme="red",
                                     ),
-                                    content="Eliminar recaudo"
+                                    content="Eliminar recaudo",
                                 ),
                                 rx.box(),
                             ),
@@ -283,7 +292,8 @@ def pagination_controls() -> rx.Component:
                 "Siguiente",
                 rx.icon("chevron-right", size=16),
                 on_click=RecaudosState.next_page,
-                disabled=RecaudosState.current_page * RecaudosState.page_size >= RecaudosState.total_items,
+                disabled=RecaudosState.current_page * RecaudosState.page_size
+                >= RecaudosState.total_items,
                 variant="soft",
                 size="3",
                 _hover={
@@ -300,7 +310,7 @@ def pagination_controls() -> rx.Component:
         width="100%",
         style={
             "background": "var(--color-panel-solid)",
-        }
+        },
     )
 
 
@@ -326,10 +336,8 @@ def recaudos_page() -> rx.Component:
             spacing="2",
             margin_bottom="2rem",
         ),
-        
         # Toolbar
         recaudos_toolbar(),
-        
         # Error message
         rx.cond(
             RecaudosState.error_message != "",
@@ -341,7 +349,6 @@ def recaudos_page() -> rx.Component:
             ),
             rx.box(),
         ),
-        
         # Loading o Tabla
         rx.cond(
             RecaudosState.is_loading,
@@ -356,20 +363,19 @@ def recaudos_page() -> rx.Component:
                 spacing="4",
             ),
         ),
-        
         # Modal de formulario
         modal_recaudo(),
-        
         # Modal de detalle
         modal_detalle_recaudo(),
-        
         width="100%",
         spacing="4",
         padding="2em",
     )
 
 
-@rx.page(route="/recaudos", title="Recaudos", on_load=[AuthState.require_login, RecaudosState.on_load])
+@rx.page(
+    route="/recaudos", title="Recaudos", on_load=[AuthState.require_login, RecaudosState.on_load]
+)
 def recaudos() -> rx.Component:
     """Página de recaudos con layout."""
     return dashboard_layout(recaudos_page())

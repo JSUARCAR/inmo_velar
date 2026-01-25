@@ -1,6 +1,7 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional
+
 
 @dataclass
 class Documento:
@@ -8,19 +9,20 @@ class Documento:
     Entidad que representa un documento (archivo) adjunto a otra entidad del sistema.
     Almacena tanto la metadata como el contenido binario (BLOB).
     """
+
     id: Optional[int] = None
-    entidad_tipo: str = "" # Ejemplo: 'CONTRATO', 'INCIDENTE'
-    entidad_id: str = "" # ID de la entidad relacionada
+    entidad_tipo: str = ""  # Ejemplo: 'CONTRATO', 'INCIDENTE'
+    entidad_id: str = ""  # ID de la entidad relacionada
     nombre_archivo: str = ""
     extension: str = ""
     mime_type: str = ""
     descripcion: str = ""
-    contenido: Optional[bytes] = None # BLOB - Puede ser None si se cargó con 'lazy loading'
+    contenido: Optional[bytes] = None  # BLOB - Puede ser None si se cargó con 'lazy loading'
     version: int = 1
     es_vigente: bool = True
     created_at: Optional[datetime] = None
     created_by: Optional[str] = None
-    
+
     def __post_init__(self):
         if not self.entidad_tipo:
             raise ValueError("El tipo de entidad es obligatorio")
@@ -40,5 +42,5 @@ class Documento:
     def extension_normalizada(self) -> str:
         """Retorna la extensión sin punto y en minúsculas."""
         if self.extension:
-            return self.extension.lower().replace('.', '')
+            return self.extension.lower().replace(".", "")
         return ""

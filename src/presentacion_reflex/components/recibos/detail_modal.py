@@ -1,6 +1,8 @@
 import reflex as rx
-from src.presentacion_reflex.state.recibos_state import RecibosState
+
 from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+from src.presentacion_reflex.state.recibos_state import RecibosState
+
 
 def detail_modal() -> rx.Component:
     return rx.dialog.root(
@@ -8,7 +10,6 @@ def detail_modal() -> rx.Component:
             rx.vstack(
                 rx.dialog.title("Detalles del Recibo"),
                 rx.dialog.description("Información completa del registro y soportes."),
-                
                 # Contenido principal
                 rx.scroll_area(
                     rx.vstack(
@@ -32,8 +33,8 @@ def detail_modal() -> rx.Component:
                             rx.vstack(
                                 rx.text("Estado", weight="bold", size="2"),
                                 rx.badge(
-                                    RecibosState.detail_data["estado"], 
-                                    color_scheme=RecibosState.detail_data["clase_estado"]
+                                    RecibosState.detail_data["estado"],
+                                    color_scheme=RecibosState.detail_data["clase_estado"],
                                 ),
                             ),
                             rx.vstack(
@@ -42,11 +43,9 @@ def detail_modal() -> rx.Component:
                             ),
                             columns="2",
                             spacing="4",
-                            width="100%"
+                            width="100%",
                         ),
-                        
                         rx.divider(margin_y="2"),
-                        
                         rx.heading("Detalles de Facturación", size="3"),
                         rx.grid(
                             rx.vstack(
@@ -63,9 +62,8 @@ def detail_modal() -> rx.Component:
                             ),
                             columns="3",
                             spacing="4",
-                            width="100%"
+                            width="100%",
                         ),
-                        
                         rx.cond(
                             RecibosState.detail_data["estado"] == "Pagado",
                             rx.vstack(
@@ -82,28 +80,28 @@ def detail_modal() -> rx.Component:
                                     ),
                                     columns="2",
                                     spacing="4",
-                                    width="100%"
-                                )
-                            )
+                                    width="100%",
+                                ),
+                            ),
                         ),
-                        
                         rx.divider(margin_y="2"),
-                        
                         # Sección de Documentos
                         rx.heading("Soportes y Comprobantes", size="3"),
-                        rx.text("Adjunte la factura del servicio público y el comprobante de pago.", size="2", color="gray"),
+                        rx.text(
+                            "Adjunte la factura del servicio público y el comprobante de pago.",
+                            size="2",
+                            color="gray",
+                        ),
                         rx.card(
                             document_manager_elite(RecibosState),
                             width="100%",
                         ),
-
                         spacing="4",
                         margin_top="4",
-                        width="100%"
+                        width="100%",
                     ),
-                    max_height="70vh"
+                    max_height="70vh",
                 ),
-                
                 # Footer
                 rx.flex(
                     rx.dialog.close(
@@ -111,13 +109,12 @@ def detail_modal() -> rx.Component:
                     ),
                     justify="end",
                     margin_top="6",
-                    width="100%"
+                    width="100%",
                 ),
-                width="100%"
+                width="100%",
             ),
-            
             max_width="700px",
-            padding="24px"
+            padding="24px",
         ),
         open=RecibosState.show_detail_modal,
         on_open_change=RecibosState.handle_detail_open_change,

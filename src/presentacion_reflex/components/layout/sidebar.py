@@ -1,45 +1,46 @@
 import reflex as rx
+
+from src.presentacion_reflex.components.layout.bell_icon import bell_icon
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
-from src.presentacion_reflex.components.layout.bell_icon import bell_icon
 
-def sidebar_item(text: str, icon: str, url: str, description: str = "", module_name: str = "", icon_color: str = "#3b82f6") -> rx.Component:
+
+def sidebar_item(
+    text: str,
+    icon: str,
+    url: str,
+    description: str = "",
+    module_name: str = "",
+    icon_color: str = "#3b82f6",
+) -> rx.Component:
     """Item individual del sidebar con HoverCard experto y protección por permisos."""
     is_active = rx.State.router.page.path == url
-    
+
     # Base item content (Trigger)
     item_content = rx.hstack(
         rx.icon(
-            icon, 
+            icon,
             size=20,
-            color=icon_color, # Use category color
+            color=icon_color,  # Use category color
         ),
         rx.text(
-            text, 
-            size="3", 
+            text,
+            size="3",
             weight=rx.cond(is_active, "bold", "medium"),
-            color=rx.cond(is_active, "#0f172a", "#334155"), # Dark colors for light bg
+            color=rx.cond(is_active, "#0f172a", "#334155"),  # Dark colors for light bg
         ),
         spacing="3",
         padding_x="4",
         padding_y="3",
         margin_left="2",
         border_radius="10px",
-        border_left=rx.cond(
-            is_active,
-            "3px solid #3b82f6",
-            "3px solid transparent"
-        ),
-        background=rx.cond(
-            is_active,
-            "rgba(59, 130, 246, 0.1)",
-            "transparent"
-        ),
+        border_left=rx.cond(is_active, "3px solid #3b82f6", "3px solid transparent"),
+        background=rx.cond(is_active, "rgba(59, 130, 246, 0.1)", "transparent"),
         _hover={
             "background": rx.cond(
                 is_active,
                 "rgba(59, 130, 246, 0.15)",
-                "rgba(59, 130, 246, 0.05)" # Light blue hover
+                "rgba(59, 130, 246, 0.05)",  # Light blue hover
             ),
             "transform": "translateX(4px)",
         },
@@ -112,21 +113,22 @@ def sidebar_item(text: str, icon: str, url: str, description: str = "", module_n
         return rx.cond(
             AuthState.is_authenticated & AuthState.check_module_access(module_name),
             item_component,
-            rx.fragment() # No renderizar nada si no tiene permiso
+            rx.fragment(),  # No renderizar nada si no tiene permiso
         )
-    
+
     # Si no tiene módulo asignado (ej. Dashboard público), mostrar siempre
     # (Aunque Dashboard también debería ser un módulo, lo manejamos en la llamada)
     return item_component
+
 
 def sidebar_section(title: str, *items) -> rx.Component:
     """Sección del sidebar con título y items."""
     return rx.vstack(
         rx.text(
-            title, 
-            size="1", 
-            color="#64748b", # Slate 500 - Darker than before
-            weight="bold", 
+            title,
+            size="1",
+            color="#64748b",  # Slate 500 - Darker than before
+            weight="bold",
             letter_spacing="0.5px",
             padding_x="4",
             padding_left="6",
@@ -138,6 +140,7 @@ def sidebar_section(title: str, *items) -> rx.Component:
         margin_bottom="4",
     )
 
+
 def sidebar_items() -> rx.Component:
     """Items de navegación reutilizables."""
     return rx.vstack(
@@ -145,185 +148,176 @@ def sidebar_items() -> rx.Component:
         sidebar_section(
             "PRINCIPAL",
             sidebar_item(
-                "Dashboard", 
-                "layout_dashboard", 
+                "Dashboard",
+                "layout_dashboard",
                 "/dashboard",
                 "Panel de control general con métricas estratégicas y KPIs operativos.",
                 module_name="Dashboard",
-                icon_color="#3b82f6"  # Blue
+                icon_color="#3b82f6",  # Blue
             ),
         ),
-        
         # Sección Gestión
         sidebar_section(
             "GESTIÓN",
             sidebar_item(
-                "Personas", 
-                "users", 
-                "/personas", 
+                "Personas",
+                "users",
+                "/personas",
                 "Gestión integral de propietarios, arrendatarios, codeudores y asesores.",
                 module_name="Personas",
-                icon_color="#10b981"  # Green
+                icon_color="#10b981",  # Green
             ),
             sidebar_item(
-                "Propiedades", 
-                "home", 
+                "Propiedades",
+                "home",
                 "/propiedades",
                 "Administración del inventario de inmuebles, características y estados.",
                 module_name="Propiedades",
-                icon_color="#10b981"  # Green
+                icon_color="#10b981",  # Green
             ),
             sidebar_item(
-                "Contratos", 
-                "file_text", 
+                "Contratos",
+                "file_text",
                 "/contratos",
                 "Control de contratos de mandato y arrendamiento vigentes e históricos.",
                 module_name="Contratos",
-                icon_color="#10b981"  # Green
+                icon_color="#10b981",  # Green
             ),
             sidebar_item(
-                "Proveedores", 
-                "wrench", 
+                "Proveedores",
+                "wrench",
                 "/proveedores",
                 "Directorio y gestión de proveedores de servicios y mantenimiento.",
                 module_name="Proveedores",
-                icon_color="#10b981"  # Green
+                icon_color="#10b981",  # Green
             ),
         ),
-        
         # Sección Operaciones
         sidebar_section(
             "OPERACIONES",
             sidebar_item(
-                "Liquidaciones", 
-                "dollar_sign", 
+                "Liquidaciones",
+                "dollar_sign",
                 "/liquidaciones",
                 "Procesamiento de liquidaciones a propietarios y gestión financiera.",
                 module_name="Liquidaciones",
-                icon_color="#f59e0b"  # Amber
+                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
-                "Liquidación Asesores", 
-                "user_check", 
+                "Liquidación Asesores",
+                "user_check",
                 "/liquidacion-asesores",
                 "Cálculo y pago de comisiones, bonificaciones y estructura comercial.",
                 module_name="Liquidación Asesores",
-                icon_color="#f59e0b"  # Amber
+                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
-                "Recaudos", 
-                "coins", 
+                "Recaudos",
+                "coins",
                 "/recaudos",
                 "Registro y seguimiento de pagos recibidos de arrendatarios.",
                 module_name="Recaudos",
-                icon_color="#f59e0b"  # Amber
+                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
-                "Desocupaciones", 
-                "log_out", 
+                "Desocupaciones",
+                "log_out",
                 "/desocupaciones",
                 "Gestión de procesos de desocupación, inspecciones y restitución.",
                 module_name="Desocupaciones",
-                icon_color="#f59e0b"  # Amber
+                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
-                "Incidentes", 
-                "triangle_alert", 
+                "Incidentes",
+                "triangle_alert",
                 "/incidentes",
                 "Seguimiento y resolución de incidencias, reparaciones y mantenimiento.",
                 module_name="Incidentes",
-                icon_color="#f59e0b"  # Amber
+                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
-                "Seguros", 
-                "shield", 
+                "Seguros",
+                "shield",
                 "/seguros",
                 "Control de pólizas de seguro de arrendamiento y hogar.",
                 module_name="Seguros",
-                icon_color="#f59e0b"  # Amber
+                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
-                "Recibos Públicos", 
-                "zap", 
+                "Recibos Públicos",
+                "zap",
                 "/recibos-publicos",
                 "Gestión de pagos y control de servicios públicos de los inmuebles.",
                 module_name="Recibos Públicos",
-                icon_color="#f59e0b"  # Amber
+                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
-                "Saldos a Favor", 
-                "piggy-bank", 
+                "Saldos a Favor",
+                "piggy-bank",
                 "/saldos-favor",
                 "Administración de saldos a favor de terceros y devoluciones.",
                 module_name="Saldos a Favor",
-                icon_color="#f59e0b"  # Amber
+                icon_color="#f59e0b",  # Amber
             ),
         ),
-        
         # Sección Administración
         sidebar_section(
             "ADMINISTRACIÓN",
             sidebar_item(
-                "Usuarios", 
-                "users_round", 
+                "Usuarios",
+                "users_round",
                 "/usuarios",
                 "Gestión de usuarios del sistema, roles y permisos de acceso.",
                 module_name="Usuarios",
-                icon_color="#8b5cf6"  # Purple
+                icon_color="#8b5cf6",  # Purple
             ),
             sidebar_item(
-                "Configuración", 
-                "settings", 
+                "Configuración",
+                "settings",
                 "/configuracion",
                 "Ajustes generales del sistema y parámetros globales.",
                 module_name="Configuración",
-                icon_color="#8b5cf6"  # Purple
+                icon_color="#8b5cf6",  # Purple
             ),
             sidebar_item(
-                "IPC / Incrementos", 
-                "trending_up", 
+                "IPC / Incrementos",
+                "trending_up",
                 "/incrementos",
                 "Aplicación de incrementos anuales e indexación masiva por IPC.",
                 module_name="IPC / Incrementos",
-                icon_color="#8b5cf6"  # Purple
+                icon_color="#8b5cf6",  # Purple
             ),
             sidebar_item(
-                "Auditoría", 
-                "clipboard_list", 
+                "Auditoría",
+                "clipboard_list",
                 "/auditoria",
                 "Registro detallado (logs) de cambios y actividades en el sistema.",
                 module_name="Auditoría",
-                icon_color="#8b5cf6"  # Purple
+                icon_color="#8b5cf6",  # Purple
             ),
         ),
-        
         spacing="0",
         width="100%",
     )
 
+
 def sidebar_footer() -> rx.Component:
     """Pie del sidebar con perfil de usuario."""
     return rx.hstack(
-        rx.avatar(
-            fallback="IV", 
-            size="3", 
-            radius="full",
-            color_scheme="blue",
-            variant="solid"
-        ),
+        rx.avatar(fallback="IV", size="3", radius="full", color_scheme="blue", variant="solid"),
         rx.vstack(
             rx.text(
-                AuthState.user_info["nombre_usuario"], 
-                size="2", 
-                weight="bold", 
+                AuthState.user_info["nombre_usuario"],
+                size="2",
+                weight="bold",
                 color="#1e293b",
                 max_width="120px",
                 overflow="hidden",
                 text_overflow="ellipsis",
             ),
             rx.text(
-                AuthState.user_info["rol"], 
-                size="1", 
+                AuthState.user_info["rol"],
+                size="1",
                 color="#64748b",
                 max_width="120px",
                 overflow="hidden",
@@ -333,20 +327,21 @@ def sidebar_footer() -> rx.Component:
             align_items="start",
         ),
         rx.spacer(),
-        bell_icon(), # Restored bell icon
+        bell_icon(),  # Restored bell icon
         rx.icon_button(
             "log-out",
             size="2",
-            variant="ghost", 
+            variant="ghost",
             color_scheme="red",
             on_click=AuthState.logout,
-            tooltip="Cerrar Sesión"
+            tooltip="Cerrar Sesión",
         ),
         spacing="3",
         width="100%",
         align_items="center",
-        padding_top="2"
+        padding_top="2",
     )
+
 
 def sidebar() -> rx.Component:
     """Componente de navegación lateral mejorado."""
@@ -366,9 +361,15 @@ def sidebar() -> rx.Component:
                                 object_fit="contain",
                                 alt="Logo",
                                 margin_bottom="2",
-                                cursor="pointer"
+                                cursor="pointer",
                             ),
-                            rx.icon("building", size=40, color="#3b82f6", margin_bottom="2", cursor="pointer")
+                            rx.icon(
+                                "building",
+                                size=40,
+                                color="#3b82f6",
+                                margin_bottom="2",
+                                cursor="pointer",
+                            ),
                         ),
                         _hover={"transform": "scale(1.05)", "transition": "transform 0.2s"},
                     )
@@ -384,92 +385,97 @@ def sidebar() -> rx.Component:
                                 radius="full",
                                 color_scheme="blue",
                                 variant="soft",
-                                border="2px solid #e2e8f0"
+                                border="2px solid #e2e8f0",
                             ),
                             rx.vstack(
                                 rx.text(
-                                    ConfiguracionState.empresa["nombre_empresa"], 
-                                    size="3", 
-                                    weight="bold", 
-                                    color="#1e293b"
+                                    ConfiguracionState.empresa["nombre_empresa"],
+                                    size="3",
+                                    weight="bold",
+                                    color="#1e293b",
                                 ),
                                 rx.badge(
-                                    f"NIT: {ConfiguracionState.empresa['nit']}", 
-                                    color_scheme="gray", 
-                                    variant="surface", 
-                                    size="1"
+                                    f"NIT: {ConfiguracionState.empresa['nit']}",
+                                    color_scheme="gray",
+                                    variant="surface",
+                                    size="1",
                                 ),
                                 spacing="0",
-                                align_items="start"
+                                align_items="start",
                             ),
                             spacing="3",
                             align_items="center",
                             width="100%",
                             padding_bottom="3",
-                            border_bottom="1px solid #f1f5f9"
+                            border_bottom="1px solid #f1f5f9",
                         ),
-                        
                         # Detalles de la Empresa (Representante)
                         rx.vstack(
-                            rx.text("Representante Legal", size="1", weight="bold", color="#64748b", margin_top="1"),
+                            rx.text(
+                                "Representante Legal",
+                                size="1",
+                                weight="bold",
+                                color="#64748b",
+                                margin_top="1",
+                            ),
                             rx.hstack(
                                 rx.icon("user-check", size=14, color="#3b82f6"),
                                 rx.text(
-                                    ConfiguracionState.empresa["representante_legal"], 
-                                    size="2", 
-                                    weight="medium", 
-                                    color="#334155"
+                                    ConfiguracionState.empresa["representante_legal"],
+                                    size="2",
+                                    weight="medium",
+                                    color="#334155",
                                 ),
                                 spacing="2",
-                                align_items="center"
+                                align_items="center",
                             ),
                             spacing="1",
-                            width="100%"
+                            width="100%",
                         ),
-                        
                         # Contacto
                         rx.vstack(
-                            rx.text("Contacto", size="1", weight="bold", color="#64748b", margin_top="1"),
+                            rx.text(
+                                "Contacto", size="1", weight="bold", color="#64748b", margin_top="1"
+                            ),
                             rx.vstack(
                                 rx.hstack(
                                     rx.icon("mail", size=14, color="#94a3b8"),
                                     rx.text(
-                                        ConfiguracionState.empresa["email"], 
-                                        size="1", 
-                                        color="#475569"
+                                        ConfiguracionState.empresa["email"],
+                                        size="1",
+                                        color="#475569",
                                     ),
                                     spacing="2",
-                                    align_items="center"
+                                    align_items="center",
                                 ),
                                 rx.hstack(
                                     rx.icon("phone", size=14, color="#94a3b8"),
                                     rx.text(
-                                        ConfiguracionState.empresa["telefono"], 
-                                        size="1", 
-                                        color="#475569"
+                                        ConfiguracionState.empresa["telefono"],
+                                        size="1",
+                                        color="#475569",
                                     ),
                                     spacing="2",
-                                    align_items="center"
+                                    align_items="center",
                                 ),
                                 rx.hstack(
                                     rx.icon("map-pin", size=14, color="#94a3b8"),
                                     rx.text(
-                                        f"{ConfiguracionState.empresa['direccion']} - {ConfiguracionState.empresa['ubicacion']}", 
-                                        size="1", 
-                                        color="#475569"
+                                        f"{ConfiguracionState.empresa['direccion']} - {ConfiguracionState.empresa['ubicacion']}",
+                                        size="1",
+                                        color="#475569",
                                     ),
                                     spacing="2",
-                                    align_items="center"
+                                    align_items="center",
                                 ),
                                 spacing="2",
-                                width="100%"
+                                width="100%",
                             ),
                             spacing="1",
-                            width="100%"
+                            width="100%",
                         ),
-                        
                         spacing="3",
-                        width="100%"
+                        width="100%",
                     ),
                     side="right",
                     side_offset=20,
@@ -481,20 +487,20 @@ def sidebar() -> rx.Component:
                     box_shadow="0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                     width="280px",
                     data_state="open",
-                    z_index="2000"
-                )
+                    z_index="2000",
+                ),
             ),
             rx.heading(
                 rx.cond(
                     ConfiguracionState.empresa["nombre_empresa"] != "",
                     ConfiguracionState.empresa["nombre_empresa"],
-                    "Inmobiliaria Velar"
-                ), 
-                size="3", 
-                color="#1e293b", # Dark text
+                    "Inmobiliaria Velar",
+                ),
+                size="3",
+                color="#1e293b",  # Dark text
                 weight="bold",
                 letter_spacing="-0.5px",
-                text_align="center"
+                text_align="center",
             ),
             spacing="1",
             padding_x="4",
@@ -502,9 +508,9 @@ def sidebar() -> rx.Component:
             align="center",
             width="100%",
         ),
-        
-        rx.divider(color_scheme="gray", opacity=0.5, margin_y="0"), # Changed opacity for visibility
-        
+        rx.divider(
+            color_scheme="gray", opacity=0.5, margin_y="0"
+        ),  # Changed opacity for visibility
         # Navigation Links
         rx.box(
             sidebar_items(),
@@ -512,13 +518,11 @@ def sidebar() -> rx.Component:
             overflow_y="auto",
             flex="1",
         ),
-        
         # Footer User Profile
         sidebar_footer(),
-        
         height="100vh",
         width="280px",
-        background="rgba(0, 0, 51, 0.06)", # Changed background
+        background="rgba(0, 0, 51, 0.06)",  # Changed background
         position="sticky",
         top="0",
         left="0",

@@ -3,10 +3,10 @@ Formulario modal para Contratos de Arrendamiento - Reflex
 """
 
 import reflex as rx
-from typing import Dict, Any
-from src.presentacion_reflex.state.contratos_state import ContratosState
+
 from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
 from src.presentacion_reflex.components.image_gallery import image_gallery
+from src.presentacion_reflex.state.contratos_state import ContratosState
 
 
 def contrato_arrendamiento_form() -> rx.Component:
@@ -16,7 +16,7 @@ def contrato_arrendamiento_form() -> rx.Component:
     """
     return rx.dialog.root(
         rx.dialog.content(
-             # --- ELITE HEADER ---
+            # --- ELITE HEADER ---
             rx.vstack(
                 rx.hstack(
                     rx.icon("key", size=24, color="var(--blue-9)"),
@@ -24,7 +24,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                         rx.cond(
                             ContratosState.modal_mode == "crear_arrendamiento",
                             "Nuevo Contrato de Arrendamiento",
-                            "Editar Contrato de Arrendamiento"
+                            "Editar Contrato de Arrendamiento",
                         ),
                         size="6",
                         weight="bold",
@@ -41,7 +41,6 @@ def contrato_arrendamiento_form() -> rx.Component:
                 spacing="3",
                 padding_bottom="4",
             ),
-            
             # Mensaje de error
             rx.cond(
                 ContratosState.error_message != "",
@@ -53,14 +52,12 @@ def contrato_arrendamiento_form() -> rx.Component:
                     margin_bottom="1rem",
                 ),
             ),
-            
             # Tabs Structure
             rx.tabs.root(
                 rx.tabs.list(
                     rx.tabs.trigger("Datos del Contrato", value="datos"),
                     rx.tabs.trigger("Documentos", value="documentos"),
                 ),
-                
                 # TAB 1: DATOS (Formulario Existente)
                 rx.tabs.content(
                     rx.form(
@@ -72,13 +69,15 @@ def contrato_arrendamiento_form() -> rx.Component:
                                     rx.select.trigger(
                                         rx.icon("home", size=16),
                                         placeholder="Seleccione una propiedad",
-                                        variant="surface"
+                                        variant="surface",
                                     ),
                                     rx.select.content(
                                         rx.select.group(
                                             rx.foreach(
                                                 ContratosState.propiedades_arriendo_select_options,
-                                                lambda opcion: rx.select.item(opcion[0], value=opcion[1])
+                                                lambda opcion: rx.select.item(
+                                                    opcion[0], value=opcion[1]
+                                                ),
                                             )
                                         )
                                     ),
@@ -91,7 +90,6 @@ def contrato_arrendamiento_form() -> rx.Component:
                                 align="start",
                                 width="100%",
                             ),
-                            
                             # Arrendatario (requerido)
                             rx.vstack(
                                 rx.text("Arrendatario *", size="2", weight="bold"),
@@ -99,26 +97,29 @@ def contrato_arrendamiento_form() -> rx.Component:
                                     rx.select.trigger(
                                         rx.icon("user", size=16),
                                         placeholder="Seleccione el arrendatario",
-                                        variant="surface"
+                                        variant="surface",
                                     ),
                                     rx.select.content(
                                         rx.select.group(
                                             rx.foreach(
                                                 ContratosState.arrendatarios_select_options,
-                                                lambda opcion: rx.select.item(opcion[0], value=opcion[1])
+                                                lambda opcion: rx.select.item(
+                                                    opcion[0], value=opcion[1]
+                                                ),
                                             )
                                         )
                                     ),
                                     name="id_arrendatario",
                                     value=ContratosState.form_data.get("id_arrendatario", ""),
-                                    on_change=lambda v: ContratosState.set_form_field("id_arrendatario", v),
+                                    on_change=lambda v: ContratosState.set_form_field(
+                                        "id_arrendatario", v
+                                    ),
                                     width="100%",
                                 ),
                                 spacing="1",
                                 align="start",
                                 width="100%",
                             ),
-                            
                             # Codeudor (opcional)
                             rx.vstack(
                                 rx.text("Codeudor (opcional)", size="2", weight="bold"),
@@ -126,26 +127,29 @@ def contrato_arrendamiento_form() -> rx.Component:
                                     rx.select.trigger(
                                         rx.icon("users", size=16),
                                         placeholder="Seleccione el codeudor (opcional)",
-                                        variant="surface"
+                                        variant="surface",
                                     ),
                                     rx.select.content(
                                         rx.select.group(
                                             rx.foreach(
                                                 ContratosState.codeudores_select_options,
-                                                lambda opcion: rx.select.item(opcion[0], value=opcion[1])
+                                                lambda opcion: rx.select.item(
+                                                    opcion[0], value=opcion[1]
+                                                ),
                                             )
                                         )
                                     ),
                                     name="id_codeudor",
                                     value=ContratosState.form_data.get("id_codeudor", ""),
-                                    on_change=lambda v: ContratosState.set_form_field("id_codeudor", v),
+                                    on_change=lambda v: ContratosState.set_form_field(
+                                        "id_codeudor", v
+                                    ),
                                     width="100%",
                                 ),
                                 spacing="1",
                                 align="start",
                                 width="100%",
                             ),
-                            
                             # Fechas (en dos columnas)
                             rx.grid(
                                 rx.vstack(
@@ -157,7 +161,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                         required=True,
                                         value=ContratosState.form_data.get("fecha_inicio", ""),
                                         on_change=ContratosState.on_change_fecha_inicio,
-                                        variant="surface"
+                                        variant="surface",
                                     ),
                                     spacing="1",
                                     width="100%",
@@ -171,7 +175,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                         required=True,
                                         value=ContratosState.form_data.get("fecha_fin", ""),
                                         on_change=ContratosState.on_change_fecha_fin,
-                                        variant="surface"
+                                        variant="surface",
                                     ),
                                     spacing="1",
                                     width="100%",
@@ -180,7 +184,6 @@ def contrato_arrendamiento_form() -> rx.Component:
                                 spacing="4",
                                 width="100%",
                             ),
-                            
                             # Duración en meses
                             rx.vstack(
                                 rx.text("Duración (meses) *", size="2", weight="bold"),
@@ -193,13 +196,12 @@ def contrato_arrendamiento_form() -> rx.Component:
                                     required=True,
                                     min=1,
                                     value=ContratosState.form_data.get("duracion_meses", "12"),
-                                    variant="surface"
+                                    variant="surface",
                                 ),
                                 spacing="1",
                                 align="start",
                                 width="100%",
                             ),
-                            
                             # Canon y Depósito
                             rx.grid(
                                 rx.vstack(
@@ -214,7 +216,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                         min=0,
                                         value=ContratosState.form_data.get("canon", ""),
                                         on_change=ContratosState.on_change_canon_arriendo,
-                                        variant="surface"
+                                        variant="surface",
                                     ),
                                     spacing="1",
                                     width="100%",
@@ -228,8 +230,10 @@ def contrato_arrendamiento_form() -> rx.Component:
                                         placeholder="1000000",
                                         min=0,
                                         value=ContratosState.form_data.get("deposito", "0"),
-                                        on_change=lambda v: ContratosState.set_form_field("deposito", v),
-                                        variant="surface"
+                                        on_change=lambda v: ContratosState.set_form_field(
+                                            "deposito", v
+                                        ),
+                                        variant="surface",
                                     ),
                                     spacing="1",
                                     width="100%",
@@ -238,11 +242,9 @@ def contrato_arrendamiento_form() -> rx.Component:
                                 spacing="4",
                                 width="100%",
                             ),
-                            
                             spacing="4",
                             width="100%",
                         ),
-                        
                         # Botones (Footer)
                         rx.flex(
                             rx.dialog.close(
@@ -260,7 +262,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                     rx.hstack(
                                         rx.icon("save", size=18),
                                         rx.text("Guardar Contrato"),
-                                        spacing="2"
+                                        spacing="2",
                                     ),
                                 ),
                                 type="submit",
@@ -271,66 +273,63 @@ def contrato_arrendamiento_form() -> rx.Component:
                                     "_hover": {
                                         "opacity": 0.9,
                                         "transform": "translateY(-1px)",
-                                    }
-                                }
+                                    },
+                                },
                             ),
                             spacing="3",
                             margin_top="2rem",
                             justify="end",
                             width="100%",
                         ),
-                        
                         on_submit=ContratosState.save_contrato,
                         reset_on_submit=True,
                     ),
                     value="datos",
                     padding_top="4",
                 ),
-
                 # TAB 2: DOCUMENTOS
                 rx.tabs.content(
                     rx.vstack(
                         rx.cond(
                             ContratosState.modal_mode == "crear_arrendamiento",
-                             rx.callout(
+                            rx.callout(
                                 "Guarde el contrato primero para subir documentos.",
                                 icon="info",
                                 color_scheme="blue",
-                                width="100%"
+                                width="100%",
                             ),
                             rx.vstack(
                                 document_manager_elite(ContratosState),
                                 rx.separator(),
                                 image_gallery(
                                     documentos=ContratosState.documentos,
-                                    on_delete=ContratosState.eliminar_documento
+                                    on_delete=ContratosState.eliminar_documento,
                                 ),
                                 spacing="4",
-                                width="100%"
-                            )
+                                width="100%",
+                            ),
                         ),
                         spacing="4",
-                        width="100%"
+                        width="100%",
                     ),
                     value="documentos",
                     padding_top="4",
                 ),
-                
                 default_value="datos",
                 width="100%",
             ),
-
             max_width="750px",
             border_radius="16px",
             padding="2rem",
         ),
         open=rx.cond(
-            (ContratosState.modal_open) & (
-                (ContratosState.modal_mode == "crear_arrendamiento") |
-                (ContratosState.modal_mode == "editar_arrendamiento")
+            (ContratosState.modal_open)
+            & (
+                (ContratosState.modal_mode == "crear_arrendamiento")
+                | (ContratosState.modal_mode == "editar_arrendamiento")
             ),
             True,
-            False
+            False,
         ),
         on_open_change=ContratosState.close_modal,
     )

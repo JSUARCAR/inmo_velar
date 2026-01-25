@@ -3,12 +3,13 @@ Modal Form para Crear Pólizas de Seguro
 """
 
 import reflex as rx
+
 from src.presentacion_reflex.state.seguros_state import SegurosState
 
 
 def modal_poliza() -> rx.Component:
     """Modal para crear póliza de seguro."""
-    
+
     return rx.dialog.root(
         rx.dialog.content(
             rx.dialog.title("Nueva Póliza de Seguro"),
@@ -17,7 +18,6 @@ def modal_poliza() -> rx.Component:
                 size="2",
                 margin_bottom="4",
             ),
-            
             rx.form(
                 rx.vstack(
                     # Error message
@@ -31,7 +31,6 @@ def modal_poliza() -> rx.Component:
                             width="100%",
                         ),
                     ),
-                    
                     # Número de Póliza *
                     rx.vstack(
                         rx.text("Número de Póliza *", size="2", weight="bold"),
@@ -45,7 +44,6 @@ def modal_poliza() -> rx.Component:
                         spacing="1",
                         width="100%",
                     ),
-                    
                     # Contrato ID *
                     rx.vstack(
                         rx.text("ID Contrato de Arrendamiento *", size="2", weight="bold"),
@@ -57,14 +55,11 @@ def modal_poliza() -> rx.Component:
                             width="100%",
                         ),
                         rx.text(
-                            "Ingrese el ID del contrato de arrendamiento",
-                            size="1",
-                            color="gray"
+                            "Ingrese el ID del contrato de arrendamiento", size="1", color="gray"
                         ),
                         spacing="1",
                         width="100%",
                     ),
-                    
                     # Seguro ID *
                     rx.vstack(
                         rx.text("ID Seguro *", size="2", weight="bold"),
@@ -75,15 +70,10 @@ def modal_poliza() -> rx.Component:
                             required=True,
                             width="100%",
                         ),
-                        rx.text(
-                            "Ingrese el ID del seguro a asignar",
-                            size="1",
-                            color="gray"
-                        ),
+                        rx.text("Ingrese el ID del seguro a asignar", size="1", color="gray"),
                         spacing="1",
                         width="100%",
                     ),
-                    
                     # Fecha Inicio y Fecha Fin (en fila)
                     rx.hstack(
                         rx.vstack(
@@ -113,7 +103,6 @@ def modal_poliza() -> rx.Component:
                         spacing="3",
                         width="100%",
                     ),
-                    
                     # Botones
                     rx.hstack(
                         rx.dialog.close(
@@ -135,14 +124,12 @@ def modal_poliza() -> rx.Component:
                         margin_top="4",
                         width="100%",
                     ),
-                    
                     spacing="4",
                     width="100%",
                 ),
                 on_submit=SegurosState.save_poliza,
                 width="100%",
             ),
-            
             max_width="550px",
             width="100%",
         ),

@@ -1,8 +1,8 @@
-
 import asyncio
-import io
-from typing import Optional, Tuple
+from typing import Optional
+
 from src.aplicacion.servicios.servicio_documental import ServicioDocumentalElite
+
 
 class ProcesadorDocumentosAsync:
     """
@@ -10,7 +10,7 @@ class ProcesadorDocumentosAsync:
     Maneja tareas pesadas como compresión de imágenes, generación de thumbnails,
     y OCR sin bloquear el hilo principal.
     """
-    
+
     def __init__(self):
         self.servicio_base = ServicioDocumentalElite()
 
@@ -21,13 +21,11 @@ class ProcesadorDocumentosAsync:
         """
         if "image" not in mime_type:
             return imagen_bytes
-            
+
         loop = asyncio.get_running_loop()
         # Ejecutar en thread pool por defecto
         optimized_bytes = await loop.run_in_executor(
-            None, 
-            self.servicio_base.comprimir_imagen,
-            imagen_bytes
+            None, self.servicio_base.comprimir_imagen, imagen_bytes
         )
         return optimized_bytes
 
@@ -37,13 +35,10 @@ class ProcesadorDocumentosAsync:
         """
         if "image" not in mime_type:
             return None
-            
+
         loop = asyncio.get_running_loop()
         thumb_bytes = await loop.run_in_executor(
-            None,
-            self.servicio_base.generar_thumbnail,
-            imagen_bytes,
-            mime_type
+            None, self.servicio_base.generar_thumbnail, imagen_bytes, mime_type
         )
         return thumb_bytes
 
@@ -53,8 +48,6 @@ class ProcesadorDocumentosAsync:
         """
         loop = asyncio.get_running_loop()
         texto = await loop.run_in_executor(
-            None,
-            self.servicio_base.extraer_texto_ocr,
-            documento_bytes
+            None, self.servicio_base.extraer_texto_ocr, documento_bytes
         )
         return texto
