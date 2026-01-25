@@ -35,14 +35,23 @@ from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
 
 
 class ServicioContratos:
-    def __init__(self, db_manager: DatabaseManager):
+    def __init__(
+        self,
+        db_manager: DatabaseManager,
+        repo_mandato: RepositorioContratoMandatoSQLite,
+        repo_arriendo: RepositorioContratoArrendamientoSQLite,
+        repo_propiedad: RepositorioPropiedadSQLite,
+        repo_renovacion: RepositorioRenovacionSQLite,
+        repo_ipc: RepositorioIPCSQLite,
+        repo_arrendatario: RepositorioArrendatarioSQLite,
+        repo_codeudor: RepositorioCodeudorSQLite
+    ):
         self.db = db_manager
-        # Instanciar repositorios concretos para inyectar en servicios especializados
-        self.repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-        self.repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-        self.repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-        self.repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-        self.repo_ipc = RepositorioIPCSQLite(db_manager)
+        self.repo_mandato = repo_mandato
+        self.repo_arriendo = repo_arriendo
+        self.repo_propiedad = repo_propiedad
+        self.repo_renovacion = repo_renovacion
+        self.repo_ipc = repo_ipc
 
         # Servicios especializados (SRP)
         self.servicio_mandato = ServicioContratoMandato(
@@ -52,9 +61,9 @@ class ServicioContratos:
             self.repo_arriendo, self.repo_propiedad, self.repo_renovacion, self.repo_ipc
         )
 
-        # Repositorios auxiliares (se mantienen para métodos no migrados aún)
-        self.repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-        self.repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+        # Repositorios auxiliares
+        self.repo_arrendatario = repo_arrendatario
+        self.repo_codeudor = repo_codeudor
 
     # =========================================================================
     # DROPDOWN HELPERS
