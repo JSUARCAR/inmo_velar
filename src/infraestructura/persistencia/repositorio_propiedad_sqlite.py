@@ -120,6 +120,44 @@ class RepositorioPropiedadSQLite:
 
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
+    def listar_sin_mandato(self) -> List[dict]:
+        """Retorna propiedades que no tienen mandato activo."""
+        query = """
+        SELECT p.ID_PROPIEDAD, p.MATRICULA_INMOBILIARIA, p.DIRECCION_PROPIEDAD, p.CANON_ARRENDAMIENTO_ESTIMADO
+        FROM PROPIEDADES p
+        WHERE p.ESTADO_REGISTRO = TRUE
+          AND NOT EXISTS (
+              SELECT 1 FROM CONTRATOS_MANDATOS cm
+              WHERE cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+                AND cm.ESTADO_CONTRATO_M = 'Activo'
+          )
+        ORDER BY p.MATRICULA_INMOBILIARIA
+        """
+        with self.db.obtener_conexion() as conn:
+            cursor = self.db.get_dict_cursor(conn)
+            cursor.execute(query)
+            return [dict(row) for row in cursor.fetchall()]
+
+    def listar_para_arrendamiento(self) -> List[dict]:
+        """Retorna propiedades con mandato activo y sin arriendo activo."""
+        query = """
+        SELECT p.ID_PROPIEDAD, p.MATRICULA_INMOBILIARIA, p.DIRECCION_PROPIEDAD, p.CANON_ARRENDAMIENTO_ESTIMADO
+        FROM PROPIEDADES p
+        JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD
+        WHERE p.ESTADO_REGISTRO = TRUE
+          AND cm.ESTADO_CONTRATO_M = 'Activo'
+          AND NOT EXISTS (
+              SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca
+              WHERE ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+                AND ca.ESTADO_CONTRATO_A = 'Activo'
+          )
+        ORDER BY p.MATRICULA_INMOBILIARIA
+        """
+        with self.db.obtener_conexion() as conn:
+            cursor = self.db.get_dict_cursor(conn)
+            cursor.execute(query)
+            return [dict(row) for row in cursor.fetchall()]
+
     def crear(self, propiedad: Propiedad, usuario_sistema: str) -> Propiedad:
         """
         Crea una nueva propiedad en la BD.
