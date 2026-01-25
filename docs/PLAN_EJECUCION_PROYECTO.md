@@ -37,7 +37,7 @@ Esta lista de tareas define la hoja de ruta operativa para elevar el proyecto `P
     - [x] Definir esquemas Pydantic estrictos para DTOs (Data Transfer Objects).
     - [x] Implementar validación de fronteras en controladores/servicios.
 
-## 🔧 Fase 3: Refactorización Arquitectónica
+## 🔧 Fase 3: Refactorización Arquitectónica [EN PROGRESO]
 **Objetivo**: Desacoplar componentes y facilitar la escalabilidad horizontal y vertical.
 
 - [ ] **Descomposición de Monolitos**
