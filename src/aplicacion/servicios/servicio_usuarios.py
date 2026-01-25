@@ -16,7 +16,16 @@ class ServicioUsuarios:
     ):
         self.db = db_manager
         self.repo = RepositorioUsuarioSQLite(db_manager)
-        self.auth_service = auth_service or ServicioAutenticacion(db_manager)
+
+        if auth_service:
+            self.auth_service = auth_service
+        else:
+            from src.infraestructura.persistencia.repositorio_sesion_sqlite import (
+                RepositorioSesionSQLite,
+            )
+
+            repo_sesion = RepositorioSesionSQLite(db_manager)
+            self.auth_service = ServicioAutenticacion(self.repo, repo_sesion)
 
     def listar_usuarios(self) -> List[Usuario]:
         """Obtiene todos los usuarios registrados."""
