@@ -22,8 +22,10 @@ except ImportError:
         DB_USER = os.getenv("DB_USER", "inmo_user")
         DB_PASSWORD = os.getenv("DB_PASSWORD", "7323")
 
+SQL_FILE = "src/infraestructura/db/migrations/fix_audit_postgres_v2.sql"
 
 try:
+    print(f"Connecting to PostgreSQL...")
     conn = psycopg2.connect(
         host=DB_HOST,
         port=DB_PORT,
@@ -31,43 +33,15 @@ try:
         user=DB_USER,
         password=DB_PASSWORD
     )
+    conn.autocommit = True 
     cursor = conn.cursor()
     
-    # Get all public tables
-    cursor.execute("""
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_type = 'BASE TABLE'
-        ORDER BY table_name
-    """)
-    tables = cursor.fetchall()
-    
-    print("--- Database Tables & Analyzed PKs ---")
-    
-    skipped_tables = ['auditoria_cambios', 'alembic_version', 'spatial_ref_sys']
-    
-    for t in tables:
-        table_name = t[0]
-        if table_name in skipped_tables:
-            continue
-            
-        # Try to guess PK or find ID column
-        # Usually ID_{TABLE_NAME_SINGULAR} or ID_{TABLE_NAME}
-        
-        cursor.execute(f"""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name = '{table_name}' 
-            AND column_name LIKE 'id_%'
-            ORDER BY ordinal_position
-            LIMIT 1
-        """)
-        col = cursor.fetchone()
-        pk_col = col[0] if col else "UNKNOWN"
-        
-        print(f"Table: {table_name:<30} | PK Guess: {pk_col}")
+    with open(SQL_FILE, 'r', encoding='utf-8') as f:
+        sql = f.read()
 
+    print("Executing V2 Fix...")
+    cursor.execute(sql)
+    print("[SUCCESS] V2 Fix Applied.")
     conn.close()
 
 except Exception as e:
