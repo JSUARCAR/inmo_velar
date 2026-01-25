@@ -3,9 +3,10 @@ Repositorio SQLite: ContratoMandato
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.contrato_mandato import ContratoMandato
+from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
@@ -86,33 +87,96 @@ class RepositorioContratoMandatoSQLite:
 
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
-    def listar_por_propietario_activos(self, id_propietario: int) -> List[ContratoMandato]:
-        conn = self.db.obtener_conexion()
-        cursor = self.db.get_dict_cursor(conn)
-        placeholder = self.db.get_placeholder()
-        cursor.execute(
-            f"""
-        SELECT * FROM CONTRATOS_MANDATOS 
-        WHERE ID_PROPIEDAD = {placeholder} AND ESTADO_CONTRATO_M = 'Activo'
-        ORDER BY ID_CONTRATO_M
-        """,
-            (id_propietario,),
-        )  # ERROR EN ORIGINAL: WHERE ID_PROPIEDAD = id_propietario, pero el método se llama listar_por_propietario_activos y el argumento es id_propietario.
-        # El query original decía WHERE ID_PROPIETARIO = {placeholder}.
-        # Y pasaba (id_propietario,). Eso es correcto.
-        # Pero mi código arriba puso ID_PROPIEDAD. Corrijo a ID_PROPIETARIO.
+    def listar_paginado(
+        self,
+        page: int = 1,
+        page_size: int = 25,
+        estado: Optional[str] = None,
+        busqueda: Optional[str] = None,
+        id_asesor: Optional[str] = None,
+    ) -> PaginatedResult:
+        """Lista contratos de mandato con paginación y filtros."""
+        params = PaginationParams(page=page, page_size=page_size)
 
-        # Corrección:
-        cursor.execute(
-            f"""
-        SELECT * FROM CONTRATOS_MANDATOS 
-        WHERE ID_PROPIETARIO = {placeholder} AND ESTADO_CONTRATO_M = 'Activo'
-        ORDER BY ID_CONTRATO_M
-        """,
-            (id_propietario,),
-        )
+        with self.db.obtener_conexion() as conn:
+            cursor = self.db.get_dict_cursor(conn)
+            placeholder = self.db.get_placeholder()
 
-        return [self._row_to_entity(row) for row in cursor.fetchall()]
+            base_from = """
+                FROM CONTRATOS_MANDATOS cm
+                JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+                JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
+                JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+            """
+
+            conditions = []
+            query_params = []
+
+            if estado and estado != "Todos":
+                if estado == "Activo":
+                    conditions.append("cm.ESTADO_CONTRATO_M = 'Activo'")
+                elif estado == "Cancelado":
+                    conditions.append("cm.ESTADO_CONTRATO_M != 'Activo'")
+                else:
+                    conditions.append(f"cm.ESTADO_CONTRATO_M = {placeholder}")
+                    query_params.append(estado)
+
+            if busqueda:
+                conditions.append(
+                    f"(p.DIRECCION_PROPIEDAD LIKE {placeholder} OR "
+                    f"per.NOMBRE_COMPLETO LIKE {placeholder} OR "
+                    f"per.NUMERO_DOCUMENTO LIKE {placeholder})"
+                )
+                term = f"%{busqueda}%"
+                query_params.extend([term, term, term])
+
+            if id_asesor:
+                conditions.append(f"cm.ID_ASESOR = {placeholder}")
+                query_params.append(int(id_asesor))
+
+            where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+
+            # 1. Count
+            count_query = f"SELECT COUNT(*) as TOTAL {base_from} {where_clause}"
+            cursor.execute(count_query, query_params)
+            total = cursor.fetchone()["TOTAL"]
+
+            # 2. Data
+            data_query = f"""
+                SELECT 
+                    cm.ID_CONTRATO_M,
+                    cm.ESTADO_CONTRATO_M,
+                    cm.CANON_MANDATO,
+                    cm.FECHA_INICIO_CONTRATO_M,
+                    cm.FECHA_FIN_CONTRATO_M,
+                    p.DIRECCION_PROPIEDAD,
+                    per.NOMBRE_COMPLETO as PROPIETARIO,
+                    per.NUMERO_DOCUMENTO
+                {base_from}
+                {where_clause}
+                ORDER BY cm.ID_CONTRATO_M DESC
+                LIMIT {placeholder} OFFSET {placeholder}
+            """
+
+            cursor.execute(data_query, query_params + [params.page_size, params.offset])
+
+            items = [
+                {
+                    "id": row["ID_CONTRATO_M"],
+                    "estado": row["ESTADO_CONTRATO_M"],
+                    "canon": row["CANON_MANDATO"],
+                    "fecha_inicio": row["FECHA_INICIO_CONTRATO_M"],
+                    "fecha_fin": row["FECHA_FIN_CONTRATO_M"],
+                    "propiedad": row["DIRECCION_PROPIEDAD"],
+                    "propietario": row["PROPIETARIO"],
+                    "documento_propietario": row["NUMERO_DOCUMENTO"],
+                }
+                for row in cursor.fetchall()
+            ]
+
+            return PaginatedResult(
+                items=items, total=total, page=params.page, page_size=params.page_size
+            )
 
     def actualizar(self, contrato: ContratoMandato, usuario: str) -> None:
         conn = self.db.obtener_conexion()

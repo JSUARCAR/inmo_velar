@@ -3,9 +3,10 @@ Repositorio SQLite: ContratoArrendamiento
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
+from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
@@ -139,6 +140,100 @@ class RepositorioContratoArrendamientoSQLite:
         cursor.execute("SELECT * FROM CONTRATOS_ARRENDAMIENTOS ORDER BY ID_CONTRATO_A DESC")
 
         return [self._row_to_entity(row) for row in cursor.fetchall()]
+
+    def listar_paginado(
+        self,
+        page: int = 1,
+        page_size: int = 25,
+        estado: Optional[str] = None,
+        busqueda: Optional[str] = None,
+        id_asesor: Optional[str] = None,
+    ) -> PaginatedResult:
+        """Lista contratos de arrendamiento con paginación y filtros."""
+        params = PaginationParams(page=page, page_size=page_size)
+
+        with self.db.obtener_conexion() as conn:
+            cursor = self.db.get_dict_cursor(conn)
+            placeholder = self.db.get_placeholder()
+
+            base_from = """
+                FROM CONTRATOS_ARRENDAMIENTOS ca
+                JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+                JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+                JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+            """
+
+            conditions = []
+            query_params = []
+
+            if estado and estado != "Todos":
+                if estado == "Activo":
+                    conditions.append("ca.ESTADO_CONTRATO_A = 'Activo'")
+                elif estado == "Cancelado":
+                    conditions.append("ca.ESTADO_CONTRATO_A != 'Activo'")
+                else:
+                    conditions.append(f"ca.ESTADO_CONTRATO_A = {placeholder}")
+                    query_params.append(estado)
+
+            if busqueda:
+                conditions.append(
+                    f"(p.DIRECCION_PROPIEDAD LIKE {placeholder} OR "
+                    f"per.NOMBRE_COMPLETO LIKE {placeholder} OR "
+                    f"per.NUMERO_DOCUMENTO LIKE {placeholder})"
+                )
+                term = f"%{busqueda}%"
+                query_params.extend([term, term, term])
+
+            if id_asesor:
+                # Arrendamientos no tienen ID_ASESOR directo, se filtra por el mandato asociado
+                conditions.append(
+                    f"EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm WHERE cm.ID_PROPIEDAD = ca.ID_PROPIEDAD AND cm.ID_ASESOR = {placeholder})"
+                )
+                query_params.append(int(id_asesor))
+
+            where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+
+            # 1. Count
+            count_query = f"SELECT COUNT(*) as TOTAL {base_from} {where_clause}"
+            cursor.execute(count_query, query_params)
+            total = cursor.fetchone()["TOTAL"]
+
+            # 2. Data
+            data_query = f"""
+                SELECT 
+                    ca.ID_CONTRATO_A,
+                    ca.ESTADO_CONTRATO_A,
+                    ca.CANON_ARRENDAMIENTO,
+                    ca.FECHA_INICIO_CONTRATO_A,
+                    ca.FECHA_FIN_CONTRATO_A,
+                    p.DIRECCION_PROPIEDAD,
+                    per.NOMBRE_COMPLETO as ARRENDATARIO,
+                    per.NUMERO_DOCUMENTO
+                {base_from}
+                {where_clause}
+                ORDER BY ca.ID_CONTRATO_A DESC
+                LIMIT {placeholder} OFFSET {placeholder}
+            """
+
+            cursor.execute(data_query, query_params + [params.page_size, params.offset])
+
+            items = [
+                {
+                    "id": row["ID_CONTRATO_A"],
+                    "estado": row["ESTADO_CONTRATO_A"],
+                    "canon": row["CANON_ARRENDAMIENTO"],
+                    "fecha_inicio": row["FECHA_INICIO_CONTRATO_A"],
+                    "fecha_fin": row["FECHA_FIN_CONTRATO_A"],
+                    "propiedad": row["DIRECCION_PROPIEDAD"],
+                    "arrendatario": row["ARRENDATARIO"],
+                    "documento_arrendatario": row["NUMERO_DOCUMENTO"],
+                }
+                for row in cursor.fetchall()
+            ]
+
+            return PaginatedResult(
+                items=items, total=total, page=params.page, page_size=params.page_size
+            )
 
     def actualizar(self, contrato: ContratoArrendamiento, usuario: str) -> None:
         conn = self.db.obtener_conexion()
