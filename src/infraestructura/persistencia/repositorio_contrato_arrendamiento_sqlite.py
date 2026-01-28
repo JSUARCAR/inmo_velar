@@ -207,6 +207,7 @@ class RepositorioContratoArrendamientoSQLite:
                     ca.FECHA_INICIO_CONTRATO_A,
                     ca.FECHA_FIN_CONTRATO_A,
                     p.DIRECCION_PROPIEDAD,
+                    p.TIPO_PROPIEDAD,
                     per.NOMBRE_COMPLETO as ARRENDATARIO,
                     per.NUMERO_DOCUMENTO
                 {base_from}
@@ -225,6 +226,7 @@ class RepositorioContratoArrendamientoSQLite:
                     "fecha_inicio": row["FECHA_INICIO_CONTRATO_A"],
                     "fecha_fin": row["FECHA_FIN_CONTRATO_A"],
                     "propiedad": row["DIRECCION_PROPIEDAD"],
+                    "tipo_propiedad": row["TIPO_PROPIEDAD"],
                     "arrendatario": row["ARRENDATARIO"],
                     "documento_arrendatario": row["NUMERO_DOCUMENTO"],
                 }
