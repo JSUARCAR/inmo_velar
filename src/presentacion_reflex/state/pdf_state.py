@@ -542,8 +542,33 @@ class PDFState(rx.State):
         """
         from src.aplicacion.servicios.servicio_contratos import ServicioContratos
         from src.infraestructura.persistencia.database import db_manager
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
+        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+        from src.infraestructura.persistencia.repositorio_renovacion_sqlite import RepositorioRenovacionSQLite
+        from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+        from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
+        from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
 
-        servicio = ServicioContratos(db_manager)
+        # Instanciar repositorios requeridos
+        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+        repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+        repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+        repo_ipc = RepositorioIPCSQLite(db_manager)
+        repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+        repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+
+        servicio = ServicioContratos(
+            db_manager,
+            repo_mandato,
+            repo_arriendo,
+            repo_propiedad,
+            repo_renovacion,
+            repo_ipc,
+            repo_arrendatario,
+            repo_codeudor
+        )
 
         # Obtener detalles del contrato de arrendamiento desde la DB
         detalle = servicio.obtener_detalle_contrato_ui(contrato_id, "Arrendamiento")
@@ -551,10 +576,20 @@ class PDFState(rx.State):
         if not detalle:
             raise ValueError(f"Contrato {contrato_id} no encontrado")
 
+        from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
+        
+        # Obtener configuración de empresa para el logo
+        servicio_config = ServicioConfiguracion(db_manager)
+        config_empresa = servicio_config.obtener_configuracion_empresa()
+        logo_data = config_empresa.logo_base64 if config_empresa else None
+        
         # Transformar el formato de la BD al formato esperado por el generador PDF
         return {
             "contrato_id": detalle["id"],
+            "logo_base64": logo_data, # Logo inyectado
             "fecha": detalle["fecha_inicio"],
+            "fecha_inicio": detalle["fecha_inicio"],
+            "fecha_fin": detalle["fecha_fin"],
             "estado": detalle["estado"],
             "arrendador": {
                 "nombre": detalle.get("propietario", "N/A"),
@@ -565,15 +600,23 @@ class PDFState(rx.State):
             },
             "arrendatario": {
                 "nombre": detalle.get("arrendatario", "N/A"),
-                "documento": detalle.get("documento_arrendatario", "N/A"),
-                "telefono": detalle.get("telefono_arrendatario", "N/A"),
-                "email": detalle.get("email_arrendatario", "N/A"),
+                "documento": detalle.get("documento", "N/A"),
+                "telefono": detalle.get("telefono", "N/A"),
+                "email": detalle.get("email", "N/A"),
                 "direccion": detalle.get("direccion_arrendatario", "N/A"),
             },
+            "codeudor": {
+                "nombre": detalle.get("codeudor", "N/A"),
+                "documento": detalle.get("documento_codeudor", "N/A"),
+                "telefono": detalle.get("telefono_codeudor", "N/A"),
+                "email": detalle.get("email_codeudor", "N/A"),
+                "direccion": detalle.get("direccion_codeudor", "N/A"),
+            },
             "inmueble": {
-                "direccion": detalle.get("propiedad", "N/A"),
+                "direccion": detalle.get("direccion", "N/A"),
+                "matricula_inmobiliaria": detalle.get("matricula", "N/A"),
                 "tipo": detalle.get("tipo_propiedad", "Apartamento"),
-                "area": str(detalle.get("area", "0")),
+                "area": str(detalle.get("area_m2", "0")),
                 "habitaciones": "0",  # TODO: Agregar a la query si está disponible
                 "banos": "0",  # TODO: Agregar a la query si está disponible
                 "estrato": "0",  # TODO: Agregar a la query si está disponible
@@ -581,9 +624,9 @@ class PDFState(rx.State):
             "condiciones": {
                 "canon": detalle.get("canon", 0),
                 "duracion_meses": detalle.get("duracion", 12),
-                "dia_pago": detalle.get("dia_pago", 5),
+                "dia_pago": 5,  # Default, not in result set directly yet? Check query. Query has logic? No field dia_pago in query.
                 "deposito": detalle.get("deposito", 0),
-                "administracion": detalle.get("administracion", 0),
+                "administracion": 0, # Not in query explicitly
             },
         }
 
@@ -593,8 +636,33 @@ class PDFState(rx.State):
         """
         from src.aplicacion.servicios.servicio_contratos import ServicioContratos
         from src.infraestructura.persistencia.database import db_manager
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
+        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+        from src.infraestructura.persistencia.repositorio_renovacion_sqlite import RepositorioRenovacionSQLite
+        from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+        from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
+        from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
 
-        servicio = ServicioContratos(db_manager)
+        # Instanciar repositorios requeridos
+        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+        repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+        repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+        repo_ipc = RepositorioIPCSQLite(db_manager)
+        repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+        repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+
+        servicio = ServicioContratos(
+            db_manager,
+            repo_mandato,
+            repo_arriendo,
+            repo_propiedad,
+            repo_renovacion,
+            repo_ipc,
+            repo_arrendatario,
+            repo_codeudor
+        )
 
         # Obtener detalles del contrato de mandato desde la DB
         detalle = servicio.obtener_detalle_contrato_ui(contrato_id, "Mandato")

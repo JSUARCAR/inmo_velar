@@ -750,8 +750,12 @@ class ServicioContratos:
                 per_arr.NUMERO_DOCUMENTO as DOC_ARRENDATARIO,
                 per_arr.TELEFONO_PRINCIPAL as TEL_ARRENDATARIO,
                 per_arr.CORREO_ELECTRONICO as EMAIL_ARRENDATARIO,
+                per_arr.DIRECCION_PRINCIPAL as DIR_ARRENDATARIO,
                 per_code.NOMBRE_COMPLETO as CODEUDOR,
-                per_code.NUMERO_DOCUMENTO as DOC_CODEUDOR
+                per_code.NUMERO_DOCUMENTO as DOC_CODEUDOR,
+                per_code.TELEFONO_PRINCIPAL as TEL_CODEUDOR,
+                per_code.CORREO_ELECTRONICO as EMAIL_CODEUDOR,
+                per_code.DIRECCION_PRINCIPAL as DIR_CODEUDOR
             FROM CONTRATOS_ARRENDAMIENTOS ca
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
             JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
@@ -793,9 +797,13 @@ class ServicioContratos:
                     "documento": row["DOC_ARRENDATARIO"],
                     "telefono": row["TEL_ARRENDATARIO"] or "N/A",
                     "email": row["EMAIL_ARRENDATARIO"] or "N/A",
+                    "direccion_arrendatario": row["DIR_ARRENDATARIO"] or "N/A",
                     # Codeudor
                     "codeudor": row["CODEUDOR"] or "N/A",
                     "documento_codeudor": row["DOC_CODEUDOR"] or "N/A",
+                    "telefono_codeudor": row["TEL_CODEUDOR"] or "N/A",
+                    "email_codeudor": row["EMAIL_CODEUDOR"] or "N/A",
+                    "direccion_codeudor": row["DIR_CODEUDOR"] or "N/A",
                 }
 
     def listar_arrendamientos_por_vencimiento(
