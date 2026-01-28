@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import A4, letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
@@ -198,7 +198,7 @@ class ReportLabGenerator(BasePDFGenerator):
                 parent=base_styles["Normal"],
                 fontSize=Fonts.SIZE_BODY,
                 spaceAfter=6,
-                alignment=TA_LEFT,  # Changed from TA_JUSTIFY to fix ReportLab bug
+                alignment=TA_JUSTIFY,
                 fontName=Fonts.BODY,
                 leading=Fonts.get_leading(Fonts.SIZE_BODY, "normal"),
             ),
@@ -207,7 +207,7 @@ class ReportLabGenerator(BasePDFGenerator):
                 parent=base_styles["Normal"],
                 fontSize=Fonts.SIZE_BODY,
                 spaceAfter=6,
-                alignment=TA_LEFT,  # Changed from TA_JUSTIFY to fix ReportLab bug
+                alignment=TA_JUSTIFY,
                 fontName="Helvetica-Bold",  # Usar fuente estándar
                 leading=Fonts.get_leading(Fonts.SIZE_BODY, "normal"),
             ),
@@ -291,7 +291,7 @@ class ReportLabGenerator(BasePDFGenerator):
                     "left": TA_LEFT,
                     "center": TA_CENTER,
                     "right": TA_RIGHT,
-                    "justify": TA_LEFT,  # Usar LEFT en lugar de JUSTIFY para evitar bug
+                    "justify": TA_JUSTIFY,
                 }
                 align_val = style_overrides["alignment"]
                 if isinstance(align_val, str):
