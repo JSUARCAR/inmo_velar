@@ -22,7 +22,10 @@ from .pdf_elite.core.config import config
 from .pdf_elite.templates.certificado_template import CertificadoTemplate
 
 # Importar nuevos templates élite
+# Importar nuevos templates élite
 from .pdf_elite.templates.contrato_template import ContratoArrendamientoElite
+from .pdf_elite.templates.contrato_template_local import ContratoArrendamientoElite as ContratoLocalElite
+from .pdf_elite.templates.contrato_template_mandato import ContratoMandatoElite
 from .pdf_elite.templates.estado_cuenta_elite import EstadoCuentaElite
 
 
@@ -65,6 +68,8 @@ class ServicioPDFFacade:
 
         # Generadores élite (lazy initialization)
         self._contrato_gen: Optional[ContratoArrendamientoElite] = None
+        self._contrato_local_gen: Optional[ContratoLocalElite] = None
+        self._contrato_mandato_gen: Optional[ContratoMandatoElite] = None
         self._certificado_gen: Optional[CertificadoTemplate] = None
         self._estado_cuenta_gen: Optional[EstadoCuentaElite] = None
 
@@ -154,16 +159,46 @@ class ServicioPDFFacade:
         logger.debug(f"🎯 Template type: {'borrador' if usar_borrador else 'oficial'}")
         logger.debug(f"📂 Output directory: {self.output_dir}")
 
-        # Lazy initialization del generador
-        if not self._contrato_gen:
-            self._contrato_gen = ContratoArrendamientoElite(self.output_dir)
+        # Determinación de tipo de contrato y propiedad
+        tipo_contrato = datos.get("tipo_contrato", "Arrendamiento")
+        tipo_propiedad = datos.get("inmueble", {}).get("tipo", "")
+        
+        logger.debug(f"📋 Contract Type: {tipo_contrato}")
+        logger.debug(f"🏠 Property Type: {tipo_propiedad}")
+
+        generator = None
+
+        # Lógica de selección de plantilla
+        # Lógica de selección de plantilla
+        if tipo_contrato.upper() == "MANDATO":
+            # Safety check for hot-reload scenarios using getattr
+            if not getattr(self, "_contrato_mandato_gen", None):
+                self._contrato_mandato_gen = ContratoMandatoElite(self.output_dir)
+            generator = self._contrato_mandato_gen
+            
+        elif tipo_contrato == "Arrendamiento":
+            if tipo_propiedad == "Local Comercial":
+                if not getattr(self, "_contrato_local_gen", None):
+                    self._contrato_local_gen = ContratoLocalElite(self.output_dir)
+                generator = self._contrato_local_gen
+            else:
+                # Default Arrendamiento (Vivienda/Otros)
+                if not getattr(self, "_contrato_gen", None):
+                    self._contrato_gen = ContratoArrendamientoElite(self.output_dir)
+                generator = self._contrato_gen
+        else:
+            # Fallback a Arrendamiento estándar si no coincide nada
+            logger.warning(f"⚠️ Tipo de contrato desconocido: {tipo_contrato}. Usando estándar.")
+            if not self._contrato_gen:
+                self._contrato_gen = ContratoArrendamientoElite(self.output_dir)
+            generator = self._contrato_gen
 
         # Agregar estado si es borrador
         if usar_borrador:
             datos["estado"] = "borrador"
 
         # Generar contrato
-        path = self._contrato_gen.generate_safe(datos)
+        path = generator.generate_safe(datos)
 
         if not path:
             raise ValueError("Error generando contrato élite")
