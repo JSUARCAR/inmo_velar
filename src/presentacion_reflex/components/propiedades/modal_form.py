@@ -58,7 +58,7 @@ def step_1_content() -> rx.Component:
             form_field(
                 "Tipo de Propiedad",
                 rx.select(
-                    ["Casa", "Apartamento", "Bodega", "Local", "Lote", "Oficina", "Finca"],
+                    ["Casa", "Apartamento", "Local Comercial", "Bodega", "Oficina", "Lote"],
                     value=PropiedadesState.form_data["tipo_propiedad"],
                     on_change=lambda v: PropiedadesState.set_form_field("tipo_propiedad", v),
                     variant="surface",
