@@ -150,6 +150,7 @@ class RepositorioContratoMandatoSQLite:
                     cm.FECHA_INICIO_CONTRATO_M,
                     cm.FECHA_FIN_CONTRATO_M,
                     p.DIRECCION_PROPIEDAD,
+                    p.TIPO_PROPIEDAD,
                     per.NOMBRE_COMPLETO as PROPIETARIO,
                     per.NUMERO_DOCUMENTO
                 {base_from}
@@ -168,6 +169,7 @@ class RepositorioContratoMandatoSQLite:
                     "fecha_inicio": row["FECHA_INICIO_CONTRATO_M"],
                     "fecha_fin": row["FECHA_FIN_CONTRATO_M"],
                     "propiedad": row["DIRECCION_PROPIEDAD"],
+                    "tipo_propiedad": row["TIPO_PROPIEDAD"],
                     "propietario": row["PROPIETARIO"],
                     "documento_propietario": row["NUMERO_DOCUMENTO"],
                 }

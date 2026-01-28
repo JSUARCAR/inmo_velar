@@ -255,6 +255,9 @@ def contratos_page() -> rx.Component:
                                         "Tipo", style={"font-weight": "600"}
                                     ),
                                     rx.table.column_header_cell(
+                                        "Tipo Propiedad", style={"font-weight": "600"}
+                                    ),
+                                    rx.table.column_header_cell(
                                         "Propiedad", style={"font-weight": "600"}
                                     ),
                                     rx.table.column_header_cell(
@@ -291,6 +294,13 @@ def contratos_page() -> rx.Component:
                                                     "green",
                                                 ),
                                             ),
+                                        ),
+                                        rx.table.cell(
+                                            rx.text(
+                                                contrato.get("tipo_propiedad", ""),
+                                                size="2",
+                                                color="gray",
+                                            )
                                         ),
                                         rx.table.cell(
                                             rx.text(

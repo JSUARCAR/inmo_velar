@@ -45,6 +45,13 @@ def contrato_card(contrato: dict) -> rx.Component:
                     weight="bold",
                     color="var(--gray-12)",
                 ),
+                rx.badge(
+                    contrato.get("tipo_propiedad", ""),
+                    variant="soft",
+                    color_scheme="indigo",
+                    size="1",
+                    radius="full",
+                ),
                 rx.text(
                     f"ID: {contrato['id']}",
                     size="1",
