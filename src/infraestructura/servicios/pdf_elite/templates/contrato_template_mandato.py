@@ -10,6 +10,7 @@ Fecha: 2026-01-25
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
 
@@ -26,7 +27,7 @@ class ContratoMandatoElite(BaseDocumentTemplate):
     Características:
     - 25 Cláusulas exactas del formato legal.
     - Cabecera y Pie de página persistentes.
-    - Mapeo dinámico de datos (Arrendatario, Inmueble, Codeudor).
+    - Mapeo dinámico de datos (Mandante, Inmueble).
     - Arrendador corporativo fijo.
     """
 
@@ -278,13 +279,13 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         
         # 5. Texto de Cierre Legal
         self.add_paragraph(
-            "El presente contrato de arrendamiento se regirá por las normas establecidas en la Ley 820 de 2003... "
-            "(ESTO SOLO SI SE TRATA DE PROPIEDAD HORIZONTAL).",
+            "El presente contrato de arrendamiento se regirá por las normas establecidas en la <b>Ley 820 de 2003</b>... "
+            "<i><b>(ESTO SOLO SI SE TRATA DE PROPIEDAD HORIZONTAL).</b></i>",
             style_name="Body"
         )
         self.add_spacer(0.2)
         self.add_paragraph(
-            f"Para constancia de lo anterior se firma el día {data['fecha']}, en dos ejemplares de un mismo tenor literal ordenado por la Ley."
+            f"Para constancia de lo anterior se firma el día <b>{self._format_fecha_es(data.get('fecha', ''))}</b>, en dos ejemplares de un mismo tenor literal ordenado por la Ley."
         )
         self.add_spacer(0.5)
         
@@ -309,37 +310,61 @@ class ContratoMandatoElite(BaseDocumentTemplate):
 
         # Construcción de filas simulando el layout visual
         
-        # Dirección Inmueble
+        # Dirección Inmueble (Manejo de N/A gracefully)
+        direccion_inmueble = inmueble.get('direccion', 'N/A')
+        municipio = inmueble.get('municipio', 'ARMENIA')
+        departamento = inmueble.get('departamento', 'QUINDÍO')
+        direccion_full = f"{direccion_inmueble}<br/>{municipio}, {departamento}"
         row_inm = [
-            [p_kw("DIRECCIÓN DEL INMUEBLE:"), p_val(inmueble['direccion'])]
+            [p_kw("DIRECCIÓN DEL INMUEBLE:"), p_val(direccion_full)]
         ]
 
         # Mandatario (Inmobiliaria)
         # Usamos datos quemados si no vienen, o los del objeto
         nombre_inmo = mandatario.get('nombre', "INMOBILIARIA VELAR S.A.S.")
         nit_inmo = mandatario.get('nit', "901703515-7")
+        rep_legal = mandatario.get('representante', "CRISTIAN FERNANDO JAMIOY FONSECA")
+        rep_doc = mandatario.get('documento_rep', "1.094.959.215")
+        
+        contenido_mandatario = (
+            f"{nombre_inmo}<br/>"
+            f"NIT: {nit_inmo}<br/>"
+            f"REP. {rep_legal}<br/>"
+            f"C.C.: {rep_doc}"
+        )
         
         row_arr = [
-            [p_kw("MANDATARIO:"), p_val(f"{nombre_inmo}<br/>NIT: {nit_inmo}")]
+            [p_kw("MANDATARIO:"), p_val(contenido_mandatario)]
         ]
         
         # Mandante (Propietario)
+        # Asegurar que si viene N/A se muestre algo decente o se mantenga
+        nombre_mandante = mandante.get('nombre', 'N/A')
+        doc_mandante = mandante.get('documento', 'N/A')
+        
         row_user = [
-            [p_kw("MANDANTE:"), p_val(f"{mandante['nombre']}<br/>C.C. {mandante['documento']}")]
+            [p_kw("MANDANTE:"), p_val(f"{nombre_mandante}<br/>C.C. {doc_mandante}")]
         ]
         
         # Condiciones
         comision_fmt = f"${cond.get('comision', 0):,.0f}".replace(",", ".")
+        canon_fmt = f"${cond.get('valor_canon_sugerido', 0):,.0f}".replace(",", ".")
         duracion = f"{cond.get('duracion_meses', 12)} Meses"
+        
+        # Fechas
+        fecha_inicio = self._format_fecha_es(data.get('fecha_inicio', 'N/A'))
+        fecha_fin = self._format_fecha_es(data.get('fecha_fin', 'N/A'))
         
         # Renderizar tabla
         data_table = []
         data_table.append(row_inm[0])
         data_table.append(row_arr[0])
         data_table.append(row_user[0])
-        data_table.append([p_kw("DURACIÓN:"), p_val(duracion)])
-        data_table.append([p_kw("COMISIÓN:"), p_val(comision_fmt)])
-        data_table.append([p_kw("FECHA:"), p_val(data['fecha'])])
+        data_table.append([p_kw("CANON MANDATO:"), p_val(canon_fmt)])
+        data_table.append([p_kw("FECHA DE INICIO DEL CONTRATO:"), p_val(fecha_inicio)])
+        data_table.append([p_kw("FECHA DE TERMINACIÓN DEL CONTRATO:"), p_val(fecha_fin)])
+        data_table.append([p_kw("DURACIÓN DEL CONTRATO:"), p_val(duracion)])
+        # data_table.append([p_kw("FECHA:"), p_val(data['fecha'])]) # Redundante si ya están inicio/fin? El diseño original tenía FECHA simple. Dejar opcional o quitar si confunde. En la imagen de "Faltan datos" se veía FECHA pero faltaba inicio/fin. Dejaremos inicio/fin explícitos.
 
         t = Table(data_table, colWidths=[150, 300])
         t.setStyle(TableStyle([
@@ -360,28 +385,24 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         # Se mapean roles de Mandato a los placeholders de arriendo para que se llene
         
         mapeo = {
-            "[DIRECCION PREDIO]": data['inmueble']['direccion'].upper(),
+            "[DIRECCION PREDIO]": data['inmueble'].get('direccion', 'N/A').upper(),
             "[MATRICULA INMOBILIARIA]": data['inmueble'].get('matricula_inmobiliaria', 'N/A'),
-            "[FECHA ACTUAL DEL SISTEMA]": data['fecha'],
-            # Mapeos de roles
-            "[NOMBRE ARRENDATARIO]": mandante['nombre'].upper(), # Mapeamos Mandante a Arrendatario en el texto por compatibilidad
-            "[NUMERO DE DOCUMENTO]": mandante['documento'],
-            "[DOCUMENTO ARRENDATARIO]": mandante['documento'],
-            "[DIRECCION ARRENDATARIO]": mandante.get('direccion', 'N/A'),
-            "[TELEFONO ARRENDATARIO]": mandante['telefono'],
-            "[CORREO ARRENDATARIO]": mandante['email'],
+            "[FECHA ACTUAL DEL SISTEMA]": self._format_fecha_es(data.get('fecha', 'N/A')),
+            # Mapeos de roles - MANDANTE (Propietario)
+            "[NOMBRE PROPIETARIO]": mandante.get('nombre', 'N/A').upper(),
+            "[TELEFONO PROPIETARIO]": mandante.get('telefono', 'N/A'),
+            "[CORREO PROPIETARIO]": mandante.get('email', 'N/A'),
             
-            # Limpiar codeudor en texto
-            "[NOMBRE CODEUDOR]": "N/A",
-            "[DOCUMENTO CODEUDOR]": "N/A",
-            "[DIRECCION CODEUDOR]": "N/A",
-            "[TELEFONO CODEUDOR]": "N/A",
-            "[CORREO CODEUDOR]": "N/A",
+            # Datos Bancarios (con fallback seguro)
+            "[BANCO PROPIETARIO]": mandante.get('banco', '___BANCO___'),
+            "[TIPO DE CUENTA PROPIETARIO]": mandante.get('tipo_cuenta', '___TIPO___'),
+            "[NUMERO DE CUENTA PROPIETARIO]": mandante.get('numero_cuenta', '___NUMERO___'),
             
             # Fechas y valores
-            "[FECHA DE INICIO]": data['fecha'],
-            "[FECHA DE FIN]": "N/A", # Mandato indefinido usualmente o por duración
+            "[FECHA DE INICIO]": self._format_fecha_es(data.get('fecha_inicio', 'N/A')),
+            "[FECHA DE FIN]": self._format_fecha_es(data.get('fecha_fin', 'N/A')), 
             "[VALOR CANON ARRENDAMIENTO]": f"${data['condiciones'].get('valor_canon_sugerido', 0):,.0f}",
+            "[VALOR CANON MANDATO]": f"${data['condiciones'].get('valor_canon_sugerido', 0):,.0f}",
             "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO]": str(data['condiciones'].get('duracion_meses', 12))
         }
 
