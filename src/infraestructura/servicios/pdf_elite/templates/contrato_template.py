@@ -263,7 +263,7 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         # 1. Título y Ciudad
         self.add_title_main(self.document_title)
         self.add_paragraph(f"<b>Fecha:</b> {data['fecha']}", align='CENTER')
-        self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b><br/>(ARMENIA, QUINDÍO)", align='CENTER')
+        self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b><br/>ARMENIA, QUINDÍO", align='CENTER')
         self.add_spacer(0.4)
         
         # 2. Resumen de Partes (Tabla inicial del PDF)
