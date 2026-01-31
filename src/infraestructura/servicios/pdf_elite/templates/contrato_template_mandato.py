@@ -261,22 +261,67 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         self.logo_data = data.get("logo_base64")
         
         if data.get("estado") == "borrador":
-            self.set_watermark("BORRADOR", opacity=0.1)
+            self.set_watermark("BORRADOR VELAR SAS", opacity=0.1)
             
         filename = self._generate_filename("contrato_mandato", data["contrato_id"])
         self.create_document(filename, self.document_title)
         
         # 1. Título y Ciudad
-        self.add_title_main(self.document_title)
-        self.add_paragraph(f"<b>Fecha:</b> {data['fecha']}", align='CENTER')
-        self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b><br/>(ARMENIA, QUINDÍO)", align='CENTER')
+        # Título en NEGRO (sobreescribiendo el default de base que es azul)
+        style_title = ParagraphStyle(
+            'TitleBlack',
+            parent=self.styles['Heading1'],
+            alignment=TA_CENTER,
+            textColor=colors.black,
+            fontSize=17,
+            spaceAfter=2, # Espacio reducido para que parezcan un solo bloque
+            leading=10
+        )
+        
+        style_subtitle = ParagraphStyle(
+            'SubTitleBlack',
+            parent=style_title,
+            fontSize=13, # Mismo tamaño
+            spaceAfter=12
+        )
+        
+        self.story.append(Paragraph("CONTRATO DE MANDATO", style_title))
+        self.story.append(Paragraph("(ADMINISTRACIÓN DE INMUEBLE)", style_subtitle))
+        
+        # Formatear Fecha
+        fecha_fmt = self._format_fecha_es(data.get('fecha', ''))
+            
+        self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {fecha_fmt}", align='CENTER')
+        self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b><br/>ARMENIA, QUINDÍO", align='CENTER')
         self.add_spacer(0.4)
         
         # 2. Resumen de Partes (Tabla inicial del PDF)
         self._add_resumen_partes(data)
         
-        # 3. Condiciones Generales (Header sección)
-        self.add_section_divider("CONDICIONES GENERALES")
+        # 3. Condiciones Generales (Header sección en NEGRO)
+        # self.add_section_divider("CONDICIONES GENERALES")
+        
+        # Título Sección
+        style_h2 = ParagraphStyle(
+            'H2Black',
+            parent=self.styles['Heading2'],
+            textColor=colors.black,
+            fontSize=12,
+            spaceAfter=6
+        )
+        self.story.append(Paragraph("CONDICIONES GENERALES", style_h2))
+        
+        # Línea separadora Negra
+        from reportlab.platypus import HRFlowable
+        hr = HRFlowable(
+            width="100%",
+            thickness=2,
+            color=colors.black,
+            spaceAfter=10,
+            spaceBefore=10,
+        )
+        self.story.append(hr)
+        
         self.story.append(Spacer(1, 10))
         
         # 4. Cláusulas
