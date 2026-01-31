@@ -681,9 +681,15 @@ class ServicioContratos:
                 per.NUMERO_DOCUMENTO,
                 per.TELEFONO_PRINCIPAL as TELEFONO,
                 per.CORREO_ELECTRONICO as EMAIL,
+                prop.BANCO_PROPIETARIO,
+                prop.NUMERO_CUENTA_PROPIETARIO,
+                prop.TIPO_CUENTA,
+                m.NOMBRE_MUNICIPIO,
+                m.DEPARTAMENTO,
                 ases.NOMBRE_COMPLETO as ASESOR
             FROM CONTRATOS_MANDATOS cm
             JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+            LEFT JOIN MUNICIPIOS m ON p.ID_MUNICIPIO = m.ID_MUNICIPIO
             JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
             JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
             LEFT JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR
@@ -719,11 +725,16 @@ class ServicioContratos:
                     "direccion": row["DIRECCION_PROPIEDAD"],
                     "tipo_propiedad": row["TIPO_PROPIEDAD"],
                     "area_m2": row["AREA_M2"],
+                    "municipio": row["NOMBRE_MUNICIPIO"] or "N/A",
+                    "departamento": row["DEPARTAMENTO"] or "N/A",
                     # Propietario
                     "propietario": row["PROPIETARIO"],
                     "documento": row["NUMERO_DOCUMENTO"],
                     "telefono": row["TELEFONO"] or "N/A",
                     "email": row["EMAIL"] or "N/A",
+                    "banco": row["BANCO_PROPIETARIO"] or "N/A",
+                    "numero_cuenta": row["NUMERO_CUENTA_PROPIETARIO"] or "N/A",
+                    "tipo_cuenta": row["TIPO_CUENTA"] or "N/A",
                     "asesor": row["ASESOR"] or "N/A",
                 }
 

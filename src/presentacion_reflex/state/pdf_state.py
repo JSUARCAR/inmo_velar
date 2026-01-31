@@ -670,35 +670,84 @@ class PDFState(rx.State):
         if not detalle:
             raise ValueError(f"Contrato mandato {contrato_id} no encontrado")
 
+        from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
+        
+        # Obtener configuración de empresa para el logo y datos del mandatario
+        servicio_config = ServicioConfiguracion(db_manager)
+        config_empresa = servicio_config.obtener_configuracion_empresa()
+        logo_data = config_empresa.logo_base64 if config_empresa else None
+        
+        # Datos Inmobiliaria (Mandatario) desde config o fallback
+        nombre_inmo = config_empresa.nombre_empresa if config_empresa else "INMOBILIARIA VELAR S.A.S."
+        nit_inmo = config_empresa.nit if config_empresa else "901703515-7"
+        direccion_inmo = config_empresa.direccion if config_empresa else "Calle 19 No. 16 – 44 Centro Comercial Manhatan Local 15"
+        telefono_inmo = config_empresa.telefono if config_empresa else "3011281684"
+        email_inmo = config_empresa.email if config_empresa else "inmobiliariavelarsasaxm@gmail.com"
+        rep_legal = config_empresa.representante_legal if config_empresa else "CRISTIAN FERNANDO JAMIOY FONSECA"
+        rep_legal_cc = config_empresa.cedula_representante if config_empresa else "1.094.959.215"
+
+        # Cálculo de fechas
+        fecha_inicio_str = detalle["fecha_inicio"]
+        duracion_meses = detalle.get("duracion", 12)
+        try:
+            # Intentar calcular fecha fin
+            f_inicio = datetime.strptime(fecha_inicio_str, "%Y-%m-%d")
+            # Aproximación simple de meses (se puede mejorar con relativedelta si está disponible)
+            import calendar
+            
+            def add_months(sourcedate, months):
+                month = sourcedate.month - 1 + months
+                year = sourcedate.year + month // 12
+                month = month % 12 + 1
+                day = min(sourcedate.day, calendar.monthrange(year,month)[1])
+                return sourcedate.replace(year=year, month=month, day=day)
+                
+            f_fin = add_months(f_inicio, duracion_meses)
+            fecha_fin_str = f_fin.strftime("%Y-%m-%d")
+        except Exception:
+            # Fallback si falla el parseo
+            fecha_fin_str = "N/A"
+
         # Transformar el formato de la BD al formato esperado por el generador PDF
         return {
             "contrato_id": detalle["id"],
-            "fecha": detalle["fecha_inicio"],
+            "fecha": detalle["fecha_inicio"], # Fecha de firma/generación
+            "fecha_inicio": detalle["fecha_inicio"],
+            "fecha_fin": fecha_fin_str,
             "estado": detalle["estado"],
-            "tipo_contrato": "MANDATO",  # Identificador para template
+            "tipo_contrato": "MANDATO",
+            "logo_base64": logo_data,
             "mandante": {  # Propietario en mandato
                 "nombre": detalle.get("propietario", "N/A"),
-                "documento": detalle.get("documento_propietario", "N/A"),
-                "telefono": detalle.get("telefono_propietario", "N/A"),
-                "email": detalle.get("email_propietario", "N/A"),
+                "documento": detalle.get("documento", "N/A"),
+                "telefono": detalle.get("telefono", "N/A"),
+                "email": detalle.get("email", "N/A"),
                 "direccion": detalle.get("direccion_propietario", "N/A"),
+                "banco": detalle.get("banco", "N/A"),
+                "tipo_cuenta": detalle.get("tipo_cuenta", "N/A"),
+                "numero_cuenta": detalle.get("numero_cuenta", "N/A"),
             },
-            "inmobiliaria": {  # Mandatario (la inmobiliaria)
-                "nombre": "INMOBILIARIA VELAR SAS",
-                "nit": "900.123.456-7",
-                "direccion": "Calle Principal #123",
-                "telefono": "(+57) 300 123 4567",
-                "email": "contacto@inmobiliaravelar.com",
+            "inmobiliaria": {  # Mandatario
+                "nombre": nombre_inmo,
+                "nit": nit_inmo,
+                "direccion": direccion_inmo,
+                "telefono": telefono_inmo,
+                "email": email_inmo,
+                "representante": rep_legal,
+                "documento_rep": rep_legal_cc
             },
             "inmueble": {
-                "direccion": detalle.get("propiedad", "N/A"),
+                "direccion": detalle.get("direccion", "N/A"), # Corregido: llave correcta es 'direccion'
+                "matricula_inmobiliaria": detalle.get("matricula", "N/A"),
                 "tipo": detalle.get("tipo_propiedad", "Apartamento"),
                 "area": str(detalle.get("area", "0")),
+                "municipio": detalle.get("municipio", "N/A"),
+                "departamento": detalle.get("departamento", "N/A"),
             },
             "condiciones": {
-                "comision": detalle.get("canon", 0),  # En mandato es comisión
+                "comision": float(detalle.get("canon", 0)) * float(detalle.get("comision_pct", 0)),
                 "duracion_meses": detalle.get("duracion", 12),
-                "valor_canon_sugerido": detalle.get("administracion", 0),  # Valor referencia
+                "valor_canon_sugerido": detalle.get("canon", 0),  # Valor del canon de arrendamiento
             },
         }
 
