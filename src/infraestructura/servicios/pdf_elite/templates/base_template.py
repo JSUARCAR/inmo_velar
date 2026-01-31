@@ -226,7 +226,7 @@ class BaseDocumentTemplate(ReportLabGenerator):
         hr = HRFlowable(
             width="100%",
             thickness=2,
-            color=Colors.to_reportlab(Colors.PRIMARY),
+            color=Colors.to_reportlab(Colors.BLACK),
             spaceAfter=10,
             spaceBefore=10,
         )
