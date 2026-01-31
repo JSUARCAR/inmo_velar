@@ -757,6 +757,8 @@ class ServicioContratos:
                 p.DIRECCION_PROPIEDAD,
                 p.TIPO_PROPIEDAD,
                 p.AREA_M2,
+                m.NOMBRE_MUNICIPIO,
+                m.DEPARTAMENTO,
                 per_arr.NOMBRE_COMPLETO as ARRENDATARIO,
                 per_arr.NUMERO_DOCUMENTO as DOC_ARRENDATARIO,
                 per_arr.TELEFONO_PRINCIPAL as TEL_ARRENDATARIO,
@@ -769,6 +771,7 @@ class ServicioContratos:
                 per_code.DIRECCION_PRINCIPAL as DIR_CODEUDOR
             FROM CONTRATOS_ARRENDAMIENTOS ca
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+            LEFT JOIN MUNICIPIOS m ON p.ID_MUNICIPIO = m.ID_MUNICIPIO
             JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             JOIN PERSONAS per_arr ON arr.ID_PERSONA = per_arr.ID_PERSONA
             LEFT JOIN CODEUDORES code ON ca.ID_CODEUDOR = code.ID_CODEUDOR
@@ -789,9 +792,12 @@ class ServicioContratos:
                     "id": row["ID_CONTRATO_A"],
                     "fecha_inicio": row["FECHA_INICIO_CONTRATO_A"],
                     "fecha_fin": row["FECHA_FIN_CONTRATO_A"],
+                    "fecha_fin": row["FECHA_FIN_CONTRATO_A"],
                     "duracion": row["DURACION_CONTRATO_A"],
                     "canon": row["CANON_ARRENDAMIENTO"],
                     "deposito": row["DEPOSITO"],
+                    "municipio": row["NOMBRE_MUNICIPIO"] or "ARMENIA",
+                    "departamento": row["DEPARTAMENTO"] or "QUINDÍO",
                     "estado": row["ESTADO_CONTRATO_A"],
                     "motivo_cancelacion": row["MOTIVO_CANCELACION"],
                     "alerta_vencimiento": row["ALERTA_VENCIMIENTO_CONTRATO_A"],
