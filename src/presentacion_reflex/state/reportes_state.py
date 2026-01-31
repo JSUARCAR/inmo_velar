@@ -32,6 +32,10 @@ class ReportesState(rx.State):
             "color": "#10b981",
             "reports": [
                 {"id": "personas", "name": "Reporte de Personas", "description": "Base de datos completa de usuarios y roles.", "module": "Personas"},
+                {"id": "reporte_propietarios", "name": "Reporte de Propietarios", "description": "Información detallada de propietarios.", "module": "Personas"},
+                {"id": "reporte_arrendatarios", "name": "Reporte de Arrendatarios", "description": "Información detallada de arrendatarios.", "module": "Personas"},
+                {"id": "reporte_codeudores", "name": "Reporte de Codeudores", "description": "Información detallada de codeudores.", "module": "Personas"},
+                {"id": "reporte_asesores", "name": "Reporte de Asesores", "description": "Información detallada de asesores.", "module": "Personas"},
                 {"id": "propiedades", "name": "Reporte de Propiedades", "description": "Inventario detallado de inmuebles.", "module": "Propiedades"},
                 {"id": "contratos_mandato", "name": "Contratos: Mandato", "description": "Gestión de contratos con propietarios.", "module": "Contratos"},
                 {"id": "contratos_arrendamiento", "name": "Contratos: Arrendamiento", "description": "Gestión de contratos con arrendatarios.", "module": "Contratos"},
@@ -62,6 +66,7 @@ class ReportesState(rx.State):
     filter_fecha_inicio: str = ""
     filter_fecha_fin: str = ""
     filter_estado: str = "Todos"
+    filter_rol: str = "Todos"
     filter_busqueda_tabla: str = ""  # Busqueda especifica en tabla
 
     # Paginación y Datos
@@ -76,6 +81,7 @@ class ReportesState(rx.State):
 
     # Opciones para dropdowns de filtros
     estado_options: List[str] = ["Todos", "Activo", "Inactivo"]
+    rol_options: List[str] = ["Todos", "Propietario", "Arrendatario", "Codeudor", "Asesor"]
 
     @rx.var
     def active_report(self) -> Dict[str, Any]:
@@ -141,6 +147,7 @@ class ReportesState(rx.State):
         self.filter_fecha_inicio = ""
         self.filter_fecha_fin = ""
         self.filter_estado = "Todos"
+        self.filter_rol = "Todos"
         self.preview_data = []
         self.preview_headers = []
         return ReportesState.load_preview_data()
@@ -153,6 +160,11 @@ class ReportesState(rx.State):
 
     def set_filter_activo(self, estado: str):
         self.filter_estado = estado
+        self.current_page = 1
+        return ReportesState.load_preview_data()
+
+    def set_filter_rol(self, rol: str):
+        self.filter_rol = rol
         self.current_page = 1
         return ReportesState.load_preview_data()
 
@@ -261,7 +273,8 @@ class ReportesState(rx.State):
             
             personas = repo.obtener_todos(
                 busqueda=self.filter_busqueda_tabla if self.filter_busqueda_tabla else None,
-                solo_activos=False if self.filter_estado == "Todos" else (True if self.filter_estado == "Activo" else False)
+                solo_activos=False if self.filter_estado == "Todos" else (True if self.filter_estado == "Activo" else False),
+                filtro_rol=self.filter_rol if self.filter_rol != "Todos" else None
             )
             
             # Filtrado en memoria si el repo no filtra todo (ej. fechas, o si queremos 'Inactivo' especifico)
@@ -312,6 +325,118 @@ class ReportesState(rx.State):
                     clean_data.append(new_item)
                 return clean_data, headers, total
             return [], [], 0
+
+            return [], [], 0
+
+        # Lógica para reportes de Roles Específicos (JOINs)
+        elif report_id in ["reporte_propietarios", "reporte_arrendatarios", "reporte_codeudores", "reporte_asesores"]:
+            table_map_roles = {
+                "reporte_propietarios": "PROPIETARIOS",
+                "reporte_arrendatarios": "ARRENDATARIOS",
+                "reporte_codeudores": "CODEUDORES",
+                "reporte_asesores": "ASESORES"
+            }
+            
+            role_table = table_map_roles[report_id]
+            
+            # Query con JOIN para traer datos de Persona + Datos del Rol
+            # Usamos alias para evitar conflictos de ID_PERSONA, aunque en dict cursor se sobreescriben si no cuidamos los nombres
+            # Preferimos seleccionar columnas explicitas o dejar que el driver maneje duplicados (normalmente el ultimo gana)
+            # Para mas seguridad, p.* y r.*
+            
+            query = f"""
+                SELECT p.TIPO_DOCUMENTO, p.NUMERO_DOCUMENTO, p.NOMBRE_COMPLETO, 
+                       p.TELEFONO_PRINCIPAL, p.CORREO_ELECTRONICO, p.DIRECCION_PRINCIPAL,
+                       r.* 
+                FROM PERSONAS p
+                INNER JOIN {role_table} r ON p.ID_PERSONA = r.ID_PERSONA
+            """
+            
+            conditions = []
+            params = []
+            
+            if self.filter_busqueda_tabla:
+                # Busqueda simple en nombre o documento
+                conditions.append(f"(p.NOMBRE_COMPLETO LIKE ? OR p.NUMERO_DOCUMENTO LIKE ?)")
+                params.extend([f"%{self.filter_busqueda_tabla}%", f"%{self.filter_busqueda_tabla}%"])
+            
+            if self.filter_estado != "Todos":
+                # Asumimos que la tabla del rol tiene alguna columna de estado o usamos la de persona
+                # Para simplificar, usamos la de PERSONA (ESTADO_REGISTRO) o la del ROL si es estandar
+                # Propietarios: ESTADO_PROPIETARIO (int 1/0), Arrendatarios: ESTADO_ARRENDATARIO (bool?)
+                # Codeudores: ESTADO_REGISTRO (bool), Asesores: ESTADO (int 1/0)
+                
+                # Normalización de estados es compleja dinamicamente, usaremos ESTADO_REGISTRO de Persona como base fiable
+                # Si el usuario quiere estado del rol especifico, lo agregamos.
+                # Por ahora: Filtramos por el estado de la PERSONA para consistencia
+                
+                is_active = 1 if self.filter_estado == "Activo" else 0
+                conditions.append(f"p.ESTADO_REGISTRO = ?")
+                params.append(is_active)
+
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+                
+            # Ejecucion
+            with db_manager.obtener_conexion() as conn:
+                cursor = db_manager.get_dict_cursor(conn) # Importante: devuelve dict
+                # SQLite placeholder es ?
+                # Adapt params to generic placeholder of db_manager if needed, usually its ? for sqlite
+                # Pero db_manager.get_placeholder() devuelve ? o %s.
+                placeholder = db_manager.get_placeholder()
+                
+                # Reconstruir query con placeholders correctos (hack simple replace ?)
+                query = query.replace("?", placeholder)
+                
+                try:
+                    cursor.execute(query, tuple(params))
+                    rows = cursor.fetchall()
+                    
+                    total = len(rows)
+                    
+                    # Paginación en memoria (simple)
+                    paginated = rows[offset : offset + limit]
+                    
+                    if paginated:
+                        # Convertir a dict serializable y limpiar headers
+                        clean_data = []
+                        # Obtener headers del primer row
+                        # Nota: Si hay columnas duplicadas en JOIN (ej ID_PERSONA), 
+                        # sqlite3.Row / dict cursor puede que solo muestre una.
+                        
+                        # Definir orden de headers para que sea bonito: Datos Persona primero
+                        priority_headers = ["tipo_documento", "numero_documento", "nombre_completo", "telefono_principal", "correo_electronico"]
+                        
+                        all_keys = list(paginated[0].keys())
+                        # Keys devuelve nombres en minuscula o mayuscula dependinedo de config.
+                        # Normalizamos a lowercase para chequeo
+                        
+                        other_keys = [k for k in all_keys if k.lower() not in priority_headers and not k.startswith('_')]
+                        
+                        # Combine headers
+                        # Note: we use actual keys from row to avoid case mismatches
+                        final_headers_keys = []
+                        
+                        # Find actual key names for priority
+                        for pk in priority_headers:
+                            found = next((k for k in all_keys if k.lower() == pk), None)
+                            if found: final_headers_keys.append(found)
+                            
+                        # Add others
+                        for ok in other_keys:
+                            if ok not in final_headers_keys:
+                                final_headers_keys.append(ok)
+                        
+                        for row in paginated:
+                            item = {k: str(row[k]) if row[k] is not None else "" for k in final_headers_keys}
+                            clean_data.append(item)
+                            
+                        return clean_data, final_headers_keys, total
+                    return [], [], 0
+                    
+                except Exception as ex:
+                    print(f"Error executing report role query: {ex}")
+                    return [], [], 0
 
         # Mapeo de reportes a tablas para lógica genérica "SELECT *"
         table_map = {

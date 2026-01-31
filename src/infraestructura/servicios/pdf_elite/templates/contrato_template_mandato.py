@@ -410,7 +410,7 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         data_table.append(row_inm[0])
         data_table.append(row_arr[0])
         data_table.append(row_user[0])
-        data_table.append([p_kw("CANON MANDATO:"), p_val(canon_fmt)])
+        data_table.append([p_kw("CANON MANDATO:"), p_val(f"{canon_fmt} (COP - PESOS COLOMBIANOS)")])
         data_table.append([p_kw("FECHA DE INICIO DEL CONTRATO:"), p_val(fecha_inicio)])
         data_table.append([p_kw("FECHA DE TERMINACIÓN DEL CONTRATO:"), p_val(fecha_fin)])
         data_table.append([p_kw("DURACIÓN DEL CONTRATO:"), p_val(duracion)])

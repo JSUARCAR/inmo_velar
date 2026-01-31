@@ -145,7 +145,7 @@ class ReportLabGenerator(BasePDFGenerator):
                 "TitleMain",
                 parent=base_styles["Title"],
                 fontSize=Fonts.SIZE_TITLE_MAIN,
-                textColor=Colors.to_reportlab(Colors.PRIMARY),
+                textColor=Colors.to_reportlab(Colors.BLACK),
                 spaceAfter=20,
                 spaceBefore=10,
                 alignment=TA_CENTER,
