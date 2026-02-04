@@ -63,6 +63,31 @@ def liquidacion_edit_form() -> rx.Component:
                     # Información Inmutable
                     section_title("Información General"),
                     rx.grid(
+                        # Fila 1: Propietario y Dirección
+                        rx.grid(
+                            form_field(
+                                "Propietario",
+                                "nombre_propietario",
+                                LiquidacionesState.form_data["nombre_propietario"],
+                                read_only=True,
+                            ),
+                            form_field(
+                                "Dirección Inmueble",
+                                "direccion_propiedad",
+                                LiquidacionesState.form_data["direccion_propiedad"],
+                                read_only=True,
+                            ),
+                            columns="2",
+                            spacing="3",
+                            width="100%",
+                        ),
+                        # Fila 2: Canon, ID, Periodo
+                        form_field(
+                            "Canon Mandato",
+                            "canon_mandato",
+                            LiquidacionesState.form_data["canon_mandato"].to(str),
+                            read_only=True,
+                        ),
                         form_field(
                             "ID Contrato",
                             "id_contrato_m",
@@ -107,13 +132,13 @@ def liquidacion_edit_form() -> rx.Component:
                             type="number",
                         ),
                         form_field(
-                            "Gastos Reparaciones",
+                            "Incidentes",
                             "gastos_reparaciones",
                             LiquidacionesState.form_data["gastos_reparaciones"].to(str),
                             type="number",
                         ),
                         form_field(
-                            "Otros Egresos",
+                            "Pago Predial",
                             "otros_egresos",
                             LiquidacionesState.form_data["otros_egresos"].to(str),
                             type="number",

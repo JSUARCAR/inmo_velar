@@ -755,28 +755,67 @@ class PDFState(rx.State):
         """
         Obtiene datos consolidados del estado de cuenta para un propietario/período.
         Usa datos reales de la base de datos.
-
+        
         Args:
             propietario_id: ID del propietario
             periodo: Período (YYYY-MM)
-
+            
         Returns:
             Diccionario con datos consolidados
-
+            
         Raises:
             ValueError: Si no se encuentran liquidaciones
         """
         from src.aplicacion.servicios.servicio_financiero import ServicioFinanciero
         from src.infraestructura.persistencia.database import db_manager
-
-        servicio = ServicioFinanciero(db_manager)
+        
+        # Importar repositorios requeridos para ServicioFinanciero
+        from src.infraestructura.persistencia.repositorio_recaudo_sqlite import RepositorioRecaudoSQLite
+        from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import RepositorioLiquidacionSQLite
+        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
+        from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+        
+        # Instanciar dependencias
+        repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+        repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+        repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+        servicio_pdf = ServicioDocumentosPDF()
+        
+        # Instanciar servicio financiero con todas sus dependencias
+        servicio = ServicioFinanciero(
+            repo_recaudo=repo_recaudo,
+            repo_liquidacion=repo_liquidacion,
+            repo_propiedad=repo_propiedad,
+            repo_arriendo=repo_arriendo,
+            repo_mandato=repo_mandato,
+            pdf_service=servicio_pdf
+        )
+        
         datos = servicio.obtener_datos_consolidados_para_pdf(propietario_id, periodo)
-
+        
         if not datos:
-            raise ValueError(
-                f"No se encontraron liquidaciones para propietario {propietario_id} en período {periodo}"
-            )
+            raise ValueError("No se encontraron datos para generar el estado de cuenta")
 
+        # --- OBTENER CONFIGURACIÓN DE EMPRESA ---
+        from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
+        servicio_config = ServicioConfiguracion(db_manager)
+        config_empresa = servicio_config.obtener_configuracion_empresa()
+        
+        if config_empresa:
+            datos["empresa"] = {
+                "nombre": config_empresa.nombre_empresa,
+                "nit": config_empresa.nit,
+                "direccion": config_empresa.direccion,
+                "telefono": config_empresa.telefono,
+                "email": config_empresa.email,
+                "logo_base64": config_empresa.logo_base64,
+                "website": config_empresa.website
+            }
+        
         return datos
 
     def _transform_consolidated_to_pdf_format(self, datos: Dict[str, Any]) -> Dict[str, Any]:
@@ -810,52 +849,77 @@ class PDFState(rx.State):
             # Fallback si no hay propiedades
             inmueble = {"direccion": "N/A", "tipo": "Propiedad", "canon": 0}
 
-        # Convertir propiedades a movimientos (lista de ingresos/egresos)
-        movimientos = []
+        # Convertir propiedades a detalle detallado (lista de filas para la tabla)
+        detalle_propiedades = []
+        lista_propiedades = []
+        
+        total_seguro_global = 0
+
         for idx, prop in enumerate(propiedades, 1):
-            # Movimiento de ingreso (canon)
-            movimientos.append(
-                {
-                    "fecha": datos.get("fecha_generacion", "")[:10],  # YYYY-MM-DD
-                    "concepto": f"Canon - {prop['direccion']}",
-                    "ingreso": prop["canon"] + prop["otros_ingresos"],
-                    "egreso": 0,
-                }
+            prop_id = prop.get("id", idx) # Fallback to index if no ID
+            
+            # Agregar a lista de identificación de propiedades
+            lista_propiedades.append({
+                "id": prop_id,
+                "direccion": prop["direccion"]
+            })
+            
+            # Calcular valores para la fila de detalle
+            canon = prop["canon"]
+            comision = prop["comision_monto"]
+            iva = prop["iva_comision"]
+            imp_4x1000 = prop["impuesto_4x1000"]
+            admin = prop["gastos_admin"]
+            servicios = prop["gastos_serv"]
+            
+            # Cálculo de Seguro
+            pct_seguro = prop.get("porcentaje_seguro", 0)
+            # Sistema usa puntos básicos (10000 = 100%). Ejemplo: 200 = 2%
+            valor_seguro = int(canon * (pct_seguro / 10000)) if pct_seguro else 0
+            
+            total_seguro_global += valor_seguro
+            
+            # Incidentes y Otros
+            incidente = prop["gastos_rep"] + prop["otros_egr"]
+            
+            predial = 0 # No disponible en modelo actual, default 0
+            
+            # Total Fila (Neto: Canon - Egresos)
+            total_fila = (
+                canon - (comision + valor_seguro + iva + imp_4x1000 + 
+                admin + servicios + predial + incidente)
             )
+            
+            detalle_propiedades.append({
+                "id": prop_id,
+                "canon": canon,
+                "comision": comision,
+                "seguro": valor_seguro,
+                "iva": iva,
+                "impuesto_4x1000": imp_4x1000,
+                "admin": admin,
+                "servicios": servicios,
+                "predial": predial,
+                "incidente": incidente,
+                "total": total_fila
+            })
 
-            # Movimiento de egresos totales para esta propiedad
-            egresos_prop = (
-                prop["comision_monto"]
-                + prop["iva_comision"]
-                + prop["impuesto_4x1000"]
-                + prop["gastos_admin"]
-                + prop["gastos_serv"]
-                + prop["gastos_rep"]
-                + prop["otros_egr"]
-            )
-            if egresos_prop > 0:
-                movimientos.append(
-                    {
-                        "fecha": datos.get("fecha_generacion", "")[:10],
-                        "concepto": f"Descuentos - {prop['direccion']}",
-                        "ingreso": 0,
-                        "egreso": egresos_prop,
-                    }
-                )
-
-        # Construir resumen
+        # Construir resumen (legacy support, though visual table replaces movements)
+        # Ajustamos los totales para incluir el Seguro calculado (que no viene en 'datos' DB)
         resumen = {
             "total_ingresos": datos["total_ingresos"],
-            "total_egresos": datos["total_egresos"],
-            "honorarios": datos["comision_monto"] + datos["iva_comision"],
+            "total_egresos": datos["total_egresos"] + total_seguro_global,
+            "honorarios": datos["comision_monto"],
             "otros_descuentos": (
-                datos["impuesto_4x1000"]
+                datos["iva_comision"]
+                + datos["impuesto_4x1000"]
                 + datos["gastos_admin"]
                 + datos["gastos_serv"]
                 + datos["gastos_rep"]
                 + datos["otros_egr"]
+                + total_seguro_global
             ),
-            "valor_neto": datos["neto_pagar"],
+            "valor_neto": datos["neto_pagar"] - total_seguro_global,
             "cuenta_bancaria": f"{datos['banco']} - {datos['tipo_cuenta']} {datos['cuenta_bancaria']}",
         }
 
@@ -866,8 +930,11 @@ class PDFState(rx.State):
             "propietario": propietario,
             "inmueble": inmueble,
             "periodo": datos["periodo"],
-            "movimientos": movimientos,
+            "fecha_generacion": datetime.now().strftime("%Y-%m-%d"),
+            "lista_propiedades": lista_propiedades,
+            "detalle_propiedades": detalle_propiedades,
             "resumen": resumen,
+            "empresa": datos.get("empresa", {}),
             "notas": [
                 f"Estado de cuenta consolidado - {datos['cantidad_propiedades']} propiedades",
                 datos.get("observaciones", ""),
@@ -1184,14 +1251,54 @@ class PDFState(rx.State):
         """
         from src.aplicacion.servicios.servicio_financiero import ServicioFinanciero
         from src.infraestructura.persistencia.database import db_manager
+        
+        # Importar repositorios requeridos para ServicioFinanciero
+        from src.infraestructura.persistencia.repositorio_recaudo_sqlite import RepositorioRecaudoSQLite
+        from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import RepositorioLiquidacionSQLite
+        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
+        from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+        
+        # Instanciar dependencias
+        repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+        repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+        repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+        servicio_pdf = ServicioDocumentosPDF()
 
-        servicio = ServicioFinanciero(db_manager)
+        # Instanciar servicio financiero con todas sus dependencias
+        servicio = ServicioFinanciero(
+            repo_recaudo=repo_recaudo,
+            repo_liquidacion=repo_liquidacion,
+            repo_propiedad=repo_propiedad,
+            repo_arriendo=repo_arriendo,
+            repo_mandato=repo_mandato,
+            pdf_service=servicio_pdf
+        )
 
         # Get real liquidation data from database
         datos = servicio.obtener_datos_liquidacion_para_pdf(id_liquidacion)
 
         if not datos:
             raise ValueError(f"Liquidación {id_liquidacion} no encontrada")
+
+        # --- OBTENER CONFIGURACIÓN DE EMPRESA ---
+        from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
+        servicio_config = ServicioConfiguracion(db_manager)
+        config_empresa = servicio_config.obtener_configuracion_empresa()
+        
+        if config_empresa:
+            datos["empresa"] = {
+                "nombre": config_empresa.nombre_empresa,
+                "nit": config_empresa.nit,
+                "direccion": config_empresa.direccion,
+                "telefono": config_empresa.telefono,
+                "email": config_empresa.email,
+                "logo_base64": config_empresa.logo_base64,
+                "website": config_empresa.website
+            }
 
         return datos
 

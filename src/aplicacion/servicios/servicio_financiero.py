@@ -232,3 +232,67 @@ class ServicioFinanciero:
             periodo=periodo,
             busqueda=busqueda,
         )
+
+    def obtener_datos_liquidacion_para_pdf(self, id_liquidacion: int) -> Dict[str, Any]:
+        """
+        Obtiene datos de liquidación formateados para PDF.
+        Delega la consulta al repositorio.
+        """
+        return self.repo_liquidacion.obtener_datos_para_pdf(id_liquidacion)
+
+    def obtener_detalle_liquidacion_ui(self, id_liquidacion: int) -> Optional[Dict[str, Any]]:
+        """
+        Obtiene datos detallados de una liquidación para mostrar en UI (Modales de Detalle/Edición).
+        Reutiliza la lógica de obtención de datos para PDF ya que contiene toda la info necesaria.
+        """
+        return self.repo_liquidacion.obtener_datos_para_pdf(id_liquidacion)
+
+    def obtener_datos_consolidados_para_pdf(self, id_propietario: int, periodo: str) -> Dict[str, Any]:
+        """
+        Obtiene datos consolidados de estado de cuenta para PDF.
+        Delega la consulta al repositorio.
+        """
+        return self.repo_liquidacion.obtener_consolidado_propietario(id_propietario, periodo)
+
+    def actualizar_liquidacion(
+        self, id_liquidacion: int, datos_actualizados: Dict[str, Any], usuario_sistema: str
+    ) -> None:
+        """
+        Actualiza los datos variables de una liquidación existente.
+        Solo permitido si el estado es 'En Proceso'.
+        Re-calcula totales, comisiones e impuestos.
+        """
+        liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
+        if not liquidacion:
+            raise ValueError(f"No existe liquidación con ID {id_liquidacion}")
+            
+        if liquidacion.estado_liquidacion != "En Proceso":
+            raise ValueError("Solo se pueden editar liquidaciones en estado 'En Proceso'")
+            
+        # Actualizar campos editables
+        liquidacion.otros_ingresos = datos_actualizados.get("otros_ingresos", liquidacion.otros_ingresos)
+        liquidacion.gastos_administracion = datos_actualizados.get("gastos_administracion", liquidacion.gastos_administracion)
+        liquidacion.gastos_servicios = datos_actualizados.get("gastos_servicios", liquidacion.gastos_servicios)
+        liquidacion.gastos_reparaciones = datos_actualizados.get("gastos_reparaciones", liquidacion.gastos_reparaciones)
+        liquidacion.otros_egresos = datos_actualizados.get("otros_egresos", liquidacion.otros_egresos)
+        liquidacion.observaciones = datos_actualizados.get("observaciones", liquidacion.observaciones)
+        
+        # Recalcular valores derivados (Comisión e Impuesto dependen de Ingresos)
+        # 1. Total Ingresos
+        liquidacion.total_ingresos = liquidacion.canon_bruto + liquidacion.otros_ingresos
+        
+        # 2. Comisión (Si cambia el ingreso, podría cambiar la base? Normalmente es sobre canon)
+        # Pero si la comisión es fija sobre canon, no cambia. 
+        # Si la lógica de negocio dice que otros ingresos comisionan, habría que ajustar.
+        # Asumiremos la lógica original: Comisión sobre CANON.
+        # Sin embargo, el TOTAL INGRESOS afecta el 4x1000.
+        
+        # Recalcular 4x1000
+        imp_4x1000_val = 4
+        if self.servicio_config:
+            imp_4x1000_val = self.servicio_config.obtener_valor_parametro("IMPUESTO_4X1000", 4)
+            
+        liquidacion.impuesto_4x1000 = int(liquidacion.total_ingresos * (imp_4x1000_val / 1000.0))
+        
+        # El método repository.actualizar llamará a calcular_totales() para sumar egresos y neto
+        self.repo_liquidacion.actualizar(liquidacion, usuario_sistema)

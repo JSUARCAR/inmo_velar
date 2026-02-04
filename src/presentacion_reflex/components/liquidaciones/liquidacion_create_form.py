@@ -173,7 +173,7 @@ def liquidacion_create_form() -> rx.Component:
                             ),
                         ),
                         form_field(
-                            "Gastos Reparaciones",
+                            "Incidentes",
                             "gastos_reparaciones",
                             "0",
                             type="number",
@@ -183,7 +183,7 @@ def liquidacion_create_form() -> rx.Component:
                             ),
                         ),
                         form_field(
-                            "Otros Egresos",
+                            "Pago Predial",
                             "otros_egresos",
                             "0",
                             type="number",

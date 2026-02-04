@@ -805,9 +805,8 @@ class RepositorioLiquidacionSQLite:
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
-
-        cursor.execute(
-            f"""
+        
+        cursor.execute(f"""
             UPDATE LIQUIDACIONES 
             SET 
                 ESTADO_LIQUIDACION = 'Aprobada',
@@ -822,21 +821,255 @@ class RepositorioLiquidacionSQLite:
             )
             AND PERIODO = {placeholder}
             AND ESTADO_LIQUIDACION = 'En Proceso'
-        """,
-            (
-                usuario_sistema,
-                datetime.now().isoformat(),
-                datetime.now().isoformat(),
-                usuario_sistema,
-                id_propietario,
-                periodo,
-            ),
-        )
-
+        """, (usuario_sistema, datetime.now().isoformat(), datetime.now().isoformat(), usuario_sistema, id_propietario, periodo))
+        
         affected = cursor.rowcount
         conn.commit()
-
         return affected
+
+    def obtener_datos_para_pdf(self, id_liquidacion: int) -> Optional[Dict[str, Any]]:
+        """
+        Obtiene todos los datos necesarios para generar el PDF de liquidación.
+        Realiza JOINS con Contratos, Propiedades, Propietarios, Inquilinos, etc.
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+        
+        query = f"""
+        SELECT 
+            l.*,
+            cm.ID_CONTRATO_M, cm.FECHA_INICIO_CONTRATO_M, cm.COMISION_PORCENTAJE_CONTRATO_M,
+            p.DIRECCION_PROPIEDAD, p.MATRICULA_INMOBILIARIA, p.TIPO_PROPIEDAD, p.AREA_M2, p.VALOR_ADMINISTRACION,
+            prop.BANCO_PROPIETARIO, prop.NUMERO_CUENTA_PROPIETARIO, prop.TIPO_CUENTA,
+            per_prop.NOMBRE_COMPLETO as NOMBRE_PROPIETARIO,
+            per_prop.NUMERO_DOCUMENTO as DOCUMENTO_PROPIETARIO,
+            per_prop.TELEFONO_PRINCIPAL as TELEFONO_PROPIETARIO,
+            per_prop.CORREO_ELECTRONICO as EMAIL_PROPIETARIO,
+            per_prop.DIRECCION_PRINCIPAL as DIRECCION_PROPIEDARIO_RESIDENCIA,
+            
+            -- Datos del inquilino actual (si hay contrato activo)
+            per_arr.NOMBRE_COMPLETO as NOMBRE_ARRENDATARIO,
+            per_arr.NUMERO_DOCUMENTO as DOCUMENTO_ARRENDATARIO,
+
+            -- Datos de seguro (Prioridad: Póliza activa -> Seguro del inquilino)
+            COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO) as PORCENTAJE_SEGURO,
+            COALESCE(seg.NOMBRE_SEGURO, seg_arr.NOMBRE_SEGURO) as NOMBRE_SEGURO,
+
+            -- Datos del asesor (Comisión real a aplicar)
+            ase.COMISION_PORCENTAJE_ARRIENDO as COMISION_ASESOR
+            
+        FROM LIQUIDACIONES l
+        JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+        JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+        JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
+        JOIN PERSONAS per_prop ON prop.ID_PERSONA = per_prop.ID_PERSONA
+        LEFT JOIN ASESORES ase ON cm.ID_ASESOR = ase.ID_ASESOR
+        
+        -- Left Join para obtener Arrendatario y Seguro
+        LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON p.ID_PROPIEDAD = ca.ID_PROPIEDAD AND ca.ESTADO_CONTRATO_A = 'Activo'
+        LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+        LEFT JOIN PERSONAS per_arr ON arr.ID_PERSONA = per_arr.ID_PERSONA
+        
+        -- Join 1: A través de Póliza (tabla POLIZAS)
+        LEFT JOIN POLIZAS pol ON ca.ID_CONTRATO_A = pol.ID_CONTRATO AND pol.ESTADO = 'Activa'
+        LEFT JOIN SEGUROS seg ON pol.ID_SEGURO = seg.ID_SEGURO
+        
+        -- Join 2: Directo desde Arrendatario (tabla ARRENDATARIOS)
+        LEFT JOIN SEGUROS seg_arr ON arr.ID_SEGURO = seg_arr.ID_SEGURO
+        
+        WHERE l.ID_LIQUIDACION = {placeholder}
+        """
+        
+        cursor.execute(query, (id_liquidacion,))
+        row = cursor.fetchone()
+        
+        if not row:
+            return None
+            
+        row = dict(row)
+        
+        # Mapeo a estructura plana para PDF (Legacy Service compatible)
+        return {
+            "id": row.get("ID_LIQUIDACION"),
+            "id_contrato": row.get("ID_CONTRATO_M"),
+            "periodo": row.get("PERIODO"),
+            "fecha_generacion": row.get("FECHA_GENERACION"),
+            "estado": row.get("ESTADO_LIQUIDACION"),
+            
+            # Propietario (Flat)
+            "propietario": row.get("NOMBRE_PROPIETARIO"),
+            "documento": row.get("DOCUMENTO_PROPIETARIO"),
+            "telefono": row.get("TELEFONO_PROPIETARIO"),
+            "email": row.get("EMAIL_PROPIETARIO"),
+            "direccion_propietario": row.get("DIRECCION_PROPIEDARIO_RESIDENCIA"),
+            "banco": row.get("BANCO_PROPIETARIO"),
+            "numero_cuenta": row.get("NUMERO_CUENTA_PROPIETARIO"),
+            "tipo_cuenta": row.get("TIPO_CUENTA"),
+            
+            # Inmueble (Flat)
+            "propiedad": row.get("DIRECCION_PROPIEDAD"),
+            "matricula": row.get("MATRICULA_INMOBILIARIA"),
+            "tipo_propiedad": row.get("TIPO_PROPIEDAD"),
+            "area": row.get("AREA_M2"),
+            "valor_administracion": row.get("VALOR_ADMINISTRACION"),
+            
+            # Inquilino
+            "nombre_arrendatario": row.get("NOMBRE_ARRENDATARIO"),
+            "documento_arrendatario": row.get("DOCUMENTO_ARRENDATARIO"),
+            
+            # Datos adicionales para cálculo/display
+            "comision_pct_contrato": row.get("COMISION_PORCENTAJE_CONTRATO_M"),
+            "comision_pct_asesor": row.get("COMISION_ASESOR"),
+            "seguro_pct": row.get("PORCENTAJE_SEGURO"),
+            "nombre_seguro": row.get("NOMBRE_SEGURO"),
+
+            # Detalle Financiero
+            "canon": row.get("CANON_BRUTO"),
+            "otros_ingresos": row.get("OTROS_INGRESOS"),
+            "total_ingresos": row.get("TOTAL_INGRESOS"),
+            
+            "comision_pct": row.get("COMISION_PORCENTAJE"),
+            "comision_monto": row.get("COMISION_MONTO"),
+            "iva_comision": row.get("IVA_COMISION"),
+            
+            "impuesto_4x1000": row.get("IMPUESTO_4X1000"),
+            "gastos_admin": row.get("GASTOS_ADMINISTRACION"),
+            
+            # Claves renombradas para coincidir con servicio PDF legacy
+            "gastos_serv": row.get("GASTOS_SERVICIOS"),
+            "gastos_rep": row.get("GASTOS_REPARACIONES"),
+            "otros_egr": row.get("OTROS_EGRESOS"),
+            
+            "total_egresos": row.get("TOTAL_EGRESOS"),
+            "neto_pagar": row.get("NETO_A_PAGAR"),
+            
+            "observaciones": row.get("OBSERVACIONES"),
+            
+            # Datos de pago (si existen en la tabla)
+            "fecha_pago": row.get("FECHA_PAGO"),
+            "metodo_pago": row.get("METODO_PAGO"),
+            "referencia_pago": row.get("REFERENCIA_PAGO"),
+        }
+
+    def obtener_consolidado_propietario(self, id_propietario: int, periodo: str) -> Optional[Dict[str, Any]]:
+        """
+        Obtiene datos consolidados de todas las propiedades de un propietario para un periodo.
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+        
+        # 1. Obtener datos del propietario
+        query_prop = f"""
+        SELECT 
+            prop.ID_PROPIETARIO,
+            prop.BANCO_PROPIETARIO, prop.NUMERO_CUENTA_PROPIETARIO, prop.TIPO_CUENTA,
+            per.NOMBRE_COMPLETO, per.NUMERO_DOCUMENTO, per.TELEFONO_PRINCIPAL, per.CORREO_ELECTRONICO
+        FROM PROPIETARIOS prop
+        JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+        WHERE prop.ID_PROPIETARIO = {placeholder}
+        """
+        cursor.execute(query_prop, (id_propietario,))
+        propietario = cursor.fetchone()
+        
+        if not propietario:
+            return None
+            
+        propietario = dict(propietario)
+        
+        # 2. Obtener liquidaciones
+        query_liqs = f"""
+        SELECT 
+            l.*,
+            p.ID_PROPIEDAD,
+            p.DIRECCION_PROPIEDAD,
+            COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0) as PORCENTAJE_SEGURO
+        FROM LIQUIDACIONES l
+        JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+        JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+        
+        -- Left Join para obtener Arrendatario y Seguro
+        LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON p.ID_PROPIEDAD = ca.ID_PROPIEDAD AND ca.ESTADO_CONTRATO_A = 'Activo'
+        LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+        
+        -- Join 1: A través de Póliza (tabla POLIZAS)
+        LEFT JOIN POLIZAS pol ON ca.ID_CONTRATO_A = pol.ID_CONTRATO AND pol.ESTADO = 'Activa'
+        LEFT JOIN SEGUROS seg ON pol.ID_SEGURO = seg.ID_SEGURO
+        
+        -- Join 2: Directo desde Arrendatario (tabla ARRENDATARIOS)
+        LEFT JOIN SEGUROS seg_arr ON arr.ID_SEGURO = seg_arr.ID_SEGURO
+
+        WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder}
+        """
+        cursor.execute(query_liqs, (id_propietario, periodo))
+        liquidaciones = [dict(r) for r in cursor.fetchall()]
+        
+        if not liquidaciones:
+            return None
+            
+        # 3. Calcular totales consolidados
+        total_ingresos = sum(l.get("TOTAL_INGRESOS", 0) for l in liquidaciones)
+        total_egresos = sum(l.get("TOTAL_EGRESOS", 0) for l in liquidaciones)
+        neto_pagar = sum(l.get("NETO_A_PAGAR", 0) for l in liquidaciones)
+        
+        comision_total = sum(l.get("COMISION_MONTO", 0) for l in liquidaciones)
+        iva_total = sum(l.get("IVA_COMISION", 0) for l in liquidaciones)
+        impuesto_total = sum(l.get("IMPUESTO_4X1000", 0) for l in liquidaciones)
+        
+        gastos_admin = sum(l.get("GASTOS_ADMINISTRACION", 0) for l in liquidaciones)
+        gastos_serv = sum(l.get("GASTOS_SERVICIOS", 0) for l in liquidaciones)
+        gastos_rep = sum(l.get("GASTOS_REPARACIONES", 0) for l in liquidaciones)
+        otros_egr = sum(l.get("OTROS_EGRESOS", 0) for l in liquidaciones)
+        
+        # 4. Formatear lista de propiedades
+        propiedades_formateadas = []
+        for l in liquidaciones:
+            propiedades_formateadas.append({
+                "id": l.get("ID_PROPIEDAD"),
+                "direccion": l.get("DIRECCION_PROPIEDAD"),
+                "canon": l.get("CANON_BRUTO"),
+                "otros_ingresos": l.get("OTROS_INGRESOS"),
+                "comision_monto": l.get("COMISION_MONTO"),
+                "iva_comision": l.get("IVA_COMISION"),
+                "impuesto_4x1000": l.get("IMPUESTO_4X1000"),
+                "gastos_admin": l.get("GASTOS_ADMINISTRACION"),
+                "gastos_serv": l.get("GASTOS_SERVICIOS"),
+                "gastos_rep": l.get("GASTOS_REPARACIONES"),
+                "otros_egr": l.get("OTROS_EGRESOS"),
+                "neto": l.get("NETO_A_PAGAR"),
+                "porcentaje_seguro": l.get("PORCENTAJE_SEGURO", 0)
+            })
+            
+        return {
+            "propietario": propietario["NOMBRE_COMPLETO"],
+            "documento": propietario["NUMERO_DOCUMENTO"],
+            "telefono": propietario.get("TELEFONO_PRINCIPAL", "N/A"),
+            "email": propietario.get("CORREO_ELECTRONICO", "N/A"),
+            "banco": propietario.get("BANCO_PROPIETARIO", "N/A"),
+            "tipo_cuenta": propietario.get("TIPO_CUENTA", "N/A"),
+            "cuenta_bancaria": propietario.get("NUMERO_CUENTA_PROPIETARIO", "N/A"),
+            
+            "periodo": periodo,
+            "cantidad_propiedades": len(liquidaciones),
+            "fecha_generacion": liquidaciones[0].get("FECHA_GENERACION"), # Usamos la primera
+            
+            "propiedades": propiedades_formateadas,
+            
+            "total_ingresos": total_ingresos,
+            "total_egresos": total_egresos,
+            "neto_pagar": neto_pagar,
+            
+            "comision_monto": comision_total,
+            "iva_comision": iva_total,
+            "impuesto_4x1000": impuesto_total,
+            "gastos_admin": gastos_admin,
+            "gastos_serv": gastos_serv,
+            "gastos_rep": gastos_rep,
+            "otros_egr": otros_egr,
+            
+            "observaciones": f"Estado de cuenta consolidado para {len(liquidaciones)} inmuebles."
+        }
 
     def marcar_como_pagadas_por_propietario(
         self,

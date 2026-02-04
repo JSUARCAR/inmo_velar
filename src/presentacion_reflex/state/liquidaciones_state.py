@@ -423,12 +423,23 @@ class LiquidacionesState(DocumentosStateMixin):
                     self.form_data["direccion_propiedad"] = mandato["DIRECCION_PROPIEDAD"]
                     self.form_data["nombre_propietario"] = mandato["NOMBRE_PROPIETARIO"]
 
-                if propiedad and propiedad["VALOR_ADMINISTRACION"]:
-                    self.form_data["gastos_administracion"] = int(propiedad["VALOR_ADMINISTRACION"])
+                # Cargar Gastos Administración si tiene valor
+                if propiedad and propiedad["VALOR_ADMINISTRACION"] is not None:
+                    valor_admin = propiedad["VALOR_ADMINISTRACION"]
+                    # Convertir a int si es posible para mostrar sin decimales
+                    try:
+                        self.form_data["gastos_administracion"] = int(float(valor_admin))
+                    except (ValueError, TypeError):
+                        self.form_data["gastos_administracion"] = valor_admin
+                else:
+                    self.form_data["gastos_administracion"] = 0
+                
+                # Forzar actualización de la UI reutilizando el diccionario
+                self.form_data = self.form_data.copy()
 
-        except Exception:
-            # En producción loguearíamos esto, por ahora silencioso o print en consola
-            pass  # print(f"Error fetching contract details: {e}") [OpSec Removed]
+        except Exception as e:
+            print(f"Error fetching contract details: {e}")
+
 
     @rx.event(background=True)
     async def open_edit_modal(self, id_liquidacion: int):
@@ -485,10 +496,19 @@ class LiquidacionesState(DocumentosStateMixin):
                 async with self:
                     self.form_data = {
                         "id_liquidacion": id_liquidacion,
+                        # Contexto visual (inmutable)
+                        "nombre_propietario": liquidacion.get("propietario", ""),
+                        "direccion_propiedad": liquidacion.get("propiedad", ""),
+                        "canon_mandato": liquidacion.get("canon", 0),
+                        
                         "id_contrato_m": liquidacion["id_contrato"],
                         "periodo": liquidacion["periodo"],
                         "otros_ingresos": liquidacion["otros_ingresos"],
-                        "gastos_administracion": liquidacion["gastos_admin"],
+                        "gastos_administracion": (
+                            liquidacion["gastos_admin"] 
+                            if liquidacion.get("gastos_admin", 0) > 0 
+                            else int(float(liquidacion.get("valor_administracion") or 0))
+                        ),
                         "gastos_servicios": liquidacion["gastos_serv"],
                         "gastos_reparaciones": liquidacion["gastos_rep"],
                         "otros_egresos": liquidacion["otros_egr"],
@@ -672,7 +692,7 @@ class LiquidacionesState(DocumentosStateMixin):
                         "otros_ingresos": sum(d["otros_ingresos"] for d in detalles_lista),
                         "total_ingresos": sum(d["total_ingresos"] for d in detalles_lista),
                         "comision_pct": detalles_lista[0]["comision_pct"],  # Mismo % para todos
-                        "comision_pct_view": detalles_lista[0]["comision_pct_view"],
+                        "comision_pct_view": f"{int(detalles_lista[0]['comision_pct'])}%",
                         "comision_monto": sum(d["comision_monto"] for d in detalles_lista),
                         "iva_comision": sum(d["iva_comision"] for d in detalles_lista),
                         "impuesto_4x1000": sum(d["impuesto_4x1000"] for d in detalles_lista),
