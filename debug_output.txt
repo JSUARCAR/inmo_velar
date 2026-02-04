@@ -1,0 +1,21 @@
+--- Debugging Liquidation 15 ---
+Seguro PCT: 200
+Comision PCT Contrato: 1000
+Comision PCT (Liquidacion): 1000
+Valor Admin: 0
+ID Contrato M: 15
+Linked Mandate ID: 15
+Property ID: 100008
+Lease Contracts found: 3
+  Lease ID: 24, Status: Finalizado
+  Tenant ID: 19, ID_SEGURO: 8
+    Insurance from Tenant: PSA (200%)
+  Policies found: 0
+  Lease ID: 27, Status: Finalizado
+  Tenant ID: 18, ID_SEGURO: 9
+    Insurance from Tenant: SSA (200%)
+  Policies found: 0
+  Lease ID: 5, Status: Activo
+  Tenant ID: 18, ID_SEGURO: 9
+    Insurance from Tenant: SSA (200%)
+  Policies found: 0

@@ -31,6 +31,7 @@ class AdvancedTable:
         col_widths: Optional[List[float]] = None,
         highlight_totals: bool = True,
         zebra_stripe: bool = False,
+        font_size: int = Fonts.SIZE_SMALL,
     ) -> Table:
         """
         Crea tabla de datos con headers y opcionalmente totales
@@ -42,16 +43,10 @@ class AdvancedTable:
             col_widths: Anchos personalizados de columnas en puntos
             highlight_totals: Resaltar fila de totales
             zebra_stripe: Alternar colores de filas (efecto zebra)
+            font_size: Tamaño de fuente para el contenido
 
         Returns:
             Tabla configurada
-
-        Example:
-            >>> table = AdvancedTable.create_data_table(
-            ...     headers=["Producto", "Cantidad", "Precio"],
-            ...     rows=[["Item 1", "10", "$100"], ["Item 2", "5", "$50"]],
-            ...     totals={1: "15", 2: "$150"}
-            ... )
         """
         # Construir datos completos
         data = [headers] + rows
@@ -69,10 +64,10 @@ class AdvancedTable:
         # Comandos de estilo base
         style_commands = [
             # === HEADER ===
-            ("BACKGROUND", (0, 0), (-1, 0), Colors.to_reportlab(Colors.PRIMARY)),
-            ("TEXTCOLOR", (0, 0), (-1, 0), Colors.to_reportlab(Colors.WHITE)),
+            ("BACKGROUND", (0, 0), (-1, 0), Colors.to_reportlab(Colors.GRAY_LIGHT)),
+            ("TEXTCOLOR", (0, 0), (-1, 0), Colors.to_reportlab(Colors.BLACK)),
             ("FONTNAME", (0, 0), (-1, 0), Fonts.MAIN_BOLD),
-            ("FONTSIZE", (0, 0), (-1, 0), Fonts.SIZE_BODY),
+            ("FONTSIZE", (0, 0), (-1, 0), Fonts.SIZE_SMALL),
             ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
             ("TOPPADDING", (0, 0), (-1, 0), 8),
             ("ALIGN", (0, 0), (-1, 0), "CENTER"),
@@ -80,7 +75,7 @@ class AdvancedTable:
             # === BODY ===
             ("BACKGROUND", (0, 1), (-1, -1), Colors.to_reportlab(Colors.WHITE)),
             ("FONTNAME", (0, 1), (-1, -1), Fonts.MAIN),
-            ("FONTSIZE", (0, 1), (-1, -1), Fonts.SIZE_SMALL),
+            ("FONTSIZE", (0, 1), (-1, -1), font_size),
             ("GRID", (0, 0), (-1, -1), 0.5, Colors.to_reportlab(Colors.GRAY_LIGHT)),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("LEFTPADDING", (0, 0), (-1, -1), 8),
