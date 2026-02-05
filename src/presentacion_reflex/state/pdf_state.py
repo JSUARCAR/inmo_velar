@@ -1088,6 +1088,7 @@ class PDFState(rx.State):
                 cursor = db_manager.get_dict_cursor(conn)
 
                 # Main query using placeholder from db_manager (not hardcoded $1)
+                # Main query using placeholder from db_manager (not hardcoded $1)
                 query = f"""
                 SELECT 
                     r.ID_RECAUDO,
@@ -1100,11 +1101,16 @@ class PDFState(rx.State):
                     r.OBSERVACIONES,
                     p.DIRECCION_PROPIEDAD,
                     p.MATRICULA_INMOBILIARIA,
+                    m.NOMBRE_MUNICIPIO as MUNICIPIO,
+                    m.DEPARTAMENTO,
                     per.NOMBRE_COMPLETO as NOMBRE_ARRENDATARIO,
-                    per.NUMERO_DOCUMENTO as DOCUMENTO_ARRENDATARIO
+                    per.NUMERO_DOCUMENTO as DOCUMENTO_ARRENDATARIO,
+                    per.CORREO_ELECTRONICO as EMAIL_ARRENDATARIO,
+                    per.TELEFONO_PRINCIPAL as TELEFONO_ARRENDATARIO
                 FROM RECAUDOS r
                 INNER JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
                 INNER JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+                LEFT JOIN MUNICIPIOS m ON p.ID_MUNICIPIO = m.ID_MUNICIPIO
                 INNER JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
                 INNER JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
                 WHERE r.ID_RECAUDO = {placeholder}
@@ -1125,6 +1131,9 @@ class PDFState(rx.State):
                 """
                 cursor.execute(query_conceptos, (id_recaudo,))
                 conceptos_rows = cursor.fetchall()
+
+                # Fetch bank account info if available (Optional, strictly speaking not in RECAUDOS but useful)
+                # For now using placeholders or derived data
 
             logger.debug(
                 f"✅ Datos obtenidos: Recaudo {row['ID_RECAUDO']}, Valor ${row['VALOR_TOTAL']:,}"
@@ -1161,7 +1170,15 @@ class PDFState(rx.State):
                 # Propiedad (flat strings)
                 "propiedad": row["DIRECCION_PROPIEDAD"],
                 "matricula": row["MATRICULA_INMOBILIARIA"] or "Sin matrícula",
+                "municipio": row.get("MUNICIPIO", "Armenia").upper(),
+                "departamento": row.get("DEPARTAMENTO", "Quindío").upper(),
+                # Arrendatario
+                "arrendatario": row["NOMBRE_ARRENDATARIO"],
+                "arrendatario_doc": row["DOCUMENTO_ARRENDATARIO"],
+                "email": row.get("EMAIL_ARRENDATARIO") or "No registrado",
+                "telefono": row.get("TELEFONO_ARRENDATARIO") or "No registrado",
                 # Financial details
+                "valor_total": row["VALOR_TOTAL"],
                 "canon": row["VALOR_TOTAL"],
                 "otros_ingresos": 0,
                 "total_ingresos": row["VALOR_TOTAL"],
@@ -1182,18 +1199,39 @@ class PDFState(rx.State):
                 "metodo_pago": row["METODO_PAGO"] or "N/A",
                 "referencia_pago": row.get("REFERENCIA_BANCARIA") or "N/A",
                 # Banking
-                "cuenta_bancaria": f"Recibo #{row['ID_RECAUDO']}",
+                "cuenta_bancaria": "No aplica", # Usually for payments made TO the entity
                 "tipo_cuenta": row["METODO_PAGO"],
-                "banco": "N/A",
+                "banco": "Caja General", # Default for cash
                 # Notes with arrendatario info
                 "observaciones": f"Arrendatario: {row['NOMBRE_ARRENDATARIO']} ({row['DOCUMENTO_ARRENDATARIO']}). {row['OBSERVACIONES'] or ''}".strip(),
                 # Audit
                 "created_at": datetime.now().isoformat(),
                 "created_by": "Sistema",
             }
+            
+            # --- INYECTAR DATOS EMPRESA (LOGO) ---
+            try:
+                from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
+                servicio_config = ServicioConfiguracion(db_manager)
+                config_empresa = servicio_config.obtener_configuracion_empresa()
+                
+                if config_empresa:
+                    datos_pdf["empresa"] = {
+                        "nombre": config_empresa.nombre_empresa,
+                        "nit": config_empresa.nit,
+                        "direccion": config_empresa.direccion,
+                        "telefono": config_empresa.telefono,
+                        "email": config_empresa.email,
+                        "logo_base64": config_empresa.logo_base64, # <--- CLAVE PARA EL LOGO
+                        "website": config_empresa.website
+                    }
+                    # Copia directa para compatibilidad extra
+                    datos_pdf["logo_base64"] = config_empresa.logo_base64
+            except Exception as e:
+                logger.error(f"⚠️ No se pudo cargar config empresa: {e}")
 
             logger.debug("📄 Paso 2: Generando PDF...")
-            pdf_path = self.pdf_service.generar_estado_cuenta(datos_pdf)
+            pdf_path = self.pdf_service.generar_recibo_recaudo_elite(datos_pdf)
             logger.debug(f"✅ PDF generado en: {pdf_path}")
 
             self.last_pdf_path = pdf_path
