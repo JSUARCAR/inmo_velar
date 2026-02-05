@@ -27,6 +27,7 @@ from .pdf_elite.templates.contrato_template import ContratoArrendamientoElite
 from .pdf_elite.templates.contrato_template_local import ContratoArrendamientoElite as ContratoLocalElite
 from .pdf_elite.templates.contrato_template_mandato import ContratoMandatoElite
 from .pdf_elite.templates.estado_cuenta_elite import EstadoCuentaElite
+from .pdf_elite.templates.recibo_recaudo_elite import ReciboRecaudoElite
 
 
 class ServicioPDFFacade:
@@ -72,6 +73,7 @@ class ServicioPDFFacade:
         self._contrato_mandato_gen: Optional[ContratoMandatoElite] = None
         self._certificado_gen: Optional[CertificadoTemplate] = None
         self._estado_cuenta_gen: Optional[EstadoCuentaElite] = None
+        self._recibo_recaudo_gen: Optional[ReciboRecaudoElite] = None
 
     # ========================================================================
     # MÉTODOS LEGACY (100% COMPATIBILIDAD)
@@ -268,6 +270,32 @@ class ServicioPDFFacade:
 
         if not path:
             raise ValueError("Error generando estado de cuenta élite")
+
+        return str(path)
+
+    def generar_recibo_recaudo_elite(self, datos: Dict[str, Any]) -> str:
+        """
+        Genera recibo de pago para recaudos (élite)
+
+        Args:
+            datos: Datos del recaudo
+
+        Returns:
+            Path del PDF generado
+        """
+        if not self.elite_enabled:
+            raise ValueError("Características élite no habilitadas")
+
+        logger.debug("🔧 SERVICE LAYER: Facade method called - generar_recibo_recaudo_elite")
+        logger.debug(f"📦 Data keys received: {list(datos.keys())}")
+
+        if not getattr(self, "_recibo_recaudo_gen", None):
+            self._recibo_recaudo_gen = ReciboRecaudoElite(self.output_dir)
+
+        path = self._recibo_recaudo_gen.generate_safe(datos)
+
+        if not path:
+            raise ValueError("Error generando recibo de recaudo élite")
 
         return str(path)
 
