@@ -191,6 +191,15 @@ def modal_details() -> rx.Component:
                 rx.hstack(
                     rx.heading(f"Incidente #{inc['id']}", size="6"),
                     rx.spacer(),
+                    rx.button(
+                        "Descargar PDF",
+                        icon="download",
+                        variant="soft",
+                        size="2",
+                        on_click=IncidentesState.generar_pdf_incidente,
+                        loading=IncidentesState.is_loading,
+                        margin_right="1em",
+                    ),
                     rx.badge(inc["estado"], size="2", variant="solid", color_scheme="blue"),
                     width="100%",
                     align_items="center",
