@@ -6,6 +6,9 @@ import reflex as rx
 from src.aplicacion.servicios.servicio_incidentes import ServicioIncidentes
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+from src.infraestructura.servicios.pdf_elite.templates.incidente_template_elite import IncidenteTemplateElite
+from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
+from pathlib import Path
 
 
 class IncidentesState(DocumentosStateMixin):
@@ -707,3 +710,65 @@ class IncidentesState(DocumentosStateMixin):
         if self.page < self.total_pages:
             self.page += 1
             return IncidentesState.load_incidentes
+
+    @rx.event(background=True)
+    async def generar_pdf_incidente(self):
+        """Genera el PDF del incidente seleccionado."""
+        async with self:
+            if not self.selected_incidente:
+                 yield rx.toast.error("No hay incidente seleccionado.")
+                 return
+            self.is_loading = True
+
+        try:
+            # 1. Obtener datos completos
+            datos = self.selected_incidente.copy()
+            # Mapear fecha a fecha_reporte para el template
+            datos["fecha_reporte"] = datos.get("fecha")
+            # Agregar cotizaciones
+            datos["cotizaciones"] = self.cotizaciones
+            # Agregar dirección legible
+            datos["direccion"] = datos.get("direccion_propiedad")
+
+            # 2. Configuración empresa
+            servicio_config = ServicioConfiguracion(db_manager)
+            config_empresa = servicio_config.obtener_configuracion_empresa()
+            if config_empresa:
+                datos["empresa"] = {
+                     "logo_base64": config_empresa.logo_base64,
+                     "nombre": config_empresa.nombre_empresa
+                }
+
+            # 3. Generar PDF
+            # Usar un directorio temporal o el de documentos generados
+            template = IncidenteTemplateElite(output_dir=Path("documentos_generados"))
+            pdf_path = template.generate(datos)
+
+            yield rx.toast.success("PDF generado exitosamente.")
+
+            # 4. Descargar
+            pdf_filename = Path(pdf_path).name
+            download_url = f"http://localhost:8000/api/pdf/download/{pdf_filename}"
+
+            js_download = f"""
+            fetch('{download_url}')
+              .then(res => res.blob())
+              .then(blob => {{
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = '{pdf_filename}';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+              }})
+              .catch(err => console.error('Download error:', err));
+            """
+            yield rx.call_script(js_download)
+
+        except Exception as e:
+            yield rx.toast.error(f"Error generando PDF: {str(e)}")
+        finally:
+             async with self:
+                self.is_loading = False
