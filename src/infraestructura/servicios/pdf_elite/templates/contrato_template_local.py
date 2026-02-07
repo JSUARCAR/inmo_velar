@@ -11,7 +11,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+from num2words import num2words
+
 
 from ..components.tables import AdvancedTable
 from ..utils.validators import DataValidator
@@ -57,7 +60,7 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         },
         {
             "titulo": "CUARTA. CANON DE ARRENDAMIENTO",
-            "texto": "El valor acordado por las partes asciende a la suma de [VALOR CANON ARRENDAMIENTO] M/CTE., la cual el ARRENDATARIO pagará en su totalidad, dentro de los cinco (5) primeros días calendario de cada período mensual (del 01 al 05 de cada mes), por anticipado, al ARRENDADOR o a su orden.<br/><br/><b>Parágrafo primero</b>: La mera tolerancia del arrendador en aceptar el pago del precio con posterioridad, no se entenderá como ánimo las condiciones del presente.<br/><br/><b>Parágrafo segundo</b>: El incremento para las nuevas vigencias del presente contrato será fijado de común acuerdo entre los contratantes, que el ARRENDATARIO se obliga a pagar dentro de los términos establecidos, sin necesidad de requerimientos privados o judiciales. El reajuste del precio en la cuantía antes señalada tendrá vigencia durante las prórrogas o renovaciones del presente.<br/><br/><b>Parágrafo tercero</b>: Queda a salvo el derecho de las partes contratantes para acordar un nuevo reajuste, acudiendo al procedimiento verbal de que trata el artículo 519 del Código de Comercio, por medio del cual se señala un nuevo valor de arrendamiento mensual, con base en el precio inicialmente pactado, más el precio en caso de renovación del contrato, y en ningún momento el reajuste establecido en el presente."
+            "texto": "El valor acordado por las partes asciende a la suma de [VALOR CANON ARRENDAMIENTO] ([VALOR CANON ARRENDAMIENTO EN TEXTO]), la cual el ARRENDATARIO pagará en su totalidad, dentro de los cinco (5) primeros días calendario de cada período mensual (del 01 al 05 de cada mes), por anticipado, al ARRENDADOR o a su orden.<br/><br/><b>Parágrafo primero</b>: La mera tolerancia del arrendador en aceptar el pago del precio con posterioridad, no se entenderá como ánimo las condiciones del presente.<br/><br/><b>Parágrafo segundo</b>: El incremento para las nuevas vigencias del presente contrato será fijado de común acuerdo entre los contratantes, que el ARRENDATARIO se obliga a pagar dentro de los términos establecidos, sin necesidad de requerimientos privados o judiciales. El reajuste del precio en la cuantía antes señalada tendrá vigencia durante las prórrogas o renovaciones del presente.<br/><br/><b>Parágrafo tercero</b>: Queda a salvo el derecho de las partes contratantes para acordar un nuevo reajuste, acudiendo al procedimiento verbal de que trata el artículo 519 del Código de Comercio, por medio del cual se señala un nuevo valor de arrendamiento mensual, con base en el precio inicialmente pactado, más el precio en caso de renovación del contrato, y en ningún momento el reajuste establecido en el presente."
         },
         {
             "titulo": "QUINTA. TÉRMINO DEL CONTRATO",
@@ -381,7 +384,9 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
             "[DIRECCION CODEUDOR]": data['codeudor']['direccion'],
             "[TELEFONO CODEUDOR]": data['codeudor']['telefono'],
             "[CORREO CODEUDOR]": data['codeudor']['email'],
-            "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO]": str(data['condiciones']['duracion_meses']) # Simplificado, asumimos viene calculado o data raw
+            "[CORREO CODEUDOR]": data['codeudor']['email'],
+            "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO]": str(data['condiciones']['duracion_meses']), # Simplificado, asumimos viene calculado o data raw
+            "[VALOR CANON ARRENDAMIENTO EN TEXTO]": num2words(data['condiciones']['canon'], lang='es').upper() + " PESOS M/CTE"
         }
 
         # Fix placeholder variations
