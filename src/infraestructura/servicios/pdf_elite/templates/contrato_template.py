@@ -12,6 +12,8 @@ from typing import Any, Dict, List, Optional
 from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+from num2words import num2words
+
 
 from ..components.tables import AdvancedTable
 from ..utils.validators import DataValidator
@@ -61,7 +63,7 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         },
         {
             "titulo": "QUINTA. CANON DE ARRENDAMIENTO",
-            "texto": "El valor acordado por las partes asciende a la suma de [VALOR CANON ARRENDAMIENTO] M/CTE. la cual el ARRENDATARIO pagará en su totalidad, dentro de los cinco (5) primeros días calendario de cada período mensual (del 01 al 05 de cada mes), por anticipado, al ARRENDADOR o a su orden."
+            "texto": "El valor acordado por las partes asciende a la suma de [VALOR CANON ARRENDAMIENTO] ([VALOR CANON ARRENDAMIENTO EN TEXTO]) la cual el ARRENDATARIO pagará en su totalidad, dentro de los cinco (5) primeros días calendario de cada período mensual (del 01 al 05 de cada mes), por anticipado, al ARRENDADOR o a su orden."
         },
         {
             "titulo": "SEXTA. INCREMENTOS DEL CANON",
@@ -403,7 +405,9 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
             "[DIRECCION CODEUDOR]": data['codeudor']['direccion'],
             "[TELEFONO CODEUDOR]": data['codeudor']['telefono'],
             "[CORREO CODEUDOR]": data['codeudor']['email'],
-            "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO]": str(data['condiciones']['duracion_meses']) # Simplificado, asumimos viene calculado o data raw
+            "[CORREO CODEUDOR]": data['codeudor']['email'],
+            "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO]": str(data['condiciones']['duracion_meses']), # Simplificado, asumimos viene calculado o data raw
+            "[VALOR CANON ARRENDAMIENTO EN TEXTO]": num2words(data['condiciones']['canon'], lang='es').upper() + " PESOS M/CTE"
         }
 
         # Fix placeholder variations

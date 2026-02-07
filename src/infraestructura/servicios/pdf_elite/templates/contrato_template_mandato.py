@@ -13,6 +13,9 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+from num2words import num2words
+from datetime import datetime
+
 
 from ..components.tables import AdvancedTable
 from ..utils.validators import DataValidator
@@ -58,11 +61,11 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         },
         {
             "titulo": "SEGUNDA. TÉRMINO DEL CONTRATO",
-            "texto": "El término de duración del presente será de [DIFERENCIA DE MESES FECHA FIN - FECHA INICIO] meses"
+            "texto": "El término de duración del presente será de [DIFERENCIA DE MESES FECHA FIN - FECHA INICIO] ([DIFERENCIA DE MESES FECHA FIN - FECHA INICIO EN TEXTO]) meses"
         },
         {
             "titulo": "TERCERA. FIJACIÓN DEL CANON Y FORMA DE PAGO",
-            "texto": "El precio pactado con el MANDANTE por el cual se arrendará el inmueble objeto del presente contrato, será la suma de [VALOR CANON MANDATO] M/C la cual será depositada a nombre de [NOMBRE PROPIETARIO], a la cuenta bancaria: [BANCO PROPIETARIO] - [TIPO DE CUENTA PROPIETARIO] - [NUMERO DE CUENTA PROPIETARIO].<br/><br/>El Mandatario queda facultado para ofertar y fijar el canon de arrendamiento del inmueble objeto de este contrato, de acuerdo con las condiciones del mercado y las disposiciones legales vigentes.<br/><br/>El canon de arrendamiento se ajustará anualmente en el porcentaje correspondiente a la variación del <b>Índice de Precios al Consumidor (IPC) certificado por el DANE</b>, en los términos del <b>artículo 20 de la Ley 820 de 2003</b>, sin necesidad de autorización previa del Mandante.<br/><br/>En caso de que se pretenda un incremento superior al IPC legalmente permitido, o cualquier modificación extraordinaria del canon, se requerirá autorización previa y por escrito del Mandante."
+            "texto": "El precio pactado con el MANDANTE por el cual se arrendará el inmueble objeto del presente contrato, será la suma de [VALOR CANON MANDATO] ([VALOR CANON MANDATO EN TEXTO]) la cual será depositada a nombre de [NOMBRE PROPIETARIO], a la cuenta bancaria: [BANCO PROPIETARIO] - [TIPO DE CUENTA PROPIETARIO] - [NUMERO DE CUENTA PROPIETARIO].<br/><br/>El Mandatario queda facultado para ofertar y fijar el canon de arrendamiento del inmueble objeto de este contrato, de acuerdo con las condiciones del mercado y las disposiciones legales vigentes.<br/><br/>El canon de arrendamiento se ajustará anualmente en el porcentaje correspondiente a la variación del <b>Índice de Precios al Consumidor (IPC) certificado por el DANE</b>, en los términos del <b>artículo 20 de la Ley 820 de 2003</b>, sin necesidad de autorización previa del Mandante.<br/><br/>En caso de que se pretenda un incremento superior al IPC legalmente permitido, o cualquier modificación extraordinaria del canon, se requerirá autorización previa y por escrito del Mandante."
         },
         {
             "titulo": "CUARTA. REPORTE MENSUAL",
@@ -430,6 +433,43 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         """Itera y reemplaza placeholders en las cláusulas"""
         
         mandante = data['mandante']
+
+        # --- Lógica de Num2Words y Cálculo de Fechas ---
+        try:
+            # 1. Calcular diferencia de meses real si hay fechas
+            f_inicio_str = data.get('fecha_inicio')
+            f_fin_str = data.get('fecha_fin')
+            
+            duracion_meses = data['condiciones'].get('duracion_meses', 12) # Fallback al valor numérico directo si falla cálculo
+            
+            if f_inicio_str and f_fin_str and f_inicio_str != 'N/A' and f_fin_str != 'N/A':
+                try:
+                    dt_inicio = datetime.strptime(str(f_inicio_str), '%Y-%m-%d')
+                    dt_fin = datetime.strptime(str(f_fin_str), '%Y-%m-%d')
+                    
+                    # Cálculo aproximado de meses (diferencia de años * 12 + diferencia de meses)
+                    # Ajuste simple: si día fin < día inicio, se resta un mes (no siempre exacto legalmente pero estándar)
+                    
+                    diff_years = dt_fin.year - dt_inicio.year
+                    diff_months = dt_fin.month - dt_inicio.month
+                    
+                    calculated_months = (diff_years * 12) + diff_months
+                    if calculated_months > 0:
+                        duracion_meses = calculated_months
+                except ValueError:
+                    pass # Fallback to existing duracion_meses
+            
+            # 2. Convertir a Texto
+            diff_meses_texto = num2words(duracion_meses, lang='es').upper()
+            
+            canon_val = data['condiciones'].get('valor_canon_sugerido', 0)
+            canon_texto = num2words(canon_val, lang='es').upper() + " PESOS M/CTE"
+            
+        except Exception as e:
+            print(f"Error en conversión num2words: {e}")
+            diff_meses_texto = "DOCE"
+            canon_texto = "CERO PESOS M/CTE"
+
         
         # Mapping para compatibilidad con texto existente (que parece ser copia de arriendo)
         # Se mapean roles de Mandato a los placeholders de arriendo para que se llene
@@ -453,7 +493,9 @@ class ContratoMandatoElite(BaseDocumentTemplate):
             "[FECHA DE FIN]": self._format_fecha_es(data.get('fecha_fin', 'N/A')), 
             "[VALOR CANON ARRENDAMIENTO]": f"${data['condiciones'].get('valor_canon_sugerido', 0):,.0f}",
             "[VALOR CANON MANDATO]": f"${data['condiciones'].get('valor_canon_sugerido', 0):,.0f}",
-            "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO]": str(data['condiciones'].get('duracion_meses', 12))
+            "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO]": str(data['condiciones'].get('duracion_meses', 12)),
+            "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO EN TEXTO]": diff_meses_texto,
+            "[VALOR CANON MANDATO EN TEXTO]": canon_texto
         }
 
         for clausula in self.CLAUSULAS_TEXTO:
@@ -509,4 +551,4 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         
         self.story.append(tabla_firmas)
 
-__all__ = ["ContratoArrendamientoElite"]
+__all__ = ["ContratoMandatoElite"]
