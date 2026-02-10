@@ -36,33 +36,36 @@ def reports_sidebar():
             width="100%",
         ),
         rx.divider(margin_y="2"),
-        rx.foreach(
-            ReportesState.filtered_grouped_reports,
-            # category is now a ReportCategory object (rx.Base)
-            lambda category: rx.vstack(
-                rx.hstack(
-                    rx.icon(category.icon, size=14, color=category.color),
-                    rx.text(category.name, size="1", weight="bold", color=category.color),
-                    spacing="2",
-                    align_items="center",
-                    padding_top="2",
-                ),
-                rx.vstack(
-                    rx.foreach(
-                        category.reports,
-                        # report is now a ReportItem object
-                        lambda report: report_item_sidebar(
-                            report,
-                            report.id == ReportesState.selected_report_id
-                        )
+        rx.accordion.root(
+            rx.foreach(
+                ReportesState.filtered_grouped_reports,
+                lambda category: rx.accordion.item(
+                    header=rx.hstack(
+                        rx.icon(category.icon, size=16, color=category.color),
+                        rx.text(category.name, size="2", weight="bold", color=category.color),
+                        spacing="2",
+                        align_items="center",
+                        width="100%"
                     ),
-                    spacing="1",
-                    padding_left="2",
-                    width="100%",
-                ),
-                width="100%",
-                spacing="2",
-            )
+                    content=rx.vstack(
+                        rx.foreach(
+                            category.reports,
+                            lambda report: report_item_sidebar(
+                                report,
+                                report.id == ReportesState.selected_report_id
+                            )
+                        ),
+                        spacing="1",
+                        padding_left="2",
+                        width="100%",
+                        padding_top="2"
+                    ),
+                )
+            ),
+            type="multiple",
+            collapsible=True,
+            width="100%",
+            variant="ghost"
         ),
         width="250px",
         height="100%",
