@@ -182,8 +182,95 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
     async def handle_save_form(self, form_data: Dict):
         """Unified handler for saving form (create or edit)."""
         if self.selected_liquidacion_id > 0:
-            # TODO: Logica de edicion
-            yield rx.toast.info("Edición no implementada aún")
+            # Lógica de Edición
+            async with self:
+                self.is_loading = True
+                self.error_message = ""
+
+            try:
+                repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
+                repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
+                repo_pago = RepositorioPagoAsesorSQLite(db_manager)
+                repo_bonificacion = RepositorioBonificacionAsesorSQLite(db_manager)
+
+                servicio = ServicioLiquidacionAsesores(
+                    repo_liquidacion=repo_liquidacion,
+                    repo_descuento=repo_descuento,
+                    repo_pago=repo_pago,
+                    repo_bonificacion=repo_bonificacion,
+                )
+
+                usuario_sistema = "admin"  # TODO: Obtener de AuthState
+
+                # 1. Actualizar datos básicos (Porcentaje y Observaciones)
+                datos_actualizar = {}
+                
+                # Porcentaje
+                porcentaje_str = form_data.get("porcentaje_comision")
+                if porcentaje_str:
+                    try:
+                        porcentaje_decimal = float(porcentaje_str)
+                        basis_points = int(porcentaje_decimal * 100)
+                        datos_actualizar["porcentaje_comision"] = basis_points
+                    except ValueError:
+                        pass # Ignorar si no es número válido
+
+                # Observaciones
+                observaciones = form_data.get("observaciones")
+                if observaciones is not None:
+                    datos_actualizar["observaciones_liquidacion"] = observaciones
+
+                if datos_actualizar:
+                    servicio.actualizar_liquidacion(
+                        self.selected_liquidacion_id, 
+                        datos_actualizar, 
+                        usuario_sistema
+                    )
+
+                # 2. Agregar nuevos descuentos
+                for descuento in self.new_discounts:
+                    try:
+                        servicio.agregar_descuento(
+                            id_liquidacion=self.selected_liquidacion_id,
+                            tipo=descuento["tipo"],
+                            descripcion=descuento["descripcion"],
+                            valor=int(descuento["valor"]),
+                            usuario=usuario_sistema,
+                        )
+                    except Exception as e:
+                        print(f"Error agregando descuento {descuento}: {e}")
+                        # No interrumpimos, intentamos los demás
+
+                # 3. Agregar nuevas bonificaciones
+                for bonificacion in self.new_bonuses:
+                    try:
+                        servicio.agregar_bonificacion(
+                            id_liquidacion=self.selected_liquidacion_id,
+                            tipo=bonificacion["tipo"],
+                            descripcion=bonificacion["descripcion"],
+                            valor=int(bonificacion["valor"]),
+                            usuario=usuario_sistema,
+                        )
+                    except Exception as e:
+                        print(f"Error agregando bonificacion {bonificacion}: {e}")
+
+                async with self:
+                    self.show_form_modal = False
+                    self.is_loading = False
+                    self.form_data = {}
+                    self.new_discounts = []
+                    self.new_bonuses = []
+                    self.selected_liquidacion_id = 0
+
+                yield rx.toast.success("Liquidación actualizada exitosamente", position="top-center")
+                yield LiquidacionAsesoresState.load_liquidaciones()
+
+            except Exception as e:
+                async with self:
+                    self.error_message = f"Error al actualizar liquidación: {str(e)}"
+                    self.is_loading = False
+                yield rx.toast.error(f"Error al actualizar: {str(e)}", position="top-center")
+
         else:
             async for event in self.crear_liquidacion(form_data):
                 yield event

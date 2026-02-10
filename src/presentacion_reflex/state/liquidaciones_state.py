@@ -583,6 +583,10 @@ class LiquidacionesState(DocumentosStateMixin):
                 l_fmt["comision_monto_view"] = format_currency(liquidacion.get("comision_monto", 0))
                 l_fmt["iva_comision_view"] = format_currency(liquidacion.get("iva_comision", 0))
                 l_fmt["impuesto_4x1000_view"] = format_currency(liquidacion.get("impuesto_4x1000", 0))
+                l_fmt["gastos_admin_view"] = format_currency(liquidacion.get("gastos_admin", 0))
+                l_fmt["gastos_serv_view"] = format_currency(liquidacion.get("gastos_serv", 0))
+                l_fmt["gastos_rep_view"] = format_currency(liquidacion.get("gastos_rep", 0))
+                l_fmt["otros_egr_view"] = format_currency(liquidacion.get("otros_egr", 0))
                 
                 # Formatear listas internas si existen
                 if "propiedades_detalle" in l_fmt:
@@ -702,6 +706,16 @@ class LiquidacionesState(DocumentosStateMixin):
                         "otros_egr": sum(d["otros_egr"] for d in detalles_lista),
                         "total_egresos": sum(d["total_egresos"] for d in detalles_lista),
                         "neto_pagar": sum(d["neto_pagar"] for d in detalles_lista),
+                        # Formatted View Values
+                        "comision_monto_view": format_currency(sum(d["comision_monto"] for d in detalles_lista)),
+                        "iva_comision_view": format_currency(sum(d["iva_comision"] for d in detalles_lista)),
+                        "impuesto_4x1000_view": format_currency(sum(d["impuesto_4x1000"] for d in detalles_lista)),
+                        "gastos_admin_view": format_currency(sum(d["gastos_admin"] for d in detalles_lista)),
+                        "gastos_serv_view": format_currency(sum(d["gastos_serv"] for d in detalles_lista)),
+                        "gastos_rep_view": format_currency(sum(d["gastos_rep"] for d in detalles_lista)),
+                        "otros_egr_view": format_currency(sum(d["otros_egr"] for d in detalles_lista)),
+                        "total_egresos_view": format_currency(sum(d["total_egresos"] for d in detalles_lista)),
+                        "neto_pagar_view": format_currency(sum(d["neto_pagar"] for d in detalles_lista)),
                         # Pago
                         "fecha_pago": detalles_lista[0].get("fecha_pago"),
                         "metodo_pago": detalles_lista[0].get("metodo_pago"),
