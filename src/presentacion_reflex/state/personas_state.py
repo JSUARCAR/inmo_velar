@@ -563,7 +563,7 @@ class PersonasState(rx.State):
             selected_roles = self.selected_roles
 
             auth_state = await self.get_state(AuthState)
-            user_system = auth_state.user["nombre_usuario"] if auth_state.user else "sistema"
+            user_system = auth_state.user_info["nombre_usuario"] if auth_state.user_info else "sistema"
 
         # Validate
         is_valid, error_msg = self.validate_form_data(form_data, is_editing, selected_roles)
