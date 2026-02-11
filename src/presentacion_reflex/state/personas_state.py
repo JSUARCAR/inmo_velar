@@ -352,6 +352,12 @@ class PersonasState(rx.State):
         self.modal_step = 1
         self.form_validation_errors = {}
 
+    # --- Input Handling ---
+
+    def set_upper(self, field: str, value: str):
+        """Establece el valor del campo en mayúsculas."""
+        self.form_data[field] = value.upper()
+
     # --- Modal Logic ---
 
     def open_create_modal(self):
@@ -359,7 +365,15 @@ class PersonasState(rx.State):
         pass  # print("\n🔵 OPEN_CREATE_MODAL called") [OpSec Removed]
         self.is_editing = False
         self.current_persona_id = None
-        self.form_data = {}  # Limpiar formulario
+        # Inicializar con claves vacías para evitar errores de binding
+        self.form_data = {
+            "nombre_completo": "",
+            "correo_electronico": "",
+            "direccion_principal": "",
+            "numero_documento": "",
+            "telefono_principal": "",
+            "tipo_documento": "CC",
+        }
         self.error_message = ""
         self.selected_roles = []  # Reset roles
         self.reset_wizard()  # Reset wizard to step 1
@@ -416,14 +430,15 @@ class PersonasState(rx.State):
 
             p_entidad = persona_completa.persona
 
-            # 2. Cargar datos básicos
+
+            # 2. Cargar datos básicos (con conversion a mayúsculas si aplica)
             self.form_data = {
-                "nombre_completo": p_entidad.nombre_completo,
+                "nombre_completo": (p_entidad.nombre_completo or "").upper(),
                 "tipo_documento": p_entidad.tipo_documento or "CC",
                 "numero_documento": p_entidad.numero_documento,
                 "telefono_principal": p_entidad.telefono_principal or "",
-                "correo_electronico": p_entidad.correo_electronico or "",
-                "direccion_principal": p_entidad.direccion_principal or "",
+                "correo_electronico": (p_entidad.correo_electronico or "").upper(),
+                "direccion_principal": (p_entidad.direccion_principal or "").upper(),
             }
 
             # 3. Cargar roles activos

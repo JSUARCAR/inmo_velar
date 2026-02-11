@@ -13,6 +13,8 @@ def form_field(
     required: bool = False,
     default_value: str = "",
     icon: str = "",
+    value: str = None,
+    on_change: str = None,
 ) -> rx.Component:
     """Elite form field with icon and enhanced styling."""
     return rx.vstack(
@@ -24,6 +26,8 @@ def form_field(
             type=type,
             required=required,
             default_value=default_value,
+            value=value,
+            on_change=on_change,
             width="100%",
             size="3",
             style={
@@ -283,6 +287,8 @@ def step_1_basic_info() -> rx.Component:
             "Ej: Juan Pérez S.A.S",
             required=True,
             default_value=PersonasState.form_data["nombre_completo"],
+            value=PersonasState.form_data["nombre_completo"],
+            on_change=lambda val: PersonasState.set_upper("nombre_completo", val),
             icon="user",
         ),
         rx.hstack(
@@ -300,6 +306,8 @@ def step_1_basic_info() -> rx.Component:
                 "Ej: contacto@empresa.com",
                 type="email",
                 default_value=PersonasState.form_data["correo_electronico"],
+                value=PersonasState.form_data["correo_electronico"],
+                on_change=lambda val: PersonasState.set_upper("correo_electronico", val),
                 icon="mail",
             ),
             spacing="3",
@@ -310,6 +318,8 @@ def step_1_basic_info() -> rx.Component:
             "direccion_principal",
             "Ej: Calle 123 # 45-67",
             default_value=PersonasState.form_data["direccion_principal"],
+            value=PersonasState.form_data["direccion_principal"],
+            on_change=lambda val: PersonasState.set_upper("direccion_principal", val),
             icon="map-pin",
         ),
         spacing="4",
