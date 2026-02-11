@@ -226,6 +226,8 @@ class PropiedadesState(DocumentosStateMixin):
     def set_search(self, value: str):
         """Actualiza búsqueda."""
         self.search_text = value
+        self.current_page = 1
+        yield PropiedadesState.load_propiedades
 
     def search_propiedades(self):
         """Ejecuta búsqueda."""
