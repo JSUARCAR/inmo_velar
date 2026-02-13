@@ -102,6 +102,13 @@ def propietario_fields() -> rx.Component:
             width="100%",
         ),
         form_field(
+            "Cédula Consignatario",
+            "documento_consignatario",
+            "Documento de quien recibe el pago",
+            default_value=PersonasState.form_data["documento_consignatario"],
+            icon="credit-card",
+        ),
+        form_field(
             "Nombre Consignatario",
             "consignatario",
             "Nombre de quien recibe el pago",
