@@ -63,25 +63,25 @@ echo "  ✅ Caddyfile generated (frontend: $FRONTEND_DIR)"
 
 # ── Step 3: Clear stale alembic state ─────────────────────
 echo ""
-echo "=== Step 3: Clearing alembic state ==="
-python -c "
-import psycopg2, os
-url = os.environ.get('DATABASE_URL','')
-if url:
-    conn = psycopg2.connect(url)
-    conn.autocommit = True
-    cur = conn.cursor()
-    cur.execute('DROP TABLE IF EXISTS alembic_version')
-    print('  ✅ Cleared alembic_version table')
-    conn.close()
-else:
-    print('  ⚠ DATABASE_URL not set, skipping')
-" || echo "  ⚠ Could not clear alembic_version (non-fatal)"
+echo "=== Step 3: Clearing alembic state (SKIPPED for manual DB management) ==="
+# python -c "
+# import psycopg2, os
+# url = os.environ.get('DATABASE_URL','')
+# if url:
+#     conn = psycopg2.connect(url)
+#     conn.autocommit = True
+#     cur = conn.cursor()
+#     cur.execute('DROP TABLE IF EXISTS alembic_version')
+#     print('  ✅ Cleared alembic_version table')
+#     conn.close()
+# else:
+#     print('  ⚠ DATABASE_URL not set, skipping')
+# " || echo "  ⚠ Could not clear alembic_version (non-fatal)"
 
 # ── Step 4: Initialize database ──────────────────────────
 echo ""
-echo "=== Step 4: Initializing database ==="
-reflex db init || echo "  ⚠ reflex db init had issues (non-fatal, tables may already exist)"
+echo "=== Step 4: Initializing database (SKIPPED for manual DB management) ==="
+# reflex db init || echo "  ⚠ reflex db init had issues (non-fatal, tables may already exist)"
 
 # ── Step 5: Start backend ────────────────────────────────
 echo ""
