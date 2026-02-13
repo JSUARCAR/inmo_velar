@@ -9,7 +9,7 @@ Fecha: 2025-12-29
 
 from typing import Callable, List, Optional
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.theme import colors
 

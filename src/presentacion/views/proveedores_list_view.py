@@ -1,6 +1,6 @@
 import threading
 
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios.servicio_proveedores import ServicioProveedores
 

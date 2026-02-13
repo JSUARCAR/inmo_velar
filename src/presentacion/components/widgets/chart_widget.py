@@ -3,7 +3,7 @@ Componente de Gráfico - Inmobiliaria Velar
 Wrapper para gráficos Plotly en Flet.
 """
 
-import flet as ft
+import reflex as rx
 import plotly.graph_objects as go
 from flet.plotly_chart import PlotlyChart
 

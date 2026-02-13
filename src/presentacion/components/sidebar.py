@@ -2,7 +2,7 @@
 Barra de Navegación Lateral (Sidebar) - Inmobiliaria Velar
 """
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.theme import colors, styles
 

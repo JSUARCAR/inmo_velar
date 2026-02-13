@@ -8,7 +8,7 @@ Adaptado a Flet moderno (sin UserControl).
 import threading
 from typing import Callable
 
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios.servicio_seguros import ServicioSeguros
 from src.infraestructura.persistencia.database import DatabaseManager

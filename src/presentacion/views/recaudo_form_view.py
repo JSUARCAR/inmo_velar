@@ -6,7 +6,7 @@ Formulario para registrar pagos del inquilino con desglose de conceptos.
 from datetime import datetime
 from typing import Callable
 
-import flet as ft
+import reflex as rx
 
 
 def crear_recaudo_form_view(

@@ -6,7 +6,7 @@ Formulario para generar liquidaciones mensuales del propietario.
 from datetime import datetime
 from typing import Callable
 
-import flet as ft
+import reflex as rx
 
 
 def crear_liquidacion_form_view(

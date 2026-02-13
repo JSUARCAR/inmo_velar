@@ -6,7 +6,7 @@ Permite completar las tareas del checklist y finalizar la desocupación.
 import threading
 from typing import Callable
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.theme import colors
 

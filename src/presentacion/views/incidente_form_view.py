@@ -1,6 +1,6 @@
 from typing import Callable
 
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios.servicio_incidentes import ServicioIncidentes
 from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades

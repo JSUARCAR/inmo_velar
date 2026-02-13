@@ -2,7 +2,7 @@
 Barra Superior (Navbar) - Inmobiliaria Velar
 """
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.theme import colors
 

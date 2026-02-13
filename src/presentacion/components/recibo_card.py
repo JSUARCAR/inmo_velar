@@ -5,7 +5,7 @@ Muestra información resumida de un recibo público con acciones rápidas.
 
 from datetime import datetime
 
-import flet as ft
+import reflex as rx
 
 from src.dominio.entidades.recibo_publico import ReciboPublico
 from src.presentacion.theme import colors

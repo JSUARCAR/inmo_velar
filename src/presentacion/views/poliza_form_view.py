@@ -5,7 +5,7 @@ Permite asignar un seguro a un contrato de arrendamiento.
 
 from datetime import datetime, timedelta
 
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios.servicio_seguros import ServicioSeguros
 from src.infraestructura.persistencia.database import DatabaseManager

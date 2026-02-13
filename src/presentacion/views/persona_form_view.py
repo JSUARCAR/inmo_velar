@@ -6,7 +6,7 @@ Permite crear y editar personas con asignación de roles.
 import datetime
 from typing import Callable, List, Optional
 
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios import ServicioPersonas
 from src.infraestructura.persistencia.database import DatabaseManager

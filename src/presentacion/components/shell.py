@@ -4,7 +4,7 @@ Mantiene Sidebar y Navbar estáticos, solo actualiza el área de contenido.
 Adaptado a Flet moderno (sin UserControl).
 """
 
-import flet as ft
+import reflex as rx
 
 
 class Shell(ft.Row):

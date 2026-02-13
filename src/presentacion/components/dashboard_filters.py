@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Callable, Optional
 
-import flet as ft
+import reflex as rx
 
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite

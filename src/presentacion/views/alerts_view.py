@@ -5,7 +5,7 @@ Panel lateral de notificaciones.
 
 import threading
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.theme import colors
 

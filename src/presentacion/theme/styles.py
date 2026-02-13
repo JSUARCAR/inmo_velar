@@ -3,7 +3,7 @@ Sistema de Estilos Reutilizables - Inmobiliaria Velar
 Definiciones de estilos consistentes para componentes Flet
 """
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.theme import colors
 

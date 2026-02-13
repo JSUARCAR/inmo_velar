@@ -5,7 +5,7 @@ Tarjeta visual para mostrar resumen de una propiedad.
 
 from typing import Callable
 
-import flet as ft
+import reflex as rx
 
 from src.dominio.entidades.propiedad import Propiedad
 from src.presentacion.theme import colors

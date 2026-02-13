@@ -6,7 +6,7 @@ Permite crear y editar seguros de arrendamiento.
 import datetime
 from typing import Callable, Optional
 
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios.servicio_seguros import ServicioSeguros
 from src.infraestructura.persistencia.database import DatabaseManager

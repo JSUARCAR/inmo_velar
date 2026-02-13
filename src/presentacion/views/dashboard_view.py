@@ -7,7 +7,7 @@ Adaptado a Flet moderno (sin UserControl).
 
 import threading
 
-import flet as ft
+import reflex as rx
 import plotly.graph_objects as go
 
 from src.aplicacion.servicios import ServicioDashboard

@@ -9,7 +9,7 @@ import threading
 import time
 from typing import Callable, List
 
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios import PersonaConRoles, ServicioPersonas
 from src.infraestructura.persistencia.database import DatabaseManager
