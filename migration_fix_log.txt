@@ -1,0 +1,230 @@
+============================================================
+  MIGRACION: SQLite -> Railway PostgreSQL
+============================================================
+
+Tablas encontradas: 42
+
+PASO 0: Limpiando tablas existentes...
+  DROPPED alertas
+  DROPPED archivos_adjuntos
+  DROPPED arrendatarios
+  DROPPED asesores
+  DROPPED auditoria_cambios
+  DROPPED codeudores
+  DROPPED contratos_arrendamientos
+  DROPPED contratos_arrendamientos_old
+  DROPPED contratos_mandatos
+  DROPPED cotizaciones
+  DROPPED descuentos_asesores
+  DROPPED desocupaciones
+  DROPPED documentos
+  DROPPED historial_estados
+  DROPPED historial_incidentes
+  DROPPED incidentes
+  DROPPED ipc
+  DROPPED liquidaciones
+  DROPPED liquidaciones_asesores
+  DROPPED liquidaciones_contratos
+  DROPPED liquidaciones_propietarios
+  DROPPED municipios
+  DROPPED notificaciones_enviadas
+  DROPPED pagos_asesores
+  DROPPED pagos_propietarios
+  DROPPED parametros_sistema
+  DROPPED personas
+  DROPPED plantillas_notificaciones
+  DROPPED polizas
+  DROPPED propiedades
+  DROPPED propietarios
+  DROPPED proveedores
+  DROPPED recaudos
+  DROPPED recaudo_arrendamiento
+  DROPPED recaudo_conceptos
+  DROPPED recibos_publicos
+  DROPPED renovaciones_contratos
+  DROPPED saldos_favor
+  DROPPED seguros
+  DROPPED sesiones_usuario
+  DROPPED tareas_desocupacion
+  DROPPED usuarios
+
+PASO 1: Creando tablas...
+  OK ALERTAS -> alertas
+  OK ARCHIVOS_ADJUNTOS -> archivos_adjuntos
+  OK ARRENDATARIOS -> arrendatarios
+  OK ASESORES -> asesores
+  OK AUDITORIA_CAMBIOS -> auditoria_cambios
+  OK CODEUDORES -> codeudores
+  OK CONTRATOS_ARRENDAMIENTOS -> contratos_arrendamientos
+  OK CONTRATOS_ARRENDAMIENTOS_OLD -> contratos_arrendamientos_old
+  OK CONTRATOS_MANDATOS -> contratos_mandatos
+  OK COTIZACIONES -> cotizaciones
+  OK DESCUENTOS_ASESORES -> descuentos_asesores
+  OK DESOCUPACIONES -> desocupaciones
+  OK DOCUMENTOS -> documentos
+  OK HISTORIAL_ESTADOS -> historial_estados
+  OK HISTORIAL_INCIDENTES -> historial_incidentes
+  OK INCIDENTES -> incidentes
+  OK IPC -> ipc
+  OK LIQUIDACIONES -> liquidaciones
+  OK LIQUIDACIONES_ASESORES -> liquidaciones_asesores
+  OK LIQUIDACIONES_CONTRATOS -> liquidaciones_contratos
+  OK LIQUIDACIONES_PROPIETARIOS -> liquidaciones_propietarios
+  OK MUNICIPIOS -> municipios
+  OK NOTIFICACIONES_ENVIADAS -> notificaciones_enviadas
+  OK PAGOS_ASESORES -> pagos_asesores
+  OK PAGOS_PROPIETARIOS -> pagos_propietarios
+  OK PARAMETROS_SISTEMA -> parametros_sistema
+  OK PERSONAS -> personas
+  OK PLANTILLAS_NOTIFICACIONES -> plantillas_notificaciones
+  OK POLIZAS -> polizas
+  OK PROPIEDADES -> propiedades
+  OK PROPIETARIOS -> propietarios
+  OK PROVEEDORES -> proveedores
+  OK RECAUDOS -> recaudos
+  OK RECAUDO_ARRENDAMIENTO -> recaudo_arrendamiento
+  OK RECAUDO_CONCEPTOS -> recaudo_conceptos
+  OK RECIBOS_PUBLICOS -> recibos_publicos
+  OK RENOVACIONES_CONTRATOS -> renovaciones_contratos
+  OK SALDOS_FAVOR -> saldos_favor
+  OK SEGUROS -> seguros
+  OK SESIONES_USUARIO -> sesiones_usuario
+  OK TAREAS_DESOCUPACION -> tareas_desocupacion
+  OK USUARIOS -> usuarios
+
+Created 42 / 42 tables
+
+PASO 2: Copiando datos...
+  EMPTY ALERTAS
+  EMPTY ARCHIVOS_ADJUNTOS
+  DATA ARRENDATARIOS: 5 rows
+  DATA ASESORES: 2 rows
+  DATA AUDITORIA_CAMBIOS: 23 rows
+  DATA CODEUDORES: 1 rows
+  DATA CONTRATOS_ARRENDAMIENTOS: 6 rows
+  EMPTY CONTRATOS_ARRENDAMIENTOS_OLD
+  DATA CONTRATOS_MANDATOS: 5 rows
+  DATA COTIZACIONES: 2 rows
+  EMPTY DESCUENTOS_ASESORES
+  DATA DESOCUPACIONES: 5 rows
+  DATA DOCUMENTOS: 7 rows
+  EMPTY HISTORIAL_ESTADOS
+  DATA HISTORIAL_INCIDENTES: 2 rows
+  DATA INCIDENTES: 4 rows
+  DATA IPC: 3 rows
+  DATA LIQUIDACIONES: 16 rows
+  DATA LIQUIDACIONES_ASESORES: 1 rows
+  DATA LIQUIDACIONES_CONTRATOS: 3 rows
+  EMPTY LIQUIDACIONES_PROPIETARIOS
+  DATA MUNICIPIOS: 6 rows
+  EMPTY NOTIFICACIONES_ENVIADAS
+  DATA PAGOS_ASESORES: 1 rows
+  EMPTY PAGOS_PROPIETARIOS
+  DATA PARAMETROS_SISTEMA: 17 rows
+  DATA PERSONAS: 11 rows
+  EMPTY PLANTILLAS_NOTIFICACIONES
+  EMPTY POLIZAS
+  DATA PROPIEDADES: 5 rows
+  DATA PROPIETARIOS: 2 rows
+  DATA PROVEEDORES: 1 rows
+  DATA RECAUDOS: 4 rows
+  EMPTY RECAUDO_ARRENDAMIENTO
+  DATA RECAUDO_CONCEPTOS: 5 rows
+  DATA RECIBOS_PUBLICOS: 3 rows
+  EMPTY RENOVACIONES_CONTRATOS
+  EMPTY SALDOS_FAVOR
+  DATA SEGUROS: 2 rows
+  DATA SESIONES_USUARIO: 1 rows
+  DATA TAREAS_DESOCUPACION: 80 rows
+  DATA USUARIOS: 3 rows
+
+PASO 3: Reseteando secuencias...
+  SEQ alertas.id_alertas
+  SEQ archivos_adjuntos.id_archivo
+  SEQ arrendatarios.id_arrendatario
+  SEQ asesores.id_asesor
+  SEQ auditoria_cambios.id_auditoria
+  SEQ codeudores.id_codeudor
+  SEQ contratos_arrendamientos.id_contrato_a
+  SEQ contratos_mandatos.id_contrato_m
+  SEQ cotizaciones.id_cotizacion
+  SEQ descuentos_asesores.id_descuento_asesor
+  SEQ desocupaciones.id_desocupacion
+  SEQ documentos.id
+  SEQ historial_estados.id_historial
+  SEQ historial_incidentes.id_historial
+  SEQ incidentes.id_incidente
+  SEQ ipc.id_ipc
+  SEQ liquidaciones.id_liquidacion
+  SEQ liquidaciones_asesores.id_liquidacion_asesor
+  SEQ liquidaciones_contratos.id_liquidacion_contrato
+  SEQ liquidaciones_propietarios.id_liquidacion_propietario
+  SEQ municipios.id_municipio
+  SEQ notificaciones_enviadas.id_notificacion
+  SEQ pagos_asesores.id_pago_asesor
+  SEQ pagos_propietarios.id_pago_propietario
+  SEQ parametros_sistema.id_parametro
+  SEQ personas.id_persona
+  SEQ plantillas_notificaciones.id_plantilla
+  SEQ polizas.id_poliza
+  SEQ propiedades.id_propiedad
+  SEQ propietarios.id_propietario
+  SEQ proveedores.id_proveedor
+  SEQ recaudos.id_recaudo
+  SEQ recaudo_arrendamiento.id_recaudo
+  SEQ recaudo_conceptos.id_recaudo_concepto
+  SEQ recibos_publicos.id_recibo_publico
+  SEQ renovaciones_contratos.id_renovacion
+  SEQ saldos_favor.id_saldo_favor
+  SEQ seguros.id_seguro
+  SEQ sesiones_usuario.id_sesion
+  SEQ tareas_desocupacion.id_tarea
+  SEQ usuarios.id_usuario
+
+============================================================
+  VERIFICACION FINAL
+============================================================
+  alertas: 0 rows
+  archivos_adjuntos: 0 rows
+  arrendatarios: 5 rows
+  asesores: 2 rows
+  auditoria_cambios: 23 rows
+  codeudores: 1 rows
+  contratos_arrendamientos: 6 rows
+  contratos_arrendamientos_old: 0 rows
+  contratos_mandatos: 5 rows
+  cotizaciones: 2 rows
+  descuentos_asesores: 0 rows
+  desocupaciones: 5 rows
+  documentos: 7 rows
+  historial_estados: 0 rows
+  historial_incidentes: 2 rows
+  incidentes: 4 rows
+  ipc: 3 rows
+  liquidaciones: 16 rows
+  liquidaciones_asesores: 1 rows
+  liquidaciones_contratos: 3 rows
+  liquidaciones_propietarios: 0 rows
+  municipios: 6 rows
+  notificaciones_enviadas: 0 rows
+  pagos_asesores: 1 rows
+  pagos_propietarios: 0 rows
+  parametros_sistema: 17 rows
+  personas: 11 rows
+  plantillas_notificaciones: 0 rows
+  polizas: 0 rows
+  propiedades: 5 rows
+  propietarios: 2 rows
+  proveedores: 1 rows
+  recaudo_arrendamiento: 0 rows
+  recaudo_conceptos: 5 rows
+  recaudos: 4 rows
+  recibos_publicos: 3 rows
+  renovaciones_contratos: 0 rows
+  saldos_favor: 0 rows
+  seguros: 2 rows
+  sesiones_usuario: 1 rows
+  tareas_desocupacion: 80 rows
+  usuarios: 3 rows
+
+COMPLETED: 42 tables, 226 rows
