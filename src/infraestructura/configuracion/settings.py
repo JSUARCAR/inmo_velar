@@ -6,7 +6,7 @@ Gestiona las variables de entorno y configuración de la aplicación.
 
 from typing import Optional
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -25,6 +25,14 @@ class Settings(BaseSettings):
     # === PostgreSQL ===
     db_host: str = Field(default="localhost", description="Host de PostgreSQL")
     db_port: int = Field(default=5432, description="Puerto de PostgreSQL")
+
+    @field_validator("db_port", "smtp_port", mode="before")
+    @classmethod
+    def parse_empty_port(cls, v):
+        """Handle empty string from Railway env vars."""
+        if v == "" or v is None:
+            return 5432  # default port
+        return int(v)
     db_user: str = Field(default="postgres", description="Usuario de PostgreSQL")
     db_password: str = Field(default="", description="Contraseña de PostgreSQL")
     db_name: str = Field(
