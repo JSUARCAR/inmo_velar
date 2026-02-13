@@ -1,0 +1,25 @@
+:{$PORT:8080}
+
+# Reverse-proxy WebSocket + API requests to Reflex backend
+@backend {
+	path /_event
+	path /_event/*
+	path /api/*
+	path /upload
+	path /upload/*
+	path /_upload
+	path /_upload/*
+	path /ping
+}
+
+handle @backend {
+	reverse_proxy localhost:8081
+}
+
+# Serve pre-built static frontend for everything else
+handle {
+	root * /app/frontend
+	try_files {path} /index.html
+	file_server
+	encode gzip
+}

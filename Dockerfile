@@ -3,9 +3,11 @@
 # ============================================================
 FROM python:3.11-slim
 
-# System dependencies
+# System dependencies + Caddy (downloaded as single binary)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip curl gcc libpq-dev && \
+    curl -L "https://caddyserver.com/api/download?os=linux&arch=amd64" -o /usr/local/bin/caddy && \
+    chmod +x /usr/local/bin/caddy && \
     rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -28,7 +30,12 @@ RUN rm -f dummy_build.db
 # Expose port (Railway sets $PORT)
 EXPOSE 8080
 
-# At RUNTIME, Railway injects the real DATABASE_URL env var.
-# Initialize the real DB, then start both frontend + backend.
-CMD reflex db init && reflex run --env prod --backend-port ${PORT:-8080} --backend-host 0.0.0.0
+# At RUNTIME:
+# 1. Init the real DB with Railway's DATABASE_URL
+# 2. Start backend on internal port 8081 (backend-only, no frontend rebuild)
+# 3. Start Caddy on $PORT to serve static frontend + proxy API/WS to backend
+CMD reflex db init && \
+    reflex run --env prod --backend-only --backend-port 8081 --backend-host 0.0.0.0 & \
+    sleep 3 && \
+    caddy run --config /app/Caddyfile --adapter caddyfile
 
