@@ -17,7 +17,7 @@ config = rx.Config(
     # Configuración PostgreSQL
     db_url=f"postgresql://{os.getenv('DB_USER', 'inmo_user')}:{os.getenv('DB_PASSWORD', '7323')}@{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'db_inmo_velar')}",
     # Entorno de desarrollo
-    env=rx.Env.DEV,
+    env=rx.Env.PROD,
     # Desactivar telemetría (opcional)
     telemetry_enabled=False,
 )
