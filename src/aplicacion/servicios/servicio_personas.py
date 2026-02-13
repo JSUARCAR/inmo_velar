@@ -343,6 +343,8 @@ class ServicioPersonas:
                 prop.tipo_cuenta = datos_extra["tipo_cuenta"]
             if "observaciones_propietario" in datos_extra:
                 prop.observaciones_propietario = datos_extra["observaciones_propietario"]
+            if "consignatario" in datos_extra:
+                prop.consignatario = datos_extra["consignatario"]
             prop.updated_at = datetime.now().isoformat()
             prop.updated_by = usuario_sistema
             self.repo_propietario.actualizar(prop, usuario_sistema)
@@ -450,6 +452,7 @@ class ServicioPersonas:
                 numero_cuenta_propietario=datos_extra.get("numero_cuenta_propietario"),
                 tipo_cuenta=datos_extra.get("tipo_cuenta"),
                 observaciones_propietario=datos_extra.get("observaciones_propietario"),
+                consignatario=datos_extra.get("consignatario"),
                 created_at=created_at,
                 created_by=usuario_sistema,
             )
