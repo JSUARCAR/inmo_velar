@@ -27,6 +27,7 @@ def dashboard_layout(content: rx.Component) -> rx.Component:
             "column",
             "row",
             "row",
+            "row",
         ],  # Stack vertically on mobile, horizontally on desktop
         width="100%",
         height="100vh",
