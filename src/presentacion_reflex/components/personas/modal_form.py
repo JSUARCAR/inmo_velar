@@ -96,9 +96,17 @@ def propietario_fields() -> rx.Component:
                 ),
                 spacing="1",
                 width="50%",
+
             ),
             spacing="3",
             width="100%",
+        ),
+        form_field(
+            "Nombre Consignatario",
+            "consignatario",
+            "Nombre de quien recibe el pago",
+            default_value=PersonasState.form_data["consignatario"],
+            icon="user-check",
         ),
         form_textarea(
             "Observaciones",

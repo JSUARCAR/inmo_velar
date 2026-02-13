@@ -373,6 +373,7 @@ class PersonasState(rx.State):
             "numero_documento": "",
             "telefono_principal": "",
             "tipo_documento": "CC",
+            "consignatario": "",
         }
         self.error_message = ""
         self.selected_roles = []  # Reset roles
@@ -456,6 +457,7 @@ class PersonasState(rx.State):
                         "numero_cuenta_propietario": prop.numero_cuenta_propietario or "",
                         "tipo_cuenta": prop.tipo_cuenta or "",
                         "observaciones_propietario": prop.observaciones_propietario or "",
+                        "consignatario": prop.consignatario or "",
                     }
                 )
 
@@ -637,6 +639,7 @@ class PersonasState(rx.State):
                         "numero_cuenta_propietario": form_data.get("numero_cuenta_propietario", ""),
                         "tipo_cuenta": form_data.get("tipo_cuenta", ""),
                         "observaciones_propietario": form_data.get("observaciones_propietario", ""),
+                        "consignatario": form_data.get("consignatario", ""),
                     }
                 elif rol == "Arrendatario":
                     datos_rol = {
