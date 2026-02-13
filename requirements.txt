@@ -1,0 +1,41 @@
+# ============================================================================
+# Sistema de Gestión Inmobiliaria - Dependencias
+# ============================================================================
+
+# === Framework UI ===
+flet>=0.21.0  # Desktop/Web UI (Original)
+reflex>=0.4.0  # Web UI moderno (Migración en progreso)
+plotly>=5.18.0
+kaleido>=0.2.1
+
+# === Configuración y Validación ===
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# === Base de Datos ===
+# SQLite está incluido en Python estándar
+
+# === Utilidades ===
+python-dotenv>=1.0.0
+python-dateutil>=2.8.0
+fpdf2>=2.7.5
+num2words>=0.5.13
+
+# === Type Checking (para desarrollo) ===
+mypy>=1.7.0
+
+
+# === Testing ===
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# === Linting y Formateo ===
+ruff>=0.1.0
+black>=23.12.0
+
+# === Automatización y Notificaciones ===
+pyautogui>=0.9.54
+
+
+psycopg2-binary>=2.9.0
+gunicorn>=21.0.0
