@@ -19,7 +19,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Determinar modo de base de datos
-DB_MODE = os.getenv("DB_MODE", "sqlite").lower()
+# Auto-detect PostgreSQL if DATABASE_URL is set (Railway, Heroku, etc.)
+_database_url = os.getenv("DATABASE_URL", "")
+
+# DEBUG LOGGING
+print(f"DEBUG [database.py]: DATABASE_URL length: {len(_database_url)}")
+print(f"DEBUG [database.py]: Is postgresql? {_database_url.startswith('postgresql')}")
+
+if _database_url and _database_url.startswith("postgresql"):
+    DB_MODE = "postgresql"
+else:
+    DB_MODE = os.getenv("DB_MODE", "sqlite").lower()
+
+print(f"DEBUG [database.py]: Final DB_MODE: {DB_MODE}")
 
 # Importar el módulo correcto según el modo
 if DB_MODE == "postgresql":
@@ -131,15 +143,30 @@ class DatabaseManager:
 
         if self.use_postgresql:
             # Configuración PostgreSQL
-            self.pg_config = {
-                "host": os.getenv("DB_HOST", "localhost"),
-                "port": int(os.getenv("DB_PORT", 5432)),
-                "database": os.getenv("DB_NAME", "db_inmo_velar"),
-                "user": os.getenv("DB_USER", "inmo_user"),
-                "password": os.getenv("DB_PASSWORD"),
-                "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", 10)),
-                "application_name": os.getenv("DB_APPLICATION_NAME", "InmobiliariaVelar"),
-            }
+            # Parse DATABASE_URL if available (Railway, Heroku, etc.)
+            database_url = os.getenv("DATABASE_URL", "")
+            if database_url and database_url.startswith("postgresql"):
+                from urllib.parse import urlparse
+                parsed = urlparse(database_url)
+                self.pg_config = {
+                    "host": parsed.hostname or "localhost",
+                    "port": parsed.port or 5432,
+                    "database": (parsed.path or "/railway").lstrip("/"),
+                    "user": parsed.username or "postgres",
+                    "password": parsed.password or "",
+                    "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", 10)),
+                    "application_name": os.getenv("DB_APPLICATION_NAME", "InmobiliariaVelar"),
+                }
+            else:
+                self.pg_config = {
+                    "host": os.getenv("DB_HOST", "localhost"),
+                    "port": int(os.getenv("DB_PORT", 5432)),
+                    "database": os.getenv("DB_NAME", "db_inmo_velar"),
+                    "user": os.getenv("DB_USER", "inmo_user"),
+                    "password": os.getenv("DB_PASSWORD"),
+                    "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", 10)),
+                    "application_name": os.getenv("DB_APPLICATION_NAME", "InmobiliariaVelar"),
+                }
         else:
             # Configuración SQLite
             config = obtener_configuracion()
