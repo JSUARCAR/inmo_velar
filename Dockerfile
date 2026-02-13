@@ -29,6 +29,6 @@ RUN rm -f dummy_build.db
 EXPOSE 8080
 
 # At RUNTIME, Railway injects the real DATABASE_URL env var.
-# Initialize the real DB, then start the backend.
-CMD reflex db init && reflex run --env prod --backend-only --backend-port ${PORT:-8080} --backend-host 0.0.0.0
+# Initialize the real DB, then start both frontend + backend.
+CMD reflex db init && reflex run --env prod --backend-port ${PORT:-8080} --backend-host 0.0.0.0
 
