@@ -25,6 +25,10 @@ def verify_local_connection():
         count = cursor.fetchone()[0]
         print(f"✅ Found {count} tables in public schema.")
         
+        cursor.execute('SELECT count(*) FROM "contratos_arrendamientos"')
+        contratos_count = cursor.fetchone()[0]
+        print(f"✅ contratos_arrendamientos row count: {contratos_count}")
+        
         cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' LIMIT 5")
         print("Sample tables:")
         for row in cursor.fetchall():
