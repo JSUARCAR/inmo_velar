@@ -1,12 +1,13 @@
 from typing import List
 
 import reflex as rx
+from pydantic import BaseModel
 
 from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
 from src.infraestructura.persistencia.database import db_manager
 
 
-class AuditLogModel(rx.Base):
+class AuditLogModel(BaseModel):
     """Modelo serializable para registros de auditoría."""
 
     id_auditoria: int

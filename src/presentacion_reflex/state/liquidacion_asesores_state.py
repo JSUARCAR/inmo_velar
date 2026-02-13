@@ -799,6 +799,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
     def set_show_discount_modal(self, value: bool):
         self.show_discount_modal = value
 
+    def set_show_bulk_modal(self, value: bool):
+        self.show_bulk_modal = value
+
     def close_form_modal(self):
         """Cierra el modal de formulario."""
         self.show_form_modal = False
