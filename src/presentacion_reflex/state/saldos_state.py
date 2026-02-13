@@ -1,13 +1,14 @@
 from typing import List, Optional
 
 import reflex as rx
+from pydantic import BaseModel
 
 from src.aplicacion.servicios.servicio_saldos_favor import ServicioSaldosFavor
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.auth_state import AuthState
 
 
-class SaldoModel(rx.Base):
+class SaldoModel(BaseModel):
     """Modelo serializable para Reflex."""
 
     id_saldo: int

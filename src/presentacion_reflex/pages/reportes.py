@@ -1,9 +1,9 @@
 import reflex as rx
 from src.presentacion_reflex.components.layout.sidebar import sidebar
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
-from src.presentacion_reflex.state.reportes_state import ReportesState
+from src.presentacion_reflex.state.reportes_state import ReportesState, ReportItem
 
-def report_item_sidebar(report: rx.Base, is_selected: bool):
+def report_item_sidebar(report: ReportItem, is_selected: bool):
     """Item individual del sidebar de reportes."""
     return rx.hstack(
         rx.icon("file-text", size=16, color=rx.cond(is_selected, "#2563eb", "#64748b")),
