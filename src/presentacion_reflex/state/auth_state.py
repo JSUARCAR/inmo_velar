@@ -132,6 +132,11 @@ class AuthState(rx.State):
         except ExcepcionDominio as e:
             self.error_message = f"Error de negocio: {str(e)}"
         except Exception as e:
+            import sys
+            import traceback
+            error_trace = traceback.format_exc()
+            print(f"LOGIN ERROR: {str(e)}", file=sys.stderr)
+            print(f"TRACEBACK: {error_trace}", file=sys.stderr)
             logger.error("Error inesperado en login", error=e)
             self.error_message = "Ocurrió un error inesperado. Intente de nuevo."
         finally:
