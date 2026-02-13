@@ -96,9 +96,7 @@ def contrato_detail_modal() -> rx.Component:
                             "Comisión (%)",
                             rx.cond(
                                 ContratosState.contrato_detalle.get("comision_pct"),
-                                f"{ContratosState.contrato_detalle.get('comision_pct', 0
-
-):.2f}%",
+                                f"{ContratosState.contrato_detalle.get('comision_pct', 0):.2f}%",
                                 "N/A",
                             ),
                         ),
