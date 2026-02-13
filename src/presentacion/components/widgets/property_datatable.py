@@ -5,7 +5,7 @@ Tabla para mostrar listado de propiedades con acciones.
 
 from typing import Callable, List
 
-import flet as ft
+import reflex as rx
 
 from src.dominio.entidades.propiedad import Propiedad
 from src.presentacion.theme import colors

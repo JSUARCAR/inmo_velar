@@ -3,7 +3,7 @@ Loading View: Pantalla de Carga del Sistema
 Muestra el progreso de pre-carga de vistas después del login.
 """
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.theme import colors
 

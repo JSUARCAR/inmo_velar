@@ -6,7 +6,7 @@ Permite crear y editar propiedades del inventario.
 import datetime
 from typing import Callable, Optional
 
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios import ServicioPropiedades
 from src.infraestructura.persistencia.database import DatabaseManager

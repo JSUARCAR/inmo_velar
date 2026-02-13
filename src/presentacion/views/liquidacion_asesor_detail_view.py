@@ -6,7 +6,7 @@ Muestra información completa de una liquidación incluyendo descuentos y pagos.
 import os
 from typing import Callable
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.components.document_manager import DocumentManager
 

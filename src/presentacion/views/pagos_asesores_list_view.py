@@ -8,7 +8,7 @@ Adaptado a Flet moderno (sin UserControl).
 import threading
 from typing import Callable
 
-import flet as ft
+import reflex as rx
 
 
 class PagosAsesoresListView(ft.Container):

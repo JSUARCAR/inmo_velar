@@ -6,7 +6,7 @@ Permite buscar contratos próximos a vencer y aplicar incrementos masivos.
 import threading
 from datetime import datetime, timedelta
 
-import flet as ft
+import reflex as rx
 
 
 class IncrementosView(ft.Container):

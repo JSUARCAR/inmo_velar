@@ -3,7 +3,7 @@ Componente KPI Card - Inmobiliaria Velar
 Tarjeta para mostrar indicadores clave de rendimiento.
 """
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.theme import colors
 

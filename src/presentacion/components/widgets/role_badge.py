@@ -3,7 +3,7 @@ Componente: Badge de Rol
 Muestra el rol de una persona con un color distintivo.
 """
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.theme import colors
 

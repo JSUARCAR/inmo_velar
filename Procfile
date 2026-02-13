@@ -1,3 +1,3 @@
 # Procfile
-web: flet web --directory . --host 0.0.0.0 --port $PORT
+web: reflex run --env prod --port $PORT --host 0.0.0.0
 

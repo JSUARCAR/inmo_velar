@@ -5,7 +5,7 @@ Formulario para crear y editar usuarios del sistema.
 
 from typing import Callable, Optional
 
-import flet as ft
+import reflex as rx
 
 from src.dominio.entidades.usuario import Usuario
 

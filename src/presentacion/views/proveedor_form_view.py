@@ -1,4 +1,4 @@
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios.servicio_personas import ServicioPersonas
 from src.aplicacion.servicios.servicio_proveedores import ServicioProveedores

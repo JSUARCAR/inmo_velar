@@ -1,5 +1,5 @@
 
-import flet as ft
+import reflex as rx
 from src.presentacion.views.dashboard_view import crear_dashboard_view
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.aplicacion.servicios import ServicioDashboard

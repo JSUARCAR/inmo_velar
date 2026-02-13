@@ -11,7 +11,7 @@ La aplicación estará disponible en: http://localhost:8080
 """
 
 import os
-import flet as ft
+import reflex as rx
 from dotenv import load_dotenv
 from main import main
 

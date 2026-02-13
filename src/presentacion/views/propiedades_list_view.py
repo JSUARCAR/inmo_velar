@@ -9,7 +9,7 @@ import threading
 import time
 from typing import Callable, List
 
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios import ServicioPropiedades
 from src.dominio.entidades.propiedad import Propiedad

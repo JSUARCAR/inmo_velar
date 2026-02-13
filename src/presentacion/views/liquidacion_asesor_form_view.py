@@ -5,7 +5,7 @@ Permite crear y editar liquidaciones de comisiones para asesores.
 
 from typing import Any, Callable, Dict, Optional
 
-import flet as ft
+import reflex as rx
 
 
 def crear_liquidacion_asesor_form_view(

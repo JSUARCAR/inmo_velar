@@ -6,7 +6,7 @@ Muestra desocupaciones en proceso y completadas con progreso visual.
 import threading
 from typing import Callable
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.components.document_manager import DocumentManager
 from src.presentacion.components.pagination_manager import PaginationManager

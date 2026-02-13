@@ -1,5 +1,5 @@
 
-import flet as ft
+import reflex as rx
 import time
 
 def main(page: ft.Page):

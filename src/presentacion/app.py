@@ -3,7 +3,7 @@ Aplicacion Principal - Inmobiliaria Velar
 Punto de entrada del sistema Flet.
 """
 
-import flet as ft
+import reflex as rx
 
 from src.presentacion.theme import colors as app_colors
 from src.presentacion.views.login_view import crear_login_view

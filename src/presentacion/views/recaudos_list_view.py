@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 from typing import Callable
 
-import flet as ft
+import reflex as rx
 
 # Integración Fase 4: Paginación
 from src.presentacion.components.pagination_manager import PaginationManager

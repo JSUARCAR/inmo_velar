@@ -5,7 +5,7 @@ Tabla optimizada para listar personas con acciones inline.
 
 from typing import Callable, List, Optional
 
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios import PersonaConRoles
 from src.presentacion.components.widgets.role_badge import RoleBadge

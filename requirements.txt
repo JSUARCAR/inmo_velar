@@ -3,8 +3,7 @@
 # ============================================================================
 
 # === Framework UI ===
-flet>=0.21.0  # Desktop/Web UI (Original)
-reflex>=0.4.0  # Web UI moderno (Migración en progreso)
+reflex>=0.4.0  # Web UI
 plotly>=5.18.0
 kaleido>=0.2.1
 

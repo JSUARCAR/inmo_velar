@@ -3,7 +3,7 @@ Vista de Login - Inmobiliaria Velar
 Pantalla de autenticacion del sistema.
 """
 
-import flet as ft
+import reflex as rx
 
 from src.aplicacion.servicios import ServicioAutenticacion
 from src.infraestructura.persistencia.database import DatabaseManager
