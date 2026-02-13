@@ -25,5 +25,5 @@ RUN reflex export --frontend-only --no-zip
 # Expose port (Railway sets $PORT)
 EXPOSE 8080
 
-# Start: backend-only since frontend is already built as static
-CMD reflex run --env prod --backend-only --backend-port ${PORT:-8080} --backend-host 0.0.0.0
+# Start: initialize DB, then run backend-only since frontend is pre-built
+CMD reflex db init && reflex run --env prod --backend-only --backend-port ${PORT:-8080} --backend-host 0.0.0.0
