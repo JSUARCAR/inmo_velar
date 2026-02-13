@@ -15,7 +15,7 @@ config = rx.Config(
     backend_port=8000,
     frontend_port=3000,
     # Configuración PostgreSQL
-    db_url=f"postgresql://{os.getenv('DB_USER', 'inmo_user')}:{os.getenv('DB_PASSWORD', '7323')}@{os.getenv('DB_HOST', 'localhost')}:{os.getenv('DB_PORT', '5432')}/{os.getenv('DB_NAME', 'db_inmo_velar')}",
+    db_url=f"postgresql://{os.getenv('DB_USER') or 'inmo_user'}:{os.getenv('DB_PASSWORD') or '7323'}@{os.getenv('DB_HOST') or 'localhost'}:{os.getenv('DB_PORT') or '5432'}/{os.getenv('DB_NAME') or 'db_inmo_velar'}",
     # Entorno de desarrollo
     env=rx.Env.PROD,
     # Desactivar telemetría (opcional)
