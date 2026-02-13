@@ -4,19 +4,20 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import reflex as rx
+from pydantic import BaseModel
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.auth_state import AuthState
 
 # Importación diferida de servicios para evitar ciclos y carga innecesaria
 # Se realizarán dentro de los métodos
 
-class ReportItem(rx.Base):
+class ReportItem(BaseModel):
     id: str
     name: str
     description: str
     module: str
 
-class ReportCategory(rx.Base):
+class ReportCategory(BaseModel):
     name: str
     icon: str
     color: str
