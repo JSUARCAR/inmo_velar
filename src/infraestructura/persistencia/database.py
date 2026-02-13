@@ -198,7 +198,37 @@ class DatabaseManager:
 
             self._connection_pool[thread_id] = conexion
 
+        # Validar conexión antes de retornarla (Solo PostgreSQL)
+        if self.use_postgresql:
+            conn = self._connection_pool[thread_id]
+            if not self._validar_conexion(conn):
+                # Si falló, reconectar
+                print(f"DEBUG [database.py]: Connection for thread {thread_id} is dead. Reconnecting...")
+                try:
+                    conn.close()
+                except:
+                    pass
+                
+                real_conn = psycopg2.connect(**self.pg_config)
+                real_conn.autocommit = False
+                self._connection_pool[thread_id] = UpperCaseConnectionWrapper(real_conn)
+
         return self._connection_pool[thread_id]
+
+    def _validar_conexion(self, conn) -> bool:
+        """
+        Verifica si la conexión sigue viva.
+        """
+        try:
+            # Poll returns 0 (POLL_OK) if connection is active
+            if conn.poll() != psycopg2.extensions.POLL_OK:
+                return False
+            # Execute a lightweight query just to be sure
+            with conn.cursor() as cur:
+               cur.execute("SELECT 1")
+            return True
+        except Exception:
+            return False
 
     def obtener_conexion(self) -> Any:
         """

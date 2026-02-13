@@ -134,10 +134,10 @@ class RepositorioDashboardSQLite(IRepositorioDashboard):
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
             if id_asesor:
-                query = f"SELECT SUM(CASE WHEN p.DISPONIBILIDAD_PROPIEDAD = TRUE THEN 1 ELSE 0 END) AS DISPONIBLES, SUM(CASE WHEN p.DISPONIBILIDAD_PROPIEDAD = FALSE THEN 1 ELSE 0 END) AS OCUPADAS FROM PROPIEDADES p JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'Activo' AND p.ESTADO_REGISTRO = TRUE"
+                query = f"SELECT SUM(CASE WHEN p.DISPONIBILIDAD_PROPIEDAD IS TRUE THEN 1 ELSE 0 END) AS DISPONIBLES, SUM(CASE WHEN p.DISPONIBILIDAD_PROPIEDAD IS FALSE THEN 1 ELSE 0 END) AS OCUPADAS FROM PROPIEDADES p JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'Activo' AND p.ESTADO_REGISTRO IS TRUE"
                 cursor.execute(query, (id_asesor,))
             else:
-                query = "SELECT SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD = TRUE THEN 1 ELSE 0 END) AS DISPONIBLES, SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD = FALSE THEN 1 ELSE 0 END) AS OCUPADAS FROM PROPIEDADES WHERE ESTADO_REGISTRO = TRUE"
+                query = "SELECT SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD IS TRUE THEN 1 ELSE 0 END) AS DISPONIBLES, SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD IS FALSE THEN 1 ELSE 0 END) AS OCUPADAS FROM PROPIEDADES WHERE ESTADO_REGISTRO IS TRUE"
                 cursor.execute(query)
             r = cursor.fetchone()
             disp, ocup = r["DISPONIBLES"] or 0, r["OCUPADAS"] or 0
@@ -149,10 +149,10 @@ class RepositorioDashboardSQLite(IRepositorioDashboard):
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
             if id_asesor:
-                query = f"SELECT p.TIPO_PROPIEDAD, COUNT(*) as CONTAR FROM PROPIEDADES p JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'Activo' AND p.ESTADO_REGISTRO = TRUE GROUP BY p.TIPO_PROPIEDAD"
+                query = f"SELECT p.TIPO_PROPIEDAD, COUNT(*) as CONTAR FROM PROPIEDADES p JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'Activo' AND p.ESTADO_REGISTRO IS TRUE GROUP BY p.TIPO_PROPIEDAD"
                 cursor.execute(query, (id_asesor,))
             else:
-                query = "SELECT TIPO_PROPIEDAD, COUNT(*) as CONTAR FROM PROPIEDADES WHERE ESTADO_REGISTRO = TRUE GROUP BY TIPO_PROPIEDAD"
+                query = "SELECT TIPO_PROPIEDAD, COUNT(*) as CONTAR FROM PROPIEDADES WHERE ESTADO_REGISTRO IS TRUE GROUP BY TIPO_PROPIEDAD"
                 cursor.execute(query)
             return {row["TIPO_PROPIEDAD"]: row["CONTAR"] for row in cursor.fetchall()}
 
@@ -160,7 +160,7 @@ class RepositorioDashboardSQLite(IRepositorioDashboard):
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
-            q_potencial = "SELECT SUM(CANON_ARRENDAMIENTO_ESTIMADO) as TOTAL FROM PROPIEDADES WHERE ESTADO_REGISTRO = TRUE"
+            q_potencial = "SELECT SUM(CANON_ARRENDAMIENTO_ESTIMADO) as TOTAL FROM PROPIEDADES WHERE ESTADO_REGISTRO IS TRUE"
             q_real = "SELECT SUM(CANON_ARRENDAMIENTO) as TOTAL FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'Activo'"
             if id_asesor:
                 cand = f" AND ID_PROPIEDAD IN (SELECT ID_PROPIEDAD FROM CONTRATOS_MANDATOS WHERE ID_ASESOR = {placeholder} AND ESTADO_CONTRATO_M = 'Activo')"

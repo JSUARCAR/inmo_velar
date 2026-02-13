@@ -69,6 +69,10 @@ class AuthState(rx.State):
                 return None
             except Exception as e:
                 logger.error("Error validando sesión en AuthState", error=e)
+                try:
+                    db_manager.obtener_conexion().rollback()
+                except Exception:
+                    pass
                 return None
         return None
 
@@ -137,7 +141,12 @@ class AuthState(rx.State):
             error_trace = traceback.format_exc()
             print(f"LOGIN ERROR: {str(e)}", file=sys.stderr)
             print(f"TRACEBACK: {error_trace}", file=sys.stderr)
+            print(f"TRACEBACK: {error_trace}", file=sys.stderr)
             logger.error("Error inesperado en login", error=e)
+            try:
+                db_manager.obtener_conexion().rollback()
+            except Exception:
+                pass
             self.error_message = "Ocurrió un error inesperado. Intente de nuevo."
         finally:
             self.is_loading = False
