@@ -1,3 +1,3 @@
 # Procfile
-web: reflex run --env prod --port $PORT --host 0.0.0.0
+web: reflex run --env prod --backend-port $PORT --backend-host 0.0.0.0
 
