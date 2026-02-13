@@ -4,8 +4,5 @@
     "builder": "DOCKERFILE",
     "dockerfilePath": "Dockerfile"
   },
-  "deploy": {
-    "healthcheckPath": "/_health",
-    "healthcheckTimeout": 300
-  }
+  "deploy": {}
 }
