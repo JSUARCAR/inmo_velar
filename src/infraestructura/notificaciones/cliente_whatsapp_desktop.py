@@ -4,7 +4,11 @@ import time
 import urllib.parse
 import webbrowser
 
-import pyautogui
+try:
+    import pyautogui
+except ImportError:
+    pyautogui = None
+    logging.getLogger(__name__).warning("pyautogui no disponible (entorno headless?)")
 
 
 class ClienteWhatsAppDesktop:
@@ -51,14 +55,18 @@ class ClienteWhatsAppDesktop:
 
             # Simular ENTER para enviar
             # pyautogui funciona sobre la ventana activa
-            self.logger.info("Enviando mensaje (Simulando ENTER)...")
-            pyautogui.press("enter")
+            if pyautogui:
+                self.logger.info("Enviando mensaje (Simulando ENTER)...")
+                pyautogui.press("enter")
+            else:
+                self.logger.warning("No se pudo simular ENTER: pyautogui no cargado")
 
             # Opcional: Esperar un momento para asegurar que salió
             time.sleep(1)
 
             # Opcional: Cerrar ventana o minimizar (Alt+F4 o Win+Down)
-            # pyautogui.hotkey('alt', 'f4')
+            # if pyautogui:
+            #     pyautogui.hotkey('alt', 'f4')
 
             return True
 

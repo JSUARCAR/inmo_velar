@@ -22,6 +22,7 @@ num2words>=0.5.13
 bcrypt>=4.0.0
 reportlab>=4.0.0
 qrcode[pil]>=7.4.2
+fastapi>=0.110.0
 
 # === Type Checking (para desarrollo) ===
 mypy>=1.7.0

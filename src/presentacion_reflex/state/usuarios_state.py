@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 
 import reflex as rx
+from pydantic import BaseModel
 
 from src.aplicacion.servicios.servicio_permisos import ServicioPermisos
 from src.aplicacion.servicios.servicio_usuarios import ServicioUsuarios
@@ -8,7 +9,7 @@ from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.auth_state import AuthState
 
 
-class PermissionModel(rx.Base):
+class PermissionModel(BaseModel):
     """Modelo para un permiso individual en la UI."""
 
     id_permiso: int
@@ -19,14 +20,14 @@ class PermissionModel(rx.Base):
     categoria: str
 
 
-class PermissionModule(rx.Base):
+class PermissionModule(BaseModel):
     """Modelo para un módulo con sus permisos."""
 
     name: str
     permissions: List[PermissionModel]
 
 
-class PermissionCategory(rx.Base):
+class PermissionCategory(BaseModel):
     """Modelo para una categoría de permisos."""
 
     category: str
