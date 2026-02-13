@@ -243,6 +243,13 @@ class ReportesState(rx.State):
         except Exception as e:
             return rx.window_alert(f"Error generando CSV: {str(e)}")
 
+    def _sanitize_value(self, value: Any) -> str:
+        """Limpia el valor para exportación CSV (elimina saltos de linea)."""
+        if value is None:
+            return ""
+        # Convertir a string y eliminar saltos de línea
+        return str(value).replace('\n', ' ').replace('\r', '').strip()
+
     async def _fetch_data(self, report_id: str, page: int, limit: int, is_export: bool):
         """
         Hub central de lógica de obtención de datos.
@@ -297,7 +304,7 @@ class ReportesState(rx.State):
                 # Rebuild data dicts with clean headers y strings
                 clean_data = []
                 for item in data:
-                    new_item = {k: str(v) if v is not None else "" for k, v in item.items() if k in headers}
+                    new_item = {k: self._sanitize_value(v) for k, v in item.items() if k in headers}
                     clean_data.append(new_item)
                 return clean_data, headers, total
             else:
@@ -321,11 +328,9 @@ class ReportesState(rx.State):
                 headers = [h for h in list(data[0].keys()) if not h.startswith('_')]
                 clean_data = []
                 for item in data:
-                    new_item = {k: str(v) for k, v in item.items() if k in headers}
+                    new_item = {k: self._sanitize_value(v) for k, v in item.items() if k in headers}
                     clean_data.append(new_item)
                 return clean_data, headers, total
-            return [], [], 0
-
             return [], [], 0
 
         # Lógica para reportes de Roles Específicos (JOINs)
@@ -428,7 +433,7 @@ class ReportesState(rx.State):
                                 final_headers_keys.append(ok)
                         
                         for row in paginated:
-                            item = {k: str(row[k]) if row[k] is not None else "" for k in final_headers_keys}
+                            item = {k: self._sanitize_value(row[k]) for k in final_headers_keys}
                             clean_data.append(item)
                             
                         return clean_data, final_headers_keys, total
@@ -472,7 +477,7 @@ class ReportesState(rx.State):
                     
                     if paginated:
                         headers = list(paginated[0].keys())
-                        clean_data = [{k: str(v) if v is not None else "" for k,v in row.items()} for row in paginated]
+                        clean_data = [{k: self._sanitize_value(v) for k,v in row.items()} for row in paginated]
                         return clean_data, headers, total
                 except Exception as ex:
                     print(f"Error querying {table_name}: {ex}")
