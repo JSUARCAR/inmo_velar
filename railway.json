@@ -6,6 +6,6 @@
   "deploy": {
     "startCommand": "reflex run --env prod --backend-port $PORT --backend-host 0.0.0.0",
     "healthcheckPath": "/_health",
-    "healthcheckTimeout": 30
+    "healthcheckTimeout": 300
   }
 }
