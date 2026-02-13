@@ -58,6 +58,9 @@ class RepositorioPropietarioSQLite:
                 row_dict.get("fecha_ingreso_propietario")
                 or row_dict.get("FECHA_INGRESO_PROPIETARIO")
             ),
+            consignatario=(
+                row_dict.get("consignatario") or row_dict.get("CONSIGNATARIO")
+            ),
             motivo_inactivacion=(
                 row_dict.get("motivo_inactivacion") or row_dict.get("MOTIVO_INACTIVACION")
             ),
@@ -119,9 +122,10 @@ class RepositorioPropietarioSQLite:
                     OBSERVACIONES_PROPIETARIO,
                     ESTADO_PROPIETARIO,
                     FECHA_INGRESO_PROPIETARIO,
+                    CONSIGNATARIO,
                     CREATED_AT,
                     CREATED_BY
-                ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
                 """,
                 (
                     propietario.id_persona,
@@ -135,6 +139,7 @@ class RepositorioPropietarioSQLite:
                         else True
                     ),
                     propietario.fecha_ingreso_propietario or datetime.now().isoformat(),
+                    propietario.consignatario,
                     datetime.now().isoformat(),
                     usuario_sistema,
                 ),
@@ -160,6 +165,7 @@ class RepositorioPropietarioSQLite:
                     NUMERO_CUENTA_PROPIETARIO = {placeholder},
                     TIPO_CUENTA = {placeholder},
                     OBSERVACIONES_PROPIETARIO = {placeholder},
+                    CONSIGNATARIO = {placeholder},
                     ESTADO_PROPIETARIO = {placeholder},
                     UPDATED_AT = {placeholder},
                     UPDATED_BY = {placeholder}
@@ -170,6 +176,7 @@ class RepositorioPropietarioSQLite:
                     propietario.numero_cuenta_propietario,
                     propietario.tipo_cuenta,
                     propietario.observaciones_propietario,
+                    propietario.consignatario,
                     (
                         bool(propietario.estado_propietario)
                         if propietario.estado_propietario is not None

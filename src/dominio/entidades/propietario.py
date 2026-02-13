@@ -36,6 +36,7 @@ class Propietario:
     tipo_cuenta: Optional[str] = None
 
     observaciones_propietario: Optional[str] = None
+    consignatario: Optional[str] = None
     estado_propietario: Optional[bool] = True
     fecha_ingreso_propietario: Optional[str] = None
     motivo_inactivacion: Optional[str] = None
