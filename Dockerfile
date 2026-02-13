@@ -30,12 +30,5 @@ EXPOSE 8080
 
 # At RUNTIME, Railway injects the real DATABASE_URL env var.
 # Initialize the real DB, then start the backend.
-# Diagnostic: log DATABASE_URL status so we can debug connection issues.
-CMD echo "=== RUNTIME DB DIAGNOSTIC ===" && \
-    echo "DATABASE_URL is: ${DATABASE_URL:-(NOT SET)}" && \
-    echo "DB_HOST is: ${DB_HOST:-(NOT SET)}" && \
-    python -c "import rxconfig; print('rxconfig.db_url =', rxconfig.config.db_url)" && \
-    echo "=== END DIAGNOSTIC ===" && \
-    reflex db init && \
-    reflex run --env prod --backend-only --backend-port ${PORT:-8080} --backend-host 0.0.0.0
+CMD reflex db init && reflex run --env prod --backend-only --backend-port ${PORT:-8080} --backend-host 0.0.0.0
 
