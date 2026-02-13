@@ -8,6 +8,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Railway provides DATABASE_URL automatically when a Postgres plugin is attached.
+# For local development, fall back to composing the URL from individual env vars.
+_db_url = os.getenv("DATABASE_URL") or (
+    f"postgresql://{os.getenv('DB_USER') or 'inmo_user'}"
+    f":{os.getenv('DB_PASSWORD') or '7323'}"
+    f"@{os.getenv('DB_HOST') or 'localhost'}"
+    f":{os.getenv('DB_PORT') or '5432'}"
+    f"/{os.getenv('DB_NAME') or 'db_inmo_velar'}"
+)
+
 config = rx.Config(
     # IMPORTANTE: app_name debe coincidir con la carpeta y archivo (inmobiliaria_velar/inmobiliaria_velar.py)
     app_name="inmobiliaria_velar",
@@ -15,7 +25,7 @@ config = rx.Config(
     backend_port=8000,
     frontend_port=3000,
     # Configuración PostgreSQL
-    db_url=f"postgresql://{os.getenv('DB_USER') or 'inmo_user'}:{os.getenv('DB_PASSWORD') or '7323'}@{os.getenv('DB_HOST') or 'localhost'}:{os.getenv('DB_PORT') or '5432'}/{os.getenv('DB_NAME') or 'db_inmo_velar'}",
+    db_url=_db_url,
     # Entorno de desarrollo
     env=rx.Env.PROD,
     # Desactivar telemetría (opcional)
