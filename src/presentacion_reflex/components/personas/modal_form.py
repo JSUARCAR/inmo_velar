@@ -73,7 +73,7 @@ def propietario_fields() -> rx.Component:
             default_value=PersonasState.form_data["banco_propietario"],
             icon="landmark",
         ),
-        rx.hstack(
+        rx.grid(
             form_field(
                 "Número de Cuenta",
                 "numero_cuenta_propietario",
@@ -95,9 +95,9 @@ def propietario_fields() -> rx.Component:
                     size="3",
                 ),
                 spacing="1",
-                width="50%",
-
+                width="100%",
             ),
+            columns=rx.breakpoints(initial="1", sm="2"),
             spacing="3",
             width="100%",
         ),
@@ -147,7 +147,7 @@ def arrendatario_fields() -> rx.Component:
             default_value=PersonasState.form_data["direccion_referencia"],
             icon="map-pin",
         ),
-        rx.hstack(
+        rx.grid(
             form_field(
                 "Código Aprobación Seguro",
                 "codigo_aprobacion_seguro",
@@ -163,6 +163,7 @@ def arrendatario_fields() -> rx.Component:
                 default_value=PersonasState.form_data["id_seguro"],
                 icon="hash",
             ),
+            columns=rx.breakpoints(initial="1", sm="2"),
             spacing="3",
             width="100%",
         ),
@@ -185,7 +186,7 @@ def asesor_fields() -> rx.Component:
             rx.text("Comisiones", size="3", weight="bold", color="var(--purple-11)"),
             spacing="2",
         ),
-        rx.hstack(
+        rx.grid(
             form_field(
                 "Comisión % Arriendo",
                 "comision_porcentaje_arriendo",
@@ -202,6 +203,7 @@ def asesor_fields() -> rx.Component:
                 default_value=PersonasState.form_data["comision_porcentaje_venta"],
                 icon="percent",
             ),
+            columns=rx.breakpoints(initial="1", sm="2"),
             spacing="3",
             width="100%",
         ),
@@ -268,7 +270,7 @@ def proveedor_fields() -> rx.Component:
 def step_1_basic_info() -> rx.Component:
     """Step 1: Basic Information."""
     return rx.vstack(
-        rx.hstack(
+        rx.flex(
             rx.vstack(
                 rx.text("Tipo Doc", size="2", weight="bold", color="var(--gray-12)"),
                 rx.select(
@@ -280,7 +282,7 @@ def step_1_basic_info() -> rx.Component:
                     width="100%",
                     size="3",
                 ),
-                width="25%",
+                width=["100%", "25%"],
             ),
             rx.box(
                 form_field(
@@ -291,8 +293,9 @@ def step_1_basic_info() -> rx.Component:
                     default_value=PersonasState.form_data["numero_documento"],
                     icon="credit-card",
                 ),
-                width="75%",
+                width=["100%", "75%"],
             ),
+            flex_direction=["column", "row"],
             width="100%",
             spacing="3",
         ),
@@ -306,7 +309,7 @@ def step_1_basic_info() -> rx.Component:
             on_change=lambda val: PersonasState.set_upper("nombre_completo", val),
             icon="user",
         ),
-        rx.hstack(
+        rx.grid(
             form_field(
                 "Teléfono Principal",
                 "telefono_principal",
@@ -325,6 +328,7 @@ def step_1_basic_info() -> rx.Component:
                 on_change=lambda val: PersonasState.set_upper("correo_electronico", val),
                 icon="mail",
             ),
+            columns=rx.breakpoints(initial="1", sm="2"),
             spacing="3",
             width="100%",
         ),
@@ -411,6 +415,7 @@ def step_3_role_details() -> rx.Component:
                         color="var(--gray-10)",
                     ),
                     spacing="2",
+                    align="center",
                 ),
                 padding="6",
             ),
@@ -466,8 +471,12 @@ def modal_persona() -> rx.Component:
                                 (3, step_3_role_details()),
                                 step_1_basic_info(),  # fallback
                             ),
+                            # Responsive height and scroll
                             min_height="300px",
+                            max_height="60vh",
+                            overflow_y="auto",
                             width="100%",
+                            padding_right="2", # avoid scrollbar overlap
                         ),
                         # Navigation Buttons
                         rx.hstack(
@@ -536,7 +545,7 @@ def modal_persona() -> rx.Component:
                 spacing="4",
                 width="100%",
             ),
-            max_width="700px",
+            max_width=["95%", "700px"],
             width="100%",
             padding="6",
             on_escape_key_down=PersonasState.close_modal,
