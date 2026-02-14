@@ -4,7 +4,7 @@ from src.presentacion_reflex.components.layout.dashboard_layout import dashboard
 from src.presentacion_reflex.components.usuarios import modal_form
 from src.presentacion_reflex.components.usuarios.gestion_permisos import gestion_permisos_modal
 from src.presentacion_reflex.state.auth_state import AuthState
-from src.presentacion_reflex.state.usuarios_state import UsuariosState
+from src.presentacion_reflex.state.usuarios_state import UsuarioDisplayModel, UsuariosState
 
 
 def filtros_bar() -> rx.Component:
@@ -66,21 +66,21 @@ def filtros_bar() -> rx.Component:
     )
 
 
-def usuario_card(u: dict) -> rx.Component:
+def usuario_card(u: UsuarioDisplayModel) -> rx.Component:
     """Card individual para vista móvil de usuarios."""
     return rx.card(
         rx.vstack(
             rx.hstack(
-                rx.avatar(fallback=u["nombre_usuario"][:2].upper(), radius="full", size="3"),
+                rx.avatar(fallback=u.nombre_usuario.to(str)[:2].upper(), radius="full", size="3"),
                 rx.vstack(
-                    rx.text(u["nombre_usuario"], weight="bold", size="3"),
-                    rx.badge(u["rol"], variant="soft", color_scheme="blue"),
+                    rx.text(u.nombre_usuario, weight="bold", size="3"),
+                    rx.badge(u.rol, variant="soft", color_scheme="blue"),
                     spacing="1",
                 ),
                 rx.spacer(),
                 rx.badge(
-                    u["estado_label"],
-                    color_scheme=rx.cond(u["estado_usuario"], "green", "gray"),
+                    u.estado_label,
+                    color_scheme=rx.cond(u.estado_usuario, "green", "gray"),
                 ),
                 width="100%",
                 align="center",
@@ -88,7 +88,7 @@ def usuario_card(u: dict) -> rx.Component:
             rx.divider(),
             rx.hstack(
                 rx.text("Último acceso:", size="1", color="gray"),
-                rx.text(u["ultimo_acceso"], size="1"),
+                rx.text(u.ultimo_acceso, size="1"),
                 justify="between",
                 width="100%",
             ),
@@ -98,9 +98,9 @@ def usuario_card(u: dict) -> rx.Component:
                     rx.hstack(
                         rx.text("Estado:", size="2", weight="medium"),
                         rx.switch(
-                            checked=u["estado_usuario"],
+                            checked=u.estado_usuario,
                             on_change=lambda val: UsuariosState.toggle_status(
-                                u["id_usuario"], u["estado_usuario"]
+                                u.id_usuario, u.estado_usuario
                             ),
                             color_scheme="green",
                         ),
@@ -111,13 +111,13 @@ def usuario_card(u: dict) -> rx.Component:
                 rx.spacer(),
                 rx.hstack(
                     rx.cond(
-                        (u["rol"] != "Administrador")
+                        (u.rol != "Administrador")
                         & AuthState.check_action("Usuarios", "EDITAR"),
                         rx.icon_button(
                             rx.icon("shield-check", size=18),
                             variant="surface",
                             color_scheme="violet",
-                            on_click=lambda: UsuariosState.open_permissions_modal(u["rol"]),
+                            on_click=lambda: UsuariosState.open_permissions_modal(u.rol),
                         ),
                     ),
                     rx.cond(
@@ -164,24 +164,24 @@ def usuarios_table() -> rx.Component:
             rx.foreach(
                 UsuariosState.usuarios,
                 lambda u: rx.table.row(
-                    rx.table.cell(u["nombre_usuario"], font_weight="bold"),
-                    rx.table.cell(rx.badge(u["rol"], variant="soft", color_scheme="blue")),
+                    rx.table.cell(u.nombre_usuario, font_weight="bold"),
+                    rx.table.cell(rx.badge(u.rol, variant="soft", color_scheme="blue")),
                     rx.table.cell(
                         rx.badge(
-                            u["estado_label"],
-                            color_scheme=rx.cond(u["estado_usuario"], "green", "gray"),
+                            u.estado_label,
+                            color_scheme=rx.cond(u.estado_usuario, "green", "gray"),
                         )
                     ),
-                    rx.table.cell(u["ultimo_acceso"]),
+                    rx.table.cell(u.ultimo_acceso),
                     rx.table.cell(
                         rx.hstack(
                             rx.cond(
                                 AuthState.check_action("Usuarios", "EDITAR"),
                                 rx.tooltip(
                                     rx.switch(
-                                        checked=u["estado_usuario"],
+                                        checked=u.estado_usuario,
                                         on_change=lambda val: UsuariosState.toggle_status(
-                                            u["id_usuario"], u["estado_usuario"]
+                                            u.id_usuario, u.estado_usuario
                                         ),
                                         color_scheme="green",
                                         style={
@@ -197,7 +197,7 @@ def usuarios_table() -> rx.Component:
                             ),
                             # Botón de permisos (solo para roles != Administrador)
                             rx.cond(
-                                (u["rol"] != "Administrador")
+                                (u.rol != "Administrador")
                                 & AuthState.check_action("Usuarios", "EDITAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -206,7 +206,7 @@ def usuarios_table() -> rx.Component:
                                         variant="ghost",
                                         color_scheme="violet",
                                         on_click=lambda: UsuariosState.open_permissions_modal(
-                                            u["rol"]
+                                            u.rol
                                         ),
                                     ),
                                     content="Gestionar permisos del rol",
