@@ -59,7 +59,7 @@ class PDFState(rx.State):
     # Servicio PDF
     _pdf_service: Optional[ServicioPDFFacade] = None
 
-    @rx.var
+    @property
     def pdf_service(self) -> ServicioPDFFacade:
         """Obtiene instancia del servicio PDF (singleton)"""
         if self._pdf_service is None:
