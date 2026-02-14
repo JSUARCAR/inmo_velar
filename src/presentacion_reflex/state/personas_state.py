@@ -467,7 +467,6 @@ class PersonasState(rx.State):
                 arr = datos_roles["Arrendatario"]
                 self.form_data.update(
                     {
-                        "direccion_referencia": arr.direccion_referencia or "",
                         "codigo_aprobacion_seguro": arr.codigo_aprobacion_seguro or "",
                         "id_seguro": str(arr.id_seguro) if arr.id_seguro else "",
                     }
@@ -646,7 +645,6 @@ class PersonasState(rx.State):
                     }
                 elif rol == "Arrendatario":
                     datos_rol = {
-                        "direccion_referencia": form_data.get("direccion_referencia", ""),
                         "codigo_aprobacion_seguro": form_data.get("codigo_aprobacion_seguro", ""),
                         # Convertir a entero solo si hay valor
                         "id_seguro": (

@@ -155,13 +155,6 @@ def arrendatario_fields() -> rx.Component:
             rx.text("Información de Seguro", size="3", weight="bold", color="var(--green-11)"),
             spacing="2",
         ),
-        form_field(
-            "Dirección de Referencia",
-            "direccion_referencia",
-            "Ej: Calle 456 # 78-90",
-            default_value=PersonasState.form_data["direccion_referencia"],
-            icon="map-pin",
-        ),
         rx.grid(
             form_field(
                 "Código Aprobación Seguro",

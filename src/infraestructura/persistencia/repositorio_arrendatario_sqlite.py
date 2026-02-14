@@ -43,9 +43,6 @@ class RepositorioArrendatarioSQLite:
             codigo_aprobacion_seguro=(
                 row_dict.get("codigo_aprobacion_seguro") or row_dict.get("CODIGO_APROBACION_SEGURO")
             ),
-            direccion_referencia=(
-                row_dict.get("direccion_referencia") or row_dict.get("DIRECCION_REFERENCIA")
-            ),
             estado_arrendatario=(
                 row_dict.get("estado_arrendatario") or row_dict.get("ESTADO_ARRENDATARIO")
             ),
@@ -100,18 +97,16 @@ class RepositorioArrendatarioSQLite:
                     ID_PERSONA,
                     ID_SEGURO,
                     CODIGO_APROBACION_SEGURO,
-                    DIRECCION_REFERENCIA,
                     ESTADO_ARRENDATARIO,
                     FECHA_INGRESO_ARRENDATARIO,
                     CREATED_AT,
                     CREATED_BY
-                ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
                 """,
                 (
                     arrendatario.id_persona,
                     arrendatario.id_seguro,
                     arrendatario.codigo_aprobacion_seguro,
-                    arrendatario.direccion_referencia,
                     (
                         bool(arrendatario.estado_arrendatario)
                         if arrendatario.estado_arrendatario is not None
@@ -141,7 +136,6 @@ class RepositorioArrendatarioSQLite:
                 UPDATE ARRENDATARIOS SET
                     ID_SEGURO = {placeholder},
                     CODIGO_APROBACION_SEGURO = {placeholder},
-                    DIRECCION_REFERENCIA = {placeholder},
                     ESTADO_ARRENDATARIO = {placeholder},
                     UPDATED_AT = {placeholder},
                     UPDATED_BY = {placeholder}
@@ -150,7 +144,6 @@ class RepositorioArrendatarioSQLite:
                 (
                     arrendatario.id_seguro,
                     arrendatario.codigo_aprobacion_seguro,
-                    arrendatario.direccion_referencia,
                     (
                         bool(arrendatario.estado_arrendatario)
                         if arrendatario.estado_arrendatario is not None
