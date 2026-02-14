@@ -42,7 +42,14 @@ def form_field(
     )
 
 
-def form_textarea(label: str, name: str, placeholder: str, default_value: str = "") -> rx.Component:
+def form_textarea(
+    label: str, 
+    name: str, 
+    placeholder: str, 
+    default_value: str = "",
+    value: str = None,
+    on_change: str = None,
+) -> rx.Component:
     """Elite textarea field."""
     return rx.vstack(
         rx.text(label, size="2", weight="bold", color="var(--gray-12)"),
@@ -50,6 +57,8 @@ def form_textarea(label: str, name: str, placeholder: str, default_value: str = 
             name=name,
             placeholder=placeholder,
             default_value=default_value,
+            value=value,
+            on_change=on_change,
             width="100%",
             size="3",
         ),
@@ -71,6 +80,8 @@ def propietario_fields() -> rx.Component:
             "banco_propietario",
             "Ej: Bancolombia",
             default_value=PersonasState.form_data["banco_propietario"],
+            value=PersonasState.form_data["banco_propietario"],
+            on_change=lambda val: PersonasState.set_upper("banco_propietario", val),
             icon="landmark",
         ),
         rx.grid(
@@ -113,6 +124,8 @@ def propietario_fields() -> rx.Component:
             "consignatario",
             "Nombre de quien recibe el pago",
             default_value=PersonasState.form_data["consignatario"],
+            value=PersonasState.form_data["consignatario"],
+            on_change=lambda val: PersonasState.set_upper("consignatario", val),
             icon="user-check",
         ),
         form_textarea(
@@ -120,6 +133,8 @@ def propietario_fields() -> rx.Component:
             "observaciones_propietario",
             "Notas adicionales...",
             default_value=PersonasState.form_data["observaciones_propietario"],
+            value=PersonasState.form_data["observaciones_propietario"],
+            on_change=lambda val: PersonasState.set_upper("observaciones_propietario", val),
         ),
         spacing="3",
         width="100%",
@@ -239,6 +254,8 @@ def proveedor_fields() -> rx.Component:
             "especialidad",
             "Ej: Plomería, Electricidad",
             default_value=PersonasState.form_data["especialidad"],
+            value=PersonasState.form_data["especialidad"],
+            on_change=lambda val: PersonasState.set_upper("especialidad", val),
             icon="wrench",
         ),
         form_field(
@@ -254,6 +271,8 @@ def proveedor_fields() -> rx.Component:
             "observaciones",
             "Ej: Disponible fines de semana",
             default_value=PersonasState.form_data["observaciones"],
+            value=PersonasState.form_data["observaciones"],
+            on_change=lambda val: PersonasState.set_upper("observaciones", val),
         ),
         spacing="3",
         width="100%",
