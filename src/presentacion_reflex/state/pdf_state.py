@@ -77,7 +77,7 @@ class PDFState(rx.State):
             # ESTRATEGIA ÉLITE: Fetch + Blob URL
             # Esto evita problemas de navegación cross-origin y garantiza la descarga
             pdf_filename = Path(pdf_path).name
-            download_url = f"http://localhost:8000/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}')
@@ -122,7 +122,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA ÉLITE: Fetch + Blob URL
             pdf_filename = Path(pdf_path).name
-            download_url = f"http://localhost:8000/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}')
@@ -193,7 +193,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA EXPERTA: API Backend Directa
             pdf_filename = Path(pdf_path).name
-            download_url = f"http://localhost:8000/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             logger.info(f"✅ Iniciando descarga con Fetch API: {download_url}")
 
@@ -265,7 +265,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA ÉLITE: Fetch + Blob URL
             pdf_filename = Path(pdf_path).name
-            download_url = f"http://localhost:8000/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             logger.info(f"✅ Iniciando descarga con Fetch API: {download_url}")
 
@@ -341,7 +341,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA EXPERTA: API Backend Directa
             pdf_filename = Path(pdf_path).name
-            download_url = f"http://localhost:8000/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             # ESTRATEGIA ÉLITE: Fetch + Blob URL
             js_download = f"""
@@ -414,7 +414,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA ÉLITE: Fetch + Blob URL
             pdf_filename = Path(pdf_path).name
-            download_url = f"http://localhost:8000/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}')
@@ -507,7 +507,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA EXPERTA: API Backend Directa
             pdf_filename = Path(pdf_path).name
-            download_url = f"http://localhost:8000/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             # ESTRATEGIA ÉLITE: Fetch + Blob URL
             js_download = f"""
@@ -1036,7 +1036,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA ÉLITE: Fetch + Blob URL (same as Propietarios)
             pdf_filename = Path(pdf_path).name
-            download_url = f"http://localhost:8000/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}')
@@ -1252,7 +1252,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA ÉLITE: Fetch + Blob URL
             pdf_filename = Path(pdf_path).name
-            download_url = f"http://localhost:8000/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}')
