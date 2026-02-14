@@ -4,10 +4,13 @@ from src.presentacion_reflex.components.layout.dashboard_layout import dashboard
 from src.presentacion_reflex.state.auditoria_state import AuditoriaState
 
 
+from src.presentacion_reflex import styles
+
 def filters_bar() -> rx.Component:
     return rx.flex(
         rx.input(
             placeholder="Buscar por usuario o detalle...",
+            color=styles.TEXT_PRIMARY,
             on_change=lambda val: [AuditoriaState.set_search(val), AuditoriaState.load_logs()],
             icon="search",
             width="350px",
@@ -72,7 +75,7 @@ def audit_table() -> rx.Component:
                         rx.text(
                             log.detalle,
                             size="1",
-                            color="gray",
+                            color=styles.TEXT_SECONDARY,
                             overflow="hidden",
                             text_overflow="ellipsis",
                             white_space="nowrap",
@@ -91,7 +94,7 @@ def audit_table() -> rx.Component:
 def auditoria_content() -> rx.Component:
     return rx.vstack(
         rx.heading("Auditoría de Cambios", size="6"),
-        rx.text("Historial de operaciones críticas y modificaciones del sistema.", color="gray"),
+        rx.text("Historial de operaciones críticas y modificaciones del sistema.", color=styles.TEXT_SECONDARY),
         rx.divider(),
         filters_bar(),
         rx.cond(AuditoriaState.is_loading, rx.center(rx.spinner()), audit_table()),

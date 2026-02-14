@@ -311,6 +311,8 @@ def sidebar_items() -> rx.Component:
 
 def sidebar_footer() -> rx.Component:
     """Pie del sidebar con perfil de usuario."""
+    from src.presentacion_reflex.components.layout.theme_toggle import theme_toggle_icon
+
     return rx.hstack(
         rx.avatar(fallback="IV", size="3", radius="full", color_scheme="blue", variant="solid"),
         rx.vstack(
@@ -335,9 +337,10 @@ def sidebar_footer() -> rx.Component:
             align_items="start",
         ),
         rx.spacer(),
+        theme_toggle_icon(), # Elite Toggle Integration
         bell_icon(),  # Restored bell icon
         rx.icon_button(
-            "log-out",
+            rx.icon("log-out", size=20),
             size="2",
             variant="ghost",
             color_scheme="red",

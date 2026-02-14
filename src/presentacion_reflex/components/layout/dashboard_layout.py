@@ -6,6 +6,7 @@ def dashboard_layout(content: rx.Component) -> rx.Component:
     Layout principal para páginas autenticadas.
     Incluye Sidebar y area de contenido.
     """
+    from src.presentacion_reflex import styles
     from src.presentacion_reflex.components.layout.mobile_nav import mobile_nav
     from src.presentacion_reflex.components.layout.sidebar import sidebar
 
@@ -17,7 +18,7 @@ def dashboard_layout(content: rx.Component) -> rx.Component:
             flex="1",
             height="100vh",
             overflow_y="auto",
-            background="#F3F4F6",  # Gray 100
+            background=styles.BG_APP,  # Semantic Token
             width="100%",
         ),
         rx.toast.provider(),

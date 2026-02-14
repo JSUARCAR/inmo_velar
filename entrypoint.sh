@@ -57,6 +57,15 @@ handle {
     try_files {path} /index.html
     file_server
     encode gzip
+    
+    # Disable cache for HTML files to ensure updates are seen immediately
+    @html {
+        path *.html
+    }
+    header @html Cache-Control "no-cache, no-store, must-revalidate"
+    
+    # Cache static assets (JS, CSS, Images) for a long time, but with versioning check
+    # Reflex uses hashed filenames, so long cache is fine, but index.html MUST be no-cache.
 }
 EOF
 echo "  ✅ Caddyfile generated (frontend: $FRONTEND_DIR)"
