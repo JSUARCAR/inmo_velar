@@ -29,25 +29,23 @@ if not logger.handlers:
     logger.addHandler(handler)
 
 
+
+# ========================================================================
+# SERVICIO PDF SINGLETON (Module Level)
+# ========================================================================
+_pdf_service_instance: Optional[ServicioPDFFacade] = None
+
+def get_pdf_service() -> ServicioPDFFacade:
+    """Obtiene instancia del servicio PDF (singleton a nivel de módulo)"""
+    global _pdf_service_instance
+    if _pdf_service_instance is None:
+        _pdf_service_instance = ServicioPDFFacade()
+    return _pdf_service_instance
+
+
 class PDFState(rx.State):
     """
     Estado para manejo de PDFs en Reflex
-
-    Proporciona event handlers para generar PDFs desde la UI
-    y manejar descargas automáticas.
-
-    Attributes:
-        generating: Si está generando un PDF
-        last_pdf_path: Path del último PDF generado
-        error_message: Mensaje de error si hubo problema
-        success_message: Mensaje de éxito
-
-    Example:
-        En una página de Reflex:
-        >>> rx.button(
-        ...     "Generar Contrato",
-        ...     on_click=PDFState.generar_contrato_arrendamiento(contrato_id)
-        ... )
     """
 
     # Estado
@@ -55,16 +53,6 @@ class PDFState(rx.State):
     last_pdf_path: str = ""
     error_message: str = ""
     success_message: str = ""
-
-    # Servicio PDF
-    _pdf_service: Optional[ServicioPDFFacade] = None
-
-    @property
-    def pdf_service(self) -> ServicioPDFFacade:
-        """Obtiene instancia del servicio PDF (singleton)"""
-        if self._pdf_service is None:
-            self._pdf_service = ServicioPDFFacade()
-        return self._pdf_service
 
     # ========================================================================
     # EVENT HANDLERS - DOCUMENTOS LEGACY
@@ -82,7 +70,7 @@ class PDFState(rx.State):
         self.success_message = ""
 
         try:
-            pdf_path = self.pdf_service.generar_comprobante_recaudo(datos)
+            pdf_path = get_pdf_service().generar_comprobante_recaudo(datos)
             self.last_pdf_path = pdf_path
             self.success_message = f"Comprobante generado: {Path(pdf_path).name}"
 
@@ -128,7 +116,7 @@ class PDFState(rx.State):
         self.error_message = ""
 
         try:
-            pdf_path = self.pdf_service.generar_estado_cuenta(datos)
+            pdf_path = get_pdf_service().generar_estado_cuenta(datos)
             self.last_pdf_path = pdf_path
             self.success_message = f"Estado de cuenta generado: {Path(pdf_path).name}"
 
@@ -192,7 +180,7 @@ class PDFState(rx.State):
             logger.debug(f"✅ Datos obtenidos: {list(datos.keys())}")
 
             logger.debug("📄 Paso 2: Generando PDF con facade...")
-            pdf_path = self.pdf_service.generar_contrato_elite(datos, usar_borrador=es_borrador)
+            pdf_path = get_pdf_service().generar_contrato_elite(datos, usar_borrador=es_borrador)
             logger.debug(f"✅ PDF generado en: {pdf_path}")
 
             self.last_pdf_path = pdf_path
@@ -264,7 +252,7 @@ class PDFState(rx.State):
             logger.debug(f"✅ Datos obtenidos: {list(datos.keys())}")
 
             logger.debug("📄 Paso 2: Generando PDF con facade...")
-            pdf_path = self.pdf_service.generar_contrato_elite(datos, usar_borrador=es_borrador)
+            pdf_path = get_pdf_service().generar_contrato_elite(datos, usar_borrador=es_borrador)
             logger.debug(f"✅ PDF generado en: {pdf_path}")
 
             self.last_pdf_path = pdf_path
@@ -346,7 +334,7 @@ class PDFState(rx.State):
                 },
             }
 
-            pdf_path = self.pdf_service.generar_certificado_elite(datos)
+            pdf_path = get_pdf_service().generar_certificado_elite(datos)
             self.last_pdf_path = pdf_path
 
             yield rx.toast.success("Certificado de paz y salvo generado")
@@ -414,7 +402,7 @@ class PDFState(rx.State):
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
             pdf_service = ServicioDocumentosPDF()
-            pdf_path = pdf_service.generar_estado_cuenta(datos)
+            pdf_path = get_pdf_service().generar_estado_cuenta(datos)
             logger.debug(f"✅ PDF generado en: {pdf_path}")
 
             self.last_pdf_path = pdf_path
@@ -507,7 +495,7 @@ class PDFState(rx.State):
             logger.debug(f"  - Resumen keys: {list(datos_pdf.get('resumen', {}).keys())}")
 
             logger.debug("📄 Paso 2: Generando PDF con facade...")
-            pdf_path = self.pdf_service.generar_estado_cuenta_elite(datos_pdf)
+            pdf_path = get_pdf_service().generar_estado_cuenta_elite(datos_pdf)
             logger.debug(f"✅ PDF generado en: {pdf_path}")
 
             self.last_pdf_path = pdf_path
