@@ -67,7 +67,7 @@ def reports_sidebar():
             width="100%",
             variant="ghost"
         ),
-        width="250px",
+        width="100%",
         height="100%",
         padding="4",
         border_right="1px solid #e5e7eb",
@@ -206,12 +206,63 @@ def reports_content():
 def reportes_page() -> rx.Component:
     """Página principal del módulo de Reportes."""
     return dashboard_layout(
-        rx.hstack(
-            reports_sidebar(),
-            reports_content(),
-            height="calc(100vh - 80px)", # Ajuste aproximado para headers
+        rx.box(
+            # Mobile Sidebar Drawer (Visible only on mobile)
+            rx.box(
+                rx.drawer.root(
+                    rx.drawer.trigger(
+                        rx.button(
+                            rx.icon("menu", size=24),
+                            "Menú Reportes",
+                            variant="soft",
+                            color_scheme="gray",
+                            size="3",
+                            margin_bottom="4",
+                        )
+                    ),
+                    rx.drawer.overlay(background_color="rgba(0, 0, 0, 0.5)"),
+                    rx.drawer.portal(
+                        rx.drawer.content(
+                            rx.vstack(
+                                rx.heading("Navegación", size="4", margin_bottom="4"),
+                                reports_sidebar(),
+                                padding="4",
+                                height="100%",
+                                width="100%",
+                                background_color="white",
+                            ),
+                            top="0",
+                            left="0",
+                            height="100%",
+                            width="280px",
+                            background_color="white",
+                            padding="0",
+                        )
+                    ),
+                    direction="left",
+                ),
+                display=["block", "block", "none", "none", "none"], # Show only on mobile/tablet
+                width="100%",
+                padding_x="4",
+                padding_top="4",
+            ),
+            
+            rx.hstack(
+                # Desktop Sidebar (Original - Visible only on desktop)
+                rx.box(
+                    reports_sidebar(),
+                    display=["none", "none", "block", "block", "block"],
+                    width="250px",
+                    height="100%",
+                    flex_shrink="0",
+                ),
+                # Main Content Area
+                reports_content(),
+                height="calc(100vh - 80px)", 
+                width="100%",
+                spacing="0",
+                align_items="start",
+            ),
             width="100%",
-            spacing="0",
-            align_items="start",
         )
     )
