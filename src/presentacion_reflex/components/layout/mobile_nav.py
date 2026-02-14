@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.components.layout.sidebar import sidebar_footer, sidebar_items
+from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
 
 
 def mobile_nav() -> rx.Component:
@@ -34,7 +35,17 @@ def mobile_nav() -> rx.Component:
                             rx.box(
                                 rx.hstack(
                                     rx.hstack(
-                                        rx.icon("building", size=26, color="white"),
+                                        rx.cond(
+                                            ConfiguracionState.logo_preview != "",
+                                            rx.image(
+                                                src=ConfiguracionState.logo_preview,
+                                                height="40px",
+                                                width="auto",
+                                                object_fit="contain",
+                                                alt="Logo",
+                                            ),
+                                            rx.icon("building", size=26, color="white"),
+                                        ),
                                         rx.heading(
                                             "Inmobiliaria Velar",
                                             size="5",
@@ -79,29 +90,40 @@ def mobile_nav() -> rx.Component:
                             rx.box(
                                 sidebar_footer(),
                                 width="100%",
+                                padding="4", # Added padding for better look on white bg
                             ),
                             height="100%",
                             width="100%",
                             spacing="0",
-                            background="#111827",
+                            background="white",  # Changed to white ensuring high contrast
                         ),
                         top="0",
                         left="0",
                         height="100%",
                         width="85%",
                         max_width="320px",
-                        background="#111827",
+                        background="white",  # Changed to white
                         position="fixed",
                         z_index="100",
                         box_shadow="10px 0 50px rgba(0,0,0,0.5)",
-                        border_right="1px solid rgba(255,255,255,0.05)",
+                        border_right="1px solid rgba(0,0,0,0.1)",
                     )
                 ),
                 direction="left",
             ),
             # Title / Logo with Gradient Text
             rx.hstack(
-                rx.icon("building", size=22, color="#60a5fa"),  # Lighter blue icon
+                rx.cond(
+                    ConfiguracionState.logo_preview != "",
+                    rx.image(
+                        src=ConfiguracionState.logo_preview,
+                        height="32px",
+                        width="auto",
+                        object_fit="contain",
+                        alt="Logo",
+                    ),
+                    rx.icon("building", size=22, color="#60a5fa"),
+                ),
                 rx.heading(
                     "Inmobiliaria Velar",
                     size="4",
