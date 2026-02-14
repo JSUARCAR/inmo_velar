@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.components.layout.sidebar import sidebar_footer, sidebar_items
+from src.presentacion_reflex.components.layout.theme_toggle import theme_toggle_icon
 from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
 
 
@@ -139,6 +140,8 @@ def mobile_nav() -> rx.Component:
                 spacing="2",
             ),
             rx.spacer(),
+            # Theme Toggle (Mobile)
+            theme_toggle_icon(),
             # User Avatar (Mini) with Ring
             rx.box(
                 rx.avatar(
