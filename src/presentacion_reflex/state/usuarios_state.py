@@ -242,8 +242,14 @@ class UsuariosState(rx.State):
             error_msg = str(e)
 
             # Traducir errores comunes de PostgreSQL
+            # Traducir errores comunes de PostgreSQL
             if "duplicate key" in error_msg.lower() or "already exists" in error_msg.lower():
-                error_msg = f"El usuario '{datos['nombre_usuario']}' ya existe en el sistema."
+                if "usuarios_pkey" in error_msg.lower():
+                    error_msg = f"Error interno: ID duplicado (Secuencia desincronizada). Contacte soporte. Detalles: {error_msg}"
+                elif "usuarios_nombre_usuario_key" in error_msg.lower() or "nombre_usuario" in error_msg.lower():
+                    error_msg = f"El usuario '{datos['nombre_usuario']}' ya existe en el sistema."
+                else:
+                     error_msg = f"Error de duplicidad: {error_msg}"
             elif "foreign key" in error_msg.lower():
                 error_msg = "Error de integridad de datos. Verifique las relaciones."
             else:
