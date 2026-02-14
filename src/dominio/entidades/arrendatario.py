@@ -35,8 +35,6 @@ class Arrendatario:
     id_seguro: Optional[int] = None
 
     codigo_aprobacion_seguro: Optional[str] = None
-    direccion_referencia: Optional[str] = None
-
     estado_arrendatario: Optional[bool] = True
     fecha_ingreso_arrendatario: Optional[str] = None
     motivo_inactivacion: Optional[str] = None
