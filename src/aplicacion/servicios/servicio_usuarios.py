@@ -85,23 +85,10 @@ class ServicioUsuarios:
             raise ValueError("Usuario no encontrado")
 
         # Reutilizamos lógica de validación y hash de auth_service
-        # Pero como auth_service.cambiar_contraseña pide la actual para verificación,
-        # aquí hacemos la asignación directa del hash validado.
-
+        # Corrección: hashear_contraseña devuelve string (hash bcrypt), no tupla.
         if len(nueva_contrasena) < 6:
             raise ValueError("La contraseña debe tener al menos 6 caracteres")
 
-        hash_nuevo, _ = self.auth_service.hashear_contraseña(nueva_contrasena)
-
-        # OJO: ServicioAutenticacion.hashear_contraseña devuelve (hash, salt) pero el método actual del servicio
-        # en `crear_usuario` usa hashlib directo sin salt separado en la implementación actual de autenticación.
-        # Revisando servicio_autenticacion.py:
-        # L86: hash_ingresado = hashlib.sha256(contraseña.encode('utf-8')).hexdigest()
-        # L172: contraseña_hash = hashlib.sha256(contraseña.encode('utf-8')).hexdigest()
-        # Por consistencia con FASE 0, usaremos hashlib directo aquí también hasta que se migre todo a sal.
-
-        import hashlib
-
-        usuario.contrasena_hash = hashlib.sha256(nueva_contrasena.encode("utf-8")).hexdigest()
+        usuario.contrasena_hash = self.auth_service.hashear_contraseña(nueva_contrasena)
 
         return self.repo.actualizar(usuario, editor)
