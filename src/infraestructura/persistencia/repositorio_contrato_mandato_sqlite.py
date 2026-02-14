@@ -26,8 +26,9 @@ class RepositorioContratoMandatoSQLite:
             FECHA_INICIO_CONTRATO_M, FECHA_FIN_CONTRATO_M, DURACION_CONTRATO_M,
             CANON_MANDATO, COMISION_PORCENTAJE_CONTRATO_M, IVA_CONTRATO_M,
             ESTADO_CONTRATO_M, ALERTA_VENCIMINETO_CONTRATO_M, FECHA_RENOVACION_CONTRATO_M,
+            FECHA_PAGO,
             CREATED_BY, UPDATED_BY
-        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
         """,
             (
                 contrato.id_propiedad,
@@ -41,7 +42,10 @@ class RepositorioContratoMandatoSQLite:
                 contrato.iva_contrato_m,
                 contrato.estado_contrato_m,
                 contrato.alerta_vencimiento_contrato_m,
+                contrato.estado_contrato_m,
+                contrato.alerta_vencimiento_contrato_m,
                 contrato.fecha_renovacion_contrato_m,
+                contrato.fecha_pago,
                 usuario,
                 usuario,
             ),
@@ -200,7 +204,9 @@ class RepositorioContratoMandatoSQLite:
             ESTADO_CONTRATO_M = {placeholder},
             MOTIVO_CANCELACION = {placeholder},
             ALERTA_VENCIMINETO_CONTRATO_M = {placeholder},
+            ALERTA_VENCIMINETO_CONTRATO_M = {placeholder},
             FECHA_RENOVACION_CONTRATO_M = {placeholder},
+            FECHA_PAGO = {placeholder},
             UPDATED_AT = {placeholder},
             UPDATED_BY = {placeholder}
         WHERE ID_CONTRATO_M = {placeholder}
@@ -218,7 +224,9 @@ class RepositorioContratoMandatoSQLite:
                 contrato.estado_contrato_m,
                 contrato.motivo_cancelacion,
                 contrato.alerta_vencimiento_contrato_m,
+                contrato.alerta_vencimiento_contrato_m,
                 contrato.fecha_renovacion_contrato_m,
+                contrato.fecha_pago,
                 datetime.now().replace(microsecond=0).isoformat(),
                 usuario,
                 contrato.id_contrato_m,
@@ -273,6 +281,7 @@ class RepositorioContratoMandatoSQLite:
                 row_dict.get("fecha_renovacion_contrato_m")
                 or row_dict.get("FECHA_RENOVACION_CONTRATO_M")
             ),
+            fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),

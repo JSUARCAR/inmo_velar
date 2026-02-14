@@ -186,12 +186,6 @@ def contrato_mandato_form() -> rx.Component:
                                     spacing="1",
                                     width="100%",
                                 ),
-                                columns=rx.breakpoints(initial="1", sm="2"),
-                                spacing="4",
-                                width="100%",
-                            ),
-                            # Duración y Canon (2 columnas)
-                            rx.grid(
                                 rx.vstack(
                                     rx.text("Duración (meses) *", size="2", weight="bold"),
                                     rx.input(
@@ -208,6 +202,12 @@ def contrato_mandato_form() -> rx.Component:
                                     spacing="1",
                                     width="100%",
                                 ),
+                                columns=rx.breakpoints(initial="1", sm="2"),
+                                spacing="4",
+                                width="100%",
+                            ),
+                            # Canon y Fecha de Pago (2 columnas)
+                            rx.grid(
                                 rx.vstack(
                                     rx.text("Canon Estimado *", size="2", weight="bold"),
                                     rx.input(
@@ -219,6 +219,23 @@ def contrato_mandato_form() -> rx.Component:
                                         min=0,
                                         read_only=True,
                                         value=ContratosState.form_data.get("canon", ""),
+                                        variant="surface",
+                                    ),
+                                    spacing="1",
+                                    width="100%",
+                                ),
+                                rx.vstack(
+                                    rx.text("Fecha de Pago *", size="2", weight="bold"),
+                                    rx.input(
+                                        rx.input.slot(rx.icon("calendar-days", size=16)),
+                                        type="text",
+                                        name="fecha_pago",
+                                        placeholder="Ej: Día 5 de cada mes",
+                                        required=True,
+                                        value=ContratosState.form_data.get("fecha_pago", ""),
+                                        on_change=lambda v: ContratosState.set_form_field(
+                                            "fecha_pago", v
+                                        ),
                                         variant="surface",
                                     ),
                                     spacing="1",

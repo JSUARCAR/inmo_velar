@@ -614,7 +614,9 @@ class ContratosState(DocumentosStateMixin):
             "id_propietario": "",
             "id_asesor": "",
             "fecha_inicio": "",
+            "fecha_inicio": "",
             "fecha_fin": "",
+            "fecha_pago": "",
             "duracion_meses": 12,
             "canon": 0,
             "comision_porcentaje": 10,  # 10% Predeterminado
@@ -699,7 +701,9 @@ class ContratosState(DocumentosStateMixin):
                             "id_propietario": str(contrato.id_propietario),
                             "id_asesor": str(contrato.id_asesor),
                             "fecha_inicio": contrato.fecha_inicio_contrato_m,
+                            "fecha_inicio": contrato.fecha_inicio_contrato_m,
                             "fecha_fin": contrato.fecha_fin_contrato_m,
+                            "fecha_pago": contrato.fecha_pago or "",
                             "duracion_meses": contrato.duracion_contrato_m,
                             "canon": contrato.canon_mandato,
                             "comision_porcentaje": contrato.comision_porcentaje_contrato_m,
@@ -878,6 +882,7 @@ class ContratosState(DocumentosStateMixin):
                     "id_asesor": int(form_data["id_asesor"]),
                     "fecha_inicio": form_data["fecha_inicio"],
                     "fecha_fin": form_data["fecha_fin"],
+                    "fecha_pago": form_data.get("fecha_pago"),
                     "duracion_meses": int(form_data["duracion_meses"]),
                     "canon": int(form_data["canon"]),
                     "comision_porcentaje": int(

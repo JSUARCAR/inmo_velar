@@ -42,6 +42,7 @@ class ContratoMandato:
     # Alertas
     alerta_vencimiento_contrato_m: bool = True  # True = Activa, False = Inactiva
     fecha_renovacion_contrato_m: Optional[str] = None
+    fecha_pago: Optional[str] = None  # Fecha pago propietario
 
     # Auditoría
     created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
