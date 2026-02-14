@@ -1,0 +1,11 @@
+DEBUG [database.py]: Final DB_MODE: postgresql
+Checking for user 'losorio'...
+NOT FOUND STRICT
+NOT FOUND LOWER
+
+ALL USERS:
+{'ID_USUARIO': 10, 'NOMBRE_USUARIO': 'usuario_prueba', 'ESTADO_USUARIO': True}
+{'ID_USUARIO': 9, 'NOMBRE_USUARIO': 'test_diagnostic', 'ESTADO_USUARIO': False}
+{'ID_USUARIO': 8, 'NOMBRE_USUARIO': 'crisjam', 'ESTADO_USUARIO': True}
+{'ID_USUARIO': 1, 'NOMBRE_USUARIO': 'ADMIN', 'ESTADO_USUARIO': True}
+{'ID_USUARIO': 2, 'NOMBRE_USUARIO': 'admin', 'ESTADO_USUARIO': True}

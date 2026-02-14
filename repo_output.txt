@@ -1,0 +1,10 @@
+DEBUG [database.py]: Final DB_MODE: postgresql
+
+--- CHECKING INDEXES ---
+Could not list indexes (might not be postgres?): 'indexname'
+
+--- REPRODUCING WITH REPO ---
+Obtener por nombre 'losorio': None
+Attempting to create user 'losorio' via Repo...
+User created successfully! ID: 13
+Cleanup successful.
