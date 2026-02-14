@@ -67,7 +67,14 @@ def index() -> rx.Component:
 
 # Crear la app (toast provider incluido automáticamente)
 # Crear la app (toast provider incluido automáticamente)
-app = rx.App()
+app = rx.App(
+    theme=rx.theme(
+        appearance="light",
+        has_background=True,
+        radius="large",
+        accent_color="blue",
+    )
+)
 
 # Middleware de Seguridad (Headers)
 from fastapi import Request

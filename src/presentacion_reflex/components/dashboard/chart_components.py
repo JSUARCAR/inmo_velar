@@ -8,6 +8,7 @@ from reflex.vars.base import Var
 from src.presentacion_reflex.utils.formatters import format_currency
 
 from src.presentacion_reflex.state.dashboard_state import DashboardState
+from src.presentacion_reflex import styles
 
 # Formateador nativo JS para tooltips (usando formato alemán para separador de miles por punto)
 # Reemplaza el símbolo de moneda de DE para mantener consistencia con el estilo local
@@ -22,7 +23,7 @@ def vencimientos_chart() -> rx.Component:
     """
     return rx.card(
         rx.vstack(
-            rx.text("Contratos por Vencer (90 Días)", size="4", weight="bold"),
+            rx.text("Contratos por Vencer (90 Días)", size="4", weight="bold", color=styles.TEXT_PRIMARY),
             rx.box(
                 rx.recharts.bar_chart(
                     rx.recharts.bar(
@@ -58,6 +59,7 @@ def vencimientos_chart() -> rx.Component:
             width="100%",
         ),
         size="2",
+        bg=styles.BG_PANEL,
         width="100%",
     )
 
@@ -68,7 +70,7 @@ def evolucion_chart() -> rx.Component:
     """
     return rx.card(
         rx.vstack(
-            rx.text("Evolución de Recaudos (6 Meses)", size="4", weight="bold"),
+            rx.text("Evolución de Recaudos (6 Meses)", size="4", weight="bold", color=styles.TEXT_PRIMARY),
             rx.box(
                 rx.recharts.area_chart(
                     rx.recharts.area(
@@ -125,6 +127,7 @@ def evolucion_chart() -> rx.Component:
             width="100%",
         ),
         size="2",
+        bg=styles.BG_PANEL,
         width="100%",
     )
 
@@ -136,7 +139,7 @@ def propiedades_tipo_chart() -> rx.Component:
     """
     return rx.card(
         rx.vstack(
-            rx.text("Propiedades por Tipo", size="4", weight="bold"),
+            rx.text("Propiedades por Tipo", size="4", weight="bold", color=styles.TEXT_PRIMARY),
             rx.box(
                 rx.recharts.bar_chart(
                     rx.recharts.bar(
@@ -184,6 +187,7 @@ def propiedades_tipo_chart() -> rx.Component:
             width="100%",
         ),
         size="2",
+        bg=styles.BG_PANEL,
         width="100%",
     )
 
@@ -194,7 +198,7 @@ def incidentes_pie_chart() -> rx.Component:
     """
     return rx.card(
         rx.vstack(
-            rx.text("Incidentes por Estado", size="4", weight="bold"),
+            rx.text("Incidentes por Estado", size="4", weight="bold", color=styles.TEXT_PRIMARY),
             rx.box(
                 rx.recharts.pie_chart(
                     rx.recharts.pie(
@@ -231,6 +235,7 @@ def incidentes_pie_chart() -> rx.Component:
             width="100%",
         ),
         size="2",
+        bg=styles.BG_PANEL,
         width="100%",
     )
 
@@ -239,7 +244,7 @@ def top_asesores_chart() -> rx.Component:
     """Gráfico de ranking de asesores por revenue."""
     return rx.card(
         rx.vstack(
-            rx.text("Top Asesores (Revenue)", size="4", weight="bold"),
+            rx.text("Top Asesores (Revenue)", size="4", weight="bold", color=styles.TEXT_PRIMARY),
             rx.box(
                 rx.recharts.bar_chart(
                     rx.recharts.bar(
@@ -288,6 +293,7 @@ def top_asesores_chart() -> rx.Component:
             width="100%",
         ),
         size="2",
+        bg=styles.BG_PANEL,
         width="100%",
     )
 
@@ -296,7 +302,7 @@ def tunel_vencimientos_chart() -> rx.Component:
     """Gráfico de túnel de vencimientos (Riesgo)."""
     return rx.card(
         rx.vstack(
-            rx.text("Túnel de Vencimientos (12 Meses)", size="4", weight="bold"),
+            rx.text("Túnel de Vencimientos (12 Meses)", size="4", weight="bold", color=styles.TEXT_PRIMARY),
             rx.box(
                 rx.recharts.area_chart(
                     rx.recharts.area(
@@ -350,5 +356,6 @@ def tunel_vencimientos_chart() -> rx.Component:
             width="100%",
         ),
         size="2",
+        bg=styles.BG_PANEL,
         width="100%",
     )

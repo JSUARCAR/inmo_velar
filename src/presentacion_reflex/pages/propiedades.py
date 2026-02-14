@@ -10,6 +10,7 @@ from src.presentacion_reflex.components.propiedades.modal_form import modal_prop
 from src.presentacion_reflex.components.propiedades.property_card import property_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
+from src.presentacion_reflex import styles
 
 
 def propiedades_page() -> rx.Component:
@@ -37,18 +38,14 @@ def propiedades_page() -> rx.Component:
                                     "-webkit-text-fill-color": "transparent",
                                 },
                             ),
-                            rx.text(
-                                "Inventario inmobiliario y seguimiento de activos",
-                                color="var(--gray-10)",
-                                size="3",
-                            ),
+                            rx.text("Inventario inmobiliario", size="3"),
                             rx.hstack(
                                 rx.icon("building-2", size=18, color="var(--gray-9)"),
                                 rx.text(
                                     f"Total: {PropiedadesState.total_items} propiedades",
                                     size="2",
                                     weight="medium",
-                                    color="var(--gray-11)",
+                                    color=styles.TEXT_SECONDARY,
                                 ),
                                 spacing="2",
                                 align="center",
@@ -190,8 +187,8 @@ def propiedades_page() -> rx.Component:
                         width="100%",
                         style={
                             "backdrop_filter": "blur(12px)",
-                            "background": "rgba(255, 255, 255, 0.8)",
-                            "border": "1px solid rgba(255, 255, 255, 0.3)",
+                            "background": styles.BG_PANEL,
+                            "border": f"1px solid {styles.BORDER_DEFAULT}",
                         },
                     ),
                     # Stats/Counter
@@ -544,7 +541,7 @@ def propiedades_page() -> rx.Component:
                         ),
                         width="100%",
                         style={
-                            "background": "var(--color-panel-solid)",
+                            "background": styles.BG_PANEL,
                             "margin_top": "24px",
                         },
                     ),

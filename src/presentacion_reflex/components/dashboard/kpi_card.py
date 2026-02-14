@@ -34,13 +34,16 @@ def kpi_card(
     """
 
     # Manejo de colores según criticidad
-    bg_color = "red.9" if es_critico else "white"  # Default a blanco para limpieza
-    if variant == "elite":
-        # Gradientes sutiles para elite
-        bg_color = "linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(248,250,252,1) 100%)"
+    from src.presentacion_reflex import styles
 
-    text_color = "white" if es_critico else "gray.12"
-    subtitle_color = "red.11" if es_critico else "gray.10"
+    # Manejo de colores según criticidad
+    bg_color = "red.9" if es_critico else styles.BG_PANEL  # Semantic background
+    if variant == "elite":
+        # Gradientes sutiles para elite (removed hardcoded light gradient)
+        bg_color = styles.BG_PANEL
+
+    text_color = "white" if es_critico else styles.TEXT_PRIMARY
+    subtitle_color = "red.11" if es_critico else styles.TEXT_SECONDARY
 
     # Ajuste de colores de icono
     icon_bg = "red.10" if es_critico else f"{color_icono}.3"
@@ -216,7 +219,7 @@ def kpi_card(
                 side="top",
                 align="center",
                 side_offset=5,
-                background_color="white",
+                background_color=styles.BG_PANEL,
                 border="1px solid var(--gray-4)",
                 box_shadow="0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
                 border_radius="12px",

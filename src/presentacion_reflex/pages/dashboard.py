@@ -18,6 +18,7 @@ from src.presentacion_reflex.components.dashboard import (
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.dashboard_state import DashboardState
+from src.presentacion_reflex import styles
 
 
 def dashboard_page() -> rx.Component:
@@ -356,8 +357,8 @@ def dashboard_page() -> rx.Component:
                                 width="100%",
                             ),
                             padding="5",
-                            bg="rgba(248, 250, 252, 0.5)",
-                            border="1px solid rgba(0,0,0,0.04)",
+                            bg=styles.BG_PANEL,
+                            border="1px solid var(--gray-4)",
                             border_radius="16px",
                             height="fit-content",
                             width="100%",
@@ -381,7 +382,7 @@ def dashboard_page() -> rx.Component:
             spacing="4",
             width="100%",
             padding=["4", "6", "8", "32px"],
-            background="linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%)",
+            # background removed to use default theme background
             min_height="100vh",
         ),
     )
