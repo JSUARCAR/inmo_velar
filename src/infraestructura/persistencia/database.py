@@ -23,8 +23,8 @@ load_dotenv()
 _database_url = os.getenv("DATABASE_URL", "")
 
 # DEBUG LOGGING
-print(f"DEBUG [database.py]: DATABASE_URL length: {len(_database_url)}")
-print(f"DEBUG [database.py]: Is postgresql? {_database_url.startswith('postgresql')}")
+# print(f"DEBUG [database.py]: DATABASE_URL length: {len(_database_url)}")
+# print(f"DEBUG [database.py]: Is postgresql? {_database_url.startswith('postgresql')}")
 
 if _database_url and _database_url.startswith("postgresql"):
     DB_MODE = "postgresql"
@@ -203,7 +203,7 @@ class DatabaseManager:
             conn = self._connection_pool[thread_id]
             if not self._validar_conexion(conn):
                 # Si falló, reconectar
-                print(f"DEBUG [database.py]: Connection for thread {thread_id} is dead. Reconnecting...")
+                # print(f"DEBUG [database.py]: Connection for thread {thread_id} is dead. Reconnecting...")
                 try:
                     conn.close()
                 except:
