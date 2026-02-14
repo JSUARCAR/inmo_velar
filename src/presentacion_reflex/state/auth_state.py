@@ -129,7 +129,7 @@ class AuthState(rx.State):
             self.error_message = ""
 
             # Redirigir al dashboard
-            return rx.redirect("/")
+            return rx.redirect("/dashboard")
 
         except ErrorAutenticacion as e:
             self.error_message = str(e)
