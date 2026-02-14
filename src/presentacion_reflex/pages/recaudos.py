@@ -4,6 +4,7 @@ Gestión completa de pagos recibidos
 """
 
 import reflex as rx
+from src.presentacion_reflex import styles
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.components.recaudos import modal_detalle_recaudo, modal_recaudo
@@ -91,8 +92,9 @@ def recaudos_toolbar() -> rx.Component:
         ),
         width="100%",
         padding="1em",
-        background="white",
+        background=styles.BG_PANEL,
         border_radius="8px",
+        border=f"1px solid {styles.BORDER_DEFAULT}",
         box_shadow="sm",
         spacing="3",
     )
@@ -309,7 +311,7 @@ def pagination_controls() -> rx.Component:
         ),
         width="100%",
         style={
-            "background": "var(--color-panel-solid)",
+            "background": styles.BG_PANEL,
         },
     )
 
@@ -330,7 +332,7 @@ def recaudos_page() -> rx.Component:
             rx.text(
                 "Registro y gestión de pagos recibidos de contratos de arrendamiento",
                 size="4",
-                color="gray",
+                color=styles.TEXT_SECONDARY,
                 weight="medium",
             ),
             spacing="2",

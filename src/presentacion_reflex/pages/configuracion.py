@@ -2,20 +2,21 @@ import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
+from src.presentacion_reflex import styles
 
 # --- ESTILOS & CONSTANTES ---
 CARD_STYLE = {
-    "background": "white",
+    "background": styles.BG_PANEL,
     "border_radius": "16px",
     "box_shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
     "padding": "2rem",
-    "border": "1px solid rgba(226, 232, 240, 0.8)",
+    "border": f"1px solid {styles.BORDER_DEFAULT}",
 }
 
 SECTION_TITLE_STYLE = {
     "font_size": "1.1rem",
     "font_weight": "bold",
-    "color": "#1e293b",  # Slate 800
+    "color": styles.TEXT_PRIMARY,  # Semantic text
     "letter_spacing": "-0.01em",
     "display": "flex",
     "align_items": "center",
@@ -50,7 +51,7 @@ def elite_input_field(
                 radius="full",
                 padding_left="40px",
                 width="100%",
-                style={"_focus": {"box_shadow": "0 0 0 2px #3b82f6", "background": "white"}},
+                style={"_focus": {"box_shadow": "0 0 0 2px #3b82f6", "background": styles.BG_PANEL}},
             ),
             position="relative",
             width="100%",
@@ -162,7 +163,7 @@ def company_identity_card() -> rx.Component:
                             border_radius="12px",
                             object_fit="contain",
                             border="2px solid #e2e8f0",
-                            background="white",
+                            background=styles.BG_PANEL,
                             padding="3",
                         ),
                         width="100%",
@@ -561,7 +562,7 @@ def configuracion_content() -> rx.Component:
                 size="8",
                 weight="bold",
                 letter_spacing="-0.03em",
-                color="#1e293b",
+                color=styles.TEXT_PRIMARY,
             ),
             rx.text(
                 "Gestión centralizada de la identidad corporativa y parámetros del sistema.",
@@ -595,7 +596,7 @@ def configuracion_content() -> rx.Component:
         width="100%",
         spacing="6",
         padding="8",
-        background="#f8fafc",  # Slate 50 background global
+        # background="#f8fafc",  # Removed to use default theme bg
         min_height="100vh",
         on_mount=ConfiguracionState.on_load,
     )

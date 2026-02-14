@@ -2,6 +2,7 @@ import reflex as rx
 from src.presentacion_reflex.components.layout.sidebar import sidebar
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.reportes_state import ReportesState, ReportItem
+from src.presentacion_reflex import styles
 
 def report_item_sidebar(report: ReportItem, is_selected: bool):
     """Item individual del sidebar de reportes."""
@@ -70,8 +71,8 @@ def reports_sidebar():
         width="100%",
         height="100%",
         padding="4",
-        border_right="1px solid #e5e7eb",
-        background_color="white",
+        border_right=f"1px solid {styles.BORDER_DEFAULT}",
+        background_color=styles.BG_PANEL,
     )
 
 def reports_content():
@@ -82,7 +83,7 @@ def reports_content():
             rx.heading(
                 ReportesState.active_report["name"], 
                 size="6", 
-                color="#1e293b"
+                color=styles.TEXT_PRIMARY,
             ),
             rx.text(
                 ReportesState.active_report["description"], 
@@ -229,13 +230,13 @@ def reportes_page() -> rx.Component:
                                 padding="4",
                                 height="100%",
                                 width="100%",
-                                background_color="white",
+                                background_color=styles.BG_PANEL,
                             ),
                             top="0",
                             left="0",
                             height="100%",
                             width="280px",
-                            background_color="white",
+                            background_color=styles.BG_PANEL,
                             padding="0",
                         )
                     ),

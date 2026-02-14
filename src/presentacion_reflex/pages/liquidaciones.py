@@ -18,6 +18,7 @@ from src.presentacion_reflex.components.liquidaciones import (
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 from src.presentacion_reflex.state.pdf_state import PDFState
+from src.presentacion_reflex import styles
 
 
 def format_currency(amount: rx.Var) -> rx.Component:
@@ -57,8 +58,9 @@ def liquidaciones_toolbar() -> rx.Component:
             ),
             spacing="2",
             padding="0.5em",
-            background="#f0f9ff",
+            background=styles.BG_PANEL,
             border_radius="6px",
+            border=f"1px solid {styles.BORDER_DEFAULT}",
         ),
         # Búsqueda
         rx.input(
@@ -115,8 +117,9 @@ def liquidaciones_toolbar() -> rx.Component:
         ),
         width="100%",
         padding="1em",
-        background="white",
+        background=styles.BG_PANEL,
         border_radius="8px",
+        border=f"1px solid {styles.BORDER_DEFAULT}",
         box_shadow="sm",
         spacing="3",
     )
@@ -452,7 +455,7 @@ def liquidaciones_page() -> rx.Component:
             rx.text(
                 "Gestión de estados de cuenta mensuales y pagos a propietarios",
                 size="4",
-                color="gray",
+                color=styles.TEXT_SECONDARY,
                 weight="medium",
             ),
             spacing="2",

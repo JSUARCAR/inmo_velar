@@ -29,9 +29,10 @@ def theme_toggle_icon() -> rx.Component:
     """
     return rx.tooltip(
         rx.button(
-            rx.color_mode.icon(
-                light=rx.icon("moon", size=18),
-                dark=rx.icon("sun", size=18),
+            rx.cond(
+                rx.color_mode == "light",
+                rx.icon("moon", size=18),
+                rx.icon("sun", size=18),
             ),
             on_click=rx.toggle_color_mode,
             variant="ghost",
