@@ -34,11 +34,22 @@ class PermissionCategory(BaseModel):
     modules: List[PermissionModule]
 
 
+class UsuarioDisplayModel(BaseModel):
+    """Modelo para visualización de usuarios en la UI using Pydantic/Reflex."""
+
+    id_usuario: int
+    nombre_usuario: str
+    rol: str
+    estado_usuario: bool
+    estado_label: str
+    ultimo_acceso: str
+
+
 class UsuariosState(rx.State):
     """Estado para la gestión de usuarios."""
 
     # Datos
-    usuarios: List[Dict[str, Any]] = []
+    usuarios: List[UsuarioDisplayModel] = []
 
     # Filtros
     filter_role: str = "Todos"
@@ -84,28 +95,28 @@ class UsuariosState(rx.State):
             # Formatear para tabla
             formatted = []
             for u in users_list:
-                item = {
-                    "id_usuario": u.id_usuario,
-                    "nombre_usuario": u.nombre_usuario,
-                    "rol": u.rol,
-                    "estado_usuario": u.es_activo(),  # bool
-                    "estado_label": "Activo" if u.es_activo() else "Inactivo",
-                    "ultimo_acceso": u.ultimo_acceso or "Nunca",
-                }
+                item = UsuarioDisplayModel(
+                    id_usuario=u.id_usuario,
+                    nombre_usuario=u.nombre_usuario,
+                    rol=u.rol,
+                    estado_usuario=u.es_activo(),
+                    estado_label="Activo" if u.es_activo() else "Inactivo",
+                    ultimo_acceso=u.ultimo_acceso or "Nunca",
+                )
 
                 # Filtros en memoria
                 pass_filter = True
-                if self.filter_role != "Todos" and item["rol"] != self.filter_role:
+                if self.filter_role != "Todos" and item.rol != self.filter_role:
                     pass_filter = False
                 if self.filter_status != "Todos":
-                    is_active = item["estado_usuario"]
+                    is_active = item.estado_usuario
                     if self.filter_status == "Activo" and not is_active:
                         pass_filter = False
                     if self.filter_status == "Inactivo" and is_active:
                         pass_filter = False
                 if (
                     self.search_text
-                    and self.search_text.lower() not in item["nombre_usuario"].lower()
+                    and self.search_text.lower() not in item.nombre_usuario.lower()
                 ):
                     pass_filter = False
 
@@ -138,14 +149,14 @@ class UsuariosState(rx.State):
         }
         self.show_form_modal = True
 
-    def open_edit_modal(self, user: Dict):
+    def open_edit_modal(self, user: UsuarioDisplayModel):
         self.is_editing = True
         self.form_data = {
-            "id_usuario": user["id_usuario"],
-            "nombre_usuario": user["nombre_usuario"],
+            "id_usuario": user.id_usuario,
+            "nombre_usuario": user.nombre_usuario,
             "contrasena": "",  # Optional for edit (reset)
-            "rol": user["rol"],
-            "estado_usuario": user["estado_usuario"],
+            "rol": user.rol,
+            "estado_usuario": user.estado_usuario,
         }
         self.show_form_modal = True
 
