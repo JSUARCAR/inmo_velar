@@ -94,7 +94,7 @@ def propiedades_page() -> rx.Component:
                 rx.vstack(
                     # Toolbar Section
                     rx.card(
-                        rx.hstack(
+                        rx.flex(
                             # Search Bar with enhanced styling
                             rx.input(
                                 rx.input.slot(rx.icon("search", size=18)),
@@ -102,7 +102,7 @@ def propiedades_page() -> rx.Component:
                                 value=PropiedadesState.search_text,
                                 on_change=PropiedadesState.set_search,
                                 size="3",
-                                width="320px",
+                                width=rx.breakpoints(initial="100%", md="320px"),
                                 style={
                                     "transition": "all 0.3s ease",
                                 },
@@ -112,66 +112,78 @@ def propiedades_page() -> rx.Component:
                             ),
                             rx.spacer(),
                             # Filters Row
-                            rx.select(
-                                PropiedadesState.tipos_options,
-                                placeholder="Tipo",
-                                value=PropiedadesState.filter_tipo,
-                                on_change=PropiedadesState.set_filter_tipo,
-                                size="3",
-                                variant="surface",
-                            ),
-                            rx.select.root(
-                                rx.select.trigger(
-                                    placeholder="Disponibilidad", variant="surface", size="3"
+                            rx.flex(
+                                rx.select(
+                                    PropiedadesState.tipos_options,
+                                    placeholder="Tipo",
+                                    value=PropiedadesState.filter_tipo,
+                                    on_change=PropiedadesState.set_filter_tipo,
+                                    size="3",
+                                    variant="surface",
+                                    width=rx.breakpoints(initial="100%", sm="auto"),
                                 ),
-                                rx.select.content(
-                                    rx.select.group(
-                                        rx.select.item("Todos", value="Todos"),
-                                        rx.select.item("Disponible", value="1"),
-                                        rx.select.item("Ocupada", value="0"),
-                                    )
-                                ),
-                                value=PropiedadesState.filter_disponibilidad,
-                                on_change=PropiedadesState.set_filter_disponibilidad,
-                            ),
-                            # View Toggle Button (Single Button like Personas)
-                            rx.tooltip(
-                                rx.button(
-                                    rx.cond(
-                                        PropiedadesState.vista_tipo == "cards",
-                                        rx.icon("table", size=18),
-                                        rx.icon("layout-grid", size=18),
+                                rx.box(
+                                    rx.select.root(
+                                        rx.select.trigger(
+                                            placeholder="Disponibilidad", variant="surface", size="3"
+                                        ),
+                                        rx.select.content(
+                                            rx.select.group(
+                                                rx.select.item("Todos", value="Todos"),
+                                                rx.select.item("Disponible", value="1"),
+                                                rx.select.item("Ocupada", value="0"),
+                                            )
+                                        ),
+                                        value=PropiedadesState.filter_disponibilidad,
+                                        on_change=PropiedadesState.set_filter_disponibilidad,
                                     ),
-                                    on_click=PropiedadesState.toggle_vista,
-                                    variant="soft",
-                                    size="3",
-                                    color_scheme="gray",
+                                    width=rx.breakpoints(initial="100%", sm="auto"),
                                 ),
-                                content=rx.cond(
-                                    PropiedadesState.vista_tipo == "cards",
-                                    "Cambiar a vista de tabla",
-                                    "Cambiar a vista de cards",
+                                # View Toggle Button (Single Button like Personas)
+                                rx.tooltip(
+                                    rx.button(
+                                        rx.cond(
+                                            PropiedadesState.vista_tipo == "cards",
+                                            rx.icon("table", size=18),
+                                            rx.icon("layout-grid", size=18),
+                                        ),
+                                        on_click=PropiedadesState.toggle_vista,
+                                        variant="soft",
+                                        size="3",
+                                        color_scheme="gray",
+                                        width=rx.breakpoints(initial="100%", sm="auto"),
+                                    ),
+                                    content=rx.cond(
+                                        PropiedadesState.vista_tipo == "cards",
+                                        "Cambiar a vista de tabla",
+                                        "Cambiar a vista de cards",
+                                    ),
                                 ),
-                            ),
-                            # Export Button (Standardized)
-                            rx.tooltip(
-                                rx.button(
-                                    rx.icon("file-spreadsheet", size=16),
-                                    "Exportar",
-                                    color_scheme="green",
-                                    variant="soft",
-                                    on_click=PropiedadesState.exportar_csv,
-                                    size="3",
-                                    _hover={
-                                        "transform": "scale(1.05)",
-                                    },
-                                    transition="all 0.2s ease",
+                                # Export Button (Standardized)
+                                rx.tooltip(
+                                    rx.button(
+                                        rx.icon("file-spreadsheet", size=16),
+                                        "Exportar",
+                                        color_scheme="green",
+                                        variant="soft",
+                                        on_click=PropiedadesState.exportar_csv,
+                                        size="3",
+                                        _hover={
+                                            "transform": "scale(1.05)",
+                                        },
+                                        transition="all 0.2s ease",
+                                        width=rx.breakpoints(initial="100%", sm="auto"),
+                                    ),
+                                    content="Exportar a Excel",
                                 ),
-                                content="Exportar a Excel",
+                                spacing="3",
+                                flex_direction=rx.breakpoints(initial="column", sm="row"),
+                                width=rx.breakpoints(initial="100%", md="auto"),
                             ),
                             spacing="3",
                             width="100%",
-                            align="center",
+                            align=rx.breakpoints(initial="start", md="center"),
+                            flex_direction=rx.breakpoints(initial="column", md="row"),
                             wrap="wrap",
                         ),
                         padding="5",
@@ -234,6 +246,7 @@ def propiedades_page() -> rx.Component:
                                             "Intenta ajustar los filtros o registra una nueva propiedad.",
                                             size="3",
                                             color="var(--gray-9)",
+                                            text_align="center",
                                         ),
                                         spacing="4",
                                         align="center",
@@ -273,8 +286,8 @@ def propiedades_page() -> rx.Component:
                                                 on_toggle_disponibilidad=PropiedadesState.toggle_disponibilidad,
                                             ),
                                         ),
-                                        columns="3",
-                                        gap="9",
+                                        columns=rx.breakpoints(initial="1", sm="2", lg="3"),
+                                        gap="6",
                                         width="100%",
                                     ),
                                     # Table View (Premium)
