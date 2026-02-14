@@ -106,26 +106,35 @@ def kpi_card(
                             color="gray.9",
                             text_transform="uppercase",
                             letter_spacing="0.05em",
+                            max_width="100%",  # Prevent overflow
+                            white_space="normal",  # Allow wrapping
                         ),
                         rx.text(
                             valor,
                             size="8",
-                            font_size=["2em", "2.5em", "3em"],
+                            font_size=rx.breakpoints(
+                                initial="1.5em", sm="2em", lg="2.5em", xl="3em"
+                            ),
                             weight="bold",
                             color=text_color,
                             letter_spacing="-0.03em",
                             line_height="1",
+                            white_space="nowrap",  # Keep number on one line if possible
+                            overflow="hidden",  # Truncate if too long (better than breaking layout)
+                            text_overflow="ellipsis",
                         ),
-                        spacing="2",
+                        spacing="1",
                         align="start",
+                        width="100%",
+                        overflow="hidden",
                     ),
                     rx.spacer(),
                     rx.box(
-                        rx.icon(icono, size=28, color=icon_color),
+                        rx.icon(icono, size=24, color=icon_color),
                         bg=icon_bg,
                         border_radius="12px",
-                        padding="10px",
-                        display="flex",
+                        padding="8px",
+                        display=rx.breakpoints(initial="none", sm="flex"),  # Hide icon on very small screens if needed
                         align_items="center",
                         justify_content="center",
                     ),
@@ -136,7 +145,7 @@ def kpi_card(
                     subtitulo != "",
                     rx.box(
                         rx.text(subtitulo, size="1", weight="medium", color=subtitle_color),
-                        margin_top="12px",
+                        margin_top="8px",
                         padding_top="8px",
                         border_top="1px solid var(--gray-4)",
                         width="100%",

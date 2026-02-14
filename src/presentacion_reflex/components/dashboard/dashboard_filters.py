@@ -28,9 +28,14 @@ def dashboard_filters() -> rx.Component:
     anios = [str(a) for a in range(anio_actual, anio_actual - 5, -1)]
 
     return rx.card(
-        rx.hstack(
-            rx.icon("filter", size=20, color="blue.9"),
-            rx.text("Filtros:", weight="bold", size="3"),
+
+        rx.flex(
+            rx.hstack(
+                rx.icon("filter", size=20, color="blue.9"),
+                rx.text("Filtros:", weight="bold", size="3"),
+                width="100%",
+                padding_bottom=rx.breakpoints(initial="2", sm="0"),
+            ),
             # Dropdown Mes
             rx.select(
                 [
@@ -51,6 +56,7 @@ def dashboard_filters() -> rx.Component:
                 value=DashboardState.selected_month_name,
                 on_change=DashboardState.set_month,
                 size="2",
+                width=rx.breakpoints(initial="100%", sm="auto"),
             ),
             # Dropdown Año
             rx.select(
@@ -59,22 +65,26 @@ def dashboard_filters() -> rx.Component:
                 value=DashboardState.selected_year.to_string(),
                 on_change=DashboardState.set_year,
                 size="2",
+                width=rx.breakpoints(initial="100%", sm="auto"),
             ),
             # Dropdown Asesor
-            rx.select.root(
-                rx.select.trigger(placeholder="Todos los asesores"),
-                rx.select.content(
-                    rx.select.group(
-                        rx.select.item("Todos", value="todos_asesores"),
-                        rx.foreach(
-                            DashboardState.advisor_options,
-                            lambda x: rx.select.item(x["label"], value=x["value"]),
-                        ),
-                    )
+            rx.box(
+                rx.select.root(
+                    rx.select.trigger(placeholder="Todos los asesores"),
+                    rx.select.content(
+                        rx.select.group(
+                            rx.select.item("Todos", value="todos_asesores"),
+                            rx.foreach(
+                                DashboardState.advisor_options,
+                                lambda x: rx.select.item(x["label"], value=x["value"]),
+                            ),
+                        )
+                    ),
+                    value=DashboardState.selected_advisor_id.to_string(),
+                    on_change=DashboardState.set_advisor,
+                    size="2",
                 ),
-                value=DashboardState.selected_advisor_id.to_string(),
-                on_change=DashboardState.set_advisor,
-                size="2",
+                width=rx.breakpoints(initial="100%", sm="auto"),
             ),
             # Botón Aplicar
             rx.button(
@@ -82,6 +92,7 @@ def dashboard_filters() -> rx.Component:
                 "Aplicar",
                 on_click=DashboardState.apply_filters,
                 size="2",
+                width=rx.breakpoints(initial="100%", sm="auto"),
             ),
             # Botón Reiniciar
             rx.icon_button(
@@ -89,10 +100,13 @@ def dashboard_filters() -> rx.Component:
                 on_click=DashboardState.reset_filters,
                 size="2",
                 variant="soft",
+                width=rx.breakpoints(initial="100%", sm="auto"),
             ),
             spacing="3",
-            align="center",
-            wrap="wrap",
+            align=rx.breakpoints(initial="start", sm="center"),
+            width="100%",
+            flex_direction=rx.breakpoints(initial="column", sm="row"),
+            flex_wrap="wrap",
         ),
         size="1",
         style={
