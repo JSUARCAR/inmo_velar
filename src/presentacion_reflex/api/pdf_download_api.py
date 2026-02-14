@@ -37,11 +37,15 @@ async def download_pdf(filename: str):
     # Construir path completo
     pdf_path = PDF_OUTPUT_DIR / safe_filename
 
+    # Validar que existe
     if not pdf_path.exists():
         raise HTTPException(status_code=404, detail=f"PDF no encontrado: {safe_filename}")
 
     if not pdf_path.suffix.lower() == ".pdf":
         raise HTTPException(status_code=400, detail="Solo se permiten archivos PDF")
+
+    # Obtener tamaño del archivo para Content-Length
+    file_size = pdf_path.stat().st_size
 
     # Retornar archivo permitiendo que FileResponse maneje el Content-Disposition
     # Starlette/FastAPI generará automáticamente: content-disposition: attachment; filename="..."
@@ -50,6 +54,8 @@ async def download_pdf(filename: str):
         media_type="application/pdf",
         filename=safe_filename,
         headers={
+            "Content-Disposition": f'attachment; filename="{safe_filename}"',
+            "Content-Length": str(file_size),
             "Cache-Control": "no-cache, no-store, must-revalidate",
         },
     )

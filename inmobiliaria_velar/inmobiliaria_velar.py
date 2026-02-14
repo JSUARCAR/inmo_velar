@@ -81,9 +81,14 @@ from fastapi import Request
 
 @app._api.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
-    # Procesar request
+    # Skip middleware for WebSocket upgrades to avoid "Connection already upgraded" errors
+    if request.headers.get("upgrade", "").lower() == "websocket":
+        return await call_next(request)
+        
+    # Procesar request normal
     response = await call_next(request)
-    # Añadir headers de seguridad
+    
+    # Añadir headers de seguridad solo si no es un websocket
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-XSS-Protection"] = "1; mode=block"

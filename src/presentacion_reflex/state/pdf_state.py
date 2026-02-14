@@ -93,7 +93,10 @@ class PDFState(rx.State):
 
             js_download = f"""
             fetch('{download_url}')
-              .then(res => res.blob())
+              .then(res => {{
+                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
+                  return res.blob();
+              }})
               .then(blob => {{
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -135,7 +138,10 @@ class PDFState(rx.State):
 
             js_download = f"""
             fetch('{download_url}')
-              .then(res => res.blob())
+              .then(res => {{
+                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
+                  return res.blob();
+              }})
               .then(blob => {{
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -205,7 +211,10 @@ class PDFState(rx.State):
 
             js_download = f"""
             fetch('{download_url}')
-              .then(res => res.blob())
+              .then(res => {{
+                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
+                  return res.blob();
+              }})
               .then(blob => {{
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -274,7 +283,10 @@ class PDFState(rx.State):
 
             js_download = f"""
             fetch('{download_url}')
-              .then(res => res.blob())
+              .then(res => {{
+                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
+                  return res.blob();
+              }})
               .then(blob => {{
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -346,7 +358,10 @@ class PDFState(rx.State):
             # ESTRATEGIA ÉLITE: Fetch + Blob URL
             js_download = f"""
             fetch('{download_url}')
-              .then(res => res.blob())
+              .then(res => {{
+                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
+                  return res.blob();
+              }})
               .then(blob => {{
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -415,7 +430,10 @@ class PDFState(rx.State):
 
             js_download = f"""
             fetch('{download_url}')
-              .then(res => res.blob())
+              .then(res => {{
+                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
+                  return res.blob();
+              }})
               .then(blob => {{
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -506,7 +524,10 @@ class PDFState(rx.State):
             # ESTRATEGIA ÉLITE: Fetch + Blob URL
             js_download = f"""
             fetch('{download_url}')
-              .then(res => res.blob())
+              .then(res => {{
+                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
+                  return res.blob();
+              }})
               .then(blob => {{
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');

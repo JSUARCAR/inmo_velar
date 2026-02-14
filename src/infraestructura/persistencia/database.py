@@ -221,6 +221,9 @@ class DatabaseManager:
         """
         try:
             # Poll returns 0 (POLL_OK) if connection is active
+            if conn.closed != 0:
+                return False
+                
             if conn.poll() != psycopg2.extensions.POLL_OK:
                 return False
             # Execute a lightweight query just to be sure
@@ -228,6 +231,7 @@ class DatabaseManager:
                cur.execute("SELECT 1")
             return True
         except Exception:
+            # Silent failure for validation checks
             return False
 
     def obtener_conexion(self) -> Any:
