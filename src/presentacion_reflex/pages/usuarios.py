@@ -12,33 +12,40 @@ def filtros_bar() -> rx.Component:
         rx.input(
             placeholder="Buscar usuario...",
             on_change=UsuariosState.set_search,
-            width="300px",
+            width=["100%", "300px"],
             icon="search",
         ),
-        rx.select.root(
-            rx.select.trigger(placeholder="Rol"),
-            rx.select.content(
-                rx.select.group(
-                    rx.select.item("Todos", value="Todos"),
-                    rx.select.item("Administrador", value="Administrador"),
-                    rx.select.item("Asesor", value="Asesor"),
-                    rx.select.item("Operativo", value="Operativo"),
-                )
+        rx.flex(
+            rx.select.root(
+                rx.select.trigger(placeholder="Rol", width=["100%", "auto"]),
+                rx.select.content(
+                    rx.select.group(
+                        rx.select.item("Todos", value="Todos"),
+                        rx.select.item("Administrador", value="Administrador"),
+                        rx.select.item("Asesor", value="Asesor"),
+                        rx.select.item("Operativo", value="Operativo"),
+                    )
+                ),
+                value=UsuariosState.filter_role,
+                on_change=lambda val: UsuariosState.set_filter_role(val),
+                width=["100%", "auto"],
             ),
-            value=UsuariosState.filter_role,
-            on_change=lambda val: UsuariosState.set_filter_role(val),
-        ),
-        rx.select.root(
-            rx.select.trigger(placeholder="Estado"),
-            rx.select.content(
-                rx.select.group(
-                    rx.select.item("Todos", value="Todos"),
-                    rx.select.item("Activo", value="Activo"),
-                    rx.select.item("Inactivo", value="Inactivo"),
-                )
+            rx.select.root(
+                rx.select.trigger(placeholder="Estado", width=["100%", "auto"]),
+                rx.select.content(
+                    rx.select.group(
+                        rx.select.item("Todos", value="Todos"),
+                        rx.select.item("Activo", value="Activo"),
+                        rx.select.item("Inactivo", value="Inactivo"),
+                    )
+                ),
+                value=UsuariosState.filter_status,
+                on_change=lambda val: UsuariosState.set_filter_status(val),
+                width=["100%", "auto"],
             ),
-            value=UsuariosState.filter_status,
-            on_change=lambda val: UsuariosState.set_filter_status(val),
+            spacing="3",
+            width=["100%", "auto"],
+            flex_direction=["column", "row"],
         ),
         rx.spacer(),
         rx.cond(
@@ -47,6 +54,7 @@ def filtros_bar() -> rx.Component:
                 rx.icon("user_plus"),
                 "Nuevo Usuario",
                 on_click=UsuariosState.open_create_modal,
+                width=["100%", "auto"],
             ),
         ),
         width="100%",
@@ -54,6 +62,90 @@ def filtros_bar() -> rx.Component:
         align="center",
         wrap="wrap",
         padding_bottom="4",
+        flex_direction=["column", "row"],
+    )
+
+
+def usuario_card(u: dict) -> rx.Component:
+    """Card individual para vista móvil de usuarios."""
+    return rx.card(
+        rx.vstack(
+            rx.hstack(
+                rx.avatar(fallback=u["nombre_usuario"][:2].upper(), radius="full", size="3"),
+                rx.vstack(
+                    rx.text(u["nombre_usuario"], weight="bold", size="3"),
+                    rx.badge(u["rol"], variant="soft", color_scheme="blue"),
+                    spacing="1",
+                ),
+                rx.spacer(),
+                rx.badge(
+                    u["estado_label"],
+                    color_scheme=rx.cond(u["estado_usuario"], "green", "gray"),
+                ),
+                width="100%",
+                align="center",
+            ),
+            rx.divider(),
+            rx.hstack(
+                rx.text("Último acceso:", size="1", color="gray"),
+                rx.text(u["ultimo_acceso"], size="1"),
+                justify="between",
+                width="100%",
+            ),
+            rx.hstack(
+                rx.cond(
+                    AuthState.check_action("Usuarios", "EDITAR"),
+                    rx.hstack(
+                        rx.text("Estado:", size="2", weight="medium"),
+                        rx.switch(
+                            checked=u["estado_usuario"],
+                            on_change=lambda val: UsuariosState.toggle_status(
+                                u["id_usuario"], u["estado_usuario"]
+                            ),
+                            color_scheme="green",
+                        ),
+                        align="center",
+                        spacing="2",
+                    ),
+                ),
+                rx.spacer(),
+                rx.hstack(
+                    rx.cond(
+                        (u["rol"] != "Administrador")
+                        & AuthState.check_action("Usuarios", "EDITAR"),
+                        rx.icon_button(
+                            rx.icon("shield-check", size=18),
+                            variant="surface",
+                            color_scheme="violet",
+                            on_click=lambda: UsuariosState.open_permissions_modal(u["rol"]),
+                        ),
+                    ),
+                    rx.cond(
+                        AuthState.check_action("Usuarios", "EDITAR"),
+                        rx.icon_button(
+                            rx.icon("pencil", size=18),
+                            variant="surface",
+                            on_click=lambda: UsuariosState.open_edit_modal(u),
+                        ),
+                    ),
+                    spacing="2",
+                ),
+                width="100%",
+                align="center",
+                padding_top="2",
+            ),
+            spacing="3",
+            width="100%",
+        ),
+        width="100%",
+    )
+
+
+def usuarios_card_list() -> rx.Component:
+    return rx.vstack(
+        rx.foreach(UsuariosState.usuarios, usuario_card),
+        spacing="3",
+        width="100%",
     )
 
 
@@ -154,7 +246,21 @@ def usuarios_content() -> rx.Component:
         rx.cond(
             UsuariosState.is_loading,
             rx.center(rx.spinner()),
-            usuarios_table(),
+            rx.box(
+                # Desktop View (Table)
+                rx.box(
+                    usuarios_table(),
+                    display=["none", "none", "block", "block", "block"],
+                    width="100%",
+                ),
+                # Mobile View (Cards)
+                rx.box(
+                    usuarios_card_list(),
+                    display=["block", "block", "none", "none", "none"],
+                    width="100%",
+                ),
+                width="100%",
+            ),
         ),
         modal_form(),
         gestion_permisos_modal(),  # Modal de gestión de permisos
