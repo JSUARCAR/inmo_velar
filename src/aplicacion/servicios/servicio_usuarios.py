@@ -89,6 +89,22 @@ class ServicioUsuarios:
         if len(nueva_contrasena) < 6:
             raise ValueError("La contraseña debe tener al menos 6 caracteres")
 
-        usuario.contrasena_hash = self.auth_service.hashear_contraseña(nueva_contrasena)
+        from src.infraestructura.logging.logger import logger
+        try:
+            # Debugging: Ensure hashear_contraseña returns string
+            nuevo_hash = self.auth_service.hashear_contraseña(nueva_contrasena)
+            
+            # If accidentally returned tuple (hash, salt), this log will reveal it
+            if not isinstance(nuevo_hash, str):
+                logger.error(f"CRITICAL: hashear_contraseña returned {type(nuevo_hash)}: {nuevo_hash}")
+                # Fallback if it is a tuple (just in case of weird environment)
+                if isinstance(nuevo_hash, tuple):
+                    nuevo_hash = nuevo_hash[0]
+
+            usuario.contrasena_hash = nuevo_hash
+
+        except Exception as e:
+            logger.error(f"Error hashing password in restablecer_contrasena: {e}")
+            raise e
 
         return self.repo.actualizar(usuario, editor)
