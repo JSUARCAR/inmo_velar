@@ -105,7 +105,7 @@ def personas_page() -> rx.Component:
                 modal_persona(),
                 # --- Elite Header with Gradient ---
                 rx.box(
-                    rx.hstack(
+                    rx.flex(
                         rx.vstack(
                             rx.heading(
                                 "Gestión de Personas",
@@ -146,6 +146,7 @@ def personas_page() -> rx.Component:
                                     "Nueva Persona",
                                     size="3",
                                     on_click=PersonasState.open_create_modal,
+                                    width=["100%", "100%", "auto"],
                                     style={
                                         "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                                         "color": "white",
@@ -161,7 +162,10 @@ def personas_page() -> rx.Component:
                         ),
                         width="100%",
                         padding="5",
-                        align="center",
+                        
+                        flex_direction=rx.breakpoints(initial="column", md="row"),
+                        align=rx.breakpoints(initial="start", md="center"),
+                        spacing="4",
                     ),
                     width="100%",
                     padding_bottom="2",
@@ -173,7 +177,7 @@ def personas_page() -> rx.Component:
                 ),
                 # --- Elite Toolbar ---
                 rx.card(
-                    rx.hstack(
+                    rx.flex(
                         # Search bar with enhanced styling
                         rx.input(
                             rx.input.slot(rx.icon("search", size=18)),
@@ -181,7 +185,7 @@ def personas_page() -> rx.Component:
                             value=PersonasState.search_query,
                             on_change=PersonasState.set_search,
                             size="3",
-                            width="320px",
+                            width=["100%", "100%", "320px"],
                             style={
                                 "transition": "all 0.3s ease",
                             },
@@ -202,6 +206,7 @@ def personas_page() -> rx.Component:
                             value=PersonasState.filtro_rol,
                             on_change=PersonasState.set_filtro_rol,
                             size="3",
+                            width=["100%", "100%", "auto"],
                         ),
                         # Date filters
                         rx.input(
@@ -209,67 +214,76 @@ def personas_page() -> rx.Component:
                             placeholder="Desde",
                             on_change=PersonasState.set_fecha_inicio,
                             size="3",
+                            width=["100%", "100%", "auto"],
                         ),
                         rx.input(
                             type="date",
                             placeholder="Hasta",
                             on_change=PersonasState.set_fecha_fin,
                             size="3",
+                            width=["100%", "100%", "auto"],
                         ),
                         rx.spacer(),
                         # View toggle button
-                        rx.tooltip(
-                            rx.button(
-                                rx.icon(
-                                    rx.cond(
-                                        PersonasState.view_mode == "table", "layout-grid", "table"
+                        rx.hstack(
+                            rx.tooltip(
+                                rx.button(
+                                    rx.icon(
+                                        rx.cond(
+                                            PersonasState.view_mode == "table", "layout-grid", "table"
+                                        ),
+                                        size=18,
                                     ),
-                                    size=18,
+                                    on_click=PersonasState.toggle_view_mode,
+                                    variant="soft",
+                                    size="3",
+                                    color_scheme="gray",
                                 ),
-                                on_click=PersonasState.toggle_view_mode,
-                                variant="soft",
-                                size="3",
-                                color_scheme="gray",
+                                content=rx.cond(
+                                    PersonasState.view_mode == "table",
+                                    "Cambiar a vista de cards",
+                                    "Cambiar a vista de tabla",
+                                ),
                             ),
-                            content=rx.cond(
-                                PersonasState.view_mode == "table",
-                                "Cambiar a vista de cards",
-                                "Cambiar a vista de tabla",
+                            # Export button
+                            rx.tooltip(
+                                rx.button(
+                                    rx.icon("file-spreadsheet", size=16),
+                                    "Exportar",
+                                    color_scheme="green",
+                                    variant="soft",
+                                    on_click=PersonasState.exportar_csv,
+                                    size="3",
+                                    _hover={
+                                        "transform": "scale(1.05)",
+                                    },
+                                    transition="all 0.2s ease",
+                                ),
+                                content="Exportar a Excel",
                             ),
-                        ),
-                        # Export button
-                        rx.tooltip(
-                            rx.button(
-                                rx.icon("file-spreadsheet", size=16),
-                                "Exportar",
-                                color_scheme="green",
-                                variant="soft",
-                                on_click=PersonasState.exportar_csv,
-                                size="3",
-                                _hover={
-                                    "transform": "scale(1.05)",
-                                },
-                                transition="all 0.2s ease",
+                            # Refresh button
+                            rx.tooltip(
+                                rx.icon_button(
+                                    rx.icon("refresh-cw", size=16),
+                                    variant="ghost",
+                                    size="3",
+                                    on_click=PersonasState.load_personas,
+                                    _hover={
+                                        "transform": "rotate(180deg)",
+                                    },
+                                    transition="transform 0.3s ease",
+                                ),
+                                content="Recargar",
                             ),
-                            content="Exportar a Excel",
-                        ),
-                        # Refresh button
-                        rx.tooltip(
-                            rx.icon_button(
-                                rx.icon("refresh-cw", size=16),
-                                variant="ghost",
-                                size="3",
-                                on_click=PersonasState.load_personas,
-                                _hover={
-                                    "transform": "rotate(180deg)",
-                                },
-                                transition="transform 0.3s ease",
-                            ),
-                            content="Recargar",
+                            width=["100%", "100%", "auto"],
+                            justify=rx.breakpoints(initial="between", md="start"),
+                            spacing="3",
                         ),
                         padding="4",
                         width="100%",
                         align="center",
+                        direction=rx.breakpoints(initial="column", md="row"),
+                        wrap="wrap",
                         spacing="3",
                     ),
                     width="100%",
@@ -541,7 +555,7 @@ def personas_page() -> rx.Component:
                 ),
                 # --- Premium Pagination ---
                 rx.card(
-                    rx.hstack(
+                    rx.flex(
                         rx.button(
                             rx.icon("chevron-left", size=16),
                             "Anterior",
@@ -587,6 +601,7 @@ def personas_page() -> rx.Component:
                         padding="4",
                         align="center",
                         spacing="4",
+                        wrap="wrap",
                     ),
                     width="100%",
                     style={
