@@ -48,11 +48,11 @@ class ContratoMandatoElite(BaseDocumentTemplate):
     # Cláusulas extraídas del PDF
     CLAUSULAS_TEXTO = [
 	    {
-	    "titulo": "Cláusula de Tratamiento de Datos Personales y Centrales de Riesgo",
+	    "titulo": "CLÁUSULA DE TRATAMIENTO DE DATOS PERSONALES Y CENTRALES DE RIESGO",
 	    "texto": "El Mandante autoriza expresa e inequívocamente al Mandatario para recolectar, consultar, verificar, reportar y administrar la información personal, laboral y financiera de arrendatarios y fiadores, ante aseguradoras, entidades financieras, centrales de riesgo y demás entidades, exclusivamente con fines de análisis de riesgo, validación de solvencia y cumplimiento del contrato de arrendamiento.<br/><br/>El tratamiento de la información se realizará conforme a la <b>Ley 1581 de 2012</b> (protección de datos personales) y a la <b>Ley 1266 de 2008</b> (habeas data financiero), garantizando los derechos de los titulares de la información, quienes podrán ejercer en cualquier momento sus derechos de acceso, rectificación, actualización y supresión de datos."
 	    },
 	    {
-	    "titulo": "Cláusula de Régimen de Propiedad Horizontal y Convivencia",
+	    "titulo": "CLÁUSULA DE RÉGIMEN DE PROPIEDAD HORIZONTAL Y CONVIVENCIA",
 	    "texto": "El Mandante y el arrendatario se obligan a cumplir estrictamente con el <b>Reglamento de Propiedad Horizontal</b>, el <b>Manual de Convivencia y demás disposiciones internas</b> que rijan la copropiedad donde se encuentre el inmueble objeto de este contrato, en los términos de la <b>Ley 675 de 2001</b>.<br/><br/>Las sanciones, multas o cobros que se originen por incumplimiento de tales normas serán de cargo exclusivo del Mandante, quien autoriza expresamente al Mandatario a descontarlos de los cánones de arrendamiento recaudados o exigir su pago directo. El Mandatario no asumirá responsabilidad alguna por el comportamiento de los arrendatarios frente al reglamento interno, limitándose a informar oportunamente al Mandante sobre cualquier situación que genere sanciones por parte de la copropiedad."
 	    },
         {
@@ -69,11 +69,11 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         },
         {
             "titulo": "CUARTA. REPORTE MENSUAL",
-            "texto": "Dentro de los primeros diez (10) días del mes inmediatamente siguiente a aquel en que se causa el canon de arrendamiento, y siempre y cuando el inmueble estuviere ocupado y los arrendatarios hubiesen cancelado el correspondiente canon de arrendamiento, deberá el MANDATARIO pagar mensualmente al CONSIGNANTE el valor por concepto de arrendamiento recibido por anticipado, excluyendo la respectiva <b>Deducción mensual</b>. Deducción mensual: <br/><br/>a) La comisión equivalente al diez por ciento (10%) del canon de arrendamiento y el IVA sobre el 10% del servicio prestado. <br/><br/>b)	Gastos adicionales como: impuestos, contribuciones, cuotas ordinarias y extraordinarias de administración, multas, intereses, vigilantes, ascensoristas, avisos publicitarios, y otras cuentas pendientes cuando no correspondan al arrendatario del bien inmueble, siempre con previa autorización del propietario, De no recibir respuesta del MANDANTE, observaciones dentro del mes siguiente, se entenderá que aprobó el monto pagado por conceptos nombrados.<br/><br/>El Mandatario se obliga a rendir cuentas al Mandante de la gestión realizada, de manera mensual, dentro de los primeros diez (10) días hábiles de cada mes, entregando reporte escrito o electrónico con el detalle de los cánones de arrendamiento recaudados, descuentos aplicados y valores entregados, acompañado de los soportes correspondientes (facturas, recibos de administración, comprobantes de pago de servicios, constancias de retención en la fuente, entre otros).<br/><br/>Los dineros recaudados a nombre del Mandante se mantendrán en <b>cuentas separadas</b> de las del Mandatario, sin que puedan mezclarse con recursos propios o de terceros, salvo autorización expresa del Mandante.<br/><br/>El Mandatario podrá efectuar, con cargo a dichos recursos, los siguientes descuentos: <br/><br/>a)	Comisión pactada a su favor <br/><br/>b)	Impuestos, tasas y contribuciones que legalmente graven el inmueble o el contrato. <br/><br/>c)	Expensas comunes ordinarias y extraordinarias de la copropiedad. <br/><br/>d)	Reparaciones locativas realizadas conforme a este contrato. <br/><br/>e)	Sanciones o multas impuestas por la copropiedad. <br/><br/>f)	Gastos de cobranza prejurídica generados por el incumplimiento del arrendatario.<br/><br/>El Mandante autoriza expresamente al Mandatario a <b>conciliar y aplicar compensaciones menores</b>, cuando existan diferencias derivadas de ajustes de servicios públicos, cuotas de administración o reparaciones menores, siempre que se respete el principio de buena fe y se entreguen los soportes respectivos con su previa autorización."
+            "texto": "El MANDATARIO transferirá al MANDANTE el valor neto del cánon de mandato el día [FECHA DE PAGO TEXTO] [FECHA DE PAGO] de cada mes (o el día hábil siguiente si este coincidiere con un día festivo), siempre y cuando el inmueble estuviere ocupado y los arrendatarios hubiesen cancelado el correspondiente canon de arrendamiento.<br><br>De dicho valor se realizará la respectiva Deducción mensual, que comprende: <br/><br/>a) La comisión equivalente al diez por ciento (10%) del canon de arrendamiento y el IVA sobre el 10% del servicio prestado. <br/><br/>b)	Gastos adicionales como: impuestos, contribuciones, cuotas ordinarias y extraordinarias de administración, multas, intereses, vigilantes, ascensoristas, avisos publicitarios, y otras cuentas pendientes cuando no correspondan al arrendatario del bien inmueble, siempre con previa autorización del propietario, De no recibir respuesta del MANDANTE, observaciones dentro del mes siguiente, se entenderá que aprobó el monto pagado por conceptos nombrados.<br/><br/>El Mandatario se obliga a rendir cuentas al Mandante de la gestión realizada, de manera mensual, dentro de los primeros diez (10) días hábiles de cada mes, entregando reporte escrito o electrónico con el detalle de los cánones de arrendamiento recaudados, descuentos aplicados y valores entregados, acompañado de los soportes correspondientes (facturas, recibos de administración, comprobantes de pago de servicios, constancias de retención en la fuente, entre otros).<br/><br/>Los dineros recaudados a nombre del Mandante se mantendrán en <b>cuentas separadas</b> de las del Mandatario, sin que puedan mezclarse con recursos propios o de terceros, salvo autorización expresa del Mandante.<br/><br/>El Mandatario podrá efectuar, con cargo a dichos recursos, los siguientes descuentos: <br/><br/>a)	Comisión pactada a su favor <br/><br/>b)	Impuestos, tasas y contribuciones que legalmente graven el inmueble o el contrato. <br/><br/>c)	Expensas comunes ordinarias y extraordinarias de la copropiedad. <br/><br/>d)	Reparaciones locativas realizadas conforme a este contrato. <br/><br/>e)	Sanciones o multas impuestas por la copropiedad. <br/><br/>f)	Gastos de cobranza prejurídica generados por el incumplimiento del arrendatario.<br/><br/>El Mandante autoriza expresamente al Mandatario a <b>conciliar y aplicar compensaciones menores</b>, cuando existan diferencias derivadas de ajustes de servicios públicos, cuotas de administración o reparaciones menores, siempre que se respete el principio de buena fe y se entreguen los soportes respectivos con su previa autorización."
         },
 	    {
-            "titulo": "Cláusula de Intereses de Mora",
-            "texto": "En caso de incumplimiento por parte del Mandante en el pago oportuno de cualquier obligación derivada del presente contrato, se causarán intereses de mora a la <b>tasa máxima legal permitida para obligaciones cibiles o comerciales</b>, certificada por la <b>Superintendencia Financiera de Colombia</b>, liquidados mes vencido, sin perjuicio de las demás acciones legales a que haya lugar."
+            "titulo": "CLÁUSULA DE INTERESES DE MORA",
+            "texto": "En caso de incumplimiento por parte del Mandante en el pago oportuno de cualquier obligación derivada del presente contrato, se causarán intereses de mora a la <b>tasa máxima legal permitida para obligaciones civiles o comerciales</b>, certificada por la <b>Superintendencia Financiera de Colombia</b>, liquidados mes vencido, sin perjuicio de las demás acciones legales a que haya lugar."
 	    },
         {
             "titulo": "QUINTA. FACULTADES DEL MANDATARIO",
@@ -465,10 +465,28 @@ class ContratoMandatoElite(BaseDocumentTemplate):
             canon_val = data['condiciones'].get('valor_canon_sugerido', 0)
             canon_texto = num2words(canon_val, lang='es').upper() + " PESOS M/CTE"
             
+            # Fecha de Pago Logic
+            fecha_pago_dia = data['condiciones'].get('fecha_pago', '5')
+            try:
+                # Si viene "YYYY-MM-DD", extraer día
+                if "-" in str(fecha_pago_dia):
+                     dt_pago = datetime.strptime(str(fecha_pago_dia), '%Y-%m-%d')
+                     dia_num = dt_pago.day
+                else:
+                     dia_num = int(fecha_pago_dia)
+                
+                fecha_pago_texto = num2words(dia_num, lang='es').upper()
+                fecha_pago_num = str(dia_num)
+            except:
+                fecha_pago_texto = "CINCO"
+                fecha_pago_num = "5"
+            
         except Exception as e:
             print(f"Error en conversión num2words: {e}")
             diff_meses_texto = "DOCE"
             canon_texto = "CERO PESOS M/CTE"
+            fecha_pago_texto = "CINCO"
+            fecha_pago_num = "5"
 
         
         # Mapping para compatibilidad con texto existente (que parece ser copia de arriendo)
@@ -495,7 +513,9 @@ class ContratoMandatoElite(BaseDocumentTemplate):
             "[VALOR CANON MANDATO]": f"${data['condiciones'].get('valor_canon_sugerido', 0):,.0f}",
             "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO]": str(data['condiciones'].get('duracion_meses', 12)),
             "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO EN TEXTO]": diff_meses_texto,
-            "[VALOR CANON MANDATO EN TEXTO]": canon_texto
+            "[VALOR CANON MANDATO EN TEXTO]": canon_texto,
+            "[FECHA DE PAGO]": f"({fecha_pago_num})",
+            "[FECHA DE PAGO TEXTO]": fecha_pago_texto
         }
 
         for clausula in self.CLAUSULAS_TEXTO:

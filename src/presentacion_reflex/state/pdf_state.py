@@ -757,6 +757,7 @@ class PDFState(rx.State):
                 "comision": float(detalle.get("canon", 0)) * float(detalle.get("comision_pct", 0)),
                 "duracion_meses": detalle.get("duracion", 12),
                 "valor_canon_sugerido": detalle.get("canon", 0),  # Valor del canon de arrendamiento
+                "fecha_pago": detalle.get("fecha_pago", "5"), # Default 5 if missing
             },
         }
 
