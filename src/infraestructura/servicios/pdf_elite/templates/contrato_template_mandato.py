@@ -360,7 +360,14 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         style_val = ParagraphStyle('Val', fontName='Helvetica', fontSize=9)
         
         def p_kw(txt): return Paragraph(f"<b>{txt}</b>", style_label)
-        def p_val(txt): return Paragraph(str(txt), style_val)
+        
+        def p_val(txt): 
+            # Safe split for <br> to avoid ReportLab syntax errors
+            # Returns a list of Paragraphs which is valid for Table cells
+            if not txt:
+                return []
+            lines = str(txt).split('<br>')
+            return [Paragraph(line.strip(), style_val) for line in lines if line.strip()]
 
         # Construcción de filas simulando el layout visual
         
