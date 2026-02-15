@@ -17,7 +17,7 @@ def login_page() -> rx.Component:
                 # Logo de la Empresa (Dinámico) o Título por defecto
                 # Logo/Titulo (Texto estático para garantizar rendimiento de animación)
                 rx.heading(
-                    "INMOBILIARIA VELAR SAS", 
+                    "INMOBILIARIA VELAR", 
                     font_size=["1.5rem", "2rem", "2.5rem"], # Responsive size via style prop
                     weight="bold", 
                     color="white",
