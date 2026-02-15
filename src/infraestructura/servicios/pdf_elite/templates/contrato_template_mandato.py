@@ -559,8 +559,15 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         style_firma = ParagraphStyle('Firma', fontName='Helvetica', fontSize=8, leading=10, alignment=1) # Center
         
         def firma_bloque(titulo, nombre, doc):
-            content = f"<br><br><br><br>_______________________________________<br><b>{titulo}</b><br>{nombre}<br>C.C./NIT. {doc}"
-            return Paragraph(content, style_firma)
+            # FIXED: Avoid <br> in Paragraphs for signature blocks
+            # Return list of Flowables for Table cell
+            return [
+                Spacer(1, 40), # Space for signature (~4 lines)
+                Paragraph("_______________________________________", style_firma),
+                Paragraph(f"<b>{titulo}</b>", style_firma),
+                Paragraph(nombre, style_firma),
+                Paragraph(f"C.C./NIT. {doc}", style_firma)
+            ]
             
         # Mandatario
         bloque_1 = firma_bloque(
