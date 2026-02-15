@@ -1,6 +1,9 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.auth_state import AuthState
+from src.presentacion_reflex.components.shared.aurora_background import aurora_background
+from src.presentacion_reflex.components.shared.matrix_background import matrix_background
+from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
 
 
 def login_page() -> rx.Component:
@@ -11,8 +14,9 @@ def login_page() -> rx.Component:
     return rx.box(
         rx.center(
             rx.vstack(
-                # Logo / Título
-                rx.heading("Inmobiliaria Velar", size="8", weight="bold", color="white"),
+                # Logo de la Empresa (Dinámico) o Título por defecto
+                # Logo/Titulo (Texto estático para garantizar rendimiento de animación)
+                rx.heading("INMOBILIARIA VELAR SAS", size="8", weight="bold", color="white"),
                 rx.text("Gestión Integral de Propiedades", color="rgba(255,255,255, 0.8)", size="4"),
                 # Card de Login
                 rx.card(
@@ -22,7 +26,7 @@ def login_page() -> rx.Component:
                             rx.vstack(
                                 rx.text("Usuario", size="2", weight="bold"),
                                 rx.input(
-                                    placeholder="usuario.sistema",
+                                    placeholder="usuario sistema",
                                     name="username",
                                     size="3",
                                     width="100%",
@@ -83,12 +87,15 @@ def login_page() -> rx.Component:
             height="100%",
             width="100%",
         ),
-        # Fondo decorativo y posicionamiento fijo
-        background="linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), linear-gradient(135deg, #1A365D 0%, #2B6CB0 100%)",
+        # Fondo Aurora Animado
+        aurora_background(),
+        # Fondo Matrix (Lluvia Digital)
+        matrix_background(),
         position="fixed",
         top="0px",
         left="0px",
         right="0px",
         bottom="0px",
         z_index="999",
+        on_mount=ConfiguracionState.cargar_datos_empresa,
     )

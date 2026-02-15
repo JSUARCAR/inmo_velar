@@ -1,0 +1,16 @@
+/* Aurora Background Animations */
+
+@keyframes aurora-1 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(20%, 20%) scale(1.1); }
+}
+
+@keyframes aurora-2 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-20%, 10%) scale(0.9); }
+}
+
+@keyframes aurora-3 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(10%, -20%) scale(1.05); }
+}
