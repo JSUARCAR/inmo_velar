@@ -68,12 +68,17 @@ def index() -> rx.Component:
 # Crear la app (toast provider incluido automáticamente)
 # Crear la app (toast provider incluido automáticamente)
 app = rx.App(
+    stylesheets=["aurora.css"],
+    html_lang="es",
     theme=rx.theme(
         appearance="light",
         has_background=True,
         radius="large",
         accent_color="blue",
-    )
+    ),
+    head_components=[
+        rx.script(src="/matrix.js?v=5"),
+    ]
 )
 
 # Middleware de Seguridad (Headers)
