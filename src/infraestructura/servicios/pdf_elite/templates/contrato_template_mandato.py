@@ -434,7 +434,13 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         
         mandante = data['mandante']
 
-        # --- Lógica de Num2Words y Cálculo de Fechas ---
+        # INICIO: Preparar variables con valores por defecto
+        diff_meses_texto = "DOCE"
+        canon_texto = "CERO PESOS M/CTE"
+        fecha_pago_texto = "CINCO"
+        fecha_pago_num = "5"
+        
+        # Intentar calcular valores reales
         try:
             # 1. Calcular diferencia de meses real si hay fechas
             f_inicio_str = data.get('fecha_inicio')
@@ -478,15 +484,11 @@ class ContratoMandatoElite(BaseDocumentTemplate):
                 fecha_pago_texto = num2words(dia_num, lang='es').upper()
                 fecha_pago_num = str(dia_num)
             except:
-                fecha_pago_texto = "CINCO"
-                fecha_pago_num = "5"
+                pass  # Use default values already set
             
         except Exception as e:
             print(f"Error en conversión num2words: {e}")
-            diff_meses_texto = "DOCE"
-            canon_texto = "CERO PESOS M/CTE"
-            fecha_pago_texto = "CINCO"
-            fecha_pago_num = "5"
+            # Variables ya tienen valores por defecto, no es necesario reasignar
 
         
         # Mapping para compatibilidad con texto existente (que parece ser copia de arriendo)
