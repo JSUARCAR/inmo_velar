@@ -538,9 +538,16 @@ class ContratoMandatoElite(BaseDocumentTemplate):
                     replacement = f"<b><u>{v}</u></b>"
                     texto = texto.replace(k, replacement)
             
-            # Render
+            # Render - Fix for <br> (ReportLab "No content allowed in br tag")
             self.add_heading(titulo, level=2)
-            self.add_paragraph(texto, style_name="Body", alignment="justify")
+            
+            # Split by <br> and add separate paragraphs
+            # This is safer than relying on ReportLab's <br/> handling which is fragile with mixed content
+            parts = texto.split('<br>')
+            for part in parts:
+                if part.strip():
+                    self.add_paragraph(part.strip(), style_name="Body", alignment="justify")
+            
             self.add_spacer(0.15)
 
     def _add_firmas_tres_columnas(self, data: Dict[str, Any]):
