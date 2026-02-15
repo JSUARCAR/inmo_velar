@@ -204,6 +204,7 @@ def bell_icon() -> rx.Component:
                     overflow="hidden",
                 ),
                 side_offset=15,
+                z_index="9999", # Ensure it's above Mobile Drawer (z-100) and everything else
             ),
         ),
         on_mount=AlertasState.check_alerts,
