@@ -16,8 +16,19 @@ def login_page() -> rx.Component:
             rx.vstack(
                 # Logo de la Empresa (Dinámico) o Título por defecto
                 # Logo/Titulo (Texto estático para garantizar rendimiento de animación)
-                rx.heading("INMOBILIARIA VELAR SAS", size="8", weight="bold", color="white"),
-                rx.text("Gestión Integral de Propiedades", color="rgba(255,255,255, 0.8)", size="4"),
+                rx.heading(
+                    "INMOBILIARIA VELAR SAS", 
+                    font_size=["1.5rem", "2rem", "2.5rem"], # Responsive size via style prop
+                    weight="bold", 
+                    color="white",
+                    text_align="center",
+                ),
+                rx.text(
+                    "Gestión Integral de Propiedades", 
+                    color="rgba(255,255,255, 0.8)", 
+                    font_size=["0.9rem", "1.1rem"], # Responsive size via style prop
+                    text_align="center",
+                ),
                 # Card de Login
                 rx.card(
                     rx.vstack(
@@ -82,6 +93,8 @@ def login_page() -> rx.Component:
                 spacing="6",
                 align="center",
                 z_index="10",
+                padding=["4", "6"], # Padding for mobile edges
+                width="100%",
             ),
             # Center content
             height="100%",
