@@ -295,7 +295,8 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         fecha_fmt = self._format_fecha_es(data.get('fecha', ''))
             
         self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {fecha_fmt}", align='CENTER')
-        self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b><br>ARMENIA, QUINDÍO", align='CENTER')
+        self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b>", align='CENTER')
+        self.add_paragraph("ARMENIA, QUINDÍO", align='CENTER')
         self.add_spacer(0.4)
         
         # 2. Resumen de Partes (Tabla inicial del PDF)
