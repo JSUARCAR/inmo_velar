@@ -68,6 +68,7 @@ class ServicioContratoMandato:
             iva_contrato_m=datos.get("iva_porcentaje", 1900),
             estado_contrato_m="Activo",
             alerta_vencimiento_contrato_m=True,
+            fecha_pago=datos.get("fecha_pago"),
         )
 
         return self.repo_mandato.crear(contrato, usuario_sistema)
@@ -93,6 +94,7 @@ class ServicioContratoMandato:
         mandato.comision_porcentaje_contrato_m = datos.get(
             "comision_porcentaje", mandato.comision_porcentaje_contrato_m
         )
+        mandato.fecha_pago = datos.get("fecha_pago", mandato.fecha_pago)
 
         mandato.updated_by = usuario_sistema
         mandato.updated_at = datetime.now().isoformat()
