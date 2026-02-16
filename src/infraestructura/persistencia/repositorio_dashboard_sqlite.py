@@ -57,7 +57,7 @@ class RepositorioDashboardSQLite(IRepositorioDashboard):
             query = "SELECT SUM(ca.CANON_ARRENDAMIENTO) AS TOTAL_ESPERADO FROM CONTRATOS_ARRENDAMIENTOS ca"
             params = []
             if id_asesor:
-                query += " JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE ca.ESTADO_CONTRATO_A = 'Activo' AND cm.ID_ASESOR = ? AND cm.ESTADO_CONTRATO_M = 'Activo' "
+                query += f" JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE ca.ESTADO_CONTRATO_A = 'Activo' AND cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'Activo' "
                 params.append(id_asesor)
             else:
                 query += " WHERE ca.ESTADO_CONTRATO_A = 'Activo' "

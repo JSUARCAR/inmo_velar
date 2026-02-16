@@ -395,8 +395,8 @@ class ServicioContratos:
         JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
         JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
         WHERE ca.ESTADO_CONTRATO_A = 'Activo'
-          AND ca.FECHA_FIN_CONTRATO_A <= ?
-          AND ca.FECHA_FIN_CONTRATO_A >= ?
+          AND ca.FECHA_FIN_CONTRATO_A <= {placeholder}
+          AND ca.FECHA_FIN_CONTRATO_A >= {placeholder}
         ORDER BY ca.FECHA_FIN_CONTRATO_A ASC
         """
         # Note: Using '?' for simplicity here, but should use self.db.get_placeholder() if strictly following pattern.
@@ -406,13 +406,7 @@ class ServicioContratos:
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
-
-            # Replace ? with placeholder dynamically in Python code? No, I must write the code.
-            # I will use f-string with placeholder call if I can, but I can't inject variable in Replace tool easily.
-            # I'll write the code to use db.get_placeholder()
-
-            final_query = query.replace("?", placeholder)
-
+            final_query = query.format(placeholder=placeholder)
             cursor.execute(final_query, (fecha_limite, fecha_hoy))
             return [
                 {
