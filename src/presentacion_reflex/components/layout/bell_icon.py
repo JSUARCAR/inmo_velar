@@ -82,14 +82,9 @@ def bell_icon() -> rx.Component:
                             rx.box(
                                 rx.icon(
                                     "bell",
-                                    size=22,
-                                    color=rx.cond(
-                                        AlertasState.unread_count > 0, "#1f2937", "#6b7280"
-                                    ),  # Darker when active
+                                    size=24,
+                                    color="#fbbf24",
                                 ),
-                                bg="#fbbf24",  # Yellow background (amber-400)
-                                border_radius="full",
-                                padding="2",
                                 class_name=rx.cond(
                                     AlertasState.unread_count > 0, "bell-ringing", ""
                                 ),
@@ -207,5 +202,4 @@ def bell_icon() -> rx.Component:
                 z_index="9999", # Ensure it's above Mobile Drawer (z-100) and everything else
             ),
         ),
-        on_mount=AlertasState.check_alerts,
     )

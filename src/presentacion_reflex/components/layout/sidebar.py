@@ -314,7 +314,7 @@ def sidebar_footer() -> rx.Component:
     from src.presentacion_reflex.components.layout.theme_toggle import theme_toggle_icon
 
     return rx.hstack(
-        rx.avatar(fallback="IV", size="3", radius="full", color_scheme="blue", variant="solid"),
+        rx.icon("user-check", size=30, color="#3b82f6"),
         rx.vstack(
             rx.text(
                 AuthState.user_info["nombre_usuario"],
