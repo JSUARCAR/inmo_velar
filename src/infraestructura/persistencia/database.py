@@ -273,6 +273,47 @@ class DatabaseManager:
         """
         return "%s" if self.use_postgresql else "?"
 
+    def execute_write(self, query: str, params: tuple = ()) -> int:
+        """
+        Ejecuta una consulta de escritura (INSERT, UPDATE, DELETE).
+        Maneja automáticamente el placeholder.
+
+        Args:
+            query: Consulta SQL con placeholders '?' (serán reemplazados si es PG)
+            params: Parámetros para la consulta
+
+        Returns:
+            Número de filas afectadas
+        """
+        placeholder = self.get_placeholder()
+        if placeholder != "?":
+            query = query.replace("?", placeholder)
+
+        with self.transaccion() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            return cursor.rowcount
+
+    def execute_query_one(self, query: str, params: tuple = ()) -> Optional[dict]:
+        """
+        Ejecuta una consulta que retorna una sola fila como diccionario.
+
+        Args:
+            query: Consulta SQL
+            params: Parámetros
+
+        Returns:
+            Diccionario con los datos o None
+        """
+        placeholder = self.get_placeholder()
+        if placeholder != "?":
+            query = query.replace("?", placeholder)
+
+        conn = self.obtener_conexion()
+        cursor = self.get_dict_cursor(conn)
+        cursor.execute(query, params)
+        return cursor.fetchone()
+
     def get_last_insert_id(self, cursor, table_name: str = None, id_column: str = None) -> int:
         """
         Obtiene el último ID insertado de manera compatible.

@@ -66,7 +66,6 @@ def index() -> rx.Component:
 # --- CONFIGURACIÓN DE LA APP ---
 
 # Crear la app (toast provider incluido automáticamente)
-# Crear la app (toast provider incluido automáticamente)
 app = rx.App(
     stylesheets=["aurora.css"],
     html_lang="es",
@@ -81,25 +80,30 @@ app = rx.App(
     ]
 )
 
-# Middleware de Seguridad (Headers)
-from fastapi import Request
+# Middleware de Seguridad (Headers) - Implementación ASGI pura para evitar conflictos con WebSockets
+class SecurityHeadersMiddleware:
+    def __init__(self, app):
+        self.app = app
 
-@app._api.middleware("http")
-async def security_headers_middleware(request: Request, call_next):
-    # Skip middleware for WebSocket upgrades to avoid "Connection already upgraded" errors
-    if request.headers.get("upgrade", "").lower() == "websocket":
-        return await call_next(request)
-        
-    # Procesar request normal
-    response = await call_next(request)
-    
-    # Añadir headers de seguridad solo si no es un websocket
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    # Note: HSTS handled by host/proxy usually, but can be added here if HTTPS enforced
-    return response
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_wrapper(message):
+            if message["type"] == "http.response.start":
+                from starlette.datastructures import MutableHeaders
+                headers = MutableHeaders(scope=message)
+                headers.append("X-Frame-Options", "DENY")
+                headers.append("X-Content-Type-Options", "nosniff")
+                headers.append("X-XSS-Protection", "1; mode=block")
+                headers.append("Referrer-Policy", "strict-origin-when-cross-origin")
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
+
+# Registrar el middleware en la app subyacente de Starlette/FastAPI
+app._api.add_middleware(SecurityHeadersMiddleware)
 
 # Registrar API routes para descargas de PDF con nombres correctos
 from src.presentacion_reflex.api.pdf_download_api import register_pdf_routes
@@ -112,7 +116,6 @@ register_document_routes(app)
 # 1. Login (Pública)
 app.add_page(login.login_page, route="/login", title="Login - Inmobiliaria Velar")
 
-# 2. Home/Dashboard (Protegida)
 # 2. Home/Dashboard (Protegida)
 from src.presentacion_reflex.pages import personas
 # app.add_page(personas.personas_page, route="/personas", title="Personas - Inmobiliaria Velar")

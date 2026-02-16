@@ -99,11 +99,12 @@ def crear_liquidacion_form_view(
             # 6. Obtener el nombre del propietario desde la base de datos
             nombre_propietario = "Desconocido"
             try:
-                query_propietario = """
+                placeholder = servicio_contratos.db.get_placeholder()
+                query_propietario = f"""
                 SELECT per.NOMBRE_COMPLETO 
                 FROM PROPIETARIOS prop 
                 JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA 
-                WHERE prop.ID_PROPIETARIO = ?
+                WHERE prop.ID_PROPIETARIO = {placeholder}
                 """
                 with servicio_contratos.db.obtener_conexion() as conn:
                     cursor = conn.cursor()

@@ -28,13 +28,14 @@ class RepositorioSaldoFavorSQLite:
         Returns:
             SaldoFavor con ID asignado
         """
-        query = """
+        placeholder = self.db_manager.get_placeholder()
+        query = f"""
             INSERT INTO SALDOS_FAVOR (
                 ID_PROPIETARIO, ID_ASESOR, TIPO_BENEFICIARIO,
                 VALOR_SALDO, MOTIVO, FECHA_GENERACION,
                 ESTADO, FECHA_RESOLUCION, OBSERVACIONES,
                 CREATED_BY, UPDATED_BY
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
         """
 
         params = (
@@ -71,20 +72,21 @@ class RepositorioSaldoFavorSQLite:
         Raises:
             ValueError: Si el saldo no existe
         """
-        query = """
+        placeholder = self.db_manager.get_placeholder()
+        query = f"""
             UPDATE SALDOS_FAVOR SET
-                ID_PROPIETARIO = ?,
-                ID_ASESOR = ?,
-                TIPO_BENEFICIARIO = ?,
-                VALOR_SALDO = ?,
-                MOTIVO = ?,
-                FECHA_GENERACION = ?,
-                ESTADO = ?,
-                FECHA_RESOLUCION = ?,
-                OBSERVACIONES = ?,
-                UPDATED_AT = datetime('now', 'localtime'),
-                UPDATED_BY = ?
-            WHERE ID_SALDO_FAVOR = ?
+                ID_PROPIETARIO = {placeholder},
+                ID_ASESOR = {placeholder},
+                TIPO_BENEFICIARIO = {placeholder},
+                VALOR_SALDO = {placeholder},
+                MOTIVO = {placeholder},
+                FECHA_GENERACION = {placeholder},
+                ESTADO = {placeholder},
+                FECHA_RESOLUCION = {placeholder},
+                OBSERVACIONES = {placeholder},
+                UPDATED_AT = {placeholder},
+                UPDATED_BY = {placeholder}
+            WHERE ID_SALDO_FAVOR = {placeholder}
         """
 
         params = (
@@ -97,15 +99,14 @@ class RepositorioSaldoFavorSQLite:
             saldo.estado,
             saldo.fecha_resolucion,
             saldo.observaciones,
+            datetime.now().isoformat(),
             usuario,
             saldo.id_saldo_favor,
         )
 
-        with self.db_manager.obtener_conexion() as conn:
-            cursor = conn.cursor()
-            cursor.execute(query, params)
-            if cursor.rowcount == 0:
-                raise ValueError(f"No se encontró el saldo con ID {saldo.id_saldo_favor}")
+        affected = self.db_manager.execute_write(query, params)
+        if affected == 0:
+            raise ValueError(f"No se encontró el saldo con ID {saldo.id_saldo_favor}")
 
         saldo.updated_by = usuario
         saldo.updated_at = datetime.now().isoformat()
@@ -121,15 +122,11 @@ class RepositorioSaldoFavorSQLite:
         Returns:
             SaldoFavor o None si no existe
         """
-        query = "SELECT * FROM SALDOS_FAVOR WHERE ID_SALDO_FAVOR = ?"
+        placeholder = self.db_manager.get_placeholder()
+        query = f"SELECT * FROM SALDOS_FAVOR WHERE ID_SALDO_FAVOR = {placeholder}"
 
-        with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-            cursor.execute(query, (id_saldo,))
-            row = cursor.fetchone()
-
-            return self._row_to_entity(row) if row else None
+        row = self.db_manager.execute_query_one(query, (id_saldo,))
+        return self._row_to_entity(row) if row else None
 
     def listar_todos(self) -> List[SaldoFavor]:
         """
@@ -160,15 +157,15 @@ class RepositorioSaldoFavorSQLite:
         Returns:
             Lista de SaldoFavor
         """
-        query = """
+        placeholder = self.db_manager.get_placeholder()
+        query = f"""
             SELECT * FROM SALDOS_FAVOR
-            WHERE ID_PROPIETARIO = ?
+            WHERE ID_PROPIETARIO = {placeholder}
             ORDER BY FECHA_GENERACION DESC
         """
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_propietario,))
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -183,15 +180,15 @@ class RepositorioSaldoFavorSQLite:
         Returns:
             Lista de SaldoFavor
         """
-        query = """
+        placeholder = self.db_manager.get_placeholder()
+        query = f"""
             SELECT * FROM SALDOS_FAVOR
-            WHERE ID_ASESOR = ?
+            WHERE ID_ASESOR = {placeholder}
             ORDER BY FECHA_GENERACION DESC
         """
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_asesor,))
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -206,15 +203,15 @@ class RepositorioSaldoFavorSQLite:
         Returns:
             Lista de SaldoFavor
         """
-        query = """
+        placeholder = self.db_manager.get_placeholder()
+        query = f"""
             SELECT * FROM SALDOS_FAVOR
-            WHERE ESTADO = ?
+            WHERE ESTADO = {placeholder}
             ORDER BY FECHA_GENERACION DESC
         """
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (estado,))
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -247,30 +244,30 @@ class RepositorioSaldoFavorSQLite:
         Returns:
             Lista de SaldoFavor filtrados
         """
+        placeholder = self.db_manager.get_placeholder()
         query = "SELECT * FROM SALDOS_FAVOR WHERE 1=1"
         params = []
 
         if tipo_beneficiario:
-            query += " AND TIPO_BENEFICIARIO = ?"
+            query += f" AND TIPO_BENEFICIARIO = {placeholder}"
             params.append(tipo_beneficiario)
 
         if estado:
-            query += " AND ESTADO = ?"
+            query += f" AND ESTADO = {placeholder}"
             params.append(estado)
 
         if id_propietario is not None:
-            query += " AND ID_PROPIETARIO = ?"
+            query += f" AND ID_PROPIETARIO = {placeholder}"
             params.append(id_propietario)
 
         if id_asesor is not None:
-            query += " AND ID_ASESOR = ?"
+            query += f" AND ID_ASESOR = {placeholder}"
             params.append(id_asesor)
 
         query += " ORDER BY FECHA_GENERACION DESC"
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, tuple(params))
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -285,16 +282,20 @@ class RepositorioSaldoFavorSQLite:
         Returns:
             Suma total de saldos pendientes
         """
-        query = """
+        placeholder = self.db_manager.get_placeholder()
+        query = f"""
             SELECT COALESCE(SUM(VALOR_SALDO), 0) as total
             FROM SALDOS_FAVOR
-            WHERE ID_PROPIETARIO = ? AND ESTADO = 'Pendiente'
+            WHERE ID_PROPIETARIO = {placeholder} AND ESTADO = 'Pendiente'
         """
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, (id_propietario,))
             row = cursor.fetchone()
+            # Handle both list/tuple and dict results
+            if isinstance(row, dict):
+                return row.get("total", 0) or 0
             return row[0] if row else 0
 
     def obtener_total_pendiente_asesor(self, id_asesor: int) -> int:
@@ -307,16 +308,20 @@ class RepositorioSaldoFavorSQLite:
         Returns:
             Suma total de saldos pendientes
         """
-        query = """
+        placeholder = self.db_manager.get_placeholder()
+        query = f"""
             SELECT COALESCE(SUM(VALOR_SALDO), 0) as total
             FROM SALDOS_FAVOR
-            WHERE ID_ASESOR = ? AND ESTADO = 'Pendiente'
+            WHERE ID_ASESOR = {placeholder} AND ESTADO = 'Pendiente'
         """
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, (id_asesor,))
             row = cursor.fetchone()
+            # Handle both list/tuple and dict results
+            if isinstance(row, dict):
+                return row.get("total", 0) or 0
             return row[0] if row else 0
 
     def obtener_resumen_general(self) -> Dict[str, Any]:
@@ -375,12 +380,9 @@ class RepositorioSaldoFavorSQLite:
         Returns:
             True si se eliminó, False si no existía
         """
-        query = "DELETE FROM SALDOS_FAVOR WHERE ID_SALDO_FAVOR = ?"
-
-        with self.db_manager.obtener_conexion() as conn:
-            cursor = conn.cursor()
-            cursor.execute(query, (id_saldo,))
-            return cursor.rowcount > 0
+        placeholder = self.db_manager.get_placeholder()
+        query = f"DELETE FROM SALDOS_FAVOR WHERE ID_SALDO_FAVOR = {placeholder}"
+        return self.db_manager.execute_write(query, (id_saldo,)) > 0
 
     def _row_to_entity(self, row: sqlite3.Row) -> SaldoFavor:
         """

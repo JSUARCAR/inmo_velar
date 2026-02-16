@@ -236,22 +236,24 @@ class ServicioSaldosFavor:
             cursor = conn.cursor()
 
             if saldo.tipo_beneficiario == "Propietario" and saldo.id_propietario:
+                placeholder = self.db_manager.get_placeholder()
                 cursor.execute(
-                    """
+                    f"""
                     SELECT p.NOMBRE_COMPLETO 
                     FROM PERSONAS p
                     JOIN PROPIETARIOS pr ON p.ID_PERSONA = pr.ID_PERSONA
-                    WHERE pr.ID_PROPIETARIO = ?
+                    WHERE pr.ID_PROPIETARIO = {placeholder}
                 """,
                     (saldo.id_propietario,),
                 )
             elif saldo.tipo_beneficiario == "Asesor" and saldo.id_asesor:
+                placeholder = self.db_manager.get_placeholder()
                 cursor.execute(
-                    """
+                    f"""
                     SELECT p.NOMBRE_COMPLETO 
                     FROM PERSONAS p
                     JOIN ASESORES a ON p.ID_PERSONA = a.ID_PERSONA
-                    WHERE a.ID_ASESOR = ?
+                    WHERE a.ID_ASESOR = {placeholder}
                 """,
                     (saldo.id_asesor,),
                 )

@@ -88,8 +88,9 @@ class RepositorioProveedoresSQLite(RepositorioProveedores):
         WHERE P.ESTADO_REGISTRO = TRUE
         """
         params = []
+        placeholder = self.db.get_placeholder()
         if especialidad:
-            query += " AND P.ESPECIALIDAD = ?"
+            query += f" AND P.ESPECIALIDAD = {placeholder}"
             params.append(especialidad)
 
         conn = self.db.obtener_conexion()
