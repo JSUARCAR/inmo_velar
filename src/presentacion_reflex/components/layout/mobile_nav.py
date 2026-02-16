@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.components.layout.sidebar import sidebar_footer, sidebar_items
+from src.presentacion_reflex.components.layout.bell_icon import bell_icon
 from src.presentacion_reflex.components.layout.theme_toggle import theme_toggle_icon
 from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
 
@@ -142,16 +143,10 @@ def mobile_nav() -> rx.Component:
             rx.spacer(),
             # Theme Toggle (Mobile)
             theme_toggle_icon(),
+            bell_icon(),
             # User Avatar (Mini) with Ring
             rx.box(
-                rx.avatar(
-                    fallback="IV",
-                    size="2",
-                    radius="full",
-                    color="white",
-                    background="linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-                    border="2px solid rgba(255,255,255,0.2)",
-                ),
+                    rx.icon("user-check", size=24, color="#3b82f6"),
                 _hover={"transform": "scale(1.1)"},
                 transition="all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
             ),
