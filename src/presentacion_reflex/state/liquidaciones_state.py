@@ -129,12 +129,12 @@ class LiquidacionesState(DocumentosStateMixin):
             propiedades = [
                 {
                     "id": str(row["ID_PROPIEDAD"]),
-                    "texto": f"{row['MATRICULA_INMOBILIARIA']} - {row['DIRECCION_PROPIEDAD']}",
+                    "texto": f"{row['DIRECCION_PROPIEDAD']}",
                 }
                 for row in rows_propiedades
             ]
             propiedades_select = [
-                f"{row['MATRICULA_INMOBILIARIA']} - {row['DIRECCION_PROPIEDAD']}"
+                f"{row['DIRECCION_PROPIEDAD']}"
                 for row in rows_propiedades
             ]
 
@@ -144,13 +144,13 @@ class LiquidacionesState(DocumentosStateMixin):
             propietarios = [
                 {
                     "id": str(row["ID_PROPIETARIO"]),
-                    "texto": f"{row['NOMBRE_COMPLETO']} - {row['NUMERO_DOCUMENTO']}",
+                    "texto": f"{row['NOMBRE_COMPLETO']}",
                 }
                 for row in rows_propietarios
             ]
             # Para rx.select: solo strings formateados (se parseará en backend)
             propietarios_select = [
-                f"{row['NOMBRE_COMPLETO']} - {row['NUMERO_DOCUMENTO']}" for row in rows_propietarios
+                f"{row['NOMBRE_COMPLETO']}" for row in rows_propietarios
             ]
 
         async with self:

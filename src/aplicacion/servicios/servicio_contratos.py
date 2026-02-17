@@ -792,6 +792,7 @@ class ServicioContratos:
                     "duracion": row["DURACION_CONTRATO_A"],
                     "canon": row["CANON_ARRENDAMIENTO"],
                     "deposito": row["DEPOSITO"],
+                    "fecha_pago": row.get("FECHA_PAGO") or row.get("fecha_pago"),
                     "municipio": row["NOMBRE_MUNICIPIO"] or "ARMENIA",
                     "departamento": row["DEPARTAMENTO"] or "QUINDÍO",
                     "estado": row["ESTADO_CONTRATO_A"],

@@ -52,12 +52,16 @@ def searchable_select(
                          rx.vstack(
                              rx.foreach(
                                 filtered_options,
-                                lambda opt: rx.box(
-                                    rx.text(opt[0], size="2"),
-                                    width="100%",
-                                    padding="2",
-                                    _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
-                                    on_click=lambda: on_select(opt[1], opt[0]),
+                                lambda opt: rx.cond(
+                                    opt[0] != "",
+                                    rx.box(
+                                        rx.text(opt[0], size="2"),
+                                        width="100%",
+                                        padding_x="3",
+                                        padding_y="2",
+                                        _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
+                                        on_click=lambda: on_select(opt[1], opt[0]),
+                                    )
                                 )
                              ),
                              width="100%",
@@ -69,7 +73,8 @@ def searchable_select(
                         width="100%",
                     ),
                     padding="2",
-                    width="300px",
+                    width="320px",
+                    spacing="2",
                 ),
             ),
             open=menu_open,

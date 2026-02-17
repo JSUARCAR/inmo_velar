@@ -33,6 +33,7 @@ class ContratoArrendamiento:
     # Condiciones Económicas
     canon_arrendamiento: int = 0
     deposito: int = 0
+    fecha_pago: Optional[str] = None
 
     # Estado
     estado_contrato_a: str = "Activo"  # Activo, Finalizado, Legal, Cancelado

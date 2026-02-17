@@ -9,6 +9,81 @@ from src.presentacion_reflex.components.image_gallery import image_gallery
 from src.presentacion_reflex.state.contratos_state import ContratosState
 
 
+def searchable_select(
+    label: str,
+    placeholder: str,
+    value_label: rx.Var[str],
+    search_value: rx.Var[str],
+    menu_open: rx.Var[bool],
+    filtered_options: rx.Var[list],
+    on_change_search: callable,
+    on_toggle_menu: callable,
+    on_select: callable,
+) -> rx.Component:
+    return rx.vstack(
+        rx.text(label, size="2", weight="bold"),
+        rx.popover.root(
+            rx.popover.trigger(
+                rx.button(
+                    rx.cond(
+                        value_label == "",
+                        rx.text(placeholder, color="gray"),
+                        rx.text(value_label, color="black"),
+                    ),
+                    rx.icon("chevron-down", size=16),
+                    variant="surface",
+                    width="100%",
+                    justify="between",
+                ),
+            ),
+            rx.popover.content(
+                rx.vstack(
+                    rx.input(
+                        placeholder="Buscar...",
+                        value=search_value,
+                        on_change=on_change_search,
+                        autofocus=True,
+                        width="100%",
+                        variant="soft",
+                        size="1",
+                    ),
+                    rx.scroll_area(
+                         rx.vstack(
+                             rx.foreach(
+                                filtered_options,
+                                lambda opt: rx.cond(
+                                    opt[0] != "",
+                                    rx.box(
+                                        rx.text(opt[0], size="2"),
+                                        width="100%",
+                                        padding_x="3",
+                                        padding_y="2",
+                                        _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
+                                        on_click=lambda: on_select(opt[1], opt[0]),
+                                    )
+                                )
+                             ),
+                             width="100%",
+                             spacing="0",
+                        ),
+                        type="auto",
+                        scrollbars="vertical",
+                        style={"max_height": "200px"},
+                        width="100%",
+                    ),
+                    padding="2",
+                    width="320px",
+                    spacing="2",
+                ),
+            ),
+            open=menu_open,
+            on_open_change=on_toggle_menu,
+        ),
+        spacing="1",
+        width="100%",
+    )
+
+
 def contrato_arrendamiento_form() -> rx.Component:
     """
     Formulario modal para crear/editar contratos de arrendamiento.
@@ -63,92 +138,40 @@ def contrato_arrendamiento_form() -> rx.Component:
                     rx.form(
                         rx.vstack(
                             # Propiedad (requerido)
-                            rx.vstack(
-                                rx.text("Propiedad *", size="2", weight="bold"),
-                                rx.select.root(
-                                    rx.select.trigger(
-                                        rx.icon("home", size=16),
-                                        placeholder="Seleccione una propiedad",
-                                        variant="surface",
-                                    ),
-                                    rx.select.content(
-                                        rx.select.group(
-                                            rx.foreach(
-                                                ContratosState.propiedades_arriendo_select_options,
-                                                lambda opcion: rx.select.item(
-                                                    opcion[0], value=opcion[1]
-                                                ),
-                                            )
-                                        )
-                                    ),
-                                    name="id_propiedad",
-                                    value=ContratosState.form_data.get("id_propiedad", ""),
-                                    on_change=ContratosState.on_change_propiedad_arriendo,
-                                    width="100%",
-                                ),
-                                spacing="1",
-                                align="start",
-                                width="100%",
+                            searchable_select(
+                                "Propiedad *",
+                                "Seleccione una propiedad",
+                                ContratosState.propiedad_selected_label,
+                                ContratosState.propiedad_search,
+                                ContratosState.propiedad_menu_open,
+                                ContratosState.filtered_propiedades_options,
+                                ContratosState.set_propiedad_search,
+                                ContratosState.toggle_propiedad_menu,
+                                ContratosState.select_propiedad,
                             ),
                             # Arrendatario (requerido)
-                            rx.vstack(
-                                rx.text("Arrendatario *", size="2", weight="bold"),
-                                rx.select.root(
-                                    rx.select.trigger(
-                                        rx.icon("user", size=16),
-                                        placeholder="Seleccione el arrendatario",
-                                        variant="surface",
-                                    ),
-                                    rx.select.content(
-                                        rx.select.group(
-                                            rx.foreach(
-                                                ContratosState.arrendatarios_select_options,
-                                                lambda opcion: rx.select.item(
-                                                    opcion[0], value=opcion[1]
-                                                ),
-                                            )
-                                        )
-                                    ),
-                                    name="id_arrendatario",
-                                    value=ContratosState.form_data.get("id_arrendatario", ""),
-                                    on_change=lambda v: ContratosState.set_form_field(
-                                        "id_arrendatario", v
-                                    ),
-                                    width="100%",
-                                ),
-                                spacing="1",
-                                align="start",
-                                width="100%",
+                            searchable_select(
+                                "Arrendatario *",
+                                "Seleccione el arrendatario",
+                                ContratosState.arrendatario_selected_label,
+                                ContratosState.arrendatario_search,
+                                ContratosState.arrendatario_menu_open,
+                                ContratosState.filtered_arrendatarios_options,
+                                ContratosState.set_arrendatario_search,
+                                ContratosState.toggle_arrendatario_menu,
+                                ContratosState.select_arrendatario,
                             ),
                             # Codeudor (opcional)
-                            rx.vstack(
-                                rx.text("Codeudor (opcional)", size="2", weight="bold"),
-                                rx.select.root(
-                                    rx.select.trigger(
-                                        rx.icon("users", size=16),
-                                        placeholder="Seleccione el codeudor (opcional)",
-                                        variant="surface",
-                                    ),
-                                    rx.select.content(
-                                        rx.select.group(
-                                            rx.foreach(
-                                                ContratosState.codeudores_select_options,
-                                                lambda opcion: rx.select.item(
-                                                    opcion[0], value=opcion[1]
-                                                ),
-                                            )
-                                        )
-                                    ),
-                                    name="id_codeudor",
-                                    value=ContratosState.form_data.get("id_codeudor", ""),
-                                    on_change=lambda v: ContratosState.set_form_field(
-                                        "id_codeudor", v
-                                    ),
-                                    width="100%",
-                                ),
-                                spacing="1",
-                                align="start",
-                                width="100%",
+                            searchable_select(
+                                "Codeudor (opcional)",
+                                "Seleccione el codeudor (opcional)",
+                                ContratosState.codeudor_selected_label,
+                                ContratosState.codeudor_search,
+                                ContratosState.codeudor_menu_open,
+                                ContratosState.filtered_codeudores_options,
+                                ContratosState.set_codeudor_search,
+                                ContratosState.toggle_codeudor_menu,
+                                ContratosState.select_codeudor,
                             ),
                             # Fechas (en dos columnas)
                             rx.grid(
@@ -202,7 +225,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                 align="start",
                                 width="100%",
                             ),
-                            # Canon y Depósito
+                            # Canon, Deposito y Fecha de Pago
                             rx.grid(
                                 rx.vstack(
                                     rx.text("Canon Arrendamiento *", size="2", weight="bold"),
@@ -211,7 +234,6 @@ def contrato_arrendamiento_form() -> rx.Component:
                                         type="number",
                                         name="canon",
                                         placeholder="1000000",
-                                        read_only=True,
                                         required=True,
                                         min=0,
                                         value=ContratosState.form_data.get("canon", ""),
@@ -224,11 +246,10 @@ def contrato_arrendamiento_form() -> rx.Component:
                                 rx.vstack(
                                     rx.text("Depósito", size="2", weight="bold"),
                                     rx.input(
-                                        rx.input.slot(rx.icon("banknote", size=16)),
+                                        rx.input.slot(rx.icon("wallet", size=16)),
                                         type="number",
                                         name="deposito",
-                                        placeholder="1000000",
-                                        min=0,
+                                        placeholder="0",
                                         value=ContratosState.form_data.get("deposito", "0"),
                                         on_change=lambda v: ContratosState.set_form_field(
                                             "deposito", v
@@ -238,7 +259,24 @@ def contrato_arrendamiento_form() -> rx.Component:
                                     spacing="1",
                                     width="100%",
                                 ),
-                                columns="2",
+                                rx.vstack(
+                                    rx.text("Fecha de Pago *", size="2", weight="bold"),
+                                    rx.input(
+                                        rx.input.slot(rx.icon("calendar-days", size=16)),
+                                        type="text",
+                                        name="fecha_pago",
+                                        placeholder="Ej: Día 5 de cada mes",
+                                        required=True,
+                                        value=ContratosState.form_data.get("fecha_pago", ""),
+                                        on_change=lambda v: ContratosState.set_form_field(
+                                            "fecha_pago", v
+                                        ),
+                                        variant="surface",
+                                    ),
+                                    spacing="1",
+                                    width="100%",
+                                ),
+                                columns=rx.breakpoints(initial="1", sm="3"),
                                 spacing="4",
                                 width="100%",
                             ),

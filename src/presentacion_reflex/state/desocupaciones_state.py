@@ -131,7 +131,7 @@ class DesocupacionesState(DocumentosStateMixin):
             opciones = [
                 {
                     "id": str(c["id_contrato"]),
-                    "texto": f"#{c['id_contrato']} - {c['direccion']} ({c['inquilino']})",
+                    "texto": f"ID:{c['id_contrato']} - {c['direccion']} ({c['inquilino']})",
                 }
                 for c in contratos
             ]

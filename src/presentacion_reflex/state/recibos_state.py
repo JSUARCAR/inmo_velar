@@ -74,7 +74,7 @@ class RecibosState(DocumentosStateMixin):
 
             options = [
                 {
-                    "label": f"{p.direccion_propiedad} ({p.matricula_inmobiliaria})",
+                    "label": p.direccion_propiedad,
                     "value": str(p.id_propiedad),
                 }
                 for p in props
