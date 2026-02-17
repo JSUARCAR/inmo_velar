@@ -4,9 +4,80 @@ Formulario modal para Contratos de Mandato - Reflex
 
 import reflex as rx
 
+
 from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
 from src.presentacion_reflex.components.image_gallery import image_gallery
 from src.presentacion_reflex.state.contratos_state import ContratosState
+
+
+def searchable_select(
+    label: str,
+    placeholder: str,
+    value_label: rx.Var[str],
+    search_value: rx.Var[str],
+    menu_open: rx.Var[bool],
+    filtered_options: rx.Var[list],
+    on_change_search: callable,
+    on_toggle_menu: callable,
+    on_select: callable,
+) -> rx.Component:
+    return rx.vstack(
+        rx.text(label, size="2", weight="bold"),
+        rx.popover.root(
+            rx.popover.trigger(
+                rx.button(
+                    rx.cond(
+                        value_label == "",
+                        rx.text(placeholder, color="gray"),
+                        rx.text(value_label, color="black"),
+                    ),
+                    rx.icon("chevron-down", size=16),
+                    variant="surface",
+                    width="100%",
+                    justify="between",
+                ),
+            ),
+            rx.popover.content(
+                rx.vstack(
+                    rx.input(
+                        placeholder="Buscar...",
+                        value=search_value,
+                        on_change=on_change_search,
+                        autofocus=True,
+                        width="100%",
+                        variant="soft",
+                        size="1",
+                    ),
+                    rx.scroll_area(
+                         rx.vstack(
+                             rx.foreach(
+                                filtered_options,
+                                lambda opt: rx.box(
+                                    rx.text(opt[0], size="2"),
+                                    width="100%",
+                                    padding="2",
+                                    _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
+                                    on_click=lambda: on_select(opt[1], opt[0]),
+                                )
+                             ),
+                             width="100%",
+                             spacing="0",
+                        ),
+                        type="auto",
+                        scrollbars="vertical",
+                        style={"max_height": "200px"},
+                        width="100%",
+                    ),
+                    padding="2",
+                    width="300px",
+                ),
+            ),
+            open=menu_open,
+            on_open_change=on_toggle_menu,
+        ),
+        spacing="1",
+        width="100%",
+    )
 
 
 def contrato_mandato_form() -> rx.Component:
@@ -62,95 +133,43 @@ def contrato_mandato_form() -> rx.Component:
                 rx.tabs.content(
                     rx.form(
                         rx.vstack(
+
+
                             # Propiedad (requerido)
-                            rx.vstack(
-                                rx.text("Propiedad *", size="2", weight="bold"),
-                                rx.select.root(
-                                    rx.select.trigger(
-                                        rx.icon("home", size=16),
-                                        placeholder="Seleccione una propiedad",
-                                        variant="surface",
-                                    ),
-                                    rx.select.content(
-                                        rx.select.group(
-                                            rx.foreach(
-                                                rx.cond(
-                                                    ContratosState.modal_mode == "crear_mandato",
-                                                    ContratosState.propiedades_mandato_libre_select_options,
-                                                    ContratosState.propiedades_select_options,
-                                                ),
-                                                lambda opcion: rx.select.item(
-                                                    opcion[0], value=opcion[1]
-                                                ),
-                                            )
-                                        )
-                                    ),
-                                    name="id_propiedad",
-                                    required=True,
-                                    value=ContratosState.form_data.get("id_propiedad", ""),
-                                    on_change=ContratosState.on_change_propiedad,
-                                ),
-                                spacing="1",
-                                align="start",
-                                width="100%",
+                            searchable_select(
+                                "Propiedad *",
+                                "Seleccione una propiedad",
+                                ContratosState.propiedad_selected_label,
+                                ContratosState.propiedad_search,
+                                ContratosState.propiedad_menu_open,
+                                ContratosState.filtered_propiedades_options,
+                                ContratosState.set_propiedad_search,
+                                ContratosState.toggle_propiedad_menu,
+                                ContratosState.select_propiedad,
                             ),
                             # Propietario y Asesor (2 columnas)
                             rx.grid(
-                                rx.vstack(
-                                    rx.text("Propietario *", size="2", weight="bold"),
-                                    rx.select.root(
-                                        rx.select.trigger(
-                                            rx.icon("user", size=16),
-                                            placeholder="Seleccione el propietario",
-                                            variant="surface",
-                                        ),
-                                        rx.select.content(
-                                            rx.select.group(
-                                                rx.foreach(
-                                                    ContratosState.propietarios_select_options,
-                                                    lambda opcion: rx.select.item(
-                                                        opcion[0], value=opcion[1]
-                                                    ),
-                                                )
-                                            )
-                                        ),
-                                        name="id_propietario",
-                                        required=True,
-                                        value=ContratosState.form_data.get("id_propietario", ""),
-                                        on_change=lambda v: ContratosState.set_form_field(
-                                            "id_propietario", v
-                                        ),
-                                    ),
-                                    spacing="1",
-                                    width="100%",
+                                searchable_select(
+                                    "Propietario *",
+                                    "Seleccione el propietario",
+                                    ContratosState.propietario_selected_label,
+                                    ContratosState.propietario_search,
+                                    ContratosState.propietario_menu_open,
+                                    ContratosState.filtered_propietarios_options,
+                                    ContratosState.set_propietario_search,
+                                    ContratosState.toggle_propietario_menu,
+                                    ContratosState.select_propietario,
                                 ),
-                                rx.vstack(
-                                    rx.text("Asesor *", size="2", weight="bold"),
-                                    rx.select.root(
-                                        rx.select.trigger(
-                                            rx.icon("briefcase", size=16),
-                                            placeholder="Seleccione el asesor",
-                                            variant="surface",
-                                        ),
-                                        rx.select.content(
-                                            rx.select.group(
-                                                rx.foreach(
-                                                    ContratosState.asesores_select_options,
-                                                    lambda opcion: rx.select.item(
-                                                        opcion[0], value=opcion[1]
-                                                    ),
-                                                )
-                                            )
-                                        ),
-                                        name="id_asesor",
-                                        required=True,
-                                        value=ContratosState.form_data.get("id_asesor", ""),
-                                        on_change=lambda v: ContratosState.set_form_field(
-                                            "id_asesor", v
-                                        ),
-                                    ),
-                                    spacing="1",
-                                    width="100%",
+                                searchable_select(
+                                    "Asesor *",
+                                    "Seleccione el asesor",
+                                    ContratosState.asesor_selected_label,
+                                    ContratosState.asesor_search,
+                                    ContratosState.asesor_menu_open,
+                                    ContratosState.filtered_asesores_options,
+                                    ContratosState.set_asesor_search,
+                                    ContratosState.toggle_asesor_menu,
+                                    ContratosState.select_asesor,
                                 ),
                                 columns=rx.breakpoints(initial="1", sm="2"),
                                 spacing="4",
