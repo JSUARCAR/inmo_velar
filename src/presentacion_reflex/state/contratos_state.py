@@ -263,7 +263,7 @@ class ContratosState(DocumentosStateMixin):
             # Formato para Reflex Select: [Label, Value]
             propiedades_select = [
                 [
-                    f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}",
+                    get_val(row, "DIRECCION_PROPIEDAD"),
                     get_val(row, "ID_PROPIEDAD"),
                 ]
                 for row in rows_propiedades
@@ -282,7 +282,7 @@ class ContratosState(DocumentosStateMixin):
             rows_propietarios = cursor.fetchall()
             propietarios_select = [
                 [
-                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
+                    get_val(row, "NOMBRE_COMPLETO"),
                     get_val(row, "ID_PROPIETARIO"),
                 ]
                 for row in rows_propietarios
@@ -293,7 +293,7 @@ class ContratosState(DocumentosStateMixin):
             rows_asesores = cursor.fetchall()
             asesores_select = [
                 [
-                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
+                    get_val(row, "NOMBRE_COMPLETO"),
                     get_val(row, "ID_ASESOR"),
                 ]
                 for row in rows_asesores
@@ -304,7 +304,7 @@ class ContratosState(DocumentosStateMixin):
             rows_personas = cursor.fetchall()
             personas_select = [
                 [
-                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
+                    get_val(row, "NOMBRE_COMPLETO"),
                     get_val(row, "ID_PERSONA"),
                 ]
                 for row in rows_personas
@@ -327,7 +327,7 @@ class ContratosState(DocumentosStateMixin):
             rows_prop_libre = cursor.fetchall()
             propiedades_libre_select = [
                 [
-                    f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}",
+                    get_val(row, "DIRECCION_PROPIEDAD"),
                     get_val(row, "ID_PROPIEDAD"),
                 ]
                 for row in rows_prop_libre
@@ -356,7 +356,7 @@ class ContratosState(DocumentosStateMixin):
             rows_prop_arriendo = cursor.fetchall()
             propiedades_arriendo_select = [
                 [
-                    f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}",
+                    get_val(row, "DIRECCION_PROPIEDAD"),
                     get_val(row, "ID_PROPIEDAD"),
                 ]
                 for row in rows_prop_arriendo
@@ -381,7 +381,7 @@ class ContratosState(DocumentosStateMixin):
             rows_arrendatarios = cursor.fetchall()
             arrendatarios_select = [
                 [
-                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
+                    get_val(row, "NOMBRE_COMPLETO"),
                     get_val(row, "ID_ARRENDATARIO"),
                 ]
                 for row in rows_arrendatarios
@@ -399,7 +399,7 @@ class ContratosState(DocumentosStateMixin):
             rows_codeudores = cursor.fetchall()
             codeudores_select = [
                 [
-                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
+                    get_val(row, "NOMBRE_COMPLETO"),
                     get_val(row, "ID_CODEUDOR"),
                 ]
                 for row in rows_codeudores
@@ -424,20 +424,26 @@ class ContratosState(DocumentosStateMixin):
     propiedad_search: str = ""
     propietario_search: str = ""
     asesor_search: str = ""
+    arrendatario_search: str = ""
+    codeudor_search: str = ""
 
     # Menu Open States
     propiedad_menu_open: bool = False
     propietario_menu_open: bool = False
     asesor_menu_open: bool = False
+    arrendatario_menu_open: bool = False
+    codeudor_menu_open: bool = False
 
     @rx.var
     def filtered_propiedades_options(self) -> List[List[str]]:
         """Filtra opciones de propiedad según el texto de búsqueda."""
-        options = (
-            self.propiedades_mandato_libre_select_options
-            if self.modal_mode == "crear_mandato"
-            else self.propiedades_select_options
-        )
+        if self.modal_mode == "crear_mandato":
+            options = self.propiedades_mandato_libre_select_options
+        elif self.modal_mode in ["crear_arrendamiento", "editar_arrendamiento"]:
+            options = self.propiedades_arriendo_select_options
+        else:
+            options = self.propiedades_select_options
+            
         if not self.propiedad_search:
             return options
         return [
@@ -466,12 +472,36 @@ class ContratosState(DocumentosStateMixin):
         ]
 
     @rx.var
+    def filtered_arrendatarios_options(self) -> List[List[str]]:
+        """Filtra opciones de arrendatario según el texto de búsqueda."""
+        if not self.arrendatario_search:
+            return self.arrendatarios_select_options
+        return [
+            opt for opt in self.arrendatarios_select_options 
+            if self.arrendatario_search.lower() in opt[0].lower()
+        ]
+
+    @rx.var
+    def filtered_codeudores_options(self) -> List[List[str]]:
+        """Filtra opciones de codeudor según el texto de búsqueda."""
+        if not self.codeudor_search:
+            return self.codeudores_select_options
+        return [
+            opt for opt in self.codeudores_select_options 
+            if self.codeudor_search.lower() in opt[0].lower()
+        ]
+
+    @rx.var
     def propiedad_selected_label(self) -> str:
         """Obtiene el label de la propiedad seleccionada."""
         id_p = self.form_data.get("id_propiedad")
         if not id_p: return ""
-        # Buscamos en ambas listas para asegurar que se muestre
-        all_options = self.propiedades_select_options + self.propiedades_mandato_libre_select_options
+        # Buscamos en todas las listas para asegurar que se muestre
+        all_options = (
+            self.propiedades_select_options + 
+            self.propiedades_mandato_libre_select_options +
+            self.propiedades_arriendo_select_options
+        )
         for opt in all_options:
             if str(opt[1]) == str(id_p):
                 return opt[0]
@@ -497,9 +527,32 @@ class ContratosState(DocumentosStateMixin):
                 return opt[0]
         return ""
 
+    @rx.var
+    def arrendatario_selected_label(self) -> str:
+        """Obtiene el label del arrendatario seleccionado."""
+        id_arr = self.form_data.get("id_arrendatario")
+        if not id_arr: return ""
+        for opt in self.arrendatarios_select_options:
+            if str(opt[1]) == str(id_arr):
+                return opt[0]
+        return ""
+
+    @rx.var
+    def codeudor_selected_label(self) -> str:
+        """Obtiene el label del codeudor seleccionado."""
+        id_cod = self.form_data.get("id_codeudor")
+        if not id_cod: return ""
+        for opt in self.codeudores_select_options:
+            if str(opt[1]) == str(id_cod):
+                return opt[0]
+        return ""
+
     def select_propiedad(self, id_propiedad: str, label: str):
         """Selecciona una propiedad y cierra el menú."""
-        self.on_change_propiedad(id_propiedad)
+        if self.modal_mode in ["crear_arrendamiento", "editar_arrendamiento"]:
+            self.on_change_propiedad_arriendo(id_propiedad)
+        else:
+            self.on_change_propiedad(id_propiedad)
         self.propiedad_search = ""
         self.propiedad_menu_open = False
 
@@ -514,6 +567,18 @@ class ContratosState(DocumentosStateMixin):
         self.set_form_field("id_asesor", id_asesor)
         self.asesor_search = ""
         self.asesor_menu_open = False
+
+    def select_arrendatario(self, id_arrendatario: str, label: str):
+        """Selecciona un arrendatario y cierra el menú."""
+        self.set_form_field("id_arrendatario", id_arrendatario)
+        self.arrendatario_search = ""
+        self.arrendatario_menu_open = False
+
+    def select_codeudor(self, id_codeudor: str, label: str):
+        """Selecciona un codeudor y cierra el menú."""
+        self.set_form_field("id_codeudor", id_codeudor)
+        self.codeudor_search = ""
+        self.codeudor_menu_open = False
 
     def toggle_propiedad_menu(self):
         self.propiedad_menu_open = not self.propiedad_menu_open
@@ -530,6 +595,16 @@ class ContratosState(DocumentosStateMixin):
         if self.asesor_menu_open:
             self.asesor_search = ""
 
+    def toggle_arrendatario_menu(self):
+        self.arrendatario_menu_open = not self.arrendatario_menu_open
+        if self.arrendatario_menu_open:
+            self.arrendatario_search = ""
+
+    def toggle_codeudor_menu(self):
+        self.codeudor_menu_open = not self.codeudor_menu_open
+        if self.codeudor_menu_open:
+            self.codeudor_search = ""
+
     def set_propiedad_search(self, val: str):
         self.propiedad_search = val
 
@@ -538,6 +613,12 @@ class ContratosState(DocumentosStateMixin):
 
     def set_asesor_search(self, val: str):
         self.asesor_search = val
+
+    def set_arrendatario_search(self, val: str):
+        self.arrendatario_search = val
+
+    def set_codeudor_search(self, val: str):
+        self.codeudor_search = val
 
     @rx.event(background=True)
     async def load_contratos(self):
@@ -759,6 +840,7 @@ class ContratosState(DocumentosStateMixin):
             "duracion_meses": 12,
             "canon": 0,
             "deposito": 0,
+            "fecha_pago": "",
         }
         self.modal_open = True
         self.error_message = ""
@@ -853,6 +935,7 @@ class ContratosState(DocumentosStateMixin):
                             "fecha_fin": contrato.fecha_fin_contrato_a,
                             "canon": contrato.canon_arrendamiento,
                             "deposito": contrato.deposito,
+                            "fecha_pago": contrato.fecha_pago or "",
                         }
 
                         # Set Document Context for Arrendamiento
@@ -1035,6 +1118,7 @@ class ContratosState(DocumentosStateMixin):
                     "duracion_meses": int(form_data["duracion_meses"]),
                     "canon": int(form_data["canon"]),
                     "deposito": int(form_data.get("deposito", 0)),
+                    "fecha_pago": form_data.get("fecha_pago", ""),
                 }
 
                 if self.modal_mode == "crear_arrendamiento":

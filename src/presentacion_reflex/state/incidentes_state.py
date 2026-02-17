@@ -160,7 +160,7 @@ class IncidentesState(DocumentosStateMixin):
             props = servicio.listar_propiedades()  # Limit removed as not supported by service
 
             options = [
-                {"id": str(p.id_propiedad), "texto": f"{p.direccion_propiedad} (#{p.id_propiedad})"}
+                {"id": str(p.id_propiedad), "texto": p.direccion_propiedad}
                 for p in props
             ]
             async with self:

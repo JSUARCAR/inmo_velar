@@ -67,6 +67,7 @@ class ServicioContratoArrendamiento:
             duracion_contrato_a=datos["duracion_meses"],
             canon_arrendamiento=datos["canon"],
             deposito=datos.get("deposito", 0),
+            fecha_pago=datos.get("fecha_pago"),
             estado_contrato_a="Activo",
             alerta_vencimiento_contrato_a=True,
             alerta_ipc=True,
@@ -85,6 +86,7 @@ class ServicioContratoArrendamiento:
 
         arriendo.fecha_fin_contrato_a = datos.get("fecha_fin", arriendo.fecha_fin_contrato_a)
         arriendo.canon_arrendamiento = datos.get("canon", arriendo.canon_arrendamiento)
+        arriendo.fecha_pago = datos.get("fecha_pago", arriendo.fecha_pago)
         arriendo.updated_by = usuario_sistema
         arriendo.updated_at = datetime.now().isoformat()
 

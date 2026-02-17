@@ -24,11 +24,11 @@ class RepositorioContratoArrendamientoSQLite:
         INSERT INTO CONTRATOS_ARRENDAMIENTOS (
             ID_PROPIEDAD, ID_ARRENDATARIO, ID_CODEUDOR,
             FECHA_INICIO_CONTRATO_A, FECHA_FIN_CONTRATO_A, DURACION_CONTRATO_A,
-            CANON_ARRENDAMIENTO, DEPOSITO,
+            CANON_ARRENDAMIENTO, DEPOSITO, FECHA_PAGO,
             ESTADO_CONTRATO_A, ALERTA_VENCIMIENTO_CONTRATO_A, ALERTA_IPC,
             FECHA_RENOVACION_CONTRATO_A, FECHA_INCREMENTO_IPC,
             CREATED_BY, UPDATED_BY
-        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
         """,
             (
                 contrato.id_propiedad,
@@ -39,6 +39,7 @@ class RepositorioContratoArrendamientoSQLite:
                 contrato.duracion_contrato_a,
                 contrato.canon_arrendamiento,
                 contrato.deposito,
+                contrato.fecha_pago,
                 contrato.estado_contrato_a,
                 contrato.alerta_vencimiento_contrato_a,
                 contrato.alerta_ipc,
@@ -247,6 +248,7 @@ class RepositorioContratoArrendamientoSQLite:
         UPDATE CONTRATOS_ARRENDAMIENTOS SET
             FECHA_FIN_CONTRATO_A = {placeholder},
             CANON_ARRENDAMIENTO = {placeholder},
+            FECHA_PAGO = {placeholder},
             ESTADO_CONTRATO_A = {placeholder},
             MOTIVO_CANCELACION = {placeholder},
             ALERTA_VENCIMIENTO_CONTRATO_A = {placeholder},
@@ -260,6 +262,7 @@ class RepositorioContratoArrendamientoSQLite:
             (
                 contrato.fecha_fin_contrato_a,
                 contrato.canon_arrendamiento,
+                contrato.fecha_pago,
                 contrato.estado_contrato_a,
                 contrato.motivo_cancelacion,
                 contrato.alerta_vencimiento_contrato_a,
@@ -301,6 +304,7 @@ class RepositorioContratoArrendamientoSQLite:
                 row_dict.get("canon_arrendamiento") or row_dict.get("CANON_ARRENDAMIENTO")
             ),
             deposito=(row_dict.get("deposito") or row_dict.get("DEPOSITO")),
+            fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
             estado_contrato_a=(
                 row_dict.get("estado_contrato_a") or row_dict.get("ESTADO_CONTRATO_A")
             ),
