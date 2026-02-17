@@ -418,6 +418,127 @@ class ContratosState(DocumentosStateMixin):
             self.propiedades_canon_map = canon_map
             self.propiedades_canon_map = canon_map
 
+    # --- Custom Searchable Select Logic ---
+
+    # Search Texts
+    propiedad_search: str = ""
+    propietario_search: str = ""
+    asesor_search: str = ""
+
+    # Menu Open States
+    propiedad_menu_open: bool = False
+    propietario_menu_open: bool = False
+    asesor_menu_open: bool = False
+
+    @rx.var
+    def filtered_propiedades_options(self) -> List[List[str]]:
+        """Filtra opciones de propiedad según el texto de búsqueda."""
+        options = (
+            self.propiedades_mandato_libre_select_options
+            if self.modal_mode == "crear_mandato"
+            else self.propiedades_select_options
+        )
+        if not self.propiedad_search:
+            return options
+        return [
+            opt for opt in options 
+            if self.propiedad_search.lower() in opt[0].lower()
+        ]
+
+    @rx.var
+    def filtered_propietarios_options(self) -> List[List[str]]:
+        """Filtra opciones de propietario según el texto de búsqueda."""
+        if not self.propietario_search:
+            return self.propietarios_select_options
+        return [
+            opt for opt in self.propietarios_select_options 
+            if self.propietario_search.lower() in opt[0].lower()
+        ]
+
+    @rx.var
+    def filtered_asesores_options(self) -> List[List[str]]:
+        """Filtra opciones de asesor según el texto de búsqueda."""
+        if not self.asesor_search:
+            return self.asesores_select_options
+        return [
+            opt for opt in self.asesores_select_options 
+            if self.asesor_search.lower() in opt[0].lower()
+        ]
+
+    @rx.var
+    def propiedad_selected_label(self) -> str:
+        """Obtiene el label de la propiedad seleccionada."""
+        id_p = self.form_data.get("id_propiedad")
+        if not id_p: return ""
+        # Buscamos en ambas listas para asegurar que se muestre
+        all_options = self.propiedades_select_options + self.propiedades_mandato_libre_select_options
+        for opt in all_options:
+            if str(opt[1]) == str(id_p):
+                return opt[0]
+        return ""
+
+    @rx.var
+    def propietario_selected_label(self) -> str:
+        """Obtiene el label del propietario seleccionado."""
+        id_p = self.form_data.get("id_propietario")
+        if not id_p: return ""
+        for opt in self.propietarios_select_options:
+            if str(opt[1]) == str(id_p):
+                return opt[0]
+        return ""
+
+    @rx.var
+    def asesor_selected_label(self) -> str:
+        """Obtiene el label del asesor seleccionado."""
+        id_a = self.form_data.get("id_asesor")
+        if not id_a: return ""
+        for opt in self.asesores_select_options:
+            if str(opt[1]) == str(id_a):
+                return opt[0]
+        return ""
+
+    def select_propiedad(self, id_propiedad: str, label: str):
+        """Selecciona una propiedad y cierra el menú."""
+        self.on_change_propiedad(id_propiedad)
+        self.propiedad_search = ""
+        self.propiedad_menu_open = False
+
+    def select_propietario(self, id_propietario: str, label: str):
+        """Selecciona un propietario y cierra el menú."""
+        self.set_form_field("id_propietario", id_propietario)
+        self.propietario_search = ""
+        self.propietario_menu_open = False
+
+    def select_asesor(self, id_asesor: str, label: str):
+        """Selecciona un asesor y cierra el menú."""
+        self.set_form_field("id_asesor", id_asesor)
+        self.asesor_search = ""
+        self.asesor_menu_open = False
+
+    def toggle_propiedad_menu(self):
+        self.propiedad_menu_open = not self.propiedad_menu_open
+        if self.propiedad_menu_open:
+            self.propiedad_search = ""
+
+    def toggle_propietario_menu(self):
+        self.propietario_menu_open = not self.propietario_menu_open
+        if self.propietario_menu_open:
+            self.propietario_search = ""
+
+    def toggle_asesor_menu(self):
+        self.asesor_menu_open = not self.asesor_menu_open
+        if self.asesor_menu_open:
+            self.asesor_search = ""
+
+    def set_propiedad_search(self, val: str):
+        self.propiedad_search = val
+
+    def set_propietario_search(self, val: str):
+        self.propietario_search = val
+
+    def set_asesor_search(self, val: str):
+        self.asesor_search = val
+
     @rx.event(background=True)
     async def load_contratos(self):
         """Carga contratos con filtros y paginación (unificados)."""

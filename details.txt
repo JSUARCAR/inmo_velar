@@ -1,0 +1,347 @@
+diff --git a/src/presentacion_reflex/components/contratos/contrato_mandato_form.py b/src/presentacion_reflex/components/contratos/contrato_mandato_form.py
+index 4cb12d1..52f6fd5 100644
+--- a/src/presentacion_reflex/components/contratos/contrato_mandato_form.py
++++ b/src/presentacion_reflex/components/contratos/contrato_mandato_form.py
+@@ -4,11 +4,82 @@ Formulario modal para Contratos de Mandato - Reflex
+ 
+ import reflex as rx
+ 
++
+ from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+ from src.presentacion_reflex.components.image_gallery import image_gallery
+ from src.presentacion_reflex.state.contratos_state import ContratosState
+ 
+ 
++def searchable_select(
++    label: str,
++    placeholder: str,
++    value_label: rx.Var[str],
++    search_value: rx.Var[str],
++    menu_open: rx.Var[bool],
++    filtered_options: rx.Var[list],
++    on_change_search: callable,
++    on_toggle_menu: callable,
++    on_select: callable,
++) -> rx.Component:
++    return rx.vstack(
++        rx.text(label, size="2", weight="bold"),
++        rx.popover.root(
++            rx.popover.trigger(
++                rx.button(
++                    rx.cond(
++                        value_label == "",
++                        rx.text(placeholder, color="gray"),
++                        rx.text(value_label, color="black"),
++                    ),
++                    rx.icon("chevron-down", size=16),
++                    variant="surface",
++                    width="100%",
++                    justify="between",
++                ),
++            ),
++            rx.popover.content(
++                rx.vstack(
++                    rx.input(
++                        placeholder="Buscar...",
++                        value=search_value,
++                        on_change=on_change_search,
++                        autofocus=True,
++                        width="100%",
++                        variant="soft",
++                        size="1",
++                    ),
++                    rx.scroll_area(
++                         rx.vstack(
++                             rx.foreach(
++                                filtered_options,
++                                lambda opt: rx.box(
++                                    rx.text(opt[0], size="2"),
++                                    width="100%",
++                                    padding="2",
++                                    _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
++                                    on_click=lambda: on_select(opt[1], opt[0]),
++                                )
++                             ),
++                             width="100%",
++                             spacing="0",
++                        ),
++                        type="auto",
++                        scrollbars="vertical",
++                        style={"max_height": "200px"},
++                        width="100%",
++                    ),
++                    padding="2",
++                    width="300px",
++                ),
++            ),
++            open=menu_open,
++            on_open_change=on_toggle_menu,
++        ),
++        spacing="1",
++        width="100%",
++    )
++
++
+ def contrato_mandato_form() -> rx.Component:
+     """
+     Formulario modal para crear/editar contratos de mandato.
+@@ -62,95 +133,43 @@ def contrato_mandato_form() -> rx.Component:
+                 rx.tabs.content(
+                     rx.form(
+                         rx.vstack(
++
++
+                             # Propiedad (requerido)
+-                            rx.vstack(
+-                                rx.text("Propiedad *", size="2", weight="bold"),
+-                                rx.select.root(
+-                                    rx.select.trigger(
+-                                        rx.icon("home", size=16),
+-                                        placeholder="Seleccione una propiedad",
+-                                        variant="surface",
+-                                    ),
+-                                    rx.select.content(
+-                                        rx.select.group(
+-                                            rx.foreach(
+-                                                rx.cond(
+-                                                    ContratosState.modal_mode == "crear_mandato",
+-                                                    ContratosState.propiedades_mandato_libre_select_options,
+-                                                    ContratosState.propiedades_select_options,
+-                                                ),
+-                                                lambda opcion: rx.select.item(
+-                                                    opcion[0], value=opcion[1]
+-                                                ),
+-                                            )
+-                                        )
+-                                    ),
+-                                    name="id_propiedad",
+-                                    required=True,
+-                                    value=ContratosState.form_data.get("id_propiedad", ""),
+-                                    on_change=ContratosState.on_change_propiedad,
+-                                ),
+-                                spacing="1",
+-                                align="start",
+-                                width="100%",
++                            searchable_select(
++                                "Propiedad *",
++                                "Seleccione una propiedad",
++                                ContratosState.propiedad_selected_label,
++                                ContratosState.propiedad_search,
++                                ContratosState.propiedad_menu_open,
++                                ContratosState.filtered_propiedades_options,
++                                ContratosState.set_propiedad_search,
++                                ContratosState.toggle_propiedad_menu,
++                                ContratosState.select_propiedad,
+                             ),
+                             # Propietario y Asesor (2 columnas)
+                             rx.grid(
+-                                rx.vstack(
+-                                    rx.text("Propietario *", size="2", weight="bold"),
+-                                    rx.select.root(
+-                                        rx.select.trigger(
+-                                            rx.icon("user", size=16),
+-                                            placeholder="Seleccione el propietario",
+-                                            variant="surface",
+-                                        ),
+-                                        rx.select.content(
+-                                            rx.select.group(
+-                                                rx.foreach(
+-                                                    ContratosState.propietarios_select_options,
+-                                                    lambda opcion: rx.select.item(
+-                                                        opcion[0], value=opcion[1]
+-                                                    ),
+-                                                )
+-                                            )
+-                                        ),
+-                                        name="id_propietario",
+-                                        required=True,
+-                                        value=ContratosState.form_data.get("id_propietario", ""),
+-                                        on_change=lambda v: ContratosState.set_form_field(
+-                                            "id_propietario", v
+-                                        ),
+-                                    ),
+-                                    spacing="1",
+-                                    width="100%",
++                                searchable_select(
++                                    "Propietario *",
++                                    "Seleccione el propietario",
++                                    ContratosState.propietario_selected_label,
++                                    ContratosState.propietario_search,
++                                    ContratosState.propietario_menu_open,
++                                    ContratosState.filtered_propietarios_options,
++                                    ContratosState.set_propietario_search,
++                                    ContratosState.toggle_propietario_menu,
++                                    ContratosState.select_propietario,
+                                 ),
+-                                rx.vstack(
+-                                    rx.text("Asesor *", size="2", weight="bold"),
+-                                    rx.select.root(
+-                                        rx.select.trigger(
+-                                            rx.icon("briefcase", size=16),
+-                                            placeholder="Seleccione el asesor",
+-                                            variant="surface",
+-                                        ),
+-                                        rx.select.content(
+-                                            rx.select.group(
+-                                                rx.foreach(
+-                                                    ContratosState.asesores_select_options,
+-                                                    lambda opcion: rx.select.item(
+-                                                        opcion[0], value=opcion[1]
+-                                                    ),
+-                                                )
+-                                            )
+-                                        ),
+-                                        name="id_asesor",
+-                                        required=True,
+-                                        value=ContratosState.form_data.get("id_asesor", ""),
+-                                        on_change=lambda v: ContratosState.set_form_field(
+-                                            "id_asesor", v
+-                                        ),
+-                                    ),
+-                                    spacing="1",
+-                                    width="100%",
++                                searchable_select(
++                                    "Asesor *",
++                                    "Seleccione el asesor",
++                                    ContratosState.asesor_selected_label,
++                                    ContratosState.asesor_search,
++                                    ContratosState.asesor_menu_open,
++                                    ContratosState.filtered_asesores_options,
++                                    ContratosState.set_asesor_search,
++                                    ContratosState.toggle_asesor_menu,
++                                    ContratosState.select_asesor,
+                                 ),
+                                 columns=rx.breakpoints(initial="1", sm="2"),
+                                 spacing="4",
+diff --git a/src/presentacion_reflex/state/contratos_state.py b/src/presentacion_reflex/state/contratos_state.py
+index e4228e9..c8b7ce8 100644
+--- a/src/presentacion_reflex/state/contratos_state.py
++++ b/src/presentacion_reflex/state/contratos_state.py
+@@ -418,6 +418,127 @@ class ContratosState(DocumentosStateMixin):
+             self.propiedades_canon_map = canon_map
+             self.propiedades_canon_map = canon_map
+ 
++    # --- Custom Searchable Select Logic ---
++
++    # Search Texts
++    propiedad_search: str = ""
++    propietario_search: str = ""
++    asesor_search: str = ""
++
++    # Menu Open States
++    propiedad_menu_open: bool = False
++    propietario_menu_open: bool = False
++    asesor_menu_open: bool = False
++
++    @rx.var
++    def filtered_propiedades_options(self) -> List[List[str]]:
++        """Filtra opciones de propiedad según el texto de búsqueda."""
++        options = (
++            self.propiedades_mandato_libre_select_options
++            if self.modal_mode == "crear_mandato"
++            else self.propiedades_select_options
++        )
++        if not self.propiedad_search:
++            return options
++        return [
++            opt for opt in options 
++            if self.propiedad_search.lower() in opt[0].lower()
++        ]
++
++    @rx.var
++    def filtered_propietarios_options(self) -> List[List[str]]:
++        """Filtra opciones de propietario según el texto de búsqueda."""
++        if not self.propietario_search:
++            return self.propietarios_select_options
++        return [
++            opt for opt in self.propietarios_select_options 
++            if self.propietario_search.lower() in opt[0].lower()
++        ]
++
++    @rx.var
++    def filtered_asesores_options(self) -> List[List[str]]:
++        """Filtra opciones de asesor según el texto de búsqueda."""
++        if not self.asesor_search:
++            return self.asesores_select_options
++        return [
++            opt for opt in self.asesores_select_options 
++            if self.asesor_search.lower() in opt[0].lower()
++        ]
++
++    @rx.var
++    def propiedad_selected_label(self) -> str:
++        """Obtiene el label de la propiedad seleccionada."""
++        id_p = self.form_data.get("id_propiedad")
++        if not id_p: return ""
++        # Buscamos en ambas listas para asegurar que se muestre
++        all_options = self.propiedades_select_options + self.propiedades_mandato_libre_select_options
++        for opt in all_options:
++            if str(opt[1]) == str(id_p):
++                return opt[0]
++        return ""
++
++    @rx.var
++    def propietario_selected_label(self) -> str:
++        """Obtiene el label del propietario seleccionado."""
++        id_p = self.form_data.get("id_propietario")
++        if not id_p: return ""
++        for opt in self.propietarios_select_options:
++            if str(opt[1]) == str(id_p):
++                return opt[0]
++        return ""
++
++    @rx.var
++    def asesor_selected_label(self) -> str:
++        """Obtiene el label del asesor seleccionado."""
++        id_a = self.form_data.get("id_asesor")
++        if not id_a: return ""
++        for opt in self.asesores_select_options:
++            if str(opt[1]) == str(id_a):
++                return opt[0]
++        return ""
++
++    def select_propiedad(self, id_propiedad: str, label: str):
++        """Selecciona una propiedad y cierra el menú."""
++        self.on_change_propiedad(id_propiedad)
++        self.propiedad_search = ""
++        self.propiedad_menu_open = False
++
++    def select_propietario(self, id_propietario: str, label: str):
++        """Selecciona un propietario y cierra el menú."""
++        self.set_form_field("id_propietario", id_propietario)
++        self.propietario_search = ""
++        self.propietario_menu_open = False
++
++    def select_asesor(self, id_asesor: str, label: str):
++        """Selecciona un asesor y cierra el menú."""
++        self.set_form_field("id_asesor", id_asesor)
++        self.asesor_search = ""
++        self.asesor_menu_open = False
++
++    def toggle_propiedad_menu(self):
++        self.propiedad_menu_open = not self.propiedad_menu_open
++        if self.propiedad_menu_open:
++            self.propiedad_search = ""
++
++    def toggle_propietario_menu(self):
++        self.propietario_menu_open = not self.propietario_menu_open
++        if self.propietario_menu_open:
++            self.propietario_search = ""
++
++    def toggle_asesor_menu(self):
++        self.asesor_menu_open = not self.asesor_menu_open
++        if self.asesor_menu_open:
++            self.asesor_search = ""
++
++    def set_propiedad_search(self, val: str):
++        self.propiedad_search = val
++
++    def set_propietario_search(self, val: str):
++        self.propietario_search = val
++
++    def set_asesor_search(self, val: str):
++        self.asesor_search = val
++
+     @rx.event(background=True)
+     async def load_contratos(self):
+         """Carga contratos con filtros y paginación (unificados)."""
