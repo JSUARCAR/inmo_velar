@@ -1076,24 +1076,28 @@ class ContratosState(DocumentosStateMixin):
                 repo_codeudor=repo_codeudor,
             )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
+            
+            # Combinar datos del formulario con los del estado
+            # Los del estado contienen los IDs de los searchable_select que no viajan en form_data
+            full_data = {**self.form_data, **form_data}
 
             # Procesar datos del formulario según el tipo
             if self.modal_mode == "crear_mandato" or self.modal_mode == "editar_mandato":
                 # Convertir tipos para mandato
                 datos_procesados = {
-                    "id_propiedad": int(form_data["id_propiedad"]),
-                    "id_propietario": int(form_data["id_propietario"]),
-                    "id_asesor": int(form_data["id_asesor"]),
-                    "fecha_inicio": form_data["fecha_inicio"],
-                    "fecha_fin": form_data["fecha_fin"],
-                    "fecha_pago": form_data.get("fecha_pago"),
-                    "duracion_meses": int(form_data["duracion_meses"]),
-                    "canon": int(form_data["canon"]),
+                    "id_propiedad": int(full_data["id_propiedad"]),
+                    "id_propietario": int(full_data["id_propietario"]),
+                    "id_asesor": int(full_data["id_asesor"]),
+                    "fecha_inicio": full_data["fecha_inicio"],
+                    "fecha_fin": full_data["fecha_fin"],
+                    "fecha_pago": full_data.get("fecha_pago"),
+                    "duracion_meses": int(full_data["duracion_meses"]),
+                    "canon": int(full_data["canon"]),
                     "comision_porcentaje": int(
-                        float(form_data["comision_porcentaje"]) * 100
+                        float(full_data["comision_porcentaje"]) * 100
                     ),  # Convertir % a base 10000
                     "iva_porcentaje": int(
-                        float(form_data.get("iva_porcentaje", 19)) * 100
+                        float(full_data.get("iva_porcentaje", 19)) * 100
                     ),  # Convertir % a base 10000
                 }
 
@@ -1108,17 +1112,17 @@ class ContratosState(DocumentosStateMixin):
             ):
                 # Convertir tipos para arrendamiento
                 datos_procesados = {
-                    "id_propiedad": int(form_data["id_propiedad"]),
-                    "id_arrendatario": int(form_data["id_arrendatario"]),
+                    "id_propiedad": int(full_data["id_propiedad"]),
+                    "id_arrendatario": int(full_data["id_arrendatario"]),
                     "id_codeudor": (
-                        int(form_data["id_codeudor"]) if form_data.get("id_codeudor") else None
+                        int(full_data["id_codeudor"]) if full_data.get("id_codeudor") else None
                     ),
-                    "fecha_inicio": form_data["fecha_inicio"],
-                    "fecha_fin": form_data["fecha_fin"],
-                    "duracion_meses": int(form_data["duracion_meses"]),
-                    "canon": int(form_data["canon"]),
-                    "deposito": int(form_data.get("deposito", 0)),
-                    "fecha_pago": form_data.get("fecha_pago", ""),
+                    "fecha_inicio": full_data["fecha_inicio"],
+                    "fecha_fin": full_data["fecha_fin"],
+                    "duracion_meses": int(full_data["duracion_meses"]),
+                    "canon": int(full_data["canon"]),
+                    "deposito": int(full_data.get("deposito", 0)),
+                    "fecha_pago": full_data.get("fecha_pago", ""),
                 }
 
                 if self.modal_mode == "crear_arrendamiento":
