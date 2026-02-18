@@ -421,6 +421,47 @@ class ServicioContratos:
                 for row in cursor.fetchall()
             ]
 
+    def listar_mandatos_por_vencer(self, dias_antelacion: int = 60) -> List[Dict[str, Any]]:
+        """
+        Lista contratos de mandato que vencen en los próximos N días.
+        """
+        fecha_limite = (datetime.now() + timedelta(days=dias_antelacion)).strftime("%Y-%m-%d")
+        fecha_hoy = datetime.now().strftime("%Y-%m-%d")
+
+        query = """
+        SELECT 
+            cm.ID_CONTRATO_M,
+            cm.FECHA_FIN_CONTRATO_M,
+            p.DIRECCION_PROPIEDAD,
+            per.NOMBRE_COMPLETO as PROPIETARIO
+        FROM CONTRATOS_MANDATOS cm
+        JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+        JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
+        JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+        WHERE cm.ESTADO_CONTRATO_M = 'Activo'
+          AND cm.FECHA_FIN_CONTRATO_M <= {placeholder}
+          AND cm.FECHA_FIN_CONTRATO_M >= {placeholder}
+        ORDER BY cm.FECHA_FIN_CONTRATO_M ASC
+        """
+
+        with self.db.obtener_conexion() as conn:
+            cursor = self.db.get_dict_cursor(conn)
+            placeholder = self.db.get_placeholder()
+            final_query = query.format(placeholder=placeholder)
+            cursor.execute(final_query, (fecha_limite, fecha_hoy))
+            return [
+                {
+                    "id": row["ID_CONTRATO_M"],
+                    "fecha_fin": row["FECHA_FIN_CONTRATO_M"],
+                    "propiedad": row["DIRECCION_PROPIEDAD"],
+                    "propietario": row["PROPIETARIO"],
+                    "dias_restantes": (
+                        datetime.strptime(row["FECHA_FIN_CONTRATO_M"], "%Y-%m-%d") - datetime.now()
+                    ).days,
+                }
+                for row in cursor.fetchall()
+            ]
+
     def exportar_contratos_csv(
         self,
         filtro_tipo: str = "Todos",
