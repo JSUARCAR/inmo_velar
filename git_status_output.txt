@@ -1,0 +1,24 @@
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   src/aplicacion/servicios/servicio_contrato_arrendamiento.py
+	modified:   src/aplicacion/servicios/servicio_contratos.py
+	modified:   src/dominio/entidades/contrato_arrendamiento.py
+	modified:   src/infraestructura/persistencia/repositorio_contrato_arrendamiento_sqlite.py
+	modified:   src/presentacion_reflex/components/contratos/contrato_arrendamiento_form.py
+	modified:   src/presentacion_reflex/components/contratos/contrato_mandato_form.py
+	modified:   src/presentacion_reflex/state/contratos_state.py
+	modified:   src/presentacion_reflex/state/desocupaciones_state.py
+	modified:   src/presentacion_reflex/state/incidentes_state.py
+	modified:   src/presentacion_reflex/state/liquidaciones_state.py
+	modified:   src/presentacion_reflex/state/recibos_state.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	git_status_output.txt
+	src/infraestructura/persistencia/scripts/migrar_fecha_pago_postgresql.py
+
+no changes added to commit (use "git add" and/or "git commit -a")

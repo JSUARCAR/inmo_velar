@@ -33,6 +33,7 @@ $env:USE_REFLEX = "true"
 # Limpiar caché anterior si existe
 if (Test-Path ".\.web\") {
     Write-Host "🧹 Limpiando caché anterior..." -ForegroundColor Yellow
+    Remove-Item -Recurse -Force ".\.web\"
 }
 
 Write-Host ""

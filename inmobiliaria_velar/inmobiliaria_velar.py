@@ -93,12 +93,21 @@ class SecurityHeadersMiddleware:
         async def send_wrapper(message):
             if message["type"] == "http.response.start":
                 from starlette.datastructures import MutableHeaders
-                headers = MutableHeaders(scope=message)
+                # IMPORTANTE: Usar 'raw' asegura que manipulamos los bytes de los headers correctamente
+                # El uso previo de 'scope' era incorrecto para mensajes individuales de respuesta
+                headers = MutableHeaders(raw=message["headers"])
                 headers.append("X-Frame-Options", "DENY")
                 headers.append("X-Content-Type-Options", "nosniff")
                 headers.append("X-XSS-Protection", "1; mode=block")
                 headers.append("Referrer-Policy", "strict-origin-when-cross-origin")
-            await send(message)
+            
+            try:
+                await send(message)
+            except RuntimeError as e:
+                if "already upgraded" in str(e):
+                    # Ignorar errores si la conexión ya se actualizó a WebSockets
+                    return
+                raise e
 
         await self.app(scope, receive, send_wrapper)
 
