@@ -75,11 +75,19 @@ class ServicioAlertas:
         for c in contratos_vencen:
             dias = c["dias_restantes"]
             nivel = "danger" if dias < 30 else "warning"
+            
+            if dias < 0:
+                mensaje = f"Arriendo VENCIDO hace {abs(dias)} días: {c['propiedad']}"
+            elif dias == 0:
+                mensaje = f"Arriendo vence HOY: {c['propiedad']}"
+            else:
+                mensaje = f"Arriendo vence en {dias} días: {c['propiedad']}"
+
             alertas.append(
                 {
                     "id": f"cnt_{c['id']}",
                     "tipo": "Contrato Arriendo",
-                    "mensaje": f"Arriendo vence en {dias} días: {c['propiedad']}",
+                    "mensaje": mensaje,
                     "fecha": c["fecha_fin"],
                     "nivel": nivel,
                     "link": "/contratos",
@@ -97,11 +105,19 @@ class ServicioAlertas:
         for m in mandatos_vencen:
             dias = m["dias_restantes"]
             nivel = "danger" if dias < 30 else "warning"
+            
+            if dias < 0:
+                mensaje = f"Mandato VENCIDO hace {abs(dias)} días: {m['propiedad']}"
+            elif dias == 0:
+                mensaje = f"Mandato vence HOY: {m['propiedad']}"
+            else:
+                mensaje = f"Mandato vence en {dias} días: {m['propiedad']}"
+
             alertas.append(
                 {
                     "id": f"mand_{m['id']}",
                     "tipo": "Contrato Mandato",
-                    "mensaje": f"Mandato vence en {dias} días: {m['propiedad']}",
+                    "mensaje": mensaje,
                     "fecha": m["fecha_fin"],
                     "nivel": nivel,
                     "link": "/contratos",

@@ -396,7 +396,6 @@ class ServicioContratos:
         JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
         WHERE ca.ESTADO_CONTRATO_A = 'Activo'
           AND ca.FECHA_FIN_CONTRATO_A <= {placeholder}
-          AND ca.FECHA_FIN_CONTRATO_A >= {placeholder}
         ORDER BY ca.FECHA_FIN_CONTRATO_A ASC
         """
         # Note: Using '?' for simplicity here, but should use self.db.get_placeholder() if strictly following pattern.
@@ -407,7 +406,7 @@ class ServicioContratos:
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
             final_query = query.format(placeholder=placeholder)
-            cursor.execute(final_query, (fecha_limite, fecha_hoy))
+            cursor.execute(final_query, (fecha_limite,))
             return [
                 {
                     "id": row["ID_CONTRATO_A"],
@@ -423,11 +422,10 @@ class ServicioContratos:
 
     def listar_mandatos_por_vencer(self, dias_antelacion: int = 60) -> List[Dict[str, Any]]:
         """
-        Lista contratos de mandato que vencen en los próximos N días.
+        Lista contratos de mandato que vencen en los próximos N días (incluyendo vencidos).
         """
         fecha_limite = (datetime.now() + timedelta(days=dias_antelacion)).strftime("%Y-%m-%d")
-        fecha_hoy = datetime.now().strftime("%Y-%m-%d")
-
+        
         query = """
         SELECT 
             cm.ID_CONTRATO_M,
@@ -440,7 +438,6 @@ class ServicioContratos:
         JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
         WHERE cm.ESTADO_CONTRATO_M = 'Activo'
           AND cm.FECHA_FIN_CONTRATO_M <= {placeholder}
-          AND cm.FECHA_FIN_CONTRATO_M >= {placeholder}
         ORDER BY cm.FECHA_FIN_CONTRATO_M ASC
         """
 
@@ -448,7 +445,7 @@ class ServicioContratos:
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
             final_query = query.format(placeholder=placeholder)
-            cursor.execute(final_query, (fecha_limite, fecha_hoy))
+            cursor.execute(final_query, (fecha_limite,))
             return [
                 {
                     "id": row["ID_CONTRATO_M"],
