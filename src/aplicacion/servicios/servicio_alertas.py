@@ -67,8 +67,8 @@ class ServicioAlertas:
         """
         alertas = []
 
-        # 1. Contratos próximos a vencer (según parámetro o 60 días def)
-        dias_cnt = self.servicio_config.obtener_valor_parametro("DIAS_ALERTA_ARRENDAMIENTO", 60)
+        # 1. Contratos próximos a vencer (según parámetro o 90 días def)
+        dias_cnt = self.servicio_config.obtener_valor_parametro("DIAS_ALERTA_ARRENDAMIENTO", 90)
         contratos_vencen = self.servicio_contratos.listar_arrendamientos_por_vencer(
             dias_antelacion=dias_cnt
         )
@@ -86,8 +86,11 @@ class ServicioAlertas:
                 }
             )
 
-        # 1.1 Contratos Mandato próximos a vencer (según parámetro o 60 días def)
-        dias_mand = self.servicio_config.obtener_valor_parametro("DIAS_ALERTA_MANDATO", 60)
+        # 1.1 Contratos Mandato próximos a vencer (según parámetro o 90 días def)
+        # Forzamos mínimo 90 días para asegurar visibilidad alineada con Dashboard
+        dias_mand_config = self.servicio_config.obtener_valor_parametro("DIAS_ALERTA_MANDATO", 90)
+        dias_mand = max(90, int(dias_mand_config or 90))
+        
         mandatos_vencen = self.servicio_contratos.listar_mandatos_por_vencer(
             dias_antelacion=dias_mand
         )
