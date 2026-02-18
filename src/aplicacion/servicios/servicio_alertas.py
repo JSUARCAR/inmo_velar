@@ -78,9 +78,28 @@ class ServicioAlertas:
             alertas.append(
                 {
                     "id": f"cnt_{c['id']}",
-                    "tipo": "Contrato",
+                    "tipo": "Contrato Arriendo",
                     "mensaje": f"Arriendo vence en {dias} días: {c['propiedad']}",
                     "fecha": c["fecha_fin"],
+                    "nivel": nivel,
+                    "link": "/contratos",
+                }
+            )
+
+        # 1.1 Contratos Mandato próximos a vencer (según parámetro o 60 días def)
+        dias_mand = self.servicio_config.obtener_valor_parametro("DIAS_ALERTA_MANDATO", 60)
+        mandatos_vencen = self.servicio_contratos.listar_mandatos_por_vencer(
+            dias_antelacion=dias_mand
+        )
+        for m in mandatos_vencen:
+            dias = m["dias_restantes"]
+            nivel = "danger" if dias < 30 else "warning"
+            alertas.append(
+                {
+                    "id": f"mand_{m['id']}",
+                    "tipo": "Contrato Mandato",
+                    "mensaje": f"Mandato vence en {dias} días: {m['propiedad']}",
+                    "fecha": m["fecha_fin"],
                     "nivel": nivel,
                     "link": "/contratos",
                 }
