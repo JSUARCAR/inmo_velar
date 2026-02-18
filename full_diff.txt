@@ -1,116 +1,847 @@
-diff --git a/src/presentacion_reflex/components/personas/modal_form.py b/src/presentacion_reflex/components/personas/modal_form.py
-index f3be592..831a34d 100644
---- a/src/presentacion_reflex/components/personas/modal_form.py
-+++ b/src/presentacion_reflex/components/personas/modal_form.py
-@@ -13,6 +13,8 @@ def form_field(
-     required: bool = False,
-     default_value: str = "",
-     icon: str = "",
-+    value: str = None,
-+    on_change: str = None,
- ) -> rx.Component:
-     """Elite form field with icon and enhanced styling."""
-     return rx.vstack(
-@@ -24,6 +26,8 @@ def form_field(
-             type=type,
-             required=required,
-             default_value=default_value,
-+            value=value,
-+            on_change=on_change,
-             width="100%",
-             size="3",
-             style={
-@@ -283,6 +287,8 @@ def step_1_basic_info() -> rx.Component:
-             "Ej: Juan Pérez S.A.S",
-             required=True,
-             default_value=PersonasState.form_data["nombre_completo"],
-+            value=PersonasState.form_data["nombre_completo"],
-+            on_change=lambda val: PersonasState.set_upper("nombre_completo", val),
-             icon="user",
-         ),
-         rx.hstack(
-@@ -300,6 +306,8 @@ def step_1_basic_info() -> rx.Component:
-                 "Ej: contacto@empresa.com",
-                 type="email",
-                 default_value=PersonasState.form_data["correo_electronico"],
-+                value=PersonasState.form_data["correo_electronico"],
-+                on_change=lambda val: PersonasState.set_upper("correo_electronico", val),
-                 icon="mail",
+diff --git a/full_diff.txt b/full_diff.txt
+index 657738b..e69de29 100644
+--- a/full_diff.txt
++++ b/full_diff.txt
+@@ -1,116 +0,0 @@
+-diff --git a/src/presentacion_reflex/components/personas/modal_form.py b/src/presentacion_reflex/components/personas/modal_form.py
+-index f3be592..831a34d 100644
+---- a/src/presentacion_reflex/components/personas/modal_form.py
+-+++ b/src/presentacion_reflex/components/personas/modal_form.py
+-@@ -13,6 +13,8 @@ def form_field(
+-     required: bool = False,
+-     default_value: str = "",
+-     icon: str = "",
+-+    value: str = None,
+-+    on_change: str = None,
+- ) -> rx.Component:
+-     """Elite form field with icon and enhanced styling."""
+-     return rx.vstack(
+-@@ -24,6 +26,8 @@ def form_field(
+-             type=type,
+-             required=required,
+-             default_value=default_value,
+-+            value=value,
+-+            on_change=on_change,
+-             width="100%",
+-             size="3",
+-             style={
+-@@ -283,6 +287,8 @@ def step_1_basic_info() -> rx.Component:
+-             "Ej: Juan Pérez S.A.S",
+-             required=True,
+-             default_value=PersonasState.form_data["nombre_completo"],
+-+            value=PersonasState.form_data["nombre_completo"],
+-+            on_change=lambda val: PersonasState.set_upper("nombre_completo", val),
+-             icon="user",
+-         ),
+-         rx.hstack(
+-@@ -300,6 +306,8 @@ def step_1_basic_info() -> rx.Component:
+-                 "Ej: contacto@empresa.com",
+-                 type="email",
+-                 default_value=PersonasState.form_data["correo_electronico"],
+-+                value=PersonasState.form_data["correo_electronico"],
+-+                on_change=lambda val: PersonasState.set_upper("correo_electronico", val),
+-                 icon="mail",
+-             ),
+-             spacing="3",
+-@@ -310,6 +318,8 @@ def step_1_basic_info() -> rx.Component:
+-             "direccion_principal",
+-             "Ej: Calle 123 # 45-67",
+-             default_value=PersonasState.form_data["direccion_principal"],
+-+            value=PersonasState.form_data["direccion_principal"],
+-+            on_change=lambda val: PersonasState.set_upper("direccion_principal", val),
+-             icon="map-pin",
+-         ),
+-         spacing="4",
+-diff --git a/src/presentacion_reflex/state/personas_state.py b/src/presentacion_reflex/state/personas_state.py
+-index e552fad..45596b8 100644
+---- a/src/presentacion_reflex/state/personas_state.py
+-+++ b/src/presentacion_reflex/state/personas_state.py
+-@@ -352,6 +352,12 @@ class PersonasState(rx.State):
+-         self.modal_step = 1
+-         self.form_validation_errors = {}
+- 
+-+    # --- Input Handling ---
+-+
+-+    def set_upper(self, field: str, value: str):
+-+        """Establece el valor del campo en mayúsculas."""
+-+        self.form_data[field] = value.upper()
+-+
+-     # --- Modal Logic ---
+- 
+-     def open_create_modal(self):
+-@@ -359,7 +365,15 @@ class PersonasState(rx.State):
+-         pass  # print("\n🔵 OPEN_CREATE_MODAL called") [OpSec Removed]
+-         self.is_editing = False
+-         self.current_persona_id = None
+--        self.form_data = {}  # Limpiar formulario
+-+        # Inicializar con claves vacías para evitar errores de binding
+-+        self.form_data = {
+-+            "nombre_completo": "",
+-+            "correo_electronico": "",
+-+            "direccion_principal": "",
+-+            "numero_documento": "",
+-+            "telefono_principal": "",
+-+            "tipo_documento": "CC",
+-+        }
+-         self.error_message = ""
+-         self.selected_roles = []  # Reset roles
+-         self.reset_wizard()  # Reset wizard to step 1
+-@@ -416,14 +430,15 @@ class PersonasState(rx.State):
+- 
+-             p_entidad = persona_completa.persona
+- 
+--            # 2. Cargar datos básicos
+-+
+-+            # 2. Cargar datos básicos (con conversion a mayúsculas si aplica)
+-             self.form_data = {
+--                "nombre_completo": p_entidad.nombre_completo,
+-+                "nombre_completo": (p_entidad.nombre_completo or "").upper(),
+-                 "tipo_documento": p_entidad.tipo_documento or "CC",
+-                 "numero_documento": p_entidad.numero_documento,
+-                 "telefono_principal": p_entidad.telefono_principal or "",
+--                "correo_electronico": p_entidad.correo_electronico or "",
+--                "direccion_principal": p_entidad.direccion_principal or "",
+-+                "correo_electronico": (p_entidad.correo_electronico or "").upper(),
+-+                "direccion_principal": (p_entidad.direccion_principal or "").upper(),
+-             }
+- 
+-             # 3. Cargar roles activos
+-diff --git a/src/presentacion_reflex/state/propiedades_state.py b/src/presentacion_reflex/state/propiedades_state.py
+-index 4ab603c..b170fa4 100644
+---- a/src/presentacion_reflex/state/propiedades_state.py
+-+++ b/src/presentacion_reflex/state/propiedades_state.py
+-@@ -226,6 +226,8 @@ class PropiedadesState(DocumentosStateMixin):
+-     def set_search(self, value: str):
+-         """Actualiza búsqueda."""
+-         self.search_text = value
+-+        self.current_page = 1
+-+        yield PropiedadesState.load_propiedades
+- 
+-     def search_propiedades(self):
+-         """Ejecuta búsqueda."""
+diff --git a/src/aplicacion/servicios/servicio_contrato_arrendamiento.py b/src/aplicacion/servicios/servicio_contrato_arrendamiento.py
+index 07a4bcc..4221e02 100644
+--- a/src/aplicacion/servicios/servicio_contrato_arrendamiento.py
++++ b/src/aplicacion/servicios/servicio_contrato_arrendamiento.py
+@@ -67,6 +67,7 @@ class ServicioContratoArrendamiento:
+             duracion_contrato_a=datos["duracion_meses"],
+             canon_arrendamiento=datos["canon"],
+             deposito=datos.get("deposito", 0),
++            fecha_pago=datos.get("fecha_pago"),
+             estado_contrato_a="Activo",
+             alerta_vencimiento_contrato_a=True,
+             alerta_ipc=True,
+@@ -85,6 +86,7 @@ class ServicioContratoArrendamiento:
+ 
+         arriendo.fecha_fin_contrato_a = datos.get("fecha_fin", arriendo.fecha_fin_contrato_a)
+         arriendo.canon_arrendamiento = datos.get("canon", arriendo.canon_arrendamiento)
++        arriendo.fecha_pago = datos.get("fecha_pago", arriendo.fecha_pago)
+         arriendo.updated_by = usuario_sistema
+         arriendo.updated_at = datetime.now().isoformat()
+ 
+diff --git a/src/aplicacion/servicios/servicio_contratos.py b/src/aplicacion/servicios/servicio_contratos.py
+index 78b8f95..762f32b 100644
+--- a/src/aplicacion/servicios/servicio_contratos.py
++++ b/src/aplicacion/servicios/servicio_contratos.py
+@@ -792,6 +792,7 @@ class ServicioContratos:
+                     "duracion": row["DURACION_CONTRATO_A"],
+                     "canon": row["CANON_ARRENDAMIENTO"],
+                     "deposito": row["DEPOSITO"],
++                    "fecha_pago": row.get("FECHA_PAGO") or row.get("fecha_pago"),
+                     "municipio": row["NOMBRE_MUNICIPIO"] or "ARMENIA",
+                     "departamento": row["DEPARTAMENTO"] or "QUINDÍO",
+                     "estado": row["ESTADO_CONTRATO_A"],
+diff --git a/src/dominio/entidades/contrato_arrendamiento.py b/src/dominio/entidades/contrato_arrendamiento.py
+index a34c586..e537ccc 100644
+--- a/src/dominio/entidades/contrato_arrendamiento.py
++++ b/src/dominio/entidades/contrato_arrendamiento.py
+@@ -33,6 +33,7 @@ class ContratoArrendamiento:
+     # Condiciones Económicas
+     canon_arrendamiento: int = 0
+     deposito: int = 0
++    fecha_pago: Optional[str] = None
+ 
+     # Estado
+     estado_contrato_a: str = "Activo"  # Activo, Finalizado, Legal, Cancelado
+diff --git a/src/infraestructura/persistencia/repositorio_contrato_arrendamiento_sqlite.py b/src/infraestructura/persistencia/repositorio_contrato_arrendamiento_sqlite.py
+index 3470eeb..479c481 100644
+--- a/src/infraestructura/persistencia/repositorio_contrato_arrendamiento_sqlite.py
++++ b/src/infraestructura/persistencia/repositorio_contrato_arrendamiento_sqlite.py
+@@ -24,11 +24,11 @@ class RepositorioContratoArrendamientoSQLite:
+         INSERT INTO CONTRATOS_ARRENDAMIENTOS (
+             ID_PROPIEDAD, ID_ARRENDATARIO, ID_CODEUDOR,
+             FECHA_INICIO_CONTRATO_A, FECHA_FIN_CONTRATO_A, DURACION_CONTRATO_A,
+-            CANON_ARRENDAMIENTO, DEPOSITO,
++            CANON_ARRENDAMIENTO, DEPOSITO, FECHA_PAGO,
+             ESTADO_CONTRATO_A, ALERTA_VENCIMIENTO_CONTRATO_A, ALERTA_IPC,
+             FECHA_RENOVACION_CONTRATO_A, FECHA_INCREMENTO_IPC,
+             CREATED_BY, UPDATED_BY
+-        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
++        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+         """,
+             (
+                 contrato.id_propiedad,
+@@ -39,6 +39,7 @@ class RepositorioContratoArrendamientoSQLite:
+                 contrato.duracion_contrato_a,
+                 contrato.canon_arrendamiento,
+                 contrato.deposito,
++                contrato.fecha_pago,
+                 contrato.estado_contrato_a,
+                 contrato.alerta_vencimiento_contrato_a,
+                 contrato.alerta_ipc,
+@@ -247,6 +248,7 @@ class RepositorioContratoArrendamientoSQLite:
+         UPDATE CONTRATOS_ARRENDAMIENTOS SET
+             FECHA_FIN_CONTRATO_A = {placeholder},
+             CANON_ARRENDAMIENTO = {placeholder},
++            FECHA_PAGO = {placeholder},
+             ESTADO_CONTRATO_A = {placeholder},
+             MOTIVO_CANCELACION = {placeholder},
+             ALERTA_VENCIMIENTO_CONTRATO_A = {placeholder},
+@@ -260,6 +262,7 @@ class RepositorioContratoArrendamientoSQLite:
+             (
+                 contrato.fecha_fin_contrato_a,
+                 contrato.canon_arrendamiento,
++                contrato.fecha_pago,
+                 contrato.estado_contrato_a,
+                 contrato.motivo_cancelacion,
+                 contrato.alerta_vencimiento_contrato_a,
+@@ -301,6 +304,7 @@ class RepositorioContratoArrendamientoSQLite:
+                 row_dict.get("canon_arrendamiento") or row_dict.get("CANON_ARRENDAMIENTO")
              ),
-             spacing="3",
-@@ -310,6 +318,8 @@ def step_1_basic_info() -> rx.Component:
-             "direccion_principal",
-             "Ej: Calle 123 # 45-67",
-             default_value=PersonasState.form_data["direccion_principal"],
-+            value=PersonasState.form_data["direccion_principal"],
-+            on_change=lambda val: PersonasState.set_upper("direccion_principal", val),
-             icon="map-pin",
-         ),
-         spacing="4",
-diff --git a/src/presentacion_reflex/state/personas_state.py b/src/presentacion_reflex/state/personas_state.py
-index e552fad..45596b8 100644
---- a/src/presentacion_reflex/state/personas_state.py
-+++ b/src/presentacion_reflex/state/personas_state.py
-@@ -352,6 +352,12 @@ class PersonasState(rx.State):
-         self.modal_step = 1
-         self.form_validation_errors = {}
+             deposito=(row_dict.get("deposito") or row_dict.get("DEPOSITO")),
++            fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
+             estado_contrato_a=(
+                 row_dict.get("estado_contrato_a") or row_dict.get("ESTADO_CONTRATO_A")
+             ),
+diff --git a/src/presentacion_reflex/components/contratos/contrato_arrendamiento_form.py b/src/presentacion_reflex/components/contratos/contrato_arrendamiento_form.py
+index 22d658e..975f027 100644
+--- a/src/presentacion_reflex/components/contratos/contrato_arrendamiento_form.py
++++ b/src/presentacion_reflex/components/contratos/contrato_arrendamiento_form.py
+@@ -9,6 +9,81 @@ from src.presentacion_reflex.components.image_gallery import image_gallery
+ from src.presentacion_reflex.state.contratos_state import ContratosState
  
-+    # --- Input Handling ---
-+
-+    def set_upper(self, field: str, value: str):
-+        """Establece el valor del campo en mayúsculas."""
-+        self.form_data[field] = value.upper()
-+
-     # --- Modal Logic ---
  
-     def open_create_modal(self):
-@@ -359,7 +365,15 @@ class PersonasState(rx.State):
-         pass  # print("\n🔵 OPEN_CREATE_MODAL called") [OpSec Removed]
-         self.is_editing = False
-         self.current_persona_id = None
--        self.form_data = {}  # Limpiar formulario
-+        # Inicializar con claves vacías para evitar errores de binding
-+        self.form_data = {
-+            "nombre_completo": "",
-+            "correo_electronico": "",
-+            "direccion_principal": "",
-+            "numero_documento": "",
-+            "telefono_principal": "",
-+            "tipo_documento": "CC",
-+        }
++def searchable_select(
++    label: str,
++    placeholder: str,
++    value_label: rx.Var[str],
++    search_value: rx.Var[str],
++    menu_open: rx.Var[bool],
++    filtered_options: rx.Var[list],
++    on_change_search: callable,
++    on_toggle_menu: callable,
++    on_select: callable,
++) -> rx.Component:
++    return rx.vstack(
++        rx.text(label, size="2", weight="bold"),
++        rx.popover.root(
++            rx.popover.trigger(
++                rx.button(
++                    rx.cond(
++                        value_label == "",
++                        rx.text(placeholder, color="gray"),
++                        rx.text(value_label, color="black"),
++                    ),
++                    rx.icon("chevron-down", size=16),
++                    variant="surface",
++                    width="100%",
++                    justify="between",
++                ),
++            ),
++            rx.popover.content(
++                rx.vstack(
++                    rx.input(
++                        placeholder="Buscar...",
++                        value=search_value,
++                        on_change=on_change_search,
++                        autofocus=True,
++                        width="100%",
++                        variant="soft",
++                        size="1",
++                    ),
++                    rx.scroll_area(
++                         rx.vstack(
++                             rx.foreach(
++                                filtered_options,
++                                lambda opt: rx.cond(
++                                    opt[0] != "",
++                                    rx.box(
++                                        rx.text(opt[0], size="2"),
++                                        width="100%",
++                                        padding_x="3",
++                                        padding_y="2",
++                                        _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
++                                        on_click=lambda: on_select(opt[1], opt[0]),
++                                    )
++                                )
++                             ),
++                             width="100%",
++                             spacing="0",
++                        ),
++                        type="auto",
++                        scrollbars="vertical",
++                        style={"max_height": "200px"},
++                        width="100%",
++                    ),
++                    padding="2",
++                    width="320px",
++                    spacing="2",
++                ),
++            ),
++            open=menu_open,
++            on_open_change=on_toggle_menu,
++        ),
++        spacing="1",
++        width="100%",
++    )
++
++
+ def contrato_arrendamiento_form() -> rx.Component:
+     """
+     Formulario modal para crear/editar contratos de arrendamiento.
+@@ -63,92 +138,40 @@ def contrato_arrendamiento_form() -> rx.Component:
+                     rx.form(
+                         rx.vstack(
+                             # Propiedad (requerido)
+-                            rx.vstack(
+-                                rx.text("Propiedad *", size="2", weight="bold"),
+-                                rx.select.root(
+-                                    rx.select.trigger(
+-                                        rx.icon("home", size=16),
+-                                        placeholder="Seleccione una propiedad",
+-                                        variant="surface",
+-                                    ),
+-                                    rx.select.content(
+-                                        rx.select.group(
+-                                            rx.foreach(
+-                                                ContratosState.propiedades_arriendo_select_options,
+-                                                lambda opcion: rx.select.item(
+-                                                    opcion[0], value=opcion[1]
+-                                                ),
+-                                            )
+-                                        )
+-                                    ),
+-                                    name="id_propiedad",
+-                                    value=ContratosState.form_data.get("id_propiedad", ""),
+-                                    on_change=ContratosState.on_change_propiedad_arriendo,
+-                                    width="100%",
+-                                ),
+-                                spacing="1",
+-                                align="start",
+-                                width="100%",
++                            searchable_select(
++                                "Propiedad *",
++                                "Seleccione una propiedad",
++                                ContratosState.propiedad_selected_label,
++                                ContratosState.propiedad_search,
++                                ContratosState.propiedad_menu_open,
++                                ContratosState.filtered_propiedades_options,
++                                ContratosState.set_propiedad_search,
++                                ContratosState.toggle_propiedad_menu,
++                                ContratosState.select_propiedad,
+                             ),
+                             # Arrendatario (requerido)
+-                            rx.vstack(
+-                                rx.text("Arrendatario *", size="2", weight="bold"),
+-                                rx.select.root(
+-                                    rx.select.trigger(
+-                                        rx.icon("user", size=16),
+-                                        placeholder="Seleccione el arrendatario",
+-                                        variant="surface",
+-                                    ),
+-                                    rx.select.content(
+-                                        rx.select.group(
+-                                            rx.foreach(
+-                                                ContratosState.arrendatarios_select_options,
+-                                                lambda opcion: rx.select.item(
+-                                                    opcion[0], value=opcion[1]
+-                                                ),
+-                                            )
+-                                        )
+-                                    ),
+-                                    name="id_arrendatario",
+-                                    value=ContratosState.form_data.get("id_arrendatario", ""),
+-                                    on_change=lambda v: ContratosState.set_form_field(
+-                                        "id_arrendatario", v
+-                                    ),
+-                                    width="100%",
+-                                ),
+-                                spacing="1",
+-                                align="start",
+-                                width="100%",
++                            searchable_select(
++                                "Arrendatario *",
++                                "Seleccione el arrendatario",
++                                ContratosState.arrendatario_selected_label,
++                                ContratosState.arrendatario_search,
++                                ContratosState.arrendatario_menu_open,
++                                ContratosState.filtered_arrendatarios_options,
++                                ContratosState.set_arrendatario_search,
++                                ContratosState.toggle_arrendatario_menu,
++                                ContratosState.select_arrendatario,
+                             ),
+                             # Codeudor (opcional)
+-                            rx.vstack(
+-                                rx.text("Codeudor (opcional)", size="2", weight="bold"),
+-                                rx.select.root(
+-                                    rx.select.trigger(
+-                                        rx.icon("users", size=16),
+-                                        placeholder="Seleccione el codeudor (opcional)",
+-                                        variant="surface",
+-                                    ),
+-                                    rx.select.content(
+-                                        rx.select.group(
+-                                            rx.foreach(
+-                                                ContratosState.codeudores_select_options,
+-                                                lambda opcion: rx.select.item(
+-                                                    opcion[0], value=opcion[1]
+-                                                ),
+-                                            )
+-                                        )
+-                                    ),
+-                                    name="id_codeudor",
+-                                    value=ContratosState.form_data.get("id_codeudor", ""),
+-                                    on_change=lambda v: ContratosState.set_form_field(
+-                                        "id_codeudor", v
+-                                    ),
+-                                    width="100%",
+-                                ),
+-                                spacing="1",
+-                                align="start",
+-                                width="100%",
++                            searchable_select(
++                                "Codeudor (opcional)",
++                                "Seleccione el codeudor (opcional)",
++                                ContratosState.codeudor_selected_label,
++                                ContratosState.codeudor_search,
++                                ContratosState.codeudor_menu_open,
++                                ContratosState.filtered_codeudores_options,
++                                ContratosState.set_codeudor_search,
++                                ContratosState.toggle_codeudor_menu,
++                                ContratosState.select_codeudor,
+                             ),
+                             # Fechas (en dos columnas)
+                             rx.grid(
+@@ -202,7 +225,7 @@ def contrato_arrendamiento_form() -> rx.Component:
+                                 align="start",
+                                 width="100%",
+                             ),
+-                            # Canon y Depósito
++                            # Canon, Deposito y Fecha de Pago
+                             rx.grid(
+                                 rx.vstack(
+                                     rx.text("Canon Arrendamiento *", size="2", weight="bold"),
+@@ -211,7 +234,6 @@ def contrato_arrendamiento_form() -> rx.Component:
+                                         type="number",
+                                         name="canon",
+                                         placeholder="1000000",
+-                                        read_only=True,
+                                         required=True,
+                                         min=0,
+                                         value=ContratosState.form_data.get("canon", ""),
+@@ -224,11 +246,10 @@ def contrato_arrendamiento_form() -> rx.Component:
+                                 rx.vstack(
+                                     rx.text("Depósito", size="2", weight="bold"),
+                                     rx.input(
+-                                        rx.input.slot(rx.icon("banknote", size=16)),
++                                        rx.input.slot(rx.icon("wallet", size=16)),
+                                         type="number",
+                                         name="deposito",
+-                                        placeholder="1000000",
+-                                        min=0,
++                                        placeholder="0",
+                                         value=ContratosState.form_data.get("deposito", "0"),
+                                         on_change=lambda v: ContratosState.set_form_field(
+                                             "deposito", v
+@@ -238,7 +259,24 @@ def contrato_arrendamiento_form() -> rx.Component:
+                                     spacing="1",
+                                     width="100%",
+                                 ),
+-                                columns="2",
++                                rx.vstack(
++                                    rx.text("Fecha de Pago *", size="2", weight="bold"),
++                                    rx.input(
++                                        rx.input.slot(rx.icon("calendar-days", size=16)),
++                                        type="text",
++                                        name="fecha_pago",
++                                        placeholder="Ej: Día 5 de cada mes",
++                                        required=True,
++                                        value=ContratosState.form_data.get("fecha_pago", ""),
++                                        on_change=lambda v: ContratosState.set_form_field(
++                                            "fecha_pago", v
++                                        ),
++                                        variant="surface",
++                                    ),
++                                    spacing="1",
++                                    width="100%",
++                                ),
++                                columns=rx.breakpoints(initial="1", sm="3"),
+                                 spacing="4",
+                                 width="100%",
+                             ),
+diff --git a/src/presentacion_reflex/components/contratos/contrato_mandato_form.py b/src/presentacion_reflex/components/contratos/contrato_mandato_form.py
+index 52f6fd5..d5a05a6 100644
+--- a/src/presentacion_reflex/components/contratos/contrato_mandato_form.py
++++ b/src/presentacion_reflex/components/contratos/contrato_mandato_form.py
+@@ -52,12 +52,16 @@ def searchable_select(
+                          rx.vstack(
+                              rx.foreach(
+                                 filtered_options,
+-                                lambda opt: rx.box(
+-                                    rx.text(opt[0], size="2"),
+-                                    width="100%",
+-                                    padding="2",
+-                                    _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
+-                                    on_click=lambda: on_select(opt[1], opt[0]),
++                                lambda opt: rx.cond(
++                                    opt[0] != "",
++                                    rx.box(
++                                        rx.text(opt[0], size="2"),
++                                        width="100%",
++                                        padding_x="3",
++                                        padding_y="2",
++                                        _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
++                                        on_click=lambda: on_select(opt[1], opt[0]),
++                                    )
+                                 )
+                              ),
+                              width="100%",
+@@ -69,7 +73,8 @@ def searchable_select(
+                         width="100%",
+                     ),
+                     padding="2",
+-                    width="300px",
++                    width="320px",
++                    spacing="2",
+                 ),
+             ),
+             open=menu_open,
+diff --git a/src/presentacion_reflex/state/contratos_state.py b/src/presentacion_reflex/state/contratos_state.py
+index c8b7ce8..af91d49 100644
+--- a/src/presentacion_reflex/state/contratos_state.py
++++ b/src/presentacion_reflex/state/contratos_state.py
+@@ -263,7 +263,7 @@ class ContratosState(DocumentosStateMixin):
+             # Formato para Reflex Select: [Label, Value]
+             propiedades_select = [
+                 [
+-                    f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}",
++                    get_val(row, "DIRECCION_PROPIEDAD"),
+                     get_val(row, "ID_PROPIEDAD"),
+                 ]
+                 for row in rows_propiedades
+@@ -282,7 +282,7 @@ class ContratosState(DocumentosStateMixin):
+             rows_propietarios = cursor.fetchall()
+             propietarios_select = [
+                 [
+-                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
++                    get_val(row, "NOMBRE_COMPLETO"),
+                     get_val(row, "ID_PROPIETARIO"),
+                 ]
+                 for row in rows_propietarios
+@@ -293,7 +293,7 @@ class ContratosState(DocumentosStateMixin):
+             rows_asesores = cursor.fetchall()
+             asesores_select = [
+                 [
+-                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
++                    get_val(row, "NOMBRE_COMPLETO"),
+                     get_val(row, "ID_ASESOR"),
+                 ]
+                 for row in rows_asesores
+@@ -304,7 +304,7 @@ class ContratosState(DocumentosStateMixin):
+             rows_personas = cursor.fetchall()
+             personas_select = [
+                 [
+-                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
++                    get_val(row, "NOMBRE_COMPLETO"),
+                     get_val(row, "ID_PERSONA"),
+                 ]
+                 for row in rows_personas
+@@ -327,7 +327,7 @@ class ContratosState(DocumentosStateMixin):
+             rows_prop_libre = cursor.fetchall()
+             propiedades_libre_select = [
+                 [
+-                    f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}",
++                    get_val(row, "DIRECCION_PROPIEDAD"),
+                     get_val(row, "ID_PROPIEDAD"),
+                 ]
+                 for row in rows_prop_libre
+@@ -356,7 +356,7 @@ class ContratosState(DocumentosStateMixin):
+             rows_prop_arriendo = cursor.fetchall()
+             propiedades_arriendo_select = [
+                 [
+-                    f"{get_val(row, 'MATRICULA_INMOBILIARIA')} - {get_val(row, 'DIRECCION_PROPIEDAD')}",
++                    get_val(row, "DIRECCION_PROPIEDAD"),
+                     get_val(row, "ID_PROPIEDAD"),
+                 ]
+                 for row in rows_prop_arriendo
+@@ -381,7 +381,7 @@ class ContratosState(DocumentosStateMixin):
+             rows_arrendatarios = cursor.fetchall()
+             arrendatarios_select = [
+                 [
+-                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
++                    get_val(row, "NOMBRE_COMPLETO"),
+                     get_val(row, "ID_ARRENDATARIO"),
+                 ]
+                 for row in rows_arrendatarios
+@@ -399,7 +399,7 @@ class ContratosState(DocumentosStateMixin):
+             rows_codeudores = cursor.fetchall()
+             codeudores_select = [
+                 [
+-                    f"{get_val(row, 'NOMBRE_COMPLETO')} - {get_val(row, 'NUMERO_DOCUMENTO')}",
++                    get_val(row, "NOMBRE_COMPLETO"),
+                     get_val(row, "ID_CODEUDOR"),
+                 ]
+                 for row in rows_codeudores
+@@ -424,20 +424,26 @@ class ContratosState(DocumentosStateMixin):
+     propiedad_search: str = ""
+     propietario_search: str = ""
+     asesor_search: str = ""
++    arrendatario_search: str = ""
++    codeudor_search: str = ""
+ 
+     # Menu Open States
+     propiedad_menu_open: bool = False
+     propietario_menu_open: bool = False
+     asesor_menu_open: bool = False
++    arrendatario_menu_open: bool = False
++    codeudor_menu_open: bool = False
+ 
+     @rx.var
+     def filtered_propiedades_options(self) -> List[List[str]]:
+         """Filtra opciones de propiedad según el texto de búsqueda."""
+-        options = (
+-            self.propiedades_mandato_libre_select_options
+-            if self.modal_mode == "crear_mandato"
+-            else self.propiedades_select_options
+-        )
++        if self.modal_mode == "crear_mandato":
++            options = self.propiedades_mandato_libre_select_options
++        elif self.modal_mode in ["crear_arrendamiento", "editar_arrendamiento"]:
++            options = self.propiedades_arriendo_select_options
++        else:
++            options = self.propiedades_select_options
++            
+         if not self.propiedad_search:
+             return options
+         return [
+@@ -465,13 +471,37 @@ class ContratosState(DocumentosStateMixin):
+             if self.asesor_search.lower() in opt[0].lower()
+         ]
+ 
++    @rx.var
++    def filtered_arrendatarios_options(self) -> List[List[str]]:
++        """Filtra opciones de arrendatario según el texto de búsqueda."""
++        if not self.arrendatario_search:
++            return self.arrendatarios_select_options
++        return [
++            opt for opt in self.arrendatarios_select_options 
++            if self.arrendatario_search.lower() in opt[0].lower()
++        ]
++
++    @rx.var
++    def filtered_codeudores_options(self) -> List[List[str]]:
++        """Filtra opciones de codeudor según el texto de búsqueda."""
++        if not self.codeudor_search:
++            return self.codeudores_select_options
++        return [
++            opt for opt in self.codeudores_select_options 
++            if self.codeudor_search.lower() in opt[0].lower()
++        ]
++
+     @rx.var
+     def propiedad_selected_label(self) -> str:
+         """Obtiene el label de la propiedad seleccionada."""
+         id_p = self.form_data.get("id_propiedad")
+         if not id_p: return ""
+-        # Buscamos en ambas listas para asegurar que se muestre
+-        all_options = self.propiedades_select_options + self.propiedades_mandato_libre_select_options
++        # Buscamos en todas las listas para asegurar que se muestre
++        all_options = (
++            self.propiedades_select_options + 
++            self.propiedades_mandato_libre_select_options +
++            self.propiedades_arriendo_select_options
++        )
+         for opt in all_options:
+             if str(opt[1]) == str(id_p):
+                 return opt[0]
+@@ -497,9 +527,32 @@ class ContratosState(DocumentosStateMixin):
+                 return opt[0]
+         return ""
+ 
++    @rx.var
++    def arrendatario_selected_label(self) -> str:
++        """Obtiene el label del arrendatario seleccionado."""
++        id_arr = self.form_data.get("id_arrendatario")
++        if not id_arr: return ""
++        for opt in self.arrendatarios_select_options:
++            if str(opt[1]) == str(id_arr):
++                return opt[0]
++        return ""
++
++    @rx.var
++    def codeudor_selected_label(self) -> str:
++        """Obtiene el label del codeudor seleccionado."""
++        id_cod = self.form_data.get("id_codeudor")
++        if not id_cod: return ""
++        for opt in self.codeudores_select_options:
++            if str(opt[1]) == str(id_cod):
++                return opt[0]
++        return ""
++
+     def select_propiedad(self, id_propiedad: str, label: str):
+         """Selecciona una propiedad y cierra el menú."""
+-        self.on_change_propiedad(id_propiedad)
++        if self.modal_mode in ["crear_arrendamiento", "editar_arrendamiento"]:
++            self.on_change_propiedad_arriendo(id_propiedad)
++        else:
++            self.on_change_propiedad(id_propiedad)
+         self.propiedad_search = ""
+         self.propiedad_menu_open = False
+ 
+@@ -515,6 +568,18 @@ class ContratosState(DocumentosStateMixin):
+         self.asesor_search = ""
+         self.asesor_menu_open = False
+ 
++    def select_arrendatario(self, id_arrendatario: str, label: str):
++        """Selecciona un arrendatario y cierra el menú."""
++        self.set_form_field("id_arrendatario", id_arrendatario)
++        self.arrendatario_search = ""
++        self.arrendatario_menu_open = False
++
++    def select_codeudor(self, id_codeudor: str, label: str):
++        """Selecciona un codeudor y cierra el menú."""
++        self.set_form_field("id_codeudor", id_codeudor)
++        self.codeudor_search = ""
++        self.codeudor_menu_open = False
++
+     def toggle_propiedad_menu(self):
+         self.propiedad_menu_open = not self.propiedad_menu_open
+         if self.propiedad_menu_open:
+@@ -530,6 +595,16 @@ class ContratosState(DocumentosStateMixin):
+         if self.asesor_menu_open:
+             self.asesor_search = ""
+ 
++    def toggle_arrendatario_menu(self):
++        self.arrendatario_menu_open = not self.arrendatario_menu_open
++        if self.arrendatario_menu_open:
++            self.arrendatario_search = ""
++
++    def toggle_codeudor_menu(self):
++        self.codeudor_menu_open = not self.codeudor_menu_open
++        if self.codeudor_menu_open:
++            self.codeudor_search = ""
++
+     def set_propiedad_search(self, val: str):
+         self.propiedad_search = val
+ 
+@@ -539,6 +614,12 @@ class ContratosState(DocumentosStateMixin):
+     def set_asesor_search(self, val: str):
+         self.asesor_search = val
+ 
++    def set_arrendatario_search(self, val: str):
++        self.arrendatario_search = val
++
++    def set_codeudor_search(self, val: str):
++        self.codeudor_search = val
++
+     @rx.event(background=True)
+     async def load_contratos(self):
+         """Carga contratos con filtros y paginación (unificados)."""
+@@ -759,6 +840,7 @@ class ContratosState(DocumentosStateMixin):
+             "duracion_meses": 12,
+             "canon": 0,
+             "deposito": 0,
++            "fecha_pago": "",
+         }
+         self.modal_open = True
          self.error_message = ""
-         self.selected_roles = []  # Reset roles
-         self.reset_wizard()  # Reset wizard to step 1
-@@ -416,14 +430,15 @@ class PersonasState(rx.State):
+@@ -853,6 +935,7 @@ class ContratosState(DocumentosStateMixin):
+                             "fecha_fin": contrato.fecha_fin_contrato_a,
+                             "canon": contrato.canon_arrendamiento,
+                             "deposito": contrato.deposito,
++                            "fecha_pago": contrato.fecha_pago or "",
+                         }
  
-             p_entidad = persona_completa.persona
+                         # Set Document Context for Arrendamiento
+@@ -1035,6 +1118,7 @@ class ContratosState(DocumentosStateMixin):
+                     "duracion_meses": int(form_data["duracion_meses"]),
+                     "canon": int(form_data["canon"]),
+                     "deposito": int(form_data.get("deposito", 0)),
++                    "fecha_pago": form_data.get("fecha_pago", ""),
+                 }
  
--            # 2. Cargar datos básicos
-+
-+            # 2. Cargar datos básicos (con conversion a mayúsculas si aplica)
-             self.form_data = {
--                "nombre_completo": p_entidad.nombre_completo,
-+                "nombre_completo": (p_entidad.nombre_completo or "").upper(),
-                 "tipo_documento": p_entidad.tipo_documento or "CC",
-                 "numero_documento": p_entidad.numero_documento,
-                 "telefono_principal": p_entidad.telefono_principal or "",
--                "correo_electronico": p_entidad.correo_electronico or "",
--                "direccion_principal": p_entidad.direccion_principal or "",
-+                "correo_electronico": (p_entidad.correo_electronico or "").upper(),
-+                "direccion_principal": (p_entidad.direccion_principal or "").upper(),
-             }
+                 if self.modal_mode == "crear_arrendamiento":
+diff --git a/src/presentacion_reflex/state/desocupaciones_state.py b/src/presentacion_reflex/state/desocupaciones_state.py
+index 377d2ff..6a61f74 100644
+--- a/src/presentacion_reflex/state/desocupaciones_state.py
++++ b/src/presentacion_reflex/state/desocupaciones_state.py
+@@ -131,7 +131,7 @@ class DesocupacionesState(DocumentosStateMixin):
+             opciones = [
+                 {
+                     "id": str(c["id_contrato"]),
+-                    "texto": f"#{c['id_contrato']} - {c['direccion']} ({c['inquilino']})",
++                    "texto": f"ID:{c['id_contrato']} - {c['direccion']} ({c['inquilino']})",
+                 }
+                 for c in contratos
+             ]
+diff --git a/src/presentacion_reflex/state/incidentes_state.py b/src/presentacion_reflex/state/incidentes_state.py
+index 21ec4aa..25c10ad 100644
+--- a/src/presentacion_reflex/state/incidentes_state.py
++++ b/src/presentacion_reflex/state/incidentes_state.py
+@@ -160,7 +160,7 @@ class IncidentesState(DocumentosStateMixin):
+             props = servicio.listar_propiedades()  # Limit removed as not supported by service
  
-             # 3. Cargar roles activos
-diff --git a/src/presentacion_reflex/state/propiedades_state.py b/src/presentacion_reflex/state/propiedades_state.py
-index 4ab603c..b170fa4 100644
---- a/src/presentacion_reflex/state/propiedades_state.py
-+++ b/src/presentacion_reflex/state/propiedades_state.py
-@@ -226,6 +226,8 @@ class PropiedadesState(DocumentosStateMixin):
-     def set_search(self, value: str):
-         """Actualiza búsqueda."""
-         self.search_text = value
-+        self.current_page = 1
-+        yield PropiedadesState.load_propiedades
+             options = [
+-                {"id": str(p.id_propiedad), "texto": f"{p.direccion_propiedad} (#{p.id_propiedad})"}
++                {"id": str(p.id_propiedad), "texto": p.direccion_propiedad}
+                 for p in props
+             ]
+             async with self:
+diff --git a/src/presentacion_reflex/state/liquidaciones_state.py b/src/presentacion_reflex/state/liquidaciones_state.py
+index a5f999a..0a56dcc 100644
+--- a/src/presentacion_reflex/state/liquidaciones_state.py
++++ b/src/presentacion_reflex/state/liquidaciones_state.py
+@@ -129,12 +129,12 @@ class LiquidacionesState(DocumentosStateMixin):
+             propiedades = [
+                 {
+                     "id": str(row["ID_PROPIEDAD"]),
+-                    "texto": f"{row['MATRICULA_INMOBILIARIA']} - {row['DIRECCION_PROPIEDAD']}",
++                    "texto": f"{row['DIRECCION_PROPIEDAD']}",
+                 }
+                 for row in rows_propiedades
+             ]
+             propiedades_select = [
+-                f"{row['MATRICULA_INMOBILIARIA']} - {row['DIRECCION_PROPIEDAD']}"
++                f"{row['DIRECCION_PROPIEDAD']}"
+                 for row in rows_propiedades
+             ]
  
-     def search_propiedades(self):
-         """Ejecuta búsqueda."""
+@@ -144,13 +144,13 @@ class LiquidacionesState(DocumentosStateMixin):
+             propietarios = [
+                 {
+                     "id": str(row["ID_PROPIETARIO"]),
+-                    "texto": f"{row['NOMBRE_COMPLETO']} - {row['NUMERO_DOCUMENTO']}",
++                    "texto": f"{row['NOMBRE_COMPLETO']}",
+                 }
+                 for row in rows_propietarios
+             ]
+             # Para rx.select: solo strings formateados (se parseará en backend)
+             propietarios_select = [
+-                f"{row['NOMBRE_COMPLETO']} - {row['NUMERO_DOCUMENTO']}" for row in rows_propietarios
++                f"{row['NOMBRE_COMPLETO']}" for row in rows_propietarios
+             ]
+ 
+         async with self:
+diff --git a/src/presentacion_reflex/state/recibos_state.py b/src/presentacion_reflex/state/recibos_state.py
+index 0e80d2a..fad3b9f 100644
+--- a/src/presentacion_reflex/state/recibos_state.py
++++ b/src/presentacion_reflex/state/recibos_state.py
+@@ -74,7 +74,7 @@ class RecibosState(DocumentosStateMixin):
+ 
+             options = [
+                 {
+-                    "label": f"{p.direccion_propiedad} ({p.matricula_inmobiliaria})",
++                    "label": p.direccion_propiedad,
+                     "value": str(p.id_propiedad),
+                 }
+                 for p in props

@@ -35,4 +35,6 @@ config = rx.Config(
     env=rx.Env.PROD,
     # Desactivar telemetría (opcional)
     telemetry_enabled=False,
+    # Desactivar plugins internos que generan advertencias no deseadas
+    disable_plugins=['reflex.plugins.sitemap.SitemapPlugin'],
 )
