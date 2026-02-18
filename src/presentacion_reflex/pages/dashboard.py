@@ -388,7 +388,9 @@ def dashboard_page() -> rx.Component:
     )
 
 
+from src.presentacion_reflex.state.alertas_state import AlertasState
+
 # Ruta protegida
-@rx.page(route="/dashboard", on_load=[AuthState.require_login, DashboardState.on_load])
+@rx.page(route="/dashboard", on_load=[AuthState.require_login, DashboardState.on_load, AlertasState.check_alerts])
 def dashboard():
     return dashboard_page()
