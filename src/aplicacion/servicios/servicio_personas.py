@@ -353,8 +353,7 @@ class ServicioPersonas:
 
         elif nombre_rol == "Arrendatario":
             arr = entidad_rol
-            if "direccion_referencia" in datos_extra:
-                arr.direccion_referencia = datos_extra["direccion_referencia"]
+
             if "id_seguro" in datos_extra:
                 arr.id_seguro = datos_extra["id_seguro"]
             if "codigo_aprobacion_seguro" in datos_extra:
@@ -464,7 +463,7 @@ class ServicioPersonas:
         elif nombre_rol == "Arrendatario":
             arrendatario = Arrendatario(
                 id_persona=id_persona,
-                direccion_referencia=datos_extra.get("direccion_referencia"),
+
                 codigo_aprobacion_seguro=datos_extra.get("codigo_aprobacion_seguro"),
                 id_seguro=datos_extra.get("id_seguro"),
                 fecha_ingreso_arrendatario=datetime.now().date().isoformat(),
