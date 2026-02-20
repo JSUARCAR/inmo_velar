@@ -42,7 +42,12 @@ class ReciboRecaudoElite(BaseDocumentTemplate):
     def generate(self, data: Dict[str, Any]) -> Path:
         self.empresa_config = data.get("empresa", {})
         self.data_source = data # Guardar ref completa para callbacks
+        self.empresa_config = data.get("empresa", {})
+        self.data_source = data # Guardar ref completa para callbacks
         self.enable_verification_qr("recaudo", data["id"])
+
+        # Configurar Header/Footer con Membrete
+        self.set_header_footer(self._header_footer_with_features, self._header_footer_with_features)
         
         filename = self._generate_filename("recibo_pago", data["id"])
         self.create_document(filename, self.document_title)
@@ -71,67 +76,68 @@ class ReciboRecaudoElite(BaseDocumentTemplate):
 
         return self.build()
 
-    def _default_header_footer(self, canvas_obj, doc):
-        """Header/Footer con Branding completo (Dirección y Paginación)"""
-        canvas_obj.saveState()
-        page_width = doc.width + doc.leftMargin + doc.rightMargin
+    def _header_footer_with_features(self, canvas_obj, doc):
+        """
+        Header y footer con Membrete (Imagen de fondo)
+        """
+        # 0. Dibujar MEMBRETE (Fondo completo)
+        current_dir = Path(__file__).parent
+        membrete_path = current_dir / "VELAR INMOBILIARIA_membrete_modificada.png"
         
-        
-        # --- Configuración Footer ---
-        footer_text = [
-            "Calle 19 No. 16 – 44 Centro Comercial Manhatan Local 15 Armenia, Quindío.",
-            "Contacto: +57 3135410407 | inmobiliariavelarsasaxm@gmail.com"
-        ]
-        
-        # Dibujar dirección en footer (Más alto para no solapar)
-        canvas_obj.setFont(Fonts.MAIN_BOLD, 8)
-        canvas_obj.setFillColor(Colors.to_reportlab(Colors.GRAY_DARK))
-        center_x = page_width / 2
-        y_pos = 1.8 * cm # Subir posición inicial
-        
-        for line in footer_text:
-            canvas_obj.drawCentredString(center_x, y_pos, line)
-            y_pos -= 12 # Espaciado
-            
-        # Paginación (separada abajo)
-        canvas_obj.setFont(Fonts.MAIN, 8)
-        canvas_obj.setFillColor(Colors.to_reportlab(Colors.GRAY_MEDIUM))
-        canvas_obj.drawCentredString(center_x, 0.8 * cm, f"Página {doc.page} | Generado por Inmobiliaria Velar SAS")
-        
-        # --- Configuración Logo (Header Fijo) ---
-        # Dibujar logo manualmente en canvas para garantizar posición
-        logo_data = self.empresa_config.get("logo_base64")
-        if not logo_data and hasattr(self, 'data_source'): 
-             logo_data = self.data_source.get("logo_base64")
-             
-        if logo_data:
-            try:
-                import base64
-                import io
-                from reportlab.lib.utils import ImageReader
-                
-                if "," in logo_data: logo_data = logo_data.split(",")[1]
-                logo_bytes = base64.b64decode(logo_data)
-                img_reader = ImageReader(io.BytesIO(logo_bytes))
-                
-                # Posición Top-Center (Centrado)
-                logo_width = 2.2 * inch
-                logo_height = 0.9 * inch
-                page_w = doc.pagesize[0]
-                x_logo = (page_w - logo_width) / 2
-                y_logo = doc.height + doc.topMargin - logo_height + 0.75*inch
-                
-                canvas_obj.drawImage(img_reader, x_logo, y_logo, width=logo_width, height=logo_height, mask='auto', preserveAspectRatio=True)
-            except Exception as e:
-                print(f"Error dibujando logo header: {e}")
-        else:
-            # Fallback texto si no hay logo
-            canvas_obj.setFont(Fonts.MAIN_BOLD, 14)
-            canvas_obj.setFillColor(Colors.to_reportlab(Colors.PRIMARY))
-            text = "INMOBILIARIA VELAR SAS"
-            text_width = canvas_obj.stringWidth(text, Fonts.MAIN_BOLD, 14)
-            canvas_obj.drawString((doc.pagesize[0] - text_width) / 2, doc.height + doc.topMargin - 0.5*inch, text)
+        try:
+            if membrete_path.exists():
+                # Dibujar imagen cubriendo toda la página
+                page_width, page_height = doc.pagesize
+                # mask='auto' maneja transparencias si es PNG
+                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask='auto', preserveAspectRatio=False)
+        except Exception as e:
+            # Fallo silencioso o log mínimo para no romper generación
+            print(f"Advertencia: No se pudo cargar fondo {membrete_path}: {e}")
 
+        # 1. Agregar marca de agua si aplica (logic from Base)
+        if self.watermark_text:
+            from ..components.watermarks import Watermark
+            Watermark.add_text_watermark(
+                canvas_obj,
+                text=self.watermark_text,
+                opacity=self.watermark_opacity,
+                position=self.watermark_style,
+            )
+            
+        # 2. Footer simple (SOLO Página)
+        canvas_obj.saveState()
+        
+        # Página y Timestamp
+        page_num = canvas_obj.getPageNumber()
+        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFillColor(colors.gray)
+        
+        center_x = doc.pagesize[0] / 2
+        
+        # Centrado Página (más abajo que la dirección)
+        canvas_obj.drawCentredString(center_x, 20, f"Página {page_num}")
+        
+        # 4. Textos Verticales en Márgenes
+        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFillColor(colors.lightgrey) # Color tenue para no distraer
+        
+        from datetime import datetime
+        dt_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+        
+        # Margen Izquierdo (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(30, 250) # Ajustar posición X,Y
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, "Impreso por Inmobiliaria Velar SAS - NIT 901.703.515 - Correo: inmobiliariavelarsasaxm@gmail.com")
+        canvas_obj.restoreState()
+        
+        # Margen Derecho (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(doc.pagesize[0] - 30, 250)
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, f"Generado: {dt_str}")
+        canvas_obj.restoreState()
+        
         canvas_obj.restoreState()
 
 
@@ -191,7 +197,7 @@ class ReciboRecaudoElite(BaseDocumentTemplate):
         detalles_linea = f"NO: <b>{data['id']:06d}</b>  |  FECHA: <b>{fecha_fmt.upper()}</b>  |  ESTADO: <b>{data.get('estado', 'PENDIENTE').upper()}</b>"
 
         header_content = [
-            Spacer(1, 0.85*cm),
+            Spacer(1, 1.5*cm),
             Paragraph(self.document_title.upper(), style_title),
             Paragraph(detalles_linea, style_meta),
         ]

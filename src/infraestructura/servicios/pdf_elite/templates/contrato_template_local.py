@@ -139,39 +139,25 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         Override completo para evitar el header por defecto de la empresa (INMOBILIARIA VELAR SAS...)
         que se solapa con el título.
         """
-        # 0. Dibujar LOGO si existe (Top Center)
-        if hasattr(self, 'logo_data') and self.logo_data:
-            try:
-                import base64
-                import io
-                from reportlab.lib.utils import ImageReader
-                
-                # Decode base64
-                image_data = base64.b64decode(self.logo_data)
-                image_stream = io.BytesIO(image_data)
-                logo_img = ImageReader(image_stream)
-                
-                # Dimensions
-                logo_width = 150 # Ajustable
-                logo_height = 60 # Ajustable aspect ratio handled by usage, but here fixed box
-                
-                # Center X
-                page_width = doc.pagesize[0]
-                x_pos = (page_width - logo_width) / 2
-                y_pos = doc.pagesize[1] - logo_height - 30 # Top margin offset
-                
-                canvas_obj.drawImage(logo_img, x_pos, y_pos, width=logo_width, height=logo_height, mask='auto', preserveAspectRatio=True)
-            except Exception as e:
-                print(f"Error dibujando logo: {e}")
+        """
+        Override completo para evitar el header por defecto de la empresa (INMOBILIARIA VELAR SAS...)
+        que se solapa con el título.
+        """
+        # 0. Dibujar MEMBRETE (Fondo completo)
+        current_dir = Path(__file__).parent
+        membrete_path = current_dir / "VELAR INMOBILIARIA_membrete_modificada.png"
+        
+        try:
+            if membrete_path.exists():
+                # Dibujar imagen cubriendo toda la página
+                page_width, page_height = doc.pagesize
+                # mask='auto' maneja transparencias si es PNG
+                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask='auto', preserveAspectRatio=False)
+        except Exception as e:
+            # Fallo silencioso o log mínimo para no romper generación
+            print(f"Advertencia: No se pudo cargar fondo {membrete_path}: {e}")
 
-        # 1. Dibujar NUESTRO footer personalizado (Calle 19...) - Antes estaba en Header
-        # Texto del footer centrado
-        footer_text = [
-            "Calle 19 No. 16 – 44 Centro Comercial Manhatan Local 15 Armenia, Quindío.",
-            "Contacto: +57 3135410407"
-        ]
-
-        # 2. Agregar marca de agua si aplica (logic from Base)
+        # 1. Agregar marca de agua si aplica (logic from Base)
         if self.watermark_text:
             from ..components.watermarks import Watermark
             Watermark.add_text_watermark(
@@ -181,31 +167,40 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
                 position=self.watermark_style,
             )
             
-        # 3. Footer simple (Página X)
+        # 2. Footer simple (SOLO Página)
         canvas_obj.saveState()
         
-        # Dibujar dirección en footer
-        canvas_obj.setFont('Helvetica-Bold', 8)
-        canvas_obj.setFillColor(colors.gray)
-        center_x = doc.pagesize[0] / 2
-        y_pos = 50 # Un poco más arriba del borde
-        
-        for line in footer_text:
-            canvas_obj.drawCentredString(center_x, y_pos, line)
-            y_pos -= 10
-
         # Página y Timestamp
         page_num = canvas_obj.getPageNumber()
         canvas_obj.setFont('Helvetica', 8)
         canvas_obj.setFillColor(colors.gray)
         
+        center_x = doc.pagesize[0] / 2
+        
         # Centrado Página (más abajo que la dirección)
         canvas_obj.drawCentredString(center_x, 20, f"Página {page_num}")
         
-        # Timestamp derecha
+        # 4. Textos Verticales en Márgenes
+        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFillColor(colors.lightgrey) # Color tenue para no distraer
+        
         from datetime import datetime
-        dt = datetime.now().strftime('%Y-%m-%d %H:%M')
-        canvas_obj.drawRightString(doc.pagesize[0]-60, 20, f"Generado: {dt}")
+        dt_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+        
+        # Margen Izquierdo (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(30, 250) # Ajustar posición X,Y
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, "Impreso por Inmobiliaria Velar SAS - NIT 901.703.515 - Correo: inmobiliariavelarsasaxm@gmail.com")
+        canvas_obj.restoreState()
+        
+        # Margen Derecho (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(doc.pagesize[0] - 30, 250)
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, f"Generado: {dt_str}")
+        canvas_obj.restoreState()
+        
         canvas_obj.restoreState()
 
     def validate_data(self, data: Dict[str, Any]) -> bool:

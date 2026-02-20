@@ -61,6 +61,9 @@ class IncidenteTemplateElite(BaseDocumentTemplate):
         self.empresa_config = data.get("empresa", {})
         self.data_source = data
         self.enable_verification_qr("incidente", data["id"])
+
+        # Configurar Header/Footer con Membrete
+        self.set_header_footer(self._header_footer_with_features, self._header_footer_with_features)
         
         self._determinar_tipo_documento(data.get("estado", ""))
         
@@ -105,55 +108,69 @@ class IncidenteTemplateElite(BaseDocumentTemplate):
 
     # ================= LAYOUT COMPONENTS =================
 
-    def _default_header_footer(self, canvas_obj, doc):
-        """Footer estándar con paginación y contacto"""
-        canvas_obj.saveState()
-        page_width = doc.width + doc.leftMargin + doc.rightMargin
+    def _header_footer_with_features(self, canvas_obj, doc):
+        """
+        Header y footer con Membrete (Imagen de fondo)
+        """
+        # 0. Dibujar MEMBRETE (Fondo completo)
+        current_dir = Path(__file__).parent
+        membrete_path = current_dir / "VELAR INMOBILIARIA_membrete_modificada.png"
         
-        # Footer Contacto
-        txt_footer = [
-            "Calle 19 No. 16 – 44 Centro Comercial Manhatan Local 15 Armenia, Quindío.",
-            "Contacto: +57 (6) 735 9999 | mantenimiento@inmovelar.com"
-        ]
-        
-        canvas_obj.setFont(Fonts.MAIN_BOLD, 8)
-        canvas_obj.setFillColor(Colors.to_reportlab(Colors.GRAY_DARK))
-        
-        y_pos = 1.8 * cm
-        center_x = page_width / 2
-        
-        for line in txt_footer:
-            canvas_obj.drawCentredString(center_x, y_pos, line)
-            y_pos -= 10
-            
-        # Paginación
-        canvas_obj.setFont(Fonts.MAIN, 8)
-        canvas_obj.setFillColor(Colors.to_reportlab(Colors.GRAY_MEDIUM))
-        canvas_obj.drawCentredString(center_x, 0.8 * cm, f"Página {doc.page} | Gestión de Incidentes Velar")
+        try:
+            if membrete_path.exists():
+                # Dibujar imagen cubriendo toda la página
+                page_width, page_height = doc.pagesize
+                # mask='auto' maneja transparencias si es PNG
+                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask='auto', preserveAspectRatio=False)
+        except Exception as e:
+            # Fallo silencioso o log mínimo para no romper generación
+            print(f"Advertencia: No se pudo cargar fondo {membrete_path}: {e}")
 
-        # Restaurar
+        # 1. Agregar marca de agua si aplica (logic from Base)
+        if self.watermark_text:
+            from ..components.watermarks import Watermark
+            Watermark.add_text_watermark(
+                canvas_obj,
+                text=self.watermark_text,
+                opacity=self.watermark_opacity,
+                position=self.watermark_style,
+            )
+            
+        # 2. Footer simple (SOLO Página)
+        canvas_obj.saveState()
+        
+        # Página y Timestamp
+        page_num = canvas_obj.getPageNumber()
+        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFillColor(colors.gray)
+        
+        center_x = doc.pagesize[0] / 2
+        
+        # Centrado Página (más abajo que la dirección)
+        canvas_obj.drawCentredString(center_x, 20, f"Página {page_num}")
+        
+        # 4. Textos Verticales en Márgenes
+        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFillColor(colors.lightgrey) # Color tenue para no distraer
+        
+        from datetime import datetime
+        dt_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+        
+        # Margen Izquierdo (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(30, 250) # Ajustar posición X,Y
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, "Impreso por Inmobiliaria Velar SAS - NIT 901.703.515 - Correo: inmobiliariavelarsasaxm@gmail.com")
         canvas_obj.restoreState()
         
-        # Dibujar Logo si existe (Misma lógica que Recibo)
-        logo_data = self.empresa_config.get("logo_base64")
-        if not logo_data and hasattr(self, 'data_source'): 
-             logo_data = self.data_source.get("logo_base64")
-             
-        if logo_data:
-            try:
-                import base64
-                import io
-                from reportlab.lib.utils import ImageReader
-                if "," in logo_data: logo_data = logo_data.split(",")[1]
-                logo_bytes = base64.b64decode(logo_data)
-                img = ImageReader(io.BytesIO(logo_bytes))
-                
-                logo_w, logo_h = 2.0*inch, 0.8*inch
-                # Centrar Logo
-                x = (page_width - logo_w) / 2
-                y = doc.height + doc.topMargin - logo_h + 0.95*inch
-                canvas_obj.drawImage(img, x, y, width=logo_w, height=logo_h, mask='auto', preserveAspectRatio=True)
-            except: pass
+        # Margen Derecho (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(doc.pagesize[0] - 30, 250)
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, f"Generado: {dt_str}")
+        canvas_obj.restoreState()
+        
+        canvas_obj.restoreState()
 
     def _layout_header(self, data):
         """Encabezado con Título Dinámico y Estado"""
@@ -194,7 +211,7 @@ class IncidenteTemplateElite(BaseDocumentTemplate):
         # 2. Título (A la izquierda)
         # 3. Detalles (Debajo, Centrado, Una sola línea)
         
-        self.story.append(Spacer(1, 0.5*cm))
+        self.story.append(Spacer(1, 1.5*cm))
         self.story.append(Paragraph(self.titulo_documento, s_title))
         self.story.append(Paragraph(detalles, s_meta))
         #self.story.append(Spacer(1, 0.5*cm))
