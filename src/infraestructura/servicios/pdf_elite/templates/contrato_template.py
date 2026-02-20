@@ -322,8 +322,12 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         ]
         
         # Dirección Inmueble
+        direccion_completa = inmueble['direccion']
+        if inmueble.get('municipio') and inmueble.get('departamento') and inmueble.get('municipio') != 'N/A':
+             direccion_completa += f"<br/>{inmueble['municipio'].upper()}, {inmueble['departamento'].upper()}"
+
         row_inm = [
-            [p_kw("DIRECCIÓN DEL INMUEBLE:"), p_val(inmueble['direccion'])]
+            [p_kw("DIRECCIÓN DEL INMUEBLE:"), p_val(direccion_completa)]
         ]
         
         # Canon y Fechas
@@ -333,8 +337,12 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         ]
         
         # Arrendatario
+        datos_arrendatario = f"{arrendatario['nombre']}<br/>C.C. {arrendatario['documento']}"
+        if arrendatario.get('codigo_seguro') and arrendatario.get('codigo_seguro') != 'N/A':
+            datos_arrendatario += f"<br/><b>CÓDIGO APROBACIÓN SEGURO:</b> {arrendatario['codigo_seguro']}"
+
         row_user = [
-            [p_kw("ARRENDATARIO:"), p_val(f"{arrendatario['nombre']}<br/>C.C. {arrendatario['documento']}")]
+            [p_kw("ARRENDATARIO:"), p_val(datos_arrendatario)]
         ]
         
         # Codeudor y Fecha Fin
@@ -358,6 +366,8 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         data_table.append(row_cod[0])
         # 5. CANON
         data_table.append([p_kw("CANON ARRENDAMIENTO:"), p_val(canon_fmt)])
+        # New Row: DURACIÓN
+        data_table.append([p_kw("DURACIÓN DEL CONTRATO:"), p_val(f"{cond.get('duracion_meses', 12)} Meses")])
         # 6. INICIO
         data_table.append([p_kw("FECHA DE INICIO DEL CONTRATO:"), p_val(self._format_date_spanish(data['fecha_inicio']))])
         # 7. FIN
