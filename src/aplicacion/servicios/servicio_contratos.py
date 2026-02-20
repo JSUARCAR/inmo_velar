@@ -798,6 +798,7 @@ class ServicioContratos:
                 per_arr.TELEFONO_PRINCIPAL as TEL_ARRENDATARIO,
                 per_arr.CORREO_ELECTRONICO as EMAIL_ARRENDATARIO,
                 per_arr.DIRECCION_PRINCIPAL as DIR_ARRENDATARIO,
+                arr.CODIGO_APROBACION_SEGURO,
                 per_code.NOMBRE_COMPLETO as CODEUDOR,
                 per_code.NUMERO_DOCUMENTO as DOC_CODEUDOR,
                 per_code.TELEFONO_PRINCIPAL as TEL_CODEUDOR,
@@ -850,6 +851,7 @@ class ServicioContratos:
                     "telefono": row["TEL_ARRENDATARIO"] or "N/A",
                     "email": row["EMAIL_ARRENDATARIO"] or "N/A",
                     "direccion_arrendatario": row["DIR_ARRENDATARIO"] or "N/A",
+                    "codigo_seguro": row["CODIGO_APROBACION_SEGURO"] or "N/A",
                     # Codeudor
                     "codeudor": row["CODEUDOR"] or "N/A",
                     "documento_codeudor": row["DOC_CODEUDOR"] or "N/A",

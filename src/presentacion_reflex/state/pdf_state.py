@@ -613,6 +613,7 @@ class PDFState(rx.State):
                 "telefono": detalle.get("telefono", "N/A"),
                 "email": detalle.get("email", "N/A"),
                 "direccion": detalle.get("direccion_arrendatario", "N/A"),
+                "codigo_seguro": detalle.get("codigo_seguro", "N/A"),
             },
             "codeudor": {
                 "nombre": detalle.get("codeudor", "N/A"),
@@ -626,6 +627,8 @@ class PDFState(rx.State):
                 "matricula_inmobiliaria": detalle.get("matricula", "N/A"),
                 "tipo": detalle.get("tipo_propiedad", "Apartamento"),
                 "area": str(detalle.get("area_m2", "0")),
+                "municipio": detalle.get("municipio", "N/A"),
+                "departamento": detalle.get("departamento", "N/A"),
                 "habitaciones": "0",  # TODO: Agregar a la query si está disponible
                 "banos": "0",  # TODO: Agregar a la query si está disponible
                 "estrato": "0",  # TODO: Agregar a la query si está disponible
