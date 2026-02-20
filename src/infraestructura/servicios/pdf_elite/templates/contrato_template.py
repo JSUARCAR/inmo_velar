@@ -250,7 +250,18 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         self.create_document(filename, self.document_title)
         
         # 1. Título y Ciudad
-        self.add_title_main(self.document_title)
+        # Personalización: Título un poco más pequeño (18pt) y corrido a la derecha
+        style_title = ParagraphStyle(
+            'TitleCustom',
+            parent=self.styles['Heading1'], 
+            alignment=TA_CENTER,
+            fontSize=18, # Originalmente es 20 (TitleMain) o Heading1 es menor. Usamos 18 intermedio.
+            leftIndent=50, # Mueve el bloque visualmente a la derecha
+            spaceAfter=15,
+            leading=20,
+            textColor=colors.black
+        )
+        self.story.append(Paragraph(self.document_title, style_title))
         self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {self._format_date_spanish(data['fecha'])}", align='CENTER')
         self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b><br/>ARMENIA, QUINDÍO", align='CENTER')
         self.add_spacer(0.4)
