@@ -263,8 +263,10 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
             textColor=colors.black
         )
         self.story.append(Paragraph(self.document_title, style_title))
-        self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {self._format_date_spanish(data['fecha'])}", align='CENTER')
-        self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b><br/>ARMENIA, QUINDÍO", align='CENTER')
+        
+        # Metadata alineada con el título (Left Indent 50)
+        self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {self._format_date_spanish(data['fecha'])}", alignment='LEFT', leftIndent=50)
+        self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b><br/>ARMENIA, QUINDÍO", alignment='LEFT', leftIndent=50)
         self.add_spacer(0.4)
         
         # 2. Resumen de Partes (Tabla inicial del PDF)
