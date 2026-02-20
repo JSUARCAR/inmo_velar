@@ -170,6 +170,20 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         Override completo para evitar el header por defecto de la empresa (INMOBILIARIA VELAR SAS...)
         que se solapa con el título.
         """
+        # -1. Dibujar MEMBRETE (Fondo completo)
+        current_dir = Path(__file__).parent
+        membrete_path = current_dir / "VELAR INMOBILIARIA_membrete.png"
+        
+        try:
+            if membrete_path.exists():
+                # Dibujar imagen cubriendo toda la página
+                page_width, page_height = doc.pagesize
+                # mask='auto' maneja transparencias si es PNG
+                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask='auto', preserveAspectRatio=False)
+        except Exception as e:
+            # Fallo silencioso o log mínimo para no romper generación
+            print(f"Advertencia: No se pudo cargar fondo {membrete_path}: {e}")
+
         # 0. Dibujar LOGO si existe (Top Center)
         if hasattr(self, 'logo_data') and self.logo_data:
             try:
