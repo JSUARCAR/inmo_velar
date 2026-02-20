@@ -144,7 +144,7 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         },
         {
             "titulo": "VIGÉSIMA QUINTA. NOTIFICACIONES",
-            "texto": "Para todos los efectos judiciales o extrajudiciales, las partes se notificarán en las siguientes direcciones, así: EL ARRENDADOR en el Centro Comercial Manhatan local 15 en Armenia, Quindío; por medio del número de teléfono: 3011281684; y el correo electrónico: inmobiliariavelarsasaxm@gmail.com. EL ARRENDATARIO por medio del número de teléfono [TELEFONO ARRENDATARIO] y el correo electrónico [CORREO ARRENDATARIO], CODEUDOR: por medio del número de teléfono [TELEFONO CODEUDOR] y el correo electrónico [CORREO CODEUDOR] primero. <br/><br/><b>Parágrafo primero</b>: En caso de cambio de alguno de los datos descritos en la cláusula vigésima quinta del presente contrato, las partes se comprometen expresamente a informar por medio escrito para su debida actualización."
+            "texto": "Para todos los efectos judiciales o extrajudiciales, las partes se notificarán en las siguientes direcciones, así: EL ARRENDADOR en el Centro Comercial Manhatan local 15 en Armenia, Quindío; por medio del número de teléfono: 3011281684; y el correo electrónico: inmobiliariavelarsasaxm@gmail.com. EL ARRENDATARIO por medio del número de teléfono [TELEFONO ARRENDATARIO] y el correo electrónico [CORREO ARRENDATARIO], CODEUDOR: por medio del número de teléfono [TELEFONO CODEUDOR] y el correo electrónico [CORREO CODEUDOR]. <br/><br/><b>Parágrafo primero</b>: En caso de cambio de alguno de los datos descritos en la cláusula vigésima quinta del presente contrato, las partes se comprometen expresamente a informar por medio escrito para su debida actualización."
         }
     ]
 
