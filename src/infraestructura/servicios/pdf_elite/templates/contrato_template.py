@@ -195,7 +195,7 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
                 position=self.watermark_style,
             )
             
-        # 2. Footer simple (SOLO Página y Fecha)
+        # 2. Footer simple (SOLO Página)
         canvas_obj.saveState()
         
         # Página y Timestamp
@@ -208,10 +208,27 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         # Centrado Página (más abajo que la dirección)
         canvas_obj.drawCentredString(center_x, 20, f"Página {page_num}")
         
-        # Timestamp derecha
+        # 4. Textos Verticales en Márgenes
+        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFillColor(colors.lightgrey) # Color tenue para no distraer
+        
         from datetime import datetime
-        dt = datetime.now().strftime('%Y-%m-%d %H:%M')
-        canvas_obj.drawRightString(doc.pagesize[0]-60, 20, f"Generado: {dt}")
+        dt_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+        
+        # Margen Izquierdo (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(30, 250) # Ajustar posición X,Y
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, "Impreso por Inmobiliaria Velar SAS - NIT 901.703.515 - Correo: inmobiliariavelarsasaxm@gmail.com")
+        canvas_obj.restoreState()
+        
+        # Margen Derecho (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(doc.pagesize[0] - 30, 250)
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, f"Generado: {dt_str}")
+        canvas_obj.restoreState()
+        
         canvas_obj.restoreState()
 
     def validate_data(self, data: Dict[str, Any]) -> bool:
