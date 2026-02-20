@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
 
+from reportlab.lib import colors
 from ..components.tables import AdvancedTable
 from ..core.config import Colors, config
 from ..styles.themes import Themes
@@ -65,6 +66,9 @@ class CertificadoTemplate(BaseDocumentTemplate):
         # Habilitar QR de verificación
         self.enable_verification_qr("certificado", data["certificado_id"])
 
+        # Configurar Header/Footer con Membrete
+        self.set_header_footer(self._header_footer_with_features, self._header_footer_with_features)
+
         # Crear documento
         filename = self._generate_filename("certificado", data["certificado_id"])
         titulo = self._get_titulo_certificado(data["tipo"])
@@ -93,31 +97,8 @@ class CertificadoTemplate(BaseDocumentTemplate):
         """Agrega header elegante del certificado"""
         from reportlab.platypus import HRFlowable
 
-        # Espacio superior
-        self.add_spacer(0.5)
-
-        # Logo/Título empresa (centrado y elegante)
-        self.add_paragraph(
-            f"<font size=18 color='#{int(self.theme.primary_color[0]*255):02X}{int(self.theme.primary_color[1]*255):02X}{int(self.theme.primary_color[2]*255):02X}'>"
-            f"<b>{config.empresa_nombre}</b></font>",
-            style_name="Body",
-            alignment="center",
-        )
-
-        self.add_paragraph(
-            f"<font size=9>{config.empresa_nit}</font>", style_name="Small", alignment="center"
-        )
-
-        # Línea decorativa dorada
-        hr = HRFlowable(
-            width="30%",
-            thickness=1,
-            color=Colors.to_reportlab(self.theme.accent_color),
-            spaceAfter=20,
-            spaceBefore=15,
-            hAlign="CENTER",
-        )
-        self.story.append(hr)
+        # Espacio superior (Ajustado para el membrete)
+        self.add_spacer(1.5)
 
         # Título del certificado
         self.add_title_main(titulo)
@@ -239,6 +220,70 @@ class CertificadoTemplate(BaseDocumentTemplate):
             return f"{fecha.day} días del mes de {mes} de {fecha.year}"
         except:
             return fecha_str
+
+    def _header_footer_with_features(self, canvas_obj, doc):
+        """
+        Override completo para evitar el header por defecto 
+        """
+        # 0. Dibujar MEMBRETE (Fondo completo)
+        current_dir = Path(__file__).parent
+        membrete_path = current_dir / "VELAR INMOBILIARIA_membrete_modificada.png"
+        
+        try:
+            if membrete_path.exists():
+                # Dibujar imagen cubriendo toda la página
+                page_width, page_height = doc.pagesize
+                # mask='auto' maneja transparencias si es PNG
+                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask='auto', preserveAspectRatio=False)
+        except Exception as e:
+            # Fallo silencioso o log mínimo para no romper generación
+            print(f"Advertencia: No se pudo cargar fondo {membrete_path}: {e}")
+
+        # 1. Agregar marca de agua si aplica (logic from Base)
+        if self.watermark_text:
+            from ..components.watermarks import Watermark
+            Watermark.add_text_watermark(
+                canvas_obj,
+                text=self.watermark_text,
+                opacity=self.watermark_opacity,
+                position=self.watermark_style,
+            )
+            
+        # 2. Footer simple (SOLO Página)
+        canvas_obj.saveState()
+        
+        # Página y Timestamp
+        page_num = canvas_obj.getPageNumber()
+        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFillColor(colors.gray)
+        
+        center_x = doc.pagesize[0] / 2
+        
+        # Centrado Página (más abajo que la dirección)
+        canvas_obj.drawCentredString(center_x, 20, f"Página {page_num}")
+        
+        # 4. Textos Verticales en Márgenes
+        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFillColor(colors.lightgrey) # Color tenue para no distraer
+        
+        from datetime import datetime
+        dt_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+        
+        # Margen Izquierdo (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(30, 250) # Ajustar posición X,Y
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, "Impreso por Inmobiliaria Velar SAS - NIT 901.703.515 - Correo: inmobiliariavelarsasaxm@gmail.com")
+        canvas_obj.restoreState()
+        
+        # Margen Derecho (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(doc.pagesize[0] - 30, 250)
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, f"Generado: {dt_str}")
+        canvas_obj.restoreState()
+        
+        canvas_obj.restoreState()
 
 
 __all__ = ["CertificadoTemplate"]

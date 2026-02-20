@@ -10,6 +10,7 @@ Fecha: 2026-01-18
 from pathlib import Path
 from typing import Any, Dict
 
+from reportlab.lib import colors
 from ..components.tables import AdvancedTable
 from .base_template import BaseDocumentTemplate
 
@@ -63,6 +64,9 @@ class EstadoCuentaElite(BaseDocumentTemplate):
         # Guardar configuración de empresa para el header
         self.empresa_config = data.get("empresa", {})
 
+        # Configurar Header/Footer con Membrete
+        self.set_header_footer(self._header_footer_with_features, self._header_footer_with_features)
+
         # Habilitar QR de verificación
         self.enable_verification_qr("estado", data["estado_id"])
 
@@ -80,82 +84,68 @@ class EstadoCuentaElite(BaseDocumentTemplate):
         # Construir PDF
         return self.build()
 
-    def _default_header_footer(self, canvas_obj, doc):
+    def _header_footer_with_features(self, canvas_obj, doc):
         """
-        Header y footer personalizado con Logo y Datos de Empresa
-        (Reemplazo para Estado de Cuenta - Estilo Contrato Mandato)
+        Header y footer con Membrete (Imagen de fondo)
         """
-        from reportlab.lib.units import inch
-        from ..core.config import Colors, Fonts, config
-        from reportlab.lib.utils import ImageReader
-        import base64
-        import io
+        # 0. Dibujar MEMBRETE (Fondo completo)
+        current_dir = Path(__file__).parent
+        membrete_path = current_dir / "VELAR INMOBILIARIA_membrete_modificada.png"
+        
+        try:
+            if membrete_path.exists():
+                # Dibujar imagen cubriendo toda la página
+                page_width, page_height = doc.pagesize
+                # mask='auto' maneja transparencias si es PNG
+                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask='auto', preserveAspectRatio=False)
+        except Exception as e:
+            # Fallo silencioso o log mínimo para no romper generación
+            print(f"Advertencia: No se pudo cargar fondo {membrete_path}: {e}")
 
+        # 1. Agregar marca de agua si aplica (logic from Base)
+        if self.watermark_text:
+            from ..components.watermarks import Watermark
+            Watermark.add_text_watermark(
+                canvas_obj,
+                text=self.watermark_text,
+                opacity=self.watermark_opacity,
+                position=self.watermark_style,
+            )
+            
+        # 2. Footer simple (SOLO Página)
         canvas_obj.saveState()
         
-        # El tope de la página es doc.pagesize[1].
-        # El contenido empieza en: doc.pagesize[1] - doc.topMargin.
+        # Página y Timestamp
+        page_num = canvas_obj.getPageNumber()
+        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFillColor(colors.gray)
         
-        page_height = doc.pagesize[1]
-        page_width = doc.width + doc.leftMargin + doc.rightMargin
+        center_x = doc.pagesize[0] / 2
         
-        # Area del encabezado (Margen superior)
-        header_top = page_height - 10 # 10pt padding desde el borde superior (Logo más arriba)
+        # Centrado Página (más abajo que la dirección)
+        canvas_obj.drawCentredString(center_x, 20, f"Página {page_num}")
         
-        # 1. LOGO (Centrado)
-        logo_data = self.empresa_config.get("logo_base64")
-        if logo_data:
-            try:
-                if "," in logo_data:
-                    logo_data = logo_data.split(",")[1]
-                
-                logo_bytes = base64.b64decode(logo_data)
-                logo_buffer = io.BytesIO(logo_bytes)
-                logo_img = ImageReader(logo_buffer)
-                
-                # Dimensiones fijas para consistencia con contrato
-                logo_h = 1.0 * inch
-                logo_w = 2.0 * inch
-                
-                # Centrado exacto
-                logo_x = (page_width - logo_w) / 2
-                logo_y = header_top - logo_h
-                
-                canvas_obj.drawImage(
-                    logo_img, 
-                    logo_x, 
-                    logo_y, 
-                    height=logo_h, 
-                    width=logo_w,
-                    preserveAspectRatio=True, 
-                    mask='auto'
-                )
-            except Exception as e:
-                print(f"Error dibujando logo: {e}")
-
-        # 2. FOOTER (Centrado - Estilo Contrato)
-        # Dirección hardcoded para igualar contrato (o fallback a config si se desea, pero usuario pidió 'igual')
-        footer_text = [
-            "Calle 19 No. 16 – 44 Centro Comercial Manhatan Local 15 Armenia, Quindío.",
-            "Contacto: +57 3135410407"
-        ]
+        # 4. Textos Verticales en Márgenes
+        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFillColor(colors.lightgrey) # Color tenue para no distraer
         
-        canvas_obj.setFont(Fonts.MAIN_BOLD, 8)
-        canvas_obj.setFillColor(Colors.to_reportlab(Colors.GRAY_DARK))
+        from datetime import datetime
+        dt_str = datetime.now().strftime('%Y-%m-%d %H:%M')
         
-        center_x = page_width / 2
-        y_pos = 50 # Posición vertical footer
+        # Margen Izquierdo (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(30, 250) # Ajustar posición X,Y
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, "Impreso por Inmobiliaria Velar SAS - NIT 901.703.515 - Correo: inmobiliariavelarsasaxm@gmail.com")
+        canvas_obj.restoreState()
         
-        for line in footer_text:
-            canvas_obj.drawCentredString(center_x, y_pos, line)
-            y_pos -= 10
-            
-        # Número de página
-        canvas_obj.setFont(Fonts.MAIN, Fonts.SIZE_TINY)
-        canvas_obj.setFillColor(Colors.to_reportlab(Colors.GRAY_MEDIUM))
-        page_text = f"Página {doc.page}"
-        canvas_obj.drawCentredString(center_x, 20, page_text)
-
+        # Margen Derecho (Vertical)
+        canvas_obj.saveState()
+        canvas_obj.translate(doc.pagesize[0] - 30, 250)
+        canvas_obj.rotate(90)
+        canvas_obj.drawString(0, 0, f"Generado: {dt_str}")
+        canvas_obj.restoreState()
+        
         canvas_obj.restoreState()
 
     def _add_informacion_consolidada(self, data: Dict[str, Any]) -> None:
