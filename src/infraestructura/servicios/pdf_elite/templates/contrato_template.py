@@ -10,6 +10,7 @@ Fecha: 2026-01-25
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
 from num2words import num2words
