@@ -173,7 +173,7 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         """
         # 0. Dibujar MEMBRETE (Fondo completo)
         current_dir = Path(__file__).parent
-        membrete_path = current_dir / "VELAR INMOBILIARIA_membrete.png"
+        membrete_path = current_dir / "VELAR INMOBILIARIA_membrete_modificada.png"
         
         try:
             if membrete_path.exists():
