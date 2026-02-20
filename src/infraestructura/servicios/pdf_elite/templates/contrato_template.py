@@ -365,13 +365,14 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         # 4. CODEUDOR
         data_table.append(row_cod[0])
         # 5. CANON
-        data_table.append([p_kw("CANON ARRENDAMIENTO:"), p_val(canon_fmt)])
-        # New Row: DURACIÓN
-        data_table.append([p_kw("DURACIÓN DEL CONTRATO:"), p_val(f"{cond.get('duracion_meses', 12)} Meses")])
+        canon_texto = num2words(cond['canon'], lang='es').upper() + " PESOS M/CTE"
+        data_table.append([p_kw("CANON ARRENDAMIENTO:"), p_val(f"{canon_fmt}<br/>{canon_texto}")])
         # 6. INICIO
         data_table.append([p_kw("FECHA DE INICIO DEL CONTRATO:"), p_val(self._format_date_spanish(data['fecha_inicio']))])
         # 7. FIN
         data_table.append([p_kw("FECHA DE TERMINACIÓN DEL CONTRATO:"), p_val(self._format_date_spanish(data['fecha_fin']))])
+        # 8. DURACIÓN
+        data_table.append([p_kw("DURACIÓN DEL CONTRATO:"), p_val(f"{cond.get('duracion_meses', 12)} Meses")])
 
         t = Table(data_table, colWidths=[150, 300])
         t.setStyle(TableStyle([
