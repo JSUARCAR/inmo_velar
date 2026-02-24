@@ -266,9 +266,9 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         self.story.append(Paragraph("(ADMINISTRACIÓN DE INMUEBLE)", style_subtitle))
         
         # Formatear Fecha
-        fecha_fmt = self._format_fecha_es(data.get('fecha', ''))
-            
-        self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {fecha_fmt}", align='CENTER')
+         from datetime import datetime
+        fecha_sistema = datetime.now().strftime("%Y-%m-%d")
+        self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {self._format_date_spanish(fecha_sistema)}", alignment='LEFT', leftIndent=0)
         self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b>", align='CENTER')
         self.add_paragraph("ARMENIA, QUINDÍO", align='CENTER')
         self.add_spacer(0.4)

@@ -52,7 +52,7 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         },
         {
             "titulo": "SEGUNDA. DIRECCIÓN Y LINDEROS DEL INMUEBLE",
-            "texto": "El inmueble objeto del presente contrato se encuentra en el [DIRECCION PREDIO] inmueble se identifica con el folio de matrícula inmobiliaria No. [MATRICULA INMOBILIARIA]."
+            "texto": "El inmueble objeto del presente contrato se encuentra en la siguiente dirección [DIRECCION PREDIO] inmueble se identifica con el folio de matrícula inmobiliaria No. [MATRICULA INMOBILIARIA]."
         },
         {
             "titulo": "TERCERA. DESTINACIÓN",
@@ -286,14 +286,14 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         fecha_sistema = datetime.now().strftime("%Y-%m-%d")
         self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {self._format_date_spanish(fecha_sistema)}", alignment='LEFT', leftIndent=0)
         self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b><br/>ARMENIA, QUINDÍO", alignment='LEFT', leftIndent=0)
-        self.add_spacer(0.4)
+        #self.add_spacer(0.4)
         
         # 2. Resumen de Partes (Tabla inicial del PDF)
         self._add_resumen_partes(data)
         
         # 3. Condiciones Generales (Header sección)
         self.add_section_divider("CONDICIONES GENERALES")
-        self.story.append(Spacer(1, 10))
+        #self.story.append(Spacer(1, 10))
         
         # 4. Cláusulas
         self._add_clausulas_reales(data)
