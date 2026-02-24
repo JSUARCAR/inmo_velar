@@ -144,7 +144,7 @@ class SaldosState(rx.State):
         async with self:
             self.is_loading = True
             current_user = await self.get_state(AuthState)
-            usuario = current_user.user["nombre_usuario"] if current_user.user else "sistema"
+            usuario = current_user.user_info["nombre_usuario"] if current_user.user_info else "sistema"
 
         try:
             servicio = ServicioSaldosFavor(db_manager)
@@ -178,7 +178,7 @@ class SaldosState(rx.State):
         async with self:
             self.is_loading = True
             current_user = await self.get_state(AuthState)
-            usuario = current_user.user["nombre_usuario"] if current_user.user else "sistema"
+            usuario = current_user.user_info["nombre_usuario"] if current_user.user_info else "sistema"
 
         try:
             servicio = ServicioSaldosFavor(db_manager)
