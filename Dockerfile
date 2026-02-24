@@ -17,8 +17,15 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Cache-busting ARG — incrementar para forzar rebuild limpio desde COPY . .
+ARG CACHEBUST=20260224
+
 # Copy ALL source code
 COPY . .
+
+# Limpiar cachés de Python compilado para garantizar que el código fuente fresco sea usado
+RUN find /app -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true && \
+    find /app -name "*.pyc" -delete 2>/dev/null || true
 
 # Make entrypoint executable
 RUN chmod +x /app/entrypoint.sh
