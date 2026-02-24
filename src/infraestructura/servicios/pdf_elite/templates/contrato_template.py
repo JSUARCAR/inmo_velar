@@ -293,7 +293,7 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         
         # 3. Condiciones Generales (Header sección)
         self.add_section_divider("CONDICIONES GENERALES")
-        self.story.append(Spacer(1, 10))
+        # self.story.append(Spacer(1, 10))
         
         # 4. Cláusulas
         self._add_clausulas_reales(data)
