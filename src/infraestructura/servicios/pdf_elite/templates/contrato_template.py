@@ -282,7 +282,9 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         self.story.append(Paragraph(self.document_title, style_title))
         
         # Metadata alineada con el título (Left Indent 50)
-        self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {self._format_date_spanish(data['fecha'])}", alignment='LEFT', leftIndent=0)
+        from datetime import datetime
+        fecha_sistema = datetime.now().strftime("%Y-%m-%d")
+        self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {self._format_date_spanish(fecha_sistema)}", alignment='LEFT', leftIndent=0)
         self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b><br/>ARMENIA, QUINDÍO", alignment='LEFT', leftIndent=0)
         self.add_spacer(0.4)
         
