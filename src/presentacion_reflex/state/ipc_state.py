@@ -89,7 +89,7 @@ class IPCState(rx.State):
             self.is_loading = True
             self.error_message = ""
             current_user = await self.get_state(AuthState)
-            usuario = current_user.user["nombre_usuario"] if current_user.user else "sistema"
+            usuario = current_user.user_info["nombre_usuario"] if current_user.user_info else "sistema"
 
         try:
             servicio = ServicioIPC(db_manager)
