@@ -9,6 +9,82 @@ import reflex as rx
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 
 
+def searchable_select(
+    label: str,
+    placeholder: str,
+    value_label: rx.Var,
+    search_value: rx.Var,
+    menu_open: rx.Var,
+    filtered_options: rx.Var,
+    on_change_search: callable,
+    on_toggle_menu: callable,
+    on_select: callable,
+) -> rx.Component:
+    """Combobox con búsqueda usando Popover."""
+    return rx.vstack(
+        rx.text(label, size="2", weight="medium"),
+        rx.popover.root(
+            rx.popover.trigger(
+                rx.button(
+                    rx.cond(
+                        value_label == "",
+                        rx.text(placeholder, color="gray"),
+                        rx.text(value_label, color="black"),
+                    ),
+                    rx.icon("chevron-down", size=16),
+                    variant="surface",
+                    width="100%",
+                    justify="between",
+                ),
+            ),
+            rx.popover.content(
+                rx.vstack(
+                    rx.input(
+                        placeholder="Buscar...",
+                        value=search_value,
+                        on_change=on_change_search,
+                        autofocus=True,
+                        width="100%",
+                        variant="soft",
+                        size="1",
+                    ),
+                    rx.scroll_area(
+                        rx.vstack(
+                            rx.foreach(
+                                filtered_options,
+                                lambda opt: rx.cond(
+                                    opt[0] != "",
+                                    rx.box(
+                                        rx.text(opt[0], size="2"),
+                                        width="100%",
+                                        padding_x="3",
+                                        padding_y="2",
+                                        _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
+                                        on_click=lambda: on_select(opt[1], opt[0]),
+                                    ),
+                                ),
+                            ),
+                            width="100%",
+                            spacing="0",
+                        ),
+                        type="auto",
+                        scrollbars="vertical",
+                        style={"max_height": "200px"},
+                        width="100%",
+                    ),
+                    padding="2",
+                    width="320px",
+                    spacing="2",
+                ),
+            ),
+            open=menu_open,
+            on_open_change=on_toggle_menu,
+        ),
+        spacing="1",
+        width="100%",
+    )
+
+
 def form_field(
     label: str,
     name: str,
@@ -65,17 +141,16 @@ def liquidacion_create_form() -> rx.Component:
                     # Selección de Contrato y Período
                     section_title("Configuración Básica"),
                     rx.grid(
-                        rx.vstack(
-                            rx.text("Contrato de Mandato/Propiedad", size="2", weight="medium"),
-                            rx.select(
-                                LiquidacionesState.propiedades_select_options,
-                                name="id_propiedad",
-                                placeholder="Seleccione propiedad...",
-                                on_change=LiquidacionesState.handle_propiedad_change,
-                                required=True,
-                                width="100%",
-                            ),
-                            spacing="1",
+                        searchable_select(
+                            "Contrato de Mandato/Propiedad",
+                            "Seleccione propiedad...",
+                            LiquidacionesState.propiedad_liq_selected_label,
+                            LiquidacionesState.propiedad_liq_search,
+                            LiquidacionesState.propiedad_liq_menu_open,
+                            LiquidacionesState.filtered_propiedades_liq_options,
+                            LiquidacionesState.set_propiedad_liq_search,
+                            LiquidacionesState.toggle_propiedad_liq_menu,
+                            LiquidacionesState.select_propiedad_liq,
                         ),
                         rx.grid(
                             form_field(

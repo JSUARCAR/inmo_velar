@@ -42,6 +42,11 @@ class LiquidacionesState(DocumentosStateMixin):
     propiedades_select_options: List[str] = []
     propietarios_select_options: List[str] = []  # Strings "Nombre - Documento"
 
+    # Combobox Propiedad (formulario de creación de liquidación)
+    propiedad_liq_search: str = ""
+    propiedad_liq_menu_open: bool = False
+    propiedad_liq_selected_label: str = ""
+
     # Vista agrupada/consolidada
     vista_agrupada: bool = False  # False = Individual, True = Por propietario
 
@@ -347,10 +352,46 @@ class LiquidacionesState(DocumentosStateMixin):
             "observaciones": "",
         }
         self.error_message = ""
+        # Reset combobox propiedad
+        self.propiedad_liq_selected_label = ""
+        self.propiedad_liq_search = ""
+        self.propiedad_liq_menu_open = False
+
 
     def set_form_field(self, field: str, value: str):
         """Actualiza un campo del formulario."""
         self.form_data[field] = value
+
+    # -------------------------------------------------------------------------
+    # Combobox Propiedad (formulario de creación de liquidación)
+    # -------------------------------------------------------------------------
+    def set_propiedad_liq_search(self, value: str):
+        """Actualiza el texto de búsqueda en el combobox de propiedad."""
+        self.propiedad_liq_search = value
+
+    def toggle_propiedad_liq_menu(self, open: bool):
+        """Abre/cierra el popover del combobox de propiedad."""
+        self.propiedad_liq_menu_open = open
+
+    def select_propiedad_liq(self, id_propiedad: str, label: str):
+        """Selecciona una propiedad en el combobox y dispara la carga de datos."""
+        self.propiedad_liq_selected_label = label
+        self.propiedad_liq_menu_open = False
+        self.propiedad_liq_search = ""
+        return LiquidacionesState.handle_propiedad_change(label)
+
+    @rx.var
+    def filtered_propiedades_liq_options(self) -> List[List[str]]:
+        """Filtra las opciones de propiedad según el texto de búsqueda."""
+        opts = self.propiedades_options
+        search = self.propiedad_liq_search.lower()
+        result = []
+        for opt in opts:
+            texto = opt.get("texto", "")
+            id_ = opt.get("id", "")
+            if not search or search in texto.lower():
+                result.append([texto, id_])
+        return result
 
     @rx.event(background=True)
     async def handle_propiedad_change(self, valor_seleccionado: str):
