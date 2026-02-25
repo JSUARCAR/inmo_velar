@@ -4,6 +4,7 @@ import reflex as rx
 
 from src.aplicacion.servicios.servicio_ipc import ServicioIPC
 from src.dominio.entidades.ipc import IPC
+from src.infraestructura.logging.logger import logger
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.auth_state import AuthState
 
