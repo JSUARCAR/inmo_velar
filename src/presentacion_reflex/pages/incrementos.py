@@ -33,7 +33,9 @@ def ipc_modal() -> rx.Component:
                     value=IPCState.form_valor,
                     on_change=IPCState.set_valor,
                     type="number",
-                    placeholder="Ej: 5.5",
+                    step="0.01",
+                    min="0.01",
+                    placeholder="Ej: 5.1",
                 ),
                 rx.text(
                     "Ingrese el valor porcentual (Ej: escriba 13.12 para 13.12%).",
