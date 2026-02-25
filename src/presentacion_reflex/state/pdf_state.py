@@ -1244,7 +1244,7 @@ class PDFState(rx.State):
                 logger.error(f"⚠️ No se pudo cargar config empresa: {e}")
 
             logger.debug("📄 Paso 2: Generando PDF...")
-            pdf_path = self.pdf_service.generar_recibo_recaudo_elite(datos_pdf)
+            pdf_path = get_pdf_service().generar_recibo_recaudo_elite(datos_pdf)
             logger.debug(f"✅ PDF generado en: {pdf_path}")
 
             self.last_pdf_path = pdf_path
