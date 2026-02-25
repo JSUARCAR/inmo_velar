@@ -25,6 +25,10 @@ class AuthState(rx.State):
     Maneja la sesión del usuario, login y logout.
     """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        logger.info("AuthState initialized - Version: 2026-02-24-v2 (user_info fix)")
+
     # Token de Sesión (Persistente)
     # En producción cambiar secure=True
     session_token: str = rx.Cookie(name="session_token", secure=False)

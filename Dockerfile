@@ -18,7 +18,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Cache-busting ARG — incrementar para forzar rebuild limpio desde COPY . .
-ARG CACHEBUST=20260224
+ARG CACHEBUST=20260224_1907
 
 # Copy ALL source code
 COPY . .
