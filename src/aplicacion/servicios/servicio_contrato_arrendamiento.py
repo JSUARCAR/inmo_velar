@@ -73,7 +73,15 @@ class ServicioContratoArrendamiento:
             alerta_ipc=True,
         )
 
-        return self.repo_arriendo.crear(contrato, usuario_sistema)
+        contrato_creado = self.repo_arriendo.crear(contrato, usuario_sistema)
+
+        # Marcar la propiedad como OCUPADA al crear el contrato
+        propiedad = self.repo_propiedad.obtener_por_id(id_propiedad)
+        if propiedad:
+            propiedad.disponibilidad_propiedad = 0  # Ocupada
+            self.repo_propiedad.actualizar(propiedad, usuario_sistema)
+
+        return contrato_creado
 
     def obtener_arrendamiento(self, id_contrato: int) -> Optional[ContratoArrendamiento]:
         return self.repo_arriendo.obtener_por_id(id_contrato)
