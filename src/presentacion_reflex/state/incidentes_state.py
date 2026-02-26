@@ -52,6 +52,37 @@ class IncidentesState(DocumentosStateMixin):
     prioridad_options: List[str] = ["Todas", "Alta", "Media", "Baja"]
     propiedades_options: List[Dict[str, Any]] = []
 
+    # Combobox State - Propiedad Afectada
+    propiedad_search: str = ""
+    propiedad_menu_open: bool = False
+    propiedad_selected_label: str = ""
+
+    @rx.var
+    def filtered_propiedades_options(self) -> List[tuple[str, str]]:
+        """Opciones filtradas de propiedades para el combobox (texto, id_propiedad)."""
+        search_lower = self.propiedad_search.lower()
+        if not search_lower:
+            return [(p["texto"], str(p["id"])) for p in self.propiedades_options]
+        return [
+            (p["texto"], str(p["id"]))
+            for p in self.propiedades_options
+            if search_lower in p["texto"].lower()
+        ]
+
+    def set_propiedad_search(self, value: str):
+        """Actualiza el texto de búsqueda de propiedad."""
+        self.propiedad_search = value
+
+    def toggle_propiedad_menu(self, open: bool):
+        """Abre o cierra el menú del combobox de propiedad."""
+        self.propiedad_menu_open = open
+
+    def select_propiedad(self, value: str, label: str):
+        """Selecciona una propiedad del combobox."""
+        self.propiedad_selected_label = label
+        self.form_data["id_propiedad"] = value
+        self.propiedad_menu_open = False
+
     # Mapeo de estados backend a columnas Kanban
     # Backend states: Reportado, En Revision, Cotizado, Aprobado, En Reparacion, Finalizado, Cancelado
     kanban_columns: Dict[str, List[str]] = {
@@ -327,6 +358,9 @@ class IncidentesState(DocumentosStateMixin):
             "fecha_incidente": datetime.now().strftime("%Y-%m-%d"),
             "responsable_pago": "Inquilino",
         }
+        self.propiedad_search = ""
+        self.propiedad_selected_label = ""
+        self.propiedad_menu_open = False
 
     def close_modal(self):
         self.modal_open = False
