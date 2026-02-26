@@ -84,7 +84,7 @@ def dashboard_page() -> rx.Component:
                             color="gray.9",
                             letter_spacing="0.1em",
                         ),
-                        rx.grid(
+                        rx.box(
                             kpi_card(
                                 "Ocupación Financiera",
                                 rx.text(DashboardState.kpi_ocupacion_financiera_view, "%"),
@@ -157,15 +157,7 @@ def dashboard_page() -> rx.Component:
                                     width="100%",
                                 ),
                             ),
-                            # columns=["1", "2", "3", "3"],
-                            grid_template_columns=[
-                                "repeat(1, 1fr)",
-                                "repeat(2, 1fr)",
-                                "repeat(3, 1fr)",
-                                "repeat(3, 1fr)",
-                            ],
-                            spacing="5",
-                            width="100%",
+                            class_name="grid-elite",
                         ),
                         spacing="3",
                         width="100%",
@@ -175,7 +167,7 @@ def dashboard_page() -> rx.Component:
                     tablas_vencimientos_detalle(),
                     rx.divider(margin_y="4"),
                     # 2. GRID PRINCIPAL (Análisis + Operativo)
-                    rx.grid(
+                    rx.box(
                         # COLUMNA IZQUIERDA (Análisis Profundo - Span 2)
                         rx.vstack(
                             # A. Evolución (Tendencia Clave)
@@ -188,26 +180,19 @@ def dashboard_page() -> rx.Component:
                             ),
                             rx.spacer(),
                             # B. Gráficos de Detalle (2x2 Grid interno)
-                            rx.grid(
+                            rx.box(
                                 # Fila 1
                                 top_asesores_chart(),
                                 tunel_vencimientos_chart(),
                                 # Fila 2
                                 propiedades_tipo_chart(),
                                 incidentes_pie_chart(),
-                                # columns=["1", "1", "2", "2"],
-                                grid_template_columns=[
-                                    "repeat(1, 1fr)",
-                                    "repeat(1, 1fr)",
-                                    "repeat(2, 1fr)",
-                                    "repeat(2, 1fr)",
-                                ],
-                                spacing="4",
+                                class_name="grid-compact",
                                 width="100%",
                             ),
                             spacing="5",
                             width="100%",
-                            grid_column=["span 1", "span 1", "span 2", "span 2"],
+                            class_name="grid-main-left",
                         ),
                         # COLUMNA DERECHA (Pulso Operativo - Span 1)
                         rx.vstack(
@@ -219,7 +204,7 @@ def dashboard_page() -> rx.Component:
                                 letter_spacing="0.1em",
                             ),
                             # KPIs Compactos
-                            rx.grid(
+                            rx.box(
                                 kpi_card(
                                     "Cartera Mora",
                                     DashboardState.mora_monto_total_view,
@@ -332,14 +317,7 @@ def dashboard_page() -> rx.Component:
                                         size="1",
                                     ),
                                 ),
-                                # columns=["1", "2", "2", "2"],
-                                grid_template_columns=[
-                                    "repeat(1, 1fr)",
-                                    "repeat(2, 1fr)",
-                                    "repeat(2, 1fr)",
-                                    "repeat(2, 1fr)",
-                                ],
-                                spacing="3",
+                                class_name="grid-compact",
                                 width="100%",
                             ),
                             rx.divider(margin_y="4"),
@@ -362,16 +340,9 @@ def dashboard_page() -> rx.Component:
                             border_radius="16px",
                             height="fit-content",
                             width="100%",
-                            grid_column="span 1",
+                            class_name="grid-main-right",
                         ),
-                        # columns=["1", "1", "2", "3"],
-                        grid_template_columns=[
-                            "repeat(1, 1fr)",
-                            "repeat(1, 1fr)",
-                            "repeat(2, 1fr)",
-                            "repeat(3, 1fr)",
-                        ],
-                        spacing="6",
+                        class_name="grid-main",
                         width="100%",
                         align_items="start",
                     ),

@@ -14,3 +14,58 @@
         display: none !important;
     }
 }
+
+/* Custom Grids para Dashboard (Premium UI) */
+.grid-elite {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(1, 1fr);
+    width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .grid-elite {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.grid-compact {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(1, 1fr);
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .grid-compact {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.grid-main {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(1, 1fr);
+    width: 100%;
+    align-items: start;
+}
+
+@media (min-width: 1024px) {
+    .grid-main {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.grid-main-left {
+    grid-column: span 1;
+}
+
+@media (min-width: 1024px) {
+    .grid-main-left {
+        grid-column: span 2;
+    }
+}
+
+.grid-main-right {
+    grid-column: span 1;
+}
