@@ -163,7 +163,6 @@ def dashboard_page() -> rx.Component:
                         width="100%",
                         margin_bottom="6",
                     ),
-                    rx.text("DEBUG: SECCIÓN DE VENCIMIENTOS DETALLADOS", color="red", size="1", weight="bold"),
                     tablas_vencimientos_detalle(),
                     rx.divider(margin_y="4"),
                     # 2. GRID PRINCIPAL (Análisis + Operativo)
