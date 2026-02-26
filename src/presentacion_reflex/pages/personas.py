@@ -524,12 +524,12 @@ def personas_page() -> rx.Component:
                                 rx.box(
                                     rx.foreach(PersonasState.personas, person_card),
                                     display="grid",
-                                    grid_template_columns=[
-                                        "repeat(1, 1fr)",  # mobile
-                                        "repeat(1, 1fr)",  # small tablet
-                                        "repeat(2, 1fr)",  # tablet
-                                        "repeat(3, 1fr)",  # desktop
-                                    ],
+                                    grid_template_columns=rx.breakpoints(
+                                        initial="repeat(1, 1fr)",  # mobile
+                                        sm="repeat(1, 1fr)",       # small tablet
+                                        md="repeat(2, 1fr)",       # tablet
+                                        lg="repeat(3, 1fr)",       # desktop
+                                    ),
                                     gap="9",
                                     width="100%",
                                     padding="4",
