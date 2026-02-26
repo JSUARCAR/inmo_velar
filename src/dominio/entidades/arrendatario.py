@@ -38,6 +38,8 @@ class Arrendatario:
     estado_arrendatario: Optional[bool] = True
     fecha_ingreso_arrendatario: Optional[str] = None
     motivo_inactivacion: Optional[str] = None
+    nombre_habitante: Optional[str] = None
+    telefono_habitante: Optional[str] = None
 
     created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
     created_by: Optional[str] = None

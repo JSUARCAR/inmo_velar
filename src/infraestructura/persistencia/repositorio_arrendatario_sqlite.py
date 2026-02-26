@@ -53,6 +53,8 @@ class RepositorioArrendatarioSQLite:
             motivo_inactivacion=(
                 row_dict.get("motivo_inactivacion") or row_dict.get("MOTIVO_INACTIVACION")
             ),
+            nombre_habitante=(row_dict.get("nombre_habitante") or row_dict.get("NOMBRE_HABITANTE")),
+            telefono_habitante=(row_dict.get("telefono_habitante") or row_dict.get("TELEFONO_HABITANTE")),
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),
@@ -99,9 +101,11 @@ class RepositorioArrendatarioSQLite:
                     CODIGO_APROBACION_SEGURO,
                     ESTADO_ARRENDATARIO,
                     FECHA_INGRESO_ARRENDATARIO,
+                    NOMBRE_HABITANTE,
+                    TELEFONO_HABITANTE,
                     CREATED_AT,
                     CREATED_BY
-                ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
                 """,
                 (
                     arrendatario.id_persona,
@@ -113,6 +117,8 @@ class RepositorioArrendatarioSQLite:
                         else True
                     ),
                     arrendatario.fecha_ingreso_arrendatario or datetime.now().isoformat(),
+                    arrendatario.nombre_habitante,
+                    arrendatario.telefono_habitante,
                     datetime.now().isoformat(),
                     usuario_sistema,
                 ),
@@ -137,6 +143,8 @@ class RepositorioArrendatarioSQLite:
                     ID_SEGURO = {placeholder},
                     CODIGO_APROBACION_SEGURO = {placeholder},
                     ESTADO_ARRENDATARIO = {placeholder},
+                    NOMBRE_HABITANTE = {placeholder},
+                    TELEFONO_HABITANTE = {placeholder},
                     UPDATED_AT = {placeholder},
                     UPDATED_BY = {placeholder}
                 WHERE ID_ARRENDATARIO = {placeholder}
@@ -149,6 +157,8 @@ class RepositorioArrendatarioSQLite:
                         if arrendatario.estado_arrendatario is not None
                         else True
                     ),
+                    arrendatario.nombre_habitante,
+                    arrendatario.telefono_habitante,
                     datetime.now().isoformat(),
                     usuario_sistema,
                     arrendatario.id_arrendatario,

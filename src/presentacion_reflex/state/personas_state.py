@@ -412,6 +412,10 @@ class PersonasState(rx.State):
         """Establece el valor del campo en mayúsculas."""
         self.form_data[field] = value.upper()
 
+    def set_telefono_habitante(self, value: str):
+        """Establece el teléfono habitante."""
+        self.form_data["telefono_habitante"] = value
+
     # --- Modal Logic ---
 
     def open_create_modal(self):
@@ -429,6 +433,8 @@ class PersonasState(rx.State):
             "tipo_documento": "CC",
             "consignatario": "",
             "documento_consignatario": "",
+            "nombre_habitante": "",
+            "telefono_habitante": "",
         }
         self.error_message = ""
         self.selected_roles = []  # Reset roles
@@ -536,6 +542,8 @@ class PersonasState(rx.State):
                     {
                         "codigo_aprobacion_seguro": arr.codigo_aprobacion_seguro or "",
                         "id_seguro": str(arr.id_seguro) if arr.id_seguro else "",
+                        "nombre_habitante": (arr.nombre_habitante or "").upper(),
+                        "telefono_habitante": arr.telefono_habitante or "",
                     }
                 )
                 
@@ -725,6 +733,8 @@ class PersonasState(rx.State):
                         "id_seguro": (
                             int(form_data.get("id_seguro")) if form_data.get("id_seguro") else None
                         ),
+                        "nombre_habitante": form_data.get("nombre_habitante", ""),
+                        "telefono_habitante": form_data.get("telefono_habitante", ""),
                     }
                 elif rol == "Asesor":
                     datos_rol = {
