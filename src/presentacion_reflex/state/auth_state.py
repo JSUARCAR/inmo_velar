@@ -80,7 +80,7 @@ class AuthState(rx.State):
                 return None
         return None
 
-    @rx.var(cache=True)
+    @rx.var(cache=False)
     def is_authenticated(self) -> bool:
         """Verifica si hay un usuario autenticado."""
         return self.user_info is not None
@@ -224,9 +224,22 @@ class AuthState(rx.State):
 
     def require_login(self):
         """Protector de rutas. Redirige a login si no está autenticado."""
+        # Si no hay token en la cookie, no hay sesión posible
+        if not self.session_token:
+            return rx.redirect("/login")
+
+        # Si el token existe pero user_info no se pudo cargar (error DB transitorio),
+        # intentar re-validar antes de rechazar la sesión
         if not self.is_authenticated:
             return rx.redirect("/login")
 
         # Sincronizar permisos si el estado está vacío (ej. después de un F5)
         if not self.allowed_modules and self.user_info:
             self._sync_permissions()
+
+    def redirect_to_dashboard(self):
+        """Usado por la página raíz '/'. Redirige al dashboard si está autenticado,
+        o al login si no lo está."""
+        if self.session_token and self.is_authenticated:
+            return rx.redirect("/dashboard")
+        return rx.redirect("/login")
