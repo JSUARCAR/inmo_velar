@@ -24,13 +24,7 @@ def dashboard_layout(content: rx.Component) -> rx.Component:
         ),
         rx.toast.provider(),
         spacing="0",
-        flex_direction=[
-            "column",
-            "column",
-            "row",
-            "row",
-            "row",
-        ],  # Stack vertically on mobile, horizontally on desktop
+        flex_direction=rx.breakpoints(initial="column", md="row"),
         width="100%",
         height="100vh",
         overflow="hidden",  # Prevent double scrollbars

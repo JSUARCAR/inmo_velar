@@ -537,7 +537,7 @@ def sidebar() -> rx.Component:
         position="sticky",
         top="0",
         left="0",
-        display=["none", "none", "flex", "flex", "flex"],
+        display=rx.breakpoints(initial="none", md="flex"),
         flex_direction="column",
         box_shadow="2px 0 8px rgba(0, 0, 0, 0.1)",
         on_mount=ConfiguracionState.cargar_datos_empresa,

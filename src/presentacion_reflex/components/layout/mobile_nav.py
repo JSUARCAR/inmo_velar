@@ -165,5 +165,5 @@ def mobile_nav() -> rx.Component:
         backdrop_filter="blur(16px) saturate(180%)",  # Advanced glass effect
         border_bottom="1px solid rgba(255, 255, 255, 0.08)",
         box_shadow="0 4px 30px rgba(0, 0, 0, 0.1)",
-        display=["block", "block", "none", "none", "none"],
+        display=rx.breakpoints(initial="block", md="none"),
     )
