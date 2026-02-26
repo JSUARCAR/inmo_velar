@@ -11,55 +11,12 @@ from src.presentacion_reflex.state.auth_state import AuthState
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 
-@rx.page(on_load=AuthState.require_login)
+@rx.page(route="/", on_load=AuthState.redirect_to_dashboard)
 def index() -> rx.Component:
-    """Dashboard Principal (Protegido)."""
-    return dashboard_layout(
-        rx.vstack(
-            rx.heading("Bienvenido al Sistema", size="8", color="#111827"),
-            rx.text(f"Hola, {AuthState.user_info['nombre_usuario']}", size="4", color="gray"),
-            
-            rx.divider(margin_y="4"),
-            
-            # Estadísticas de Migración
-            rx.heading("Estado de la Migración", size="6", margin_bottom="4"),
-            
-            rx.grid(
-                rx.card(
-                    rx.vstack(
-                        rx.icon("circle_check", color="green", size=32),
-                        rx.text("Fase 0: Preparación", weight="bold", size="4"),
-                        rx.badge("Completado", color_scheme="green"),
-                        align="center",
-                        spacing="2",
-                    ),
-                ),
-                rx.card(
-                    rx.vstack(
-                        rx.icon("check_check", color="green", size=32),
-                        rx.text("Fase 1: Autenticación", weight="bold", size="4"),
-                        rx.badge("Completado", color_scheme="green"),
-                        align="center",
-                        spacing="2",
-                    ),
-                ),
-                rx.card(
-                    rx.vstack(
-                        rx.icon("layout-template", color="green", size=32),
-                        rx.text("Fase 2: Layout Base", weight="bold", size="4"),
-                        rx.badge("Completado", color_scheme="green"),
-                        align="center",
-                        spacing="2",
-                    ),
-                ),
-                columns="3",
-                spacing="4",
-                width="100%",
-            ),
-            
-            padding="8",
-            width="100%",
-        )
+    """Página raíz: redirige automáticamente al dashboard."""
+    return rx.center(
+        rx.spinner(size="3"),
+        height="100vh",
     )
 
 
