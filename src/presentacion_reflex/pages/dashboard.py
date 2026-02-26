@@ -153,7 +153,13 @@ def dashboard_page() -> rx.Component:
                                 "Cartera Total Estimada",
                                 variant="elite",
                                 hover_content=rx.vstack(
-                                    spacing="2",
+                                    rx.text("Proyección de Cartera", weight="bold", size="2"),
+                                    rx.text(
+                                        "Es la suma total del canon esperado de todos los contratos activos.",
+                                        size="1",
+                                        color="gray.11",
+                                    ),
+                                    spacing="1",
                                     width="100%",
                                 ),
                             ),
