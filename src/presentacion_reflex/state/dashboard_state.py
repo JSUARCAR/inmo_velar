@@ -374,11 +374,11 @@ class DashboardState(rx.State):
 
     @rx.var
     def contratos_vencer_mandato_view(self) -> List[Dict[str, Any]]:
-        return [c for c in self.vencimientos_lista if c.get("tipo_contrato") == "Mandato"]
+        return [c for c in self.vencimientos_lista if str(c.get("tipo_contrato", "")).strip().lower() == "mandato"]
 
     @rx.var
     def contratos_vencer_arrendamiento_view(self) -> List[Dict[str, Any]]:
-        return [c for c in self.vencimientos_lista if c.get("tipo_contrato") == "Arrendamiento"]
+        return [c for c in self.vencimientos_lista if str(c.get("tipo_contrato", "")).strip().lower() == "arrendamiento"]
 
     @rx.var
     def evolucion_chart_data(self) -> List[Dict[str, Any]]:
