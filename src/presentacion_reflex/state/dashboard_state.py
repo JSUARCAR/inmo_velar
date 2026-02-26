@@ -89,32 +89,30 @@ class DashboardState(rx.State):
             traceback.print_exc(file=sys.stderr)
             self.advisor_options = []
 
-    @rx.event(background=True)
-    async def load_dashboard_data(self):
+    def load_dashboard_data(self):
         """
-        Carga todos los datos del dashboard en background.
-        Usa @rx.event(background=True) para no bloquear la UI.
+        Carga todos los datos del dashboard.
+        NOTA: Usa generador síncrono con yield (no background task) para garantizar
+        que el estado se entrega siempre al WebSocket activo del cliente actual.
+        Esto elimina el 'Warning: disconnected client' de los background tasks en F5.
         """
         import traceback
-        print("[DASH_DEBUG] load_dashboard_data START", file=sys.stderr, flush=True)
+        print("[DASH_DEBUG] load_dashboard_data START (sync generator)", file=sys.stderr, flush=True)
 
-        async with self:
-            self.is_loading = True
-            self.error_message = ""
+        self.is_loading = True
+        self.error_message = ""
+        yield  # ← Entrega is_loading=True al WebSocket activo → spinner visible
 
         try:
-            # Obtener filtros actuales
             mes = self.selected_month
             anio = self.selected_year
             id_asesor = self.selected_advisor_id
             print(f"[DASH_DEBUG] filtros | mes={mes} anio={anio} asesor={id_asesor}", file=sys.stderr, flush=True)
 
-            # Inicializar servicio
             repo_dashboard = RepositorioDashboardSQLite(db_manager)
             servicio = ServicioDashboard(repo_dashboard=repo_dashboard)
             print("[DASH_DEBUG] servicio instanciado OK", file=sys.stderr, flush=True)
 
-            # Fetch all data (llamadas síncronas en background thread)
             print("[DASH_DEBUG] obteniendo flujo_caja_mes...", file=sys.stderr, flush=True)
             datos_flujo = servicio.obtener_flujo_caja_mes(mes=mes, anio=anio, id_asesor=id_asesor)
             print(f"[DASH_DEBUG] flujo_caja_mes OK | {datos_flujo}", file=sys.stderr, flush=True)
@@ -129,65 +127,70 @@ class DashboardState(rx.State):
 
             print("[DASH_DEBUG] obteniendo comisiones_pendientes...", file=sys.stderr, flush=True)
             datos_comisiones = servicio.obtener_comisiones_pendientes(id_asesor=id_asesor)
-            print(f"[DASH_DEBUG] comisiones OK", file=sys.stderr, flush=True)
+            print("[DASH_DEBUG] comisiones OK", file=sys.stderr, flush=True)
 
             print("[DASH_DEBUG] obteniendo cartera_mora...", file=sys.stderr, flush=True)
             datos_mora = servicio.obtener_cartera_mora()
-            print(f"[DASH_DEBUG] mora OK", file=sys.stderr, flush=True)
+            print("[DASH_DEBUG] mora OK", file=sys.stderr, flush=True)
 
             print("[DASH_DEBUG] obteniendo contratos_por_vencer...", file=sys.stderr, flush=True)
             datos_vencimiento = servicio.obtener_contratos_por_vencer()
-            print(f"[DASH_DEBUG] vencimientos OK", file=sys.stderr, flush=True)
+            print("[DASH_DEBUG] vencimientos OK", file=sys.stderr, flush=True)
 
             print("[DASH_DEBUG] obteniendo metricas_incidentes...", file=sys.stderr, flush=True)
             datos_incidentes = servicio.obtener_metricas_incidentes()
-            print(f"[DASH_DEBUG] incidentes OK", file=sys.stderr, flush=True)
+            print("[DASH_DEBUG] incidentes OK", file=sys.stderr, flush=True)
 
             print("[DASH_DEBUG] obteniendo evolucion_recaudo...", file=sys.stderr, flush=True)
             datos_evolucion = servicio.obtener_evolucion_recaudo(mes_fin=mes, anio_fin=anio)
-            print(f"[DASH_DEBUG] evolucion OK", file=sys.stderr, flush=True)
+            print("[DASH_DEBUG] evolucion OK", file=sys.stderr, flush=True)
 
             print("[DASH_DEBUG] obteniendo recibos_vencidos...", file=sys.stderr, flush=True)
             datos_recibos = servicio.obtener_recibos_vencidos_resumen()
-            print(f"[DASH_DEBUG] recibos OK", file=sys.stderr, flush=True)
+            print("[DASH_DEBUG] recibos OK", file=sys.stderr, flush=True)
+
+            print("[DASH_DEBUG] obteniendo propiedades_tipo...", file=sys.stderr, flush=True)
+            datos_propiedades_tipo = servicio.obtener_propiedades_por_tipo(id_asesor=id_asesor)
+            print("[DASH_DEBUG] propiedades_tipo OK", file=sys.stderr, flush=True)
+
+            print("[DASH_DEBUG] obteniendo metricas_expertas...", file=sys.stderr, flush=True)
+            datos_kpi_financiero = servicio.obtener_metricas_expertas(id_asesor=id_asesor)
+            print("[DASH_DEBUG] metricas_expertas OK", file=sys.stderr, flush=True)
+
+            if not id_asesor:
+                print("[DASH_DEBUG] obteniendo top_asesores y tunel...", file=sys.stderr, flush=True)
+                datos_top_asesores = servicio.obtener_top_asesores_revenue()
+                datos_tunel = servicio.obtener_tunel_vencimientos()
+                print("[DASH_DEBUG] top_asesores y tunel OK", file=sys.stderr, flush=True)
+            else:
+                datos_top_asesores = []
+                datos_tunel = []
 
             print("[DASH_DEBUG] todos los datos obtenidos, actualizando estado...", file=sys.stderr, flush=True)
 
-            # Actualizar estado con datos
-            async with self:
-                self.mora_data = datos_mora
-                self.flujo_data = datos_flujo
-                self.ocupacion_data = datos_ocupacion
-                self.comisiones_data = datos_comisiones
-                self.contratos_count = contratos_activos
-                self.recibos_data = datos_recibos
-                self.vencimiento_data = datos_vencimiento
-                self.evolucion_data = datos_evolucion
-                self.incidentes_data = datos_incidentes
-                self.propiedades_tipo_data = servicio.obtener_propiedades_por_tipo(
-                    id_asesor=id_asesor
-                )
+            # Actualizar estado (se entregará al WebSocket activo al retornar)
+            self.mora_data = datos_mora
+            self.flujo_data = datos_flujo
+            self.ocupacion_data = datos_ocupacion
+            self.comisiones_data = datos_comisiones
+            self.contratos_count = contratos_activos
+            self.recibos_data = datos_recibos
+            self.vencimiento_data = datos_vencimiento
+            self.evolucion_data = datos_evolucion
+            self.incidentes_data = datos_incidentes
+            self.propiedades_tipo_data = datos_propiedades_tipo
+            self.kpi_financiero = datos_kpi_financiero
+            self.top_asesores_data = datos_top_asesores
+            self.tunel_vencimientos_data = datos_tunel
+            self.is_loading = False
 
-                # Cargar métricas expertas
-                self.kpi_financiero = servicio.obtener_metricas_expertas(id_asesor=id_asesor)
-                # Solo cargar charts globales si no hay filtro de asesor
-                if not id_asesor:
-                    self.top_asesores_data = servicio.obtener_top_asesores_revenue()
-                    self.tunel_vencimientos_data = servicio.obtener_tunel_vencimientos()
-                else:
-                    self.top_asesores_data = []
-                    self.tunel_vencimientos_data = []
-
-                self.is_loading = False
-
-            print("[DASH_DEBUG] load_dashboard_data COMPLETO OK", file=sys.stderr, flush=True)
+            print("[DASH_DEBUG] load_dashboard_data COMPLETO OK (sync generator)", file=sys.stderr, flush=True)
 
         except Exception as e:
             print(f"[DASH_DEBUG] load_dashboard_data ERROR: {type(e).__name__}: {e}", file=sys.stderr, flush=True)
             traceback.print_exc(file=sys.stderr)
-            async with self:
-                self.error_message = f"Error al cargar datos: {type(e).__name__}: {str(e)}"
-                self.is_loading = False
+            self.error_message = f"Error al cargar datos: {type(e).__name__}: {str(e)}"
+            self.is_loading = False
 
     MONTH_MAP = {
         "Enero": 1,
