@@ -267,7 +267,7 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         
         # Formatear Fecha
         fecha_sistema = datetime.now().strftime("%Y-%m-%d")
-        self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {self._format_date_spanish(fecha_sistema)}", alignment='LEFT', leftIndent=0)
+        self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {self._format_fecha_es(fecha_sistema)}", alignment='LEFT', leftIndent=0)
         self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b>", align='CENTER')
         self.add_paragraph("ARMENIA, QUINDÍO", align='CENTER')
         self.add_spacer(0.4)
