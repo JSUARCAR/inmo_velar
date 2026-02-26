@@ -5,6 +5,81 @@ from src.presentacion_reflex.components.personas.wizard_progress import wizard_p
 from src.presentacion_reflex.state.personas_state import PersonasState
 
 
+def searchable_select(
+    label: str,
+    placeholder: str,
+    value_label: rx.Var[str],
+    search_value: rx.Var[str],
+    menu_open: rx.Var[bool],
+    filtered_options: rx.Var[list],
+    on_change_search: callable,
+    on_toggle_menu: callable,
+    on_select: callable,
+) -> rx.Component:
+    return rx.vstack(
+        rx.text(label, size="2", weight="bold"),
+        rx.popover.root(
+            rx.popover.trigger(
+                rx.button(
+                    rx.cond(
+                        value_label == "",
+                        rx.text(placeholder, color="gray"),
+                        rx.text(value_label, color="black"),
+                    ),
+                    rx.icon("chevron-down", size=16),
+                    variant="surface",
+                    width="100%",
+                    justify="between",
+                ),
+            ),
+            rx.popover.content(
+                rx.vstack(
+                    rx.input(
+                        placeholder="Buscar...",
+                        value=search_value,
+                        on_change=on_change_search,
+                        autofocus=True,
+                        width="100%",
+                        variant="soft",
+                        size="1",
+                    ),
+                    rx.scroll_area(
+                         rx.vstack(
+                             rx.foreach(
+                                filtered_options,
+                                lambda opt: rx.cond(
+                                    opt[0] != "",
+                                    rx.box(
+                                        rx.text(opt[0], size="2"),
+                                        width="100%",
+                                        padding_x="3",
+                                        padding_y="2",
+                                        _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
+                                        on_click=lambda: on_select(opt[1], opt[0]),
+                                    )
+                                )
+                             ),
+                             width="100%",
+                             spacing="0",
+                        ),
+                        type="auto",
+                        scrollbars="vertical",
+                        style={"max_height": "200px"},
+                        width="100%",
+                    ),
+                    padding="2",
+                    width="320px",
+                    spacing="2",
+                ),
+            ),
+            open=menu_open,
+            on_open_change=on_toggle_menu,
+        ),
+        spacing="1",
+        width="100%",
+    )
+
+
 def form_field(
     label: str,
     name: str,
@@ -163,13 +238,16 @@ def arrendatario_fields() -> rx.Component:
                 default_value=PersonasState.form_data["codigo_aprobacion_seguro"],
                 icon="file-check",
             ),
-            form_field(
+            searchable_select(
                 "ID Seguro (Opcional)",
-                "id_seguro",
-                "ID numérico",
-                type="number",
-                default_value=PersonasState.form_data["id_seguro"],
-                icon="hash",
+                "Seleccione un seguro...",
+                PersonasState.seguro_selected_label,
+                PersonasState.seguro_search,
+                PersonasState.seguro_menu_open,
+                PersonasState.filtered_seguros_options,
+                PersonasState.set_seguro_search,
+                PersonasState.toggle_seguro_menu,
+                PersonasState.select_seguro,
             ),
             columns=rx.breakpoints(initial="1", sm="2"),
             spacing="3",

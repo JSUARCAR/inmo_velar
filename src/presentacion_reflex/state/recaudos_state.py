@@ -39,6 +39,23 @@ class RecaudosState(DocumentosStateMixin):
     contratos_options: List[Dict[str, Any]] = []
     contratos_select_options: List[str] = []
 
+    # Combobox Contrato
+    contrato_search: str = ""
+    contrato_menu_open: bool = False
+    contrato_selected_label: str = ""
+
+    @rx.var
+    def filtered_contratos_options(self) -> List[tuple[str, str]]:
+        """Opciones filtradas de contratos para el combobox (texto, id_contrato)."""
+        search_lower = self.contrato_search.lower()
+        if not search_lower:
+            return [(c["texto"], c["id"]) for c in self.contratos_options]
+        return [
+            (c["texto"], c["id"])
+            for c in self.contratos_options
+            if search_lower in c["texto"].lower()
+        ]
+
     # Modales
     show_form_modal: bool = False
     show_detail_modal: bool = False
@@ -292,24 +309,34 @@ class RecaudosState(DocumentosStateMixin):
             "periodo": datetime.now().strftime("%Y-%m"),
         }
 
+        self.contrato_search = ""
+        self.contrato_selected_label = ""
+        self.contrato_menu_open = False
+
         self.error_message = ""
 
     def set_form_field(self, field: str, value: str):
         """Actualiza un campo del formulario manual."""
         self.form_data[field] = value
 
-    def on_contract_change(self, value: str):
-        """Maneja el cambio de contrato seleccionado."""
-        # Buscar el contrato seleccionado
-        contrato = next((c for c in self.contratos_options if c["texto"] == value), None)
+    def set_contrato_search(self, value: str):
+        """Actualiza el texto de búsqueda de contrato."""
+        self.contrato_search = value
 
-        if contrato:
-            self.form_data["id_contrato_a"] = value  # El select usa el texto como valor
-            # Auto-llenar valor con el canon
-            if "canon" in contrato and contrato["canon"]:
-                self.form_data["valor_total"] = str(contrato["canon"])
-        else:
-            self.form_data["id_contrato_a"] = value
+    def toggle_contrato_menu(self, open: bool):
+        """Abre o cierra el menú del combobox de contrato."""
+        self.contrato_menu_open = open
+
+    def select_contrato(self, value: str, label: str):
+        """Selecciona un contrato del combobox."""
+        self.contrato_selected_label = label
+        self.form_data["id_contrato_a"] = value
+        self.contrato_menu_open = False
+        
+        # Auto-llenar valor con el canon
+        contrato = next((c for c in self.contratos_options if str(c["id"]) == str(value)), None)
+        if contrato and "canon" in contrato and contrato["canon"]:
+            self.form_data["valor_total"] = str(contrato["canon"])
 
     @rx.event(background=True)
     async def open_edit_modal(self, id_recaudo: int):
@@ -335,10 +362,21 @@ class RecaudosState(DocumentosStateMixin):
                     self.is_loading = False
                 return
 
+            # Buscar el label del contrato para el combobox
+            selected_label = ""
+            for option in self.contratos_options:
+                if str(option["id"]) == str(recaudo.id_contrato_a):
+                    selected_label = option["texto"]
+                    break
+
             async with self:
+                self.contrato_search = ""
+                self.contrato_selected_label = selected_label
+                self.contrato_menu_open = False
+                
                 self.form_data = {
                     "id_recaudo": id_recaudo,
-                    "id_contrato_a": recaudo.id_contrato_a,
+                    "id_contrato_a": str(recaudo.id_contrato_a),
                     "fecha_pago": recaudo.fecha_pago,
                     "valor_total": recaudo.valor_total,
                     "metodo_pago": recaudo.metodo_pago,

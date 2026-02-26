@@ -61,6 +61,55 @@ class PersonasState(rx.State):
     modal_step: int = 1  # Wizard step (1, 2, 3)
     form_validation_errors: Dict[str, str] = {}  # Field-level validation errors
 
+    # --- Seguros Combobox State ---
+    seguros_options: List[Dict[str, Any]] = []
+    seguro_search: str = ""
+    seguro_menu_open: bool = False
+    seguro_selected_label: str = ""
+
+    @rx.var
+    def filtered_seguros_options(self) -> List[tuple[str, str]]:
+        """Opciones filtradas de seguros para el combobox (texto, id_seguro)."""
+        search_lower = self.seguro_search.lower()
+        if not search_lower:
+            return [(s["texto"], str(s["id"])) for s in self.seguros_options]
+        return [
+            (s["texto"], str(s["id"]))
+            for s in self.seguros_options
+            if search_lower in s["texto"].lower()
+        ]
+
+    def load_seguros_activos(self):
+        """Carga la lista de seguros activos."""
+        try:
+            from src.aplicacion.servicios.servicio_seguros import ServicioSeguros
+            servicio = ServicioSeguros(db_manager)
+            seguros_list = servicio.listar_seguros(solo_activos=True)
+            self.seguros_options = [
+                {
+                    "id": s.id_seguro,
+                    "texto": f"ID:{s.id_seguro} - {s.nombre_seguro} ({s.porcentaje_seguro}%)",
+                }
+                for s in seguros_list
+            ]
+        except Exception as e:
+            pass  # print(f"Error cargando seguros: {e}") [OpSec Removed]
+            self.seguros_options = []
+
+    def set_seguro_search(self, value: str):
+        """Actualiza el texto de búsqueda de seguro."""
+        self.seguro_search = value
+
+    def toggle_seguro_menu(self, open: bool):
+        """Abre o cierra el menú del combobox de seguro."""
+        self.seguro_menu_open = open
+
+    def select_seguro(self, value: str, label: str):
+        """Selecciona un seguro del combobox."""
+        self.seguro_selected_label = label
+        self.form_data["id_seguro"] = value
+        self.seguro_menu_open = False
+
     def load_personas(self):
         """Carga la lista de personas aplicando filtros y paginación."""
         self.is_loading = True
@@ -384,6 +433,13 @@ class PersonasState(rx.State):
         self.error_message = ""
         self.selected_roles = []  # Reset roles
         self.reset_wizard()  # Reset wizard to step 1
+        
+        # Cargar seguros activos y resetear combobox
+        self.load_seguros_activos()
+        self.seguro_search = ""
+        self.seguro_selected_label = ""
+        self.seguro_menu_open = False
+        
         self.show_modal = True
         pass  # print("✅ Modal state set to True") [OpSec Removed]
 
@@ -448,6 +504,12 @@ class PersonasState(rx.State):
                 "direccion_principal": (p_entidad.direccion_principal or "").upper(),
             }
 
+            # Cargar seguros para combobox
+            self.load_seguros_activos()
+            self.seguro_search = ""
+            self.seguro_menu_open = False
+            self.seguro_selected_label = ""
+
             # 3. Cargar roles activos
             self.selected_roles = persona_completa.roles if persona_completa.roles else []
             pass  # print(f"Loaded roles: {self.selected_roles}") [OpSec Removed]
@@ -476,6 +538,14 @@ class PersonasState(rx.State):
                         "id_seguro": str(arr.id_seguro) if arr.id_seguro else "",
                     }
                 )
+                
+                # Encontrar label para combobox de seguro
+                if arr.id_seguro:
+                    id_seg_str = str(arr.id_seguro)
+                    for option in self.seguros_options:
+                        if str(option["id"]) == id_seg_str:
+                            self.seguro_selected_label = option["texto"]
+                            break
 
             if "Asesor" in datos_roles:
                 ase = datos_roles["Asesor"]
