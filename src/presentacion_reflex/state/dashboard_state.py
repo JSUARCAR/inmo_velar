@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -61,17 +62,19 @@ class DashboardState(rx.State):
 
     def on_load(self):
         """Se ejecuta al montar la página del dashboard."""
+        print("[DASH_DEBUG] DashboardState.on_load CALLED", file=sys.stderr, flush=True)
         # Cargar opciones de asesores para filtro
         self.load_advisor_options()
         # Cargar datos iniciales - yield background event
+        print("[DASH_DEBUG] on_load → yield load_dashboard_data", file=sys.stderr, flush=True)
         yield DashboardState.load_dashboard_data
 
     def load_advisor_options(self):
         """Carga la lista de asesores para el dropdown."""
+        print("[DASH_DEBUG] load_advisor_options START", file=sys.stderr, flush=True)
         try:
             repo_asesores = RepositorioAsesorSQLite(db_manager)
             asesores = repo_asesores.listar_todos()
-
             self.advisor_options = [
                 {
                     "value": str(a.id_asesor),
@@ -79,8 +82,11 @@ class DashboardState(rx.State):
                 }
                 for a in asesores
             ]
-        except Exception:
-            pass  # print(f"Error cargando asesores: {e}") [OpSec Removed]
+            print(f"[DASH_DEBUG] load_advisor_options OK | count={len(self.advisor_options)}", file=sys.stderr, flush=True)
+        except Exception as e:
+            import traceback
+            print(f"[DASH_DEBUG] load_advisor_options ERROR: {e}", file=sys.stderr, flush=True)
+            traceback.print_exc(file=sys.stderr)
             self.advisor_options = []
 
     @rx.event(background=True)
@@ -89,6 +95,9 @@ class DashboardState(rx.State):
         Carga todos los datos del dashboard en background.
         Usa @rx.event(background=True) para no bloquear la UI.
         """
+        import traceback
+        print("[DASH_DEBUG] load_dashboard_data START", file=sys.stderr, flush=True)
+
         async with self:
             self.is_loading = True
             self.error_message = ""
@@ -98,21 +107,51 @@ class DashboardState(rx.State):
             mes = self.selected_month
             anio = self.selected_year
             id_asesor = self.selected_advisor_id
+            print(f"[DASH_DEBUG] filtros | mes={mes} anio={anio} asesor={id_asesor}", file=sys.stderr, flush=True)
 
             # Inicializar servicio
             repo_dashboard = RepositorioDashboardSQLite(db_manager)
             servicio = ServicioDashboard(repo_dashboard=repo_dashboard)
+            print("[DASH_DEBUG] servicio instanciado OK", file=sys.stderr, flush=True)
 
-            # Fetch all data (estas llamadas son síncronas, pero estamos en background thread)
+            # Fetch all data (llamadas síncronas en background thread)
+            print("[DASH_DEBUG] obteniendo flujo_caja_mes...", file=sys.stderr, flush=True)
             datos_flujo = servicio.obtener_flujo_caja_mes(mes=mes, anio=anio, id_asesor=id_asesor)
+            print(f"[DASH_DEBUG] flujo_caja_mes OK | {datos_flujo}", file=sys.stderr, flush=True)
+
+            print("[DASH_DEBUG] obteniendo tasa_ocupacion...", file=sys.stderr, flush=True)
             datos_ocupacion = servicio.obtener_tasa_ocupacion(id_asesor=id_asesor)
+            print(f"[DASH_DEBUG] tasa_ocupacion OK | {datos_ocupacion}", file=sys.stderr, flush=True)
+
+            print("[DASH_DEBUG] obteniendo contratos_activos...", file=sys.stderr, flush=True)
             contratos_activos = servicio.obtener_total_contratos_activos(id_asesor=id_asesor)
+            print(f"[DASH_DEBUG] contratos_activos OK | {contratos_activos}", file=sys.stderr, flush=True)
+
+            print("[DASH_DEBUG] obteniendo comisiones_pendientes...", file=sys.stderr, flush=True)
             datos_comisiones = servicio.obtener_comisiones_pendientes(id_asesor=id_asesor)
+            print(f"[DASH_DEBUG] comisiones OK", file=sys.stderr, flush=True)
+
+            print("[DASH_DEBUG] obteniendo cartera_mora...", file=sys.stderr, flush=True)
             datos_mora = servicio.obtener_cartera_mora()
+            print(f"[DASH_DEBUG] mora OK", file=sys.stderr, flush=True)
+
+            print("[DASH_DEBUG] obteniendo contratos_por_vencer...", file=sys.stderr, flush=True)
             datos_vencimiento = servicio.obtener_contratos_por_vencer()
+            print(f"[DASH_DEBUG] vencimientos OK", file=sys.stderr, flush=True)
+
+            print("[DASH_DEBUG] obteniendo metricas_incidentes...", file=sys.stderr, flush=True)
             datos_incidentes = servicio.obtener_metricas_incidentes()
+            print(f"[DASH_DEBUG] incidentes OK", file=sys.stderr, flush=True)
+
+            print("[DASH_DEBUG] obteniendo evolucion_recaudo...", file=sys.stderr, flush=True)
             datos_evolucion = servicio.obtener_evolucion_recaudo(mes_fin=mes, anio_fin=anio)
+            print(f"[DASH_DEBUG] evolucion OK", file=sys.stderr, flush=True)
+
+            print("[DASH_DEBUG] obteniendo recibos_vencidos...", file=sys.stderr, flush=True)
             datos_recibos = servicio.obtener_recibos_vencidos_resumen()
+            print(f"[DASH_DEBUG] recibos OK", file=sys.stderr, flush=True)
+
+            print("[DASH_DEBUG] todos los datos obtenidos, actualizando estado...", file=sys.stderr, flush=True)
 
             # Actualizar estado con datos
             async with self:
@@ -131,24 +170,23 @@ class DashboardState(rx.State):
 
                 # Cargar métricas expertas
                 self.kpi_financiero = servicio.obtener_metricas_expertas(id_asesor=id_asesor)
-                # Solo cargar charts globales si no hay filtro de asesor (o adaptar si se requiere)
+                # Solo cargar charts globales si no hay filtro de asesor
                 if not id_asesor:
                     self.top_asesores_data = servicio.obtener_top_asesores_revenue()
                     self.tunel_vencimientos_data = servicio.obtener_tunel_vencimientos()
                 else:
-                    self.top_asesores_data = []  # No mostrar ranking global si filtra por uno
-                    # El tunel podria filtrarse pero por ahora lo dejamos global o vacio
+                    self.top_asesores_data = []
                     self.tunel_vencimientos_data = []
 
                 self.is_loading = False
 
-        except Exception as e:
-            pass  # print(f"Error cargando dashboard: {e}") [OpSec Removed]
-            import traceback
+            print("[DASH_DEBUG] load_dashboard_data COMPLETO OK", file=sys.stderr, flush=True)
 
-            traceback.print_exc()
+        except Exception as e:
+            print(f"[DASH_DEBUG] load_dashboard_data ERROR: {type(e).__name__}: {e}", file=sys.stderr, flush=True)
+            traceback.print_exc(file=sys.stderr)
             async with self:
-                self.error_message = f"Error al cargar datos: {str(e)}"
+                self.error_message = f"Error al cargar datos: {type(e).__name__}: {str(e)}"
                 self.is_loading = False
 
     MONTH_MAP = {
