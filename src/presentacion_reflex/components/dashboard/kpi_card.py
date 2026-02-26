@@ -160,9 +160,17 @@ def kpi_card(
             size="3",
             bg=bg_color,
             width="100%",
+            transition="all 0.3s ease",
+            _hover={
+                "transform": "translateY(-4px)",
+                "box_shadow": f"0 20px 25px -5px var(--{color_icono}-4), 0 8px 10px -6px var(--{color_icono}-3)",
+                "border_color": f"var(--{color_icono}-6)",
+            },
             style={
-                "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                "border": "1px solid rgba(0,0,0,0.03)",
+                "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)",
+                "border": "1px solid var(--gray-4)",
+                "border_top": f"3px solid var(--{color_icono}-9)", # Add a visual anchor at the top
+                "border_radius": "16px",
             },
         )
 
@@ -204,9 +212,15 @@ def kpi_card(
             size="2",
             bg=bg_color,
             width="100%",
+            transition="all 0.2s ease",
+            _hover={
+                "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+                "border_color": "var(--gray-6)",
+            },
             style={
-                "box_shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-                "border": "1px solid rgba(0,0,0,0.03)",
+                "box_shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+                "border": "1px solid var(--gray-4)",
+                "border_radius": "12px",
             },
         )
 
