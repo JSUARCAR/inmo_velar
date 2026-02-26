@@ -9,7 +9,6 @@ from src.presentacion_reflex.state.auth_state import AuthState
 
 # --- VISTAS DEL DASHBOARD (Protegidas) ---
 
-from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 
 @rx.page(route="/", on_load=AuthState.redirect_to_dashboard)
 def index() -> rx.Component:
