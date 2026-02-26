@@ -16,6 +16,29 @@ js_number_formatter = Var(
     _js_expr='(value) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value).replace("$\xa0", "$")'
 )
 
+def _info_header(title: str, tooltip_text: str) -> rx.Component:
+    """Genera un encabezado estándar con ícono de información y tooltip."""
+    return rx.hstack(
+        rx.text(title, size="4", weight="bold", color=styles.TEXT_PRIMARY),
+        rx.hover_card.root(
+            rx.hover_card.trigger(rx.icon("info", size=16, color="gray.8", cursor="help")),
+            rx.hover_card.content(
+                rx.text(tooltip_text, size="2", color="gray.11"),
+                side="top",
+                align="center",
+                side_offset=5,
+                background_color=styles.BG_PANEL,
+                border="1px solid var(--gray-4)",
+                box_shadow="0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                border_radius="12px",
+                padding="12px",
+                max_width="250px",
+            )
+        ),
+        align="center",
+        spacing="2",
+    )
+
 
 def vencimientos_chart() -> rx.Component:
     """
@@ -23,7 +46,10 @@ def vencimientos_chart() -> rx.Component:
     """
     return rx.card(
         rx.vstack(
-            rx.text("Contratos por Vencer (90 Días)", size="4", weight="bold", color=styles.TEXT_PRIMARY),
+            _info_header(
+                "Contratos por Vencer (90 Días)",
+                "Distribución de contratos que finalizarán en los próximos 30, 60 y 90 días."
+            ),
             rx.box(
                 rx.recharts.bar_chart(
                     rx.recharts.bar(
@@ -70,7 +96,10 @@ def evolucion_chart() -> rx.Component:
     """
     return rx.card(
         rx.vstack(
-            rx.text("Evolución de Recaudos (6 Meses)", size="4", weight="bold", color=styles.TEXT_PRIMARY),
+            _info_header(
+                "Evolución de Recaudos (6 Meses)",
+                "Histórico del recaudo total efectivo durante los últimos 6 meses."
+            ),
             rx.box(
                 rx.recharts.area_chart(
                     rx.recharts.area(
@@ -139,7 +168,10 @@ def propiedades_tipo_chart() -> rx.Component:
     """
     return rx.card(
         rx.vstack(
-            rx.text("Propiedades por Tipo", size="4", weight="bold", color=styles.TEXT_PRIMARY),
+            _info_header(
+                "Propiedades por Tipo",
+                "Distribución del portafolio activo según la destinación del inmueble."
+            ),
             rx.box(
                 rx.recharts.bar_chart(
                     rx.recharts.bar(
@@ -198,7 +230,10 @@ def incidentes_pie_chart() -> rx.Component:
     """
     return rx.card(
         rx.vstack(
-            rx.text("Incidentes por Estado", size="4", weight="bold", color=styles.TEXT_PRIMARY),
+            _info_header(
+                "Incidentes por Estado",
+                "Proporción de incidentes reportados clasificados por su estado actual de resolución."
+            ),
             rx.box(
                 rx.recharts.pie_chart(
                     rx.recharts.pie(
@@ -244,7 +279,10 @@ def top_asesores_chart() -> rx.Component:
     """Gráfico de ranking de asesores por revenue."""
     return rx.card(
         rx.vstack(
-            rx.text("Top Asesores (Revenue)", size="4", weight="bold", color=styles.TEXT_PRIMARY),
+            _info_header(
+                "Top Asesores (Revenue)",
+                "Clasificación de asesores basada en los ingresos generados por comisiones."
+            ),
             rx.box(
                 rx.recharts.bar_chart(
                     rx.recharts.bar(
@@ -302,7 +340,10 @@ def tunel_vencimientos_chart() -> rx.Component:
     """Gráfico de túnel de vencimientos (Riesgo)."""
     return rx.card(
         rx.vstack(
-            rx.text("Túnel de Vencimientos (12 Meses)", size="4", weight="bold", color=styles.TEXT_PRIMARY),
+            _info_header(
+                "Túnel de Vencimientos (12 Meses)",
+                "Proyección del canon en riesgo por contratos que expiran en los próximos 12 meses."
+            ),
             rx.box(
                 rx.recharts.area_chart(
                     rx.recharts.area(
