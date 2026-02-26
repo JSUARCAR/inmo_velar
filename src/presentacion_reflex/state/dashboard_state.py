@@ -69,6 +69,7 @@ class DashboardState(rx.State):
 
     # Datos de gráficos
     vencimiento_data: Dict[str, Any] = {"vence_30_dias": 0, "vence_60_dias": 0, "vence_90_dias": 0}
+    vencimientos_lista: List[Dict[str, Any]] = []
 
     evolucion_data: Dict[str, Any] = {"etiquetas": [], "valores": []}
 
@@ -153,6 +154,7 @@ class DashboardState(rx.State):
 
             print("[DASH_DEBUG] obteniendo contratos_por_vencer...", file=sys.stderr, flush=True)
             datos_vencimiento = servicio.obtener_contratos_por_vencer()
+            datos_vencimiento_lista = servicio.obtener_contratos_proximos_vencer(90)
             print("[DASH_DEBUG] vencimientos OK", file=sys.stderr, flush=True)
 
             print("[DASH_DEBUG] obteniendo metricas_incidentes...", file=sys.stderr, flush=True)
@@ -194,6 +196,7 @@ class DashboardState(rx.State):
             self.contratos_count = _serialize_decimals(contratos_activos)
             self.recibos_data = _serialize_decimals(datos_recibos)
             self.vencimiento_data = _serialize_decimals(datos_vencimiento)
+            self.vencimientos_lista = _serialize_decimals(datos_vencimiento_lista)
             self.evolucion_data = _serialize_decimals(datos_evolucion)
             self.incidentes_data = _serialize_decimals(datos_incidentes)
             self.propiedades_tipo_data = _serialize_decimals(datos_propiedades_tipo)
@@ -368,6 +371,14 @@ class DashboardState(rx.State):
                 "fill": "#ffc658",
             },
         ]
+
+    @rx.var
+    def contratos_vencer_mandato_view(self) -> List[Dict[str, Any]]:
+        return [c for c in self.vencimientos_lista if c.get("tipo_contrato") == "Mandato"]
+
+    @rx.var
+    def contratos_vencer_arrendamiento_view(self) -> List[Dict[str, Any]]:
+        return [c for c in self.vencimientos_lista if c.get("tipo_contrato") == "Arrendamiento"]
 
     @rx.var
     def evolucion_chart_data(self) -> List[Dict[str, Any]]:
