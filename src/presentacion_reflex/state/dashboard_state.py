@@ -60,13 +60,17 @@ class DashboardState(rx.State):
 
     incidentes_data: Dict[str, Any] = {"por_estado": {}}
 
+    # Guard: ID único del run activo (para detectar concurrencia entre sesiones)
+    _load_run_id: int = 0
+
     def on_load(self):
         """Se ejecuta al montar la página del dashboard."""
-        print("[DASH_DEBUG] DashboardState.on_load CALLED", file=sys.stderr, flush=True)
-        # Cargar opciones de asesores para filtro
+        import time
+        run_id = int(time.time() * 1000) % 1000000  # ms timestamp mod 1M
+        self._load_run_id = run_id
+        print(f"[DASH_DEBUG] DashboardState.on_load CALLED | run_id={run_id}", file=sys.stderr, flush=True)
         self.load_advisor_options()
-        # Cargar datos iniciales - yield background event
-        print("[DASH_DEBUG] on_load → yield load_dashboard_data", file=sys.stderr, flush=True)
+        print(f"[DASH_DEBUG] on_load → yield load_dashboard_data | run_id={run_id}", file=sys.stderr, flush=True)
         yield DashboardState.load_dashboard_data
 
     def load_advisor_options(self):
@@ -97,7 +101,7 @@ class DashboardState(rx.State):
         Esto elimina el 'Warning: disconnected client' de los background tasks en F5.
         """
         import traceback
-        print("[DASH_DEBUG] load_dashboard_data START (sync generator)", file=sys.stderr, flush=True)
+        print(f"[DASH_DEBUG] load_dashboard_data START (sync) | run_id={self._load_run_id}", file=sys.stderr, flush=True)
 
         self.is_loading = True
         self.error_message = ""

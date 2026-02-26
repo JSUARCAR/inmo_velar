@@ -1,3 +1,4 @@
+import sys
 from typing import Any, Dict, List
 
 import reflex as rx
@@ -15,18 +16,17 @@ class AlertasState(rx.State):
     unread_count: int = 0
     show_list: bool = False
 
-    @rx.event(background=True)
-    async def check_alerts(self):
-        """Consulta nuevas alertas."""
+    def check_alerts(self):
+        """Consulta nuevas alertas (síncrono, sin background task)."""
+        print("[ALERT_DEBUG] check_alerts CALLED", file=sys.stderr, flush=True)
         try:
             servicio = ServicioAlertas(db_manager)
             items = servicio.obtener_alertas()
-
-            async with self:
-                self.notifications = items
-                self.unread_count = len(items)
-        except Exception:
-            pass  # print(f"Error checking alerts: {e}") [OpSec Removed]
+            self.notifications = items
+            self.unread_count = len(items)
+            print(f"[ALERT_DEBUG] check_alerts OK | count={len(items)}", file=sys.stderr, flush=True)
+        except Exception as e:
+            print(f"[ALERT_DEBUG] check_alerts ERROR: {e}", file=sys.stderr, flush=True)
 
     def toggle_list(self):
         self.show_list = not self.show_list
