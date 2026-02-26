@@ -5,6 +5,81 @@ import reflex as rx
 from src.presentacion_reflex.state.recaudos_state import RecaudosState
 
 
+def searchable_select(
+    label: str,
+    placeholder: str,
+    value_label: rx.Var[str],
+    search_value: rx.Var[str],
+    menu_open: rx.Var[bool],
+    filtered_options: rx.Var[list],
+    on_change_search: callable,
+    on_toggle_menu: callable,
+    on_select: callable,
+) -> rx.Component:
+    return rx.vstack(
+        rx.text(label, size="2", weight="bold"),
+        rx.popover.root(
+            rx.popover.trigger(
+                rx.button(
+                    rx.cond(
+                        value_label == "",
+                        rx.text(placeholder, color="gray"),
+                        rx.text(value_label, color="black"),
+                    ),
+                    rx.icon("chevron-down", size=16),
+                    variant="surface",
+                    width="100%",
+                    justify="between",
+                ),
+            ),
+            rx.popover.content(
+                rx.vstack(
+                    rx.input(
+                        placeholder="Buscar...",
+                        value=search_value,
+                        on_change=on_change_search,
+                        autofocus=True,
+                        width="100%",
+                        variant="soft",
+                        size="1",
+                    ),
+                    rx.scroll_area(
+                         rx.vstack(
+                             rx.foreach(
+                                filtered_options,
+                                lambda opt: rx.cond(
+                                    opt[0] != "",
+                                    rx.box(
+                                        rx.text(opt[0], size="2"),
+                                        width="100%",
+                                        padding_x="3",
+                                        padding_y="2",
+                                        _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
+                                        on_click=lambda: on_select(opt[1], opt[0]),
+                                    )
+                                )
+                             ),
+                             width="100%",
+                             spacing="0",
+                        ),
+                        type="auto",
+                        scrollbars="vertical",
+                        style={"max_height": "200px"},
+                        width="100%",
+                    ),
+                    padding="2",
+                    width="320px",
+                    spacing="2",
+                ),
+            ),
+            open=menu_open,
+            on_open_change=on_toggle_menu,
+        ),
+        spacing="1",
+        width="100%",
+    )
+
+
 def modal_recaudo() -> rx.Component:
     """Modal para crear o editar un recaudo."""
     return rx.dialog.root(
@@ -38,23 +113,16 @@ def modal_recaudo() -> rx.Component:
                     # Contrato (solo en creación)
                     rx.cond(
                         ~RecaudosState.form_data.get("id_recaudo"),
-                        rx.vstack(
-                            rx.text("Contrato *", size="2", weight="bold"),
-                            rx.select.root(
-                                rx.select.trigger(placeholder="Seleccione un contrato..."),
-                                rx.select.content(
-                                    rx.foreach(
-                                        RecaudosState.contratos_select_options,
-                                        lambda option: rx.select.item(option, value=option),
-                                    )
-                                ),
-                                name="id_contrato_a",
-                                on_change=RecaudosState.on_contract_change,
-                                required=True,
-                                size="2",
-                                width="100%",
-                            ),
-                            width="100%",
+                        searchable_select(
+                            "Contrato *",
+                            "Seleccione un contrato...",
+                            RecaudosState.contrato_selected_label,
+                            RecaudosState.contrato_search,
+                            RecaudosState.contrato_menu_open,
+                            RecaudosState.filtered_contratos_options,
+                            RecaudosState.set_contrato_search,
+                            RecaudosState.toggle_contrato_menu,
+                            RecaudosState.select_contrato,
                         ),
                     ),
                     # Fecha de Pago
