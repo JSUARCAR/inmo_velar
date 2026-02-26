@@ -1,0 +1,16 @@
+/* Custom responsive rules for Inmobiliaria Velar Layout */
+/* Bypasses Reflex and Radix UI SSR bugs */
+
+/* Ocultar en escritorio (768px y mayor) */
+@media (min-width: 768px) {
+    .hide-on-desktop {
+        display: none !important;
+    }
+}
+
+/* Ocultar en móviles (hasta 767px) */
+@media (max-width: 767px) {
+    .hide-on-mobile {
+        display: none !important;
+    }
+}

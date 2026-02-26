@@ -12,8 +12,8 @@ def dashboard_layout(content: rx.Component) -> rx.Component:
     from src.presentacion_reflex.state.alertas_state import AlertasState
 
     return rx.flex(
-        rx.mobile_and_tablet(mobile_nav(), width="100%"),  # Top on mobile, hidden on desktop
-        rx.desktop_only(sidebar()),  # Left on desktop, hidden on mobile
+        mobile_nav(),
+        sidebar(),
         rx.box(
             content,
             flex="1",

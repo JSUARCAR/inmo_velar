@@ -540,4 +540,5 @@ def sidebar() -> rx.Component:
         flex_direction="column",
         box_shadow="2px 0 8px rgba(0, 0, 0, 0.1)",
         on_mount=ConfiguracionState.cargar_datos_empresa,
+        class_name="hide-on-mobile",
     )
