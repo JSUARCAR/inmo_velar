@@ -537,7 +537,7 @@ def sidebar() -> rx.Component:
         position="sticky",
         top="0",
         left="0",
-        display=rx.breakpoints(initial="none", md="flex"),
+        display=["none", "none", "flex", "flex", "flex"], # Forzar ocultamiento en móvil, list CSS
         flex_direction="column",
         box_shadow="2px 0 8px rgba(0, 0, 0, 0.1)",
         on_mount=ConfiguracionState.cargar_datos_empresa,
