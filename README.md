@@ -1,701 +1,188 @@
-# Sistema de Gestión Inmobiliaria Velar
-
-[![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Reflex](https://img.shields.io/badge/framework-Reflex-orange.svg)](https://reflex.dev/)
-[![PostgreSQL](https://img.shields.io/badge/database-PostgreSQL-green.svg)](https://www.postgresql.org/)
-[![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
-
-Un sistema integral de gestión inmobiliaria de nivel empresarial construido con tecnologías Python modernas, siguiendo los principios de Arquitectura Limpia y patrones de diseño SOLID. Este sistema proporciona capacidades completas de gestión de propiedades, manejo de contratos, operaciones financieras y gestión de usuarios para empresas inmobiliarias.
-
-## 📋 Tabla de Contenidos
-
-- [Resumen](#resumen)
-- [Características Principales](#características-principales)
-- [Arquitectura](#arquitectura)
-- [Pila Tecnológica](#pila-tecnológica)
-- [Prerrequisitos](#prerrequisitos)
-- [Instalación](#instalación)
-- [Configuración](#configuración)
-- [Uso](#uso)
-- [Esquema de Base de Datos](#esquema-de-base-de-datos)
-- [Pruebas](#pruebas)
-- [Despliegue](#despliegue)
-- [Solución de Problemas](#solución-de-problemas)
-- [Desarrollo](#desarrollo)
-- [Contribución](#contribución)
-- [Licencia](#licencia)
-
-## 🎯 Resumen
-
-El Sistema de Gestión Inmobiliaria Velar es una aplicación web completa diseñada para agilizar las operaciones inmobiliarias. Maneja todo, desde listados de propiedades y gestión de inquilinos hasta liquidaciones financieras, generación de contratos e informes integrales. El sistema está construido con escalabilidad, mantenibilidad y experiencia del usuario en mente.
-
-### Capacidades Principales
-
-- **Gestión de Propiedades**: Operaciones CRUD completas para propiedades, incluyendo imágenes, documentos y seguimiento de mantenimiento
-- **Gestión de Contratos**: Generación automatizada de contratos, ajustes IPC y flujos de renovación
-- **Operaciones Financieras**: Cálculos de comisiones, liquidaciones, pagos e informes financieros
-- **Gestión de Usuarios**: Control de acceso basado en roles con permisos personalizables
-- **Gestión Documental**: Generación integrada de PDF y almacenamiento de documentos
-- **Seguimiento de Incidentes**: Sistema de gestión de incidentes estilo Kanban
-- **Registro de Auditoría**: Capacidades de logging y auditoría integrales
-
-## ✨ Características Principales
-
-### 🏢 Gestión de Propiedades
-- Búsqueda y filtrado avanzados de propiedades
-- Galería de imágenes con carga de arrastrar y soltar
-- Sistema de adjuntos de documentos
-- Seguimiento de valoración de propiedades
-- Gestión de estado de ocupación
-
-### 📄 Operaciones de Contratos
-- Generación automatizada de contratos (Arrendamiento y Mandato)
-- Cálculos de ajustes IPC (Inflación)
-- Flujos de renovación de contratos
-- Integración de firma digital
-- Seguimiento de estado de contratos
-
-### 💰 Gestión Financiera
-- Motores de cálculo de comisiones
-- Liquidaciones y pagos de asesores
-- Procesamiento masivo de liquidaciones
-- Informes y análisis financieros
-- Seguimiento y conciliación de pagos
-
-### 👥 Gestión de Usuarios y Acceso
-- Sistema de usuarios multi-rol (Admin, Asesor, Gerente, etc.)
-- Sistema de permisos granulares
-- Logging de actividad de usuarios
-- Autenticación segura con gestión de sesiones
-
-### 📊 Análisis e Informes
-- Paneles en tiempo real con tarjetas KPI
-- Gráficos y gráficos interactivos
-- Generación de informes personalizados
-- Capacidades de exportación (PDF, CSV, Excel)
-
-### 🔧 Características Avanzadas
-- Notificaciones y alertas en tiempo real
-- Procesamiento de trabajos en segundo plano
-- Integraciones API
-- Diseño responsivo para móviles
-- Soporte para arquitectura multi-tenant
-
-## 🏗️ Arquitectura
-
-Este proyecto implementa **Arquitectura Limpia** con estricta separación de responsabilidades, asegurando alta mantenibilidad, capacidad de prueba y escalabilidad.
-
-### Capas Arquitectónicas
-
-```
-┌─────────────────────────────────────────┐
-│           CAPA DE PRESENTACIÓN          │
-│  ┌─────────────────────────────────────┐ │
-│  │   Componentes Web Reflex & Páginas  │ │
-│  │   Gestión de Estado & Manejo de Eventos │ │
-│  └─────────────────────────────────────┘ │
-└─────────────────────────────────────────┘
-                    │
-                    ▼
-┌─────────────────────────────────────────┐
-│         CAPA DE APLICACIÓN              │
-│  ┌─────────────────────────────────────┐ │
-│  │   Casos de Uso & Lógica de Negocio  │ │
-│  │   DTOs, Mapeadores & Servicios      │ │
-│  └─────────────────────────────────────┘ │
-└─────────────────────────────────────────┘
-                    │
-                    ▼
-┌─────────────────────────────────────────┐
-│           CAPA DE DOMINIO               │
-│  ┌─────────────────────────────────────┐ │
-│  │   Entidades & Objetos de Valor      │ │
-│  │   Servicios de Dominio & Reglas     │ │
-│  │   Interfaces de Repositorio         │ │
-└─────────────────────────────────────┘ │
-└─────────────────────────────────────────┘
-                    │
-                    ▼
-┌─────────────────────────────────────────┐
-│       CAPA DE INFRAESTRUCTURA           │
-│  ┌─────────────────────────────────────┐ │
-│  │   Implementaciones de Base de Datos │ │
-│  │   APIs Externas & Servicios         │ │
-│  │   Configuración & Logging           │ │
-└─────────────────────────────────────┘ │
-└─────────────────────────────────────────┘
-```
-
-### Capa de Dominio
-- **Entidades**: Objetos de negocio principales (Persona, Propiedad, Contrato, etc.)
-- **Objetos de Valor**: Objetos inmutables (Dinero, IdentidadDocumento, Dirección, etc.)
-- **Servicios de Dominio**: Lógica de negocio que no pertenece a entidades
-- **Interfaces de Repositorio**: Contratos abstractos de acceso a datos
-- **Eventos de Dominio**: Soporte para arquitectura orientada a eventos
-
-### Capa de Aplicación
-- **Casos de Uso**: Lógica de negocio específica de la aplicación
-- **DTOs**: Objetos de Transferencia de Datos para comunicación entre capas
-- **Mapeadores**: Utilidades de transformación de objetos
-- **Servicios de Aplicación**: Orquestación de operaciones de dominio
-
-### Capa de Infraestructura
-- **Implementaciones de Repositorio**: Acceso a base de datos PostgreSQL
-- **Servicios Externos**: Generación de PDF, email, almacenamiento de archivos
-- **Gestión de Configuración**: Configuraciones basadas en entorno
-- **Logging y Monitoreo**: Logging estructurado y métricas
-
-### Capa de Presentación
-- **Componentes Reflex**: Componentes UI web modernos
-- **Gestión de Estado**: Manejo reactivo de estado
-- **Enrutamiento**: Navegación del lado del cliente
-- **Integración API**: Comunicación RESTful con backend
-
-## 🛠️ Pila Tecnológica
-
-### Backend
-- **Python 3.10+**: Lenguaje principal
-- **Reflex**: Framework web moderno para Python
-- **PostgreSQL**: Base de datos primaria
-- **Pydantic**: Validación de datos y gestión de configuraciones
-- **SQLAlchemy**: ORM para consultas complejas (planeado)
-
-### Frontend
-- **Reflex**: Framework UI basado en componentes
-- **Plotly**: Gráficos y visualizaciones interactivas
-- **Tailwind CSS**: Estilización utility-first (vía Reflex)
-
-### Desarrollo y Pruebas
-- **Pytest**: Framework de pruebas integral
-- **Coverage.py**: Análisis de cobertura de código
-- **Black**: Formateo de código
-- **MyPy**: Verificación de tipos estáticos
-- **Pre-commit**: Hooks de Git para aseguramiento de calidad
-
-### DevOps y Despliegue
-- **Docker**: Soporte de contenedorización
-- **GitHub Actions**: Pipelines CI/CD
-- **Poetry**: Gestión de dependencias (planeado)
-- **PostgreSQL**: Soporte de base de datos de producción
-
-## 📋 Prerrequisitos
-
-### Requisitos del Sistema
-- **Python**: 3.10 o superior
-- **Node.js**: 16+ (para desarrollo Reflex)
-- **Git**: 2.30+
-- **PostgreSQL**: 13+ (requiere instalación)
-
-### Requisitos de Hardware
-- **RAM**: Mínimo 4GB, recomendado 8GB+
-- **Almacenamiento**: 2GB de espacio libre para aplicación y base de datos
-- **Red**: Conexión a internet estable para instalación de paquetes
-
-### Soporte de Sistema Operativo
-- ✅ **Windows 10/11** (Plataforma de desarrollo primaria)
-- ✅ **macOS 12+**
-- ✅ **Ubuntu 20.04+**
-- ⚠️ **Otras distribuciones Linux** (Pueden requerir configuración adicional)
-
-## 🚀 Instalación
-
-### 1. Clonar el Repositorio
-
-```bash
-git clone https://github.com/your-org/inmobiliaria-velar.git
-cd inmobiliaria-velar
-```
-
-### 2. Configuración del Entorno
-
-```bash
-# Crear entorno virtual
-python -m venv venv
-
-# Activar entorno
-# Windows
-venv\Scripts\activate
-# macOS/Linux
-source venv/bin/activate
-```
-
-### 3. Instalar Dependencias
-
-```bash
-# Instalar paquetes Python
-pip install -r requirements.txt
-
-# Para dependencias de desarrollo
-pip install -r requirements-dev.txt
-```
-
-### 4. Configuración del Entorno
-
-```bash
-# Copiar plantilla de entorno
-cp .env.example .env
-
-# Editar .env con tus configuraciones
-# DATABASE_URL=postgresql://user:password@localhost/inmobiliaria_velar
-# SECRET_KEY=your-secret-key-here
-# DEBUG=True
-```
-
-### 5. Inicialización de Base de Datos
-
-La base de datos PostgreSQL debe estar configurada y ejecutándose:
-
-```bash
-# Verificar que PostgreSQL está ejecutándose
-pg_isready -h localhost -p 5432
-
-# Crear base de datos (si no existe)
-createdb inmobiliaria_velar
-```
-
-> **Nota**: El esquema de base de datos se crea automáticamente al iniciar la aplicación. Asegúrate de que las credenciales en `.env` sean correctas.
-
-### 6. Verificar Instalación
-
-```bash
-# Ejecutar verificación básica de salud
-python -c "import reflex as rx; print('Versión de Reflex:', rx.__version__)"
-```
-
-## ⚙️ Configuración
-
-### Variables de Entorno
-
-| Variable | Descripción | Predeterminado | Requerido |
-|----------|-------------|---------------|-----------|
-| `DATABASE_URL` | URL de conexión a base de datos PostgreSQL | `postgresql://localhost/inmobiliaria_velar` | Sí |
-| `SECRET_KEY` | Clave secreta de la aplicación | Auto-generada | Sí |
-| `DEBUG` | Habilitar modo debug | `False` | No |
-| `HOST` | Host del servidor | `0.0.0.0` | No |
-| `PORT` | Puerto del servidor | `8000` | No |
-| `LOG_LEVEL` | Nivel de logging | `INFO` | No |
-
-### Configuración Avanzada
-
-#### Configuración de Base de Datos
-```python
-# En .env
-DATABASE_URL=postgresql://user:password@host:port/database
-DATABASE_BACKUP_DIR=./backups/
-DATABASE_MAX_CONNECTIONS=10
-```
-
-#### Configuraciones de Seguridad
-```python
-# En .env
-SECRET_KEY=your-256-bit-secret-key
-SESSION_TIMEOUT=3600
-PASSWORD_MIN_LENGTH=8
-```
-
-#### Configuración de Email (Opcional)
-```python
-# En .env
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-```
-
-## 📝 Uso
-
-### Modo Desarrollo
-
-```bash
-# Iniciar servidor de desarrollo
-reflex run
-
-# O usar el script dedicado
-python main_reflex.py
-```
-
-La aplicación estará disponible en `http://localhost:8000`
-
-### Modo Producción
-
-```bash
-# Construir para producción
-reflex build
-
-# Iniciar servidor de producción
-reflex run --env prod
-```
-
-### Opciones de Línea de Comandos
-
-```bash
-# Mostrar ayuda
-python main_reflex.py --help
-
-# Ejecutar con puerto personalizado
-reflex run --port 3000
-
-# Habilitar logging de debug
-reflex run --loglevel debug
-```
-
-### Interfaz de Usuario
-
-#### Inicio de Sesión
-- Acceder a la aplicación en la URL raíz
-- Usar credenciales de administrador (configuradas en base de datos)
-- Soporte de autenticación multifactor (planeado)
-
-#### Panel de Control
-- KPIs y métricas en tiempo real
-- Gráficos y gráficos interactivos
-- Acceso rápido a actividades recientes
-- Centro de notificaciones
-
-#### Navegación de Módulos
-- **Propiedades**: Gestión y listados de propiedades
-- **Contratos**: Creación y gestión de contratos
-- **Financiero**: Liquidaciones y pagos
-- **Usuarios**: Gestión de usuarios y permisos
-- **Informes**: Análisis e informes
-- **Configuraciones**: Configuración del sistema
-
-## 🗄️ Esquema de Base de Datos
-
-### Tablas Principales
-
-| Tabla | Descripción | Campos Clave |
-|-------|-------------|--------------|
-| `personas` | Personas/entidades en el sistema | id, tipo_documento, numero_documento, nombre |
-| `usuarios` | Usuarios del sistema | id, username, password_hash, rol |
-| `propiedades` | Propiedades | id, direccion, tipo, valor, estado |
-| `contratos` | Contratos | id, propiedad_id, arrendatario_id, fecha_inicio, fecha_fin |
-| `liquidaciones` | Liquidaciones | id, asesor_id, periodo, total_comision |
-| `pagos` | Pagos | id, liquidacion_id, monto, fecha_pago |
-| `auditoria` | Registro de auditoría | id, tabla, operacion, usuario_id, fecha |
-
-### Relaciones
-
-```
-personas (1) ──── (N) contratos
-personas (1) ──── (N) liquidaciones (asesores)
-propiedades (1) ──── (N) contratos
-contratos (1) ──── (N) pagos
-liquidaciones (1) ──── (N) pagos
-```
-
-### Índices y Restricciones
-
-- Claves primarias en todas las tablas
-- Restricciones de clave foránea con eliminaciones en cascada
-- Restricciones únicas en campos críticos
-- Índices de búsqueda de texto completo en campos de texto
-- Restricciones de verificación para validación de datos
-
-## 🧪 Pruebas
-
-### Ejecutar Pruebas
-
-```bash
-# Ejecutar todas las pruebas
-pytest
-
-# Ejecutar con cobertura
-pytest --cov=src --cov-report=html --cov-report=term
-
-# Ejecutar archivo de prueba específico
-pytest tests/test_domain/test_persona.py
-
-# Ejecutar pruebas con salida verbosa
-pytest -v
-```
-
-### Estructura de Pruebas
-
-```
-tests/
-├── unit/                    # Pruebas unitarias
-│   ├── test_domain/        # Pruebas de capa de dominio
-│   ├── test_application/   # Pruebas de capa de aplicación
-│   └── test_infrastructure/ # Pruebas de capa de infraestructura
-├── integration/            # Pruebas de integración
-├── e2e/                    # Pruebas end-to-end
-└── fixtures/               # Datos de prueba fixtures
-```
-
-### Objetivos de Cobertura de Pruebas
-
-- **Capa de Dominio**: 95%+ cobertura
-- **Capa de Aplicación**: 90%+ cobertura
-- **Capa de Infraestructura**: 80%+ cobertura
-- **General**: 85%+ cobertura
-
-### Pruebas de Rendimiento
-
-```bash
-# Pruebas de carga
-pytest tests/performance/ --durations=10
-
-# Perfilado de memoria
-python -m memory_profiler main_reflex.py
-```
-
-## 🚢 Despliegue
-
-### Despliegue Docker
-
-```dockerfile
-# Dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-EXPOSE 8000
-
-CMD ["reflex", "run", "--env", "prod"]
-```
-
-```bash
-# Construir y ejecutar
-docker build -t inmobiliaria-velar .
-docker run -p 8000:8000 inmobiliaria-velar
-```
-
-### Despliegue en la Nube
-
-#### Railway
-1. Conectar repositorio GitHub
-2. Establecer variables de entorno
-3. Desplegar automáticamente
-
-#### Heroku
-```yaml
-# Procfile
-web: reflex run --env prod --port $PORT
-```
-
-#### AWS/GCP
-- Usar contenedores Docker
-- Configurar balanceadores de carga
-- Configurar bases de datos administradas
-- Implementar CDN para activos estáticos
-
-### Lista de Verificación de Producción
-
-- [ ] Variables de entorno configuradas
-- [ ] Respaldos de base de datos programados
-- [ ] Certificados SSL instalados
-- [ ] Monitoreo y logging configurados
-- [ ] Encabezados de seguridad configurados
-- [ ] Optimización de rendimiento aplicada
-
-## 🔧 Solución de Problemas
-
-### Problemas Comunes
-
-#### Errores de Conexión a Base de Datos
-```bash
-# Verificar conexión a PostgreSQL
-psql -h localhost -U user -d inmobiliaria_velar -c "SELECT version();"
-
-# Verificar que el servicio está ejecutándose
-pg_isready -h localhost -p 5432
-
-# Verificar credenciales
-python -c "import psycopg2; conn = psycopg2.connect('DATABASE_URL'); print('OK')"
-```
-
-#### Puerto Ya en Uso
-```bash
-# Encontrar proceso usando el puerto
-netstat -tulpn | grep :8000
-
-# Matar proceso
-kill -9 <PID>
-
-# O usar puerto diferente
-reflex run --port 3000
-```
-
-#### Errores de Importación
-```bash
-# Reinstalar dependencias
-pip uninstall reflex
-pip install -r requirements.txt
-
-# Limpiar caché
-rm -rf __pycache__/
-rm -rf .reflex/
-```
-
-#### Problemas de Memoria
-```bash
-# Aumentar límites del sistema
-ulimit -n 4096
-
-# Usar consultas de base de datos más ligeras
-# Implementar paginación
-# Agregar índices de base de datos
-```
-
-### Modo Debug
-
-```bash
-# Habilitar logging de debug
-export LOG_LEVEL=DEBUG
-reflex run
-
-# Verificar logs
-tail -f reflex.log
-```
-
-### Problemas de Rendimiento
-
-1. **Optimización de Base de Datos**
-   - Agregar índices faltantes
-   - Optimizar consultas
-   - Implementar agrupamiento de conexiones
-
-2. **Optimización de Aplicación**
-   - Habilitar caché
-   - Usar operaciones asíncronas
-   - Implementar carga diferida
-
-3. **Optimización del Sistema**
-   - Aumentar RAM
-   - Usar almacenamiento SSD
-   - Configurar espacio de intercambio
-
-## 💻 Desarrollo
-
-### Calidad del Código
-
-```bash
-# Formatear código
-black src/ tests/
-
-# Verificación de tipos
-mypy src/
-
-# Lint código
-flake8 src/
-
-# Ejecutar hooks pre-commit
-pre-commit run --all-files
-```
-
-### Flujo de Trabajo de Desarrollo
-
-1. **Crear Rama de Característica**
-   ```bash
-   git checkout -b feature/nueva-caracteristica
-   ```
-
-2. **Escribir Pruebas Primero**
-   ```bash
-   # Crear archivo de prueba
-   touch tests/test_caracteristica.py
-   ```
-
-3. **Implementar Característica**
-   ```bash
-   # Seguir principios de Arquitectura Limpia
-   # Agregar lógica de dominio primero
-   # Luego servicios de aplicación
-   # Finalmente componentes de presentación
-   ```
-
-4. **Ejecutar Pruebas**
-   ```bash
-   pytest tests/test_caracteristica.py
-   ```
-
-5. **Revisión de Código**
-   ```bash
-   # Asegurar que el código sigue estándares
-   # Agregar documentación
-   # Actualizar README si es necesario
-   ```
-
-### Mejores Prácticas
-
-#### Estilo de Código
-- Seguir directrices PEP 8
-- Usar hints de tipo extensivamente
-- Escribir nombres de variables descriptivos
-- Mantener funciones pequeñas y enfocadas
-
-#### Directrices de Arquitectura
-- Respetar límites de capas
-- Usar inyección de dependencias
-- Implementar manejo de errores apropiado
-- Escribir pruebas integrales
-
-#### Seguridad
-- Validar todas las entradas
-- Usar consultas parametrizadas
-- Implementar autenticación apropiada
-- Registrar eventos de seguridad
-
-#### Rendimiento
-- Optimizar consultas de base de datos
-- Usar caché estratégicamente
-- Implementar paginación
-- Monitorear uso de recursos
-
-## 🤝 Contribución
-
-### Proceso de Contribución
-
-1. **Hacer Fork del Repositorio**
-2. **Crear Rama de Característica**
-   ```bash
-   git checkout -b feature/caracteristica-increible
-   ```
-3. **Confirmar Cambios**
-   ```bash
-   git commit -m "Agregar caracteristica increible"
-   ```
-4. **Enviar a Rama**
-   ```bash
-   git push origin feature/caracteristica-increible
-   ```
-5. **Abrir Pull Request**
-
-### Lista de Verificación de Revisión de Código
-
-- [ ] Pruebas pasan
-- [ ] Código sigue directrices de estilo
-- [ ] Documentación actualizada
-- [ ] No hay vulnerabilidades de seguridad
-- [ ] Impacto de rendimiento evaluado
-- [ ] Migraciones de base de datos incluidas (si aplica)
-
-### Formato de Mensajes de Commit
-
-```
-tipo(alcance): descripción
-
-[cuerpo opcional]
-
-[pie de página opcional]
-```
-
-Tipos: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-
-## 📄 Licencia
-
-**Software Propietario**
-
-Copyright © 2025 Inmobiliaria Velar SAS. Todos los derechos reservados.
-
-Este software es propietario y confidencial. La copia, modificación, distribución o uso no autorizado de este software está estrictamente prohibido.
-
-Para consultas de licenciamiento, por favor contactar: legal@inmobiliariavelar.com
+# 🏢 Sistema Core de Gestión Inmobiliaria Velar (Velar Core System)
+
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg?style=for-the-badge&logo=python)](https://www.python.org/)
+[![Reflex Framework](https://img.shields.io/badge/Reflex-Framework-orange.svg?style=for-the-badge&logo=react)](https://reflex.dev/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Enterprise-336791.svg?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Arquitectura Limpia](https://img.shields.io/badge/Architecture-Clean%20Architecture-success.svg?style=for-the-badge)]()
+[![Proprietary License](https://img.shields.io/badge/License-Proprietary-red.svg?style=for-the-badge)](LICENSE)
+
+> Plataforma transaccional de alto rendimiento diseñada para la automatización integral de procesos inmobiliarios bajo principios de Arquitectura Limpia y patrones de diseño empresariales (Domain-Driven Design).
 
 ---
 
-**Construido con ❤️ por el Equipo de Desarrollo de Inmobiliaria Velar**
+## 📑 Índice Arquitectónico
+
+1. [Visión General de la Plataforma](#1-visión-general-de-la-plataforma)
+2. [Arquitectura del Sistema (Clean Architecture)](#2-arquitectura-del-sistema-clean-architecture)
+3. [Stack Tecnológico Base](#3-stack-tecnológico-base)
+4. [Módulos Core del Negocio](#4-módulos-core-del-negocio)
+5. [Modelo de Datos e Infraestructura](#5-modelo-de-datos-e-infraestructura)
+6. [Guía Rápida de Despliegue Entorno Local](#6-guía-rápida-de-despliegue-entorno-local)
+7. [Políticas de Calidad y Pruebas (QA)](#7-políticas-de-calidad-y-pruebas-qa)
+8. [Directrices de Ingeniería (Guidelines)](#8-directrices-de-ingeniería-guidelines)
+
+---
+
+## 1. Visión General de la Plataforma
+
+El sistema Velar constituye el núcleo operativo de la gestión inmobiliaria. Orquesta procesos críticos que abarcan desde la persistencia de portafolios de propiedades, ciclo de vida de contratos (Mandato y Arrendamiento), hasta motores de liquidación financiera y flujos de auditoría. Diseñado para garantizar **escalabilidad horizontal**, **tolerancia a fallos** y **consistencia transaccional**.
+
+### Capacidades Empresariales
+* **Motor Documental**: Generación asíncrona de contratos y reportes PDF.
+* **Motor Financiero**: Procesamiento por lotes de liquidaciones, cálculos de comisiones e indexación IPC automatizada.
+* **RBAC Avanzado**: Control de Acceso Basado en Roles hiper-granular (Administradores, Gerentes, Asesores).
+* **Trazabilidad Absoluta**: Patrón de bitácora transaccional (Audit Trail) para trazabilidad completa de cambios en entidades críticas.
+
+---
+
+## 2. Arquitectura del Sistema (Clean Architecture)
+
+El core aplica rigurosamente la **Arquitectura Limpia**, aislando el Dominio del Negocio (Reglas Core) de frameworks externos y mecanismos de entrega. Esto garantiza una base de código testeable, resiliente a cambios tecnológicos y altamente cohesiva.
+
+```mermaid
+graph TD
+    UI[Capa de Presentación Web - Reflex UI] -->|Eventos / Comandos| APP[Capa de Aplicación - Casos de Uso]
+    APP -->|Implementa| DOMAIN[Capa de Dominio - Entidades & DTOs]
+    INFRA[Capa de Infraestructura - Repositorios / APIs] -->|Adapta| DOMAIN
+    
+    subgraph Core Inmobiliario
+    DOMAIN
+    APP
+    end
+```
+
+### Topología de Capas
+* **Capa de Dominio**: Contiene el modelo rico y objetos de valor inmutables (`Dinero`, `IdentidadDocumento`). Cero dependencias tecnológicas externas.
+* **Capa de Aplicación**: Casos de uso atómicos, puertos (interfaces DTO) y orquestación de servicios en operaciones complejas.
+* **Capa de Infraestructura**: Adaptadores concretos (PostgreSQL, servicios de templates PDF avanzados, integraciones).
+* **Capa de Presentación**: Componentes reactivos renderizados en Reflex unificando un State Management predecible.
+
+---
+
+## 3. Stack Tecnológico Base
+
+| Capa / Dominio | Tecnología | Propósito Técnico |
+| :--- | :--- | :--- |
+| **Backend Core** | `Python 3.10+` | Lenguaje de tipado estático inferido (type-hinted), robusto y asíncrono. |
+| **Frontend Reactivo** | `Reflex` | Framework Full-Stack, SSR/SSG. Compilación backend-driven a componentes React/Next.js puros. |
+| **Arquitectura de Persistencia** | `PostgreSQL 13+` | RDBMS optimizado con ACID compliance para máxima precisión en transacciones financieras. |
+| **Validaciones Transversales** | `Pydantic` | Validación estricta y dinámica de esquemas de datos, DTOs y configuraciones. |
+| **Aseguramiento (QA)** | `Pytest` + `Coverage` | Framework estandarizado para pruebas unitarias, de integración y funcionales. |
+| **Pipeline (DevOps)** | `Docker` | Virtualización por contenedores e inmutabilidad de infraestructura desplegada. |
+
+---
+
+## 4. Módulos Core del Negocio
+
+### 🏢 Gestión Funcional de Propiedades
+* Patrones de búsqueda avanzada de inmuebles con filtros combinados.
+* Ciclo del activo inmobiliario: Transición algorítmica de estado de ocupación (Libre/Ocupado).
+* Repositorio de avalúos y carga de material gráfico documental.
+
+### 📄 Motores de Contratos y Acuerdos Legales
+* Abstracción polimórfica orientada a `ContratoArrendamiento` y `ContratoMandato`.
+* Sistema de Alertas Automáticas y renovaciones controladas (Indexación dinámica del mercado IPC).
+* Compilación on-the-fly de plantillas legales fidedignas (con membretes corporativos en PDF).
+
+### 💰 Núcleo de Operaciones Financieras y Liquidación
+* Algoritmos de dispersión parametrizada para cálculo matemático de comisiones y recaudos.
+* Procesamiento en masa de liquidaciones para múltiples asesores y liquidadores asignados.
+* Centralización en emisión de Comprobantes de Egreso, Pagos a Propietarios y Estados de Cuenta cruzados.
+
+### 🛡️ Módulo de Seguridad Operativa y Auditoría
+* Identity & Access Management (IAM): Manejo de sesión hiper-estricto basado en roles.
+* Sistema `VW_AUDITORIA`: Trigger-based tracking de operaciones DML en la BD.
+
+---
+
+## 5. Modelo de Datos e Integridad Estructural
+
+El esquema relacional fue concebido en tercera forma normal (3NF) maximizando la integridad referencial y soportando grandes flujos de concurrencia a través de indexación selectiva (B-Trees sobre `numero_documento`, llaves compuestas DNI).
+
+### Relacional Simplificado (ERD Resumen)
+```text
+(1) Persona [Rol: Propietario/Inquilino/Asesor] ⟷ (N) Contratos
+(1) Propiedad [Inmueble] ⟷ (N) Contratos
+(1) Contrato_Liquidacion ⟷ (N) Movimientos_Financieros ⟷ (N) Pagos
+```
+
+---
+
+## 6. Guía Rápida de Despliegue Entorno Local
+
+Se presupone un ecosistema UNIX/Unix-like o Windows preparado con herramientas de desarrollo maduras (`python`, `git`, `psql`).
+
+### 6.1. Bootstrap Inicial
+```bash
+# 1. Clonar el repositorio y acceder a carpeta core del frontend/backend
+git clone <repository-url> && cd PYTHON-REFLEX
+
+# 2. Levantar entorno virtual inyectando dependencias base
+python -m venv venv
+# Windows: venv\\Scripts\\activate | Unix: source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 6.2. Variables de Entorno y Capa de Datos
+El sistema espera una conexión activa y certificada al clúster de base de datos relacional.
+
+```bash
+# Copiar plantilla estándar de credenciales
+cp .env.example .env
+
+# Proveer la cadena de conexión (Connection String)
+# DATABASE_URL=postgresql://<usuario>:<password>@localhost:5432/inmobiliaria_velar
+```
+
+### 6.3. Lanzamiento del Engine principal
+```bash
+# Arrancar el servidor de Reflex en modo Development Server (HMR activado)
+reflex run
+```
+> **Servicio expuesto en:** `http://localhost:8000`
+
+---
+
+## 7. Políticas de Calidad y Pruebas (QA)
+
+Rigor ingenieril absoluto: Todo merge requiere paso verde de la suite profunda de tests automatizados a fin de eludir regresiones.
+
+```bash
+# Desencadenar la batería de pruebas y validaciones
+pytest -v
+
+# Extraer métricas de code coverage
+pytest --cov=src --cov-report=term-missing
+```
+
+### SLAs Internos de Cobertura
+1. **Reglas de Dominio**: 100% de cobertura. Tolerancia cero a gaps lógicos.
+2. **Capa de Aplicación**: > 90% de cobertura. Flujos orquestados testeados con mocks resilientes.
+3. **Análisis Estático**: `black` & `mypy` no arrojan flags u overrides ignorados localmente.
+
+---
+
+## 8. Directrices de Ingeniería (Guidelines)
+
+### Flujo Operativo y Versionamiento
+1. Uso estricto de bifurcaciones: `feature/<ticket>-<descripcion>`, `bugfix/<>`, `hotfix/<>`
+2. Consistencia en Commits usando [Conventional Commits](https://www.conventionalcommits.org/); ejemplos de nomenclatura élite:
+    * `feat(contratos): orquestador de incremento ipc anual integrado`
+    * `fix(pdf): reparar excepcion de renderizado en membretes asincronicos`
+    * `refactor(core): aislar adaptador postgresql para inversion de dependencia real`
+
+### Código Limpio (Clean Code) 
+* Dependencias Inyectables: Preferir Inversión de Control siempre. Cero hardcoding.
+* *Fail Fast*: Retornar excepciones custom (No Genéricas) lo más pronto posible dentro del pipe de ejecución.
+* Immutabilidad ante todo para flujos paralelizables, los objetos de valor NUNCA mutan internamente.
+* Convención de Nombres Expresiva: Variables autodescriptivas que eludan explicaciones adicionales.
+
+---
+
+### Licenciamiento Legal
+**Propietary Closed-Source Ed.**
+
+Copyright © 2026 Inmobiliaria Velar SAS. Todos los derechos comerciales, códigos, diagramas de arquitectura y marcas se encuentran registrados. Queda estrictamente prohibida su copia transversal, bifurcación, modificación u outsourcing sin licenciamiento contractual explícito por escrito expedido por Inmobiliaria Velar.
+
+*Diseñado para el Alto Volumen. Construido por la élite de Ingeniería Interna.*

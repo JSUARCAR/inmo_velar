@@ -39,10 +39,10 @@ def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado)
                     rx.table.root(
                         rx.table.header(
                             rx.table.row(
-                                rx.table.column_header_cell("Contratante", color=styles.TEXT_MUTED),
-                                rx.table.column_header_cell("Propiedad", color=styles.TEXT_MUTED),
-                                rx.table.column_header_cell("Fecha Fin", color=styles.TEXT_MUTED),
-                                rx.table.column_header_cell("Vence En", color=styles.TEXT_MUTED),
+                                rx.table.column_header_cell("Contratante", color=styles.TEXT_SECONDARY),
+                                rx.table.column_header_cell("Propiedad", color=styles.TEXT_SECONDARY),
+                                rx.table.column_header_cell("Fecha Fin", color=styles.TEXT_SECONDARY),
+                                rx.table.column_header_cell("Vence En", color=styles.TEXT_SECONDARY),
                             )
                         ),
                         rx.table.body(
@@ -50,7 +50,7 @@ def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado)
                                 lista_estado,
                                 lambda item: rx.table.row(
                                     rx.table.cell(rx.text(item["parte_contratante"], size="2", weight="medium")),
-                                    rx.table.cell(rx.text(item["direccion"], size="2", color=styles.TEXT_MUTED)),
+                                    rx.table.cell(rx.text(item["direccion"], size="2", color=styles.TEXT_SECONDARY)),
                                     rx.table.cell(rx.text(item["fecha_fin"], size="2")),
                                     rx.table.cell(_vencimiento_badge(item["dias_restantes"])),
                                     align="center",
@@ -62,7 +62,7 @@ def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado)
                         width="100%",
                     ),
                     rx.center(
-                        rx.text("No hay contratos próximos a vencer en este rango.", size="2", color=styles.TEXT_MUTED),
+                        rx.text("No hay contratos próximos a vencer en este rango.", size="2", color=styles.TEXT_SECONDARY),
                         padding="4",
                         width="100%",
                     ),
