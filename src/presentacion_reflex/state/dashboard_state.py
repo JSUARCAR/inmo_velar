@@ -1,5 +1,6 @@
 import sys
-from datetime import datetime
+import decimal
+from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
 import reflex as rx
@@ -9,6 +10,19 @@ from src.infraestructura.persistencia.database import db_manager
 from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
 from src.infraestructura.persistencia.repositorio_dashboard_sqlite import RepositorioDashboardSQLite
 from src.presentacion_reflex.utils.formatters import format_currency, format_number
+
+
+def _serialize_decimals(obj: Any) -> Any:
+    """Convierte tipos incompatibles (Decimal, date, datetime) a tipos serializables por Reflex JSON."""
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
+    elif isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    elif isinstance(obj, dict):
+        return {k: _serialize_decimals(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_serialize_decimals(v) for v in obj]
+    return obj
 
 
 class DashboardState(rx.State):
@@ -172,20 +186,20 @@ class DashboardState(rx.State):
 
             print("[DASH_DEBUG] todos los datos obtenidos, actualizando estado...", file=sys.stderr, flush=True)
 
-            # Actualizar estado (se entregará al WebSocket activo al retornar)
-            self.mora_data = datos_mora
-            self.flujo_data = datos_flujo
-            self.ocupacion_data = datos_ocupacion
-            self.comisiones_data = datos_comisiones
-            self.contratos_count = contratos_activos
-            self.recibos_data = datos_recibos
-            self.vencimiento_data = datos_vencimiento
-            self.evolucion_data = datos_evolucion
-            self.incidentes_data = datos_incidentes
-            self.propiedades_tipo_data = datos_propiedades_tipo
-            self.kpi_financiero = datos_kpi_financiero
-            self.top_asesores_data = datos_top_asesores
-            self.tunel_vencimientos_data = datos_tunel
+            # Actualizar estado sanitizando tipos para evitar crash en Reflex JSON serializer
+            self.mora_data = _serialize_decimals(datos_mora)
+            self.flujo_data = _serialize_decimals(datos_flujo)
+            self.ocupacion_data = _serialize_decimals(datos_ocupacion)
+            self.comisiones_data = _serialize_decimals(datos_comisiones)
+            self.contratos_count = _serialize_decimals(contratos_activos)
+            self.recibos_data = _serialize_decimals(datos_recibos)
+            self.vencimiento_data = _serialize_decimals(datos_vencimiento)
+            self.evolucion_data = _serialize_decimals(datos_evolucion)
+            self.incidentes_data = _serialize_decimals(datos_incidentes)
+            self.propiedades_tipo_data = _serialize_decimals(datos_propiedades_tipo)
+            self.kpi_financiero = _serialize_decimals(datos_kpi_financiero)
+            self.top_asesores_data = _serialize_decimals(datos_top_asesores)
+            self.tunel_vencimientos_data = _serialize_decimals(datos_tunel)
             self.is_loading = False
 
             print("[DASH_DEBUG] load_dashboard_data COMPLETO OK (sync generator)", file=sys.stderr, flush=True)
