@@ -23,7 +23,7 @@ def index() -> rx.Component:
 
 # Crear la app (toast provider incluido automáticamente)
 app = rx.App(
-    stylesheets=["aurora.css"],
+    stylesheets=["aurora.css", "custom_layout.css"],
     html_lang="es",
     theme=rx.theme(
         appearance="light",
