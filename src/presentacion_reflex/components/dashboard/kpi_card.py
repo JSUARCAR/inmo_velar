@@ -68,12 +68,34 @@ def kpi_card(
                     justify_content="center",
                 ),
                 rx.vstack(
-                    rx.text(
-                        titulo,
-                        size="1",
-                        font_size=["10px", "10px", "12px"],
-                        weight="medium",
-                        color="gray.10",
+                    rx.hstack(
+                        rx.text(
+                            titulo,
+                            size="1",
+                            font_size=["10px", "10px", "12px"],
+                            weight="medium",
+                            color="gray.10",
+                        ),
+                        rx.cond(
+                            hover_content != None,
+                            rx.hover_card.root(
+                                rx.hover_card.trigger(rx.icon("info", size=12, color="gray.8", cursor="help")),
+                                rx.hover_card.content(
+                                    hover_content,
+                                    side="top",
+                                    align="center",
+                                    side_offset=5,
+                                    background_color=styles.BG_PANEL,
+                                    border="1px solid var(--gray-4)",
+                                    box_shadow="0 4px 10px rgba(0,0,0,0.1)",
+                                    border_radius="8px",
+                                    padding="12px",
+                                    max_width="250px",
+                                )
+                            )
+                        ),
+                        align="center",
+                        spacing="1",
                     ),
                     rx.text(
                         valor, size="3", font_size=["14px", "16px"], weight="bold", color=text_color
@@ -102,15 +124,37 @@ def kpi_card(
             rx.vstack(
                 rx.hstack(
                     rx.vstack(
-                        rx.text(
-                            titulo,
-                            size="1",
-                            weight="bold",
-                            color="gray.9",
-                            text_transform="uppercase",
-                            letter_spacing="0.05em",
-                            max_width="100%",  # Prevent overflow
-                            white_space="normal",  # Allow wrapping
+                        rx.hstack(
+                            rx.text(
+                                titulo,
+                                size="1",
+                                weight="bold",
+                                color="gray.9",
+                                text_transform="uppercase",
+                                letter_spacing="0.05em",
+                                max_width="100%",  # Prevent overflow
+                                white_space="normal",  # Allow wrapping
+                            ),
+                            rx.cond(
+                                hover_content != None,
+                                rx.hover_card.root(
+                                    rx.hover_card.trigger(rx.icon("info", size=14, color="gray.8", cursor="help")),
+                                    rx.hover_card.content(
+                                        hover_content,
+                                        side="top",
+                                        align="center",
+                                        side_offset=5,
+                                        background_color=styles.BG_PANEL,
+                                        border="1px solid var(--gray-4)",
+                                        box_shadow="0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                                        border_radius="12px",
+                                        padding="16px",
+                                        max_width="300px",
+                                    )
+                                )
+                            ),
+                            align="center",
+                            spacing="1",
                         ),
                         rx.text(
                             valor,
@@ -188,7 +232,29 @@ def kpi_card(
                         align_items="center",
                         justify_content="center",
                     ),
-                    rx.text(titulo, size="2", weight="medium", color="gray.10"),
+                    rx.hstack(
+                        rx.text(titulo, size="2", weight="medium", color="gray.10"),
+                        rx.cond(
+                            hover_content != None,
+                            rx.hover_card.root(
+                                rx.hover_card.trigger(rx.icon("info", size=14, color="gray.8", cursor="help")),
+                                rx.hover_card.content(
+                                    hover_content,
+                                    side="top",
+                                    align="center",
+                                    side_offset=5,
+                                    background_color=styles.BG_PANEL,
+                                    border="1px solid var(--gray-4)",
+                                    box_shadow="0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                                    border_radius="12px",
+                                    padding="16px",
+                                    max_width="300px",
+                                )
+                            )
+                        ),
+                        align="center",
+                        spacing="1",
+                    ),
                     width="100%",
                     align="center",
                     spacing="3",
@@ -224,22 +290,9 @@ def kpi_card(
             },
         )
 
-    # Si hay contenido hover, envolver en HoverCard
-    if hover_content is not None:
-        return rx.hover_card.root(
-            rx.hover_card.trigger(card_component),
-            rx.hover_card.content(
-                hover_content,
-                side="top",
-                align="center",
-                side_offset=5,
-                background_color=styles.BG_PANEL,
-                border="1px solid var(--gray-4)",
-                box_shadow="0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                border_radius="12px",
-                padding="16px",
-                max_width="300px",
-            ),
-        )
+    # Modificación UI Premium: En lugar de envolver TODA la tarjeta (anti-patrón en DOM), 
+    # insertaremos el tooltip discretamente. Como la estructura ya está armada, 
+    # aplicaremos el trigger sólo si es necesario, pero como la función ya armó `card_component`,
+    # interceptaremos el título en los 3 renderizados.
 
     return card_component
