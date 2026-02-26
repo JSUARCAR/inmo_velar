@@ -358,6 +358,10 @@ class ServicioPersonas:
                 arr.id_seguro = datos_extra["id_seguro"]
             if "codigo_aprobacion_seguro" in datos_extra:
                 arr.codigo_aprobacion_seguro = datos_extra["codigo_aprobacion_seguro"]
+            if "nombre_habitante" in datos_extra:
+                arr.nombre_habitante = datos_extra["nombre_habitante"]
+            if "telefono_habitante" in datos_extra:
+                arr.telefono_habitante = datos_extra["telefono_habitante"]
             arr.updated_at = datetime.now().isoformat()
             arr.updated_by = usuario_sistema
             self.repo_arrendatario.actualizar(arr, usuario_sistema)
@@ -463,9 +467,10 @@ class ServicioPersonas:
         elif nombre_rol == "Arrendatario":
             arrendatario = Arrendatario(
                 id_persona=id_persona,
-
                 codigo_aprobacion_seguro=datos_extra.get("codigo_aprobacion_seguro"),
                 id_seguro=datos_extra.get("id_seguro"),
+                nombre_habitante=datos_extra.get("nombre_habitante"),
+                telefono_habitante=datos_extra.get("telefono_habitante"),
                 fecha_ingreso_arrendatario=datetime.now().date().isoformat(),
                 created_at=created_at,
                 created_by=usuario_sistema,
