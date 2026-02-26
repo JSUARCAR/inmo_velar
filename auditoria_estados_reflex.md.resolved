@@ -1,0 +1,777 @@
+# Auditoría de Estados Reflex — Inmobiliaria Velar
+
+> **Fecha:** 2026-02-26 | **Archivos analizados:** 16 states + 18 páginas + 2 layouts
+
+---
+
+## ÁRBOL DE HERENCIA DE ESTADOS
+
+```mermaid
+graph TD
+    A["rx.State (Reflex base)"]
+    B["DocumentosStateMixin(rx.State)"]
+    C["AuthState(rx.State)"]
+    D["DashboardState(rx.State)"]
+    E["AlertasState(rx.State)"]
+    F["ConfiguracionState(rx.State)"]
+    G["PersonasState(rx.State)"]
+    H["IPCState(rx.State)"]
+    I["ProveedoresState(rx.State)"]
+    J["ReportesState(rx.State)"]
+    K["SaldosState(rx.State)"]
+    L["SegurosState(rx.State)"]
+    M["UsuariosState(rx.State)"]
+    N["AuditoriaState(rx.State)"]
+    O["PDFState(rx.State)"]
+    P["ContratosState(DocumentosStateMixin)"]
+    Q["LiquidacionAsesoresState(DocumentosStateMixin)"]
+    R["PropiedadesState(rx.State)"]
+    S["IncidentesState(rx.State)"]
+    T["DesocupacionesState(rx.State)"]
+
+    A --> B
+    A --> C
+    A --> D
+    A --> E
+    A --> F
+    A --> G
+    A --> H
+    A --> I
+    A --> J
+    A --> K
+    A --> L
+    A --> M
+    A --> N
+    A --> O
+    A --> R
+    A --> S
+    A --> T
+    B --> P
+    B --> Q
+```
+
+> **Implicación crítica:** Cuando [DocumentosStateMixin](file:///c:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/presentacion_reflex/state/documentos_mixin.py#12-122) cambia [documentos](file:///c:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/presentacion_reflex/state/documentos_mixin.py#82-101), `is_uploading` o `current_entidad_id`, **toda la rama** [ContratosState](file:///c:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/presentacion_reflex/state/contratos_state.py#11-1451) + [LiquidacionAsesoresState](file:///c:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/presentacion_reflex/state/liquidacion_asesores_state.py#26-1174) se re-renderiza. Son **dos árboles de estado completamente separados** aunque heredan del mismo mixin, porque en Reflex cada clase State que hereda de `rx.State` (directo o indirecto) crea su propio sub-árbol de estado. Sin embargo, la clase base **no es compartida** entre ramas — cada subclase tiene su propia instancia.
+
+---
+
+## PROBLEMAS POR SEVERIDAD
+
+---
+
+### 🔴 CRÍTICA
+
+---
+
+**PROBLEMA 1**
+
+```
+ARCHIVO: src/presentacion_reflex/pages/contratos.py
+LÍNEA: 736 (on_mount) y 741 (@rx.page on_load)
+SEVERIDAD: CRÍTICA
+TIPO: ON_LOAD
+DESCRIPCIÓN:
+  ContratosState.on_load() se dispara EXACTAMENTE DOS VECES cada vez que el usuario
+  navega a /contratos:
+    1. Primero por el decorador @rx.page(on_load=[..., ContratosState.on_load])
+    2. Luego por `on_mount=ContratosState.on_load` del rx.box raíz de contratos_page()
+  Esto lanza 2 background tasks concurrentes de carga de filtros + contratos.
+CAUSA RAÍZ:
+  on_load es un trigger de nivel de PÁGINA (WebSocket connect / route change).
+  on_mount es un trigger de nivel COMPONENTE (primer render del box).
+  Ambos se disparan en la misma navegación a /contratos.
+FIX PROPUESTO:
+  Eliminar el on_mount del componente. Mantener solo el @rx.page on_load:
+```
+
+```python
+# contratos.py línea ~734-736 — ELIMINAR esto:
+width="100%",
+padding="2rem",
+on_mount=ContratosState.on_load,   # ← ELIMINAR ESTA LÍNEA
+)
+```
+
+---
+
+**PROBLEMA 2**
+
+```
+ARCHIVO: src/presentacion_reflex/pages/liquidacion_asesores.py
+LÍNEA: 391 (on_mount) y 398 (@rx.page on_load)
+SEVERIDAD: CRÍTICA
+TIPO: ON_LOAD
+DESCRIPCIÓN:
+  LiquidacionAsesoresState.on_load() se dispara DOS VECES:
+    1. @rx.page(on_load=[..., LiquidacionAsesoresState.on_load]) ← línea 398
+    2. on_mount=LiquidacionAsesoresState.on_load ← línea 391 (dentro del componente)
+  Como on_load es @rx.event(background=True), esto lanza 2 corrutinas background
+  concurrentes que compiten por escribir is_loading, liquidaciones, etc.
+CAUSA RAÍZ: idéntica al Problema 1.
+FIX PROPUESTO:
+  Eliminar el on_mount del componente interior. Mantener solo el @rx.page on_load.
+```
+
+```python
+# liquidacion_asesores.py ~ línea 391 — ELIMINAR:
+on_mount=LiquidacionAsesoresState.on_load,   # ← ELIMINAR
+```
+
+---
+
+**PROBLEMA 3**
+
+```
+ARCHIVO: src/presentacion_reflex/components/layout/dashboard_layout.py (línea 37)
+         + src/presentacion_reflex/pages/dashboard.py (línea 394)
+SEVERIDAD: CRÍTICA
+TIPO: ON_LOAD + HANDLER_CHAIN
+DESCRIPCIÓN:
+  AlertasState.check_alerts() se dispara DOS VECES en cada página que use dashboard_layout:
+    1. En dashboard.py: on_load=[..., AlertasState.check_alerts]
+    2. En dashboard_layout.py: on_mount=AlertasState.check_alerts (en el rx.flex del layout)
+  En TODAS las páginas autenticadas (contratos, propiedades, personas, etc.) se dispara
+  el on_mount del layout → check_alerts. Esto genera una query a la BD de alertas
+  en CADA navegación de página.
+CAUSA RAÍZ:
+  dashboard_layout es un componente compartido. Su on_mount se ejecuta en cada
+  route change. Las alertas se están consultando en cada cambio de ruta.
+FIX PROPUESTO:
+  Para gestión de alertas periódica, eliminar el on_mount del layout y usar en su
+  lugar un polling controlado desde el dashboard únicamente, o añadir un guard:
+```
+
+```python
+# dashboard_layout.py — ELIMINAR on_mount del layout:
+return rx.flex(
+    mobile_nav(),
+    sidebar(),
+    rx.box(content, ...),
+    rx.toast.provider(),
+    # on_mount=AlertasState.check_alerts,   ← ELIMINAR
+    ...
+)
+
+# alertas_state.py — Añadir guard para evitar re-cargas:
+class AlertasState(rx.State):
+    notifications: List[Dict[str, Any]] = []
+    unread_count: int = 0
+    show_list: bool = False
+    _last_check: float = 0.0   # timestamp de la última consulta
+
+    def check_alerts(self):
+        import time
+        now = time.time()
+        # Solo recargar si pasaron más de 60 segundos desde la última vez
+        if now - self._last_check < 60:
+            return
+        self._last_check = now
+        try:
+            servicio = ServicioAlertas(db_manager)
+            items = servicio.obtener_alertas()
+            self.notifications = items
+            self.unread_count = len(items)
+        except Exception as e:
+            print(f"[ALERT_DEBUG] check_alerts ERROR: {e}", file=sys.stderr)
+```
+
+---
+
+**PROBLEMA 4**
+
+```
+ARCHIVO: src/presentacion_reflex/pages/configuracion.py
+LÍNEA: 601 (on_mount componente) y 611 (@rx.page on_load)
+SEVERIDAD: CRÍTICA
+TIPO: ON_LOAD
+DESCRIPCIÓN:
+  ConfiguracionState.on_load() se dispara TRES VECES en /configuracion:
+    1. @rx.page(on_load=[..., ConfiguracionState.on_load]) ← línea 611
+    2. on_mount=ConfiguracionState.on_load en el componente ← línea 601
+    3. on_mount=ConfiguracionState.cargar_datos_empresa en el sidebar ← sidebar.py línea 543
+       (el sidebar se renderiza en TODAS las páginas autenticadas)
+  Esto causa 3 consultas a la BD de configuración en cada carga de página.
+CAUSA RAÍZ: Triple redundancia en los triggers de carga.
+FIX PROPUESTO:
+  Eliminar los on_mount del componente configuracion y del sidebar:
+```
+
+```python
+# configuracion.py:
+# Eliminar: on_mount=ConfiguracionState.on_load del componente
+
+# sidebar.py línea 543 — ELIMINAR:
+# on_mount=ConfiguracionState.cargar_datos_empresa,
+
+# Mantener solo: @rx.page(on_load=[AuthState.require_login, ConfiguracionState.on_load])
+```
+
+---
+
+### 🟠 ALTA
+
+---
+
+**PROBLEMA 5**
+
+```
+ARCHIVO: src/presentacion_reflex/state/contratos_state.py
+LÍNEAS: 22-26, 46-52
+SEVERIDAD: ALTA
+TIPO: HERENCIA
+DESCRIPCIÓN:
+  El estado tiene variables de estado DUPLICADAS declaradas dos veces:
+    contratos: List[Dict] = []  ← líneas 22 Y 25
+    is_loading: bool = False    ← líneas 23 Y 26
+    propiedades_select_options: List[List[str]] = []  ← líneas 46 Y 49
+    propietarios_select_options: List[List[str]] = [] ← líneas 47 Y 50
+    asesores_select_options: List[List[str]] = []     ← líneas 48, 51, Y 52 (¡3 veces!)
+    propiedades_canon_map: Dict = {} ← asignado 2 veces en load_filter_options líneas 418-419
+  En Reflex, una var duplicada puede causar comportamiento indefinido en el StateManager.
+CAUSA RAÍZ: Copy-paste sin limpieza en refactorizaciones previas.
+FIX PROPUESTO:
+  Eliminar todas las declaraciones duplicadas. Mantener solo una ocurrencia de cada var.
+```
+
+---
+
+**PROBLEMA 6**
+
+```
+ARCHIVO: src/presentacion_reflex/state/contratos_state.py
+LÍNEA: 158-171 (@rx.event background=True on_load)
+SEVERIDAD: ALTA
+TIPO: HANDLER_CHAIN
+DESCRIPCIÓN:
+  on_load() es un background task que hace:
+    yield ContratosState.load_filter_options()  ← otro background task
+    yield ContratosState.load_contratos()       ← otro background task
+  En Reflex, hacer yield de otro evento background dentro de un background task
+  puede crear condiciones de carrera. load_filter_options y load_contratos pueden
+  ejecutarse en paralelo antes de que load_filter_options haya terminado.
+CAUSA RAÍZ: Cadena de background tasks sin await explícito.
+FIX PROPUESTO:
+  Hacer on_load síncrono y llamar directamente, o mover la lógica a un solo background task:
+```
+
+```python
+@rx.event(background=True)
+async def on_load(self):
+    """Carga inicial: filtros y luego contratos en secuencia."""
+    async with self:
+        self.is_loading = True
+
+    # Ejecutar secuencialmente (no yielding other background tasks)
+    await self._load_filter_options_impl()
+    await self._load_contratos_impl()
+
+    async with self:
+        self.is_loading = False
+```
+
+---
+
+**PROBLEMA 7**
+
+```
+ARCHIVO: src/presentacion_reflex/state/personas_state.py
+LÍNEAS: 148-170
+SEVERIDAD: ALTA
+TIPO: INPUT
+DESCRIPCIÓN:
+  set_search(), set_filtro_rol(), set_fecha_inicio(), set_fecha_fin()
+  cada uno llama a self.load_personas() DIRECTAMENTE (síncronamente, bloqueando).
+  Esto significa que CADA KEYSTROKE en el campo de búsqueda dispara una
+  consulta completa a la base de datos con paginación.
+  Si el usuario escribe "JUAN PEREZ" (10 chars), ejecuta 10 queries.
+CAUSA RAÍZ: No hay debounce/delay en el on_change del input de búsqueda.
+  El handler es síncrono, lo que bloquea el event loop de Reflex.
+FIX PROPUESTO:
+  Separar el set del load. Dejar el set_search solo actualizando el estado.
+  Usar on_key_down para ejecutar la búsqueda solo al presionar Enter, igual
+  que hace ContratosState:
+```
+
+```python
+# personas_state.py
+def set_search(self, query: str):
+    """Solo actualiza el texto, SIN recargar."""
+    self.search_query = query  # No llamar load_personas aquí
+
+def search_personas(self):
+    """Ejecuta la búsqueda (llamar desde on_key_down o botón)."""
+    self.page = 1
+    self.load_personas()
+
+def handle_search_key_down(self, key: str):
+    if key == "Enter":
+        return self.search_personas()
+```
+
+```python
+# personas.py — cambiar el input:
+rx.input(
+    value=PersonasState.search_query,
+    on_change=PersonasState.set_search,       # Solo actualiza texto
+    on_key_down=PersonasState.handle_search_key_down,  # Busca al Enter
+    ...
+)
+```
+
+---
+
+**PROBLEMA 8**
+
+```
+ARCHIVO: src/presentacion_reflex/state/dashboard_state.py
+LÍNEAS: 309-352
+SEVERIDAD: ALTA
+TIPO: COMPUTED_VAR
+DESCRIPCIÓN:
+  Los @rx.var recaudo_porcentaje_view y ocupacion_porcentaje_view están
+  declarados DOS VECES (líneas 309-311 Y 346-348, y 313-315 Y 350-352).
+  En Reflex, una computed var duplicada puede causar re-evaluaciones dobles
+  o comportamiento indefinido en el diff del estado.
+CAUSA RAÍZ: Copy-paste sin limpieza.
+FIX PROPUESTO:
+  Eliminar las definiciones duplicadas de las líneas 346-352 (son idénticas).
+```
+
+---
+
+**PROBLEMA 9**
+
+```
+ARCHIVO: src/presentacion_reflex/state/personas_state.py
+LÍNEAS: 295-313 (@rx.var is_propietario_selected, is_arrendatario_selected, etc.)
+SEVERIDAD: ALTA
+TIPO: COMPUTED_VAR
+DESCRIPCIÓN:
+  Hay 4 computed vars que verifican si un rol está en selected_roles[]:
+    is_propietario_selected → "Propietario" in self.selected_roles
+    is_arrendatario_selected → "Arrendatario" in self.selected_roles
+    is_asesor_selected → "Asesor" in self.selected_roles
+    is_proveedor_selected → "Proveedor" in self.selected_roles
+  Cada vez que selected_roles cambia (al togglear cualquier checkbox),
+  Reflex re-evalúa LAS 4 vars y notifica diferencias al frontend.
+  Multiplicado por cada checkbox en el wizard, esto genera mucho overhead.
+  Además, is_rol_selected(rol) existe como método Python normal (línea 289)
+  pero NO puede usarse en el frontend de Reflex.
+CAUSA RAÍZ: En Reflex no se pueden pasar argumentos a @rx.var, 
+  por eso se crean vars individuales por rol.
+FIX PROPUESTO (aceptable):
+  Este patrón es necesario dado cómo funciona Reflex. Pero se puede optimizar
+  usando cache=True si los roles no cambian frecuentemente:
+```
+
+```python
+@rx.var(cache=True)
+def is_propietario_selected(self) -> bool:
+    return "Propietario" in self.selected_roles
+# ... etc
+```
+
+---
+
+### 🟡 MEDIA
+
+---
+
+**PROBLEMA 10**
+
+```
+ARCHIVO: src/presentacion_reflex/pages/saldos_favor.py
+LÍNEAS: 200 y 221
+SEVERIDAD: MEDIA
+TIPO: ON_LOAD + INPUT
+DESCRIPCIÓN:
+  El select de filtros tiene on_change=lambda que llama tanto set_filter como
+  load_saldos en la misma lambda:
+    on_change=lambda val: [SaldosState.set_filter_tipo(val), SaldosState.load_saldos()]
+  Además, el componente tiene on_mount=SaldosState.load_saldos Y el @rx.page
+  tiene on_load=[..., SaldosState.load_saldos] — doble trigger de carga inicial.
+CAUSA RAÍZ: Mismo patrón de doble trigger que contratos.
+FIX PROPUESTO: Eliminar el on_mount del componente. Mantener solo el on_load de página.
+```
+
+---
+
+**PROBLEMA 11**
+
+```
+ARCHIVO: src/presentacion_reflex/pages/auditoria.py
+LÍNEA: 104 (on_mount) + on_load en la página
+SEVERIDAD: MEDIA
+TIPO: ON_LOAD
+DESCRIPCIÓN: Mismo patrón de doble trigger (on_mount componente + @rx.page on_load).
+FIX PROPUESTO: Igual que los anteriores — eliminar el on_mount del componente.
+```
+
+---
+
+**PROBLEMA 12**
+
+```
+ARCHIVO: src/presentacion_reflex/state/liquidacion_asesores_state.py
+LÍNEAS: 292-293, 306-307, 316-318, 386-388
+SEVERIDAD: MEDIA
+TIPO: BACKGROUND
+DESCRIPCIÓN:
+  Múltiples background tasks escriben archivos de log en disco en tiempo real:
+    open("debug_on_load.log", "w")
+    open("debug_on_load_error.log", "w")
+    open("debug_filter_start.log", "w")
+    open("debug_filter_error.log", "w")
+  En producción (Railway), esto escribe en el filesystem efímero y genera I/O
+  innecesario en cada carga de página.
+CAUSA RAÍZ: Código de depuración no eliminado antes de producción.
+FIX PROPUESTO: Eliminar todos los bloques open("debug_*.log") o reemplazar con logging estándar.
+```
+
+---
+
+**PROBLEMA 13**
+
+```
+ARCHIVO: src/presentacion_reflex/state/dashboard_state.py
+LÍNEAS: 81-89
+SEVERIDAD: MEDIA
+TIPO: ON_LOAD
+DESCRIPCIÓN:
+  on_load() llama self.load_advisor_options() síncronamente (bloqueando)
+  y después yield DashboardState.load_dashboard_data.
+  load_advisor_options hace una query a BD con db_manager de forma síncrona.
+  Esto bloquea el event loop de Reflex durante la ejecución.
+  load_dashboard_data es un generador síncrono que también hace ~12 queries.
+  Total: bloqueo del event loop durante toda la carga del dashboard.
+CAUSA RAÍZ: Handlers síncronos con I/O bloqueante.
+FIX PROPUESTO:
+  Convertir load_advisor_options a async o integrarla dentro de load_dashboard_data
+  para que todo sea un único generador síncrono controlado.
+```
+
+---
+
+**PROBLEMA 14**
+
+```
+ARCHIVO: src/presentacion_reflex/state/dashboard_state.py
+LÍNEAS: 39-40
+SEVERIDAD: MEDIA
+TIPO: COMPUTED_VAR
+DESCRIPCIÓN:
+  selected_month y selected_year se inicializan con datetime.now() en el
+  momento de la DEFINICIÓN DE LA CLASE (no en el constructor).
+  Esto significa que el "mes actual" se fija en el momento en que la clase
+  es importada por primera vez — en producción Cloud, al arrancar el servidor.
+  Si el servidor lleva mucho tiempo corriendo, el mes mostrado puede ser incorrecto.
+CAUSA RAÍZ: Inicialización estática de valores dinámicos.
+FIX PROPUESTO:
+```
+
+```python
+class DashboardState(rx.State):
+    selected_month: int = 0   # 0 = "usar el actual"
+    selected_year: int = 0
+
+    def on_load(self):
+        from datetime import datetime
+        now = datetime.now()
+        if self.selected_month == 0:
+            self.selected_month = now.month
+        if self.selected_year == 0:
+            self.selected_year = now.year
+        ...
+```
+
+---
+
+**PROBLEMA 15**
+
+```
+ARCHIVO: src/presentacion_reflex/state/configuracion_state.py
+LÍNEA: 36
+SEVERIDAD: MEDIA
+TIPO: HERENCIA
+DESCRIPCIÓN:
+  parametros: List[ParametroSistema] = []
+  ParametroSistema es un objeto de dominio Python puro, no un tipo serializable
+  de Reflex. Si ParametroSistema no es un TypedDict o un dict simple, el
+  StateSerializer de Reflex puede tener problemas al serializar/deserializar
+  esta lista, causando errores silenciosos o re-renders innecesarios cuando
+  Reflex intenta comparar el estado anterior con el nuevo.
+FIX PROPUESTO:
+  Serializar ParametroSistema a dict antes de asignarlo al estado:
+```
+
+```python
+def cargar_parametros(self):
+    servicio = ServicioConfiguracion(db_manager)
+    params = servicio.listar_parametros()
+    # Serializar a dict para Reflex
+    self.parametros = [
+        {
+            "id": p.id_parametro,
+            "nombre": p.nombre_parametro,
+            "valor": p.valor_parametro,
+            "descripcion": p.descripcion or "",
+        }
+        for p in params
+    ]
+    # Y cambiar el tipo del var:
+    # parametros: List[Dict[str, str]] = []
+```
+
+---
+
+### 🔵 BAJA
+
+---
+
+**PROBLEMA 16**
+
+```
+ARCHIVO: src/presentacion_reflex/state/auth_state.py
+LÍNEA: 75-78
+SEVERIDAD: BAJA
+TIPO: COMPUTED_VAR
+DESCRIPCIÓN:
+  @rx.var(cache=False) def user_info → retorna self._user_data
+  Con cache=False, esta computed var se re-evalúa en CADA render del
+  componente que la use, incluso si _user_data no cambió.
+  Dado que _user_data es una var privada (prefijo _) y solo cambia
+  en event handlers, no hay razón para deshabilitar el caché.
+FIX PROPUESTO:
+  Cambiar a @rx.var (sin cache=False) para aprovechar el memoization:
+```
+
+```python
+@rx.var  # ← quitar cache=False
+def user_info(self) -> Optional[Dict[str, Any]]:
+    return self._user_data
+```
+
+---
+
+**PROBLEMA 17**
+
+```
+ARCHIVO: src/presentacion_reflex/state/liquidacion_asesores_state.py
+LÍNEA: 72 y 39
+SEVERIDAD: BAJA
+TIPO: HERENCIA
+DESCRIPCIÓN:
+  descuentos_actuales: List[Dict[str, Any]] está declarada DOS VECES
+  (líneas 39 y 72). Mismo patrón de duplicado que en contratos_state.py.
+FIX PROPUESTO: Eliminar la declaración duplicada de la línea 39.
+```
+
+---
+
+**PROBLEMA 18**
+
+```
+ARCHIVO: src/presentacion_reflex/state/liquidacion_asesores_state.py
+LÍNEA: 749-750
+SEVERIDAD: BAJA
+TIPO: HANDLER_CHAIN
+DESCRIPCIÓN:
+  En open_detail_modal, la lista bonificaciones_actuales se construye con
+  un bucle `for b in bonificaciones: for b in bonificaciones:` — hay un
+  bucle `for` duplicado en la list comprehension (líneas 749-750).
+  Esto genera el doble de elementos de los esperados.
+FIX PROPUESTO:
+  Eliminar el for duplicado en la list comprehension.
+```
+
+```python
+# INCORRECTO (líneas 742-751):
+self.bonificaciones_actuales = [
+    {...}
+    for b in bonificaciones
+    for b in bonificaciones   # ← DUPLICADO — ELIMINAR ESTA LÍNEA
+]
+
+# CORRECTO:
+self.bonificaciones_actuales = [
+    {
+        "id_bonificacion": b["id_bonificacion_asesor"],
+        "tipo": b["tipo_bonificacion"],
+        "descripcion": b["descripcion_bonificacion"],
+        "valor": b["valor_bonificacion"],
+    }
+    for b in bonificaciones
+]
+```
+
+---
+
+## MAPA DE CADENA DE EVENTOS — Dashboard
+
+```
+Usuario navega a /dashboard
+│
+├─ rx.page on_load=[AuthState.require_login, DashboardState.on_load, AlertasState.check_alerts]
+│   ├─ AuthState.require_login() → _validate_session() → query BD usuarios/sesiones
+│   ├─ DashboardState.on_load()
+│   │   ├─ load_advisor_options() → query BD asesores (SÍNCRONA, bloquea)
+│   │   └─ yield DashboardState.load_dashboard_data → ~12 queries BD + 1 yield intermedio
+│   └─ AlertasState.check_alerts() → query BD alertas
+│
+└─ dashboard_layout on_mount=AlertasState.check_alerts
+    └─ AlertasState.check_alerts() → query BD alertas  ← DUPLICADO del on_load
+```
+
+```
+Usuario navega a /contratos
+│
+├─ rx.page on_load=[AuthState.require_login, ContratosState.on_load]
+│   ├─ AuthState.require_login() → _validate_session()
+│   └─ ContratosState.on_load() (background task)
+│       ├─ yield ContratosState.load_filter_options()  (background task → 7 queries BD)
+│       └─ yield ContratosState.load_contratos()       (background task → 2 queries BD)
+│
+├─ contratos_page() on_mount=ContratosState.on_load   ← DUPLICADO
+│   └─ ContratosState.on_load() (background task) × 2  ← CONCURRENTE con el anterior
+│
+└─ dashboard_layout on_mount=AlertasState.check_alerts
+    └─ AlertasState.check_alerts() → query BD alertas
+```
+
+---
+
+## RESUMEN DE PROBLEMAS POR SEVERIDAD
+
+| # | Severidad | Tipo | Archivo | Descripción corta |
+|---|-----------|------|---------|-------------------|
+| 1 | 🔴 CRÍTICA | ON_LOAD | contratos.py | Doble disparo on_load + on_mount |
+| 2 | 🔴 CRÍTICA | ON_LOAD | liquidacion_asesores.py | Doble disparo on_load + on_mount |
+| 3 | 🔴 CRÍTICA | ON_LOAD | dashboard_layout.py | check_alerts en cada navegación |
+| 4 | 🔴 CRÍTICA | ON_LOAD | configuracion.py | Triple disparo on_load |
+| 5 | 🟠 ALTA | HERENCIA | contratos_state.py | Vars de estado duplicadas (5 vars) |
+| 6 | 🟠 ALTA | HANDLER_CHAIN | contratos_state.py | Background tasks anidados en cadena |
+| 7 | 🟠 ALTA | INPUT | personas_state.py | set_search dispara query en cada keystroke |
+| 8 | 🟠 ALTA | COMPUTED_VAR | dashboard_state.py | Computed vars duplicadas |
+| 9 | 🟠 ALTA | COMPUTED_VAR | personas_state.py | 4 vars booleanas recalculadas en cada rol toggle |
+| 10 | 🟡 MEDIA | ON_LOAD | saldos_favor.py | Doble trigger inicial |
+| 11 | 🟡 MEDIA | ON_LOAD | auditoria.py | Doble trigger inicial |
+| 12 | 🟡 MEDIA | BACKGROUND | liquidacion_asesores_state.py | Debug files en disco en producción |
+| 13 | 🟡 MEDIA | ON_LOAD | dashboard_state.py | I/O síncrono bloqueante en on_load |
+| 14 | 🟡 MEDIA | COMPUTED_VAR | dashboard_state.py | Fecha inicial fijada al arranque del servidor |
+| 15 | 🟡 MEDIA | HERENCIA | configuracion_state.py | ParametroSistema no serializable en Reflex |
+| 16 | 🔵 BAJA | COMPUTED_VAR | auth_state.py | user_info con cache=False innecesario |
+| 17 | 🔵 BAJA | HERENCIA | liquidacion_asesores_state.py | Variable descuentos_actuales duplicada |
+| 18 | 🔵 BAJA | HANDLER_CHAIN | liquidacion_asesores_state.py | Bug: doble [for](file:///c:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/presentacion_reflex/state/contratos_state.py#79-82) en list comprehension |
+
+---
+
+## LAS 3 CORRECCIONES MÁS URGENTES
+
+### Fix #1 — Eliminar doble on_mount en contratos.py
+
+```python
+# src/presentacion_reflex/pages/contratos.py
+
+# ANTES (línea ~736):
+        width="100%",
+        padding="2rem",
+        on_mount=ContratosState.on_load,    # ← ELIMINAR
+    )
+
+# DESPUÉS:
+        width="100%",
+        padding="2rem",
+    )
+```
+
+### Fix #2 — Eliminar doble on_mount en liquidacion_asesores.py
+
+```python
+# src/presentacion_reflex/pages/liquidacion_asesores.py
+
+# ANTES (línea ~391):
+        width="100%",
+        on_mount=LiquidacionAsesoresState.on_load,   # ← ELIMINAR
+    )
+
+# DESPUÉS:
+        width="100%",
+    )
+```
+
+### Fix #3 — Guard en AlertasState.check_alerts + eliminar on_mount del layout
+
+```python
+# src/presentacion_reflex/state/alertas_state.py — REEMPLAZAR check_alerts:
+import time
+
+class AlertasState(rx.State):
+    notifications: List[Dict[str, Any]] = []
+    unread_count: int = 0
+    show_list: bool = False
+    _last_check_ts: float = 0.0   # privada, no serializada al frontend
+
+    def check_alerts(self):
+        """Solo recarga alertas si pasaron más de 60 segundos."""
+        now = time.time()
+        if now - self._last_check_ts < 60:
+            return
+        self._last_check_ts = now
+        print("[ALERT_DEBUG] check_alerts CALLED", file=sys.stderr, flush=True)
+        try:
+            servicio = ServicioAlertas(db_manager)
+            items = servicio.obtener_alertas()
+            self.notifications = items
+            self.unread_count = len(items)
+        except Exception as e:
+            print(f"[ALERT_DEBUG] check_alerts ERROR: {e}", file=sys.stderr, flush=True)
+```
+
+```python
+# src/presentacion_reflex/components/layout/dashboard_layout.py — ELIMINAR on_mount:
+return rx.flex(
+    mobile_nav(),
+    sidebar(),
+    rx.box(content, flex="1", height="100vh", overflow_y="auto", ...),
+    rx.toast.provider(),
+    # on_mount=AlertasState.check_alerts,  ← ELIMINAR
+    spacing="0",
+    ...
+)
+```
+
+---
+
+## RECOMENDACIONES DE ARQUITECTURA
+
+### 1. Patrón de carga: One Source of Truth para on_load
+
+> **Regla:** Si una página usa `@rx.page(on_load=...)`, **no usar `on_mount`** en ningún componente hijo para la misma función. Son mutuamente excluyentes.
+
+### 2. Separar estado UI del estado de datos
+
+Los estados actuales mezclan datos de negocio (contratos, alertas) con estado UI (modal_open, is_loading, form_data). Considera separarlos:
+- **DataState:** solo datos del servidor (contratos[], total_items, etc.)
+- **UIState:** estado efímero de la UI (modal_open, is_loading, form_data)
+
+### 3. Debounce en búsquedas
+
+Nunca llamar `load_X()` dentro de [set_search()](file:///c:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/presentacion_reflex/state/personas_state.py#148-153). Patrón recomendado:
+```
+set_search(val) → actualiza texto solo
+on_key_down="Enter" → llama search_X() → llama load_X()
+```
+
+### 4. Singleton de configuración
+
+[ConfiguracionState](file:///c:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/presentacion_reflex/state/configuracion_state.py#11-177) se carga 3 veces en distintos triggers. El logo y nombre de empresa son datos que cambian raramente. Añadir un flag `_config_loaded: bool = False` para cargarlo solo una vez por sesión.
+
+### 5. Alertas como polling explícito, no como on_mount del layout
+
+Si se quiere actualizar alertas periódicamente sin que el usuario haga clic:
+- Usar un timer en JavaScript (`rx.script`) que llame a `AlertasState.check_alerts` cada N minutos.
+- O mostrar una cuenta regresiva en el ícono de la campana.
+- **No disparar en cada navegación de ruta** — es costoso y no aporta valor diferencial.
+
+### 6. Limpiar código de debug de producción
+
+[dashboard_state.py](file:///c:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/presentacion_reflex/state/dashboard_state.py), [auth_state.py](file:///c:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/presentacion_reflex/state/auth_state.py) y [liquidacion_asesores_state.py](file:///c:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/presentacion_reflex/state/liquidacion_asesores_state.py) tienen decenas de `print(..., file=sys.stderr)` y [open("debug_*.log", "w")](file:///c:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/presentacion_reflex/state/contratos_state.py#1387-1398). En Railway, esto satura los logs y genera I/O innecesario. Usar el `logger` del proyecto (`src.infraestructura.logging.logger`) con nivel DEBUG que se deshabilita en producción.

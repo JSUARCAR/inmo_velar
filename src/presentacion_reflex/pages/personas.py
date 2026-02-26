@@ -184,6 +184,7 @@ def personas_page() -> rx.Component:
                             placeholder="Buscar por nombre o documento...",
                             value=PersonasState.search_query,
                             on_change=PersonasState.set_search,
+                            on_key_down=PersonasState.handle_search_key_down,
                             size="3",
                             width=["100%", "100%", "320px"],
                             style={

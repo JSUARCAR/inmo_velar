@@ -35,9 +35,9 @@ class DashboardState(rx.State):
     is_loading: bool = False
     error_message: str = ""
 
-    # Filtros
-    selected_month: int = datetime.now().month
-    selected_year: int = datetime.now().year
+    # Filtros — se inicializan en on_load para tomar la fecha real del sistema
+    selected_month: int = 0  # 0 = "no inicializado aún"
+    selected_year: int = 0   # 0 = "no inicializado aún"
     selected_advisor_id: Optional[int] = None
 
     # Opciones para filtros
@@ -80,10 +80,16 @@ class DashboardState(rx.State):
 
     def on_load(self):
         """Se ejecuta al montar la página del dashboard."""
+        from datetime import datetime
         import time
         run_id = int(time.time() * 1000) % 1000000  # ms timestamp mod 1M
         self._load_run_id = run_id
         print(f"[DASH_DEBUG] DashboardState.on_load CALLED | run_id={run_id}", file=sys.stderr, flush=True)
+        # Inicializar fecha solo si es la primera vez (valor = 0 indica "no inicializado")
+        if self.selected_month == 0 or self.selected_year == 0:
+            now = datetime.now()
+            self.selected_month = now.month
+            self.selected_year = now.year
         self.load_advisor_options()
         print(f"[DASH_DEBUG] on_load → yield load_dashboard_data | run_id={run_id}", file=sys.stderr, flush=True)
         yield DashboardState.load_dashboard_data
@@ -342,14 +348,6 @@ class DashboardState(rx.State):
     def recibos_cantidad_view(self) -> str:
         return str(self.recibos_data.get("cantidad", 0))
 
-
-    @rx.var
-    def recaudo_porcentaje_view(self) -> str:
-        return format_number(self.flujo_data.get("porcentaje", 0))
-
-    @rx.var
-    def ocupacion_porcentaje_view(self) -> str:
-        return format_number(self.ocupacion_data.get("porcentaje_ocupacion", 0))
 
     @rx.var
     def vencimiento_chart_data(self) -> List[Dict[str, Any]]:

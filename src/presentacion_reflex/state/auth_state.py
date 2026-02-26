@@ -72,7 +72,7 @@ class AuthState(rx.State):
 
     # ── Computed Vars (sin efectos secundarios) ────────────────────────────────
 
-    @rx.var(cache=False)
+    @rx.var
     def user_info(self) -> Optional[Dict[str, Any]]:
         """Retorna los datos del usuario en memoria (SIN tocar la BD, SIN mutar estado)."""
         return self._user_data

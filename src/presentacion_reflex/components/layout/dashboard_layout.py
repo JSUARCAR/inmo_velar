@@ -34,5 +34,4 @@ def dashboard_layout(content: rx.Component) -> rx.Component:
         width="100%",
         height="100vh",
         overflow="hidden",  # Prevent double scrollbars
-        on_mount=AlertasState.check_alerts,
     )
