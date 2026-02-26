@@ -64,6 +64,7 @@ def wizard_progress() -> rx.Component:
         rx.box(
             width=["40px", "60px", "80px"],
             height="2px",
+            margin_top="19px",
             style={
                 "background": rx.cond(
                     PersonasState.modal_step > 1,
@@ -78,6 +79,7 @@ def wizard_progress() -> rx.Component:
         rx.box(
             width=["40px", "60px", "80px"],
             height="2px",
+            margin_top="19px",
             style={
                 "background": rx.cond(
                     PersonasState.modal_step > 2,
@@ -89,7 +91,7 @@ def wizard_progress() -> rx.Component:
         ),
         step_indicator(3, "Detalles"),
         justify="center",
-        align="center",
+        align="start",
         width="100%",
         padding="4",
         spacing="3",

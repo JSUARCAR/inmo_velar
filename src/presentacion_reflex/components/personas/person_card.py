@@ -175,7 +175,7 @@ def person_card(persona: dict) -> rx.Component:
         # Card styling
         padding="4",
         width="99%",
-        height="98",
+        height="100%",
         margin="auto",
         variant="ghost",
         # Hover effects
