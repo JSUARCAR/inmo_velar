@@ -28,7 +28,6 @@ def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado)
                 rx.icon(icon, color=rx.color(color_scheme, 9), size=20),
                 rx.text(titulo, size="4", weight="bold", color=styles.TEXT_PRIMARY),
                 rx.spacer(),
-                rx.text(rx.cond(lista_estado.length() > 0, "DATA OK", "DATA EMPTY"), color="gray", size="1"),
                 align="center",
                 spacing="2",
             ),
