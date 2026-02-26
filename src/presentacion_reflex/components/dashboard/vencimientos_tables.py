@@ -20,13 +20,35 @@ def _vencimiento_badge(dias: rx.Var[int]) -> rx.Component:
         )
     )
 
-def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado) -> rx.Component:
+def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado, tooltip_text: str = "") -> rx.Component:
     """Componente genérico de tabla para mostrar vencimientos."""
     return rx.card(
         rx.vstack(
             rx.hstack(
                 rx.icon(icon, color=rx.color(color_scheme, 9), size=20),
-                rx.text(titulo, size="4", weight="bold", color=styles.TEXT_PRIMARY),
+                rx.hstack(
+                    rx.text(titulo, size="4", weight="bold", color=styles.TEXT_PRIMARY),
+                    rx.cond(
+                        tooltip_text != "",
+                        rx.hover_card.root(
+                            rx.hover_card.trigger(rx.icon("info", size=16, color="gray.8", cursor="help")),
+                            rx.hover_card.content(
+                                rx.text(tooltip_text, size="2", color="gray.11"),
+                                side="top",
+                                align="center",
+                                side_offset=5,
+                                background_color=styles.BG_PANEL,
+                                border="1px solid var(--gray-4)",
+                                box_shadow="0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                                border_radius="12px",
+                                padding="12px",
+                                max_width="250px",
+                            )
+                        )
+                    ),
+                    align="center",
+                    spacing="2",
+                ),
                 rx.spacer(),
                 align="center",
                 spacing="2",
@@ -85,13 +107,15 @@ def tablas_vencimientos_detalle() -> rx.Component:
             "Vencimientos de Mandato (90 Días)", 
             "briefcase", 
             "blue", 
-            DashboardState.contratos_vencer_mandato_view
+            DashboardState.contratos_vencer_mandato_view,
+            "Contratos de mandato (propietarios) que finalizan o requieren renovación temprana."
         ),
         _tabla_vencimientos(
             "Vencimientos de Arrendamiento (90 Días)", 
             "home", 
             "green", 
-            DashboardState.contratos_vencer_arrendamiento_view
+            DashboardState.contratos_vencer_arrendamiento_view,
+            "Contratos de arrendamiento (inquilinos) próximos a finalizar su período vigente."
         ),
         columns=rx.breakpoints(initial="1", md="2"),
         spacing="4",
