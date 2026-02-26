@@ -317,7 +317,7 @@ def sidebar_footer() -> rx.Component:
         rx.icon("user-check", size=30, color="#3b82f6"),
         rx.vstack(
             rx.text(
-                AuthState.user_info["nombre_usuario"],
+                AuthState.user_nombre,
                 size="2",
                 weight="bold",
                 color="#1e293b",
@@ -326,7 +326,7 @@ def sidebar_footer() -> rx.Component:
                 text_overflow="ellipsis",
             ),
             rx.text(
-                AuthState.user_info["rol"],
+                AuthState.user_rol,
                 size="1",
                 color="#64748b",
                 max_width="120px",
