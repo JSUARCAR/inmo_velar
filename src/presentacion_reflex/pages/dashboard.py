@@ -11,9 +11,9 @@ from src.presentacion_reflex.components.dashboard import (
     incidentes_pie_chart,
     kpi_card,
     propiedades_tipo_chart,
-    top_asesores_chart,
     tunel_vencimientos_chart,
     vencimientos_chart,
+    tablas_vencimientos_detalle,
 )
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
@@ -371,6 +371,8 @@ def dashboard_page() -> rx.Component:
                         width="100%",
                         align_items="start",
                     ),
+                    rx.divider(margin_y="4"),
+                    tablas_vencimientos_detalle(),
                     spacing="6",
                     width="100%",
                 ),
