@@ -222,7 +222,7 @@ def dashboard_page() -> rx.Component:
                                     "circle_alert",
                                     "red",
                                     rx.text(
-                                        DashboardState.mora_data["cantidad_contratos"].to(str),
+                                        DashboardState.mora_cantidad_contratos_view,
                                         " ctros",
                                     ),
                                     variant="compact",
@@ -236,9 +236,7 @@ def dashboard_page() -> rx.Component:
                                         rx.hstack(
                                             rx.text("Contratos:", size="1"),
                                             rx.text(
-                                                DashboardState.mora_data["cantidad_contratos"].to(
-                                                    str
-                                                ),
+                                                DashboardState.mora_cantidad_contratos_view,
                                                 weight="bold",
                                                 size="1",
                                             ),
@@ -263,7 +261,7 @@ def dashboard_page() -> rx.Component:
                                             color="gray.11",
                                         ),
                                         rx.progress(
-                                            value=DashboardState.flujo_data["porcentaje"].to(int),
+                                            value=DashboardState.flujo_porcentaje_int_view,
                                             color_scheme="green",
                                             height="6px",
                                             width="100%",
@@ -279,10 +277,10 @@ def dashboard_page() -> rx.Component:
                                     ),
                                     "home",
                                     "blue",
-                                    rx.text(
-                                        DashboardState.ocupacion_data["ocupadas"].to(str),
+                                     rx.text(
+                                        DashboardState.ocupacion_ocupadas_view,
                                         "/",
-                                        DashboardState.ocupacion_data["disponibles"].to(str),
+                                        DashboardState.ocupacion_disponibles_view,
                                     ),
                                     variant="compact",
                                     hover_content=rx.text(
@@ -295,10 +293,8 @@ def dashboard_page() -> rx.Component:
                                     DashboardState.comisiones_monto_total_view,
                                     "credit-card",
                                     "amber",
-                                    rx.text(
-                                        DashboardState.comisiones_data["cantidad_liquidaciones"].to(
-                                            str
-                                        ),
+                                     rx.text(
+                                        DashboardState.comisiones_cantidad_view,
                                         " pend",
                                     ),
                                     variant="compact",
@@ -309,7 +305,7 @@ def dashboard_page() -> rx.Component:
                                 ),
                                 kpi_card(
                                     "Contratos",
-                                    DashboardState.contratos_count.to(str),
+                                     DashboardState.contratos_count_view,
                                     "file-text",
                                     "indigo",
                                     "Activos",
@@ -323,8 +319,8 @@ def dashboard_page() -> rx.Component:
                                     DashboardState.recibos_monto_total_view,
                                     "receipt",
                                     "rose",
-                                    rx.text(
-                                        DashboardState.recibos_data["cantidad"].to(str), " unds"
+                                     rx.text(
+                                        DashboardState.recibos_cantidad_view, " unds"
                                     ),
                                     variant="compact",
                                     hover_content=rx.text(

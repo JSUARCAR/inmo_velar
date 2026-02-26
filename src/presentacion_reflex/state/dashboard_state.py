@@ -312,6 +312,43 @@ class DashboardState(rx.State):
         return format_number(self.ocupacion_data.get("porcentaje_ocupacion", 0))
 
     @rx.var
+    def mora_cantidad_contratos_view(self) -> str:
+        return str(self.mora_data.get("cantidad_contratos", 0))
+
+    @rx.var
+    def flujo_porcentaje_int_view(self) -> int:
+        return int(self.flujo_data.get("porcentaje", 0))
+
+    @rx.var
+    def ocupacion_ocupadas_view(self) -> str:
+        return str(self.ocupacion_data.get("ocupadas", 0))
+
+    @rx.var
+    def ocupacion_disponibles_view(self) -> str:
+        return str(self.ocupacion_data.get("disponibles", 0))
+
+    @rx.var
+    def comisiones_cantidad_view(self) -> str:
+        return str(self.comisiones_data.get("cantidad_liquidaciones", 0))
+
+    @rx.var
+    def contratos_count_view(self) -> str:
+        return str(self.contratos_count)
+
+    @rx.var
+    def recibos_cantidad_view(self) -> str:
+        return str(self.recibos_data.get("cantidad", 0))
+
+
+    @rx.var
+    def recaudo_porcentaje_view(self) -> str:
+        return format_number(self.flujo_data.get("porcentaje", 0))
+
+    @rx.var
+    def ocupacion_porcentaje_view(self) -> str:
+        return format_number(self.ocupacion_data.get("porcentaje_ocupacion", 0))
+
+    @rx.var
     def vencimiento_chart_data(self) -> List[Dict[str, Any]]:
         """Transforma datos de vencimiento para el gráfico de barras."""
         return [
