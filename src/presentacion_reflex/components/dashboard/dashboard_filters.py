@@ -80,7 +80,7 @@ def dashboard_filters() -> rx.Component:
                             ),
                         )
                     ),
-                    value=DashboardState.selected_advisor_id.to_string(),
+                    value=DashboardState.selected_advisor_value,
                     on_change=DashboardState.set_advisor,
                     size="2",
                 ),

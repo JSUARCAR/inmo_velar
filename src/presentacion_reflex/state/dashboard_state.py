@@ -253,6 +253,11 @@ class DashboardState(rx.State):
         else:
             self.selected_advisor_id = int(value)
 
+    @rx.var
+    def selected_advisor_value(self) -> str:
+        """Valor seguro en string para el select del componente."""
+        return str(self.selected_advisor_id) if self.selected_advisor_id is not None else "todos_asesores"
+
     def apply_filters(self):
         """Aplica los filtros y recarga los datos."""
         yield DashboardState.load_dashboard_data
