@@ -11,6 +11,7 @@ from src.presentacion_reflex.components.dashboard import (
     incidentes_pie_chart,
     kpi_card,
     propiedades_tipo_chart,
+    top_asesores_chart,
     tunel_vencimientos_chart,
     vencimientos_chart,
     tablas_vencimientos_detalle,

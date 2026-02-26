@@ -52,7 +52,7 @@ def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado)
                                     rx.table.cell(rx.text(item["parte_contratante"], size="2", weight="medium")),
                                     rx.table.cell(rx.text(item["direccion"], size="2", color=styles.TEXT_SECONDARY)),
                                     rx.table.cell(rx.text(item["fecha_fin"], size="2")),
-                                    rx.table.cell(_vencimiento_badge(item["dias_restantes"])),
+                                    rx.table.cell(_vencimiento_badge(item["dias_restantes"].to(int))),
                                     align="center",
                                 )
                             )
