@@ -21,9 +21,6 @@ class ContratosState(DocumentosStateMixin):
     # Datos
     contratos: List[Dict[str, Any]] = []
     is_loading: bool = False
-    # Datos
-    contratos: List[Dict[str, Any]] = []
-    is_loading: bool = False
     error_message: str = ""
     is_grid_view: bool = False  # Default to Table, or True for Elite default
 
@@ -41,14 +38,9 @@ class ContratosState(DocumentosStateMixin):
     propiedades_options: List[Dict[str, Any]] = []
     personas_options: List[Dict[str, Any]] = []
 
-    # Opciones para selects (listas simples de strings)
     # Opciones para selects (listas de listas ["label", "value"])
     propiedades_select_options: List[List[str]] = []
     propietarios_select_options: List[List[str]] = []
-    asesores_select_options: List[List[str]] = []
-    propiedades_select_options: List[List[str]] = []
-    propietarios_select_options: List[List[str]] = []
-    asesores_select_options: List[List[str]] = []
     asesores_select_options: List[List[str]] = []
     personas_select_options: List[List[str]] = []
     # Nuevas opciones para Arrendamiento y Mandato
@@ -415,7 +407,6 @@ class ContratosState(DocumentosStateMixin):
             self.propiedades_arriendo_select_options = propiedades_arriendo_select
             self.arrendatarios_select_options = arrendatarios_select
             self.codeudores_select_options = codeudores_select
-            self.propiedades_canon_map = canon_map
             self.propiedades_canon_map = canon_map
 
     # --- Custom Searchable Select Logic ---

@@ -388,7 +388,6 @@ def liquidacion_asesores_content() -> rx.Component:
         
         padding="2rem",
         width="100%",
-        on_mount=LiquidacionAsesoresState.on_load,
     )
 
 

@@ -733,7 +733,6 @@ def contratos_page() -> rx.Component:
         ipc_increment_modal(),
         width="100%",
         padding="2rem",
-        on_mount=ContratosState.on_load,
     )
 
 

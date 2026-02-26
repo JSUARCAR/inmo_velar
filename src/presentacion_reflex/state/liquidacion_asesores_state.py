@@ -747,7 +747,6 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         "valor": b["valor_bonificacion"],
                     }
                     for b in bonificaciones
-                    for b in bonificaciones
                 ]
 
                 # Cargar propiedades para el detalle

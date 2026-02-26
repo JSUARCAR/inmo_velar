@@ -146,10 +146,19 @@ class PersonasState(rx.State):
             self.is_loading = False
 
     def set_search(self, query: str):
-        """Actualiza búsqueda y recarga."""
+        """Actualiza el texto de búsqueda SIN disparar recarga inmediata.
+        La búsqueda se ejecuta al presionar Enter o el botón de buscar."""
         self.search_query = query
+
+    def search_personas(self):
+        """Ejecuta la búsqueda contra BD (llamar desde botón o Enter)."""
         self.page = 1
         self.load_personas()
+
+    def handle_search_key_down(self, key: str):
+        """Lanza la búsqueda al presionar Enter en el campo de texto."""
+        if key == "Enter":
+            return self.search_personas()
 
     def set_filtro_rol(self, rol: str):
         """Actualiza filtro de rol."""
@@ -158,16 +167,12 @@ class PersonasState(rx.State):
         self.load_personas()
 
     def set_fecha_inicio(self, fecha: str):
-        """Actualiza fecha inicio y recarga."""
+        """Actualiza fecha inicio (sin recarga inmediata)."""
         self.fecha_inicio = fecha
-        self.page = 1
-        self.load_personas()
 
     def set_fecha_fin(self, fecha: str):
-        """Actualiza fecha fin y recarga."""
+        """Actualiza fecha fin (sin recarga inmediata)."""
         self.fecha_fin = fecha
-        self.page = 1
-        self.load_personas()
 
     def exportar_csv(self):
         """Exporta los datos filtrados a CSV y descarga el archivo."""

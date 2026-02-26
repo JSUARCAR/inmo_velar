@@ -4,7 +4,6 @@ import reflex as rx
 
 from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
 from src.dominio.entidades.configuracion_empresa import ConfiguracionEmpresa
-from src.dominio.entidades.parametro_sistema import ParametroSistema
 from src.infraestructura.persistencia.database import db_manager
 
 
@@ -32,8 +31,8 @@ class ConfiguracionState(rx.State):
     logo_base64: str = ""  # Base64 del logo cargado
     logo_filename: str = ""  # Nombre del archivo
 
-    # Parámetros del Sistema
-    parametros: List[ParametroSistema] = []
+    # Parámetros del Sistema — serializado a dict para compatibilidad con Reflex
+    parametros: List[Dict[str, Any]] = []
 
     # Control de edición de parámetros (por ID)
     parametros_desbloqueados: List[int] = []
@@ -73,9 +72,19 @@ class ConfiguracionState(rx.State):
                 self.logo_preview = f"data:image/png;base64,{config.logo_base64}"
 
     def cargar_parametros(self):
-        """Carga la lista de parámetros."""
+        """Carga la lista de parámetros, serializados a dict para Reflex."""
         servicio = ServicioConfiguracion(db_manager)
-        self.parametros = servicio.listar_parametros()
+        params = servicio.listar_parametros()
+        self.parametros = [
+            {
+                "id": p.id_parametro,
+                "nombre": p.nombre_parametro,
+                "valor": str(p.valor_parametro) if p.valor_parametro is not None else "",
+                "descripcion": p.descripcion or "",
+                "editable": getattr(p, "editable", True),
+            }
+            for p in params
+        ]
 
 
     def set_empresa_field(self, field: str, value: str):

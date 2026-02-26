@@ -131,7 +131,6 @@ def incrementos_content() -> rx.Component:
         spacing="5",
         padding="6",
         width="100%",
-        on_mount=IPCState.load_ipcs,
     )
 
 
