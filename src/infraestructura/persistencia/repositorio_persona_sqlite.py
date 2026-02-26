@@ -116,9 +116,14 @@ class RepositorioPersonaSQLite:
             conditions.append("p.ESTADO_REGISTRO = TRUE")
 
         if busqueda:
-            conditions.append(
-                f"(p.NOMBRE_COMPLETO LIKE {placeholder} OR p.NUMERO_DOCUMENTO LIKE {placeholder})"
-            )
+            if self.db.use_postgresql:
+                conditions.append(
+                    f"(TRANSLATE(p.NOMBRE_COMPLETO, 'áéíóúÁÉÍÓÚ', 'aeiouAEIOU') ILIKE TRANSLATE({placeholder}, 'áéíóúÁÉÍÓÚ', 'aeiouAEIOU') OR TRANSLATE(p.NUMERO_DOCUMENTO, 'áéíóúÁÉÍÓÚ', 'aeiouAEIOU') ILIKE TRANSLATE({placeholder}, 'áéíóúÁÉÍÓÚ', 'aeiouAEIOU'))"
+                )
+            else:
+                conditions.append(
+                    f"(p.NOMBRE_COMPLETO LIKE {placeholder} OR p.NUMERO_DOCUMENTO LIKE {placeholder})"
+                )
             busqueda_param = f"%{busqueda}%"
             params.extend([busqueda_param, busqueda_param])
 
@@ -178,9 +183,14 @@ class RepositorioPersonaSQLite:
             conditions.append("p.ESTADO_REGISTRO = TRUE")
 
         if busqueda:
-            conditions.append(
-                f"(p.NOMBRE_COMPLETO LIKE {placeholder} OR p.NUMERO_DOCUMENTO LIKE {placeholder})"
-            )
+            if self.db.use_postgresql:
+                conditions.append(
+                    f"(TRANSLATE(p.NOMBRE_COMPLETO, 'áéíóúÁÉÍÓÚ', 'aeiouAEIOU') ILIKE TRANSLATE({placeholder}, 'áéíóúÁÉÍÓÚ', 'aeiouAEIOU') OR TRANSLATE(p.NUMERO_DOCUMENTO, 'áéíóúÁÉÍÓÚ', 'aeiouAEIOU') ILIKE TRANSLATE({placeholder}, 'áéíóúÁÉÍÓÚ', 'aeiouAEIOU'))"
+                )
+            else:
+                conditions.append(
+                    f"(p.NOMBRE_COMPLETO LIKE {placeholder} OR p.NUMERO_DOCUMENTO LIKE {placeholder})"
+                )
             busqueda_param = f"%{busqueda}%"
             params.extend([busqueda_param, busqueda_param])
 
