@@ -799,14 +799,15 @@ class ServicioLiquidacionAsesores:
                 query_params.append(id_asesor)
 
             if busqueda:
+                term_norm = db_manager.normalize_search_term(busqueda)
+                term = f"%{term_norm}%"
+                search_cond = db_manager.get_search_condition([
+                    "per.NOMBRE_COMPLETO",
+                    "per.NUMERO_DOCUMENTO"
+                ])
                 conditions.append(
-                    f"""(
-                    per.NOMBRE_COMPLETO LIKE {placeholder} OR
-                    per.NUMERO_DOCUMENTO LIKE {placeholder} OR
-                    CAST(l.ID_LIQUIDACION_ASESOR AS TEXT) LIKE {placeholder}
-                )"""
+                    f"({search_cond} OR CAST(l.ID_LIQUIDACION_ASESOR AS TEXT) LIKE {placeholder})"
                 )
-                term = f"%{busqueda}%"
                 query_params.extend([term, term, term])
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
@@ -924,14 +925,15 @@ class ServicioLiquidacionAsesores:
                 query_params.append(id_asesor)
 
             if busqueda:
+                term_norm = db_manager.normalize_search_term(busqueda)
+                term = f"%{term_norm}%"
+                search_cond = db_manager.get_search_condition([
+                    "per.NOMBRE_COMPLETO",
+                    "per.NUMERO_DOCUMENTO"
+                ])
                 conditions.append(
-                    f"""(
-                    per.NOMBRE_COMPLETO LIKE {placeholder} OR
-                    per.NUMERO_DOCUMENTO LIKE {placeholder} OR
-                    CAST(l.ID_LIQUIDACION_ASESOR AS TEXT) LIKE {placeholder}
-                )"""
+                    f"({search_cond} OR CAST(l.ID_LIQUIDACION_ASESOR AS TEXT) LIKE {placeholder})"
                 )
-                term = f"%{busqueda}%"
                 query_params.extend([term, term, term])
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""

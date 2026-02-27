@@ -706,14 +706,12 @@ class RepositorioLiquidacionSQLite:
                 query_params.append(periodo)
 
             if busqueda:
-                conditions.append(
-                    f"""(
-                    per.NOMBRE_COMPLETO ILIKE {placeholder} OR
-                    per.NUMERO_DOCUMENTO LIKE {placeholder}
-                )"""
-                )
-                term = f"%{busqueda}%"
-                query_params.extend([term, term])
+                cols = ["per.NOMBRE_COMPLETO", "per.NUMERO_DOCUMENTO"]
+                cond = self.db.get_search_condition(cols)
+                conditions.append(f"({cond})")
+                
+                term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
+                query_params.extend([term_norm] * len(cols))
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
             group_by = (
@@ -1160,11 +1158,12 @@ class RepositorioLiquidacionSQLite:
             query_params.append(f"%{periodo}%")
 
         if busqueda:
-            conditions.append(
-                f"(p.DIRECCION_PROPIEDAD LIKE {placeholder} OR per.NOMBRE_COMPLETO LIKE {placeholder} OR per.NUMERO_DOCUMENTO LIKE {placeholder} OR CAST(l.ID_CONTRATO_M AS TEXT) LIKE {placeholder})"
-            )
-            term = f"%{busqueda}%"
-            query_params.extend([term, term, term, term])
+            cols = ["p.DIRECCION_PROPIEDAD", "per.NOMBRE_COMPLETO", "per.NUMERO_DOCUMENTO", "CAST(l.ID_CONTRATO_M AS TEXT)"]
+            cond = self.db.get_search_condition(cols)
+            conditions.append(f"({cond})")
+            
+            term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
+            query_params.extend([term_norm] * len(cols))
 
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
@@ -1236,11 +1235,12 @@ class RepositorioLiquidacionSQLite:
             query_params.append(f"%{periodo}%")
 
         if busqueda:
-            conditions.append(
-                f"(p.DIRECCION_PROPIEDAD LIKE {placeholder} OR per.NOMBRE_COMPLETO LIKE {placeholder} OR per.NUMERO_DOCUMENTO LIKE {placeholder} OR CAST(l.ID_CONTRATO_M AS TEXT) LIKE {placeholder})"
-            )
-            term = f"%{busqueda}%"
-            query_params.extend([term, term, term, term])
+            cols = ["p.DIRECCION_PROPIEDAD", "per.NOMBRE_COMPLETO", "per.NUMERO_DOCUMENTO", "CAST(l.ID_CONTRATO_M AS TEXT)"]
+            cond = self.db.get_search_condition(cols)
+            conditions.append(f"({cond})")
+            
+            term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
+            query_params.extend([term_norm] * len(cols))
 
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
         query = f"SELECT COUNT(*) as TOTAL {base_from} {where_clause}"

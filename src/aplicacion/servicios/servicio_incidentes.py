@@ -66,10 +66,11 @@ class ServicioIncidentes:
 
         # Filtro por búsqueda (ID o descripción)
         if busqueda:
+            term_norm = self.db_manager.normalize_search_term(busqueda)
             incidentes = [
                 i
                 for i in incidentes
-                if busqueda.lower() in i.descripcion_incidente.lower()
+                if term_norm in self.db_manager.normalize_search_term(i.descripcion_incidente)
                 or str(i.id_incidente) == busqueda
             ]
 
