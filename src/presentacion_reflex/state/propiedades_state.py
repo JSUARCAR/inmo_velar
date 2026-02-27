@@ -185,6 +185,7 @@ class PropiedadesState(DocumentosStateMixin):
                     "codigo_agua": getattr(p, "codigo_agua", ""),
                     "codigo_gas": getattr(p, "codigo_gas", ""),
                     "imagen_id": getattr(p, "imagen_principal_id", None),
+                    "estado_registro": getattr(p, "estado_registro", 1),
                 }
                 for p in result.items
             ]
@@ -537,6 +538,29 @@ class PropiedadesState(DocumentosStateMixin):
             self.error_message = f"Error al cambiar disponibilidad: {str(e)}"
             yield rx.toast.error(f"Error: {e}", position="bottom-right")
 
+    def toggle_activa(self, id_propiedad: int, estado_actual: int):
+        """Activa o desactiva una propiedad."""
+        try:
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
+            
+            if estado_actual == 1:
+                servicio.desactivar_propiedad(id_propiedad, usuario_sistema="admin")
+                msg = "Propiedad desactivada correctamente"
+            else:
+                servicio.activar_propiedad(id_propiedad, usuario_sistema="admin")
+                msg = "Propiedad reactivada correctamente"
+                
+            yield rx.toast.success(msg, position="bottom-right")
+            yield PropiedadesState.load_propiedades
+        except Exception as e:
+            pass  # print(f"Error cambiando estado registro: {e}") [OpSec Removed]
+            self.error_message = f"Error al cambiar estado: {str(e)}"
+            yield rx.toast.error(f"Error: {e}", position="bottom-right")
     def exportar_csv(self):
         """Exporta los datos filtrados a CSV y descarga el archivo."""
         try:

@@ -21,8 +21,10 @@ def property_card(
     codigo_agua: str,
     codigo_gas: str,
     imagen_id: int,
+    estado_registro: int,
     on_edit: callable,
     on_toggle_disponibilidad: callable,
+    on_toggle_activa: callable,
 ) -> rx.Component:
     """
     Elite Property Card Component.
@@ -97,11 +99,10 @@ def property_card(
                     align="start",
                 ),
                 rx.spacer(),
-                rx.badge(
-                    rx.cond(disponibilidad.to(int) == 1, "Disponible", "Ocupada"),
-                    color_scheme=rx.cond(disponibilidad.to(int) == 1, "green", "gray"),
-                    variant="soft",
-                    radius="full",
+                rx.cond(
+                    disponibilidad.to(int) == 1,
+                    rx.badge("Disponible", color_scheme="green", variant="soft", radius="full"),
+                    rx.badge("Ocupada", color_scheme="gray", variant="soft", radius="full"),
                 ),
                 width="100%",
                 align="center",
@@ -279,6 +280,28 @@ def property_card(
                                     },
                                 ),
                                 content="Editar",
+                            ),
+                            rx.tooltip(
+                                rx.cond(
+                                    estado_registro == 1,
+                                    rx.icon_button(
+                                        rx.icon("trash-2", size=16),
+                                        on_click=lambda: on_toggle_activa(id_propiedad, 1),
+                                        variant="ghost",
+                                        size="2",
+                                        color_scheme="red",
+                                        _hover={"background": "var(--red-3)", "color": "var(--red-9)"},
+                                    ),
+                                    rx.icon_button(
+                                        rx.icon("check-circle", size=16),
+                                        on_click=lambda: on_toggle_activa(id_propiedad, 0),
+                                        variant="ghost",
+                                        size="2",
+                                        color_scheme="green",
+                                        _hover={"background": "var(--green-3)", "color": "var(--green-9)"},
+                                    ),
+                                ),
+                                content=rx.cond(estado_registro == 1, "Desactivar", "Reactivar"),
                             ),
                             spacing="1",
                         ),

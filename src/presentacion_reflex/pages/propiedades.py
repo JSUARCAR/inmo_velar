@@ -279,8 +279,10 @@ def propiedades_page() -> rx.Component:
                                                 codigo_agua=prop["codigo_agua"],
                                                 codigo_gas=prop["codigo_gas"],
                                                 imagen_id=prop["imagen_id"],
+                                                estado_registro=prop["estado_registro"],
                                                 on_edit=PropiedadesState.open_edit_modal,
                                                 on_toggle_disponibilidad=PropiedadesState.toggle_disponibilidad,
+                                                on_toggle_activa=PropiedadesState.toggle_activa,
                                             ),
                                         ),
                                         columns=rx.breakpoints(initial="1", sm="2", lg="3"),
@@ -346,18 +348,10 @@ def propiedades_page() -> rx.Component:
                                                         ),
                                                         rx.table.cell(prop["municipio_nombre"]),
                                                         rx.table.cell(
-                                                            rx.badge(
-                                                                rx.cond(
-                                                                    prop["disponibilidad"] == 1,
-                                                                    "Disponible",
-                                                                    "Ocupada",
-                                                                ),
-                                                                color_scheme=rx.cond(
-                                                                    prop["disponibilidad"] == 1,
-                                                                    "green",
-                                                                    "gray",
-                                                                ),
-                                                                variant="soft",
+                                                            rx.cond(
+                                                                prop["disponibilidad"] == 1,
+                                                                rx.badge("Disponible", color_scheme="green", variant="soft"),
+                                                                rx.badge("Ocupada", color_scheme="gray", variant="soft"),
                                                             )
                                                         ),
                                                         rx.table.cell(
@@ -476,6 +470,38 @@ def propiedades_page() -> rx.Component:
                                                                                 ),
                                                                             ),
                                                                             content="Editar",
+                                                                        ),
+                                                                        rx.tooltip(
+                                                                            rx.cond(
+                                                                                prop["estado_registro"] == 1,
+                                                                                rx.icon_button(
+                                                                                    rx.icon("trash-2", size=16),
+                                                                                    size="1",
+                                                                                    variant="ghost",
+                                                                                    color_scheme="red",
+                                                                                    on_click=lambda: PropiedadesState.toggle_activa(
+                                                                                        prop["id_propiedad"],
+                                                                                        1,
+                                                                                    ),
+                                                                                    _hover={"background": "var(--red-3)", "color": "var(--red-9)"},
+                                                                                ),
+                                                                                rx.icon_button(
+                                                                                    rx.icon("check-circle", size=16),
+                                                                                    size="1",
+                                                                                    variant="ghost",
+                                                                                    color_scheme="green",
+                                                                                    on_click=lambda: PropiedadesState.toggle_activa(
+                                                                                        prop["id_propiedad"],
+                                                                                        0,
+                                                                                    ),
+                                                                                    _hover={"background": "var(--green-3)", "color": "var(--green-9)"},
+                                                                                ),
+                                                                            ),
+                                                                            content=rx.cond(
+                                                                                prop["estado_registro"] == 1,
+                                                                                "Desactivar",
+                                                                                "Reactivar",
+                                                                            ),
                                                                         ),
                                                                         spacing="1",
                                                                     ),

@@ -18,19 +18,7 @@ def person_card(persona: dict) -> rx.Component:
                     fallback=initials,
                     size="4",
                     radius="full",
-                    color_scheme=rx.cond(
-                        persona["roles"].length() > 0,
-                        rx.match(
-                            persona["roles"][0],
-                            ("Propietario", "blue"),
-                            ("Arrendatario", "green"),
-                            ("Asesor", "purple"),
-                            ("Codeudor", "orange"),
-                            ("Proveedor", "cyan"),
-                            "gray",
-                        ),
-                        "gray",
-                    ),
+                    color_scheme="gray",
                 ),
                 rx.vstack(
                     rx.text(
@@ -81,37 +69,29 @@ def person_card(persona: dict) -> rx.Component:
             rx.box(
                 rx.foreach(
                     persona["roles"],
-                    lambda r: rx.badge(
-                        rx.hstack(
-                            rx.icon(
-                                rx.match(
-                                    r,
-                                    ("Propietario", "home"),
-                                    ("Arrendatario", "user-check"),
-                                    ("Asesor", "briefcase"),
-                                    ("Codeudor", "shield"),
-                                    ("Proveedor", "wrench"),
-                                    "user",
-                                ),
-                                size=12,
-                            ),
-                            rx.text(r, size="1"),
-                            spacing="1",
-                            align="center",
+                    lambda r: rx.match(
+                        r,
+                        (
+                            "Propietario",
+                            rx.badge(rx.hstack(rx.icon("home", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="blue", variant="soft", margin_right="1", margin_bottom="1", radius="full")
                         ),
-                        color_scheme=rx.match(
-                            r,
-                            ("Propietario", "blue"),
-                            ("Arrendatario", "green"),
-                            ("Asesor", "purple"),
-                            ("Codeudor", "orange"),
-                            ("Proveedor", "cyan"),
-                            "gray",
+                        (
+                            "Arrendatario",
+                            rx.badge(rx.hstack(rx.icon("user-check", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="green", variant="soft", margin_right="1", margin_bottom="1", radius="full")
                         ),
-                        variant="soft",
-                        margin_right="1",
-                        margin_bottom="1",
-                        radius="full",
+                        (
+                            "Asesor",
+                            rx.badge(rx.hstack(rx.icon("briefcase", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="purple", variant="soft", margin_right="1", margin_bottom="1", radius="full")
+                        ),
+                        (
+                            "Codeudor",
+                            rx.badge(rx.hstack(rx.icon("shield", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="orange", variant="soft", margin_right="1", margin_bottom="1", radius="full")
+                        ),
+                        (
+                            "Proveedor",
+                            rx.badge(rx.hstack(rx.icon("wrench", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="cyan", variant="soft", margin_right="1", margin_bottom="1", radius="full")
+                        ),
+                        rx.badge(rx.hstack(rx.icon("user", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="gray", variant="soft", margin_right="1", margin_bottom="1", radius="full")
                     ),
                 ),
                 width="100%",
@@ -119,11 +99,10 @@ def person_card(persona: dict) -> rx.Component:
             rx.spacer(),
             # Footer: Status, Date & Actions
             rx.hstack(
-                rx.badge(
-                    persona["estado"],
-                    color_scheme=rx.cond(persona["estado"] == "Activo", "green", "red"),
-                    variant="soft",
-                    radius="full",
+                rx.cond(
+                    persona["estado"] == "Activo",
+                    rx.badge("Activo", color_scheme="green", variant="soft", radius="full"),
+                    rx.badge("Inactivo", color_scheme="red", variant="soft", radius="full"),
                 ),
                 rx.spacer(),
                 rx.hstack(
