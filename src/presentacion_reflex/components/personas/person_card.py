@@ -155,10 +155,10 @@ def person_card(persona: dict) -> rx.Component:
         ),
         # Card styling
         padding="4",
-        width="99%",
+        width="100%",
         height="100%",
         margin="auto",
-        bg=styles.BG_PANEL,
+        variant="surface",
         # Hover effects
         _hover={
             "transform": "translateY(-4px)",
@@ -167,9 +167,7 @@ def person_card(persona: dict) -> rx.Component:
             "cursor": "pointer",
         },
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        # Glassmorphism effect
         style={
-            "border": "1px solid var(--gray-4)",
             "border_radius": "16px",
             "overflow": "hidden",
             "min_height": "200px",

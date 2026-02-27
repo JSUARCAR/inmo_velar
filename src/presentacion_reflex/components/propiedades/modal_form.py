@@ -566,10 +566,9 @@ def modal_propiedad() -> rx.Component:
             ),
             max_width="800px",
             width="100%",
-            bg=styles.BG_PANEL,
+            padding="24px",
             style={
                 "border_radius": "16px",
-                "padding": "24px",
             },
             on_escape_key_down=PropiedadesState.close_modal,
             on_pointer_down_outside=PropiedadesState.close_modal,
