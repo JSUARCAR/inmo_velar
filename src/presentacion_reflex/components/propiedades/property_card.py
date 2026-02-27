@@ -64,7 +64,7 @@ def property_card(
                         rx.cond(
                             imagen_id,
                             rx.image(
-                                src="http://localhost:8000/api/storage/"
+                                src="/api/storage/"
                                 + imagen_id.to(str)
                                 + "/download",
                                 width="280px",
