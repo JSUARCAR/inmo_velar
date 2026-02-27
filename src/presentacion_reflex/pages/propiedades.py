@@ -349,7 +349,7 @@ def propiedades_page() -> rx.Component:
                                                         rx.table.cell(prop["municipio_nombre"]),
                                                         rx.table.cell(
                                                             rx.cond(
-                                                                prop["disponibilidad"] == 1,
+                                                                prop["disponibilidad"],
                                                                 rx.badge("Disponible", color_scheme="green", variant="soft"),
                                                                 rx.badge("Ocupada", color_scheme="gray", variant="soft"),
                                                             )
@@ -473,9 +473,9 @@ def propiedades_page() -> rx.Component:
                                                                         ),
                                                                         rx.tooltip(
                                                                             rx.cond(
-                                                                                prop["estado_registro"] == 1,
+                                                                                prop["estado_registro"],
                                                                                 rx.icon_button(
-                                                                                    rx.icon("trash-2", size=16),
+                                                                                    rx.icon("power-off", size=16),
                                                                                     size="1",
                                                                                     variant="ghost",
                                                                                     color_scheme="red",
@@ -486,7 +486,7 @@ def propiedades_page() -> rx.Component:
                                                                                     _hover={"background": "var(--red-3)", "color": "var(--red-9)"},
                                                                                 ),
                                                                                 rx.icon_button(
-                                                                                    rx.icon("check-circle", size=16),
+                                                                                    rx.icon("power", size=16),
                                                                                     size="1",
                                                                                     variant="ghost",
                                                                                     color_scheme="green",
@@ -498,9 +498,9 @@ def propiedades_page() -> rx.Component:
                                                                                 ),
                                                                             ),
                                                                             content=rx.cond(
-                                                                                prop["estado_registro"] == 1,
+                                                                                prop["estado_registro"],
                                                                                 "Desactivar",
-                                                                                "Reactivar",
+                                                                                "Activar",
                                                                             ),
                                                                         ),
                                                                         spacing="1",
