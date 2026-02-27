@@ -661,8 +661,7 @@ def modal_persona() -> rx.Component:
             ),
             max_width=["95%", "700px"],
             width="100%",
-            padding="6",
-            bg=styles.BG_PANEL,
+            padding="24px",
             style={
                 "border_radius": "16px",
             },

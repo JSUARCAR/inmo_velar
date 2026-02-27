@@ -521,16 +521,10 @@ def personas_page() -> rx.Component:
                         rx.box(
                             rx.cond(
                                 PersonasState.total_items > 0,
-                                rx.box(
+                                rx.grid(
                                     rx.foreach(PersonasState.personas, person_card),
-                                    display="grid",
-                                    grid_template_columns=rx.breakpoints(
-                                        initial="repeat(1, 1fr)",  # mobile
-                                        sm="repeat(1, 1fr)",       # small tablet
-                                        md="repeat(2, 1fr)",       # tablet
-                                        lg="repeat(3, 1fr)",       # desktop
-                                    ),
-                                    gap="9",
+                                    columns=rx.breakpoints(initial="1", sm="1", md="2", lg="3"),
+                                    gap="5",
                                     width="100%",
                                     padding="4",
                                 ),
