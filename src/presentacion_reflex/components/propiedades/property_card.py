@@ -100,7 +100,7 @@ def property_card(
                 ),
                 rx.spacer(),
                 rx.cond(
-                    disponibilidad.to(int) == 1,
+                    disponibilidad,
                     rx.badge("Disponible", color_scheme="green", variant="soft", radius="full"),
                     rx.badge("Ocupada", color_scheme="gray", variant="soft", radius="full"),
                 ),
@@ -283,9 +283,9 @@ def property_card(
                             ),
                             rx.tooltip(
                                 rx.cond(
-                                    estado_registro == 1,
+                                    estado_registro,
                                     rx.icon_button(
-                                        rx.icon("trash-2", size=16),
+                                        rx.icon("power-off", size=16),
                                         on_click=lambda: on_toggle_activa(id_propiedad, 1),
                                         variant="ghost",
                                         size="2",
@@ -293,7 +293,7 @@ def property_card(
                                         _hover={"background": "var(--red-3)", "color": "var(--red-9)"},
                                     ),
                                     rx.icon_button(
-                                        rx.icon("check-circle", size=16),
+                                        rx.icon("power", size=16),
                                         on_click=lambda: on_toggle_activa(id_propiedad, 0),
                                         variant="ghost",
                                         size="2",
@@ -301,7 +301,7 @@ def property_card(
                                         _hover={"background": "var(--green-3)", "color": "var(--green-9)"},
                                     ),
                                 ),
-                                content=rx.cond(estado_registro == 1, "Desactivar", "Reactivar"),
+                                content=rx.cond(estado_registro, "Desactivar", "Activar"),
                             ),
                             spacing="1",
                         ),
