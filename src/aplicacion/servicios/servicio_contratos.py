@@ -290,13 +290,23 @@ class ServicioContratos:
 
     @cache_manager.invalidates("arriendos:list_paginated")
     def renovar_arrendamiento(
-        self, id_contrato: int, usuario_sistema: str
+        self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoArrendamiento:
-        return self.servicio_arriendo.renovar_arrendamiento(id_contrato, usuario_sistema)
+        return self.servicio_arriendo.renovar_arrendamiento(id_contrato, usuario_sistema, nueva_fecha_fin)
 
     @cache_manager.invalidates("mandatos:list_paginated")
-    def renovar_mandato(self, id_contrato: int, usuario_sistema: str) -> ContratoMandato:
-        return self.servicio_mandato.renovar_mandato(id_contrato, usuario_sistema)
+    def renovar_mandato(self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None) -> ContratoMandato:
+        return self.servicio_mandato.renovar_mandato(id_contrato, usuario_sistema, nueva_fecha_fin)
+
+    def calcular_proyeccion_renovacion(self, id_contrato: int, tipo: str) -> Dict[str, Any]:
+        """
+        Calcula la proyección de renovación (nueva fecha y canon) sin guardar en BD.
+        Usado para mostrar la información en el diálogo de confirmación.
+        """
+        if tipo == "Arrendamiento":
+            return self.servicio_arriendo.calcular_proyeccion_renovacion(id_contrato)
+        else:
+            return self.servicio_mandato.calcular_proyeccion_renovacion(id_contrato)
 
     @cache_manager.invalidates("arriendos:list_paginated")
     def terminar_arrendamiento(self, id_contrato: int, motivo: str, usuario_sistema: str) -> None:
