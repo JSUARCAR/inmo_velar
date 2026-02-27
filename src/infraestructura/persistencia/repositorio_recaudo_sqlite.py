@@ -363,11 +363,12 @@ class RepositorioRecaudoSQLite:
             query_params.append(fecha_hasta)
 
         if busqueda:
-            conditions.append(
-                f"(r.REFERENCIA_BANCARIA LIKE {placeholder} OR p.DIRECCION_PROPIEDAD LIKE {placeholder} OR CAST(r.ID_RECAUDO AS TEXT) LIKE {placeholder})"
-            )
-            term = f"%{busqueda}%"
-            query_params.extend([term, term, term])
+            cols = ["r.REFERENCIA_BANCARIA", "p.DIRECCION_PROPIEDAD", "CAST(r.ID_RECAUDO AS TEXT)"]
+            cond = self.db.get_search_condition(cols)
+            conditions.append(f"({cond})")
+            
+            term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
+            query_params.extend([term_norm] * len(cols))
 
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
@@ -427,11 +428,12 @@ class RepositorioRecaudoSQLite:
             query_params.append(fecha_hasta)
 
         if busqueda:
-            conditions.append(
-                f"(r.REFERENCIA_BANCARIA LIKE {placeholder} OR p.DIRECCION_PROPIEDAD LIKE {placeholder} OR CAST(r.ID_RECAUDO AS TEXT) LIKE {placeholder})"
-            )
-            term = f"%{busqueda}%"
-            query_params.extend([term, term, term])
+            cols = ["r.REFERENCIA_BANCARIA", "p.DIRECCION_PROPIEDAD", "CAST(r.ID_RECAUDO AS TEXT)"]
+            cond = self.db.get_search_condition(cols)
+            conditions.append(f"({cond})")
+            
+            term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
+            query_params.extend([term_norm] * len(cols))
 
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
         query = f"SELECT COUNT(*) AS total {base_from} {where_clause}"

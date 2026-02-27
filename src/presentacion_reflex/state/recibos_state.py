@@ -156,11 +156,11 @@ class RecibosState(DocumentosStateMixin):
 
             # Filtrado texto en memoria (si aplica)
             if self.search_text:
-                st = self.search_text.lower()
+                st = db_manager.normalize_search_term(self.search_text)
                 recibos_ui = [
                     r
                     for r in recibos_ui
-                    if st in r["propiedad_nombre"].lower() or st in r["comprobante"].lower()
+                    if st in db_manager.normalize_search_term(r["propiedad_nombre"]) or st in db_manager.normalize_search_term(r.get("comprobante", "") or "")
                 ]
 
             async with self:

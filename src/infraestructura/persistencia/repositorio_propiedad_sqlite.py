@@ -145,11 +145,12 @@ class RepositorioPropiedadSQLite:
             params.append(bool(solo_activas))
 
         if busqueda:
-            conditions.append(
-                f"(p.MATRICULA_INMOBILIARIA LIKE {placeholder} OR p.DIRECCION_PROPIEDAD LIKE {placeholder})"
-            )
-            busqueda_param = f"%{busqueda}%"
-            params.extend([busqueda_param, busqueda_param])
+            cols = ["p.MATRICULA_INMOBILIARIA", "p.DIRECCION_PROPIEDAD"]
+            cond = self.db.get_search_condition(cols)
+            conditions.append(f"({cond})")
+            
+            term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
+            params.extend([term_norm] * len(cols))
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -207,11 +208,12 @@ class RepositorioPropiedadSQLite:
             params.append(bool(solo_activas))
 
         if busqueda:
-            conditions.append(
-                f"(p.MATRICULA_INMOBILIARIA LIKE {placeholder} OR p.DIRECCION_PROPIEDAD LIKE {placeholder})"
-            )
-            busqueda_param = f"%{busqueda}%"
-            params.extend([busqueda_param, busqueda_param])
+            cols = ["p.MATRICULA_INMOBILIARIA", "p.DIRECCION_PROPIEDAD"]
+            cond = self.db.get_search_condition(cols)
+            conditions.append(f"({cond})")
+            
+            term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
+            params.extend([term_norm] * len(cols))
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)

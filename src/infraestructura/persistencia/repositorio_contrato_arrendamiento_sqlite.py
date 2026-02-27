@@ -177,13 +177,12 @@ class RepositorioContratoArrendamientoSQLite:
                     query_params.append(estado)
 
             if busqueda:
-                conditions.append(
-                    f"(p.DIRECCION_PROPIEDAD LIKE {placeholder} OR "
-                    f"per.NOMBRE_COMPLETO LIKE {placeholder} OR "
-                    f"per.NUMERO_DOCUMENTO LIKE {placeholder})"
-                )
-                term = f"%{busqueda}%"
-                query_params.extend([term, term, term])
+                cols = ["p.DIRECCION_PROPIEDAD", "per.NOMBRE_COMPLETO", "per.NUMERO_DOCUMENTO"]
+                cond = self.db.get_search_condition(cols)
+                conditions.append(f"({cond})")
+                
+                term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
+                query_params.extend([term_norm] * len(cols))
 
             if id_asesor:
                 # Arrendamientos no tienen ID_ASESOR directo, se filtra por el mandato asociado

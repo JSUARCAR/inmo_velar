@@ -11,6 +11,7 @@ import threading
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Optional
+import unicodedata
 
 import psycopg2
 from dotenv import load_dotenv
@@ -195,6 +196,8 @@ class DatabaseManager:
                 conexion = sqlite3.connect(str(self.database_path), check_same_thread=False)
                 conexion.row_factory = sqlite3.Row
                 conexion.execute("PRAGMA foreign_keys = ON")
+                # Registrar función de búsqueda sin acentos
+                conexion.create_function("unaccent_lower", 1, self.normalize_search_term)
 
             self._connection_pool[thread_id] = conexion
 
@@ -433,6 +436,36 @@ class DatabaseManager:
             info["path"] = str(self.database_path)
 
         return info
+
+    @staticmethod
+    def normalize_search_term(term: str) -> str:
+        """
+        Normaliza un término quitándole tildes y convirtiéndolo a minúsculas.
+        Usado internamente por SQLite (inyectado) y por los repositorios web.
+        """
+        if term is None:
+            return ""
+        # Normaliza y elimina marcas de combinación (acentos/diacríticos)
+        term_str = str(term)
+        nfkd_form = unicodedata.normalize('NFKD', term_str)
+        return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
+
+    def get_search_condition(self, columns: list[str]) -> str:
+        """
+        Genera la condición SQL OR para múltiples columnas que ignora acentos y mayúsculas.
+        Ejemplo PG: unaccent(lower(col)) LIKE %s OR unaccent(lower(col2)) LIKE %s
+        Ejemplo SL: unaccent_lower(col) LIKE ? OR unaccent_lower(col2) LIKE ?
+        """
+        placeholder = self.get_placeholder()
+        conditions = []
+        for col in columns:
+            if self.use_postgresql:
+                conditions.append(f"unaccent(lower({col})) LIKE {placeholder}")
+            else:
+                # Usa la función python inyectada
+                conditions.append(f"unaccent_lower({col}) LIKE {placeholder}")
+        
+        return " OR ".join(conditions)
 
 
 # Singleton global
