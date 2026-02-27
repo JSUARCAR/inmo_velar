@@ -414,7 +414,10 @@ class ServicioPersonas:
 
         persona.estado_registro = 1
         persona.motivo_inactivacion = None
-        return self.repo_persona.actualizar(persona, usuario_sistema)
+        result = self.repo_persona.actualizar(persona, usuario_sistema)
+        if result:
+            cache_manager.invalidate("personas")
+        return result
 
     def buscar_por_documento(self, documento: str) -> Optional[PersonaConRoles]:
         """Busca una persona por su número de documento."""

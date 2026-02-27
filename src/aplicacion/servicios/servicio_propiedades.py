@@ -216,7 +216,10 @@ class ServicioPropiedades:
         propiedad.updated_at = datetime.now().isoformat()
         propiedad.updated_by = usuario_sistema
 
-        return self.repo.actualizar(propiedad, usuario_sistema)
+        result = self.repo.actualizar(propiedad, usuario_sistema)
+        if result:
+            cache_manager.invalidate("propiedades")
+        return result
 
     def activar_propiedad(self, id_propiedad: int, usuario_sistema: str = "sistema") -> bool:
         """Reactiva una propiedad inactiva."""
@@ -229,7 +232,10 @@ class ServicioPropiedades:
         propiedad.updated_at = datetime.now().isoformat()
         propiedad.updated_by = usuario_sistema
 
-        return self.repo.actualizar(propiedad, usuario_sistema)
+        result = self.repo.actualizar(propiedad, usuario_sistema)
+        if result:
+            cache_manager.invalidate("propiedades")
+        return result
 
     def exportar_propiedades_csv(
         self,
