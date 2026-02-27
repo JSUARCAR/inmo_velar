@@ -1,5 +1,6 @@
 import reflex as rx
 
+from src.presentacion_reflex import styles
 from src.presentacion_reflex.state.auth_state import AuthState
 
 
@@ -317,12 +318,11 @@ def property_card(
             width="100%",
         ),
         # Elite Card Styling - White & Clean
-        variant="ghost",
+        bg=styles.BG_PANEL,
         width="99%",
         height="98%",
         margin="auto",
         style={
-            "background": "var(--color-panel-solid)",
             "border": "1px solid var(--gray-4)",
             "border_radius": "16px",
             "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",

@@ -2,6 +2,7 @@ import reflex as rx
 
 from src.presentacion_reflex.components.propiedades.wizard_progress import wizard_progress
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
+from src.presentacion_reflex import styles
 
 
 def form_field(label: str, content: rx.Component, error: str = None) -> rx.Component:
@@ -565,6 +566,7 @@ def modal_propiedad() -> rx.Component:
             ),
             max_width="800px",
             width="100%",
+            bg=styles.BG_PANEL,
             style={
                 "border_radius": "16px",
                 "padding": "24px",
