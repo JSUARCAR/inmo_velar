@@ -693,37 +693,158 @@ def contratos_page() -> rx.Component:
         # Modales de creación/edición
         contrato_mandato_form(),
         contrato_arrendamiento_form(),
-        # Diálogo de Confirmación de Renovación
-        rx.alert_dialog.root(
-            rx.alert_dialog.content(
-                rx.alert_dialog.title("Confirmar Renovación"),
-                rx.alert_dialog.description(
-                    rx.cond(
-                        ContratosState.selected_contract_type_renew == "Arrendamiento",
-                        "¿Estás seguro de renovar este contrato de arrendamiento? Se aplicará el incremento del IPC automáticamente.",
-                        "¿Estás seguro de renovar este contrato de mandato? Se extenderá la fecha de fin.",
+        # Diálogo de Confirmación de Renovación (Enriquecido con proyección)
+        rx.dialog.root(
+            rx.dialog.content(
+                # Encabezado
+                rx.hstack(
+                    rx.icon("refresh-cw", size=20, color="var(--cyan-9)"),
+                    rx.dialog.title(
+                        rx.text(
+                            "Renovar Contrato — ",
+                            rx.cond(
+                                ContratosState.selected_contract_type_renew == "Arrendamiento",
+                                "Arrendamiento",
+                                "Mandato",
+                            ),
+                            weight="bold",
+                        ),
                     ),
-                    size="2",
+                    spacing="2",
+                    align="center",
                 ),
-                rx.flex(
-                    rx.alert_dialog.cancel(
-                        rx.button(
-                            "Cancelar",
-                            variant="soft",
-                            color_scheme="gray",
-                            on_click=ContratosState.cancel_renewal,
+                rx.separator(size="4", my="3"),
+                # Contenido: spinner mientras carga o datos de proyección
+                rx.cond(
+                    ContratosState.renewal_loading_proyeccion,
+                    rx.center(
+                        rx.vstack(
+                            rx.spinner(size="3"),
+                            rx.text("Calculando proyección...", size="2", color="var(--gray-10)"),
+                            spacing="3",
+                            align="center",
                         ),
+                        padding="2rem",
                     ),
-                    rx.alert_dialog.action(
-                        rx.button(
-                            "Renovar", color_scheme="cyan", on_click=ContratosState.execute_renewal
+                    # --- Proyección cargada ---
+                    rx.vstack(
+                        # ── Fechas ──────────────────────────────────
+                        rx.box(
+                            rx.vstack(
+                                rx.hstack(
+                                    rx.icon("calendar", size=16, color="var(--gray-9)"),
+                                    rx.text("Fechas del contrato", weight="bold", size="2"),
+                                    spacing="2", align="center",
+                                ),
+                                rx.grid(
+                                    rx.text("Fecha fin actual:", size="2", color="var(--gray-10)"),
+                                    rx.badge(
+                                        ContratosState.renewal_proyeccion.get("fecha_fin_actual", "—"),
+                                        color_scheme="gray",
+                                        size="2",
+                                    ),
+                                    rx.text("Nueva fecha fin:", size="2", weight="medium"),
+                                    rx.input(
+                                        type="date",
+                                        value=ContratosState.renewal_nueva_fecha_fin,
+                                        on_change=ContratosState.set_renewal_fecha_fin,
+                                        size="2",
+                                        variant="surface",
+                                        style={"width": "180px"},
+                                    ),
+                                    columns="2",
+                                    gap="2",
+                                    align="center",
+                                    width="100%",
+                                ),
+                                spacing="2",
+                            ),
+                            padding="3",
+                            border_radius="8px",
+                            style={"background": "var(--gray-2)"},
+                            width="100%",
                         ),
+                        # ── Bloque IPC (solo arrendamiento) ─────────
+                        rx.cond(
+                            ContratosState.renewal_proyeccion.get("aplica_ipc", False),
+                            rx.box(
+                                rx.vstack(
+                                    rx.hstack(
+                                        rx.icon("trending-up", size=16, color="var(--green-9)"),
+                                        rx.text("Incremento IPC", weight="bold", size="2"),
+                                        rx.badge(
+                                            ContratosState.renewal_proyeccion.get("porcentaje_ipc", 0).to_string() + "%",
+                                            color_scheme="green",
+                                            size="1",
+                                        ),
+                                        spacing="2", align="center",
+                                    ),
+                                    rx.grid(
+                                        rx.text("Canon actual:", size="2", color="var(--gray-10)"),
+                                        rx.text(
+                                            "$ " + ContratosState.renewal_proyeccion.get("canon_actual", 0).to_string(),
+                                            size="2",
+                                            weight="medium",
+                                        ),
+                                        rx.text("Nuevo canon:", size="2", color="var(--gray-10)"),
+                                        rx.text(
+                                            "$ " + ContratosState.renewal_proyeccion.get("canon_nuevo", 0).to_string(),
+                                            size="2",
+                                            weight="bold",
+                                            color="var(--green-11)",
+                                        ),
+                                        columns="2",
+                                        gap="2",
+                                        align="center",
+                                        width="100%",
+                                    ),
+                                    spacing="2",
+                                ),
+                                padding="3",
+                                border_radius="8px",
+                                style={"background": "var(--green-2)", "border": "1px solid var(--green-5)"},
+                                width="100%",
+                            ),
+                            # Mandato: sin IPC, solo nota informativa
+                            rx.callout(
+                                "El mandato se renueva con el mismo canon — no aplica incremento de IPC.",
+                                icon="info",
+                                color="blue",
+                                size="1",
+                            ),
+                        ),
+                        # ── Nota edición fecha ───────────────────────
+                        rx.text(
+                            "💡 Puedes ajustar la nueva fecha fin antes de confirmar.",
+                            size="1",
+                            color="var(--gray-9)",
+                        ),
+                        spacing="3",
+                        width="100%",
+                    ),
+                ),
+                # ── Botones ──────────────────────────────────────────
+                rx.flex(
+                    rx.button(
+                        "Cancelar",
+                        variant="soft",
+                        color_scheme="gray",
+                        on_click=ContratosState.cancel_renewal,
+                        disabled=ContratosState.renewal_loading_proyeccion,
+                    ),
+                    rx.button(
+                        rx.icon("check", size=16),
+                        "Confirmar Renovación",
+                        color_scheme="cyan",
+                        on_click=ContratosState.execute_renewal,
+                        disabled=ContratosState.renewal_loading_proyeccion,
+                        loading=ContratosState.renewal_loading_proyeccion,
                     ),
                     spacing="3",
                     margin_top="16px",
                     justify="end",
                 ),
-                style={"max_width": 450},
+                style={"max_width": "480px"},
             ),
             open=ContratosState.show_renewal_confirm,
         ),

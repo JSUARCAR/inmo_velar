@@ -103,9 +103,56 @@ class ServicioContratoArrendamiento:
     def listar_arrendamientos_paginado(self, **kwargs):
         return self.repo_arriendo.listar_paginado(**kwargs)
 
+    def calcular_proyeccion_renovacion(self, id_contrato: int) -> dict:
+        """
+        Calcula la proyección de renovación SIN guardar nada en la BD.
+        Retorna un dict con las fechas y canon proyectados para mostrar en UI.
+        """
+        arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
+        if not arriendo or arriendo.estado_contrato_a != "Activo":
+            raise ValueError("Contrato no válido para proyección de renovación")
+
+        fecha_fin_actual = datetime.strptime(arriendo.fecha_fin_contrato_a, "%Y-%m-%d")
+        meses_duracion = arriendo.duracion_contrato_a
+
+        # Calcular nueva fecha fin
+        anio_nuevo = fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
+        mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
+        try:
+            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo)
+        except ValueError:
+            import calendar
+            last_day = calendar.monthrange(anio_nuevo, mes_nuevo)[1]
+            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo, day=last_day)
+
+        nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
+
+        # Calcular IPC si aplica
+        aplica_ipc = meses_duracion >= 12
+        canon_nuevo = arriendo.canon_arrendamiento
+        porcentaje_ipc = 0.0
+
+        if aplica_ipc:
+            ipc = self.repo_ipc.obtener_ultimo()
+            if ipc:
+                porcentaje_ipc = float(ipc.valor_ipc)
+                incremento = arriendo.canon_arrendamiento * (porcentaje_ipc / 100)
+                canon_nuevo = int(arriendo.canon_arrendamiento + incremento)
+
+        return {
+            "tipo": "Arrendamiento",
+            "fecha_fin_actual": arriendo.fecha_fin_contrato_a,
+            "nueva_fecha_fin": nueva_fecha_fin_str,
+            "duracion_meses": meses_duracion,
+            "canon_actual": arriendo.canon_arrendamiento,
+            "canon_nuevo": canon_nuevo,
+            "porcentaje_ipc": porcentaje_ipc,
+            "aplica_ipc": aplica_ipc,
+        }
+
     @cache_manager.invalidates("arriendos:list_paginated")
-    def renovar_arrendamiento(self, id_contrato: int, usuario_sistema: str) -> ContratoArrendamiento:
-        """Lógica de renovación automática con incremento IPC."""
+    def renovar_arrendamiento(self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None) -> ContratoArrendamiento:
+        """Lógica de renovación automática con incremento IPC. Acepta fecha fin personalizada."""
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
         if not arriendo or arriendo.estado_contrato_a != "Activo":
             raise ValueError("Contrato no válido para renovación")
@@ -127,6 +174,10 @@ class ServicioContratoArrendamiento:
             nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo, day=last_day)
 
         nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
+
+        # Si el usuario proveyó una fecha personalizada, usarla en lugar de la calculada
+        if nueva_fecha_fin:
+            nueva_fecha_fin_str = nueva_fecha_fin
 
         # 2. Calcular incremento IPC si aplica (duración >= 12 meses)
         nuevo_canon = arriendo.canon_arrendamiento

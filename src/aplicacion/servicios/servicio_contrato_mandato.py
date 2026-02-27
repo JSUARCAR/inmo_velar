@@ -105,6 +105,88 @@ class ServicioContratoMandato:
         """Delega el listado al repositorio (Inyección de Infraestructura)."""
         return self.repo_mandato.listar_paginado(**kwargs)
 
+    def calcular_proyeccion_renovacion(self, id_contrato: int) -> dict:
+        """
+        Calcula la proyección de renovación de mandato SIN guardar nada en la BD.
+        El mandato no aplica IPC, solo se extienden las fechas.
+        """
+        mandato = self.repo_mandato.obtener_por_id(id_contrato)
+        if not mandato or mandato.estado_contrato_m != "Activo":
+            raise ValueError("Contrato no válido para proyección de renovación")
+
+        fecha_fin_actual = datetime.strptime(mandato.fecha_fin_contrato_m, "%Y-%m-%d")
+        meses_duracion = mandato.duracion_contrato_m
+
+        # Calcular nueva fecha fin sumando los meses de duración
+        anio_nuevo = fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
+        mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
+        try:
+            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo)
+        except ValueError:
+            import calendar
+            last_day = calendar.monthrange(anio_nuevo, mes_nuevo)[1]
+            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo, day=last_day)
+
+        nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
+
+        return {
+            "tipo": "Mandato",
+            "fecha_fin_actual": mandato.fecha_fin_contrato_m,
+            "nueva_fecha_fin": nueva_fecha_fin_str,
+            "duracion_meses": meses_duracion,
+            "canon_actual": mandato.canon_mandato,
+            "canon_nuevo": mandato.canon_mandato,  # Sin cambio en mandato
+            "porcentaje_ipc": 0.0,
+            "aplica_ipc": False,
+        }
+
+    @cache_manager.invalidates("mandatos:list_paginated")
+    def renovar_mandato(self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None) -> "ContratoMandato":
+        """Renueva un contrato de mandato extendiendo su fecha de fin. Acepta fecha personalizada."""
+        mandato = self.repo_mandato.obtener_por_id(id_contrato)
+        if not mandato or mandato.estado_contrato_m != "Activo":
+            raise ValueError("Contrato de mandato no válido para renovación")
+
+        fecha_fin_actual = datetime.strptime(mandato.fecha_fin_contrato_m, "%Y-%m-%d")
+        meses_duracion = mandato.duracion_contrato_m
+
+        # Calcular nueva fecha fin automática
+        anio_nuevo = fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
+        mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
+        try:
+            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo)
+        except ValueError:
+            import calendar
+            last_day = calendar.monthrange(anio_nuevo, mes_nuevo)[1]
+            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo, day=last_day)
+
+        nueva_fecha_fin_str = nueva_fecha_fin if nueva_fecha_fin else nueva_fecha_fin_dt.strftime("%Y-%m-%d")
+
+        # Registrar historial de renovación
+        from src.dominio.entidades.renovacion_contrato import RenovacionContrato
+        renovacion = RenovacionContrato(
+            id_contrato_m=mandato.id_contrato_m,
+            tipo_contrato="Mandato",
+            fecha_inicio_original=mandato.fecha_inicio_contrato_m,
+            fecha_fin_original=mandato.fecha_fin_contrato_m,
+            fecha_fin_renovacion=nueva_fecha_fin_str,
+            canon_anterior=mandato.canon_mandato,
+            canon_nuevo=mandato.canon_mandato,
+            porcentaje_incremento=0,
+            motivo_renovacion="Prórroga Automática de Mandato",
+            fecha_renovacion=datetime.now().date().isoformat(),
+        )
+        self.repo_renovacion.crear(renovacion, usuario_sistema)
+
+        # Actualizar contrato
+        mandato.fecha_fin_contrato_m = nueva_fecha_fin_str
+        mandato.fecha_renovacion_contrato_m = datetime.now().date().isoformat()
+        mandato.updated_by = usuario_sistema
+        mandato.updated_at = datetime.now().isoformat()
+
+        self.repo_mandato.actualizar(mandato, usuario_sistema)
+        return mandato
+
     @cache_manager.invalidates("mandatos:list_paginated")
     def terminar_mandato(self, id_contrato: int, motivo: str, usuario_sistema: str) -> None:
         """Finaliza un contrato de mandato."""

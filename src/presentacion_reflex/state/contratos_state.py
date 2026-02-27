@@ -1152,18 +1152,74 @@ class ContratosState(DocumentosStateMixin):
     show_renewal_confirm: bool = False
     selected_contract_id_renew: Optional[int] = None
     selected_contract_type_renew: str = ""
+    # Proyección pre-calculada para mostrar en el diálogo
+    renewal_proyeccion: Dict[str, Any] = {}
+    renewal_nueva_fecha_fin: str = ""  # Editable por el usuario en el diálogo
+    renewal_loading_proyeccion: bool = False
 
-    def confirm_renewal(self, id_contrato: int, tipo: str):
-        """Abre dialogo de confirmación de renovación."""
-        self.selected_contract_id_renew = id_contrato
-        self.selected_contract_type_renew = tipo
-        self.show_renewal_confirm = True
+    @rx.event(background=True)
+    async def confirm_renewal(self, id_contrato: int, tipo: str):
+        """Abre el diálogo de renovación y pre-calcula la proyección."""
+        async with self:
+            self.selected_contract_id_renew = id_contrato
+            self.selected_contract_type_renew = tipo
+            self.renewal_proyeccion = {}
+            self.renewal_nueva_fecha_fin = ""
+            self.renewal_loading_proyeccion = True
+            self.show_renewal_confirm = True
+
+        try:
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import RepositorioRenovacionSQLite
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
+
+            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
+            repo_ipc = RepositorioIPCSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+
+            servicio = ServicioContratos(
+                db_manager,
+                repo_mandato=repo_mandato,
+                repo_arriendo=repo_arriendo,
+                repo_propiedad=repo_propiedad,
+                repo_renovacion=repo_renovacion,
+                repo_ipc=repo_ipc,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+            )
+
+            proyeccion = servicio.calcular_proyeccion_renovacion(id_contrato, tipo)
+
+            async with self:
+                self.renewal_proyeccion = proyeccion
+                self.renewal_nueva_fecha_fin = proyeccion.get("nueva_fecha_fin", "")
+                self.renewal_loading_proyeccion = False
+
+        except Exception as e:
+            async with self:
+                self.renewal_loading_proyeccion = False
+                self.renewal_proyeccion = {"error": str(e)}
+
+    def set_renewal_fecha_fin(self, value: str):
+        """Permite al usuario editar la nueva fecha fin desde el diálogo."""
+        self.renewal_nueva_fecha_fin = value
 
     def cancel_renewal(self):
-        """Cierra dialogo de confirmación."""
+        """Cierra el diálogo de confirmación y limpia el estado."""
         self.show_renewal_confirm = False
         self.selected_contract_id_renew = None
         self.selected_contract_type_renew = ""
+        self.renewal_proyeccion = {}
+        self.renewal_nueva_fecha_fin = ""
+        self.renewal_loading_proyeccion = False
 
     @rx.event(background=True)
     async def execute_renewal(self):
@@ -1203,14 +1259,16 @@ class ContratosState(DocumentosStateMixin):
 
             tipo = self.selected_contract_type_renew
             id_contrato = self.selected_contract_id_renew
+            # Usar la fecha personalizada si el usuario la editó
+            fecha_fin_personalizada = self.renewal_nueva_fecha_fin or None
 
             resultado_msg = ""
 
             if tipo == "Arrendamiento":
-                contrato_renovado = servicio.renovar_arrendamiento(id_contrato, usuario_sistema)
-                resultado_msg = f"Arrendamiento renovado. Nuevo Canon: ${contrato_renovado.canon_arrendamiento}, Fin: {contrato_renovado.fecha_fin_contrato_a}"
+                contrato_renovado = servicio.renovar_arrendamiento(id_contrato, usuario_sistema, fecha_fin_personalizada)
+                resultado_msg = f"Arrendamiento renovado. Nuevo Canon: ${contrato_renovado.canon_arrendamiento:,}, Fin: {contrato_renovado.fecha_fin_contrato_a}"
             elif tipo == "Mandato":
-                contrato_renovado = servicio.renovar_mandato(id_contrato, usuario_sistema)
+                contrato_renovado = servicio.renovar_mandato(id_contrato, usuario_sistema, fecha_fin_personalizada)
                 resultado_msg = f"Mandato renovado. Fin: {contrato_renovado.fecha_fin_contrato_m}"
 
             # Recargar lista
@@ -1225,6 +1283,8 @@ class ContratosState(DocumentosStateMixin):
                 self.is_loading = False
                 self.selected_contract_id_renew = None
                 self.selected_contract_type_renew = ""
+                self.renewal_proyeccion = {}
+                self.renewal_nueva_fecha_fin = ""
 
     def exportar_csv(self):
         """Genera y descarga el CSV de contratos."""
