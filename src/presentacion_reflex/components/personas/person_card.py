@@ -10,6 +10,8 @@ def person_card(persona: dict) -> rx.Component:
     # Get initials for avatar
     initials = persona["nombre"][:2]
 
+    from src.presentacion_reflex import styles
+
     return rx.card(
         rx.vstack(
             # Avatar section with gradient background
@@ -156,7 +158,7 @@ def person_card(persona: dict) -> rx.Component:
         width="99%",
         height="100%",
         margin="auto",
-        variant="ghost",
+        bg=styles.BG_PANEL,
         # Hover effects
         _hover={
             "transform": "translateY(-4px)",
@@ -167,7 +169,6 @@ def person_card(persona: dict) -> rx.Component:
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         # Glassmorphism effect
         style={
-            "background": "var(--color-panel-solid)",
             "border": "1px solid var(--gray-4)",
             "border_radius": "16px",
             "overflow": "hidden",

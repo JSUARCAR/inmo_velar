@@ -140,9 +140,9 @@ class RepositorioPropiedadSQLite:
             conditions.append(f"p.ID_MUNICIPIO = {placeholder}")
             params.append(filtro_municipio)
 
-        if solo_activas:
+        if solo_activas is not None:
             conditions.append(f"p.ESTADO_REGISTRO = {placeholder}")
-            params.append(True)
+            params.append(bool(solo_activas))
 
         if busqueda:
             conditions.append(
@@ -202,9 +202,9 @@ class RepositorioPropiedadSQLite:
             conditions.append(f"p.ID_MUNICIPIO = {placeholder}")
             params.append(filtro_municipio)
 
-        if solo_activas:
+        if solo_activas is not None:
             conditions.append(f"p.ESTADO_REGISTRO = {placeholder}")
-            params.append(True)
+            params.append(bool(solo_activas))
 
         if busqueda:
             conditions.append(

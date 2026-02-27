@@ -1,5 +1,6 @@
 import reflex as rx
 
+from src.presentacion_reflex import styles
 from src.presentacion_reflex.components.personas.role_selector_card import role_selector_card
 from src.presentacion_reflex.components.personas.wizard_progress import wizard_progress
 from src.presentacion_reflex.state.personas_state import PersonasState
@@ -661,6 +662,10 @@ def modal_persona() -> rx.Component:
             max_width=["95%", "700px"],
             width="100%",
             padding="6",
+            bg=styles.BG_PANEL,
+            style={
+                "border_radius": "16px",
+            },
             on_escape_key_down=PersonasState.close_modal,
             on_pointer_down_outside=PersonasState.close_modal,
         ),
