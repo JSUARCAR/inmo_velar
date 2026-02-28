@@ -4,6 +4,7 @@ from src.presentacion_reflex.components.layout.sidebar import sidebar_footer, si
 from src.presentacion_reflex.components.layout.bell_icon import bell_icon
 from src.presentacion_reflex.components.layout.theme_toggle import theme_toggle_icon
 from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
+import src.presentacion_reflex.styles as styles
 
 
 def mobile_nav() -> rx.Component:
@@ -17,7 +18,7 @@ def mobile_nav() -> rx.Component:
             rx.drawer.root(
                 rx.drawer.trigger(
                     rx.icon_button(
-                        rx.icon("menu", size=26, color="white"),
+                        rx.icon("menu", size=26, color=rx.color_mode_cond(light="var(--gray-12)", dark="white")),
                         variant="ghost",
                         size="3",
                         _hover={
@@ -46,12 +47,12 @@ def mobile_nav() -> rx.Component:
                                                 object_fit="contain",
                                                 alt="Logo",
                                             ),
-                                            rx.icon("building", size=26, color="white"),
+                                            rx.icon("building", size=26, color=rx.color_mode_cond(light="var(--gray-12)", dark="white")),
                                         ),
                                         rx.heading(
                                             "Inmobiliaria Velar",
                                             size="5",
-                                            color="white",
+                                            color=rx.color_mode_cond(light="var(--gray-12)", dark="white"),
                                             weight="bold",
                                             letter_spacing="-0.5px",
                                         ),
@@ -61,7 +62,7 @@ def mobile_nav() -> rx.Component:
                                     rx.spacer(),
                                     rx.drawer.close(
                                         rx.icon_button(
-                                            rx.icon("x", size=24, color="white"),
+                                            rx.icon("x", size=24, color=rx.color_mode_cond(light="var(--gray-12)", dark="white")),
                                             variant="ghost",
                                             size="2",
                                             _hover={
@@ -75,8 +76,9 @@ def mobile_nav() -> rx.Component:
                                     align="center",
                                 ),
                                 padding="6",
-                                background="linear-gradient(135deg, #1f2937 0%, #111827 100%)",
-                                border_bottom="1px solid rgba(255, 255, 255, 0.05)",
+                                background_color=styles.BG_PANEL,
+                                border_bottom="none",
+                                box_shadow=styles.NEU_SHADOW,
                             ),
                             # Drawer Content (Reused Sidebar Items)
                             rx.box(
@@ -97,18 +99,18 @@ def mobile_nav() -> rx.Component:
                             height="100%",
                             width="100%",
                             spacing="0",
-                            background="white",  # Changed to white ensuring high contrast
+                            background_color=styles.BG_PANEL,  # Changed for Neumorphism
                         ),
                         top="0",
                         left="0",
                         height="100%",
                         width="85%",
                         max_width="320px",
-                        background="white",  # Changed to white
+                        background_color=styles.BG_PANEL,  # Changed for Neumorphism
                         position="fixed",
                         z_index="100",
-                        box_shadow="10px 0 50px rgba(0,0,0,0.5)",
-                        border_right="1px solid rgba(0,0,0,0.1)",
+                        box_shadow=styles.NEU_SHADOW,
+                        border_right="none",
                     )
                 ),
                 direction="left",
@@ -130,10 +132,7 @@ def mobile_nav() -> rx.Component:
                     "Inmobiliaria Velar",
                     size="4",
                     weight="bold",
-                    background="linear-gradient(to right, #ffffff, #93c5fd)",
-                    background_clip="text",
-                    color="transparent",  # Fallback handled by background_clip usually, or use darker bg
-                    _hover={"background": "linear-gradient(to right, #93c5fd, #ffffff)"},
+                    color=rx.color_mode_cond(light="var(--gray-12)", dark="white"),
                     transition="all 0.5s ease",
                     cursor="default",
                 ),
@@ -161,9 +160,8 @@ def mobile_nav() -> rx.Component:
         position="sticky",
         top="0",
         z_index="50",
-        background="rgba(17, 24, 39, 0.75)",  # More slightly transparent
-        backdrop_filter="blur(16px) saturate(180%)",  # Advanced glass effect
-        border_bottom="1px solid rgba(255, 255, 255, 0.08)",
-        box_shadow="0 4px 30px rgba(0, 0, 0, 0.1)",
+        background_color=styles.BG_PANEL,
+        border_bottom="none",
+        box_shadow=styles.NEU_SHADOW,
         class_name="hide-on-desktop",
     )

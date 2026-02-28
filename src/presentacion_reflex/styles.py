@@ -10,12 +10,12 @@ la inversión de colores en Modo Oscuro.
 # Fondo general de la aplicación (detrás de las tarjetas)
 # --- Backgrounds ---
 # Fondo general de la aplicación (detrás de las tarjetas)
-BG_APP = rx.color_mode_cond(light="#e6e9ef", dark="#18191c")
+BG_APP = "var(--bg-app)"
 
 # Fondo de paneles, tarjetas, sidebar, modales
 # En el Neumorfismo Clásico, el fondo de panel es idéntico a la app
-BG_PANEL = rx.color_mode_cond(light="#e6e9ef", dark="#18191c")
-BG_HOVER = rx.color_mode_cond(light="#dbe0e8", dark="#1e1f23")
+BG_PANEL = "var(--bg-panel)"
+BG_HOVER = "var(--bg-hover)"
 
 # --- Neumorphism Shadows ---
 # Sombra Extruida (Elemento elevado)
