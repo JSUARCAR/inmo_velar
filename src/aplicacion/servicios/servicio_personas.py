@@ -13,6 +13,9 @@ from src.dominio.entidades.codeudor import Codeudor
 from src.dominio.entidades.persona import Persona
 from src.dominio.entidades.propietario import Propietario
 from src.dominio.entidades.proveedor import Proveedor
+import logging
+
+logger = logging.getLogger(__name__)
 
 from src.dominio.interfaces.repositorio_persona import IRepositorioPersona
 from src.dominio.interfaces.repositorio_asesor import IRepositorioAsesor
@@ -94,6 +97,7 @@ class ServicioPersonas:
         """
         Lista personas con sus roles asignados.
         """
+        logger.debug(f"Listando personas: filtro_rol={filtro_rol}, solo_activos={solo_activos}, busqueda={busqueda}")
         personas = self.repo_persona.obtener_todos(
             filtro_rol=filtro_rol,
             solo_activos=solo_activos,
@@ -119,6 +123,7 @@ class ServicioPersonas:
         fecha_fin: Optional[str] = None,
     ):
         """Lista personas con paginación y filtros adicionales."""
+        logger.debug(f"Listando personas paginado: page={page}, page_size={page_size}, filtro_rol={filtro_rol}, solo_activos={solo_activos}, busqueda={busqueda}, fecha_inicio={fecha_inicio}, fecha_fin={fecha_fin}")
         from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
 
         params = PaginationParams(page=page, page_size=page_size)
@@ -162,6 +167,7 @@ class ServicioPersonas:
         fecha_fin: Optional[str] = None,
     ) -> str:
         """Genera un CSV con las personas filtradas."""
+        logger.debug(f"Exportando personas a CSV: filtro_rol={filtro_rol}, solo_activos={solo_activos}, busqueda={busqueda}, fecha_inicio={fecha_inicio}, fecha_fin={fecha_fin}")
         import csv
         import io
 
@@ -209,6 +215,7 @@ class ServicioPersonas:
 
     def obtener_persona_completa(self, id_persona: int) -> Optional[PersonaConRoles]:
         """Obtiene una persona con todos sus roles."""
+        logger.debug(f"Obteniendo persona completa por ID: {id_persona}")
         persona = self.repo_persona.obtener_por_id(id_persona)
         if not persona:
             return None
@@ -224,6 +231,7 @@ class ServicioPersonas:
         usuario_sistema: str = "sistema",
     ) -> PersonaConRoles:
         """Crea una nueva persona y le asigna roles."""
+        logger.debug(f"Creando persona con roles: datos_persona={datos_persona}, roles={roles}, datos_extras={datos_extras}, usuario_sistema={usuario_sistema}")
         if self.repo_persona.obtener_por_documento(datos_persona["numero_documento"]):
             raise ValueError(
                 f"Ya existe una persona con documento {datos_persona['numero_documento']}"
@@ -257,6 +265,7 @@ class ServicioPersonas:
         self, id_persona: int, datos: Dict, usuario_sistema: str = "sistema"
     ) -> PersonaConRoles:
         """Actualiza los datos de una persona."""
+        logger.debug(f"Actualizando persona: id_persona={id_persona}, datos={datos}, usuario_sistema={usuario_sistema}")
         persona = self.repo_persona.obtener_por_id(id_persona)
         if not persona:
             raise ValueError(f"No existe persona con ID {id_persona}")
@@ -291,6 +300,7 @@ class ServicioPersonas:
         usuario_sistema: str = "sistema",
     ) -> None:
         """Asigna un rol a una persona existente."""
+        logger.debug(f"Asignando rol a persona: id_persona={id_persona}, nombre_rol={nombre_rol}, datos_extra={datos_extra}, usuario_sistema={usuario_sistema}")
         persona = self.repo_persona.obtener_por_id(id_persona)
         if not persona:
             raise ValueError(f"No existe persona con ID {id_persona}")
@@ -305,6 +315,7 @@ class ServicioPersonas:
         self, id_persona: int, nombre_rol: str, datos_extra: Dict, usuario_sistema: str = "sistema"
     ) -> None:
         """Actualiza los datos específicos de un rol."""
+        logger.debug(f"Actualizando datos de rol: id_persona={id_persona}, nombre_rol={nombre_rol}, datos_extra={datos_extra}, usuario_sistema={usuario_sistema}")
         persona = self.repo_persona.obtener_por_id(id_persona)
         if not persona:
             raise ValueError(f"No existe persona con ID {id_persona}")
@@ -379,6 +390,7 @@ class ServicioPersonas:
 
     def remover_rol(self, id_persona: int, nombre_rol: str) -> None:
         """Remueve un rol de una persona."""
+        logger.debug(f"Removiendo rol de persona: id_persona={id_persona}, nombre_rol={nombre_rol}")
         datos_roles = self._obtener_datos_roles_persona(id_persona)
         if len(datos_roles) == 1 and nombre_rol in datos_roles:
             raise ValueError("No se puede remover el último rol de una persona")
@@ -401,6 +413,7 @@ class ServicioPersonas:
         usuario_sistema: str = "sistema",
     ) -> bool:
         """Inactiva una persona (soft delete)."""
+        logger.debug(f"Desactivando persona: id_persona={id_persona}, motivo={motivo}, usuario_sistema={usuario_sistema}")
         result = self.repo_persona.inactivar(id_persona, motivo, usuario_sistema)
         if result:
             cache_manager.invalidate("personas")
@@ -408,6 +421,7 @@ class ServicioPersonas:
 
     def activar_persona(self, id_persona: int, usuario_sistema: str = "sistema") -> bool:
         """Reactiva una persona inactiva."""
+        logger.debug(f"Activando persona: id_persona={id_persona}, usuario_sistema={usuario_sistema}")
         persona = self.repo_persona.obtener_por_id(id_persona)
         if not persona:
             return False
@@ -421,6 +435,7 @@ class ServicioPersonas:
 
     def buscar_por_documento(self, documento: str) -> Optional[PersonaConRoles]:
         """Busca una persona por su número de documento."""
+        logger.debug(f"Buscando persona por documento: {documento}")
         persona = self.repo_persona.obtener_por_documento(documento)
         if not persona:
             return None

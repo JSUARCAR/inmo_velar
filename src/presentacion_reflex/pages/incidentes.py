@@ -9,31 +9,32 @@ from src.presentacion_reflex.state.incidentes_state import IncidentesState
 
 
 def _filter_bar() -> rx.Component:
-    return rx.hstack(
+    return rx.flex(
         rx.input(
             placeholder="Buscar incidente...",
             on_change=IncidentesState.set_search,
-            width="250px",
+            width=["100%", "250px"],
             icon="search",
         ),
         rx.select(
             IncidentesState.prioridad_options,
             value=IncidentesState.filter_prioridad,
             on_change=IncidentesState.set_filter_prioridad,
-            width="150px",
+            width=["100%", "150px"],
         ),
         rx.select(
             IncidentesState.estado_options,
             value=IncidentesState.filter_estado,
             on_change=IncidentesState.set_filter_estado,
-            width="150px",
+            width=["100%", "150px"],
         ),
-        rx.spacer(),
+        rx.spacer(display=["none", "block"]),
         rx.segmented_control.root(
             rx.segmented_control.item("Kanban", value="kanban"),
             rx.segmented_control.item("Lista", value="list"),
             value=IncidentesState.view_mode,
             on_change=lambda val: IncidentesState.toggle_view_mode(),
+            width=["100%", "auto"],
         ),
         rx.cond(
             AuthState.check_action("Incidentes", "CREAR"),
@@ -42,6 +43,7 @@ def _filter_bar() -> rx.Component:
                     rx.icon("plus", size=18),
                     "Reportar",
                     on_click=IncidentesState.open_create_modal,
+                    width=["100%", "auto"],
                 ),
                 content="Reportar nuevo incidente",
             ),
@@ -49,6 +51,8 @@ def _filter_bar() -> rx.Component:
         width="100%",
         padding_bottom="1em",
         align_items="center",
+        flex_wrap="wrap",
+        gap="4",
     )
 
 
@@ -93,7 +97,7 @@ def incidentes() -> rx.Component:
             _filter_bar(),
             rx.cond(IncidentesState.view_mode == "kanban", kanban_board(), _list_view()),
             # Pagination Controls
-            rx.hstack(
+            rx.flex(
                 rx.button(
                     rx.icon("chevron-left"),
                     "Anterior",
@@ -118,7 +122,8 @@ def incidentes() -> rx.Component:
                 width="100%",
                 justify="center",
                 align_items="center",
-                spacing="4",
+                flex_wrap="wrap",
+                gap="4",
                 margin_top="1em",
             ),
             modal_form(),

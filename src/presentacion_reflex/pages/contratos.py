@@ -264,6 +264,9 @@ def contratos_page() -> rx.Component:
                                         "Persona", style={"font-weight": "600"}
                                     ),
                                     rx.table.column_header_cell(
+                                        "Asesor", style={"font-weight": "600"}
+                                    ),
+                                    rx.table.column_header_cell(
                                         "Fecha Inicio", style={"font-weight": "600"}
                                     ),
                                     rx.table.column_header_cell(
@@ -327,8 +330,32 @@ def contratos_page() -> rx.Component:
                                                     size="1",
                                                     color="gray",
                                                 ),
+                                                rx.cond(
+                                                    contrato.get("habitante", "") != "",
+                                                    rx.hstack(
+                                                        rx.icon("home", size=12, color="var(--gray-9)"),
+                                                        rx.text(
+                                                            f"Habitante: {contrato.get('habitante', '')}",
+                                                            size="1",
+                                                            color="var(--gray-10)",
+                                                        ),
+                                                        spacing="1",
+                                                        align="center",
+                                                    ),
+                                                ),
                                                 spacing="0",
                                                 align="start",
+                                            ),
+                                        ),
+                                        rx.table.cell(
+                                            rx.hstack(
+                                                rx.icon("headset", size=14, color="var(--gray-10)"),
+                                                rx.text(
+                                                    contrato.get("asesor", "N/A"),
+                                                    size="2",
+                                                ),
+                                                spacing="2",
+                                                align="center",
                                             ),
                                         ),
                                         rx.table.cell(contrato["fecha_inicio"]),

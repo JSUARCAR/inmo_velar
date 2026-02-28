@@ -78,7 +78,32 @@ def contrato_card(contrato: dict) -> rx.Component:
                         size="1",
                         color="var(--gray-9)",
                     ),
+                    rx.cond(
+                        contrato.get("habitante", "") != "",
+                        rx.hstack(
+                            rx.icon("home", size=12, color="var(--gray-9)"),
+                            rx.text(
+                                f"Habitante: {contrato.get('habitante', '')}",
+                                size="1",
+                                color="var(--gray-10)",
+                            ),
+                            spacing="1",
+                            align="center",
+                        ),
+                    ),
                     spacing="0",
+                ),
+                align="center",
+                spacing="2",
+            ),
+            # Info: Asesor
+            rx.hstack(
+                rx.icon("headset", size=16, color="var(--purple-9)"),
+                rx.text(
+                    contrato.get("asesor", "N/A"),
+                    size="2",
+                    weight="medium",
+                    color="var(--gray-11)",
                 ),
                 align="center",
                 spacing="2",
