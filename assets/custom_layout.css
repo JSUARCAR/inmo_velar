@@ -1,6 +1,17 @@
 /* Custom responsive rules for Inmobiliaria Velar Layout */
 /* Bypasses Reflex and Radix UI SSR bugs */
 
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --default-font-family: 'Comfortaa', sans-serif;
+}
+
+body,
+* {
+    font-family: 'Comfortaa', sans-serif !important;
+}
+
 /* Ocultar en escritorio (768px y mayor) */
 @media (min-width: 768px) {
     .hide-on-desktop {
@@ -68,4 +79,18 @@
 
 .grid-main-right {
     grid-column: span 1;
+}
+
+/* 
+ * Glassmorphism Override para Reflex/Radix UI.
+ * Radix inyecta un seudo-elemento ::before y ::after para el color y el outline.
+ * Esta clase fuerza la anulación para tarjetas de cristal puro (ej. Login). 
+ */
+.transparent-card::before,
+.transparent-card::after,
+.rt-Card.transparent-card::before,
+.rt-Card.transparent-card::after {
+    display: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
 }

@@ -4,6 +4,7 @@ import reflex as rx
 
 from src.presentacion_reflex.components.incidentes.incident_card import incident_card
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
+from src.presentacion_reflex import styles
 
 
 def _column_icon(title: str) -> str:
@@ -74,11 +75,10 @@ def _kanban_column(title: str, items: List[Dict[str, Any]], color_scheme: str) -
         width="320px",  # Un poco más ancho para mejor lectura
         height="100%",
         padding="1rem",
-        background_color="var(--gray-2)",  # Fondo sutil
-        border="1px solid var(--gray-3)",
+        background_color="transparent",  # Fondo sutil del kanban base
+        border="none",
         border_radius="lg",
         flex_shrink=0,
-        box_shadow="0 2px 4px rgba(0,0,0,0.02)",  # Sombra muy sutil
     )
 
 

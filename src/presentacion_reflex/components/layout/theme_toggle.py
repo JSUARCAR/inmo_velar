@@ -1,4 +1,5 @@
 import reflex as rx
+from src.presentacion_reflex import styles
 
 def theme_toggle() -> rx.Component:
     """
@@ -26,24 +27,29 @@ def theme_toggle() -> rx.Component:
 def theme_toggle_icon() -> rx.Component:
     """
     Compact version (Icon only) for headers or tight spaces.
+    Neumorphism Executive Edition.
     """
     return rx.tooltip(
         rx.button(
             rx.cond(
                 rx.color_mode == "light",
-                rx.icon("moon", size=18),
-                rx.icon("sun", size=18),
+                rx.icon("moon", size=18, color=rx.color("gray", 11)),
+                rx.icon("sun", size=18, color=rx.color("gray", 11)),
             ),
             on_click=rx.toggle_color_mode,
-            variant="ghost",
             size="3",
-            color="gray",
             radius="full",
-            _hover={
-                "background": rx.color("gray", 3),
-                "transform": "rotate(15deg)",
+            background=styles.BG_PANEL,
+            border="none",
+            box_shadow=styles.NEU_SHADOW,
+            _active={
+                "box_shadow": styles.NEU_INSET,
+                "transform": "scale(0.95)",
             },
-            transition="all 0.3s ease",
+            _hover={
+                "transform": "translateY(-1px)",
+            },
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         ),
         content="Cambiar Tema",
     )
