@@ -5,10 +5,12 @@ Implementa mapeo 1:1 estricto con tabla PERSONAS.
 
 from datetime import datetime
 from typing import List, Optional
+import logging
 
 from src.dominio.entidades.persona import Persona
 from src.infraestructura.persistencia.database import DatabaseManager
 
+logger = logging.getLogger(__name__)
 
 class RepositorioPersonaSQLite:
     """
@@ -57,6 +59,7 @@ class RepositorioPersonaSQLite:
 
     def obtener_por_id(self, id_persona: int) -> Optional[Persona]:
         """Obtiene una persona por su ID."""
+        logger.debug(f"Ejecutando obtener_por_id: id_persona={id_persona}")
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
@@ -68,6 +71,7 @@ class RepositorioPersonaSQLite:
 
     def obtener_por_documento(self, numero_documento: str) -> Optional[Persona]:
         """Obtiene una persona por su número de documento."""
+        logger.debug(f"Ejecutando obtener_por_documento: numero_documento={numero_documento}")
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
@@ -90,6 +94,7 @@ class RepositorioPersonaSQLite:
         offset: int = 0,
     ) -> List[Persona]:
         """Obtiene personas con filtros y paginación."""
+        logger.debug(f"Ejecutando obtener_todos: filtro_rol={filtro_rol}, solo_activos={solo_activos}, busqueda={busqueda}, fecha_inicio={fecha_inicio}, fecha_fin={fecha_fin}, limit={limit}, offset={offset}")
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
@@ -156,6 +161,7 @@ class RepositorioPersonaSQLite:
         fecha_fin: Optional[str] = None,
     ) -> int:
         """Cuenta total de personas con filtros."""
+        logger.debug(f"Ejecutando contar_todos: filtro_rol={filtro_rol}, solo_activos={solo_activos}, busqueda={busqueda}, fecha_inicio={fecha_inicio}, fecha_fin={fecha_fin}")
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
@@ -229,6 +235,7 @@ class RepositorioPersonaSQLite:
 
     def crear(self, persona: Persona, usuario_sistema: str) -> Persona:
         """Crea una nueva persona en la BD."""
+        logger.debug(f"Ejecutando crear persona: documento={persona.numero_documento}, usuario_sistema={usuario_sistema}")
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
@@ -269,6 +276,7 @@ class RepositorioPersonaSQLite:
 
     def actualizar(self, persona: Persona, usuario_sistema: str) -> bool:
         """Actualiza una persona existente."""
+        logger.debug(f"Ejecutando actualizar persona: id_persona={persona.id_persona}, usuario_sistema={usuario_sistema}")
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
@@ -306,6 +314,7 @@ class RepositorioPersonaSQLite:
 
     def inactivar(self, id_persona: int, motivo: str, usuario_sistema: str) -> bool:
         """Inactiva una persona (soft delete)."""
+        logger.debug(f"Ejecutando inactivar persona: id_persona={id_persona}, motivo={motivo}, usuario_sistema={usuario_sistema}")
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()

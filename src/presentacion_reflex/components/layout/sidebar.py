@@ -27,7 +27,10 @@ def sidebar_item(
             text,
             size="3",
             weight=rx.cond(is_active, "bold", "medium"),
-            color=rx.cond(is_active, "#0f172a", "#334155"),  # Dark colors for light bg
+            color=rx.color_mode_cond(
+                light=rx.cond(is_active, "#0f172a", "#334155"),
+                dark="white",
+            ),
         ),
         spacing="3",
         padding_x="4",
@@ -127,7 +130,7 @@ def sidebar_section(title: str, *items) -> rx.Component:
         rx.text(
             title,
             size="1",
-            color="#64748b",  # Slate 500 - Darker than before
+            color=rx.color_mode_cond(light="#64748b", dark="white"),
             weight="bold",
             letter_spacing="0.5px",
             padding_x="4",
@@ -320,7 +323,7 @@ def sidebar_footer() -> rx.Component:
                 AuthState.user_nombre,
                 size="2",
                 weight="bold",
-                color="#1e293b",
+                color=rx.color_mode_cond(light="#1e293b", dark="white"),
                 max_width="120px",
                 overflow="hidden",
                 text_overflow="ellipsis",
@@ -328,7 +331,7 @@ def sidebar_footer() -> rx.Component:
             rx.text(
                 AuthState.user_rol,
                 size="1",
-                color="#64748b",
+                color=rx.color_mode_cond(light="#64748b", dark="white"),
                 max_width="120px",
                 overflow="hidden",
                 text_overflow="ellipsis",
@@ -508,7 +511,7 @@ def sidebar() -> rx.Component:
                     "Inmobiliaria Velar",
                 ),
                 size="3",
-                color="#1e293b",  # Dark text
+                color=rx.color_mode_cond(light="#1e293b", dark="white"),
                 weight="bold",
                 letter_spacing="-0.5px",
                 text_align="center",

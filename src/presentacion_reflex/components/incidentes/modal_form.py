@@ -184,7 +184,7 @@ def modal_form() -> rx.Component:
                         spacing="4",
                         width="100%",
                     ),
-                    columns="2",
+                    columns=rx.breakpoints(initial="1", sm="2"),
                     spacing="4",
                     width="100%",
                 ),

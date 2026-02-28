@@ -5,6 +5,9 @@ import reflex as rx
 from src.aplicacion.servicios.servicio_personas import ServicioPersonas
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.auth_state import AuthState
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class PersonaDict(TypedDict):
@@ -81,6 +84,7 @@ class PersonasState(rx.State):
 
     def load_seguros_activos(self):
         """Carga la lista de seguros activos."""
+        logger.debug("Ejecutando load_seguros_activos en PersonasState")
         try:
             from src.aplicacion.servicios.servicio_seguros import ServicioSeguros
             servicio = ServicioSeguros(db_manager)
@@ -98,20 +102,24 @@ class PersonasState(rx.State):
 
     def set_seguro_search(self, value: str):
         """Actualiza el texto de búsqueda de seguro."""
+        logger.debug(f"Ejecutando set_seguro_search: {value}")
         self.seguro_search = value
 
     def toggle_seguro_menu(self, open: bool):
         """Abre o cierra el menú del combobox de seguro."""
+        logger.debug(f"Ejecutando toggle_seguro_menu: {open}")
         self.seguro_menu_open = open
 
     def select_seguro(self, value: str, label: str):
         """Selecciona un seguro del combobox."""
+        logger.debug(f"Ejecutando select_seguro: value={value}, label={label}")
         self.seguro_selected_label = label
         self.form_data["id_seguro"] = value
         self.seguro_menu_open = False
 
     def load_personas(self):
         """Carga la lista de personas aplicando filtros y paginación."""
+        logger.debug(f"Ejecutando load_personas: page={self.page}, filtro_rol={self.filtro_rol}, search={self.search_query}, fecha_inicio={self.fecha_inicio}, fecha_fin={self.fecha_fin}")
         self.is_loading = True
         try:
             from src.infraestructura.persistencia.repositorio_persona_sqlite import (
@@ -197,34 +205,41 @@ class PersonasState(rx.State):
     def set_search(self, query: str):
         """Actualiza el texto de búsqueda SIN disparar recarga inmediata.
         La búsqueda se ejecuta al presionar Enter o el botón de buscar."""
+        logger.debug(f"Ejecutando set_search: {query}")
         self.search_query = query
 
     def search_personas(self):
         """Ejecuta la búsqueda contra BD (llamar desde botón o Enter)."""
+        logger.debug(f"Ejecutando search_personas con query: {self.search_query}")
         self.page = 1
         self.load_personas()
 
     def handle_search_key_down(self, key: str):
         """Lanza la búsqueda al presionar Enter en el campo de texto."""
+        logger.debug(f"Ejecutando handle_search_key_down: {key}")
         if key == "Enter":
             return self.search_personas()
 
     def set_filtro_rol(self, rol: str):
         """Actualiza filtro de rol."""
+        logger.debug(f"Ejecutando set_filtro_rol: {rol}")
         self.filtro_rol = rol
         self.page = 1
         self.load_personas()
 
     def set_fecha_inicio(self, fecha: str):
         """Actualiza fecha inicio (sin recarga inmediata)."""
+        logger.debug(f"Ejecutando set_fecha_inicio: {fecha}")
         self.fecha_inicio = fecha
 
     def set_fecha_fin(self, fecha: str):
         """Actualiza fecha fin (sin recarga inmediata)."""
+        logger.debug(f"Ejecutando set_fecha_fin: {fecha}")
         self.fecha_fin = fecha
 
     def exportar_csv(self):
         """Exporta los datos filtrados a CSV y descarga el archivo."""
+        logger.debug("Ejecutando exportar_csv")
         pass  # print("[DEBUG_EXPORT] Iniciando proceso de exportación CSV") [OpSec Removed]
         try:
             yield rx.toast.info("Generando archivo...", position="bottom-right")
@@ -318,11 +333,13 @@ class PersonasState(rx.State):
             yield rx.toast.error(f"Error al exportar: {str(e)}", position="bottom-right")
 
     def next_page(self):
+        logger.debug("Ejecutando next_page")
         if self.page < self.total_pages:
             self.page += 1
             self.load_personas()
 
     def prev_page(self):
+        logger.debug("Ejecutando prev_page")
         if self.page > 1:
             self.page -= 1
             self.load_personas()
@@ -331,6 +348,7 @@ class PersonasState(rx.State):
 
     def toggle_rol(self, rol: str, checked: bool):
         """Toggles a role in the selected_roles list."""
+        logger.debug(f"Ejecutando toggle_rol: rol={rol}, checked={checked}")
         pass  # print(f"🔄 Toggle Rol: {rol} -> {checked}") [OpSec Removed]
         if checked:
             if rol not in self.selected_roles:
@@ -370,15 +388,18 @@ class PersonasState(rx.State):
 
     def toggle_view_mode(self):
         """Toggle between table and cards view."""
+        logger.debug(f"Ejecutando toggle_view_mode. Modo actual: {self.view_mode}")
         self.view_mode = "cards" if self.view_mode == "table" else "table"
 
     def next_modal_step(self):
         """Advance to next wizard step."""
+        logger.debug(f"Ejecutando next_modal_step. Paso actual: {self.modal_step}")
         if self.modal_step < 3:
             self.modal_step += 1
 
     def handle_form_submit(self, form_data: dict):
         """Handle form submission for all wizard steps."""
+        logger.debug(f"Ejecutando handle_form_submit en paso {self.modal_step} con datos: {form_data}")
         pass  # print(f"📝 Form submitted at step {self.modal_step}") [OpSec Removed]
         pass  # print(f"Received form data: {form_data}") [OpSec Removed]
 
@@ -398,11 +419,13 @@ class PersonasState(rx.State):
 
     def prev_modal_step(self):
         """Go back to previous wizard step."""
+        logger.debug(f"Ejecutando prev_modal_step. Paso actual: {self.modal_step}")
         if self.modal_step > 1:
             self.modal_step -= 1
 
     def reset_wizard(self):
         """Reset wizard to step 1."""
+        logger.debug("Ejecutando reset_wizard")
         self.modal_step = 1
         self.form_validation_errors = {}
 
@@ -410,16 +433,19 @@ class PersonasState(rx.State):
 
     def set_upper(self, field: str, value: str):
         """Establece el valor del campo en mayúsculas."""
+        logger.debug(f"Ejecutando set_upper: field={field}, value={value}")
         self.form_data[field] = value.upper()
 
     def set_telefono_habitante(self, value: str):
         """Establece el teléfono habitante."""
+        logger.debug(f"Ejecutando set_telefono_habitante: {value}")
         self.form_data["telefono_habitante"] = value
 
     # --- Modal Logic ---
 
     def open_create_modal(self):
         """Abre modal para crear nueva persona."""
+        logger.debug("Ejecutando open_create_modal")
         pass  # print("\n🔵 OPEN_CREATE_MODAL called") [OpSec Removed]
         self.is_editing = False
         self.current_persona_id = None
@@ -451,6 +477,7 @@ class PersonasState(rx.State):
 
     def open_edit_modal(self, persona: Dict):
         """Abre modal para editar persona existente con todos sus datos."""
+        logger.debug(f"Ejecutando open_edit_modal para persona ID: {persona.get('id')}")
         try:
             self.is_editing = True
             self.current_persona_id = persona["id"]
@@ -585,6 +612,7 @@ class PersonasState(rx.State):
 
     def close_modal(self):
         """Cierra el modal."""
+        logger.debug("Ejecutando close_modal")
         self.show_modal = False
         self.form_data = {}
         self.selected_roles = []
@@ -594,6 +622,7 @@ class PersonasState(rx.State):
         self, form_data: dict, is_editing: bool, selected_roles: List[str]
     ) -> tuple[bool, str]:
         """Validate form data before saving."""
+        logger.debug(f"Ejecutando validate_form_data: is_editing={is_editing}, roles={selected_roles}")
         pass  # print("\n🔍 === VALIDATE_FORM START ===") [OpSec Removed]
 
         # Required fields for all personas
@@ -653,6 +682,7 @@ class PersonasState(rx.State):
     @rx.event(background=True)
     async def save_persona(self, form_data: dict):
         """Guarda la persona (Crear o Actualizar) con roles múltiples."""
+        logger.debug(f"Ejecutando save_persona con form_data: {form_data}")
         pass  # print("\n=== SAVE_PERSONA MULTI-ROLE CALLED ===") [OpSec Removed]
 
         # CRITICAL: ALL state access must be inside async with self

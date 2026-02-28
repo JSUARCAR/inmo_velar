@@ -162,6 +162,9 @@ class RepositorioContratoArrendamientoSQLite:
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
                 JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+                LEFT JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'Activo'
+                LEFT JOIN ASESORES am ON cm.ID_ASESOR = am.ID_ASESOR
+                LEFT JOIN PERSONAS per_asesor ON am.ID_PERSONA = per_asesor.ID_PERSONA
             """
 
             conditions = []
@@ -209,7 +212,9 @@ class RepositorioContratoArrendamientoSQLite:
                     p.DIRECCION_PROPIEDAD,
                     p.TIPO_PROPIEDAD,
                     per.NOMBRE_COMPLETO as ARRENDATARIO,
-                    per.NUMERO_DOCUMENTO
+                    per.NUMERO_DOCUMENTO,
+                    per_asesor.NOMBRE_COMPLETO as ASESOR,
+                    arr.NOMBRE_HABITANTE as HABITANTE
                 {base_from}
                 {where_clause}
                 ORDER BY ca.ID_CONTRATO_A DESC
@@ -229,6 +234,8 @@ class RepositorioContratoArrendamientoSQLite:
                     "tipo_propiedad": row["TIPO_PROPIEDAD"],
                     "arrendatario": row["ARRENDATARIO"],
                     "documento_arrendatario": row["NUMERO_DOCUMENTO"],
+                    "asesor": row["ASESOR"] if row["ASESOR"] else "Sin asesor",
+                    "habitante": row["HABITANTE"] if row["HABITANTE"] else "",
                 }
                 for row in cursor.fetchall()
             ]

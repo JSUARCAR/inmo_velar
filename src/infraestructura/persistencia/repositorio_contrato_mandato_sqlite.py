@@ -109,6 +109,8 @@ class RepositorioContratoMandatoSQLite:
                 JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
                 JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+                LEFT JOIN ASESORES am ON cm.ID_ASESOR = am.ID_ASESOR
+                LEFT JOIN PERSONAS per_asesor ON am.ID_PERSONA = per_asesor.ID_PERSONA
             """
 
             conditions = []
@@ -153,7 +155,8 @@ class RepositorioContratoMandatoSQLite:
                     p.DIRECCION_PROPIEDAD,
                     p.TIPO_PROPIEDAD,
                     per.NOMBRE_COMPLETO as PROPIETARIO,
-                    per.NUMERO_DOCUMENTO
+                    per.NUMERO_DOCUMENTO,
+                    per_asesor.NOMBRE_COMPLETO as ASESOR
                 {base_from}
                 {where_clause}
                 ORDER BY cm.ID_CONTRATO_M DESC
@@ -173,6 +176,7 @@ class RepositorioContratoMandatoSQLite:
                     "tipo_propiedad": row["TIPO_PROPIEDAD"],
                     "propietario": row["PROPIETARIO"],
                     "documento_propietario": row["NUMERO_DOCUMENTO"],
+                    "asesor": row["ASESOR"] if row["ASESOR"] else "Sin asesor",
                 }
                 for row in cursor.fetchall()
             ]
