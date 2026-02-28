@@ -19,27 +19,15 @@ BG_HOVER = rx.color_mode_cond(light="#dbe0e8", dark="#1e1f23")
 
 # --- Neumorphism Shadows ---
 # Sombra Extruida (Elemento elevado)
-NEU_SHADOW = rx.color_mode_cond(
-    light="10px 10px 20px rgba(184, 195, 218, 0.45), -10px -10px 20px rgba(255, 255, 255, 0.8)",
-    dark="10px 10px 20px rgba(0, 0, 0, 0.8), -10px -10px 20px rgba(45, 47, 53, 0.4)"
-)
+NEU_SHADOW = "var(--neu-shadow)"
 
 # Sombra para Modales (Flota sobre el overlay oscuro sin producir resplandor blanco excesivo)
-NEU_MODAL_SHADOW = rx.color_mode_cond(
-    light="10px 10px 30px rgba(184, 195, 218, 0.6), -5px -5px 15px rgba(255, 255, 255, 0.2)",
-    dark="15px 15px 40px rgba(0, 0, 0, 0.9), -5px -5px 15px rgba(45, 47, 53, 0.2)"
-)
+NEU_MODAL_SHADOW = "var(--neu-modal-shadow)"
 
 # Sombra Hundida (Elemento presionado o inactivo estructuralmente)
-NEU_INSET = rx.color_mode_cond(
-    light="inset 6px 6px 12px rgba(184, 195, 218, 0.5), inset -6px -6px 12px rgba(255, 255, 255, 0.95)",
-    dark="inset 6px 6px 12px rgba(0, 0, 0, 0.9), inset -6px -6px 12px rgba(45, 47, 53, 0.5)"
-)
+NEU_INSET = "var(--neu-inset)"
 
-NEU_INSET_LIGHT = rx.color_mode_cond(
-    light="inset 2px 2px 6px rgba(184, 195, 218, 0.4), inset -2px -2px 6px rgba(255, 255, 255, 0.9)",
-    dark="inset 2px 2px 6px rgba(0, 0, 0, 0.6), inset -2px -2px 6px rgba(45, 47, 53, 0.4)"
-)
+NEU_INSET_LIGHT = "var(--neu-inset-light)"
 
 # --- Textos ---
 # Texto Principal (Títulos, Body fuerte)

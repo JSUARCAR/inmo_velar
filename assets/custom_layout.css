@@ -5,6 +5,22 @@
 
 :root {
     --default-font-family: 'Comfortaa', sans-serif;
+
+    /* Neumorphism Shadows (Light Theme Defaults) */
+    --neu-shadow: 10px 10px 20px rgba(184, 195, 218, 0.45), -10px -10px 20px rgba(255, 255, 255, 0.8);
+    --neu-modal-shadow: 10px 10px 30px rgba(184, 195, 218, 0.6), -5px -5px 15px rgba(255, 255, 255, 0.2);
+    --neu-inset: inset 6px 6px 12px rgba(184, 195, 218, 0.5), inset -6px -6px 12px rgba(255, 255, 255, 0.95);
+    --neu-inset-light: inset 4px 4px 8px rgba(184, 195, 218, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+}
+
+.dark,
+.dark-theme,
+[data-theme="dark"] {
+    /* Neumorphism Shadows (Dark Theme) */
+    --neu-shadow: 10px 10px 20px rgba(0, 0, 0, 0.8), -10px -10px 20px rgba(45, 47, 53, 0.4);
+    --neu-modal-shadow: 15px 15px 40px rgba(0, 0, 0, 0.9), -5px -5px 15px rgba(45, 47, 53, 0.2);
+    --neu-inset: inset 6px 6px 12px rgba(0, 0, 0, 0.8), inset -6px -6px 12px rgba(45, 47, 53, 0.6);
+    --neu-inset-light: inset 4px 4px 8px rgba(0, 0, 0, 0.5), inset -4px -4px 8px rgba(45, 47, 53, 0.4);
 }
 
 body,
