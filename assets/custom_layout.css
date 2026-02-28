@@ -6,6 +6,11 @@
 :root {
     --default-font-family: 'Comfortaa', sans-serif;
 
+    /* Neumorphism Backgrounds (Light Theme Defaults) */
+    --bg-app: #e6e9ef;
+    --bg-panel: #e6e9ef;
+    --bg-hover: #dbe0e8;
+
     /* Neumorphism Shadows (Light Theme Defaults) */
     --neu-shadow: 10px 10px 20px rgba(184, 195, 218, 0.45), -10px -10px 20px rgba(255, 255, 255, 0.8);
     --neu-modal-shadow: 10px 10px 30px rgba(184, 195, 218, 0.6), -5px -5px 15px rgba(255, 255, 255, 0.2);
@@ -16,6 +21,11 @@
 .dark,
 .dark-theme,
 [data-theme="dark"] {
+    /* Neumorphism Backgrounds (Dark Theme) */
+    --bg-app: #18191c;
+    --bg-panel: #18191c;
+    --bg-hover: #1e1f23;
+
     /* Neumorphism Shadows (Dark Theme) */
     --neu-shadow: 10px 10px 20px rgba(0, 0, 0, 0.8), -10px -10px 20px rgba(45, 47, 53, 0.4);
     --neu-modal-shadow: 15px 15px 40px rgba(0, 0, 0, 0.9), -5px -5px 15px rgba(45, 47, 53, 0.2);

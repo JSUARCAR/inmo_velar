@@ -41,7 +41,7 @@ app = rx.App(
     style={
         "font_family": "Comfortaa",
         "background_color": styles.BG_APP,
-        "color": styles.TEXT_PRIMARY,
+        "color": "var(--gray-12)",
         rx.card: {
             "background_color": styles.BG_PANEL,
             "border": "none",
