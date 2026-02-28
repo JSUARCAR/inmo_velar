@@ -3,6 +3,7 @@ from typing import Any, Dict
 import reflex as rx
 
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
+from src.presentacion_reflex import styles
 
 
 def _get_priority_color(priority: str) -> str:
@@ -182,12 +183,11 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
             width="100%",
             align_items="stretch",  # Estirar para que la franja ocupe todo el alto
         ),
-        bg="white",
-        # Elite: Colored border shows status at a glance
-        border="2px solid",
-        border_color=rx.color(status_base_color, 5),
-        border_radius="lg",
-        shadow="sm",
+        bg=styles.BG_PANEL,
+        # Elite Neumorphic: Instead of solid border, use subtle shadows
+        border="none",
+        border_radius="16px",
+        box_shadow=styles.NEU_SHADOW,
         position="relative",
         overflow="hidden",
         width="100%",
@@ -195,9 +195,11 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
         cursor="pointer",
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         _hover={
-            "transform": "translateY(-4px) scale(1.01)",
-            "box_shadow": "0 20px 40px -15px var(--gray-alpha-4), 0 8px 20px -8px var(--gray-alpha-3)",
-            "border_color": rx.color(status_base_color, 9),
+            "transform": "translateY(-2px)",
+            "box_shadow": rx.color_mode_cond(
+                light="12px 12px 24px rgba(184, 195, 218, 0.5), -12px -12px 24px rgba(255, 255, 255, 1)",
+                dark="12px 12px 24px rgba(0, 0, 0, 0.9), -12px -12px 24px rgba(45, 47, 53, 0.5)"
+            ),
             "& > div > div:first-child": {"bg": rx.color(status_base_color, 11), "width": "8px"},
         },
         on_click=lambda: IncidentesState.select_incidente(incident),

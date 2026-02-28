@@ -6,6 +6,7 @@ Versión web moderna. Fase 1: Core Architecture.
 import reflex as rx
 from src.presentacion_reflex.pages import login
 from src.presentacion_reflex.state.auth_state import AuthState
+from src.presentacion_reflex import styles
 
 # --- VISTAS DEL DASHBOARD (Protegidas) ---
 
@@ -23,14 +24,66 @@ def index() -> rx.Component:
 
 # Crear la app (toast provider incluido automáticamente)
 app = rx.App(
-    stylesheets=["aurora.css", "custom_layout.css"],
+    stylesheets=[
+        "aurora.css", 
+        "custom_layout.css",
+        "https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap"
+    ],
     html_lang="es",
     theme=rx.theme(
         appearance="light",
         has_background=True,
         radius="large",
         accent_color="blue",
+        panel_background="solid", # Force solid background for Neumorphism
+        font_family="Comfortaa",
     ),
+    style={
+        rx.card: {
+            "background_color": styles.BG_PANEL,
+            "border": "none",
+            "box_shadow": styles.NEU_SHADOW,
+        },
+        rx.dialog.content: {
+            "background_color": styles.BG_PANEL,
+            "border": "none",
+            "box_shadow": styles.NEU_MODAL_SHADOW,
+        },
+        rx.table.root: {
+            "background_color": styles.BG_PANEL,
+            "border_radius": "16px",
+            "box_shadow": styles.NEU_SHADOW,
+            "overflow": "hidden",
+            "border": "none",
+        },
+        rx.table.row: {
+            "_hover": {
+                "background_color": styles.BG_HOVER,
+            },
+        },
+        rx.table.cell: {
+            "border_bottom": "1px solid var(--gray-4)",
+        },
+        rx.input: {
+            "background_color": styles.BG_PANEL,
+            "border": "none",
+            "box_shadow": styles.NEU_INSET,
+            "_focus": {
+                "box_shadow": styles.NEU_INSET_LIGHT,
+                "outline": "none",
+            }
+        },
+        rx.select.trigger: {
+            "background_color": styles.BG_PANEL,
+            "border": "none",
+            "box_shadow": styles.NEU_INSET,
+        },
+        rx.text_area: {
+            "background_color": styles.BG_PANEL,
+            "border": "none",
+            "box_shadow": styles.NEU_INSET,
+        },
+    },
     head_components=[
         rx.script(src="/matrix.js?v=5"),
     ]

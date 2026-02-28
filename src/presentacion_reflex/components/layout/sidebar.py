@@ -1,5 +1,6 @@
 import reflex as rx
 
+from src.presentacion_reflex import styles
 from src.presentacion_reflex.components.layout.bell_icon import bell_icon
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
@@ -37,19 +38,19 @@ def sidebar_item(
         padding_y="3",
         margin_left="2",
         border_radius="10px",
-        border_left=rx.cond(is_active, "3px solid #3b82f6", "3px solid transparent"),
-        background=rx.cond(is_active, "rgba(59, 130, 246, 0.1)", "transparent"),
+        border="none",
+        background=styles.BG_PANEL,
+        box_shadow=rx.cond(is_active, styles.NEU_INSET_LIGHT, "none"),
         _hover={
-            "background": rx.cond(
+            "box_shadow": rx.cond(
                 is_active,
-                "rgba(59, 130, 246, 0.15)",
-                "rgba(59, 130, 246, 0.05)",  # Light blue hover
+                styles.NEU_INSET_LIGHT,
+                styles.NEU_SHADOW,  # Elevado al hover
             ),
-            "transform": "translateX(4px)",
         },
         width="100%",
         align="center",
-        transition="all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+        transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         cursor="pointer",
     )
 
@@ -88,11 +89,11 @@ def sidebar_item(
         side_offset=15,
         align="center",
         avoid_collisions=True,
-        background_color="white",
+        background_color=styles.BG_PANEL,
         padding="16px",
         border_radius="16px",
-        border="1px solid #e5e7eb",
-        box_shadow="0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+        border="none",
+        box_shadow=styles.NEU_SHADOW,
         width="260px",
         data_state="open",
     )
@@ -494,11 +495,11 @@ def sidebar() -> rx.Component:
                     side="right",
                     side_offset=20,
                     align="start",
-                    background_color="white",
+                    background_color=styles.BG_PANEL,
                     padding="16px",
                     border_radius="16px",
-                    border="1px solid #e2e8f0",
-                    box_shadow="0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                    border="none",
+                    box_shadow=styles.NEU_SHADOW,
                     width="280px",
                     data_state="open",
                     z_index="2000",
@@ -536,12 +537,12 @@ def sidebar() -> rx.Component:
         sidebar_footer(),
         height="100vh",
         width="280px",
-        background="rgba(0, 0, 51, 0.06)",  # Changed background
+        background=styles.BG_PANEL,
         position="sticky",
         top="0",
         left="0",
         flex_direction="column",
-        box_shadow="2px 0 8px rgba(0, 0, 0, 0.1)",
+        box_shadow=f"5px 0 15px {rx.color_mode_cond(light='rgba(163, 177, 198, 0.2)', dark='rgba(0, 0, 0, 0.4)')}",
         on_mount=ConfiguracionState.cargar_datos_empresa,
         class_name="hide-on-mobile",
     )

@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
+from src.presentacion_reflex import styles
 
 
 def searchable_select(
@@ -58,7 +59,7 @@ def searchable_select(
                                         width="100%",
                                         padding_x="3",
                                         padding_y="2",
-                                        _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
+                                        _hover={"bg": styles.BG_HOVER, "cursor": "pointer"},
                                         on_click=lambda: on_select(opt[1], opt[0]),
                                     )
                                 )
@@ -74,6 +75,9 @@ def searchable_select(
                     padding="2",
                     width="320px",
                     spacing="2",
+                    background_color=styles.BG_PANEL,
+                    border="none",
+                    box_shadow=styles.NEU_MODAL_SHADOW,
                 ),
             ),
             open=menu_open,
@@ -234,8 +238,10 @@ def modal_form() -> rx.Component:
             ),
             width="700px",  # Wider modal for elite look
             max_width="95vw",
-            border_radius="12px",
-            box_shadow="0 10px 30px -10px rgba(0,0,0,0.2)",
+            background_color=styles.BG_PANEL,
+            border_radius="16px",
+            border="none",
+            box_shadow=styles.NEU_MODAL_SHADOW,
         ),
         open=IncidentesState.modal_open,
         on_open_change=IncidentesState.set_modal_open,

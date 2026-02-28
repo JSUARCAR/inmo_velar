@@ -32,17 +32,17 @@ def login_page() -> rx.Component:
                 # Card de Login
                 rx.card(
                     rx.vstack(
-                        rx.heading("Iniciar Sesión", size="6", margin_bottom="4"),
+                        rx.heading("Iniciar Sesión", size="6", margin_bottom="4", color="white"),
                         rx.form(
                             rx.vstack(
-                                rx.text("Usuario", size="2", weight="bold"),
+                                rx.text("Usuario", size="2", weight="bold", color="white"),
                                 rx.input(
                                     placeholder="usuario sistema",
                                     name="username",
                                     size="3",
                                     width="100%",
                                 ),
-                                rx.text("Contraseña", size="2", weight="bold"),
+                                rx.text("Contraseña", size="2", weight="bold", color="white"),
                                 rx.input(
                                     type="password",
                                     placeholder="••••••••",
@@ -74,13 +74,13 @@ def login_page() -> rx.Component:
                             on_submit=AuthState.login,
                             width="100%",
                         ),
-                        rx.divider(margin_y="4"),
+                        rx.divider(margin_y="4", style={"border_color": "rgba(255, 255, 255, 0.2)"}),
                         rx.text(
                             "¿Olvidó su contraseña?",
                             size="2",
-                            color="gray",
+                            color="rgba(255,255,255,0.7)",
                             cursor="pointer",
-                            _hover={"text_decoration": "underline"},
+                            _hover={"text_decoration": "underline", "color": "white"},
                         ),
                         padding="6",
                         align="center",
@@ -88,7 +88,16 @@ def login_page() -> rx.Component:
                     width="100%",
                     max_width="400px",
                     size="4",
-                    box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                    # Override global Neumorphism with Pure Glassmorphism exclusively for Login
+                    backdrop_filter="blur(10px)",
+                    border="1px solid",
+                    border_color=rx.color_mode_cond(
+                        light="rgba(255, 255, 255, 0.5)",
+                        dark="rgba(255, 255, 255, 0.15)"
+                    ),
+                    box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.3)",
+                    style={"background_color": "transparent !important"},
+                    class_name="transparent-card",
                 ),
                 spacing="6",
                 align="center",

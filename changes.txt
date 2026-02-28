@@ -1,2 +1,13 @@
-src/presentacion_reflex/components/contratos/contrato_mandato_form.py
-src/presentacion_reflex/state/contratos_state.py
+ M changes.txt
+ M src/aplicacion/servicios/servicio_personas.py
+ M src/infraestructura/persistencia/repositorio_contrato_arrendamiento_sqlite.py
+ M src/infraestructura/persistencia/repositorio_contrato_mandato_sqlite.py
+ M src/infraestructura/persistencia/repositorio_persona_sqlite.py
+ M src/presentacion_reflex/components/contratos/contrato_card.py
+ M src/presentacion_reflex/components/incidentes/modal_details.py
+ M src/presentacion_reflex/components/incidentes/modal_form.py
+ M src/presentacion_reflex/components/layout/sidebar.py
+ M src/presentacion_reflex/pages/contratos.py
+ M src/presentacion_reflex/pages/incidentes.py
+ M src/presentacion_reflex/state/personas_state.py
+?? .agent/skills/crear-rama-github-elite/
