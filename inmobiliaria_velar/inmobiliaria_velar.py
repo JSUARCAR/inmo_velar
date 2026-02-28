@@ -89,7 +89,59 @@ app = rx.App(
     },
     head_components=[
         rx.script(src="/matrix.js?v=5"),
-    ]
+    ],
+    style={
+        "font_family": "Comfortaa",
+        "background_color": styles.BG_APP,
+        "color": styles.TEXT_PRIMARY,
+        "&::selection": {
+            "background_color": styles.ACCENT_BG_SOFT,
+        },
+        rx.card: {
+            "background_color": styles.BG_PANEL,
+            "border": "none",
+            "box_shadow": styles.NEU_SHADOW,
+        },
+        rx.dialog.content: {
+            "background_color": styles.BG_PANEL,
+            "border": "none",
+            "box_shadow": styles.NEU_MODAL_SHADOW,
+        },
+        rx.table.root: {
+            "background_color": styles.BG_PANEL,
+            "border_radius": "16px",
+            "box_shadow": styles.NEU_SHADOW,
+            "overflow": "hidden",
+            "border": "none",
+        },
+        rx.table.row: {
+            "_hover": {
+                "background_color": styles.BG_HOVER,
+            },
+        },
+        rx.table.cell: {
+            "border_bottom": "1px solid var(--gray-4)",
+        },
+        rx.input: {
+            "background_color": styles.BG_PANEL,
+            "border": "none",
+            "box_shadow": styles.NEU_INSET,
+            "_focus": {
+                "box_shadow": styles.NEU_INSET_LIGHT,
+                "outline": "none",
+            }
+        },
+        rx.select.trigger: {
+            "background_color": styles.BG_PANEL,
+            "border": "none",
+            "box_shadow": styles.NEU_INSET,
+        },
+        rx.text_area: {
+            "background_color": styles.BG_PANEL,
+            "border": "none",
+            "box_shadow": styles.NEU_INSET,
+        },
+    }
 )
 
 # Middleware de Seguridad (Headers) - Implementación ASGI pura para evitar conflictos con WebSockets
