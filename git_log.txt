@@ -1,0 +1,114 @@
+commit 4c7c79e75edb2e33e38f5903c7c2707976c21714
+Author: jsuarcardev <jsebastiansuarezc@gmail.com>
+Date:   Sat Feb 28 01:55:36 2026 -0500
+
+    fix(ui): migra rx.color_mode_cond de sombras globales a variables de css puro paramitar crash ssr
+
+diff --git a/assets/custom_layout.css b/assets/custom_layout.css
+index 43511e9..026bd17 100644
+--- a/assets/custom_layout.css
++++ b/assets/custom_layout.css
+@@ -5,6 +5,22 @@
+ 
+ :root {
+     --default-font-family: 'Comfortaa', sans-serif;
++
++    /* Neumorphism Shadows (Light Theme Defaults) */
++    --neu-shadow: 10px 10px 20px rgba(184, 195, 218, 0.45), -10px -10px 20px rgba(255, 255, 255, 0.8);
++    --neu-modal-shadow: 10px 10px 30px rgba(184, 195, 218, 0.6), -5px -5px 15px rgba(255, 255, 255, 0.2);
++    --neu-inset: inset 6px 6px 12px rgba(184, 195, 218, 0.5), inset -6px -6px 12px rgba(255, 255, 255, 0.95);
++    --neu-inset-light: inset 4px 4px 8px rgba(184, 195, 218, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.9);
++}
++
++.dark,
++.dark-theme,
++[data-theme="dark"] {
++    /* Neumorphism Shadows (Dark Theme) */
++    --neu-shadow: 10px 10px 20px rgba(0, 0, 0, 0.8), -10px -10px 20px rgba(45, 47, 53, 0.4);
++    --neu-modal-shadow: 15px 15px 40px rgba(0, 0, 0, 0.9), -5px -5px 15px rgba(45, 47, 53, 0.2);
++    --neu-inset: inset 6px 6px 12px rgba(0, 0, 0, 0.8), inset -6px -6px 12px rgba(45, 47, 53, 0.6);
++    --neu-inset-light: inset 4px 4px 8px rgba(0, 0, 0, 0.5), inset -4px -4px 8px rgba(45, 47, 53, 0.4);
+ }
+ 
+ body,
+diff --git a/src/presentacion_reflex/styles.py b/src/presentacion_reflex/styles.py
+index c7623a8..e231c73 100644
+--- a/src/presentacion_reflex/styles.py
++++ b/src/presentacion_reflex/styles.py
+@@ -19,27 +19,15 @@ BG_HOVER = rx.color_mode_cond(light="#dbe0e8", dark="#1e1f23")
+ 
+ # --- Neumorphism Shadows ---
+ # Sombra Extruida (Elemento elevado)
+-NEU_SHADOW = rx.color_mode_cond(
+-    light="10px 10px 20px rgba(184, 195, 218, 0.45), -10px -10px 20px rgba(255, 255, 255, 0.8)",
+-    dark="10px 10px 20px rgba(0, 0, 0, 0.8), -10px -10px 20px rgba(45, 47, 53, 0.4)"
+-)
++NEU_SHADOW = "var(--neu-shadow)"
+ 
+ # Sombra para Modales (Flota sobre el overlay oscuro sin producir resplandor blanco excesivo)
+-NEU_MODAL_SHADOW = rx.color_mode_cond(
+-    light="10px 10px 30px rgba(184, 195, 218, 0.6), -5px -5px 15px rgba(255, 255, 255, 0.2)",
+-    dark="15px 15px 40px rgba(0, 0, 0, 0.9), -5px -5px 15px rgba(45, 47, 53, 0.2)"
+-)
++NEU_MODAL_SHADOW = "var(--neu-modal-shadow)"
+ 
+ # Sombra Hundida (Elemento presionado o inactivo estructuralmente)
+-NEU_INSET = rx.color_mode_cond(
+-    light="inset 6px 6px 12px rgba(184, 195, 218, 0.5), inset -6px -6px 12px rgba(255, 255, 255, 0.95)",
+-    dark="inset 6px 6px 12px rgba(0, 0, 0, 0.9), inset -6px -6px 12px rgba(45, 47, 53, 0.5)"
+-)
++NEU_INSET = "var(--neu-inset)"
+ 
+-NEU_INSET_LIGHT = rx.color_mode_cond(
+-    light="inset 2px 2px 6px rgba(184, 195, 218, 0.4), inset -2px -2px 6px rgba(255, 255, 255, 0.9)",
+-    dark="inset 2px 2px 6px rgba(0, 0, 0, 0.6), inset -2px -2px 6px rgba(45, 47, 53, 0.4)"
+-)
++NEU_INSET_LIGHT = "var(--neu-inset-light)"
+ 
+ # --- Textos ---
+ # Texto Principal (Títulos, Body fuerte)
+
+commit afe08a694969fc8379d612cae5173930ad296272
+Author: jsuarcardev <jsebastiansuarezc@gmail.com>
+Date:   Sat Feb 28 01:49:42 2026 -0500
+
+    fix(ui): elimina seudoselector de seleccion en styles globales para arreglar render de react-router en railway
+
+diff --git a/inmobiliaria_velar/inmobiliaria_velar.py b/inmobiliaria_velar/inmobiliaria_velar.py
+index 6a7113f..a044009 100644
+--- a/inmobiliaria_velar/inmobiliaria_velar.py
++++ b/inmobiliaria_velar/inmobiliaria_velar.py
+@@ -42,9 +42,6 @@ app = rx.App(
+         "font_family": "Comfortaa",
+         "background_color": styles.BG_APP,
+         "color": styles.TEXT_PRIMARY,
+-        "&::selection": {
+-            "background_color": styles.ACCENT_BG_SOFT,
+-        },
+         rx.card: {
+             "background_color": styles.BG_PANEL,
+             "border": "none",
+
+commit 914b16e74c79265f73189b072c55cd10bcd10d51
+Author: jsuarcardev <jsebastiansuarezc@gmail.com>
+Date:   Sat Feb 28 01:45:00 2026 -0500
+
+    fix(ui): aplica herencia global directa de fuente comfortaa a rx.App
+
+diff --git a/inmobiliaria_velar/inmobiliaria_velar.py b/inmobiliaria_velar/inmobiliaria_velar.py
+index 1675f09..6a7113f 100644
+--- a/inmobiliaria_velar/inmobiliaria_velar.py
++++ b/inmobiliaria_velar/inmobiliaria_velar.py
+@@ -39,6 +39,12 @@ app = rx.App(
+         font_family="Comfortaa",
+     ),
+     style={
++        "font_family": "Comfortaa",
++        "background_color": styles.BG_APP,
++        "color": styles.TEXT_PRIMARY,
++        "&::selection": {
++            "background_color": styles.ACCENT_BG_SOFT,
++        },
+         rx.card: {
+             "background_color": styles.BG_PANEL,
+             "border": "none",
