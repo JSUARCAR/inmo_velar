@@ -104,15 +104,12 @@ def step_1_content() -> rx.Component:
             ),
             form_field(
                 "Observaciones",
-                rx.text_area(
+                neuro_text_area(
                     placeholder="Detalles adicionales sobre la propiedad...",
                     value=PropiedadesState.form_data["observaciones"],
                     on_change=lambda v: PropiedadesState.set_form_field("observaciones", v),
-                    variant="surface",
-                    min_height="100px",
                     size="3",
                     width="100%",
-                    resize="vertical",
                 ),
             ),
             spacing="4",
