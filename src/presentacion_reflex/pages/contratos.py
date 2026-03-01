@@ -4,6 +4,7 @@ Gestión de contratos de mandato y arrendamiento con filtros, CRUD y paginación
 """
 
 import reflex as rx
+from src.presentacion_reflex import styles
 
 from src.presentacion_reflex.components.contratos import (
     contrato_arrendamiento_form,
@@ -89,6 +90,7 @@ def contratos_page() -> rx.Component:
                     width="350px",
                     size="3",
                     style={
+                        **styles.NEU_INPUT_STYLE,
                         "transition": "all 0.3s ease",
                     },
                     _focus={
@@ -119,7 +121,7 @@ def contratos_page() -> rx.Component:
                         placeholder="Asesor",
                         width="200px",
                         size="3",
-                        variant="surface",
+                        style=styles.NEU_SELECT_STYLE,
                     ),
                     rx.select.content(
                         rx.select.group(

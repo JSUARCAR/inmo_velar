@@ -7,6 +7,7 @@ from typing import Any
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
+from src.presentacion_reflex import styles
 
 
 def searchable_select(
@@ -100,16 +101,16 @@ def form_field(
     return rx.vstack(
         rx.text(label, size="2", weight="medium", color="gray.700"),
         rx.input(
-            name=name,
             placeholder=placeholder,
             type=type,
-            default_value=default_value if value is None else None,
-            value=value,
-            on_change=on_change,
+            default_value=default_value,
             required=required,
             read_only=read_only,
+            value=value,
+            on_change=on_change,
             width="100%",
-            variant="surface" if read_only else "soft",
+            size="2",
+            style=styles.NEU_INPUT_STYLE,
         ),
         spacing="1",
         width="100%",

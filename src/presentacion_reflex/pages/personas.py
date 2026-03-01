@@ -187,12 +187,6 @@ def personas_page() -> rx.Component:
                             on_key_down=PersonasState.handle_search_key_down,
                             size="3",
                             width=["100%", "100%", "320px"],
-                            style={
-                                "transition": "all 0.3s ease",
-                            },
-                            _focus={
-                                "box_shadow": "0 0 0 3px rgba(102, 126, 234, 0.2)",
-                            },
                         ),
                         # Role filter with icon
                         rx.select(

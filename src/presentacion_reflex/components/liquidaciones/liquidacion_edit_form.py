@@ -5,6 +5,7 @@ Formulario de Edición de Liquidación
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
+from src.presentacion_reflex import styles
 
 
 def form_field(
@@ -25,6 +26,7 @@ def form_field(
             read_only=read_only,
             required=required,
             width="100%",
+            style=styles.NEU_INPUT_STYLE,
             variant="surface" if read_only else "soft",
         ),
         spacing="1",
@@ -154,6 +156,7 @@ def liquidacion_edit_form() -> rx.Component:
                         default_value=LiquidacionesState.form_data["observaciones"],
                         placeholder="Detalles adicionales sobre la liquidación...",
                         width="100%",
+                        style=styles.NEU_INPUT_STYLE,
                     ),
                     rx.divider(margin_y="1em"),
                     # Botones

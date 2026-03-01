@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
+from src.presentacion_reflex import styles
 
 
 def modal_form() -> rx.Component:
@@ -31,7 +32,7 @@ def modal_form() -> rx.Component:
                             rx.box(
                                 rx.text("Asesor", size="2", weight="bold", margin_bottom="1"),
                                 rx.select.root(
-                                    rx.select.trigger(placeholder="Seleccione un asesor"),
+                                    rx.select.trigger(placeholder="Seleccione un asesor", style=styles.NEU_SELECT_STYLE),
                                     rx.select.content(
                                         rx.foreach(
                                             LiquidacionAsesoresState.asesores_options,
@@ -67,6 +68,7 @@ def modal_form() -> rx.Component:
                                         "periodo", val
                                     ),
                                     read_only=LiquidacionAsesoresState.selected_liquidacion_id > 0,
+                                    style=styles.NEU_INPUT_STYLE,
                                 ),
                                 width="100%",
                             ),
@@ -91,6 +93,7 @@ def modal_form() -> rx.Component:
                                     on_change=lambda val: LiquidacionAsesoresState.set_form_field(
                                         "porcentaje_comision", val
                                     ),
+                                    style=styles.NEU_INPUT_STYLE,
                                 ),
                                 width="100%",
                             ),

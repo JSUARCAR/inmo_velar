@@ -4,6 +4,7 @@ from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.components.shared.aurora_background import aurora_background
 from src.presentacion_reflex.components.shared.matrix_background import matrix_background
 from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
+from src.presentacion_reflex import styles
 
 
 def login_page() -> rx.Component:
@@ -53,20 +54,7 @@ def login_page() -> rx.Component:
                                     name="username",
                                     size="3",
                                     width="100%",
-                                    background_color=rx.color_mode_cond(light="rgba(255, 255, 255, 0.5)", dark="rgba(255, 255, 255, 0.08)"),
-                                    border=rx.color_mode_cond(light="1px solid rgba(255, 255, 255, 0.8)", dark="1px solid rgba(255, 255, 255, 0.15)"),
-                                    color=rx.color_mode_cond(light="black", dark="white"),
-                                    box_shadow=rx.color_mode_cond(light="inset 0 2px 4px rgba(0,0,0,0.05)", dark="inset 0 2px 4px rgba(0,0,0,0.1)"),
-                                    _focus={
-                                        "border_color": rx.color_mode_cond(light="rgba(0, 0, 0, 0.3)", dark="rgba(255, 255, 255, 0.5)"), 
-                                        "box_shadow": rx.color_mode_cond(
-                                            light="0 0 0 2px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(0,0,0,0.05)", 
-                                            dark="0 0 0 2px rgba(255, 255, 255, 0.2), inset 0 2px 4px rgba(0,0,0,0.1)"
-                                        ),
-                                        "background_color": rx.color_mode_cond(light="rgba(255, 255, 255, 0.8)", dark="rgba(255, 255, 255, 0.12)")
-                                    },
-                                    _placeholder={"color": rx.color_mode_cond(light="rgba(0, 0, 0, 0.4)", dark="rgba(255, 255, 255, 0.5)")},
-                                    transition="all 0.3s ease",
+                                    style=styles.NEU_INPUT_STYLE,
                                 ),
                                 rx.text("Contraseña", size="2", weight="bold", color=rx.color_mode_cond(light="rgba(0,0,0,0.7)", dark="rgba(255,255,255,0.9)")),
                                 rx.input(
@@ -75,20 +63,7 @@ def login_page() -> rx.Component:
                                     name="password",
                                     size="3",
                                     width="100%",
-                                    background_color=rx.color_mode_cond(light="rgba(255, 255, 255, 0.5)", dark="rgba(255, 255, 255, 0.08)"),
-                                    border=rx.color_mode_cond(light="1px solid rgba(255, 255, 255, 0.8)", dark="1px solid rgba(255, 255, 255, 0.15)"),
-                                    color=rx.color_mode_cond(light="black", dark="white"),
-                                    box_shadow=rx.color_mode_cond(light="inset 0 2px 4px rgba(0,0,0,0.05)", dark="inset 0 2px 4px rgba(0,0,0,0.1)"),
-                                    _focus={
-                                        "border_color": rx.color_mode_cond(light="rgba(0, 0, 0, 0.3)", dark="rgba(255, 255, 255, 0.5)"), 
-                                        "box_shadow": rx.color_mode_cond(
-                                            light="0 0 0 2px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(0,0,0,0.05)", 
-                                            dark="0 0 0 2px rgba(255, 255, 255, 0.2), inset 0 2px 4px rgba(0,0,0,0.1)"
-                                        ),
-                                        "background_color": rx.color_mode_cond(light="rgba(255, 255, 255, 0.8)", dark="rgba(255, 255, 255, 0.12)")
-                                    },
-                                    _placeholder={"color": rx.color_mode_cond(light="rgba(0, 0, 0, 0.4)", dark="rgba(255, 255, 255, 0.5)")},
-                                    transition="all 0.3s ease",
+                                    style=styles.NEU_INPUT_STYLE,
                                 ),
                                 # Mensaje de error (condicional) con Glassmorphism
                                 rx.cond(

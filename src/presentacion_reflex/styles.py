@@ -75,3 +75,54 @@ NEU_INSET_LIGHT = rx.color_mode_cond(
     light="inset 4px 4px 8px rgba(184, 195, 218, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.9)",
     dark="inset 4px 4px 8px rgba(0, 0, 0, 0.5), inset -4px -4px 8px rgba(45, 47, 53, 0.4)"
 )
+
+
+# --- Component Styles ---
+NEU_INPUT_STYLE = {
+    "background": BG_PANEL,
+    "box_shadow": NEU_INSET,
+    "border": "none",
+    "transition": "all 0.2s ease",
+    "border_radius": "10px",
+    "padding": "0.5rem 1rem",
+    "color": TEXT_PRIMARY,
+    "_focus": {
+        "box_shadow": f"{NEU_INSET}, 0 0 0 2px rgba(102, 126, 234, 0.3)",
+        "outline": "none",
+    },
+    "_placeholder": {
+        "color": TEXT_TERTIARY,
+    }
+}
+
+NEU_SELECT_STYLE = {
+    "background": BG_PANEL,
+    "box_shadow": NEU_INSET,
+    "border": "none",
+    "border_radius": "10px",
+    "padding": "0 0.5rem",
+    "color": TEXT_PRIMARY,
+    "transition": "all 0.2s ease",
+    "_focus": {
+        "box_shadow": f"{NEU_INSET}, 0 0 0 2px rgba(102, 126, 234, 0.3)",
+    }
+}
+
+NEU_BUTTON_STYLE = {
+    "background": BG_PANEL,
+    "box_shadow": NEU_SHADOW,
+    "border": "none",
+    "border_radius": "10px",
+    "color": TEXT_PRIMARY,
+    "transition": "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    "cursor": "pointer",
+    "_hover": {
+        "transform": "translateY(-2px)",
+        "box_shadow": NEU_MODAL_SHADOW,
+        "background": BG_HOVER,
+    },
+    "_active": {
+        "transform": "translateY(0)",
+        "box_shadow": NEU_INSET,
+    }
+}

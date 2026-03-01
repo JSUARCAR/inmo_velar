@@ -106,12 +106,7 @@ def form_field(
             on_change=on_change,
             width="100%",
             size="3",
-            style={
-                "transition": "all 0.2s ease",
-            },
-            _focus={
-                "box_shadow": "0 0 0 2px rgba(102, 126, 234, 0.2)",
-            },
+            style=styles.NEU_INPUT_STYLE,
         ),
         spacing="1",
         width="100%",
