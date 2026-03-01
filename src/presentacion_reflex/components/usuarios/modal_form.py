@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.usuarios_state import UsuariosState
+from src.presentacion_reflex import styles
 
 
 def modal_form() -> rx.Component:
@@ -23,6 +24,7 @@ def modal_form() -> rx.Component:
                         on_change=lambda val: UsuariosState.set_form_field("nombre_usuario", val),
                         disabled=UsuariosState.is_editing,  # No cambiar username al editar
                         width="100%",
+                        style=styles.NEU_INPUT_STYLE,
                     ),
                     width="100%",
                 ),
@@ -38,6 +40,7 @@ def modal_form() -> rx.Component:
                         value=UsuariosState.form_data["contrasena"],
                         on_change=lambda val: UsuariosState.set_form_field("contrasena", val),
                         width="100%",
+                        style=styles.NEU_INPUT_STYLE,
                     ),
                     rx.cond(
                         UsuariosState.is_editing,
@@ -50,7 +53,7 @@ def modal_form() -> rx.Component:
                 rx.vstack(
                     rx.text("Rol", weight="bold"),
                     rx.select.root(
-                        rx.select.trigger(width="100%"),
+                        rx.select.trigger(width="100%", style=styles.NEU_SELECT_STYLE),
                         rx.select.content(
                             rx.select.group(
                                 rx.select.item("Administrador", value="Administrador"),
@@ -92,7 +95,7 @@ def modal_form() -> rx.Component:
             ),
             rx.flex(
                 rx.dialog.close(
-                    rx.button("Cancelar", variant="soft", color_scheme="gray"),
+                    rx.button("Cancelar", color_scheme="gray"),
                 ),
                 rx.button(
                     "Guardar", on_click=UsuariosState.save_user, loading=UsuariosState.is_loading

@@ -3,36 +3,40 @@
 # Sistema de Gestión Inmobiliaria Velar - Versión Web
 # ============================================================================
 
-Write-Host "🚀 Iniciando Inmobiliaria Velar - Reflex..." -ForegroundColor Cyan
+Write-Host "Iniciando Inmobiliaria Velar - Reflex..." -ForegroundColor Cyan
 Write-Host ""
 
 # Activar entorno virtual (si existe)
 if (Test-Path ".\venv\Scripts\Activate.ps1") {
-    Write-Host "✓ Activando entorno virtual..." -ForegroundColor Green
+    Write-Host "Activando entorno virtual..." -ForegroundColor Green
     .\venv\Scripts\Activate.ps1
 }
 else {
-    Write-Host "⚠ No se encontró entorno virtual en .\venv\" -ForegroundColor Yellow
+    Write-Host "No se encontro entorno virtual en .\venv\" -ForegroundColor Yellow
 }
 
-# Verificar que Reflex está instalado
+# Verificar que Reflex esta instalado
 if (-not (Get-Command reflex -ErrorAction SilentlyContinue)) {
-    Write-Host "❌ Reflex no está instalado." -ForegroundColor Red
+    Write-Host "Reflex no esta instalado." -ForegroundColor Red
     Write-Host "Ejecute: pip install reflex" -ForegroundColor Yellow
     Read-Host "Presione Enter para salir"
     exit 1
 }
 
-# Verificar versión de Reflex
-$reflexVersion = reflex --version 2>&1
-Write-Host "✓ $reflexVersion" -ForegroundColor Green
+# Verificar version de Reflex
+try {
+    $reflexVersion = reflex --version 2>&1
+    Write-Host "Version: $reflexVersion" -ForegroundColor Green
+} catch {
+    Write-Host "No se pudo determinar la version de Reflex" -ForegroundColor Yellow
+}
 
 # Exportar variable de entorno (feature flag)
 $env:USE_REFLEX = "true"
 
-# Limpiar caché anterior si existe
+# Limpiar cache anterior si existe
 if (Test-Path ".\.web\") {
-    Write-Host "🧹 Limpiando caché anterior..." -ForegroundColor Yellow
+    Write-Host "Limpiando cache anterior..." -ForegroundColor Yellow
     Remove-Item -Recurse -Force ".\.web\"
 }
 
@@ -44,15 +48,15 @@ Write-Host "  Presione Ctrl+C para detener" -ForegroundColor Yellow
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Ejecutar aplicación Reflex
+# Ejecutar aplicacion Reflex
 try {
     reflex run --backend-port 8000 --loglevel info
 }
 catch {
-    Write-Host "`n❌ Error al ejecutar Reflex: $_" -ForegroundColor Red
+    Write-Host "Error al ejecutar Reflex: $_" -ForegroundColor Red
     Read-Host "Presione Enter para salir"
     exit 1
 }
 
 # Si se detiene normalmente
-Write-Host "`n✓ Servidor Reflex detenido." -ForegroundColor Green
+Write-Host "Servidor Reflex detenido." -ForegroundColor Green

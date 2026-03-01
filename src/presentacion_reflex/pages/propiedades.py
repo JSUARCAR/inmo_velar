@@ -31,12 +31,7 @@ def propiedades_page() -> rx.Component:
                                 "Gestión de Propiedades",
                                 size="8",
                                 weight="bold",
-                                style={
-                                    "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                    "background_clip": "text",
-                                    "-webkit-background-clip": "text",
-                                    "-webkit-text-fill-color": "transparent",
-                                },
+                                color=styles.TEXT_PRIMARY,
                             ),
                             rx.text("Inventario inmobiliario", size="3"),
                             rx.hstack(
@@ -62,15 +57,6 @@ def propiedades_page() -> rx.Component:
                                     "Nueva Propiedad",
                                     size="3",
                                     on_click=PropiedadesState.open_create_modal,
-                                    style={
-                                        "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                        "color": "white",
-                                    },
-                                    _hover={
-                                        "transform": "scale(1.05)",
-                                        "box_shadow": "0 4px 12px rgba(102, 126, 234, 0.4)",
-                                    },
-                                    transition="all 0.2s ease",
                                 ),
                                 content="Crear nueva propiedad",
                             ),
@@ -82,10 +68,6 @@ def propiedades_page() -> rx.Component:
                     width="100%",
                     padding_bottom="2",
                     border_radius="12px",
-                    style={
-                        "background": "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)",
-                        "backdrop_filter": "blur(10px)",
-                    },
                 ),
                 # --- Main Content Area ---
                 rx.vstack(
@@ -100,12 +82,6 @@ def propiedades_page() -> rx.Component:
                                 on_change=PropiedadesState.set_search,
                                 size="3",
                                 width=rx.breakpoints(initial="100%", md="320px"),
-                                style={
-                                    "transition": "all 0.3s ease",
-                                },
-                                _focus={
-                                    "box_shadow": "0 0 0 3px rgba(102, 126, 234, 0.2)",
-                                },
                             ),
                             rx.spacer(),
                             # Filters Row
@@ -116,13 +92,12 @@ def propiedades_page() -> rx.Component:
                                     value=PropiedadesState.filter_tipo,
                                     on_change=PropiedadesState.set_filter_tipo,
                                     size="3",
-                                    variant="surface",
                                     width=rx.breakpoints(initial="100%", sm="auto"),
                                 ),
                                 rx.box(
                                     rx.select.root(
                                         rx.select.trigger(
-                                            placeholder="Disponibilidad", variant="surface", size="3"
+                                            placeholder="Disponibilidad", size="3"
                                         ),
                                         rx.select.content(
                                             rx.select.group(

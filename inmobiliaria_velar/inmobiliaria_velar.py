@@ -122,25 +122,10 @@ app = rx.App(
         rx.table.cell: {
             "border_bottom": "1px solid var(--gray-4)",
         },
-        rx.input: {
-            "background_color": styles.BG_PANEL,
-            "border": "none",
-            "box_shadow": styles.NEU_INSET,
-            "_focus": {
-                "box_shadow": styles.NEU_INSET_LIGHT,
-                "outline": "none",
-            }
-        },
-        rx.select.trigger: {
-            "background_color": styles.BG_PANEL,
-            "border": "none",
-            "box_shadow": styles.NEU_INSET,
-        },
-        rx.text_area: {
-            "background_color": styles.BG_PANEL,
-            "border": "none",
-            "box_shadow": styles.NEU_INSET,
-        },
+        rx.input: styles.NEU_INPUT_STYLE,
+        rx.select.trigger: styles.NEU_SELECT_STYLE,
+        rx.text_area: styles.NEU_INPUT_STYLE,
+        rx.button: styles.NEU_BUTTON_STYLE,
     }
 )
 

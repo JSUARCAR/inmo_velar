@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.proveedores_state import ProveedoresState
+from src.presentacion_reflex import styles
 
 
 def modal_form() -> rx.Component:
@@ -30,7 +31,7 @@ def modal_form() -> rx.Component:
                     # Persona (Solo editable al crear)
                     rx.text("Persona *", weight="bold", size="2"),
                     rx.select.root(
-                        rx.select.trigger(placeholder="Seleccione una persona...", width="100%"),
+                        rx.select.trigger(placeholder="Seleccione una persona...", width="100%", style=styles.NEU_SELECT_STYLE),
                         rx.select.content(
                             rx.select.group(
                                 rx.foreach(
@@ -58,6 +59,7 @@ def modal_form() -> rx.Component:
                         value=ProveedoresState.form_data["especialidad"],
                         on_change=lambda val: ProveedoresState.set_form_field("especialidad", val),
                         width="100%",
+                        style=styles.NEU_SELECT_STYLE,
                     ),
                     # Calificación
                     rx.text("Calificación Inicial (1.0 - 5.0)", weight="bold", size="2"),
@@ -83,6 +85,7 @@ def modal_form() -> rx.Component:
                         value=ProveedoresState.form_data["observaciones"],
                         on_change=lambda val: ProveedoresState.set_form_field("observaciones", val),
                         width="100%",
+                        style=styles.NEU_INPUT_STYLE,
                     ),
                     spacing="4",
                     width="100%",
@@ -90,7 +93,6 @@ def modal_form() -> rx.Component:
                 rx.hstack(
                     rx.button(
                         "Cancelar",
-                        variant="soft",
                         color_scheme="gray",
                         on_click=ProveedoresState.close_modal,
                     ),

@@ -30,8 +30,7 @@ def step_1_content() -> rx.Component:
                     on_change=lambda v: PropiedadesState.set_form_field(
                         "matricula_inmobiliaria", v
                     ),
-                    color_scheme="indigo",
-                    variant="surface",
+                    style=styles.NEU_INPUT_STYLE,
                     size="2",
                     width="100%",
                 ),
@@ -44,8 +43,7 @@ def step_1_content() -> rx.Component:
                     placeholder="Ej: Calle 123 # 45-67",
                     value=PropiedadesState.form_data["direccion_propiedad"],
                     on_change=lambda v: PropiedadesState.set_form_field("direccion_propiedad", v),
-                    color_scheme="indigo",
-                    variant="surface",
+                    style=styles.NEU_INPUT_STYLE,
                     size="2",
                     width="100%",
                 ),
@@ -62,8 +60,7 @@ def step_1_content() -> rx.Component:
                     ["Casa", "Apartamento", "Local Comercial", "Bodega", "Oficina", "Lote"],
                     value=PropiedadesState.form_data["tipo_propiedad"],
                     on_change=lambda v: PropiedadesState.set_form_field("tipo_propiedad", v),
-                    variant="surface",
-                    color_scheme="indigo",
+                    style=styles.NEU_SELECT_STYLE,
                     size="2",
                     width="100%",
                 ),
@@ -72,7 +69,7 @@ def step_1_content() -> rx.Component:
             form_field(
                 "Municipio",
                 rx.select.root(
-                    rx.select.trigger(placeholder="Seleccione Municipio", width="100%", size="2"),
+                    rx.select.trigger(placeholder="Seleccione Municipio", width="100%", size="2", style=styles.NEU_SELECT_STYLE),
                     rx.select.content(
                         rx.select.group(
                             rx.foreach(

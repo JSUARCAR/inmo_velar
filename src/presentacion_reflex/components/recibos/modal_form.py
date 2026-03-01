@@ -1,5 +1,5 @@
 import reflex as rx
-
+from src.presentacion_reflex import styles
 from src.presentacion_reflex.state.recibos_state import RecibosState
 
 
@@ -18,7 +18,7 @@ def modal_form() -> rx.Component:
                 rx.vstack(
                     rx.text("Propiedad", weight="bold"),
                     rx.select.root(
-                        rx.select.trigger(placeholder="Seleccione propiedad...", width="100%"),
+                        rx.select.trigger(placeholder="Seleccione propiedad...", width="100%", style=styles.NEU_SELECT_STYLE),
                         rx.select.content(
                             rx.select.group(
                                 rx.foreach(
@@ -35,7 +35,7 @@ def modal_form() -> rx.Component:
                 rx.vstack(
                     rx.text("Tipo de Servicio", weight="bold"),
                     rx.select.root(
-                        rx.select.trigger(placeholder="Seleccione servicio...", width="100%"),
+                        rx.select.trigger(placeholder="Seleccione servicio...", width="100%", style=styles.NEU_SELECT_STYLE),
                         rx.select.content(
                             rx.select.group(
                                 rx.select.item("Agua", value="Agua"),
@@ -59,6 +59,7 @@ def modal_form() -> rx.Component:
                         value=RecibosState.form_data["periodo_recibo"],
                         on_change=lambda val: RecibosState.set_form_field("periodo_recibo", val),
                         width="100%",
+                        style=styles.NEU_INPUT_STYLE,
                     ),
                     width="100%",
                 ),
@@ -70,6 +71,7 @@ def modal_form() -> rx.Component:
                             value=RecibosState.form_data["fecha_desde"],
                             on_change=lambda val: RecibosState.set_form_field("fecha_desde", val),
                             width="100%",
+                            style=styles.NEU_INPUT_STYLE,
                         ),
                         width="100%",
                     ),
@@ -80,6 +82,7 @@ def modal_form() -> rx.Component:
                             value=RecibosState.form_data["fecha_hasta"],
                             on_change=lambda val: RecibosState.set_form_field("fecha_hasta", val),
                             width="100%",
+                            style=styles.NEU_INPUT_STYLE,
                         ),
                         width="100%",
                     ),
@@ -89,6 +92,7 @@ def modal_form() -> rx.Component:
                             value=RecibosState.form_data["dias_facturados"],
                             read_only=True,
                             width="100%",
+                            style=styles.NEU_INPUT_STYLE,
                         ),
                         width="80px",
                     ),
@@ -102,6 +106,7 @@ def modal_form() -> rx.Component:
                         value=RecibosState.form_data["valor_recibo"],
                         on_change=lambda val: RecibosState.set_form_field("valor_recibo", val),
                         width="100%",
+                        style=styles.NEU_INPUT_STYLE,
                     ),
                     width="100%",
                 ),
@@ -112,6 +117,7 @@ def modal_form() -> rx.Component:
                         value=RecibosState.form_data["fecha_vencimiento"],
                         on_change=lambda val: RecibosState.set_form_field("fecha_vencimiento", val),
                         width="100%",
+                        style=styles.NEU_INPUT_STYLE,
                     ),
                     width="100%",
                 ),

@@ -34,6 +34,7 @@ def recaudos_toolbar() -> rx.Component:
             on_change=RecaudosState.set_search,
             on_key_down=lambda key: RecaudosState.handle_search_key_down(key),
             width="350px",
+            size="3",
         ),
         # Filtro Estado
         rx.select(
@@ -42,6 +43,7 @@ def recaudos_toolbar() -> rx.Component:
             value=RecaudosState.filter_estado,
             on_change=RecaudosState.set_filter_estado,
             width="150px",
+            size="3",
         ),
         # Filtro Fecha Desde
         rx.input(
@@ -50,6 +52,7 @@ def recaudos_toolbar() -> rx.Component:
             value=RecaudosState.filter_fecha_desde,
             on_change=RecaudosState.set_filter_fecha_desde,
             width="150px",
+            size="3",
         ),
         # Filtro Fecha Hasta
         rx.input(
@@ -58,6 +61,7 @@ def recaudos_toolbar() -> rx.Component:
             value=RecaudosState.filter_fecha_hasta,
             on_change=RecaudosState.set_filter_fecha_hasta,
             width="150px",
+            size="3",
         ),
         rx.spacer(),
         # Botón Registrar Pago
@@ -68,6 +72,7 @@ def recaudos_toolbar() -> rx.Component:
                 "Registrar Pago",
                 on_click=RecaudosState.open_create_modal,
                 color_scheme="green",
+                size="3",
             ),
         ),
         # Botón Generar Pagos Masivos
@@ -79,7 +84,7 @@ def recaudos_toolbar() -> rx.Component:
                     "Generar Masivos",
                     on_click=RecaudosState.generar_pagos_masivos,
                     color_scheme="blue",
-                    variant="soft",
+                    size="3",
                 ),
                 content="Genera pagos para todos los contratos activos con fecha de hoy, valor del canon y método Efectivo",
             ),
@@ -88,14 +93,13 @@ def recaudos_toolbar() -> rx.Component:
         rx.button(
             rx.icon("refresh-cw"),
             on_click=RecaudosState.load_recaudos,
-            variant="soft",
+            size="3",
         ),
         width="100%",
         padding="1em",
         background=styles.BG_PANEL,
-        border_radius="8px",
+        border_radius="12px",
         border=f"1px solid {styles.BORDER_DEFAULT}",
-        box_shadow="sm",
         spacing="3",
     )
 
