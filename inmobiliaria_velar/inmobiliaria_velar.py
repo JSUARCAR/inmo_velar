@@ -38,55 +38,6 @@ app = rx.App(
         panel_background="solid", # Force solid background for Neumorphism
         font_family="Comfortaa",
     ),
-    style={
-        "font_family": "Comfortaa",
-        "background_color": styles.BG_APP,
-        "color": "var(--gray-12)",
-        rx.card: {
-            "background_color": styles.BG_PANEL,
-            "border": "none",
-            "box_shadow": styles.NEU_SHADOW,
-        },
-        rx.dialog.content: {
-            "background_color": styles.BG_PANEL,
-            "border": "none",
-            "box_shadow": styles.NEU_MODAL_SHADOW,
-        },
-        rx.table.root: {
-            "background_color": styles.BG_PANEL,
-            "border_radius": "16px",
-            "box_shadow": styles.NEU_SHADOW,
-            "overflow": "hidden",
-            "border": "none",
-        },
-        rx.table.row: {
-            "_hover": {
-                "background_color": styles.BG_HOVER,
-            },
-        },
-        rx.table.cell: {
-            "border_bottom": "1px solid var(--gray-4)",
-        },
-        rx.input: {
-            "background_color": styles.BG_PANEL,
-            "border": "none",
-            "box_shadow": styles.NEU_INSET,
-            "_focus": {
-                "box_shadow": styles.NEU_INSET_LIGHT,
-                "outline": "none",
-            }
-        },
-        rx.select.trigger: {
-            "background_color": styles.BG_PANEL,
-            "border": "none",
-            "box_shadow": styles.NEU_INSET,
-        },
-        rx.text_area: {
-            "background_color": styles.BG_PANEL,
-            "border": "none",
-            "box_shadow": styles.NEU_INSET,
-        },
-    },
     head_components=[
         rx.script(src="/matrix.js?v=5"),
     ],
@@ -120,7 +71,7 @@ app = rx.App(
             },
         },
         rx.table.cell: {
-            "border_bottom": "1px solid var(--gray-4)",
+            "border_bottom": f"1px solid {styles.BORDER_COLOR}",
         },
         rx.input: styles.NEU_INPUT_STYLE,
         rx.select.trigger: styles.NEU_SELECT_STYLE,
