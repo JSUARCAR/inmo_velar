@@ -1,10 +1,12 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.usuarios_state import UsuariosState
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
 from src.presentacion_reflex import styles
 
 
 def modal_form() -> rx.Component:
+    """Modal form para crear/editar usuarios."""
     return rx.dialog.root(
         rx.dialog.content(
             rx.dialog.title(
@@ -12,25 +14,26 @@ def modal_form() -> rx.Component:
                     UsuariosState.is_editing,
                     "Editar Usuario",
                     "Nuevo Usuario",
-                )
+                ),
+                color=styles.TEXT_PRIMARY,
             ),
-            rx.dialog.description("Gestione el acceso y roles del usuario."),
+            rx.dialog.description("Gestione el acceso y roles del usuario.", color=styles.TEXT_SECONDARY),
             rx.flex(
                 rx.vstack(
-                    rx.text("Usuario", weight="bold"),
-                    rx.input(
+                    rx.text("Usuario", weight="bold", color=styles.TEXT_PRIMARY),
+                    neuro_input(
                         placeholder="nombre.apellido",
                         value=UsuariosState.form_data["nombre_usuario"],
                         on_change=lambda val: UsuariosState.set_form_field("nombre_usuario", val),
                         disabled=UsuariosState.is_editing,  # No cambiar username al editar
                         width="100%",
-                        style=styles.NEU_INPUT_STYLE,
                     ),
                     width="100%",
+                    spacing="1",
                 ),
                 rx.vstack(
-                    rx.text("Contraseña", weight="bold"),
-                    rx.input(
+                    rx.text("Contraseña", weight="bold", color=styles.TEXT_PRIMARY),
+                    neuro_input(
                         type="password",
                         placeholder=rx.cond(
                             UsuariosState.is_editing,
@@ -40,41 +43,42 @@ def modal_form() -> rx.Component:
                         value=UsuariosState.form_data["contrasena"],
                         on_change=lambda val: UsuariosState.set_form_field("contrasena", val),
                         width="100%",
-                        style=styles.NEU_INPUT_STYLE,
                     ),
                     rx.cond(
                         UsuariosState.is_editing,
                         rx.text(
-                            "Solo ingrese si desea cambiar la contraseña.", size="1", color="gray"
+                            "Solo ingrese si desea cambiar la contraseña.", size="1", color=styles.TEXT_TERTIARY
                         ),
                     ),
                     width="100%",
+                    spacing="1",
                 ),
                 rx.vstack(
-                    rx.text("Rol", weight="bold"),
-                    rx.select.root(
-                        rx.select.trigger(width="100%", style=styles.NEU_SELECT_STYLE),
-                        rx.select.content(
-                            rx.select.group(
-                                rx.select.item("Administrador", value="Administrador"),
-                                rx.select.item("Asesor", value="Asesor"),
-                                rx.select.item("Operativo", value="Operativo"),
-                            )
-                        ),
+                    rx.text("Rol", weight="bold", color=styles.TEXT_PRIMARY),
+                    neuro_select_root(
+                        [
+                            rx.select.item("Administrador", value="Administrador"),
+                            rx.select.item("Asesor", value="Asesor"),
+                            rx.select.item("Operativo", value="Operativo"),
+                        ],
                         value=UsuariosState.form_data["rol"],
                         on_change=lambda val: UsuariosState.set_form_field("rol", val),
+                        placeholder="Seleccionar Rol",
+                        width="100%",
                     ),
                     width="100%",
+                    spacing="1",
                 ),
                 rx.cond(
                     UsuariosState.is_editing,
                     rx.hstack(
-                        rx.text("Estado", weight="bold"),
+                        rx.text("Estado", weight="bold", color=styles.TEXT_PRIMARY),
                         rx.switch(
                             checked=UsuariosState.form_data["estado_usuario"],
                             on_change=lambda val: UsuariosState.set_form_field(
                                 "estado_usuario", val
                             ),
+                            color_scheme="green",
                         ),
                         align="center",
                         spacing="3",
@@ -95,16 +99,21 @@ def modal_form() -> rx.Component:
             ),
             rx.flex(
                 rx.dialog.close(
-                    rx.button("Cancelar", color_scheme="gray"),
+                    neuro_button("Cancelar", size="2"),
                 ),
-                rx.button(
-                    "Guardar", on_click=UsuariosState.save_user, loading=UsuariosState.is_loading
+                neuro_button(
+                    "Guardar",
+                    on_click=UsuariosState.save_user,
+                    size="2",
                 ),
-                spacing="3",
-                margin_top="16px",
+                padding_top="4",
                 justify="end",
+                gap="3",
             ),
+            max_width="450px",
+            background=styles.BG_PANEL,
+            style={"border_radius": "16px", "box_shadow": styles.NEU_SHADOW},
         ),
-        open=UsuariosState.show_form_modal,
-        on_open_change=UsuariosState.handle_form_open_change,
+        open=UsuariosState.show_modal,
+        on_open_change=lambda _: UsuariosState.close_modal(),
     )

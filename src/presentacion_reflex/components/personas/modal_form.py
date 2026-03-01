@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex import styles
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root, neuro_text_area
 from src.presentacion_reflex.components.personas.role_selector_card import role_selector_card
 from src.presentacion_reflex.components.personas.wizard_progress import wizard_progress
 from src.presentacion_reflex.state.personas_state import PersonasState
@@ -18,30 +19,31 @@ def searchable_select(
     on_select: callable,
 ) -> rx.Component:
     return rx.vstack(
-        rx.text(label, size="2", weight="bold"),
+        rx.text(label, size="2", weight="bold", color=styles.TEXT_PRIMARY),
         rx.popover.root(
             rx.popover.trigger(
-                rx.button(
-                    rx.cond(
-                        value_label == "",
-                        rx.text(placeholder, color="gray"),
-                        rx.text(value_label, color="black"),
+                neuro_button(
+                    rx.hstack(
+                        rx.cond(
+                            value_label == "",
+                            rx.text(placeholder, color=styles.TEXT_TERTIARY),
+                            rx.text(value_label, color=styles.TEXT_PRIMARY),
+                        ),
+                        rx.icon("chevron-down", size=16),
+                        width="100%",
+                        justify="between",
                     ),
-                    rx.icon("chevron-down", size=16),
-                    variant="surface",
                     width="100%",
-                    justify="between",
                 ),
             ),
             rx.popover.content(
                 rx.vstack(
-                    rx.input(
+                    neuro_input(
                         placeholder="Buscar...",
                         value=search_value,
                         on_change=on_change_search,
                         autofocus=True,
                         width="100%",
-                        variant="soft",
                         size="1",
                     ),
                     rx.scroll_area(
@@ -71,6 +73,8 @@ def searchable_select(
                     padding="2",
                     width="320px",
                     spacing="2",
+                    background=styles.BG_PANEL,
+                    style={"box_shadow": styles.NEU_SHADOW, "border": "none"},
                 ),
             ),
             open=menu_open,
@@ -94,8 +98,8 @@ def form_field(
 ) -> rx.Component:
     """Elite form field with icon and enhanced styling."""
     return rx.vstack(
-        rx.text(label, size="2", weight="bold", color="var(--gray-12)"),
-        rx.input(
+        rx.text(label, size="2", weight="bold", color=styles.TEXT_PRIMARY),
+        neuro_input(
             rx.cond(icon != "", rx.input.slot(rx.icon(icon, size=16)), rx.fragment()),
             name=name,
             placeholder=placeholder,
@@ -106,7 +110,6 @@ def form_field(
             on_change=on_change,
             width="100%",
             size="3",
-            style=styles.NEU_INPUT_STYLE,
         ),
         spacing="1",
         width="100%",
@@ -123,8 +126,8 @@ def form_textarea(
 ) -> rx.Component:
     """Elite textarea field."""
     return rx.vstack(
-        rx.text(label, size="2", weight="bold", color="var(--gray-12)"),
-        rx.text_area(
+        rx.text(label, size="2", weight="bold", color=styles.TEXT_PRIMARY),
+        neuro_text_area(
             name=name,
             placeholder=placeholder,
             default_value=default_value,
@@ -136,6 +139,7 @@ def form_textarea(
         spacing="1",
         width="100%",
     )
+
 
 
 def propietario_fields() -> rx.Component:
@@ -381,15 +385,19 @@ def step_1_basic_info() -> rx.Component:
     return rx.vstack(
         rx.flex(
             rx.vstack(
-                rx.text("Tipo Doc", size="2", weight="bold", color="var(--gray-12)"),
-                rx.select(
-                    ["CC", "NIT", "CE", "PAS"],
+                rx.text("Tipo Doc", size="2", weight="bold", color=styles.TEXT_PRIMARY),
+                neuro_select_root(
+                    [
+                        rx.select.item("CC", value="CC"),
+                        rx.select.item("NIT", value="NIT"),
+                        rx.select.item("CE", value="CE"),
+                        rx.select.item("PAS", value="PAS"),
+                    ],
                     name="tipo_documento",
-                    default_value=rx.cond(
+                    value=rx.cond(
                         PersonasState.is_editing, PersonasState.form_data["tipo_documento"], "CC"
                     ),
                     width="100%",
-                    size="3",
                 ),
                 width=["100%", "25%"],
             ),
@@ -406,7 +414,7 @@ def step_1_basic_info() -> rx.Component:
             ),
             flex_direction=["column", "row"],
             width="100%",
-            spacing="3",
+            gap="3",
         ),
         form_field(
             "Nombre Completo / Razón Social",
@@ -461,7 +469,7 @@ def step_2_roles() -> rx.Component:
         rx.text(
             "Seleccione uno o más roles para esta persona",
             size="2",
-            color="var(--gray-11)",
+            color=styles.TEXT_SECONDARY,
             text_align="center",
         ),
         rx.box(
@@ -516,12 +524,12 @@ def step_3_role_details() -> rx.Component:
                         "No hay roles seleccionados",
                         size="3",
                         weight="medium",
-                        color="var(--gray-11)",
+                        color=styles.TEXT_SECONDARY,
                     ),
                     rx.text(
                         "Selecciona al menos un rol en el paso anterior",
                         size="2",
-                        color="var(--gray-10)",
+                        color=styles.TEXT_TERTIARY,
                     ),
                     spacing="2",
                     align="center",
@@ -592,11 +600,8 @@ def modal_persona() -> rx.Component:
                             # Back button
                             rx.cond(
                                 PersonasState.modal_step > 1,
-                                rx.button(
-                                    rx.icon("chevron-left", size=16),
-                                    "Anterior",
-                                    variant="soft",
-                                    color_scheme="gray",
+                                neuro_button(
+                                    rx.hstack(rx.icon("chevron-left", size=16), rx.text("Anterior")),
                                     type="button",
                                     on_click=PersonasState.prev_modal_step,
                                     size="3",
@@ -604,10 +609,8 @@ def modal_persona() -> rx.Component:
                                 rx.fragment(),
                             ),
                             rx.dialog.close(
-                                rx.button(
+                                neuro_button(
                                     "Cancelar",
-                                    variant="soft",
-                                    color_scheme="gray",
                                     type="button",
                                     on_click=PersonasState.close_modal,
                                     size="3",
@@ -617,26 +620,16 @@ def modal_persona() -> rx.Component:
                             # Next / Save button
                             rx.cond(
                                 PersonasState.modal_step < 3,
-                                rx.button(
-                                    "Siguiente",
-                                    rx.icon("chevron-right", size=16),
+                                neuro_button(
+                                    rx.hstack(rx.text("Siguiente"), rx.icon("chevron-right", size=16)),
                                     type="submit",  # Changed to submit to capture form data
                                     size="3",
-                                    style={
-                                        "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                        "color": "white",
-                                    },
                                 ),
-                                rx.button(
-                                    rx.icon("save", size=16),
-                                    "Guardar",
+                                neuro_button(
+                                    rx.hstack(rx.icon("save", size=16), rx.text("Guardar")),
                                     type="submit",
                                     loading=PersonasState.is_loading,
                                     size="3",
-                                    style={
-                                        "background": "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
-                                        "color": "white",
-                                    },
                                 ),
                             ),
                             spacing="2",
@@ -659,9 +652,11 @@ def modal_persona() -> rx.Component:
                 "width": "95%",
                 "border_radius": "16px",
                 "padding": "24px",
+                "background": styles.BG_PANEL,
             },
             on_escape_key_down=PersonasState.close_modal,
             on_pointer_down_outside=PersonasState.close_modal,
         ),
         open=PersonasState.show_modal,
     )
+

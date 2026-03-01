@@ -13,6 +13,8 @@ from src.presentacion_reflex.state.pdf_state import PDFState
 from src.presentacion_reflex.state.recaudos_state import RecaudosState
 
 
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button
+
 def render_estado_badge(estado: rx.Var) -> rx.Component:
     """Renderiza badge con color según estado."""
     return rx.match(
@@ -28,7 +30,7 @@ def recaudos_toolbar() -> rx.Component:
     """Barra de herramientas con filtros y búsqueda."""
     return rx.hstack(
         # Búsqueda
-        rx.input(
+        neuro_input(
             placeholder="Buscar por propiedad, arrendatario, matrícula...",
             value=RecaudosState.search_text,
             on_change=RecaudosState.set_search,
@@ -37,16 +39,20 @@ def recaudos_toolbar() -> rx.Component:
             size="3",
         ),
         # Filtro Estado
-        rx.select(
-            RecaudosState.estado_options,
+        neuro_select_root(
+            [
+                rx.select.item("Todos", value=""),
+                rx.select.item("Pendiente", value="Pendiente"),
+                rx.select.item("Aplicado", value="Aplicado"),
+                rx.select.item("Reversado", value="Reversado"),
+            ],
             placeholder="Estado",
             value=RecaudosState.filter_estado,
             on_change=RecaudosState.set_filter_estado,
             width="150px",
-            size="3",
         ),
         # Filtro Fecha Desde
-        rx.input(
+        neuro_input(
             placeholder="Desde",
             type="date",
             value=RecaudosState.filter_fecha_desde,
@@ -55,7 +61,7 @@ def recaudos_toolbar() -> rx.Component:
             size="3",
         ),
         # Filtro Fecha Hasta
-        rx.input(
+        neuro_input(
             placeholder="Hasta",
             type="date",
             value=RecaudosState.filter_fecha_hasta,
@@ -67,11 +73,9 @@ def recaudos_toolbar() -> rx.Component:
         # Botón Registrar Pago
         rx.cond(
             AuthState.check_action("Recaudos", "CREAR"),
-            rx.button(
-                rx.icon("plus"),
-                "Registrar Pago",
+            neuro_button(
+                rx.hstack(rx.icon("plus"), rx.text("Registrar Pago")),
                 on_click=RecaudosState.open_create_modal,
-                color_scheme="green",
                 size="3",
             ),
         ),
@@ -79,18 +83,16 @@ def recaudos_toolbar() -> rx.Component:
         rx.cond(
             AuthState.check_action("Recaudos", "CREAR"),
             rx.tooltip(
-                rx.button(
+                neuro_button(
                     rx.icon("copy-plus"),
-                    "Generar Masivos",
                     on_click=RecaudosState.generar_pagos_masivos,
-                    color_scheme="blue",
                     size="3",
                 ),
-                content="Genera pagos para todos los contratos activos con fecha de hoy, valor del canon y método Efectivo",
+                content="Generar pagos masivos para contratos activos",
             ),
         ),
         # Botón Refresh
-        rx.button(
+        neuro_button(
             rx.icon("refresh-cw"),
             on_click=RecaudosState.load_recaudos,
             size="3",
@@ -98,10 +100,11 @@ def recaudos_toolbar() -> rx.Component:
         width="100%",
         padding="1em",
         background=styles.BG_PANEL,
-        border_radius="12px",
-        border=f"1px solid {styles.BORDER_DEFAULT}",
+        border_radius="16px",
+        style={"box_shadow": styles.NEU_SHADOW},
         spacing="3",
     )
+
 
 
 def recaudos_table() -> rx.Component:

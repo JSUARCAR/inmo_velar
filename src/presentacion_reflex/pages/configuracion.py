@@ -2,15 +2,16 @@ import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
 from src.presentacion_reflex import styles
 
 # --- ESTILOS & CONSTANTES ---
 CARD_STYLE = {
     "background": styles.BG_PANEL,
     "border_radius": "16px",
-    "box_shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+    "box_shadow": styles.NEU_SHADOW,
     "padding": "2rem",
-    "border": f"1px solid {styles.BORDER_DEFAULT}",
+    "border": "none",
 }
 
 SECTION_TITLE_STYLE = {
@@ -29,29 +30,25 @@ def elite_input_field(
 ) -> rx.Component:
     """Campo de entrada con diseño elite y validación visual."""
     return rx.vstack(
-        rx.text(label, font_size="0.875rem", weight="medium", color="#64748b"),
+        rx.text(label, font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY),
         rx.box(
             rx.icon(
                 icon_tag,
                 size=18,
-                color="#94a3b8",
+                color=styles.TEXT_TERTIARY,
                 position="absolute",
                 left="12px",
                 top="50%",
                 transform="translateY(-50%)",
                 z_index="1",
             ),
-            rx.input(
+            neuro_input(
                 placeholder=placeholder,
                 value=ConfiguracionState.empresa[field_name],
                 type=type_,
                 on_change=lambda val: ConfiguracionState.set_empresa_field(field_name, val),
-                variant="soft",
-                color_scheme="gray",
-                radius="full",
                 padding_left="40px",
                 width="100%",
-                style={"_focus": {"box_shadow": "0 0 0 2px #3b82f6", "background": styles.BG_PANEL}},
             ),
             position="relative",
             width="100%",
@@ -64,7 +61,7 @@ def elite_input_field(
 def company_identity_card() -> rx.Component:
     return rx.vstack(
         rx.box(
-            rx.icon("building", size=24, color="#3b82f6"),
+            rx.icon("building", size=24, color=styles.ACCENT_COLOR),
             rx.text("Identidad Corporativa", style=SECTION_TITLE_STYLE),
             display="flex",
             align_items="center",
@@ -73,27 +70,23 @@ def company_identity_card() -> rx.Component:
         ),
         rx.grid(
             rx.vstack(
-                rx.text("Nombre Legal", font_size="0.875rem", weight="medium", color="#64748b"),
-                rx.input(
+                rx.text("Nombre Legal", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY),
+                neuro_input(
                     value=ConfiguracionState.empresa["nombre_empresa"],
                     on_change=lambda val: ConfiguracionState.set_empresa_field(
                         "nombre_empresa", val
                     ),
                     placeholder="Ej. Inmobiliaria Velar S.A.S.",
-                    variant="soft",
-                    radius="large",
                     width="100%",
                 ),
                 width="100%",
             ),
             rx.vstack(
-                rx.text("NIT / RUC", font_size="0.875rem", weight="medium", color="#64748b"),
-                rx.input(
+                rx.text("NIT / RUC", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY),
+                neuro_input(
                     value=ConfiguracionState.empresa["nit"],
                     on_change=lambda val: ConfiguracionState.set_empresa_field("nit", val),
                     placeholder="Ej. 900.000.000-1",
-                    variant="soft",
-                    radius="large",
                     width="100%",
                 ),
                 width="100%",
@@ -105,32 +98,28 @@ def company_identity_card() -> rx.Component:
         rx.grid(
             rx.vstack(
                 rx.text(
-                    "Representante Legal", font_size="0.875rem", weight="medium", color="#64748b"
+                    "Representante Legal", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY
                 ),
-                rx.input(
+                neuro_input(
                     value=ConfiguracionState.empresa["representante_legal"],
                     on_change=lambda val: ConfiguracionState.set_empresa_field(
                         "representante_legal", val
                     ),
                     placeholder="Nombre del Representante",
-                    variant="soft",
-                    radius="large",
                     width="100%",
                 ),
                 width="100%",
             ),
             rx.vstack(
                 rx.text(
-                    "Cédula Representante", font_size="0.875rem", weight="medium", color="#64748b"
+                    "Cédula Representante", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY
                 ),
-                rx.input(
+                neuro_input(
                     value=ConfiguracionState.empresa["cedula_representante"],
                     on_change=lambda val: ConfiguracionState.set_empresa_field(
                         "cedula_representante", val
                     ),
                     placeholder="Número de Documento",
-                    variant="soft",
-                    radius="large",
                     width="100%",
                 ),
                 width="100%",
@@ -322,15 +311,13 @@ def contact_location_card() -> rx.Component:
                             align_items="center",
                             justify_content="center",
                         ),
-                        rx.text("Facebook", font_size="0.875rem", weight="medium", color="#64748b"),
+                        rx.text("Facebook", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY),
                         spacing="2",
                     ),
-                    rx.input(
+                    neuro_input(
                         placeholder="@tuempresa",
                         value=ConfiguracionState.empresa["facebook"],
                         on_change=lambda val: ConfiguracionState.set_empresa_field("facebook", val),
-                        variant="soft",
-                        color_scheme="gray",
                         width="100%",
                     ),
                     width="100%",
@@ -347,18 +334,16 @@ def contact_location_card() -> rx.Component:
                             justify_content="center",
                         ),
                         rx.text(
-                            "Instagram", font_size="0.875rem", weight="medium", color="#64748b"
+                            "Instagram", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY
                         ),
                         spacing="2",
                     ),
-                    rx.input(
+                    neuro_input(
                         placeholder="@tuempresa",
                         value=ConfiguracionState.empresa["instagram"],
                         on_change=lambda val: ConfiguracionState.set_empresa_field(
                             "instagram", val
                         ),
-                        variant="soft",
-                        color_scheme="gray",
                         width="100%",
                     ),
                     width="100%",
@@ -374,15 +359,13 @@ def contact_location_card() -> rx.Component:
                             align_items="center",
                             justify_content="center",
                         ),
-                        rx.text("TikTok", font_size="0.875rem", weight="medium", color="#64748b"),
+                        rx.text("TikTok", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY),
                         spacing="2",
                     ),
-                    rx.input(
+                    neuro_input(
                         placeholder="@tuempresa",
                         value=ConfiguracionState.empresa["tiktok"],
                         on_change=lambda val: ConfiguracionState.set_empresa_field("tiktok", val),
-                        variant="soft",
-                        color_scheme="gray",
                         width="100%",
                     ),
                     width="100%",
@@ -409,19 +392,11 @@ def company_tab_content() -> rx.Component:
             width="100%",
         ),
         rx.box(
-            rx.button(
+            neuro_button(
                 rx.hstack(rx.icon("save", size=18), rx.text("Guardar Cambios")),
                 on_click=ConfiguracionState.guardar_empresa_click,
                 size="3",
-                variant="solid",
-                color_scheme="blue",
                 padding_x="2rem",
-                box_shadow="0 4px 14px 0 rgba(0,118,255,0.39)",
-                _hover={
-                    "transform": "translateY(-2px)",
-                    "box_shadow": "0 6px 20px rgba(0,118,255,0.23)",
-                },
-                transition="all 0.2s ease",
             ),
             position="sticky",
             bottom="20px",
@@ -489,17 +464,16 @@ def system_tab_content() -> rx.Component:
                                 rx.cond(
                                     (param.modificable == 1) & (ConfiguracionState.parametros_desbloqueados.contains(param.id_parametro)),
                                     rx.hstack(
-                                        rx.input(
+                                        neuro_input(
                                             default_value=param.valor_parametro,
                                             on_blur=lambda val: ConfiguracionState.actualizar_parametro(
                                                 param.id_parametro, val
                                             ),
                                             width="120px",
                                             size="2",
-                                            variant="soft",
                                             auto_focus=True,
                                         ),
-                                        rx.icon("pencil", size=14, color="#3b82f6"),
+                                        rx.icon("pencil", size=14, color=styles.ACCENT_COLOR),
                                     ),
                                     rx.text(
                                         param.valor_parametro,

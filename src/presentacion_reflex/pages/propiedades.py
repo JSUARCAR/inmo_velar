@@ -10,6 +10,7 @@ from src.presentacion_reflex.components.propiedades.modal_form import modal_prop
 from src.presentacion_reflex.components.propiedades.property_card import property_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button
 from src.presentacion_reflex import styles
 
 
@@ -75,7 +76,7 @@ def propiedades_page() -> rx.Component:
                     rx.card(
                         rx.flex(
                             # Search Bar with enhanced styling
-                            rx.input(
+                            neuro_input(
                                 rx.input.slot(rx.icon("search", size=18)),
                                 placeholder="Buscar por matrícula, dirección...",
                                 value=PropiedadesState.search_text,
@@ -86,44 +87,34 @@ def propiedades_page() -> rx.Component:
                             rx.spacer(),
                             # Filters Row
                             rx.flex(
-                                rx.select(
-                                    PropiedadesState.tipos_options,
+                                neuro_select_root(
+                                    [rx.select.item(opt, value=opt) for opt in PropiedadesState.tipos_options],
                                     placeholder="Tipo",
                                     value=PropiedadesState.filter_tipo,
                                     on_change=PropiedadesState.set_filter_tipo,
-                                    size="3",
-                                    width=rx.breakpoints(initial="100%", sm="auto"),
+                                    width=rx.breakpoints(initial="100%", sm="150px"),
                                 ),
-                                rx.box(
-                                    rx.select.root(
-                                        rx.select.trigger(
-                                            placeholder="Disponibilidad", size="3"
-                                        ),
-                                        rx.select.content(
-                                            rx.select.group(
-                                                rx.select.item("Todos", value="Todos"),
-                                                rx.select.item("Disponible", value="1"),
-                                                rx.select.item("Ocupada", value="0"),
-                                            )
-                                        ),
-                                        value=PropiedadesState.filter_disponibilidad,
-                                        on_change=PropiedadesState.set_filter_disponibilidad,
-                                    ),
-                                    width=rx.breakpoints(initial="100%", sm="auto"),
+                                neuro_select_root(
+                                    [
+                                        rx.select.item("Todos", value="Todos"),
+                                        rx.select.item("Disponible", value="1"),
+                                        rx.select.item("Ocupada", value="0"),
+                                    ],
+                                    placeholder="Disponibilidad",
+                                    value=PropiedadesState.filter_disponibilidad,
+                                    on_change=PropiedadesState.set_filter_disponibilidad,
+                                    width=rx.breakpoints(initial="100%", sm="180px"),
                                 ),
-                                # View Toggle Button (Single Button like Personas)
+                                # View Toggle Button
                                 rx.tooltip(
-                                    rx.button(
+                                    neuro_button(
                                         rx.cond(
                                             PropiedadesState.vista_tipo == "cards",
                                             rx.icon("table", size=18),
                                             rx.icon("layout-grid", size=18),
                                         ),
                                         on_click=PropiedadesState.toggle_vista,
-                                        variant="soft",
                                         size="3",
-                                        color_scheme="gray",
-                                        width=rx.breakpoints(initial="100%", sm="auto"),
                                     ),
                                     content=rx.cond(
                                         PropiedadesState.vista_tipo == "cards",
@@ -131,20 +122,12 @@ def propiedades_page() -> rx.Component:
                                         "Cambiar a vista de cards",
                                     ),
                                 ),
-                                # Export Button (Standardized)
+                                # Export Button
                                 rx.tooltip(
-                                    rx.button(
+                                    neuro_button(
                                         rx.icon("file-spreadsheet", size=16),
-                                        "Exportar",
-                                        color_scheme="green",
-                                        variant="soft",
                                         on_click=PropiedadesState.exportar_csv,
                                         size="3",
-                                        _hover={
-                                            "transform": "scale(1.05)",
-                                        },
-                                        transition="all 0.2s ease",
-                                        width=rx.breakpoints(initial="100%", sm="auto"),
                                     ),
                                     content="Exportar a Excel",
                                 ),
@@ -158,14 +141,16 @@ def propiedades_page() -> rx.Component:
                             flex_direction=rx.breakpoints(initial="column", md="row"),
                             wrap="wrap",
                         ),
-                        padding="5",
                         width="100%",
                         style={
-                            "backdrop_filter": "blur(12px)",
                             "background": styles.BG_PANEL,
-                            "border": f"1px solid {styles.BORDER_DEFAULT}",
+                            "box_shadow": styles.NEU_SHADOW,
+                            "border": "none",
+                            "border_radius": "16px",
+                            "padding": "1.5rem",
                         },
                     ),
+
                     # Stats/Counter
                     rx.hstack(
                         rx.text(
@@ -499,12 +484,10 @@ def propiedades_page() -> rx.Component:
                     # --- Premium Pagination ---
                     rx.card(
                         rx.hstack(
-                            rx.button(
-                                rx.icon("chevron-left", size=16),
-                                "Anterior",
+                            neuro_button(
+                                rx.hstack(rx.icon("chevron-left", size=16), rx.text("Anterior")),
                                 on_click=PropiedadesState.prev_page,
                                 disabled=PropiedadesState.current_page == 1,
-                                variant="soft",
                                 size="3",
                             ),
                             rx.vstack(
@@ -512,26 +495,25 @@ def propiedades_page() -> rx.Component:
                                     f"Página {PropiedadesState.current_page}",
                                     size="3",
                                     weight="medium",
+                                    color=styles.TEXT_PRIMARY,
                                 ),
                                 rx.text(
                                     f"Mostrando {(PropiedadesState.current_page - 1) * PropiedadesState.page_size + 1}-"
                                     f"{rx.cond((PropiedadesState.current_page * PropiedadesState.page_size) > PropiedadesState.total_items, PropiedadesState.total_items, (PropiedadesState.current_page * PropiedadesState.page_size))} "
                                     f"de {PropiedadesState.total_items}",
                                     size="1",
-                                    color="var(--gray-10)",
+                                    color=styles.TEXT_SECONDARY,
                                 ),
                                 spacing="0",
                                 align="center",
                             ),
-                            rx.button(
-                                "Siguiente",
-                                rx.icon("chevron-right", size=16),
+                            neuro_button(
+                                rx.hstack(rx.text("Siguiente"), rx.icon("chevron-right", size=16)),
                                 on_click=PropiedadesState.next_page,
                                 disabled=(
                                     PropiedadesState.current_page * PropiedadesState.page_size
                                 )
                                 >= PropiedadesState.total_items,
-                                variant="soft",
                                 size="3",
                             ),
                             justify="center",
@@ -543,9 +525,13 @@ def propiedades_page() -> rx.Component:
                         width="100%",
                         style={
                             "background": styles.BG_PANEL,
+                            "box_shadow": styles.NEU_SHADOW,
+                            "border": "none",
+                            "border_radius": "16px",
                             "margin_top": "24px",
                         },
                     ),
+
                     spacing="6",
                     width="100%",
                     padding_x=["4", "6"],

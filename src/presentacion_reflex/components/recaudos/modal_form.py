@@ -3,6 +3,8 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.recaudos_state import RecaudosState
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex import styles
 
 
 def searchable_select(
@@ -17,30 +19,31 @@ def searchable_select(
     on_select: callable,
 ) -> rx.Component:
     return rx.vstack(
-        rx.text(label, size="2", weight="bold"),
+        rx.text(label, size="2", weight="bold", color=styles.TEXT_PRIMARY),
         rx.popover.root(
             rx.popover.trigger(
-                rx.button(
-                    rx.cond(
-                        value_label == "",
-                        rx.text(placeholder, color="gray"),
-                        rx.text(value_label, color="black"),
+                neuro_button(
+                    rx.hstack(
+                        rx.cond(
+                            value_label == "",
+                            rx.text(placeholder, color=styles.TEXT_TERTIARY),
+                            rx.text(value_label, color=styles.TEXT_PRIMARY),
+                        ),
+                        rx.icon("chevron-down", size=16),
+                        width="100%",
+                        justify="between",
                     ),
-                    rx.icon("chevron-down", size=16),
-                    variant="surface",
                     width="100%",
-                    justify="between",
                 ),
             ),
             rx.popover.content(
                 rx.vstack(
-                    rx.input(
+                    neuro_input(
                         placeholder="Buscar...",
                         value=search_value,
                         on_change=on_change_search,
                         autofocus=True,
                         width="100%",
-                        variant="soft",
                         size="1",
                     ),
                     rx.scroll_area(
@@ -70,6 +73,8 @@ def searchable_select(
                     padding="2",
                     width="320px",
                     spacing="2",
+                    background=styles.BG_PANEL,
+                    style={"box_shadow": styles.NEU_SHADOW, "border": "none"},
                 ),
             ),
             open=menu_open,
@@ -78,6 +83,7 @@ def searchable_select(
         spacing="1",
         width="100%",
     )
+
 
 
 def modal_recaudo() -> rx.Component:
@@ -89,12 +95,14 @@ def modal_recaudo() -> rx.Component:
                     RecaudosState.form_data.get("id_recaudo"),
                     "Editar Recaudo",
                     "Registrar Nuevo Pago",
-                )
+                ),
+                color=styles.TEXT_PRIMARY,
             ),
             rx.dialog.description(
                 "Complete los datos del pago recibido del arrendatar io.",
                 size="2",
                 margin_bottom="16px",
+                color=styles.TEXT_SECONDARY,
             ),
             # Mensaje de Error
             rx.cond(
@@ -127,8 +135,8 @@ def modal_recaudo() -> rx.Component:
                     ),
                     # Fecha de Pago
                     rx.vstack(
-                        rx.text("Fecha de Pago *", size="2", weight="bold"),
-                        rx.input(
+                        rx.text("Fecha de Pago *", size="2", weight="bold", color=styles.TEXT_PRIMARY),
+                        neuro_input(
                             placeholder="YYYY-MM-DD",
                             type="date",
                             name="fecha_pago",
@@ -138,11 +146,12 @@ def modal_recaudo() -> rx.Component:
                             width="100%",
                         ),
                         width="100%",
+                        spacing="1",
                     ),
                     # Valor Total
                     rx.vstack(
                         rx.hstack(
-                            rx.text("Valor Total (COP) *", size="2", weight="bold"),
+                            rx.text("Valor Total (COP) *", size="2", weight="bold", color=styles.TEXT_PRIMARY),
                             rx.tooltip(
                                 rx.icon("info", size=15),
                                 content="Ingrese el valor numérico sin puntos ni comas. Ejemplo: 1500000",
@@ -150,7 +159,7 @@ def modal_recaudo() -> rx.Component:
                             spacing="2",
                             align="center",
                         ),
-                        rx.input(
+                        neuro_input(
                             placeholder="Ej: 1500000",
                             type="number",
                             name="valor_total",
@@ -163,31 +172,33 @@ def modal_recaudo() -> rx.Component:
                             width="100%",
                         ),
                         width="100%",
+                        spacing="1",
                     ),
                     # Método de Pago
                     rx.vstack(
-                        rx.text("Método de Pago *", size="2", weight="bold"),
-                        rx.select.root(
-                            rx.select.trigger(),
-                            rx.select.content(
+                        rx.text("Método de Pago *", size="2", weight="bold", color=styles.TEXT_PRIMARY),
+                        neuro_select_root(
+                            [
                                 rx.select.item("Transferencia", value="Transferencia"),
                                 rx.select.item("PSE", value="PSE"),
                                 rx.select.item("Consignación", value="Consignación"),
                                 rx.select.item("Efectivo", value="Efectivo"),
-                            ),
+                            ],
                             name="metodo_pago",
-                            default_value=RecaudosState.form_data.get(
-                                "metodo_pago", "Transferencia"
+                            value=rx.cond(
+                                RecaudosState.form_data.get("metodo_pago") != "",
+                                RecaudosState.form_data.get("metodo_pago"),
+                                "Transferencia",
                             ),
-                            size="2",
                             width="100%",
                         ),
                         width="100%",
+                        spacing="1",
                     ),
                     # Referencia Bancaria
                     rx.vstack(
-                        rx.text("Referencia Bancaria", size="2", weight="bold"),
-                        rx.input(
+                        rx.text("Referencia Bancaria", size="2", weight="bold", color=styles.TEXT_PRIMARY),
+                        neuro_input(
                             placeholder="Número de transacción o comprobante",
                             name="referencia_bancaria",
                             default_value=RecaudosState.form_data.get("referencia_bancaria", ""),
@@ -197,33 +208,37 @@ def modal_recaudo() -> rx.Component:
                         rx.text(
                             "* Obligatoria para métodos electrónicos",
                             size="1",
-                            color="gray",
+                            color=styles.TEXT_TERTIARY,
                         ),
                         width="100%",
+                        spacing="1",
                     ),
                     # Tipo de Concepto y Período (simplificado)
                     rx.hstack(
                         rx.vstack(
-                            rx.text("Tipo *", size="2", weight="bold"),
-                            rx.select.root(
-                                rx.select.trigger(),
-                                rx.select.content(
+                            rx.text("Tipo *", size="2", weight="bold", color=styles.TEXT_PRIMARY),
+                            neuro_select_root(
+                                [
                                     rx.select.item("Canon", value="Canon"),
                                     rx.select.item("Administración", value="Administración"),
                                     rx.select.item("Mora", value="Mora"),
                                     rx.select.item("Servicios", value="Servicios"),
                                     rx.select.item("Otro", value="Otro"),
-                                ),
+                                ],
                                 name="tipo_concepto",
-                                default_value=RecaudosState.form_data.get("tipo_concepto", "Canon"),
-                                size="2",
+                                value=rx.cond(
+                                    RecaudosState.form_data.get("tipo_concepto") != "",
+                                    RecaudosState.form_data.get("tipo_concepto"),
+                                    "Canon",
+                                ),
                                 width="100%",
                             ),
                             flex="1",
+                            spacing="1",
                         ),
                         rx.vstack(
-                            rx.text("Período *", size="2", weight="bold"),
-                            rx.input(
+                            rx.text("Período *", size="2", weight="bold", color=styles.TEXT_PRIMARY),
+                            neuro_input(
                                 placeholder="YYYY-MM",
                                 type="month",
                                 name="periodo",
@@ -233,34 +248,34 @@ def modal_recaudo() -> rx.Component:
                                 width="100%",
                             ),
                             flex="1",
+                            spacing="1",
                         ),
                         width="100%",
                         spacing="3",
                     ),
                     # Observaciones
                     rx.vstack(
-                        rx.text("Observaciones", size="2", weight="bold"),
-                        rx.text_area(
+                        rx.text("Observaciones", size="2", weight="bold", color=styles.TEXT_PRIMARY),
+                        neuro_text_area(
                             placeholder="Notas adicionales sobre este pago...",
                             name="observaciones",
                             default_value=RecaudosState.form_data.get("observaciones", ""),
                             size="2",
                             width="100%",
-                            rows="3",
+                            min_height="80px",
                         ),
                         width="100%",
+                        spacing="1",
                     ),
                     # Botones
                     rx.hstack(
                         rx.dialog.close(
-                            rx.button(
+                            neuro_button(
                                 "Cancelar",
-                                variant="soft",
-                                color="gray",
                                 size="2",
                             ),
                         ),
-                        rx.button(
+                        neuro_button(
                             rx.cond(RecaudosState.is_loading, rx.spinner(size="1"), "Guardar Pago"),
                             type="submit",
                             size="2",
@@ -269,6 +284,7 @@ def modal_recaudo() -> rx.Component:
                         spacing="3",
                         justify="end",
                         width="100%",
+                        padding_top="2",
                     ),
                     spacing="4",
                     width="100%",
@@ -278,7 +294,10 @@ def modal_recaudo() -> rx.Component:
             ),
             max_width="600px",
             padding="24px",
+            background=styles.BG_PANEL,
+            style={"border_radius": "16px", "box_shadow": styles.NEU_SHADOW},
         ),
         open=RecaudosState.show_form_modal,
         on_open_change=RecaudosState.close_modal,
     )
+

@@ -5,6 +5,8 @@ from src.presentacion_reflex.components.personas.modal_form import modal_persona
 from src.presentacion_reflex.components.personas.person_card import person_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.personas_state import PersonasState
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root
+from src.presentacion_reflex import styles
 
 
 def persona_row(persona: dict) -> rx.Component:
@@ -179,7 +181,7 @@ def personas_page() -> rx.Component:
                 rx.card(
                     rx.flex(
                         # Search bar with enhanced styling
-                        rx.input(
+                        neuro_input(
                             rx.input.slot(rx.icon("search", size=18)),
                             placeholder="Buscar por nombre o documento...",
                             value=PersonasState.search_query,
@@ -189,29 +191,29 @@ def personas_page() -> rx.Component:
                             width=["100%", "100%", "320px"],
                         ),
                         # Role filter with icon
-                        rx.select(
+                        neuro_select_root(
                             [
-                                "Todos",
-                                "Propietario",
-                                "Arrendatario",
-                                "Codeudor",
-                                "Asesor",
-                                "Proveedor",
+                                rx.select.item("Todos", value="Todos"),
+                                rx.select.item("Propietario", value="Propietario"),
+                                rx.select.item("Arrendatario", value="Arrendatario"),
+                                rx.select.item("Codeudor", value="Codeudor"),
+                                rx.select.item("Asesor", value="Asesor"),
+                                rx.select.item("Proveedor", value="Proveedor"),
                             ],
                             value=PersonasState.filtro_rol,
                             on_change=PersonasState.set_filtro_rol,
-                            size="3",
-                            width=["100%", "100%", "auto"],
+                            placeholder="Filtrar por Rol",
+                            width=["100%", "100%", "200px"],
                         ),
                         # Date filters
-                        rx.input(
+                        neuro_input(
                             type="date",
                             placeholder="Desde",
                             on_change=PersonasState.set_fecha_inicio,
                             size="3",
                             width=["100%", "100%", "auto"],
                         ),
-                        rx.input(
+                        neuro_input(
                             type="date",
                             placeholder="Hasta",
                             on_change=PersonasState.set_fecha_fin,
@@ -283,7 +285,10 @@ def personas_page() -> rx.Component:
                     ),
                     width="100%",
                     style={
-                        "background": "var(--color-panel-solid)",
+                        "background": styles.BG_PANEL,
+                        "box_shadow": styles.NEU_SHADOW,
+                        "border": "none",
+                        "border_radius": "16px",
                     },
                 ),
                 # --- Content Area: Table or Cards View ---

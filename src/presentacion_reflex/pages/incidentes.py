@@ -8,24 +8,28 @@ from src.presentacion_reflex.state.incidentes_state import IncidentesState
 # from src.presentacion_reflex.components.incidentes.modal_form import modal_form # To be implemented
 
 
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex import styles
+
 def _filter_bar() -> rx.Component:
     return rx.flex(
-        rx.input(
+        neuro_input(
             placeholder="Buscar incidente...",
             on_change=IncidentesState.set_search,
             width=["100%", "250px"],
-            icon="search",
         ),
-        rx.select(
-            IncidentesState.prioridad_options,
+        neuro_select_root(
+            [rx.select.item(opt, value=opt) for opt in IncidentesState.prioridad_options],
             value=IncidentesState.filter_prioridad,
             on_change=IncidentesState.set_filter_prioridad,
+            placeholder="Prioridad",
             width=["100%", "150px"],
         ),
-        rx.select(
-            IncidentesState.estado_options,
+        neuro_select_root(
+            [rx.select.item(opt, value=opt) for opt in IncidentesState.estado_options],
             value=IncidentesState.filter_estado,
             on_change=IncidentesState.set_filter_estado,
+            placeholder="Estado",
             width=["100%", "150px"],
         ),
         rx.spacer(display=["none", "block"]),
@@ -35,13 +39,13 @@ def _filter_bar() -> rx.Component:
             value=IncidentesState.view_mode,
             on_change=lambda val: IncidentesState.toggle_view_mode(),
             width=["100%", "auto"],
+            style={"box_shadow": styles.NEU_SHADOW, "border_radius": "8px"},
         ),
         rx.cond(
             AuthState.check_action("Incidentes", "CREAR"),
             rx.tooltip(
-                rx.button(
-                    rx.icon("plus", size=18),
-                    "Reportar",
+                neuro_button(
+                    rx.hstack(rx.icon("plus", size=18), rx.text("Reportar")),
                     on_click=IncidentesState.open_create_modal,
                     width=["100%", "auto"],
                 ),
@@ -49,11 +53,16 @@ def _filter_bar() -> rx.Component:
             ),
         ),
         width="100%",
-        padding_bottom="1em",
+        padding="4",
+        background=styles.BG_PANEL,
+        border_radius="16px",
+        style={"box_shadow": styles.NEU_SHADOW},
         align_items="center",
         flex_wrap="wrap",
         gap="4",
+        margin_bottom="4",
     )
+
 
 
 def _list_view() -> rx.Component:
