@@ -168,17 +168,19 @@ def propietario_fields() -> rx.Component:
                 icon="hash",
             ),
             rx.vstack(
-                rx.text("Tipo de Cuenta", size="2", weight="bold", color="var(--gray-12)"),
-                rx.select(
-                    ["Ahorros", "Corriente"],
+                rx.text("Tipo de Cuenta", size="2", weight="bold", color=styles.TEXT_PRIMARY),
+                neuro_select_root(
+                    [
+                        rx.select.item("Ahorros", value="Ahorros"),
+                        rx.select.item("Corriente", value="Corriente"),
+                    ],
                     name="tipo_cuenta",
-                    default_value=rx.cond(
+                    value=rx.cond(
                         PersonasState.form_data["tipo_cuenta"] != "",
                         PersonasState.form_data["tipo_cuenta"],
                         "Ahorros",
                     ),
                     width="100%",
-                    size="3",
                 ),
                 spacing="1",
                 width="100%",
@@ -211,6 +213,7 @@ def propietario_fields() -> rx.Component:
             value=PersonasState.form_data["observaciones_propietario"],
             on_change=lambda val: PersonasState.set_upper("observaciones_propietario", val),
         ),
+
         spacing="3",
         width="100%",
         padding="4",
