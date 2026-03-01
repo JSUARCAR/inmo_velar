@@ -7,41 +7,39 @@ from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.usuarios_state import UsuarioDisplayModel, UsuariosState
 
 
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex import styles
+
 def filtros_bar() -> rx.Component:
     return rx.flex(
-        rx.input(
+        neuro_input(
             placeholder="Buscar usuario...",
             on_change=UsuariosState.set_search,
             width=["100%", "300px"],
-            icon="search",
         ),
         rx.flex(
-            rx.select.root(
-                rx.select.trigger(placeholder="Rol", width=["100%", "auto"]),
-                rx.select.content(
-                    rx.select.group(
-                        rx.select.item("Todos", value="Todos"),
-                        rx.select.item("Administrador", value="Administrador"),
-                        rx.select.item("Asesor", value="Asesor"),
-                        rx.select.item("Operativo", value="Operativo"),
-                    )
-                ),
+            neuro_select_root(
+                [
+                    rx.select.item("Todos", value="Todos"),
+                    rx.select.item("Administrador", value="Administrador"),
+                    rx.select.item("Asesor", value="Asesor"),
+                    rx.select.item("Operativo", value="Operativo"),
+                ],
+                placeholder="Rol",
                 value=UsuariosState.filter_role,
                 on_change=lambda val: UsuariosState.set_filter_role(val),
-                width=["100%", "auto"],
+                width=["100%", "150px"],
             ),
-            rx.select.root(
-                rx.select.trigger(placeholder="Estado", width=["100%", "auto"]),
-                rx.select.content(
-                    rx.select.group(
-                        rx.select.item("Todos", value="Todos"),
-                        rx.select.item("Activo", value="Activo"),
-                        rx.select.item("Inactivo", value="Inactivo"),
-                    )
-                ),
+            neuro_select_root(
+                [
+                    rx.select.item("Todos", value="Todos"),
+                    rx.select.item("Activo", value="Activo"),
+                    rx.select.item("Inactivo", value="Inactivo"),
+                ],
+                placeholder="Estado",
                 value=UsuariosState.filter_status,
                 on_change=lambda val: UsuariosState.set_filter_status(val),
-                width=["100%", "auto"],
+                width=["100%", "150px"],
             ),
             spacing="3",
             width=["100%", "auto"],
@@ -50,9 +48,8 @@ def filtros_bar() -> rx.Component:
         rx.spacer(),
         rx.cond(
             AuthState.check_action("Usuarios", "CREAR"),
-            rx.button(
-                rx.icon("user_plus"),
-                "Nuevo Usuario",
+            neuro_button(
+                rx.hstack(rx.icon("user_plus"), rx.text("Nuevo Usuario")),
                 on_click=UsuariosState.open_create_modal,
                 width=["100%", "auto"],
             ),
@@ -61,9 +58,14 @@ def filtros_bar() -> rx.Component:
         gap="3",
         align="center",
         wrap="wrap",
-        padding_bottom="4",
+        padding="4",
+        background=styles.BG_PANEL,
+        border_radius="16px",
+        style={"box_shadow": styles.NEU_SHADOW},
         flex_direction=["column", "row"],
+        margin_bottom="4",
     )
+
 
 
 def usuario_card(u: UsuarioDisplayModel) -> rx.Component:

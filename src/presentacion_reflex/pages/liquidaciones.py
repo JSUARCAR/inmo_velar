@@ -18,12 +18,12 @@ from src.presentacion_reflex.components.liquidaciones import (
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 from src.presentacion_reflex.state.pdf_state import PDFState
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
 from src.presentacion_reflex import styles
 
 
 def format_currency(amount: rx.Var) -> rx.Component:
     """Formatea valores monetarios."""
-    # En Reflex usamos rx.cond para formatear condicionalmente
     return rx.text(f"${amount:,}".replace(",", "."))
 
 
@@ -35,12 +35,12 @@ def render_estado_badge(estado: rx.Var) -> rx.Component:
         ("Aprobada", rx.badge("Aprobada", color_scheme="blue", variant="solid")),
         ("Pagada", rx.badge("Pagada", color_scheme="green", variant="solid")),
         ("Cancelada", rx.badge("Cancelada", color_scheme="red", variant="solid")),
-        rx.badge(estado, color_scheme="gray", variant="soft"),  # fallback
+        rx.badge(estado, color_scheme="gray", variant="soft"),
     )
 
 
 def liquidaciones_toolbar() -> rx.Component:
-    """Barra de herramientas con filtros y búsqueda."""
+    """Barra de herramientas con filtros y búsqueda con diseño neumórfico."""
     return rx.hstack(
         # Toggle Vista Agrupada
         rx.hstack(
@@ -55,15 +55,16 @@ def liquidaciones_toolbar() -> rx.Component:
                 ),
                 weight="medium",
                 size="2",
+                color=styles.TEXT_PRIMARY,
             ),
             spacing="2",
             padding="0.5em",
             background=styles.BG_PANEL,
-            border_radius="6px",
-            border=f"1px solid {styles.BORDER_DEFAULT}",
+            border_radius="10px",
+            style={"box_shadow": styles.NEU_INSET},
         ),
         # Búsqueda
-        rx.input(
+        neuro_input(
             placeholder="Buscar...",
             value=LiquidacionesState.search_text,
             on_change=LiquidacionesState.set_search,
@@ -71,20 +72,20 @@ def liquidaciones_toolbar() -> rx.Component:
             width="250px",
         ),
         # Filtro Período
-        rx.select(
-            LiquidacionesState.periodos_select_options,
+        neuro_select_root(
+            [rx.select.item(opt, value=opt) for opt in LiquidacionesState.periodos_select_options],
             placeholder="Período",
             value=LiquidacionesState.filter_periodo,
             on_change=LiquidacionesState.set_filter_periodo,
-            width="130px",
+            width="150px",
         ),
         # Filtro Estado
-        rx.select(
-            LiquidacionesState.estado_options,
+        neuro_select_root(
+            [rx.select.item(opt, value=opt) for opt in LiquidacionesState.estado_options],
             placeholder="Estado",
             value=LiquidacionesState.filter_estado,
             on_change=LiquidacionesState.set_filter_estado,
-            width="130px",
+            width="150px",
         ),
         rx.spacer(),
         # Botón Nueva Liquidación Individual o Masiva
@@ -92,36 +93,81 @@ def liquidaciones_toolbar() -> rx.Component:
             LiquidacionesState.vista_agrupada,
             rx.cond(
                 AuthState.check_action("Liquidaciones", "CREAR"),
-                rx.button(
-                    rx.icon("users"),
-                    "Nueva Liquidación Masiva",
+                neuro_button(
+                    rx.hstack(rx.icon("users"), rx.text("Liquidación Masiva")),
                     on_click=LiquidacionesState.open_bulk_create_modal,
-                    color_scheme="violet",
                 ),
             ),
             rx.cond(
                 AuthState.check_action("Liquidaciones", "CREAR"),
-                rx.button(
-                    rx.icon("plus"),
-                    "Nueva Liquidación",
+                neuro_button(
+                    rx.hstack(rx.icon("plus"), rx.text("Nueva Liquidación")),
                     on_click=LiquidacionesState.open_create_modal,
-                    color_scheme="blue",
                 ),
             ),
         ),
         # Botón Refresh
-        rx.button(
+        neuro_button(
             rx.icon("refresh-cw"),
             on_click=LiquidacionesState.load_liquidaciones,
-            variant="soft",
         ),
         width="100%",
         padding="1em",
         background=styles.BG_PANEL,
-        border_radius="8px",
-        border=f"1px solid {styles.BORDER_DEFAULT}",
-        box_shadow="sm",
+        border_radius="16px",
+        style={"box_shadow": styles.NEU_SHADOW},
         spacing="3",
+    )
+
+
+def pagination_controls() -> rx.Component:
+    """Controles de paginación Premium."""
+    return rx.card(
+        rx.hstack(
+            neuro_button(
+                rx.hstack(rx.icon("chevron-left", size=16), rx.text("Anterior")),
+                on_click=LiquidacionesState.prev_page,
+                disabled=LiquidacionesState.current_page == 1,
+                size="3",
+            ),
+            rx.vstack(
+                rx.text(
+                    f"Página {LiquidacionesState.current_page}",
+                    size="3",
+                    weight="medium",
+                    color=styles.TEXT_PRIMARY,
+                ),
+                rx.text(
+                    f"Mostrando {(LiquidacionesState.current_page - 1) * LiquidacionesState.page_size + 1}-"
+                    f"{rx.cond(LiquidacionesState.current_page * LiquidacionesState.page_size > LiquidacionesState.total_items, LiquidacionesState.total_items, LiquidacionesState.current_page * LiquidacionesState.page_size)} "
+                    f"de {LiquidacionesState.total_items}",
+                    size="1",
+                    color=styles.TEXT_SECONDARY,
+                ),
+                spacing="0",
+                align="center",
+            ),
+            neuro_button(
+                rx.hstack(rx.text("Siguiente"), rx.icon("chevron-right", size=16)),
+                on_click=LiquidacionesState.next_page,
+                disabled=LiquidacionesState.current_page * LiquidacionesState.page_size
+                >= LiquidacionesState.total_items,
+                size="3",
+            ),
+            justify="center",
+            width="100%",
+            padding="4",
+            align="center",
+            spacing="4",
+        ),
+        width="100%",
+        style={
+            "background": styles.BG_PANEL,
+            "box_shadow": styles.NEU_SHADOW,
+            "border": "none",
+            "border_radius": "16px",
+            "margin_top": "24px",
+        },
     )
 
 
@@ -201,7 +247,7 @@ def liquidaciones_table() -> rx.Component:
                                     ),
                                     content="Editar liquidación",
                                 ),
-                                rx.box(),  # Empty si no aplica
+                                rx.box(),
                             ),
                             # Aprobar (solo En Proceso)
                             rx.cond(
@@ -315,8 +361,6 @@ def liquidaciones_table_agrupada() -> rx.Component:
                                     content="Ver detalle consolidado",
                                 ),
                                 # Botón PDF Estado de Cuenta (Vista Agrupada)
-                                # Note: En vista agrupada, necesitaríamos buscar la primera liquidación
-                                # Por ahora usamos el método legacy por propietario/período
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("file-spreadsheet", size=18),
@@ -381,64 +425,6 @@ def liquidaciones_table_agrupada() -> rx.Component:
     )
 
 
-def pagination_controls() -> rx.Component:
-    """Controles de paginación Premium."""
-    return rx.card(
-        rx.hstack(
-            rx.button(
-                rx.icon("chevron-left", size=16),
-                "Anterior",
-                on_click=LiquidacionesState.prev_page,
-                disabled=LiquidacionesState.current_page == 1,
-                variant="soft",
-                size="3",
-                _hover={
-                    "transform": "translateX(-2px)",
-                },
-                transition="transform 0.2s ease",
-            ),
-            rx.vstack(
-                rx.text(
-                    f"Página {LiquidacionesState.current_page}",
-                    size="3",
-                    weight="medium",
-                ),
-                rx.text(
-                    f"Mostrando {(LiquidacionesState.current_page - 1) * LiquidacionesState.page_size + 1}-"
-                    f"{rx.cond(LiquidacionesState.current_page * LiquidacionesState.page_size > LiquidacionesState.total_items, LiquidacionesState.total_items, LiquidacionesState.current_page * LiquidacionesState.page_size)} "
-                    f"de {LiquidacionesState.total_items}",
-                    size="1",
-                    color="var(--gray-10)",
-                ),
-                spacing="0",
-                align="center",
-            ),
-            rx.button(
-                "Siguiente",
-                rx.icon("chevron-right", size=16),
-                on_click=LiquidacionesState.next_page,
-                disabled=LiquidacionesState.current_page * LiquidacionesState.page_size
-                >= LiquidacionesState.total_items,
-                variant="soft",
-                size="3",
-                _hover={
-                    "transform": "translateX(2px)",
-                },
-                transition="transform 0.2s ease",
-            ),
-            justify="center",
-            width="100%",
-            padding="4",
-            align="center",
-            spacing="4",
-        ),
-        width="100%",
-        style={
-            "background": "var(--color-panel-solid)",
-        },
-    )
-
-
 def liquidaciones_page() -> rx.Component:
     """Página principal de liquidaciones."""
     return rx.vstack(
@@ -448,9 +434,7 @@ def liquidaciones_page() -> rx.Component:
                 "Liquidaciones de Propietarios",
                 size="8",
                 weight="bold",
-                background="linear-gradient(to right, #667eea, #764ba2)",
-                background_clip="text",
-                color="transparent",
+                color=styles.TEXT_PRIMARY,
             ),
             rx.text(
                 "Gestión de estados de cuenta mensuales y pagos a propietarios",
@@ -510,9 +494,7 @@ def liquidaciones_page() -> rx.Component:
             ),
             rx.box(),
         ),
-        # Cancel Modal
         cancel_modal(),
-        # Reverse Confirm Dialog
         reverse_confirm_dialog(),
         width="100%",
         spacing="4",
