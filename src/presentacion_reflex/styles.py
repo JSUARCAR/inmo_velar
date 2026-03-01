@@ -8,8 +8,6 @@ la inversión de colores en Modo Oscuro.
 
 # --- Backgrounds ---
 # Fondo general de la aplicación (detrás de las tarjetas)
-# --- Backgrounds ---
-# Fondo general de la aplicación (detrás de las tarjetas)
 BG_APP = "var(--bg-app)"
 
 # Fondo de paneles, tarjetas, sidebar, modales
@@ -52,30 +50,8 @@ BORDER_HOVER = rx.color("gray", 8)
 ACCENT_COLOR = rx.color("blue", 9) # Color primario
 ACCENT_BG_SOFT = rx.color("blue", 3) # Fondos suaves de acento
 
-# --- Neumorphism Shadows ---
-# Sombra Extruida (Elemento elevado)
-NEU_SHADOW = rx.color_mode_cond(
-    light="10px 10px 20px rgba(184, 195, 218, 0.45), -10px -10px 20px rgba(255, 255, 255, 0.8)",
-    dark="10px 10px 20px rgba(0, 0, 0, 0.8), -10px -10px 20px rgba(45, 47, 53, 0.4)"
-)
-
-# Sombra para Modales (Flota sobre el overlay oscuro sin producir resplandor blanco excesivo)
-NEU_MODAL_SHADOW = rx.color_mode_cond(
-    light="10px 10px 30px rgba(184, 195, 218, 0.6), -5px -5px 15px rgba(255, 255, 255, 0.2)",
-    dark="15px 15px 40px rgba(0, 0, 0, 0.9), -5px -5px 15px rgba(45, 47, 53, 0.2)"
-)
-
-# Sombra Hundida (Elemento presionado o inactivo estructuralmente)
-NEU_INSET = rx.color_mode_cond(
-    light="inset 6px 6px 12px rgba(184, 195, 218, 0.5), inset -6px -6px 12px rgba(255, 255, 255, 0.95)",
-    dark="inset 6px 6px 12px rgba(0,0,0,0.8), inset -6px -6px 12px rgba(45, 47, 53, 0.6)"
-)
-
-NEU_INSET_LIGHT = rx.color_mode_cond(
-    light="inset 4px 4px 8px rgba(184, 195, 218, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.9)",
-    dark="inset 4px 4px 8px rgba(0, 0, 0, 0.5), inset -4px -4px 8px rgba(45, 47, 53, 0.4)"
-)
-
+# Alias para compatibilidad con código existente
+BORDER_COLOR = BORDER_DEFAULT
 
 # --- Component Styles ---
 NEU_INPUT_STYLE = {
