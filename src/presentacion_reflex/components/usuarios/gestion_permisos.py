@@ -130,7 +130,10 @@ def gestion_permisos_modal() -> rx.Component:
             rx.dialog.title(
                 rx.flex(
                     rx.icon("shield-check", size=20),
-                    rx.text(f"Gestionar Permisos: {UsuariosState.selected_role_for_permissions}"),
+                    rx.text(
+                        "Gestionar Permisos: ",
+                        UsuariosState.selected_role_for_permissions,
+                    ),
                     gap="2",
                     align="center",
                 ),

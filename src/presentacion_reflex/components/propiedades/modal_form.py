@@ -1,7 +1,8 @@
 import reflex as rx
 
 from src.presentacion_reflex.components.propiedades.wizard_progress import wizard_progress
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_text_area
+from src.presentacion_reflex.state.propiedades_state import PropiedadesState
 from src.presentacion_reflex import styles
 
 
@@ -73,10 +74,10 @@ def step_1_content() -> rx.Component:
             form_field(
                 "Municipio",
                 neuro_select_root(
-                    [
-                        rx.select.item(item["label"], value=item["value"].to(str))
-                        for item in PropiedadesState.municipios_options
-                    ],
+                    rx.foreach(
+                        PropiedadesState.municipios_options,
+                        lambda item: rx.select.item(item["label"], value=item["value"].to(str))
+                    ),
                     value=PropiedadesState.form_data["id_municipio"],
                     on_change=PropiedadesState.set_id_municipio,
                     placeholder="Seleccione Municipio",

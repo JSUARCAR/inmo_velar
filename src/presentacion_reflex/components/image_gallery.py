@@ -3,6 +3,12 @@ from typing import Any, Callable, Dict, List
 import reflex as rx
 
 
+def _get_image_src(doc: rx.Var) -> rx.Var:
+    return rx.Var.create("http://127.0.0.1:8000/api/storage/") + doc['id_documento'].to(str) + "/download"
+
+def _get_image_href(doc: rx.Var) -> rx.Var:
+    return rx.Var.create("http://127.0.0.1:8000/api/storage/") + doc['id_documento'].to(str) + "/download?force_download=true"
+
 def image_gallery(
     documentos: List[Dict[str, Any]],
     on_delete: Callable,
@@ -37,9 +43,9 @@ def image_gallery(
                             rx.card(
                                 rx.inset(
                                     rx.cond(
-                                        doc.get("mime_type", "").to_string().contains("image"),
+                                        doc["mime_type"].to_string().contains("image"),
                                         rx.image(
-                                            src=f"http://127.0.0.1:8000/api/storage/{doc.get('id_documento')}/download",  # IP explícita para evitar problemas de resolución
+                                            src=_get_image_src(doc),
                                             object_fit="cover",
                                             width="100%",
                                             height="140px",
@@ -59,14 +65,14 @@ def image_gallery(
                                 ),
                                 rx.vstack(
                                     rx.text(
-                                        doc.get("nombre_archivo", "Documento"),
+                                        doc["nombre_archivo"],
                                         size="1",
                                         weight="bold",
                                         no_of_lines=1,
                                     ),
                                     rx.hstack(
                                         rx.badge(
-                                            doc.get("extension", "")
+                                            doc["extension"]
                                             .to_string()
                                             .upper()
                                             .replace(".", ""),
@@ -81,7 +87,7 @@ def image_gallery(
                                                 variant="ghost",
                                                 color_scheme="blue",
                                             ),
-                                            href=f"http://127.0.0.1:8000/api/storage/{doc.get('id_documento')}/download?force_download=true",
+                                            href=_get_image_href(doc),
                                             is_external=True,
                                         ),
                                         rx.spacer(),
@@ -90,7 +96,7 @@ def image_gallery(
                                             size="1",
                                             variant="ghost",
                                             color_scheme="red",
-                                            on_click=lambda: on_delete(doc.get("id_documento")),
+                                            on_click=lambda: on_delete(doc["id_documento"]),
                                         ),
                                         width="100%",
                                         align="center",
@@ -110,14 +116,14 @@ def image_gallery(
                             rx.context_menu.item(
                                 "Descargar",
                                 on_select=rx.redirect(
-                                    path=f"http://127.0.0.1:8000/api/storage/{doc.get('id_documento')}/download?force_download=true"
+                                    path=_get_image_href(doc)
                                 ),
                             ),
                             rx.context_menu.separator(),
                             rx.context_menu.item(
                                 "Eliminar",
                                 color="red",
-                                on_select=lambda: on_delete(doc.get("id_documento")),
+                                on_select=lambda: on_delete(doc["id_documento"]),
                             ),
                         ),
                     ),

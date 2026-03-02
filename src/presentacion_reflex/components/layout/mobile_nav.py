@@ -18,7 +18,7 @@ def mobile_nav() -> rx.Component:
             rx.drawer.root(
                 rx.drawer.trigger(
                     rx.icon_button(
-                        rx.icon("menu", size=26, color=rx.color_mode_cond(light="var(--gray-12)", dark="white")),
+                        rx.icon("menu", size=26, color=rx.cond(rx.color_mode == "light", "var(--gray-12)", "white")),
                         variant="ghost",
                         size="3",
                         _hover={
@@ -47,12 +47,12 @@ def mobile_nav() -> rx.Component:
                                                 object_fit="contain",
                                                 alt="Logo",
                                             ),
-                                            rx.icon("building", size=26, color=rx.color_mode_cond(light="var(--gray-12)", dark="white")),
+                                            rx.icon("building", size=26, color=rx.cond(rx.color_mode == "light", "var(--gray-12)", "white")),
                                         ),
                                         rx.heading(
                                             "Inmobiliaria Velar",
                                             size="5",
-                                            color=rx.color_mode_cond(light="var(--gray-12)", dark="white"),
+                                            color=rx.cond(rx.color_mode == "light", "var(--gray-12)", "white"),
                                             weight="bold",
                                             letter_spacing="-0.5px",
                                         ),
@@ -62,7 +62,7 @@ def mobile_nav() -> rx.Component:
                                     rx.spacer(),
                                     rx.drawer.close(
                                         rx.icon_button(
-                                            rx.icon("x", size=24, color=rx.color_mode_cond(light="var(--gray-12)", dark="white")),
+                                            rx.icon("x", size=24, color=rx.cond(rx.color_mode == "light", "var(--gray-12)", "white")),
                                             variant="ghost",
                                             size="2",
                                             _hover={
@@ -132,7 +132,7 @@ def mobile_nav() -> rx.Component:
                     "Inmobiliaria Velar",
                     size="4",
                     weight="bold",
-                    color=rx.color_mode_cond(light="var(--gray-12)", dark="white"),
+                    color=rx.cond(rx.color_mode == "light", "var(--gray-12)", "white"),
                     transition="all 0.5s ease",
                     cursor="default",
                 ),

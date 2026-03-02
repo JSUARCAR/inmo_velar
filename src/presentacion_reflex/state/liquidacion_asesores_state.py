@@ -23,6 +23,12 @@ from src.infraestructura.repositorios.repositorio_pago_asesor_sqlite import (
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 
 
+def format_currency(value: Optional[float]) -> str:
+    if value is None:
+        return "$0"
+    return f"${float(value):,.0f}".replace(",", ".")
+
+
 class LiquidacionAsesoresState(DocumentosStateMixin):
     """Estado para gestión de liquidaciones de asesores.
     Maneja paginación, filtros, CRUD, state machine y descuentos.
@@ -394,9 +400,13 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
         """Carga las propiedades/contratos activos para visualización."""
         try:
             repo = RepositorioContratoArrendamientoSQLite(db_manager)
-            props = repo.obtener_detalle_contratos_asesor(id_asesor)
+            props_formatted = []
+            for p in props:
+                p_copy = dict(p)
+                p_copy["CANON_ARRENDAMIEENTO_VIEW"] = format_currency(p.get("CANON_ARRENDAMIENTO"))
+                props_formatted.append(p_copy)
             async with self:
-                self.advisor_properties = props
+                self.advisor_properties = props_formatted
         except Exception:
             pass  # print(f"Error fetching properties: {e}") [OpSec Removed]
             async with self:
@@ -448,11 +458,16 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                     "asesor": liq.nombre_asesor if hasattr(liq, "nombre_asesor") else "N/A",
                     "id_asesor": liq.id_asesor,
                     "canon_liquidado": liq.canon_arrendamiento_liquidado,
+                    "canon_liquidado_view": format_currency(liq.canon_arrendamiento_liquidado),
                     "porcentaje": liq.porcentaje_comision / 100.0,  # Convertir a decimal
                     "comision_bruta": liq.comision_bruta,
+                    "comision_bruta_view": format_currency(liq.comision_bruta),
                     "total_descuentos": liq.total_descuentos,
+                    "total_descuentos_view": format_currency(liq.total_descuentos),
                     "total_bonificaciones": getattr(liq, "total_bonificaciones", 0),
+                    "total_bonificaciones_view": format_currency(getattr(liq, "total_bonificaciones", 0)),
                     "valor_neto": liq.valor_neto_asesor,
+                    "valor_neto_view": format_currency(liq.valor_neto_asesor),
                     "estado": liq.estado_liquidacion,
                     "fecha_creacion": liq.fecha_creacion,
                     "fecha_aprobacion": liq.fecha_aprobacion,
@@ -722,11 +737,16 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                     "periodo": liq_data["periodo_liquidacion"],
                     "asesor": liq_data.get("nombre_asesor", "N/A"),
                     "canon_liquidado": liq_data["canon_arrendamiento_liquidado"],
+                    "canon_liquidado_view": format_currency(liq_data["canon_arrendamiento_liquidado"]),
                     "porcentaje": liq_data["porcentaje_comision"] / 100.0,
                     "comision_bruta": liq_data["comision_bruta"],
+                    "comision_bruta_view": format_currency(liq_data["comision_bruta"]),
                     "total_descuentos": liq_data["total_descuentos"],
+                    "total_descuentos_view": format_currency(liq_data["total_descuentos"]),
                     "total_bonificaciones": liq_data.get("total_bonificaciones", 0),
+                    "total_bonificaciones_view": format_currency(liq_data.get("total_bonificaciones", 0)),
                     "valor_neto": liq_data["valor_neto_asesor"],
+                    "valor_neto_view": format_currency(liq_data["valor_neto_asesor"]),
                     "estado": liq_data["estado_liquidacion"],
                     "observaciones": liq_data["observaciones_liquidacion"] or "",
                 }
@@ -736,6 +756,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         "tipo": d["tipo_descuento"],
                         "descripcion": d["descripcion_descuento"],
                         "valor": d["valor_descuento"],
+                        "valor_view": format_currency(d["valor_descuento"]),
                     }
                     for d in descuentos
                 ]
@@ -745,6 +766,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         "tipo": b["tipo_bonificacion"],
                         "descripcion": b["descripcion_bonificacion"],
                         "valor": b["valor_bonificacion"],
+                        "valor_view": format_currency(b["valor_bonificacion"]),
                     }
                     for b in bonificaciones
                 ]
@@ -758,6 +780,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                             or c.get("direccion", "N/A"),
                             "CANON_ARRENDAMIENTO": c.get("canon_arrendamiento")
                             or c.get("canon_incluido", 0),
+                            "CANON_ARRENDAMIENTO_VIEW": format_currency(
+                                c.get("canon_arrendamiento") or c.get("canon_incluido", 0)
+                            ),
                             "ID_CONTRATO_A": c.get("id_contrato") or c.get("id_contrato_a"),
                         }
                     )

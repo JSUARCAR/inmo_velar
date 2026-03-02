@@ -114,6 +114,6 @@ def modal_form() -> rx.Component:
             background=styles.BG_PANEL,
             style={"border_radius": "16px", "box_shadow": styles.NEU_SHADOW},
         ),
-        open=UsuariosState.show_modal,
+        open=UsuariosState.show_form_modal,
         on_open_change=lambda _: UsuariosState.close_modal(),
     )

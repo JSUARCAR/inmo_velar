@@ -1,12 +1,13 @@
 import reflex as rx
-
-class State(rx.State):
-    my_list: list[dict] = [{"val": 10}]
-
-def comp():
-    return rx.foreach(
-        State.my_list,
-        lambda i: rx.cond(i['val'].to(int) <= 30, rx.text('a'), rx.text('b'))
-    )
-
-print("Test passed.")
+var = rx.Var.create('test')
+try:
+  a = 'A' + var
+except Exception as e: print('Failed +:', e)
+try:
+  b = f'B{var}'
+  print('f-string:', type(b))
+except Exception as e: print('Failed f-string:', type(e).__name__)
+try:
+  c = rx.Var.create('C') + var
+  print('Var + Var:', type(c))
+except Exception as e: print('Failed Var+:', e)

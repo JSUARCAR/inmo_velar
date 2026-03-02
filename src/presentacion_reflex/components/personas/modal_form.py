@@ -475,8 +475,7 @@ def step_2_roles() -> rx.Component:
             text_align="center",
         ),
         rx.box(
-            rx.foreach(PersonasState.available_roles, role_selector_card),
-            display="grid",
+            rx.foreach(PersonasState.available_roles, role_selector_card),            display="grid",
             grid_template_columns=[
                 "repeat(1, 1fr)",  # mobile
                 "repeat(2, 1fr)",  # tablet+

@@ -135,11 +135,11 @@ def dashboard_page() -> rx.Component:
                                     rx.text("Recaudo Mensual", weight="bold", size="2"),
                                     rx.separator(),
                                     rx.text(
-                                        f"Total recaudado en el mes actual: {DashboardState.recaudo_mes_view}",
+                                        "Total recaudado en el mes actual: ", DashboardState.recaudo_mes_view,
                                         size="1",
                                     ),
                                     rx.text(
-                                        f"Meta de recaudo: {DashboardState.kpi_potencial_total_view}",
+                                        "Meta de recaudo: ", DashboardState.kpi_potencial_total_view,
                                         size="1",
                                     ),
                                     spacing="1",
@@ -311,11 +311,9 @@ def dashboard_page() -> rx.Component:
                                 kpi_card(
                                     "Recibos Pend.",
                                     DashboardState.recibos_monto_total_view,
-                                    "receipt",
-                                    "rose",
-                                     rx.text(
-                                        DashboardState.recibos_cantidad_view, " unds"
-                                    ),
+                                    "receipt", # icono
+                                    rx.cond(DashboardState.recibos_monto_total_view == "$0", "green", "red"), # color_icono
+                                    rx.text(DashboardState.recibos_cantidad_view, " unds"), # subtitulo
                                     variant="compact",
                                     hover_content=rx.text(
                                         "Recibos de servicios públicos o administración pendientes de pago.",

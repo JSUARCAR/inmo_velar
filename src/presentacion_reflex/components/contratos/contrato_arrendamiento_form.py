@@ -182,7 +182,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                         type="date",
                                         name="fecha_inicio",
                                         required=True,
-                                        value=ContratosState.form_data.get("fecha_inicio", ""),
+                                        value=ContratosState.form_data["fecha_inicio"],
                                         on_change=ContratosState.on_change_fecha_inicio,
                                         variant="surface",
                                     ),
@@ -196,7 +196,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                         type="date",
                                         name="fecha_fin",
                                         required=True,
-                                        value=ContratosState.form_data.get("fecha_fin", ""),
+                                        value=ContratosState.form_data["fecha_fin"],
                                         on_change=ContratosState.on_change_fecha_fin,
                                         variant="surface",
                                     ),
@@ -218,7 +218,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                     read_only=True,
                                     required=True,
                                     min=1,
-                                    value=ContratosState.form_data.get("duracion_meses", "12"),
+                                    value=ContratosState.form_data["duracion_meses"],
                                     variant="surface",
                                 ),
                                 spacing="1",
@@ -236,7 +236,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                         placeholder="1000000",
                                         required=True,
                                         min=0,
-                                        value=ContratosState.form_data.get("canon", ""),
+                                        value=ContratosState.form_data["canon"],
                                         on_change=ContratosState.on_change_canon_arriendo,
                                         variant="surface",
                                     ),
@@ -250,7 +250,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                         type="number",
                                         name="deposito",
                                         placeholder="0",
-                                        value=ContratosState.form_data.get("deposito", "0"),
+                                        value=ContratosState.form_data["deposito"],
                                         on_change=lambda v: ContratosState.set_form_field(
                                             "deposito", v
                                         ),
@@ -267,7 +267,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                         name="fecha_pago",
                                         placeholder="Ej: Día 5 de cada mes",
                                         required=True,
-                                        value=ContratosState.form_data.get("fecha_pago", ""),
+                                        value=ContratosState.form_data["fecha_pago"],
                                         on_change=lambda v: ContratosState.set_form_field(
                                             "fecha_pago", v
                                         ),

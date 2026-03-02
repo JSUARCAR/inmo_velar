@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, TypedDict
 
 import reflex as rx
 
@@ -11,12 +11,25 @@ from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracio
 from pathlib import Path
 
 
+class IncidenteDict(TypedDict):
+    """Estructura tipada para serialización de Incidente en Reflex."""
+    id: int
+    descripcion: str
+    estado: str
+    prioridad: str
+    fecha: str
+    id_propiedad: int
+    direccion_propiedad: str
+    id_proveedor: Optional[int]
+    origen: str
+
+
 class IncidentesState(DocumentosStateMixin):
     """Estado para gestión de Incidentes."""
 
     # Datos
-    incidentes: List[Dict[str, Any]] = []
-    incidentes_kanban: Dict[str, List[Dict[str, Any]]] = {
+    incidentes: List[IncidenteDict] = []
+    incidentes_kanban: Dict[str, List[IncidenteDict]] = {
         "Reportado": [],
         "Cotizado": [],
         "Aprobado": [],
@@ -141,25 +154,12 @@ class IncidentesState(DocumentosStateMixin):
         "dias": 1,
     }
 
-    @rx.var
-    def incidentes_reportado(self) -> List[Dict[str, Any]]:
-        return self.incidentes_kanban.get("Reportado", [])
-
-    @rx.var
-    def incidentes_cotizado(self) -> List[Dict[str, Any]]:
-        return self.incidentes_kanban.get("Cotizado", [])
-
-    @rx.var
-    def incidentes_aprobado(self) -> List[Dict[str, Any]]:
-        return self.incidentes_kanban.get("Aprobado", [])
-
-    @rx.var
-    def incidentes_en_reparacion(self) -> List[Dict[str, Any]]:
-        return self.incidentes_kanban.get("En Reparacion", [])
-
-    @rx.var
-    def incidentes_finalizado(self) -> List[Dict[str, Any]]:
-        return self.incidentes_kanban.get("Finalizado", [])
+    # Kanban Columns (Variables de estado directas para mayor estabilidad)
+    incidentes_reportado: List[IncidenteDict] = []
+    incidentes_cotizado: List[IncidenteDict] = []
+    incidentes_aprobado: List[IncidenteDict] = []
+    incidentes_en_reparacion: List[IncidenteDict] = []
+    incidentes_finalizado: List[IncidenteDict] = []
 
     @rx.event(background=True)
     async def on_load(self):
@@ -263,9 +263,9 @@ class IncidentesState(DocumentosStateMixin):
                     "estado": inc.estado,
                     "prioridad": inc.prioridad,
                     "fecha": (
-                        inc.fecha_incidente.isoformat()
-                        if hasattr(inc.fecha_incidente, "isoformat")
-                        else str(inc.fecha_incidente)
+                        inc.fecha_incidente.strftime("%Y-%m-%d")
+                        if hasattr(inc.fecha_incidente, "strftime")
+                        else str(inc.fecha_incidente)[:10]
                     ),
                     "id_propiedad": inc.id_propiedad,
                     "direccion_propiedad": direccion,
@@ -283,6 +283,14 @@ class IncidentesState(DocumentosStateMixin):
             async with self:
                 self.incidentes = items
                 self.incidentes_kanban = kanban_grouped
+                
+                # Actualizar columnas individuales para mayor estabilidad en el compilador
+                self.incidentes_reportado = kanban_grouped.get("Reportado", [])
+                self.incidentes_cotizado = kanban_grouped.get("Cotizado", [])
+                self.incidentes_aprobado = kanban_grouped.get("Aprobado", [])
+                self.incidentes_en_reparacion = kanban_grouped.get("En Reparacion", [])
+                self.incidentes_finalizado = kanban_grouped.get("Finalizado", [])
+                
                 import math
 
                 self.total_pages = math.ceil(total_items / self.items_per_page)

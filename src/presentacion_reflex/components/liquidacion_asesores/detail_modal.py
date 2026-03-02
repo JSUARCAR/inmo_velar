@@ -58,7 +58,9 @@ def detail_modal() -> rx.Component:
                             rx.card(
                                 rx.text("Canon Liquidado", size="1", color="gray"),
                                 rx.text(
-                                    f"${LiquidacionAsesoresState.liquidacion_actual['canon_liquidado']:,}",
+                                    LiquidacionAsesoresState.liquidacion_actual[
+                                        "canon_liquidado_view"
+                                    ],
                                     size="4",
                                     weight="bold",
                                 ),
@@ -66,7 +68,9 @@ def detail_modal() -> rx.Component:
                             rx.card(
                                 rx.text("Comisión Bruta", size="1", color="gray"),
                                 rx.text(
-                                    f"${LiquidacionAsesoresState.liquidacion_actual['comision_bruta']:,}",
+                                    LiquidacionAsesoresState.liquidacion_actual[
+                                        "comision_bruta_view"
+                                    ],
                                     size="4",
                                     weight="bold",
                                     color="blue",
@@ -75,7 +79,9 @@ def detail_modal() -> rx.Component:
                             rx.card(
                                 rx.text("Descuentos", size="1", color="gray"),
                                 rx.text(
-                                    f"${LiquidacionAsesoresState.liquidacion_actual['total_descuentos']:,}",
+                                    LiquidacionAsesoresState.liquidacion_actual[
+                                        "total_descuentos_view"
+                                    ],
                                     size="4",
                                     weight="bold",
                                     color="red",
@@ -84,7 +90,9 @@ def detail_modal() -> rx.Component:
                             rx.card(
                                 rx.text("Bonificaciones", size="1", color="gray"),
                                 rx.text(
-                                    f"${LiquidacionAsesoresState.liquidacion_actual['total_bonificaciones']:,}",
+                                    LiquidacionAsesoresState.liquidacion_actual[
+                                        "total_bonificaciones_view"
+                                    ],
                                     size="4",
                                     weight="bold",
                                     color="green",
@@ -93,7 +101,9 @@ def detail_modal() -> rx.Component:
                             rx.card(
                                 rx.text("Valor Neto", size="1", color="gray"),
                                 rx.text(
-                                    f"${LiquidacionAsesoresState.liquidacion_actual['valor_neto']:,}",
+                                    LiquidacionAsesoresState.liquidacion_actual[
+                                        "valor_neto_view"
+                                    ],
                                     size="5",
                                     weight="bold",
                                     color="green",
@@ -135,7 +145,7 @@ def detail_modal() -> rx.Component:
                                                         weight="bold",
                                                     ),
                                                     rx.text(
-                                                        f"${p['CANON_ARRENDAMIENTO']}",
+                                                        p["CANON_ARRENDAMIENTO_VIEW"],
                                                         size="2",
                                                         weight="medium",
                                                         color="blue",
@@ -192,7 +202,7 @@ def detail_modal() -> rx.Component:
                                                 ),
                                                 rx.table.cell(d["tipo"]),
                                                 rx.table.cell(d["descripcion"]),
-                                                rx.table.cell(f"${d['valor']:,}", color="red"),
+                                                rx.table.cell(d["valor_view"], color="red"),
                                                 rx.table.cell(
                                                     rx.cond(
                                                         LiquidacionAsesoresState.liquidacion_actual[
@@ -228,7 +238,7 @@ def detail_modal() -> rx.Component:
                                                 ),
                                                 rx.table.cell(b["tipo"]),
                                                 rx.table.cell(b["descripcion"]),
-                                                rx.table.cell(f"${b['valor']:,}", color="green"),
+                                                rx.table.cell(b["valor_view"], color="green"),
                                                 rx.table.cell(rx.box()),  # Sin acciones por ahora
                                             ),
                                         ),

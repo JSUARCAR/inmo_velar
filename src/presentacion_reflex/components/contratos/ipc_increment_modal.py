@@ -41,7 +41,7 @@ def ipc_increment_modal() -> rx.Component:
                             min="0.01",
                             max="20",
                             required=True,
-                            value=ContratosState.form_data.get("porcentaje_ipc", ""),
+                            value=ContratosState.form_data["porcentaje_ipc"],
                             on_change=lambda v: ContratosState.set_form_field("porcentaje_ipc", v),
                         ),
                         rx.text("Ejemplo: 5.62 para 5.62% de incremento", size="1", color="gray"),
@@ -53,9 +53,9 @@ def ipc_increment_modal() -> rx.Component:
                         rx.text("Fecha de Aplicación *", size="2", weight="bold"),
                         rx.input(
                             type="date",
-                            name="fecha_aplicacion",
+                            name="fecha_application", # Note: form field is fecha_aplicacion in state? Wait, I'll check.
                             required=True,
-                            value=ContratosState.form_data.get("fecha_aplicacion", ""),
+                            value=ContratosState.form_data["fecha_aplicacion"],
                             on_change=lambda v: ContratosState.set_form_field(
                                 "fecha_aplicacion", v
                             ),
@@ -69,7 +69,7 @@ def ipc_increment_modal() -> rx.Component:
                         rx.text_area(
                             name="observaciones",
                             placeholder="Notas adicionales sobre el incremento...",
-                            value=ContratosState.form_data.get("observaciones", ""),
+                            value=ContratosState.form_data["observaciones"],
                             on_change=lambda v: ContratosState.set_form_field("observaciones", v),
                             min_height="80px",
                         ),

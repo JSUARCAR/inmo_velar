@@ -77,11 +77,12 @@ class ConfiguracionState(rx.State):
         params = servicio.listar_parametros()
         self.parametros = [
             {
-                "id": p.id_parametro,
-                "nombre": p.nombre_parametro,
-                "valor": str(p.valor_parametro) if p.valor_parametro is not None else "",
+                "id_parametro": p.id_parametro,
+                "nombre_parametro": p.nombre_parametro,
+                "valor_parametro": str(p.valor_parametro) if p.valor_parametro is not None else "",
                 "descripcion": p.descripcion or "",
-                "editable": getattr(p, "editable", True),
+                "categoria": p.categoria or "SISTEMA",
+                "modificable": p.modificable if p.modificable is not None else 1,
             }
             for p in params
         ]

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Página de Liquidaciones de Propietarios
 Gestión completa de estados de cuenta mensuales
 """
@@ -24,7 +24,7 @@ from src.presentacion_reflex import styles
 
 def format_currency(amount: rx.Var) -> rx.Component:
     """Formatea valores monetarios."""
-    return rx.text(f"${amount:,}".replace(",", "."))
+    return rx.text("$", amount)
 
 
 def render_estado_badge(estado: rx.Var) -> rx.Component:
@@ -73,7 +73,10 @@ def liquidaciones_toolbar() -> rx.Component:
         ),
         # Filtro Período
         neuro_select_root(
-            [rx.select.item(opt, value=opt) for opt in LiquidacionesState.periodos_select_options],
+            rx.foreach(
+                LiquidacionesState.periodos_select_options,
+                lambda opt: rx.select.item(opt, value=opt),
+            ),
             placeholder="Período",
             value=LiquidacionesState.filter_periodo,
             on_change=LiquidacionesState.set_filter_periodo,
@@ -81,7 +84,10 @@ def liquidaciones_toolbar() -> rx.Component:
         ),
         # Filtro Estado
         neuro_select_root(
-            [rx.select.item(opt, value=opt) for opt in LiquidacionesState.estado_options],
+            rx.foreach(
+                LiquidacionesState.estado_options,
+                lambda opt: rx.select.item(opt, value=opt),
+            ),
             placeholder="Estado",
             value=LiquidacionesState.filter_estado,
             on_change=LiquidacionesState.set_filter_estado,
@@ -132,15 +138,15 @@ def pagination_controls() -> rx.Component:
             ),
             rx.vstack(
                 rx.text(
-                    f"Página {LiquidacionesState.current_page}",
+                    "Página ", LiquidacionesState.current_page,
                     size="3",
                     weight="medium",
                     color=styles.TEXT_PRIMARY,
                 ),
                 rx.text(
-                    f"Mostrando {(LiquidacionesState.current_page - 1) * LiquidacionesState.page_size + 1}-"
-                    f"{rx.cond(LiquidacionesState.current_page * LiquidacionesState.page_size > LiquidacionesState.total_items, LiquidacionesState.total_items, LiquidacionesState.current_page * LiquidacionesState.page_size)} "
-                    f"de {LiquidacionesState.total_items}",
+                    "Mostrando ", (LiquidacionesState.current_page - 1) * LiquidacionesState.page_size + 1, "-",
+                    rx.cond(LiquidacionesState.current_page * LiquidacionesState.page_size > LiquidacionesState.total_items, LiquidacionesState.total_items, LiquidacionesState.current_page * LiquidacionesState.page_size),
+                    " de ", LiquidacionesState.total_items,
                     size="1",
                     color=styles.TEXT_SECONDARY,
                 ),

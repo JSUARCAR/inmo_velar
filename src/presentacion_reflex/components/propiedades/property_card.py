@@ -23,9 +23,13 @@ def property_card(
     codigo_gas: str,
     imagen_id: int,
     estado_registro: int,
-    on_edit: callable,
-    on_toggle_disponibilidad: callable,
-    on_toggle_activa: callable,
+    valor_canon_view: str = "$0",
+    valor_venta_view: str = "$0",
+    comision_venta_valor_view: str = "$0",
+    area_metros_view: str = "0m²",
+    on_edit: callable = None,
+    on_toggle_disponibilidad: callable = None,
+    on_toggle_activa: callable = None,
 ) -> rx.Component:
     """
     Elite Property Card Component.
@@ -64,9 +68,7 @@ def property_card(
                         rx.cond(
                             imagen_id,
                             rx.image(
-                                src="/api/storage/"
-                                + imagen_id.to(str)
-                                + "/download",
+                                src="/api/storage/placeholder/download",
                                 width="280px",
                                 height="200px",
                                 border_radius="8px",
@@ -120,7 +122,8 @@ def property_card(
                     no_of_lines=1,
                 ),
                 rx.text(
-                    f"Mat: {matricula}",
+                    "Mat: ",
+                    matricula,
                     size="1",
                     color="var(--gray-10)",
                 ),
@@ -132,7 +135,7 @@ def property_card(
             rx.grid(
                 rx.hstack(
                     rx.icon("scan", size=14, color="var(--gray-9)"),
-                    rx.text(f"{area_metros.to(float):.0f}m²", size="1", color="var(--gray-11)"),
+                    rx.text(area_metros_view, size="1", color="var(--gray-11)"),
                     spacing="1",
                     align="center",
                 ),
@@ -140,7 +143,12 @@ def property_card(
                     habitaciones.to(int) > 0,
                     rx.hstack(
                         rx.icon("bed", size=14, color="var(--gray-9)"),
-                        rx.text(f"{habitaciones.to(int)} Hab", size="1", color="var(--gray-11)"),
+                        rx.text(
+                            habitaciones.to(str),
+                            " Hab",
+                            size="1",
+                            color="var(--gray-11)",
+                        ),
                         spacing="1",
                         align="center",
                     ),
@@ -150,7 +158,12 @@ def property_card(
                     banos.to(int) > 0,
                     rx.hstack(
                         rx.icon("bath", size=14, color="var(--gray-9)"),
-                        rx.text(f"{banos.to(int)} Baños", size="1", color="var(--gray-11)"),
+                        rx.text(
+                            banos.to(str),
+                            " Baños",
+                            size="1",
+                            color="var(--gray-11)",
+                        ),
                         spacing="1",
                         align="center",
                     ),
@@ -216,7 +229,7 @@ def property_card(
                 rx.vstack(
                     rx.text("Canon", size="1", color="var(--gray-9)"),
                     rx.text(
-                        f"${valor_canon.to(float):,.0f}",
+                        valor_canon_view,
                         size="4",
                         weight="bold",
                         color="var(--accent-9)",
@@ -230,13 +243,15 @@ def property_card(
                         rx.text("Venta / Comisión", size="1", color="var(--gray-9)"),
                         rx.hstack(
                             rx.text(
-                                f"${valor_venta.to(float):,.0f}",
+                                valor_venta_view,
                                 size="3",
                                 weight="bold",
                                 color="var(--green-9)",
                             ),
                             rx.text(
-                                f"(${valor_venta.to(float) * comision_venta.to(float) / 100:,.0f})",
+                                "(",
+                                comision_venta_valor_view,
+                                ")",
                                 size="2",
                                 color="var(--red-8)",
                             ),

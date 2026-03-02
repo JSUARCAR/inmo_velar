@@ -79,7 +79,7 @@ def ipc_table() -> rx.Component:
                 IPCState.ipcs,
                 lambda ipc: rx.table.row(
                     rx.table.cell(rx.badge(ipc.anio, variant="outline")),
-                    rx.table.cell(rx.text(f"{ipc.valor_ipc}%", weight="bold")),
+                    rx.table.cell(rx.text(ipc.valor_ipc, "%", weight="bold")),
                     rx.table.cell(ipc.fecha_publicacion),
                     rx.table.cell(
                         rx.cond(

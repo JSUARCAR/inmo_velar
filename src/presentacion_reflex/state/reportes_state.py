@@ -133,10 +133,12 @@ class ReportesState(rx.State):
         """Verifica acceso backend (Python puro no Var)."""
         # Acceder al estado real (no Var)
         auth_state = await self.get_state(AuthState)
-        user = auth_state.user_info
         
-        if not user: return False
-        if user.get("rol") == "Administrador": return True
+        if not auth_state.is_authenticated: 
+            return False
+            
+        if auth_state.user_rol == "Administrador": 
+            return True
         
         return module_name in auth_state.allowed_modules
 

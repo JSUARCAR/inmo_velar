@@ -36,7 +36,8 @@ def modal_detalle_seguro() -> rx.Component:
                             rx.vstack(
                                 rx.text("Porcentaje", size="2", color="gray", weight="bold"),
                                 rx.text(
-                                    f"{SegurosState.selected_seguro['porcentaje_seguro']}%",
+                                    SegurosState.selected_seguro["porcentaje_seguro"].to(str),
+                                    "%",
                                     size="3",
                                     weight="bold",
                                     color="blue",
@@ -123,15 +124,20 @@ def modal_detalle_seguro() -> rx.Component:
                                                 width="100%",
                                             ),
                                             rx.text(
-                                                f"Contrato ID: {poliza['id_contrato']}",
+                                                "Contrato ID: ",
+                                                poliza["id_contrato"],
                                                 size="2",
                                                 color="gray",
                                             ),
                                             rx.hstack(
                                                 rx.text(
-                                                    f"Inicio: {poliza['fecha_inicio']}", size="2"
+                                                    "Inicio: ",
+                                                    poliza["fecha_inicio"],
+                                                    size="2",
                                                 ),
-                                                rx.text(f"Fin: {poliza['fecha_fin']}", size="2"),
+                                                rx.text(
+                                                    "Fin: ", poliza["fecha_fin"], size="2"
+                                                ),
                                                 spacing="4",
                                             ),
                                             spacing="2",

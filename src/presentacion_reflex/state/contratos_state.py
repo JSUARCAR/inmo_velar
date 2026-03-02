@@ -1,11 +1,31 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 
 import reflex as rx
 
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+
+
+class ContratoDict(TypedDict):
+    """Estructura tipada para serialización de Contrato en Reflex."""
+    id_contrato: int
+    tipo_contrato: str
+    estado_contrato: str
+    propiedad_direccion: str
+    propiedad_matricula: str
+    propiedad_tipo: str
+    propietario_nombre: str
+    propietario_documento: str
+    arrendatario_nombre: str
+    arrendatario_documento: str
+    habitante_nombre: str
+    asesor_nombre: str
+    fecha_inicio: str
+    fecha_fin: str
+    valor_canon: float
+    valor_administracion: float
 
 
 class ContratosState(DocumentosStateMixin):
@@ -19,7 +39,7 @@ class ContratosState(DocumentosStateMixin):
     total_items: int = 0
 
     # Datos
-    contratos: List[Dict[str, Any]] = []
+    contratos: List[ContratoDict] = []
     is_loading: bool = False
     error_message: str = ""
     is_grid_view: bool = False  # Default to Table, or True for Elite default
@@ -31,6 +51,7 @@ class ContratosState(DocumentosStateMixin):
     filter_propiedad_id: str = ""
     filter_persona_id: str = ""
     filter_asesor_id: str = ""
+    solo_activos: bool = True
 
     # Opciones de filtros (para dropdowns)
     tipo_options: List[str] = ["Todos", "Mandato", "Arrendamiento"]
@@ -57,6 +78,8 @@ class ContratosState(DocumentosStateMixin):
     modal_mode: str = "crear_mandato"  # crear_mandato, crear_arrendamiento, editar
     editing_id: Optional[int] = None
     form_data: Dict[str, Any] = {}
+
+
 
     # Modal Detalle
     show_detail_modal: bool = False
@@ -665,36 +688,39 @@ class ContratosState(DocumentosStateMixin):
                 else None
             )
 
+            # Determinar estado de filtrado (si solo_activos, forzar Activo)
+            estado_filtro = "Activo" if self.solo_activos else (self.filter_estado if self.filter_estado != "Todos" else None)
+
             # Determinar qué tipo de contratos cargar
             if self.filter_tipo == "Mandato":
                 # Solo mandatos
                 resultado = servicio.listar_mandatos_paginado(
                     page=self.current_page,
                     page_size=self.page_size,
-                    estado=self.filter_estado if self.filter_estado != "Todos" else None,
+                    estado=estado_filtro,
                     busqueda=self.search_text if self.search_text else None,
                     id_asesor=asesor_filter,
                 )
-                # Agregar campo 'tipo' para distinguir en la UI
-                items = [{"tipo": "Mandato", **item} for item in resultado.items]
+                # Agregar campo 'tipo_contrato' para la UI
+                items = [{"tipo_contrato": "Mandato", **item} for item in resultado.items]
 
             elif self.filter_tipo == "Arrendamiento":
                 # Solo arrendamientos
                 resultado = servicio.listar_arrendamientos_paginado(
                     page=self.current_page,
                     page_size=self.page_size,
-                    estado=self.filter_estado if self.filter_estado != "Todos" else None,
+                    estado=estado_filtro,
                     busqueda=self.search_text if self.search_text else None,
                     id_asesor=asesor_filter,
                 )
-                items = [{"tipo": "Arrendamiento", **item} for item in resultado.items]
+                items = [{"tipo_contrato": "Arrendamiento", **item} for item in resultado.items]
 
             else:
                 # Todos: combinar mandatos y arrendamientos
                 resultado_mandatos = servicio.listar_mandatos_paginado(
                     page=self.current_page,
                     page_size=self.page_size,
-                    estado=self.filter_estado if self.filter_estado != "Todos" else None,
+                    estado=estado_filtro,
                     busqueda=self.search_text if self.search_text else None,
                     id_asesor=asesor_filter,
                 )
@@ -702,14 +728,14 @@ class ContratosState(DocumentosStateMixin):
                 resultado_arrendamientos = servicio.listar_arrendamientos_paginado(
                     page=self.current_page,
                     page_size=self.page_size,
-                    estado=self.filter_estado if self.filter_estado != "Todos" else None,
+                    estado=estado_filtro,
                     busqueda=self.search_text if self.search_text else None,
                     id_asesor=asesor_filter,
                 )
 
-                mandatos = [{"tipo": "Mandato", **item} for item in resultado_mandatos.items]
+                mandatos = [{"tipo_contrato": "Mandato", **item} for item in resultado_mandatos.items]
                 arrendamientos = [
-                    {"tipo": "Arrendamiento", **item} for item in resultado_arrendamientos.items
+                    {"tipo_contrato": "Arrendamiento", **item} for item in resultado_arrendamientos.items
                 ]
 
                 items = mandatos + arrendamientos
@@ -794,6 +820,12 @@ class ContratosState(DocumentosStateMixin):
     def set_filter_asesor(self, value: str):
         """Cambia filtro de asesor."""
         self.filter_asesor_id = value
+        self.current_page = 1
+        return ContratosState.load_contratos
+
+    def toggle_solo_activos(self, checked: bool):
+        """Toggle solo activos."""
+        self.solo_activos = checked
         self.current_page = 1
         return ContratosState.load_contratos
 

@@ -15,9 +15,9 @@ def contrato_card(contrato: dict) -> rx.Component:
             # Header: Tipo y Estado
             rx.hstack(
                 rx.badge(
-                    contrato["tipo"],
+                    contrato["tipo_contrato"],
                     color_scheme=rx.cond(
-                        contrato["tipo"] == "Mandato",
+                        contrato["tipo_contrato"] == "Mandato",
                         "blue",
                         "green",
                     ),
@@ -26,9 +26,9 @@ def contrato_card(contrato: dict) -> rx.Component:
                 ),
                 rx.spacer(),
                 rx.badge(
-                    contrato["estado"],
+                    contrato["estado_contrato"],
                     color_scheme=rx.cond(
-                        contrato["estado"] == "Activo",
+                        contrato["estado_contrato"] == "Activo",
                         "green",
                         "red",
                     ),
@@ -40,20 +40,20 @@ def contrato_card(contrato: dict) -> rx.Component:
             # Info: Propiedad
             rx.vstack(
                 rx.text(
-                    contrato.get("propiedad", "N/A"),
+                    contrato["propiedad_direccion"],
                     size="3",
                     weight="bold",
                     color="var(--gray-12)",
                 ),
                 rx.badge(
-                    contrato.get("tipo_propiedad", ""),
+                    contrato["propiedad_tipo"],
                     variant="soft",
                     color_scheme="indigo",
                     size="1",
                     radius="full",
                 ),
                 rx.text(
-                    f"ID: {contrato['id']}",
+                    "ID: ", contrato["id_contrato"],
                     size="1",
                     color="var(--gray-9)",
                 ),
@@ -66,24 +66,30 @@ def contrato_card(contrato: dict) -> rx.Component:
                 rx.icon("user", size=16, color="var(--blue-9)"),
                 rx.vstack(
                     rx.text(
-                        contrato.get("propietario", contrato.get("arrendatario", "N/A")),
+                        rx.cond(
+                            contrato["tipo_contrato"] == "Mandato",
+                            contrato["propietario_nombre"],
+                            contrato["arrendatario_nombre"]
+                        ),
                         size="2",
                         weight="medium",
                         color="var(--gray-11)",
                     ),
                     rx.text(
-                        contrato.get(
-                            "documento_propietario", contrato.get("documento_arrendatario", "")
+                        rx.cond(
+                            contrato["tipo_contrato"] == "Mandato",
+                            contrato["propietario_documento"],
+                            contrato["arrendatario_documento"]
                         ),
                         size="1",
                         color="var(--gray-9)",
                     ),
                     rx.cond(
-                        contrato.get("habitante", "") != "",
+                        contrato["habitante_nombre"] != "",
                         rx.hstack(
                             rx.icon("home", size=12, color="var(--gray-9)"),
                             rx.text(
-                                f"Habitante: {contrato.get('habitante', '')}",
+                                "Habitante: ", contrato["habitante_nombre"],
                                 size="1",
                                 color="var(--gray-10)",
                             ),
@@ -100,7 +106,7 @@ def contrato_card(contrato: dict) -> rx.Component:
             rx.hstack(
                 rx.icon("headset", size=16, color="var(--purple-9)"),
                 rx.text(
-                    contrato.get("asesor", "N/A"),
+                    contrato["asesor_nombre"],
                     size="2",
                     weight="medium",
                     color="var(--gray-11)",
@@ -123,7 +129,7 @@ def contrato_card(contrato: dict) -> rx.Component:
                 rx.vstack(
                     rx.text("Valor", size="1", color="var(--gray-9)"),
                     rx.text(
-                        f"${contrato['canon']:,.0f}", size="2", weight="bold", color="var(--blue-9)"
+                        "$", contrato["valor_canon"], size="2", weight="bold", color="var(--blue-9)"
                     ),
                     spacing="0",
                 ),
@@ -140,7 +146,7 @@ def contrato_card(contrato: dict) -> rx.Component:
                         rx.icon_button(
                             rx.icon("eye", size=18),
                             on_click=lambda: ContratosState.open_detail_modal(
-                                contrato["id"], contrato["tipo"]
+                                contrato["id_contrato"], contrato["tipo_contrato"]
                             ),
                             variant="surface",
                             size="2",
@@ -150,13 +156,13 @@ def contrato_card(contrato: dict) -> rx.Component:
                     ),
                     # --- ACCIONES ARRENDAMIENTO ---
                     rx.cond(
-                        contrato["tipo"] == "Arrendamiento",
+                        contrato["tipo_contrato"] == "Arrendamiento",
                         rx.hstack(
                             rx.tooltip(
                                 rx.icon_button(
                                     rx.icon("file-check", size=18),
                                     on_click=lambda: PDFState.generar_contrato_arrendamiento_elite(
-                                        contrato["id"], False
+                                        contrato["id_contrato"], False
                                     ),
                                     variant="ghost",
                                     size="2",
@@ -170,12 +176,12 @@ def contrato_card(contrato: dict) -> rx.Component:
                                     rx.icon_button(
                                         rx.icon("trending-up", size=18),
                                         on_click=lambda: ContratosState.open_ipc_modal(
-                                            contrato["id"]
+                                            contrato["id_contrato"]
                                         ),
                                         variant="ghost",
                                         size="2",
                                         color_scheme="cyan",
-                                        disabled=contrato["estado"] != "Activo",
+                                        disabled=contrato["estado_contrato"] != "Activo",
                                     ),
                                     content="Incremento IPC",
                                 ),
@@ -185,12 +191,12 @@ def contrato_card(contrato: dict) -> rx.Component:
                     ),
                     # --- ACCIONES MANDATO ---
                     rx.cond(
-                        contrato["tipo"] == "Mandato",
+                        contrato["tipo_contrato"] == "Mandato",
                         rx.tooltip(
                             rx.icon_button(
                                 rx.icon("file-check", size=18),
                                 on_click=lambda: PDFState.generar_contrato_mandato_elite(
-                                    contrato["id"], False
+                                    contrato["id_contrato"], False
                                 ),
                                 variant="ghost",
                                 size="2",
@@ -206,7 +212,7 @@ def contrato_card(contrato: dict) -> rx.Component:
                             rx.icon_button(
                                 rx.icon("pencil", size=18),
                                 on_click=lambda: ContratosState.open_edit_modal(
-                                    contrato["id"], contrato["tipo"]
+                                    contrato["id_contrato"], contrato["tipo_contrato"]
                                 ),
                                 variant="ghost",
                                 size="2",
@@ -222,12 +228,12 @@ def contrato_card(contrato: dict) -> rx.Component:
                             rx.icon_button(
                                 rx.icon("ban", size=18),
                                 on_click=lambda: ContratosState.toggle_estado(
-                                    contrato["id"], contrato["tipo"], contrato["estado"]
+                                    contrato["id_contrato"], contrato["tipo_contrato"], contrato["estado_contrato"]
                                 ),
                                 variant="ghost",
                                 size="2",
                                 color_scheme="red",
-                                disabled=contrato["estado"] != "Activo",
+                                disabled=contrato["estado_contrato"] != "Activo",
                             ),
                             content="Terminar",
                         ),

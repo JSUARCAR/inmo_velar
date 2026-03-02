@@ -1,0 +1,46 @@
+Warning: Windows Subsystem for Linux (WSL) is recommended for improving initial
+install times.
+Warning: Creating project directories in OneDrive may lead to performance 
+issues. For optimal performance, It is recommended to avoid using OneDrive for 
+your reflex app.
+----------------------------- Starting Reflex App -----------------------------
+Traceback (most recent call last):
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\utils\prerequisites.py", line 349, in compile_or_validate_app
+    get_compiled_app(
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\utils\prerequisites.py", line 268, in get_compiled_app
+    app._compile(prerender_routes=prerender_routes, dry_run=dry_run, use_rich=use_rich)
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\app.py", line 1248, in _compile
+    self._compile_page(route, save_page=should_compile)
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\app.py", line 878, in _compile_page
+    component = compiler.compile_unevaluated_page(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\compiler\compiler.py", line 806, in compile_unevaluated_page
+    component = into_component(page.component)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\compiler\compiler.py", line 736, in into_component
+    component_called = component()
+                       ^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\presentacion_reflex\pages\propiedades.py", line 591, in propiedades
+    return propiedades_page()
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\presentacion_reflex\pages\propiedades.py", line 286, in propiedades_page
+    rx.foreach(
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\components\core\foreach.py", line 111, in create
+    component.children = [component._render().render_component()]
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\components\tags\iter_tag.py", line 94, in render_component
+    component = self.render_fn(arg)
+                ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\presentacion_reflex\pages\propiedades.py", line 380, in <lambda>
+    content=render_tooltip_content(prop, "EnergÝa", "codigo_energia"),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\presentacion_reflex\pages\propiedades.py", line 18, in render_tooltip_content
+    return rx.Var.create(f"{label}: ").to(rx.Var) + prop[key]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\vars\sequence.py", line 596, in __add__
+    raise_unsupported_operand_types("+", (type(self), type(other)))
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\vars\number.py", line 57, in raise_unsupported_operand_types
+    raise VarTypeError(msg)
+reflex.utils.exceptions.VarTypeError: Unsupported Operand type(s) for +: LiteralStringVar, ObjectItemOperation
+Happened while evaluating page 'propiedades'
+DEBUG [database.py]: Final DB_MODE: postgresql

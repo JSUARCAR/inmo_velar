@@ -72,10 +72,10 @@ class AuthState(rx.State):
 
     # ── Computed Vars (sin efectos secundarios) ────────────────────────────────
 
-    @rx.var
-    def user_info(self) -> Optional[Dict[str, Any]]:
-        """Retorna los datos del usuario en memoria (SIN tocar la BD, SIN mutar estado)."""
-        return self._user_data
+    # @rx.var
+    # def user_info(self) -> Optional[Dict[str, Any]]:
+    #     """Retorna los datos del usuario en memoria (SIN tocar la BD, SIN mutar estado)."""
+    #     return self._user_data
 
     # ── Event Handlers ─────────────────────────────────────────────────────────
 
@@ -282,9 +282,11 @@ class AuthState(rx.State):
     @classmethod
     def check_module_access(cls, module_name: str) -> rx.Var:
         """Verifica si el usuario tiene acceso a un módulo (Frontend safe)."""
-        is_admin = cls.user_rol == "Administrador"
-        has_access = cls.allowed_modules.contains(module_name)
-        return is_admin | has_access
+        return rx.cond(
+            cls.user_rol == "Administrador",
+            True,
+            cls.allowed_modules.contains(module_name)
+        )
 
     @classmethod
     def check_action(cls, module_name: str, action: str) -> rx.Var:
@@ -292,10 +294,23 @@ class AuthState(rx.State):
         Verifica si el usuario tiene permiso para una acción específica en un módulo.
         Retorna un rx.Var booleano compatible con rx.cond().
         """
-        is_admin = cls.user_rol == "Administrador"
+        # Usar rx.cond y manejo seguro para evitar VarAttributeError durante la compilación
+        is_admin = (cls.user_rol == "Administrador")
+        
+        # Comprobar si el módulo existe primero
         module_exists = cls.permissions_map.contains(module_name)
-        action_allowed = cls.permissions_map[module_name].contains(action)
-        return is_admin | (module_exists & action_allowed)
+        
+        # Obtener la lista de acciones de forma segura. 
+        # Si el módulo existe, comprobar la acción. Si no, False.
+        return rx.cond(
+            is_admin,
+            True,
+            rx.cond(
+                module_exists,
+                cls.permissions_map[module_name].contains(action),
+                False
+            )
+        )
 
     def _sync_permissions(self, rol: str = None):
         """Recarga los permisos del usuario desde la base de datos."""

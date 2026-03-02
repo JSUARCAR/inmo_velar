@@ -28,9 +28,10 @@ def sidebar_item(
             text,
             size="3",
             weight=rx.cond(is_active, "bold", "medium"),
-            color=rx.color_mode_cond(
-                light=rx.cond(is_active, "#0f172a", "#334155"),
-                dark="white",
+            color=rx.cond(
+                rx.color_mode == "light",
+                rx.cond(is_active, "#0f172a", "#334155"),
+                "white",
             ),
         ),
         spacing="3",
@@ -76,12 +77,15 @@ def sidebar_item(
                 margin_bottom="2",
             ),
             rx.text(
-                description if description else f"Acceder al módulo de {text}",
+                rx.cond(
+                    description != "",
+                    description,
+                    f"Acceder al módulo de {text}",
+                ),
                 size="2",
                 color="#4b5563",
                 line_height="1.5",
             ),
-            # Removed "Click para navegar" footer specific request
             spacing="2",
             align="start",
         ),
@@ -120,8 +124,6 @@ def sidebar_item(
             rx.fragment(),  # No renderizar nada si no tiene permiso
         )
 
-    # Si no tiene módulo asignado (ej. Dashboard público), mostrar siempre
-    # (Aunque Dashboard también debería ser un módulo, lo manejamos en la llamada)
     return item_component
 
 
@@ -131,7 +133,7 @@ def sidebar_section(title: str, *items) -> rx.Component:
         rx.text(
             title,
             size="1",
-            color=rx.color_mode_cond(light="#64748b", dark="white"),
+            color=rx.cond(rx.color_mode == "light", "#64748b", "white"),
             weight="bold",
             letter_spacing="0.5px",
             padding_x="4",
@@ -324,7 +326,7 @@ def sidebar_footer() -> rx.Component:
                 AuthState.user_nombre,
                 size="2",
                 weight="bold",
-                color=rx.color_mode_cond(light="#1e293b", dark="white"),
+                color=rx.cond(rx.color_mode == "light", "#1e293b", "white"),
                 max_width="120px",
                 overflow="hidden",
                 text_overflow="ellipsis",
@@ -332,7 +334,7 @@ def sidebar_footer() -> rx.Component:
             rx.text(
                 AuthState.user_rol,
                 size="1",
-                color=rx.color_mode_cond(light="#64748b", dark="white"),
+                color=rx.cond(rx.color_mode == "light", "#64748b", "white"),
                 max_width="120px",
                 overflow="hidden",
                 text_overflow="ellipsis",
@@ -410,7 +412,8 @@ def sidebar() -> rx.Component:
                                     color="#1e293b",
                                 ),
                                 rx.badge(
-                                    f"NIT: {ConfiguracionState.empresa['nit']}",
+                                    "NIT: ",
+                                    ConfiguracionState.empresa["nit"],
                                     color_scheme="gray",
                                     variant="surface",
                                     size="1",
@@ -476,7 +479,9 @@ def sidebar() -> rx.Component:
                                 rx.hstack(
                                     rx.icon("map-pin", size=14, color="#94a3b8"),
                                     rx.text(
-                                        f"{ConfiguracionState.empresa['direccion']} - {ConfiguracionState.empresa['ubicacion']}",
+                                        ConfiguracionState.empresa["direccion"],
+                                        " - ",
+                                        ConfiguracionState.empresa["ubicacion"],
                                         size="1",
                                         color="#475569",
                                     ),
@@ -512,7 +517,7 @@ def sidebar() -> rx.Component:
                     "Inmobiliaria Velar",
                 ),
                 size="3",
-                color=rx.color_mode_cond(light="#1e293b", dark="white"),
+                color=rx.cond(rx.color_mode == "light", "#1e293b", "white"),
                 weight="bold",
                 letter_spacing="-0.5px",
                 text_align="center",
@@ -542,7 +547,11 @@ def sidebar() -> rx.Component:
         top="0",
         left="0",
         flex_direction="column",
-        box_shadow=f"5px 0 15px {rx.color_mode_cond(light='rgba(163, 177, 198, 0.2)', dark='rgba(0, 0, 0, 0.4)')}",
+        box_shadow=rx.cond(
+            rx.color_mode == "light",
+            "5px 0 15px rgba(163, 177, 198, 0.2)",
+            "5px 0 15px rgba(0, 0, 0, 0.4)",
+        ),
         on_mount=ConfiguracionState.cargar_datos_empresa,
         class_name="hide-on-mobile",
     )

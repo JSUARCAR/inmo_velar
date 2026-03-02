@@ -39,6 +39,7 @@ class UsuarioDisplayModel(BaseModel):
 
     id_usuario: int
     nombre_usuario: str
+    nombre_fallback: str
     rol: str
     estado_usuario: bool
     estado_label: str
@@ -98,6 +99,7 @@ class UsuariosState(rx.State):
                 item = UsuarioDisplayModel(
                     id_usuario=u.id_usuario,
                     nombre_usuario=u.nombre_usuario,
+                    nombre_fallback=u.nombre_usuario[:2].upper() if u.nombre_usuario else "US",
                     rol=u.rol,
                     estado_usuario=u.es_activo(),
                     estado_label="Activo" if u.es_activo() else "Inactivo",
@@ -177,7 +179,7 @@ class UsuariosState(rx.State):
             self.is_loading = True
             self.error_message = ""
             current_admin = await self.get_state(AuthState)
-            admin_user = current_admin.user_info["nombre_usuario"] if current_admin.user_info else "sistema"
+            admin_user = current_admin.user_nombre if current_admin.is_authenticated else "sistema"
 
         try:
             servicio = ServicioUsuarios(db_manager)
@@ -266,7 +268,7 @@ class UsuariosState(rx.State):
         """Alterna el estado activo/inactivo."""
         async with self:
             current_admin = await self.get_state(AuthState)
-            admin_user = current_admin.user_info["nombre_usuario"] if current_admin.user_info else "sistema"
+            admin_user = current_admin.user_nombre if current_admin.is_authenticated else "sistema"
 
         try:
             servicio = ServicioUsuarios(db_manager)
@@ -422,7 +424,7 @@ class UsuariosState(rx.State):
             self.is_loading_permissions = True
             self.permissions_error = ""
             current_admin = await self.get_state(AuthState)
-            admin_user = current_admin.user_info["nombre_usuario"] if current_admin.user_info else "sistema"
+            admin_user = current_admin.user_nombre if current_admin.is_authenticated else "sistema"
 
         try:
             servicio = ServicioPermisos(db_manager)
@@ -463,7 +465,7 @@ class UsuariosState(rx.State):
         async with self:
             self.is_loading_permissions = True
             current_admin = await self.get_state(AuthState)
-            admin_user = current_admin.user_info["nombre_usuario"] if current_admin.user_info else "sistema"
+            admin_user = current_admin.user_nombre if current_admin.is_authenticated else "sistema"
 
         try:
             servicio = ServicioPermisos(db_manager)

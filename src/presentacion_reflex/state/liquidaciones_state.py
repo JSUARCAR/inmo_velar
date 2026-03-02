@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 
 import reflex as rx
 
@@ -6,6 +6,23 @@ from src.aplicacion.servicios.servicio_financiero import ServicioFinanciero
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 from src.presentacion_reflex.utils.formatters import format_currency, format_number
+
+
+class LiquidacionDict(TypedDict):
+    """Estructura tipada para serialización de Liquidación en Reflex."""
+    id: int
+    periodo: str
+    contrato: str
+    propiedad: str
+    propietario: str
+    documento: str
+    id_propietario: int
+    estado: str
+    canon: float
+    neto: float
+    canon_view: str
+    neto_view: str
+    cantidad_propiedades: Optional[int]
 
 
 class LiquidacionesState(DocumentosStateMixin):
@@ -19,7 +36,7 @@ class LiquidacionesState(DocumentosStateMixin):
     total_items: int = 0
 
     # Datos
-    liquidaciones: List[Dict[str, Any]] = []
+    liquidaciones: List[LiquidacionDict] = []
     liquidacion_actual: Optional[Dict[str, Any]] = None  # Para vista de detalle
     is_loading: bool = False
     error_message: str = ""
