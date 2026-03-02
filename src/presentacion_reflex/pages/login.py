@@ -164,24 +164,19 @@ def login_page() -> rx.Component:
                     align="center",
                     spacing="1",
                 ),
-                position="absolute",
-                top="10%",
-                left="0",
-                right="0",
-                z_index="20",
+                class_name="login-header-elite",
             ),
             # Content
-            rx.center(
+            rx.box(
                 login_card(),
-                z_index="10",
-                width="100%",
-                min_height="100vh",
-                align_items="center",
-                justify_content="center",
+                class_name="login-container-elite",
             ),
-            position="relative",
             width="100%",
             min_height="100vh",
-            background="transparent", # Totalmente transparente para ver fondos
+            background=rx.cond(
+                rx.color_mode == "light",
+                "#f8fafc", 
+                "#0f172a", 
+            ),
         ),
     )
