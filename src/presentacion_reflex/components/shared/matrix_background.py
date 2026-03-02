@@ -7,13 +7,14 @@ def matrix_background() -> rx.Component:
     """
     return rx.box(
         # Canvas para el efecto
-        rx.html('<canvas id="matrix-canvas"></canvas>'),
-        
-        # Trigger init logic when component mounts, with polling to ensure JS is loaded
-        # Trigger init logic when component mounts
-        # The external matrix.js (v5) now handles auto-binding via requestAnimationFrame
-        # so no inline script is needed here.
-        rx.script("console.log('Matrix Component Mounted');"),
+        rx.el.canvas(
+            id="matrix-canvas",
+            style={
+                "width": "100%",
+                "height": "100%",
+                "display": "block",
+            }
+        ),
         
         # Estilos para posicionar el canvas sobre (o bajo) el Aurora
         style={
