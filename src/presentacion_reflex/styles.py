@@ -82,3 +82,11 @@ NEU_BUTTON_STYLE = {
         "box_shadow": NEU_INSET,
     }
 }
+
+NEU_PANEL_STYLE = {
+    "background": BG_PANEL,
+    "box_shadow": NEU_SHADOW,
+    "border": "none",
+    "border_radius": "16px",
+    "padding": "1.5rem",
+}
