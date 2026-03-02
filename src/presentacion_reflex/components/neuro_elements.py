@@ -21,14 +21,16 @@ def neuro_select_root(*args, **kwargs) -> rx.Component:
     trigger_placeholder = kwargs.pop("placeholder", "Seleccionar...")
     trigger_width = kwargs.pop("width", "100%")
     
-    # El estilo se aplica al trigger, no al root
+    # La jerarquía correcta es Root -> (Trigger, Content -> Items)
     return rx.select.root(
         rx.select.trigger(
             placeholder=trigger_placeholder,
             style=styles.NEU_SELECT_STYLE,
             width=trigger_width,
         ),
-        *args,
+        rx.select.content(
+            *args,
+        ),
         **kwargs
     )
 
