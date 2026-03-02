@@ -88,7 +88,7 @@ def seguros_page() -> rx.Component:
             rx.text(
                 rx.cond(
                     SegurosState.total_items > 0,
-                    f"{SegurosState.total_items} seguros encontrados",
+                    rx.text(SegurosState.total_items.to(str), " seguros encontrados"),
                     "0 seguros encontrados",
                 ),
                 size="2",
@@ -150,7 +150,8 @@ def seguros_page() -> rx.Component:
                                         ),
                                         rx.table.cell(
                                             rx.badge(
-                                                f"{seguro['porcentaje_seguro']}%",
+                                                seguro["porcentaje_seguro"].to(str),
+                                                "%",
                                                 color_scheme="blue",
                                             )
                                         ),
@@ -206,13 +207,10 @@ def seguros_page() -> rx.Component:
                                                     AuthState.check_action("Seguros", "EDITAR"),
                                                     rx.tooltip(
                                                         rx.icon_button(
-                                                            rx.icon(
-                                                                rx.cond(
-                                                                    seguro["estado_seguro"],
-                                                                    "shield-off",
-                                                                    "shield-check",
-                                                                ),
-                                                                size=22,
+                                                            rx.cond(
+                                                                seguro["estado_seguro"],
+                                                                rx.icon("shield-off", size=22),
+                                                                rx.icon("shield-check", size=22),
                                                             ),
                                                             size="2",
                                                             variant="soft",

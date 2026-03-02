@@ -153,7 +153,9 @@ class RepositorioContratoMandatoSQLite:
                     cm.FECHA_INICIO_CONTRATO_M,
                     cm.FECHA_FIN_CONTRATO_M,
                     p.DIRECCION_PROPIEDAD,
+                    p.MATRICULA_INMOBILIARIA,
                     p.TIPO_PROPIEDAD,
+                    p.CANON_ARRENDAMIENTO_ESTIMADO,
                     per.NOMBRE_COMPLETO as PROPIETARIO,
                     per.NUMERO_DOCUMENTO,
                     per_asesor.NOMBRE_COMPLETO as ASESOR
@@ -167,16 +169,21 @@ class RepositorioContratoMandatoSQLite:
 
             items = [
                 {
-                    "id": row["ID_CONTRATO_M"],
-                    "estado": row["ESTADO_CONTRATO_M"],
-                    "canon": row["CANON_MANDATO"],
+                    "id_contrato": row["ID_CONTRATO_M"],
+                    "estado_contrato": row["ESTADO_CONTRATO_M"],
+                    "valor_canon": row["CANON_MANDATO"],
+                    "valor_administracion": 0, # Mandatos no suelen tener administración aparte
                     "fecha_inicio": row["FECHA_INICIO_CONTRATO_M"],
                     "fecha_fin": row["FECHA_FIN_CONTRATO_M"],
-                    "propiedad": row["DIRECCION_PROPIEDAD"],
-                    "tipo_propiedad": row["TIPO_PROPIEDAD"],
-                    "propietario": row["PROPIETARIO"],
-                    "documento_propietario": row["NUMERO_DOCUMENTO"],
-                    "asesor": row["ASESOR"] if row["ASESOR"] else "Sin asesor",
+                    "propiedad_direccion": row["DIRECCION_PROPIEDAD"],
+                    "propiedad_matricula": row["MATRICULA_INMOBILIARIA"],
+                    "propiedad_tipo": row["TIPO_PROPIEDAD"],
+                    "propietario_nombre": row["PROPIETARIO"],
+                    "propietario_documento": row["NUMERO_DOCUMENTO"],
+                    "arrendatario_nombre": "N/A",
+                    "arrendatario_documento": "N/A",
+                    "habitante_nombre": "",
+                    "asesor_nombre": row["ASESOR"] if row["ASESOR"] else "Sin asesor",
                 }
                 for row in cursor.fetchall()
             ]

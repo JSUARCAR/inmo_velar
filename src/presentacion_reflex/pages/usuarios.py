@@ -73,7 +73,7 @@ def usuario_card(u: UsuarioDisplayModel) -> rx.Component:
     return rx.card(
         rx.vstack(
             rx.hstack(
-                rx.avatar(fallback=u.nombre_usuario.to(str)[:2].upper(), radius="full", size="3"),
+                rx.avatar(fallback=u.nombre_fallback, radius="full", size="3"),
                 rx.vstack(
                     rx.text(u.nombre_usuario, weight="bold", size="3"),
                     rx.badge(u.rol, variant="soft", color_scheme="blue"),

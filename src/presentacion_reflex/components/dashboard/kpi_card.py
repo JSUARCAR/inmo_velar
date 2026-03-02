@@ -18,46 +18,68 @@ def kpi_card(
 ) -> rx.Component:
     """
     Tarjeta KPI reutilizable.
-
-    Args:
-        titulo: Título del KPI (ej: "Cartera en Mora")
-        valor: Valor principal a mostrar (ej: "$1,500,000")
-        icono: Nombre del icono de Lucide (ej: "circle-alert")
-        color_icono: Color del icono (blue, green, red, amber, etc.)
-        subtitulo: Texto descriptivo adicional
-        es_critico: Si es True, muestra fondo rojo de alerta
-        variant: Variante de visualización ("standard", "elite", "compact")
-        hover_content: Contenido opcional para mostrar en hover card
-
-    Returns:
-        rx.Component: Card con el KPI formateado
     """
 
-    # Manejo de colores según criticidad
     from src.presentacion_reflex import styles
 
     # Manejo de colores según criticidad
     bg_color = "red.9" if es_critico else styles.BG_PANEL  # Semantic background
     if variant == "elite":
-        # Gradientes sutiles para elite (removed hardcoded light gradient)
         bg_color = styles.BG_PANEL
 
     text_color = "white" if es_critico else styles.TEXT_PRIMARY
     subtitle_color = "red.11" if es_critico else styles.TEXT_SECONDARY
 
-    # Ajuste de colores de icono
-    icon_bg = "red.10" if es_critico else f"{color_icono}.3"
-    icon_color = "white" if es_critico else f"{color_icono}.9"
-
-    # --- RENDERIZADO SEGÚN VARIANTE ---
+    # Ajuste de colores de icono (Soporte para Var/cond)
+    icon_bg = rx.cond(
+        es_critico,
+        "red.10",
+        rx.cond(
+            rx.Var.create(color_icono).to(str) == "green",
+            "var(--green-3)",
+            rx.cond(
+                rx.Var.create(color_icono).to(str) == "blue",
+                "var(--blue-3)",
+                rx.cond(
+                    rx.Var.create(color_icono).to(str) == "red",
+                    "var(--red-3)",
+                    rx.cond(
+                        rx.Var.create(color_icono).to(str) == "amber",
+                        "var(--amber-3)",
+                        "var(--indigo-3)"
+                    )
+                )
+            )
+        )
+    )
+    
+    icon_color = rx.cond(
+        es_critico,
+        "white",
+        rx.cond(
+            rx.Var.create(color_icono).to(str) == "green",
+            "var(--green-9)",
+            rx.cond(
+                rx.Var.create(color_icono).to(str) == "blue",
+                "var(--blue-9)",
+                rx.cond(
+                    rx.Var.create(color_icono).to(str) == "red",
+                    "var(--red-9)",
+                    rx.cond(
+                        rx.Var.create(color_icono).to(str) == "amber",
+                        "var(--amber-9)",
+                        "var(--indigo-9)"
+                    )
+                )
+            )
+        )
+    )
 
     card_component = None
 
-    # 1. COMPACT (Para listados laterales)
     if variant == "compact":
         card_component = rx.card(
             rx.hstack(
-                # Icono más pequeño
                 rx.box(
                     rx.icon(icono, size=16, color=icon_color),
                     bg=icon_bg,
@@ -76,24 +98,6 @@ def kpi_card(
                             weight="medium",
                             color="gray.10",
                         ),
-                        rx.cond(
-                            hover_content != None,
-                            rx.hover_card.root(
-                                rx.hover_card.trigger(rx.icon("info", size=12, color="gray.8", cursor="help")),
-                                rx.hover_card.content(
-                                    hover_content,
-                                    side="top",
-                                    align="center",
-                                    side_offset=5,
-                                    background_color=styles.BG_PANEL,
-                                    border="1px solid var(--gray-4)",
-                                    box_shadow="0 4px 10px rgba(0,0,0,0.1)",
-                                    border_radius="8px",
-                                    padding="12px",
-                                    max_width="250px",
-                                )
-                            )
-                        ),
                         align="center",
                         spacing="1",
                     ),
@@ -103,7 +107,6 @@ def kpi_card(
                     spacing="0",
                     align="start",
                 ),
-                # Subtítulo alineado a la derecha o debajo si es necesario
                 rx.spacer(),
                 rx.cond(
                     subtitulo != "",
@@ -112,13 +115,13 @@ def kpi_card(
                 width="100%",
                 align="center",
             ),
-            size="1",  # Card size 1 is smaller
+            size="1",
             bg=bg_color,
             width="100%",
             style={"box_shadow": "0 1px 3px rgba(0,0,0,0.05)"},
+            color_scheme=color_icono,
         )
 
-    # 2. ELITE (Más prominente, para cabecera)
     elif variant == "elite":
         card_component = rx.card(
             rx.vstack(
@@ -132,26 +135,8 @@ def kpi_card(
                                 color="gray.9",
                                 text_transform="uppercase",
                                 letter_spacing="0.05em",
-                                max_width="100%",  # Prevent overflow
-                                white_space="normal",  # Allow wrapping
-                            ),
-                            rx.cond(
-                                hover_content != None,
-                                rx.hover_card.root(
-                                    rx.hover_card.trigger(rx.icon("info", size=14, color="gray.8", cursor="help")),
-                                    rx.hover_card.content(
-                                        hover_content,
-                                        side="top",
-                                        align="center",
-                                        side_offset=5,
-                                        background_color=styles.BG_PANEL,
-                                        border="1px solid var(--gray-4)",
-                                        box_shadow="0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                                        border_radius="12px",
-                                        padding="16px",
-                                        max_width="300px",
-                                    )
-                                )
+                                max_width="100%",
+                                white_space="normal",
                             ),
                             align="center",
                             spacing="1",
@@ -166,8 +151,8 @@ def kpi_card(
                             color=text_color,
                             letter_spacing="-0.03em",
                             line_height="1",
-                            white_space="nowrap",  # Keep number on one line if possible
-                            overflow="hidden",  # Truncate if too long (better than breaking layout)
+                            white_space="nowrap",
+                            overflow="hidden",
                             text_overflow="ellipsis",
                         ),
                         spacing="1",
@@ -181,7 +166,7 @@ def kpi_card(
                         bg=icon_bg,
                         border_radius="12px",
                         padding="8px",
-                        display=rx.breakpoints(initial="none", sm="flex"),  # Hide icon on very small screens if needed
+                        display=rx.breakpoints(initial="none", sm="flex"),
                         align_items="center",
                         justify_content="center",
                     ),
@@ -207,18 +192,20 @@ def kpi_card(
             transition="all 0.3s ease",
             _hover={
                 "transform": "translateY(-4px)",
-                "box_shadow": f"0 20px 25px -5px var(--{color_icono}-4), 0 8px 10px -6px var(--{color_icono}-3)",
-                "border_color": f"var(--{color_icono}-6)",
+                "box_shadow": "0 20px 25px -5px var(--accent-4), 0 8px 10px -6px var(--accent-3)",
+                "border_color": "var(--accent-6)",
             },
             style={
                 "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)",
                 "border": "1px solid var(--gray-4)",
-                "border_top": f"3px solid var(--{color_icono}-9)", # Add a visual anchor at the top
+                "border_top_width": "3px",
+                "border_top_style": "solid",
+                "border_top_color": "var(--accent-9)",
                 "border_radius": "16px",
             },
+            color_scheme=color_icono,
         )
 
-    # 3. STANDARD (Diseño limpio por defecto)
     else:
         card_component = rx.card(
             rx.vstack(
@@ -234,24 +221,6 @@ def kpi_card(
                     ),
                     rx.hstack(
                         rx.text(titulo, size="2", weight="medium", color="gray.10"),
-                        rx.cond(
-                            hover_content != None,
-                            rx.hover_card.root(
-                                rx.hover_card.trigger(rx.icon("info", size=14, color="gray.8", cursor="help")),
-                                rx.hover_card.content(
-                                    hover_content,
-                                    side="top",
-                                    align="center",
-                                    side_offset=5,
-                                    background_color=styles.BG_PANEL,
-                                    border="1px solid var(--gray-4)",
-                                    box_shadow="0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                                    border_radius="12px",
-                                    padding="16px",
-                                    max_width="300px",
-                                )
-                            )
-                        ),
                         align="center",
                         spacing="1",
                     ),
@@ -288,11 +257,7 @@ def kpi_card(
                 "border": "1px solid var(--gray-4)",
                 "border_radius": "12px",
             },
+            color_scheme=color_icono,
         )
-
-    # Modificación UI Premium: En lugar de envolver TODA la tarjeta (anti-patrón en DOM), 
-    # insertaremos el tooltip discretamente. Como la estructura ya está armada, 
-    # aplicaremos el trigger sólo si es necesario, pero como la función ya armó `card_component`,
-    # interceptaremos el título en los 3 renderizados.
 
     return card_component

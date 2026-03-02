@@ -416,10 +416,15 @@ def company_tab_content() -> rx.Component:
 # --- SISTEMA ---
 
 
-def parameter_badge(categoria: str) -> rx.Component:
-    colors = {"FINANCIERO": "green", "LEGAL": "blue", "SISTEMA": "gray", "NOTIFICACIONES": "orange"}
-    color = colors.get(categoria, "violet")
-    return rx.badge(categoria, color_scheme=color, variant="soft", radius="full", padding_x="2")
+def parameter_badge(categoria: rx.Var) -> rx.Component:
+    return rx.match(
+        categoria,
+        ("FINANCIERO", rx.badge("FINANCIERO", color_scheme="green", variant="soft", radius="full", padding_x="2")),
+        ("LEGAL", rx.badge("LEGAL", color_scheme="blue", variant="soft", radius="full", padding_x="2")),
+        ("SISTEMA", rx.badge("SISTEMA", color_scheme="gray", variant="soft", radius="full", padding_x="2")),
+        ("NOTIFICACIONES", rx.badge("NOTIFICACIONES", color_scheme="orange", variant="soft", radius="full", padding_x="2")),
+        rx.badge(categoria, color_scheme="violet", variant="soft", radius="full", padding_x="2")
+    )
 
 
 def system_tab_content() -> rx.Component:
@@ -450,24 +455,24 @@ def system_tab_content() -> rx.Component:
                         lambda param: rx.table.row(
                             rx.table.cell(
                                 rx.vstack(
-                                    rx.text(param.nombre_parametro, weight="bold", color="#334155"),
+                                    rx.text(param["nombre_parametro"], weight="bold", color="#334155"),
                                     rx.text(
-                                        param.descripcion, font_size="0.75rem", color="#94a3b8"
+                                        param["descripcion"], font_size="0.75rem", color="#94a3b8"
                                     ),
                                     spacing="1",
                                 ),
                                 padding_y="3",
                                 padding_left="4",
                             ),
-                            rx.table.cell(parameter_badge(param.categoria)),
+                            rx.table.cell(parameter_badge(param["categoria"])),
                             rx.table.cell(
                                 rx.cond(
-                                    (param.modificable == 1) & (ConfiguracionState.parametros_desbloqueados.contains(param.id_parametro)),
+                                    (param["modificable"] == 1) & (ConfiguracionState.parametros_desbloqueados.contains(param["id_parametro"])),
                                     rx.hstack(
                                         neuro_input(
-                                            default_value=param.valor_parametro,
+                                            default_value=param["valor_parametro"],
                                             on_blur=lambda val: ConfiguracionState.actualizar_parametro(
-                                                param.id_parametro, val
+                                                param["id_parametro"], val
                                             ),
                                             width="120px",
                                             size="2",
@@ -476,30 +481,30 @@ def system_tab_content() -> rx.Component:
                                         rx.icon("pencil", size=14, color=styles.ACCENT_COLOR),
                                     ),
                                     rx.text(
-                                        param.valor_parametro,
+                                        param["valor_parametro"],
                                         weight="bold",
                                         font_family="monospace",
-                                        color=rx.cond(param.modificable != 1, "#94a3b8", "#1e293b"),
+                                        color=rx.cond(param["modificable"] != 1, "#94a3b8", "#1e293b"),
                                     ),
                                 )
                             ),
                             rx.table.cell(
                                 rx.cond(
-                                    param.modificable == 1,
+                                    param["modificable"] == 1,
                                     rx.icon_button(
                                         rx.cond(
-                                            ConfiguracionState.parametros_desbloqueados.contains(param.id_parametro),
+                                            ConfiguracionState.parametros_desbloqueados.contains(param["id_parametro"]),
                                             rx.icon("lock-open", size=16),
                                             rx.icon("lock", size=16),
                                         ),
                                         color_scheme=rx.cond(
-                                            ConfiguracionState.parametros_desbloqueados.contains(param.id_parametro),
+                                            ConfiguracionState.parametros_desbloqueados.contains(param["id_parametro"]),
                                             "blue",
                                             "gray"
                                         ),
                                         variant="soft",
                                         size="1",
-                                        on_click=lambda: ConfiguracionState.toggle_lock(param.id_parametro),
+                                        on_click=lambda: ConfiguracionState.toggle_lock(param["id_parametro"]),
                                         cursor="pointer",
                                     ),
                                     rx.icon(

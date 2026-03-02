@@ -210,12 +210,17 @@ class RepositorioContratoArrendamientoSQLite:
                     ca.FECHA_INICIO_CONTRATO_A,
                     ca.FECHA_FIN_CONTRATO_A,
                     p.DIRECCION_PROPIEDAD,
+                    p.MATRICULA_INMOBILIARIA,
                     p.TIPO_PROPIEDAD,
                     per.NOMBRE_COMPLETO as ARRENDATARIO,
                     per.NUMERO_DOCUMENTO,
                     per_asesor.NOMBRE_COMPLETO as ASESOR,
-                    arr.NOMBRE_HABITANTE as HABITANTE
+                    arr.NOMBRE_HABITANTE as HABITANTE,
+                    COALESCE(prop_per.NOMBRE_COMPLETO, 'N/A') as PROPIETARIO,
+                    COALESCE(prop_per.NUMERO_DOCUMENTO, 'N/A') as PROPIETARIO_DOC
                 {base_from}
+                LEFT JOIN PROPIETARIOS prop_ent ON ca.ID_PROPIEDAD = prop_ent.ID_PROPIEDAD
+                LEFT JOIN PERSONAS prop_per ON prop_ent.ID_PERSONA = prop_per.ID_PERSONA
                 {where_clause}
                 ORDER BY ca.ID_CONTRATO_A DESC
                 LIMIT {placeholder} OFFSET {placeholder}
@@ -225,17 +230,21 @@ class RepositorioContratoArrendamientoSQLite:
 
             items = [
                 {
-                    "id": row["ID_CONTRATO_A"],
-                    "estado": row["ESTADO_CONTRATO_A"],
-                    "canon": row["CANON_ARRENDAMIENTO"],
+                    "id_contrato": row["ID_CONTRATO_A"],
+                    "estado_contrato": row["ESTADO_CONTRATO_A"],
+                    "valor_canon": row["CANON_ARRENDAMIENTO"],
+                    "valor_administracion": 0, # Se podría sumar de la tabla propiedades si existiera campo
                     "fecha_inicio": row["FECHA_INICIO_CONTRATO_A"],
                     "fecha_fin": row["FECHA_FIN_CONTRATO_A"],
-                    "propiedad": row["DIRECCION_PROPIEDAD"],
-                    "tipo_propiedad": row["TIPO_PROPIEDAD"],
-                    "arrendatario": row["ARRENDATARIO"],
-                    "documento_arrendatario": row["NUMERO_DOCUMENTO"],
-                    "asesor": row["ASESOR"] if row["ASESOR"] else "Sin asesor",
-                    "habitante": row["HABITANTE"] if row["HABITANTE"] else "",
+                    "propiedad_direccion": row["DIRECCION_PROPIEDAD"],
+                    "propiedad_matricula": row["MATRICULA_INMOBILIARIA"],
+                    "propiedad_tipo": row["TIPO_PROPIEDAD"],
+                    "arrendatario_nombre": row["ARRENDATARIO"],
+                    "arrendatario_documento": row["NUMERO_DOCUMENTO"],
+                    "propietario_nombre": row["PROPIETARIO"],
+                    "propietario_documento": row["PROPIETARIO_DOC"],
+                    "habitante_nombre": row["HABITANTE"] if row["HABITANTE"] else "",
+                    "asesor_nombre": row["ASESOR"] if row["ASESOR"] else "Sin asesor",
                 }
                 for row in cursor.fetchall()
             ]

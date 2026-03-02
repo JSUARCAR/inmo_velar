@@ -20,6 +20,16 @@ class ProveedoresState(rx.State):
     # Filtros y Búsqueda
     search_text: str = ""
     filter_especialidad: str = "Todas"
+    especialidad_options: List[str] = [
+        "Todas",
+        "Plomería",
+        "Electricidad",
+        "Pintura",
+        "Cerrajería",
+        "Aseo",
+        "Mantenimiento",
+        "Otros",
+    ]
 
     # Paginación
     current_page: int = 1
@@ -43,10 +53,10 @@ class ProveedoresState(rx.State):
 
     def on_load(self):
         """Carga inicial de datos."""
-        return [ProveedoresState.load_data, ProveedoresState.load_personas_options]
+        return [ProveedoresState.load_proveedores, ProveedoresState.load_personas_options]
 
     @rx.event(background=True)
-    async def load_data(self):
+    async def load_proveedores(self):
         """Carga la lista de proveedores."""
         async with self:
             self.is_loading = True
@@ -130,25 +140,25 @@ class ProveedoresState(rx.State):
     def set_search(self, value: str):
         self.search_text = value
         self.current_page = 1
-        return ProveedoresState.load_data
+        return ProveedoresState.load_proveedores
 
     def set_filter_especialidad(self, value: str):
         self.filter_especialidad = value
         self.current_page = 1
-        return ProveedoresState.load_data
+        return ProveedoresState.load_proveedores
 
     def next_page(self):
         if self.current_page * self.page_size < self.total_items:
             self.current_page += 1
-            return ProveedoresState.load_data
+            return ProveedoresState.load_proveedores
 
     def prev_page(self):
         if self.current_page > 1:
             self.current_page -= 1
-            return ProveedoresState.load_data
+            return ProveedoresState.load_proveedores
 
     # CRUD
-    def open_create_modal(self):
+    def open_modal(self):
         self.is_editing = False
         self.form_data = {
             "id_proveedor": None,
@@ -211,7 +221,7 @@ class ProveedoresState(rx.State):
                 self.show_form_modal = False
                 self.is_loading = False
 
-            yield ProveedoresState.load_data
+            yield ProveedoresState.load_proveedores
 
         except Exception as e:
             async with self:
@@ -219,14 +229,14 @@ class ProveedoresState(rx.State):
                 self.is_loading = False
 
     @rx.event(background=True)
-    async def eliminar_proveedor(self, id_proveedor: int):
+    async def delete_proveedor(self, id_proveedor: int):
         """Elimina (soft delete) un proveedor."""
         try:
             repo = RepositorioProveedoresSQLite(db_manager)
             servicio = ServicioProveedores(db_manager)
             servicio.repo = repo
             servicio.eliminar_proveedor(id_proveedor)
-            yield ProveedoresState.load_data
+            yield ProveedoresState.load_proveedores
         except Exception as e:
             async with self:
                 self.error_message = f"Error al eliminar: {e}"

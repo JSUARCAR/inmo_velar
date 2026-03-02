@@ -89,24 +89,8 @@ class IPCState(rx.State):
         async with self:
             self.is_loading = True
             self.error_message = ""
-            logger.info("IPCState.save_ipc: Attempting to retrieve AuthState")
             current_user = await self.get_state(AuthState)
-            
-            # Diagnóstico de estructura
-            has_user = hasattr(current_user, "user")
-            has_user_info = hasattr(current_user, "user_info")
-            logger.info(f"AuthState Check - has_user: {has_user}, has_user_info: {has_user_info}")
-            
-            if has_user_info:
-                u_info = current_user.user_info
-                logger.info(f"User Info present: {u_info is not None}")
-                usuario = u_info["nombre_usuario"] if u_info else "sistema"
-            elif has_user:
-                logger.warning("Legacy 'user' attribute detected in AuthState - This should not happen!")
-                usuario = "sistema_legacy"
-            else:
-                logger.error("Neither 'user' nor 'user_info' found in AuthState")
-                usuario = "sistema_unknown"
+            usuario = current_user.user_nombre if current_user.is_authenticated else "sistema"
 
         try:
             servicio = ServicioIPC(db_manager)

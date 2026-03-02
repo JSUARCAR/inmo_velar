@@ -8,7 +8,7 @@ from src.presentacion_reflex.state.incidentes_state import IncidentesState
 def _detail_row(label: str, value: str, icon: str = None) -> rx.Component:
     return rx.hstack(
         rx.icon(icon, size=16, color="var(--gray-8)") if icon else rx.fragment(),
-        rx.text(label + ":", weight="bold", color="gray", width="120px"),
+        rx.text(f"{label}:", weight="bold", color="gray", width="120px"),
         rx.text(value, weight="medium", color="var(--gray-12)"),
         align_items="center",
         width="100%",
@@ -130,23 +130,24 @@ def _cotizado_view() -> rx.Component:
                             rx.grid(
                                 rx.vstack(
                                     rx.text("Materiales:", size="1", color="gray"),
-                                    rx.text(f"${cot['materiales']}", weight="medium"),
+                                    rx.text("$", cot["materiales"], weight="medium"),
                                 ),
                                 rx.vstack(
                                     rx.text("Mano de Obra:", size="1", color="gray"),
-                                    rx.text(f"${cot['mano_obra']}", weight="medium"),
+                                    rx.text("$", cot["mano_obra"], weight="medium"),
                                 ),
                                 rx.vstack(
                                     rx.text("Total:", size="1", color="gray"),
                                     rx.text(
-                                        f"${cot['valor_total']}",
+                                        "$",
+                                        cot["valor_total"],
                                         weight="bold",
                                         color="var(--accent-9)",
                                     ),
                                 ),
                                 rx.vstack(
                                     rx.text("Tiempo:", size="1", color="gray"),
-                                    rx.text(f"{cot['dias']} días", weight="medium"),
+                                    rx.text(cot["dias"], " días", weight="medium"),
                                 ),
                                 columns=rx.breakpoints(initial="2", sm="4"),
                                 spacing="2",
@@ -189,7 +190,7 @@ def modal_details() -> rx.Component:
             rx.vstack(
                 # Header
                 rx.hstack(
-                    rx.heading(f"Incidente #{inc['id']}", size="6"),
+                    rx.heading("Incidente #", inc["id"], size="6"),
                     rx.spacer(),
                     rx.button(
                         "Descargar PDF",
@@ -413,7 +414,8 @@ def modal_details() -> rx.Component:
                                                             "Costo Final:", size="1", color="gray"
                                                         ),
                                                         rx.text(
-                                                            f"${inc.get('costo_incidente', 0)}",
+                                                            "$",
+                                                            inc["costo_incidente"],
                                                             weight="bold",
                                                         ),
                                                     ),
@@ -488,28 +490,32 @@ def modal_details() -> rx.Component:
                                                         rx.vstack(
                                                             rx.text("Materiales:", size="1"),
                                                             rx.text(
-                                                                f"${cot['materiales']}",
+                                                                "$",
+                                                                cot["materiales"],
                                                                 weight="medium",
                                                             ),
                                                         ),
                                                         rx.vstack(
                                                             rx.text("Mano de Obra:", size="1"),
                                                             rx.text(
-                                                                f"${cot['mano_obra']}",
+                                                                "$",
+                                                                cot["mano_obra"],
                                                                 weight="medium",
                                                             ),
                                                         ),
                                                         rx.vstack(
                                                             rx.text("Total:", size="1"),
                                                             rx.text(
-                                                                f"${cot['valor_total']}",
+                                                                "$",
+                                                                cot["valor_total"],
                                                                 weight="bold",
                                                             ),
                                                         ),
                                                         rx.vstack(
                                                             rx.text("dias:", size="1"),
                                                             rx.text(
-                                                                f"{cot['dias']} días",
+                                                                cot["dias"],
+                                                                " días",
                                                                 weight="medium",
                                                             ),
                                                         ),

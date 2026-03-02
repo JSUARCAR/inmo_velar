@@ -1165,8 +1165,11 @@ class ServicioContratos:
                     "canon": row["canon_mandato"],
                     "comision": row["comision_porcentaje_contrato_m"],
                     "estado": row["estado_contrato_m"],
-                    "created_at": row["created_at"],
                     "created_by": row["created_by"],
+                    "id_view": str(row["id_contrato_m"]),
+                    "canon_view": f"${row['canon_mandato']:,}".replace(",", "."),
+                    "comision_view": f"{row['comision_porcentaje_contrato_m'] / 100.0:.2f}%" if row['comision_porcentaje_contrato_m'] else "0.00%",
+                    "iva_view": "19.00%", # Default or from row if added
                 }
             return None
 
@@ -1220,6 +1223,9 @@ class ServicioContratos:
                     "deposito": row["deposito"],
                     "estado": row["estado_contrato_a"],
                     "created_at": row["created_at"],
+                    "id_view": str(row["id_contrato_a"]),
+                    "canon_view": f"${row['canon_arrendamiento']:,}".replace(",", "."),
+                    "deposito_view": f"${row['deposito']:,}".replace(",", "."),
                 }
             return None
 

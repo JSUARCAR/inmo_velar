@@ -4,99 +4,111 @@ from src.presentacion_reflex.state.personas_state import PersonasState
 
 
 def role_selector_card(rol: str) -> rx.Component:
-    """Interactive card for role selection in wizard."""
+    """Card interactiva y estilizada para la selección de roles con soporte para múltiples roles."""
+    
+    # Match color scheme based on role
+    color_scheme = rx.match(
+        rol,
+        ("Propietario", "blue"),
+        ("Arrendatario", "green"),
+        ("Asesor", "purple"),
+        ("Codeudor", "orange"),
+        ("Proveedor", "cyan"),
+        "gray",
+    )
 
-    # Role metadata
-    role_config = {
-        "Propietario": {"icon": "home", "color": "blue", "description": "Dueño de propiedades"},
-        "Arrendatario": {
-            "icon": "user-check",
-            "color": "green",
-            "description": "Inquilino de propiedades",
-        },
-        "Asesor": {"icon": "briefcase", "color": "purple", "description": "Asesor inmobiliario"},
-        "Codeudor": {"icon": "shield", "color": "orange", "description": "Garante de contrato"},
-        "Proveedor": {"icon": "wrench", "color": "cyan", "description": "Proveedor de servicios"},
-    }
+    # Match description
+    description = rx.match(
+        rol,
+        ("Propietario", "Dueño de propiedades"),
+        ("Arrendatario", "Inquilino de propiedades"),
+        ("Asesor", "Asesor inmobiliario"),
+        ("Codeudor", "Garante de contrato"),
+        ("Proveedor", "Proveedor de servicios"),
+        "",
+    )
 
-    config = role_config.get(rol, {"icon": "user", "color": "gray", "description": ""})
     is_selected = PersonasState.selected_roles.contains(rol)
+
+    # Match icon
+    icon_name = rx.match(
+        rol,
+        ("Propietario", "home"),
+        ("Arrendatario", "user-check"),
+        ("Asesor", "briefcase"),
+        ("Codeudor", "shield"),
+        ("Proveedor", "wrench"),
+        "user",
+    )
 
     return rx.card(
         rx.vstack(
             rx.hstack(
-                # Icon
+                # Icon con fondo dinámico basado en acento
                 rx.box(
                     rx.icon(
-                        config["icon"],
+                        icon_name,
                         size=24,
-                        color=rx.cond(is_selected, "white", f"var(--{config['color']}-9)"),
+                        color=rx.cond(is_selected, "white", "var(--accent-9)"),
                     ),
-                    width="48px",
-                    height="48px",
-                    border_radius="50%",
-                    display="flex",
-                    align_items="center",
-                    justify_content="center",
+                    padding="12px",
+                    border_radius="12px",
                     style={
                         "background": rx.cond(
                             is_selected,
-                            f"var(--{config['color']}-9)",
-                            f"var(--{config['color']}-3)",
+                            "var(--accent-9)",
+                            "var(--accent-3)",
                         ),
                         "transition": "all 0.3s ease",
                     },
                 ),
                 rx.spacer(),
-                # Check icon when selected
+                # Check indicator (solo visible si está seleccionado)
                 rx.cond(
                     is_selected,
-                    rx.icon("circle-check", size=20, color=f"var(--{config['color']}-9)"),
                     rx.box(
-                        width="20px",
-                        height="20px",
-                        border_radius="50%",
-                        border="2px solid var(--gray-6)",
+                        rx.icon("check", size=20, color="var(--accent-9)"),
+                        padding="4px",
+                        background="var(--accent-3)",
+                        border_radius="full",
                     ),
+                    rx.box(width="28px", height="28px"), # Placeholder para mantener alineación
                 ),
                 width="100%",
-                align="center",
+                align_items="center",
             ),
             rx.vstack(
                 rx.text(
-                    rol,
-                    size="4",
-                    weight="bold",
-                    color="var(--gray-12)",
+                    rol, 
+                    weight="bold", 
+                    size="4", 
+                    color=rx.cond(is_selected, "var(--accent-11)", "var(--gray-12)"),
                 ),
-                rx.text(
-                    config["description"],
-                    size="2",
-                    color="var(--gray-10)",
-                ),
+                rx.text(description, size="2", color="var(--gray-10)"),
                 spacing="1",
-                align="start",
-                width="100%",
+                align_items="start",
             ),
-            spacing="3",
             width="100%",
+            spacing="3",
         ),
-        # Card  styling
-        padding="4",
-        width="100%",
-        on_click=lambda: PersonasState.toggle_rol(rol, ~is_selected),
+        # Acción de selección (usamos una función lambda que envuelve el evento)
+        on_click=lambda: PersonasState.toggle_rol(rol),
         cursor="pointer",
+        # Aplicamos el color scheme directamente a la tarjeta para habilitar las variables nativas
+        color_scheme=color_scheme,
         # Border highlighting when selected
         style={
-            "border": rx.cond(
-                is_selected, f"2px solid var(--{config['color']}-8)", "1px solid var(--gray-6)"
-            ),
+            "border_width": rx.cond(is_selected, "2px", "1px"),
+            "border_style": "solid",
+            "border_color": rx.cond(is_selected, "var(--accent-8)", "var(--gray-6)"),
             "transition": "all 0.2s ease",
         },
         _hover={
             "transform": "scale(1.02)",
             "box_shadow": rx.cond(
-                is_selected, f"0 4px 12px var(--{config['color']}-4)", "0 2px 8px var(--gray-4)"
+                is_selected,
+                "0 4px 12px var(--accent-4)",
+                "0 2px 8px var(--gray-4)",
             ),
         },
     )

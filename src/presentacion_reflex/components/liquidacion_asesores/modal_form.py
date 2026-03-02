@@ -120,7 +120,8 @@ def modal_form() -> rx.Component:
                                                         weight="bold",
                                                     ),
                                                     rx.text(
-                                                        f"Canon: ${prop['CANON_ARRENDAMIENTO']}",
+                                                        "Canon: ",
+                                                        prop["CANON_ARRENDAMIENTO_VIEW"],
                                                         size="1",
                                                         color="gray",
                                                     ),
@@ -239,7 +240,9 @@ def modal_form() -> rx.Component:
                                                 rx.table.cell(b["tipo"]),
                                                 rx.table.cell(b["descripcion"]),
                                                 rx.table.cell(
-                                                    f"${b['valor']:,}", color="green", weight="bold"
+                                                    b["valor_view"],
+                                                    color="green",
+                                                    weight="bold",
                                                 ),
                                                 rx.table.cell(
                                                     rx.button(
@@ -284,7 +287,10 @@ def modal_form() -> rx.Component:
                                                 rx.table.cell(b["tipo"]),
                                                 rx.table.cell(b["descripcion"]),
                                                 rx.table.cell(
-                                                    f"${b['valor']}", color="green", weight="bold"
+                                                    "$",
+                                                    b["valor"],
+                                                    color="green",
+                                                    weight="bold",
                                                 ),
                                                 rx.table.cell(
                                                     rx.button(
@@ -389,7 +395,7 @@ def modal_form() -> rx.Component:
                                             lambda d: rx.table.row(
                                                 rx.table.cell(d["tipo"]),
                                                 rx.table.cell(d["descripcion"]),
-                                                rx.table.cell(f"${d['valor']:,}"),
+                                                rx.table.cell(d["valor_view"]),
                                                 rx.table.cell(
                                                     rx.button(
                                                         rx.icon("trash", size=16),
@@ -437,7 +443,7 @@ def modal_form() -> rx.Component:
                                             lambda d: rx.table.row(
                                                 rx.table.cell(d["tipo"]),
                                                 rx.table.cell(d["descripcion"]),
-                                                rx.table.cell(f"${d['valor']}"),
+                                                rx.table.cell("$", d["valor"]),
                                                 rx.table.cell(
                                                     rx.button(
                                                         rx.icon("trash", size=16),

@@ -5,9 +5,6 @@ from src.presentacion_reflex.components.layout.dashboard_layout import dashboard
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
 
-# from src.presentacion_reflex.components.incidentes.modal_form import modal_form # To be implemented
-
-
 from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
 from src.presentacion_reflex import styles
 
@@ -19,14 +16,20 @@ def _filter_bar() -> rx.Component:
             width=["100%", "250px"],
         ),
         neuro_select_root(
-            [rx.select.item(opt, value=opt) for opt in IncidentesState.prioridad_options],
+            rx.foreach(
+                IncidentesState.prioridad_options,
+                lambda opt: rx.select.item(opt, value=opt),
+            ),
             value=IncidentesState.filter_prioridad,
             on_change=IncidentesState.set_filter_prioridad,
             placeholder="Prioridad",
             width=["100%", "150px"],
         ),
         neuro_select_root(
-            [rx.select.item(opt, value=opt) for opt in IncidentesState.estado_options],
+            rx.foreach(
+                IncidentesState.estado_options,
+                lambda opt: rx.select.item(opt, value=opt),
+            ),
             value=IncidentesState.filter_estado,
             on_change=IncidentesState.set_filter_estado,
             placeholder="Estado",
@@ -116,7 +119,7 @@ def incidentes() -> rx.Component:
                     color_scheme="gray",
                 ),
                 rx.text(
-                    f"Página {IncidentesState.page} de {IncidentesState.total_pages}",
+                    rx.text("Página ", IncidentesState.page, " de ", IncidentesState.total_pages),
                     weight="medium",
                     color="gray",
                 ),
@@ -138,7 +141,7 @@ def incidentes() -> rx.Component:
             modal_form(),
             modal_details(),
             width="100%",
-            height="calc(100vh - 100px)",  # Ajuste para que el kanban ocupe espacio vertical
+            height="calc(100vh - 100px)",
             spacing="4",
         )
     )

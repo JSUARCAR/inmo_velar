@@ -1,0 +1,30 @@
+Warning: Windows Subsystem for Linux (WSL) is recommended for improving initial
+install times.
+Warning: Creating project directories in OneDrive may lead to performance 
+issues. For optimal performance, It is recommended to avoid using OneDrive for 
+your reflex app.
+----------------------------- Starting Reflex App -----------------------------
+Traceback (most recent call last):
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\utils\prerequisites.py", line 349, in compile_or_validate_app
+    get_compiled_app(
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\utils\prerequisites.py", line 268, in get_compiled_app
+    app._compile(prerender_routes=prerender_routes, dry_run=dry_run, use_rich=use_rich)
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\app.py", line 1248, in _compile
+    self._compile_page(route, save_page=should_compile)
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\app.py", line 878, in _compile_page
+    component = compiler.compile_unevaluated_page(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\compiler\compiler.py", line 806, in compile_unevaluated_page
+    component = into_component(page.component)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\venv\Lib\site-packages\reflex\compiler\compiler.py", line 736, in into_component
+    component_called = component()
+                       ^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\presentacion_reflex\pages\contratos.py", line 470, in contratos
+    return contratos_page()
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\src\presentacion_reflex\pages\contratos.py", line 208, in contratos_page
+    rx.cond(
+TypeError: cond() takes from 2 to 3 positional arguments but 4 were given
+Happened while evaluating page 'contratos'
+DEBUG [database.py]: Final DB_MODE: postgresql

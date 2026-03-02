@@ -35,7 +35,7 @@ def contrato_detail_modal() -> rx.Component:
         rx.dialog.content(
             rx.dialog.title(
                 rx.cond(
-                    ContratosState.contrato_detalle.get("tipo") == "Mandato",
+                    ContratosState.contrato_detalle["tipo"] == "Mandato",
                     "Detalle de Contrato de Mandato",
                     "Detalle de Contrato de Arrendamiento",
                 )
@@ -43,16 +43,16 @@ def contrato_detail_modal() -> rx.Component:
             rx.vstack(
                 # Información Básica
                 rx.grid(
-                    detail_field("ID Contrato", ContratosState.contrato_detalle.get("id", "N/A")),
-                    detail_field("Estado", ContratosState.contrato_detalle.get("estado", "N/A")),
+                    detail_field("ID Contrato", ContratosState.contrato_detalle["id_view"]),
+                    detail_field("Estado", ContratosState.contrato_detalle["estado"]),
                     detail_field(
-                        "Fecha Inicio", ContratosState.contrato_detalle.get("fecha_inicio", "N/A")
+                        "Fecha Inicio", ContratosState.contrato_detalle["fecha_inicio"]
                     ),
                     detail_field(
-                        "Fecha Fin", ContratosState.contrato_detalle.get("fecha_fin", "N/A")
+                        "Fecha Fin", ContratosState.contrato_detalle["fecha_fin"]
                     ),
                     detail_field(
-                        "Duración (meses)", ContratosState.contrato_detalle.get("duracion", "N/A")
+                        "Duración (meses)", ContratosState.contrato_detalle["duracion"]
                     ),
                     columns="2",
                     spacing="4",
@@ -61,16 +61,16 @@ def contrato_detail_modal() -> rx.Component:
                 section_divider("Información de la Propiedad"),
                 rx.grid(
                     detail_field(
-                        "Matrícula", ContratosState.contrato_detalle.get("matricula", "N/A")
+                        "Matrícula", ContratosState.contrato_detalle["matricula"]
                     ),
                     detail_field(
-                        "Tipo", ContratosState.contrato_detalle.get("tipo_propiedad", "N/A")
+                        "Tipo", ContratosState.contrato_detalle["tipo_propiedad"]
                     ),
                     detail_field(
-                        "Dirección", ContratosState.contrato_detalle.get("direccion", "N/A")
+                        "Dirección", ContratosState.contrato_detalle["direccion"]
                     ),
                     detail_field(
-                        "Área (m²)", ContratosState.contrato_detalle.get("area_m2", "N/A")
+                        "Área (m²)", ContratosState.contrato_detalle["area_m2"]
                     ),
                     columns="2",
                     spacing="4",
@@ -79,32 +79,30 @@ def contrato_detail_modal() -> rx.Component:
                 # Información Financiera - diferente para Mandato vs Arrendamiento
                 section_divider("Información Financiera"),
                 rx.cond(
-                    ContratosState.contrato_detalle.get("tipo") == "Mandato",
+                    ContratosState.contrato_detalle["tipo"] == "Mandato",
                     # Mandato
                     rx.grid(
                         detail_field(
                             "Canon Mandato",
                             rx.cond(
-                                ContratosState.contrato_detalle.get("canon"),
-                                f"${ContratosState.contrato_detalle.get('canon', 0):,}".replace(
-                                    ",", "."
-                                ),
+                                ContratosState.contrato_detalle["canon"],
+                                ContratosState.contrato_detalle["canon_view"],
                                 "N/A",
                             ),
                         ),
                         detail_field(
                             "Comisión (%)",
                             rx.cond(
-                                ContratosState.contrato_detalle.get("comision_pct"),
-                                f"{ContratosState.contrato_detalle.get('comision_pct', 0):.2f}%",
+                                ContratosState.contrato_detalle["comision"],
+                                ContratosState.contrato_detalle["comision_view"],
                                 "N/A",
                             ),
                         ),
                         detail_field(
                             "IVA (%)",
                             rx.cond(
-                                ContratosState.contrato_detalle.get("iva_pct"),
-                                f"{ContratosState.contrato_detalle.get('iva_pct', 0):.2f}%",
+                                ContratosState.contrato_detalle["iva_pct"],
+                                ContratosState.contrato_detalle["iva_view"],
                                 "N/A",
                             ),
                         ),
@@ -117,20 +115,16 @@ def contrato_detail_modal() -> rx.Component:
                         detail_field(
                             "Canon Arrendamiento",
                             rx.cond(
-                                ContratosState.contrato_detalle.get("canon"),
-                                f"${ContratosState.contrato_detalle.get('canon', 0):,}".replace(
-                                    ",", "."
-                                ),
+                                ContratosState.contrato_detalle["canon"],
+                                ContratosState.contrato_detalle["canon_view"],
                                 "N/A",
                             ),
                         ),
                         detail_field(
                             "Depósito Garantía",
                             rx.cond(
-                                ContratosState.contrato_detalle.get("deposito"),
-                                f"${ContratosState.contrato_detalle.get('deposito', 0):,}".replace(
-                                    ",", "."
-                                ),
+                                ContratosState.contrato_detalle["deposito"],
+                                ContratosState.contrato_detalle["deposito_view"],
                                 "N/A",
                             ),
                         ),
@@ -142,7 +136,7 @@ def contrato_detail_modal() -> rx.Component:
                 # Información de Persona - Propietario o Arrendatario
                 section_divider(
                     rx.cond(
-                        ContratosState.contrato_detalle.get("tipo") == "Mandato",
+                        ContratosState.contrato_detalle["tipo"] == "Mandato",
                         "Información del Propietario",
                         "Información del Arrendatario",
                     )
@@ -151,34 +145,34 @@ def contrato_detail_modal() -> rx.Component:
                     detail_field(
                         "Nombre",
                         rx.cond(
-                            ContratosState.contrato_detalle.get("tipo") == "Mandato",
-                            ContratosState.contrato_detalle.get("propietario", "N/A"),
-                            ContratosState.contrato_detalle.get("arrendatario", "N/A"),
+                            ContratosState.contrato_detalle["tipo"] == "Mandato",
+                            ContratosState.contrato_detalle["propietario"],
+                            ContratosState.contrato_detalle["arrendatario"],
                         ),
                     ),
                     detail_field(
-                        "Documento", ContratosState.contrato_detalle.get("documento", "N/A")
+                        "Documento", ContratosState.contrato_detalle["documento"]
                     ),
                     detail_field(
-                        "Teléfono", ContratosState.contrato_detalle.get("telefono", "N/A")
+                        "Teléfono", ContratosState.contrato_detalle["telefono"]
                     ),
-                    detail_field("Email", ContratosState.contrato_detalle.get("email", "N/A")),
+                    detail_field("Email", ContratosState.contrato_detalle["email"]),
                     columns="2",
                     spacing="4",
                     width="100%",
                 ),
                 # Codeudor (solo para Arrendamiento)
                 rx.cond(
-                    ContratosState.contrato_detalle.get("tipo") == "Arrendamiento",
+                    ContratosState.contrato_detalle["tipo"] == "Arrendamiento",
                     rx.vstack(
                         section_divider("Información del Codeudor"),
                         rx.grid(
                             detail_field(
-                                "Nombre", ContratosState.contrato_detalle.get("codeudor", "N/A")
+                                "Nombre", ContratosState.contrato_detalle["codeudor"]
                             ),
                             detail_field(
                                 "Documento",
-                                ContratosState.contrato_detalle.get("documento_codeudor", "N/A"),
+                                ContratosState.contrato_detalle["documento_codeudor"],
                             ),
                             columns="2",
                             spacing="4",
@@ -191,18 +185,18 @@ def contrato_detail_modal() -> rx.Component:
                 # Información Adicional
                 section_divider("Información Adicional"),
                 rx.grid(
-                    detail_field("Asesor", ContratosState.contrato_detalle.get("asesor", "N/A")),
+                    detail_field("Asesor", ContratosState.contrato_detalle["asesor"]),
                     detail_field(
-                        "Creado por", ContratosState.contrato_detalle.get("created_by", "N/A")
+                        "Creado por", ContratosState.contrato_detalle["created_by"]
                     ),
                     detail_field(
-                        "Fecha Creación", ContratosState.contrato_detalle.get("created_at", "N/A")
+                        "Fecha Creación", ContratosState.contrato_detalle["created_at"]
                     ),
                     rx.cond(
-                        ContratosState.contrato_detalle.get("motivo_cancelacion"),
+                        ContratosState.contrato_detalle["motivo_cancelacion"],
                         detail_field(
                             "Motivo Cancelación",
-                            ContratosState.contrato_detalle.get("motivo_cancelacion", ""),
+                            ContratosState.contrato_detalle["motivo_cancelacion"],
                         ),
                         rx.box(),
                     ),

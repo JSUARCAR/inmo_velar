@@ -6,10 +6,10 @@ from src.presentacion_reflex.state.alertas_state import AlertasState
 def notification_item(item: dict) -> rx.Component:
     return rx.box(
         rx.hstack(
-            rx.icon(
-                rx.cond(item["nivel"] == "danger", "circle_alert", "info"),
-                color=rx.cond(item["nivel"] == "danger", "var(--red-9)", "var(--blue-9)"),
-                size=20,
+            rx.cond(
+                item["nivel"] == "danger",
+                rx.icon("circle_alert", color="var(--red-9)", size=20),
+                rx.icon("info", color="var(--blue-9)", size=20),
             ),
             rx.vstack(
                 rx.text(item["mensaje"], size="2", weight="medium", color="#1f2937"),
@@ -156,7 +156,8 @@ def bell_icon() -> rx.Component:
                         rx.text("Notificaciones", weight="bold", size="3", color="#111827"),
                         rx.spacer(),
                         rx.badge(
-                            f"{AlertasState.unread_count} nuevas",
+                            AlertasState.unread_count,
+                            " nuevas",
                             color_scheme="red",
                             variant="surface",
                             radius="full",

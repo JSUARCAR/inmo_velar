@@ -1,3 +1,3 @@
-from .modal_form import modal_form
+from .modal_form import modal_proveedor
 
-__all__ = ["modal_form"]
+__all__ = ["modal_proveedor"]

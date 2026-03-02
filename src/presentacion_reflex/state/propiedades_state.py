@@ -1,10 +1,39 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, TypedDict
 
 import reflex as rx
 
 from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+
+
+class PropiedadDict(TypedDict):
+    """Estructura tipada para serialización de Propiedad en Reflex."""
+    id_propiedad: int
+    matricula_inmobiliaria: str
+    direccion_propiedad: str
+    tipo_propiedad: str
+    municipio_nombre: str
+    disponibilidad: int
+    valor_canon: float
+    valor_canon_view: str
+    area_metros: float
+    area_metros_view: str
+    habitaciones: int
+    banos: int
+    parqueadero: int
+    valor_venta: float
+    valor_venta_view: str
+    comision_venta: float
+    comision_venta_valor_view: str
+    codigo_energia: str
+    energia_tooltip: str
+    codigo_agua: str
+    agua_tooltip: str
+    codigo_gas: str
+    gas_tooltip: str
+    imagen_id: Optional[int]
+    estado_registro: int
 
 
 class PropiedadesState(DocumentosStateMixin):
@@ -33,7 +62,7 @@ class PropiedadesState(DocumentosStateMixin):
     error_message: str = ""
 
     # Datos
-    propiedades: List[Dict[str, Any]] = []
+    propiedades: List[PropiedadDict] = []
 
     # Opciones para dropdowns
     municipios_options: List[Dict[str, str]] = []
@@ -165,6 +194,14 @@ class PropiedadesState(DocumentosStateMixin):
             # Crear mapa de municipios para lookup rápido
             municipios_map = {m["value"]: m["label"] for m in self.municipios_options}
 
+            def format_currency(amount):
+                try:
+                    if amount is None:
+                        return "$0"
+                    return f"${float(amount):,.0f}".replace(",", ".")
+                except:
+                    return "$0"
+
             # Convertir a dict
             propiedades_data = [
                 {
@@ -175,15 +212,30 @@ class PropiedadesState(DocumentosStateMixin):
                     "municipio_nombre": municipios_map.get(str(p.id_municipio), "N/A"),
                     "disponibilidad": 1 if p.disponibilidad_propiedad else 0,
                     "valor_canon": getattr(p, "canon_arrendamiento_estimado", 0),
+                    "valor_canon_view": format_currency(
+                        getattr(p, "canon_arrendamiento_estimado", 0)
+                    ),
                     "area_metros": getattr(p, "area_m2", 0),
+                    "area_metros_view": f"{float(getattr(p, 'area_m2', 0) or 0):,.0f}m²".replace(
+                        ",", "."
+                    ),
                     "habitaciones": getattr(p, "habitaciones", 0),
                     "banos": getattr(p, "bano", 0),
                     "parqueadero": getattr(p, "parqueadero", 0),
                     "valor_venta": getattr(p, "valor_venta_propiedad", 0),
+                    "valor_venta_view": format_currency(getattr(p, "valor_venta_propiedad", 0)),
                     "comision_venta": getattr(p, "comision_venta_propiedad", 0),
+                    "comision_venta_valor_view": format_currency(
+                        (getattr(p, "valor_venta_propiedad", 0) or 0)
+                        * (getattr(p, "comision_venta_propiedad", 0) or 0)
+                        / 100
+                    ),
                     "codigo_energia": getattr(p, "codigo_energia", ""),
+                    "energia_tooltip": f"Energía: {getattr(p, 'codigo_energia', '') or 'N/A'}",
                     "codigo_agua": getattr(p, "codigo_agua", ""),
+                    "agua_tooltip": f"Agua: {getattr(p, 'codigo_agua', '') or 'N/A'}",
                     "codigo_gas": getattr(p, "codigo_gas", ""),
+                    "gas_tooltip": f"Gas: {getattr(p, 'codigo_gas', '') or 'N/A'}",
                     "imagen_id": getattr(p, "imagen_principal_id", None),
                     "estado_registro": getattr(p, "estado_registro", 1),
                 }

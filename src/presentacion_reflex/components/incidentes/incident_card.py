@@ -7,34 +7,12 @@ from src.presentacion_reflex import styles
 
 
 def _get_priority_color(priority: str) -> str:
-    # Reflex Note: 'priority' here is likely a Var during compilation.
-    # We should avoid python string methods like .lower() if it causes issues in foreach.
-    # We will use a direct mapping or rx.cond if needed.
-    # For now, let's revert to a simpler exact match or mapped approach
-    # that matches the capitalization used in the backend ("Alta", "Media", "Baja").
-
+    """Retorna el esquema de color según la prioridad."""
     return rx.match(
         priority,
         ("Alta", "red"),
-        ("alta", "red"),
         ("Media", "orange"),
-        ("media", "orange"),
-        ("Baja", "green"),
-        ("baja", "green"),
-        "gray",  # Default
-    )
-
-
-def _get_status_color(status: str) -> str:
-    return rx.match(
-        status,
-        ("Reportado", "red"),
-        ("Cotizado", "orange"),
-        ("Aprobado", "green"),
-        ("En Reparacion", "blue"),
-        ("En Reparación", "blue"),  # Handle both spellings if present
-        ("Finalizado", "gray"),
-        ("Cancelado", "gray"),
+        ("Baja", "blue"),
         "gray",
     )
 
@@ -45,17 +23,30 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
     Color principal basado en el ESTADO del incidente.
     """
     priority_color = _get_priority_color(incident["prioridad"])
-    # Elite: Case-insensitive status matching with Slate for better visibility
-    status_base_color = rx.match(
-        incident["estado"].to(str).lower(),
-        ("reportado", "red"),
-        ("cotizado", "orange"),
-        ("aprobado", "green"),
-        ("en reparacion", "blue"),
-        ("en reparación", "blue"),
-        ("finalizado", "slate"),
-        ("cancelado", "slate"),
-        "slate",
+    
+    # Elite: Direct matching for status colors using pure CSS variables to avoid compilation issues
+    status_bg = rx.match(
+        incident["estado"],
+        ("Reportado", "var(--red-9)"),
+        ("Cotizado", "var(--orange-9)"),
+        ("Aprobado", "var(--green-9)"),
+        ("En Reparacion", "var(--blue-9)"),
+        ("En Reparación", "var(--blue-9)"),
+        ("Finalizado", "var(--slate-9)"),
+        ("Cancelado", "var(--slate-9)"),
+        "var(--slate-9)",
+    )
+    
+    status_bg_hover = rx.match(
+        incident["estado"],
+        ("Reportado", "var(--red-11)"),
+        ("Cotizado", "var(--orange-11)"),
+        ("Aprobado", "var(--green-11)"),
+        ("En Reparacion", "var(--blue-11)"),
+        ("En Reparación", "var(--blue-11)"),
+        ("Finalizado", "var(--slate-11)"),
+        ("Cancelado", "var(--slate-11)"),
+        "var(--slate-11)",
     )
 
     return rx.box(
@@ -64,7 +55,7 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
             rx.box(
                 width="6px",
                 height="100%",
-                bg=rx.color(status_base_color, 9),
+                bg=status_bg,
                 border_radius="0",
             ),
             # Contenedor principal de contenido
@@ -72,7 +63,8 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                 # Header: ID + Badge Prioridad
                 rx.hstack(
                     rx.text(
-                        f"INC-{incident['id']}",
+                        "INC-",
+                        incident["id"],
                         size="1",
                         color="var(--gray-10)",
                         weight="bold",
@@ -107,14 +99,16 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                     margin_y="2px",
                     title=incident["descripcion"],  # Tooltip nativo para texto truncado
                 ),
-                # Divider sutil
-                # rx.divider(margin_y="1", color="var(--gray-4)"),
                 # Metadata Bloque 1: Propiedad y Fecha
                 rx.flex(
                     rx.hstack(
                         rx.icon("map_pin", size=13, color="var(--gray-9)"),
                         rx.text(
-                            incident.get("direccion_propiedad", f"#{incident['id_propiedad']}"),
+                            rx.cond(
+                                incident["direccion_propiedad"] != "",
+                                incident["direccion_propiedad"],
+                                rx.text("#", incident["id_propiedad"]),
+                            ),
                             size="1",
                             color="gray",
                             weight="medium",
@@ -126,8 +120,8 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                     rx.spacer(),
                     rx.hstack(
                         rx.icon("calendar", size=13, color="var(--gray-9)"),
-                        # Manejo seguro de fecha (reemplazar T por espacio para split seguro)
-                        rx.text(incident["fecha"].to(str).split("T")[0], size="1", color="gray"),
+                        # Manejo seguro de fecha (ya formateada en el estado)
+                        rx.text(incident["fecha"], size="1", color="gray"),
                         spacing="1",
                         align_items="center",
                         title="Fecha del reporte",
@@ -141,7 +135,7 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                     rx.badge(
                         rx.hstack(
                             rx.icon("megaphone", size=10),
-                            rx.text(incident.get("origen", "Inquilino"), size="1"),
+                            rx.text(incident["origen"], size="1"),
                             spacing="1",
                             align_items="center",
                         ),
@@ -200,7 +194,7 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                 light="12px 12px 24px rgba(184, 195, 218, 0.5), -12px -12px 24px rgba(255, 255, 255, 1)",
                 dark="12px 12px 24px rgba(0, 0, 0, 0.9), -12px -12px 24px rgba(45, 47, 53, 0.5)"
             ),
-            "& > div > div:first-child": {"bg": rx.color(status_base_color, 11), "width": "8px"},
+            "& > div > div:first-child": {"bg": status_bg_hover, "width": "8px"},
         },
         on_click=lambda: IncidentesState.select_incidente(incident),
     )

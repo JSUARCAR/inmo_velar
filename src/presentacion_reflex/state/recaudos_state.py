@@ -59,6 +59,7 @@ class RecaudosState(DocumentosStateMixin):
     # Modales
     show_form_modal: bool = False
     show_detail_modal: bool = False
+    is_editing: bool = False
 
     # Form data
     form_data: Dict[str, Any] = {}
@@ -295,6 +296,7 @@ class RecaudosState(DocumentosStateMixin):
     # Modal CRUD
     def open_create_modal(self):
         """Abre modal para crear nuevo recaudo."""
+        self.is_editing = False
         self.show_form_modal = True
         self.show_detail_modal = False
         self.form_data = {
@@ -382,7 +384,10 @@ class RecaudosState(DocumentosStateMixin):
                     "metodo_pago": recaudo.metodo_pago,
                     "referencia_bancaria": recaudo.referencia_bancaria or "",
                     "observaciones": recaudo.observaciones or "",
+                    "tipo_concepto": "Canon",  # Default for edit
+                    "periodo": recaudo.fecha_pago[:7] if recaudo.fecha_pago else "", # YYYY-MM
                 }
+                self.is_editing = True
                 self.show_form_modal = True
                 self.show_detail_modal = False
                 self.is_loading = False

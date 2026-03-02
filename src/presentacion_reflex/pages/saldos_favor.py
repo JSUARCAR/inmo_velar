@@ -105,7 +105,7 @@ def saldos_table() -> rx.Component:
                         )
                     ),
                     rx.table.cell(saldo.motivo),
-                    rx.table.cell(rx.text(f"${saldo.valor_saldo:,.0f}", weight="bold")),
+                    rx.table.cell(rx.text("$", saldo.valor_saldo, weight="bold")),
                     rx.table.cell(
                         rx.badge(
                             saldo.estado,

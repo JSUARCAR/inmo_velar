@@ -33,8 +33,8 @@ def theme_toggle_icon() -> rx.Component:
         rx.button(
             rx.cond(
                 rx.color_mode == "light",
-                rx.icon("moon", size=18, color=rx.color("gray", 11)),
-                rx.icon("sun", size=18, color=rx.color("gray", 11)),
+                rx.icon("moon", size=18, color="var(--gray-11)"),
+                rx.icon("sun", size=18, color="var(--gray-11)"),
             ),
             on_click=rx.toggle_color_mode,
             size="3",

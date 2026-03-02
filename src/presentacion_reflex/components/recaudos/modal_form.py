@@ -3,7 +3,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.recaudos_state import RecaudosState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root, neuro_text_area
 from src.presentacion_reflex import styles
 
 
@@ -92,7 +92,7 @@ def modal_recaudo() -> rx.Component:
         rx.dialog.content(
             rx.dialog.title(
                 rx.cond(
-                    RecaudosState.form_data.get("id_recaudo"),
+                    RecaudosState.is_editing,
                     "Editar Recaudo",
                     "Registrar Nuevo Pago",
                 ),
@@ -120,7 +120,7 @@ def modal_recaudo() -> rx.Component:
                 rx.vstack(
                     # Contrato (solo en creación)
                     rx.cond(
-                        ~RecaudosState.form_data.get("id_recaudo"),
+                        ~RecaudosState.is_editing,
                         searchable_select(
                             "Contrato *",
                             "Seleccione un contrato...",
@@ -140,7 +140,7 @@ def modal_recaudo() -> rx.Component:
                             placeholder="YYYY-MM-DD",
                             type="date",
                             name="fecha_pago",
-                            default_value=RecaudosState.form_data.get("fecha_pago", ""),
+                            default_value=RecaudosState.form_data["fecha_pago"],
                             required=True,
                             size="2",
                             width="100%",
@@ -163,7 +163,7 @@ def modal_recaudo() -> rx.Component:
                             placeholder="Ej: 1500000",
                             type="number",
                             name="valor_total",
-                            value=RecaudosState.form_data.get("valor_total", ""),
+                            value=RecaudosState.form_data["valor_total"],
                             on_change=lambda v: RecaudosState.set_form_field("valor_total", v),
                             required=True,
                             min="1",
@@ -185,11 +185,7 @@ def modal_recaudo() -> rx.Component:
                                 rx.select.item("Efectivo", value="Efectivo"),
                             ],
                             name="metodo_pago",
-                            value=rx.cond(
-                                RecaudosState.form_data.get("metodo_pago") != "",
-                                RecaudosState.form_data.get("metodo_pago"),
-                                "Transferencia",
-                            ),
+                            value=RecaudosState.form_data["metodo_pago"],
                             width="100%",
                         ),
                         width="100%",
@@ -201,7 +197,7 @@ def modal_recaudo() -> rx.Component:
                         neuro_input(
                             placeholder="Número de transacción o comprobante",
                             name="referencia_bancaria",
-                            default_value=RecaudosState.form_data.get("referencia_bancaria", ""),
+                            default_value=RecaudosState.form_data["referencia_bancaria"],
                             size="2",
                             width="100%",
                         ),
@@ -226,11 +222,7 @@ def modal_recaudo() -> rx.Component:
                                     rx.select.item("Otro", value="Otro"),
                                 ],
                                 name="tipo_concepto",
-                                value=rx.cond(
-                                    RecaudosState.form_data.get("tipo_concepto") != "",
-                                    RecaudosState.form_data.get("tipo_concepto"),
-                                    "Canon",
-                                ),
+                                value=RecaudosState.form_data["tipo_concepto"],
                                 width="100%",
                             ),
                             flex="1",
@@ -242,7 +234,7 @@ def modal_recaudo() -> rx.Component:
                                 placeholder="YYYY-MM",
                                 type="month",
                                 name="periodo",
-                                default_value=RecaudosState.form_data.get("periodo", ""),
+                                default_value=RecaudosState.form_data["periodo"],
                                 required=True,
                                 size="2",
                                 width="100%",
@@ -259,7 +251,7 @@ def modal_recaudo() -> rx.Component:
                         neuro_text_area(
                             placeholder="Notas adicionales sobre este pago...",
                             name="observaciones",
-                            default_value=RecaudosState.form_data.get("observaciones", ""),
+                            default_value=RecaudosState.form_data["observaciones"],
                             size="2",
                             width="100%",
                             min_height="80px",

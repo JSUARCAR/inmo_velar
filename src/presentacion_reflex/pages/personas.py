@@ -128,7 +128,9 @@ def personas_page() -> rx.Component:
                             rx.hstack(
                                 rx.icon("users", size=18, color="var(--gray-9)"),
                                 rx.text(
-                                    f"Total: {PersonasState.total_items} personas",
+                                    "Total: ",
+                                    PersonasState.total_items,
+                                    " personas",
                                     size="2",
                                     weight="medium",
                                     color="var(--gray-11)",
@@ -225,11 +227,10 @@ def personas_page() -> rx.Component:
                         rx.hstack(
                             rx.tooltip(
                                 rx.button(
-                                    rx.icon(
-                                        rx.cond(
-                                            PersonasState.view_mode == "table", "layout-grid", "table"
-                                        ),
-                                        size=18,
+                                    rx.cond(
+                                        PersonasState.view_mode == "table",
+                                        rx.icon("layout-grid", size=18),
+                                        rx.icon("table", size=18),
                                     ),
                                     on_click=PersonasState.toggle_view_mode,
                                     variant="soft",
@@ -564,14 +565,25 @@ def personas_page() -> rx.Component:
                         ),
                         rx.vstack(
                             rx.text(
-                                f"Página {PersonasState.page} de {PersonasState.total_pages}",
+                                "Página ",
+                                PersonasState.page,
+                                " de ",
+                                PersonasState.total_pages,
                                 size="3",
                                 weight="medium",
                             ),
                             rx.text(
-                                f"Mostrando {(PersonasState.page - 1) * PersonasState.page_size + 1}-"
-                                f"{rx.cond(PersonasState.page * PersonasState.page_size > PersonasState.total_items, PersonasState.total_items, PersonasState.page * PersonasState.page_size)} "
-                                f"de {PersonasState.total_items}",
+                                "Mostrando ",
+                                (PersonasState.page - 1) * PersonasState.page_size + 1,
+                                "-",
+                                rx.cond(
+                                    PersonasState.page * PersonasState.page_size
+                                    > PersonasState.total_items,
+                                    PersonasState.total_items,
+                                    PersonasState.page * PersonasState.page_size,
+                                ),
+                                " de ",
+                                PersonasState.total_items,
                                 size="1",
                                 color="var(--gray-10)",
                             ),

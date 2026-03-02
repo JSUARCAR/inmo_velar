@@ -189,7 +189,7 @@ def contrato_mandato_form() -> rx.Component:
                                         type="date",
                                         name="fecha_inicio",
                                         required=True,
-                                        value=ContratosState.form_data.get("fecha_inicio", ""),
+                                        value=ContratosState.form_data["fecha_inicio"],
                                         on_change=ContratosState.on_change_fecha_inicio,
                                         variant="surface",
                                     ),
@@ -203,7 +203,7 @@ def contrato_mandato_form() -> rx.Component:
                                         type="date",
                                         name="fecha_fin",
                                         required=True,
-                                        value=ContratosState.form_data.get("fecha_fin", ""),
+                                        value=ContratosState.form_data["fecha_fin"],
                                         on_change=ContratosState.on_change_fecha_fin,
                                         variant="surface",
                                     ),
@@ -220,7 +220,7 @@ def contrato_mandato_form() -> rx.Component:
                                         required=True,
                                         min=1,
                                         read_only=True,
-                                        value=ContratosState.form_data.get("duracion_meses", "12"),
+                                        value=ContratosState.form_data["duracion_meses"],
                                         variant="surface",
                                     ),
                                     spacing="1",
@@ -242,7 +242,7 @@ def contrato_mandato_form() -> rx.Component:
                                         required=True,
                                         min=0,
                                         read_only=True,
-                                        value=ContratosState.form_data.get("canon", ""),
+                                        value=ContratosState.form_data["canon"],
                                         variant="surface",
                                     ),
                                     spacing="1",
@@ -256,7 +256,7 @@ def contrato_mandato_form() -> rx.Component:
                                         name="fecha_pago",
                                         placeholder="Ej: Día 5 de cada mes",
                                         required=True,
-                                        value=ContratosState.form_data.get("fecha_pago", ""),
+                                        value=ContratosState.form_data["fecha_pago"],
                                         on_change=lambda v: ContratosState.set_form_field(
                                             "fecha_pago", v
                                         ),
@@ -282,9 +282,7 @@ def contrato_mandato_form() -> rx.Component:
                                         min=0,
                                         max=100,
                                         step="0.01",
-                                        value=ContratosState.form_data.get(
-                                            "comision_porcentaje", "10"
-                                        ),
+                                        value=ContratosState.form_data["comision_porcentaje"],
                                         on_change=lambda v: ContratosState.set_form_field(
                                             "comision_porcentaje", v
                                         ),
@@ -308,7 +306,7 @@ def contrato_mandato_form() -> rx.Component:
                                         min=0,
                                         max=100,
                                         step="0.01",
-                                        value=ContratosState.form_data.get("iva_porcentaje", "19"),
+                                        value=ContratosState.form_data["iva_porcentaje"],
                                         on_change=lambda v: ContratosState.set_form_field(
                                             "iva_porcentaje", v
                                         ),

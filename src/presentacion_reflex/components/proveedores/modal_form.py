@@ -4,7 +4,7 @@ from src.presentacion_reflex.state.proveedores_state import ProveedoresState
 from src.presentacion_reflex import styles
 
 
-def modal_form() -> rx.Component:
+def modal_proveedor() -> rx.Component:
     return rx.dialog.root(
         rx.dialog.content(
             rx.vstack(

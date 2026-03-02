@@ -13,14 +13,20 @@ def dashboard_layout(content: rx.Component) -> rx.Component:
 
     return rx.flex(
         mobile_nav(),
-        sidebar(),
-        rx.box(
-            content,
-            flex="1",
-            height="100vh",
-            overflow_y="auto",
-            background=styles.BG_APP,  # Semantic Token
+        rx.hstack(
+            sidebar(),
+            rx.box(
+                content,
+                flex="1",
+                height="100vh",
+                overflow_y="auto",
+                background=styles.BG_APP,  # Semantic Token
+                width="100%",
+            ),
             width="100%",
+            height="100vh",
+            spacing="0",
+            background=styles.BG_APP,
         ),
         rx.toast.provider(),
         spacing="0",

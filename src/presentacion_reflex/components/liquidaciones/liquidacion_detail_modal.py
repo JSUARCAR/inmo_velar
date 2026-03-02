@@ -53,7 +53,8 @@ def liquidacion_detail_modal() -> rx.Component:
                     rx.cond(
                         LiquidacionesState.liquidacion_actual,
                         rx.text(
-                            f" - Período {LiquidacionesState.liquidacion_actual['periodo']}",
+                            " - Período ",
+                            LiquidacionesState.liquidacion_actual["periodo"],
                             weight="regular",
                             color="gray",
                         ),
@@ -159,7 +160,11 @@ def liquidacion_detail_modal() -> rx.Component:
                     section_header("Egresos", "circle_arrow_up"),
                     rx.box(
                         info_row(
-                            f"Comisión ({LiquidacionesState.liquidacion_actual['comision_pct_view']}%):",
+                            rx.text(
+                                "Comisión (",
+                                LiquidacionesState.liquidacion_actual["comision_pct_view"],
+                                "%):",
+                            ),
                             LiquidacionesState.liquidacion_actual["comision_monto_view"],
                         ),
                         info_row(
