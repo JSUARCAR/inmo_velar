@@ -142,7 +142,7 @@ def login_page() -> rx.Component:
                 aurora_background(),
             ),
             # Header (Title and subtitle)
-            rx.center(
+            rx.box(
                 rx.vstack(
                     rx.heading(
                         "VELAR CORE",
@@ -165,6 +165,7 @@ def login_page() -> rx.Component:
                     spacing="1",
                 ),
                 class_name="login-header-elite",
+                width="100%",
             ),
             # Content
             rx.box(
@@ -173,10 +174,6 @@ def login_page() -> rx.Component:
             ),
             width="100%",
             min_height="100vh",
-            background=rx.cond(
-                rx.color_mode == "light",
-                "#f8fafc", 
-                "#0f172a", 
-            ),
+            class_name="login-page-root",
         ),
     )
