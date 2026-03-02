@@ -180,13 +180,13 @@ def login_page() -> rx.Component:
                 align_items="center",
                 justify_content="center",
             ),
+            position="relative", # Necesario para el centrado absoluto del título
             width="100%",
             min_height="100vh",
             background=rx.cond(
                 rx.color_mode == "light",
-                "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
-                "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+                "#f8fafc", # Color base suave para light mode
+                "#0f172a", # Color base profundo para dark mode
             ),
         ),
-        width="100%",
     )

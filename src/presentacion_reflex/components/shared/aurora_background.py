@@ -13,7 +13,7 @@ def aurora_background() -> rx.Component:
             left="0",
             width="100%",
             height="100%",
-            bg="#0f172a", # Slate 900
+            bg="transparent",
             z_index="-2",
         ),
         # Orbe 1
