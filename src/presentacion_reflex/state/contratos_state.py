@@ -798,6 +798,12 @@ class ContratosState(DocumentosStateMixin):
         return ContratosState.load_contratos
 
     # Modal CRUD
+    def open_modal(self, mode: str = "crear_mandato"):
+        """Abre el modal de creación según el modo."""
+        if mode == "crear_arrendamiento":
+            return self.open_create_arrendamiento_modal()
+        return self.open_create_mandato_modal()
+
     def open_create_mandato_modal(self):
         """Abre modal para crear nuevo mandato."""
         self.modal_mode = "crear_mandato"
@@ -806,7 +812,6 @@ class ContratosState(DocumentosStateMixin):
             "id_propiedad": "",
             "id_propietario": "",
             "id_asesor": "",
-            "fecha_inicio": "",
             "fecha_inicio": "",
             "fecha_fin": "",
             "fecha_pago": "",
@@ -894,7 +899,6 @@ class ContratosState(DocumentosStateMixin):
                             "id_propiedad": str(contrato.id_propiedad),
                             "id_propietario": str(contrato.id_propietario),
                             "id_asesor": str(contrato.id_asesor),
-                            "fecha_inicio": contrato.fecha_inicio_contrato_m,
                             "fecha_inicio": contrato.fecha_inicio_contrato_m,
                             "fecha_fin": contrato.fecha_fin_contrato_m,
                             "fecha_pago": contrato.fecha_pago or "",
