@@ -177,6 +177,8 @@ def login_page() -> rx.Component:
                 z_index="10",
                 width="100%",
                 min_height="100vh",
+                align_items="center",
+                justify_content="center",
             ),
             width="100%",
             min_height="100vh",

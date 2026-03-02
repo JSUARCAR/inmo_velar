@@ -60,7 +60,11 @@ class RecibosState(DocumentosStateMixin):
 
     @rx.event(background=True)
     async def on_load(self):
-        """Carga inicial de datos."""
+        """Carga inicial de datos y limpieza de estados de UI."""
+        async with self:
+            self.show_form_modal = False
+            self.show_payment_modal = False
+            self.show_detail_modal = False
         yield RecibosState.load_propiedades_options
         yield RecibosState.load_data
 
