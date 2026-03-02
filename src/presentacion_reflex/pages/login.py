@@ -94,7 +94,10 @@ def login_card() -> rx.Component:
                             loading=AuthState.is_loading,
                         ),
                         width="100%",
+                        justify_content="center",
+                        align_items="center",
                     ),
+
                     rx.cond(
                         AuthState.error_message != "",
                         rx.text(AuthState.error_message, color="#f87171", size="2", weight="medium"),
