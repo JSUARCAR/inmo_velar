@@ -144,4 +144,16 @@ body,
     right: 0 !important;
     z-index: 20 !important;
     pointer-events: none !important;
+    text-align: center !important;
+}
+
+/* 
+ * Radix Base Override.
+ * Radix inyecta fondos sólidos en los contenedores raíz (rt-Box).
+ * Esto asegura que el fondo sea siempre transparente en el login.
+ */
+.login-page-root,
+.login-page-root>div {
+    background: transparent !important;
+    background-color: transparent !important;
 }
