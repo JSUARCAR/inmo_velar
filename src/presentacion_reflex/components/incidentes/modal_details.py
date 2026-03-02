@@ -3,6 +3,8 @@ import reflex as rx
 from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex import styles
 
 
 def _detail_row(label: str, value: str, icon: str = None) -> rx.Component:
@@ -20,25 +22,24 @@ def _quote_form() -> rx.Component:
     """Sub-formulario para registrar cotización."""
     return rx.vstack(
         rx.divider(margin_y="1em"),
-        rx.heading("Registrar Cotización", size="4", color="var(--accent-9)"),
+        rx.heading("Registrar Cotización", size="4", color="var(--blue-9)"),
         rx.grid(
             rx.vstack(
                 rx.text("Proveedor", weight="bold", size="2"),
-                rx.select.root(
-                    rx.select.trigger(placeholder="Seleccione proveedor...", width="100%"),
-                    rx.select.content(
-                        rx.foreach(
-                            IncidentesState.proveedores_options,
-                            lambda x: rx.select.item(x["texto"], value=x["id"]),
-                        )
+                neuro_select_root(
+                    rx.foreach(
+                        IncidentesState.proveedores_options,
+                        lambda x: rx.select.item(x["texto"], value=x["id"]),
                     ),
+                    placeholder="Seleccione proveedor...",
                     on_change=lambda val: IncidentesState.set_cotizacion_field("id_proveedor", val),
                     value=IncidentesState.cotizacion_form["id_proveedor"],
+                    width="100%",
                 ),
             ),
             rx.vstack(
                 rx.text("Días Estimados", weight="bold", size="2"),
-                rx.input(
+                neuro_input(
                     type="number",
                     placeholder="1",
                     on_change=lambda val: IncidentesState.set_cotizacion_field("dias", val),
@@ -52,7 +53,7 @@ def _quote_form() -> rx.Component:
         rx.grid(
             rx.vstack(
                 rx.text("Costo Materiales", weight="bold", size="2"),
-                rx.input(
+                neuro_input(
                     type="number",
                     placeholder="0",
                     on_change=lambda val: IncidentesState.set_cotizacion_field("materiales", val),
@@ -61,7 +62,7 @@ def _quote_form() -> rx.Component:
             ),
             rx.vstack(
                 rx.text("Costo Mano de Obra", weight="bold", size="2"),
-                rx.input(
+                neuro_input(
                     type="number",
                     placeholder="0",
                     on_change=lambda val: IncidentesState.set_cotizacion_field("mano_obra", val),
@@ -78,15 +79,16 @@ def _quote_form() -> rx.Component:
                 placeholder="Detalle técnico de la reparación...",
                 on_change=lambda val: IncidentesState.set_cotizacion_field("descripcion", val),
                 width="100%",
+                style=styles.NEU_INPUT_STYLE,
             ),
             width="100%",
         ),
         rx.hstack(
-            rx.button(
+            neuro_button(
                 "Guardar Cotización",
                 on_click=IncidentesState.save_cotizacion,
                 loading=IncidentesState.is_loading,
-                color_scheme="blue",
+                color_scheme="green",
             ),
             width="100%",
             justify="end",
@@ -94,9 +96,10 @@ def _quote_form() -> rx.Component:
         ),
         spacing="3",
         width="100%",
-        background_color="var(--gray-2)",
+        background_color=styles.BG_PANEL,
         padding="1em",
-        border_radius="8px",
+        border_radius="16px",
+        style={"box_shadow": styles.NEU_SHADOW},
     )
 
 
@@ -104,7 +107,7 @@ def _cotizado_view() -> rx.Component:
     """Vista para cuando el incidente está Cotizado."""
     return rx.vstack(
         rx.divider(margin_y="1em"),
-        rx.heading("Cotizaciones Recibidas", size="4", color="var(--accent-9)"),
+        rx.heading("Cotizaciones Recibidas", size="4", color="var(--blue-9)"),
         rx.cond(
             IncidentesState.cotizaciones.length() > 0,
             rx.vstack(
@@ -113,7 +116,7 @@ def _cotizado_view() -> rx.Component:
                     lambda cot: rx.card(
                         rx.vstack(
                             rx.hstack(
-                                rx.icon("file-text", size=18, color="var(--accent-9)"),
+                                rx.icon("file-text", size=18, color="var(--blue-9)"),
                                 rx.text(cot["proveedor"], weight="bold", size="3"),
                                 rx.spacer(),
                                 rx.badge(
@@ -142,7 +145,7 @@ def _cotizado_view() -> rx.Component:
                                         "$",
                                         cot["valor_total"],
                                         weight="bold",
-                                        color="var(--accent-9)",
+                                        color="var(--blue-9)",
                                     ),
                                 ),
                                 rx.vstack(
@@ -156,7 +159,7 @@ def _cotizado_view() -> rx.Component:
                             rx.text(cot["descripcion"], size="2", color="gray", margin_top="0.5em"),
                             rx.cond(
                                 AuthState.check_action("Incidentes", "EDITAR"),
-                                rx.button(
+                                neuro_button(
                                     "Aprobar Cotización",
                                     width="100%",
                                     margin_top="1em",
@@ -164,10 +167,12 @@ def _cotizado_view() -> rx.Component:
                                         IncidentesState.selected_incidente["id"], cot["id"]
                                     ),
                                     disabled=cot["estado"] != "Pendiente",
+                                    color_scheme="green",
                                 ),
                             ),
                         ),
                         width="100%",
+                        style={"box_shadow": styles.NEU_SHADOW, "border_radius": "12px"},
                     ),
                 ),
                 spacing="3",
@@ -192,11 +197,9 @@ def modal_details() -> rx.Component:
                 rx.hstack(
                     rx.heading("Incidente #", inc["id"], size="6"),
                     rx.spacer(),
-                    rx.button(
-                        "Descargar PDF",
-                        icon="download",
+                    neuro_button(
+                        rx.hstack(rx.icon("download", size=16), rx.text("Descargar PDF")),
                         variant="soft",
-                        size="2",
                         on_click=IncidentesState.generar_pdf_incidente,
                         loading=IncidentesState.is_loading,
                         margin_right="1em",
@@ -219,12 +222,12 @@ def modal_details() -> rx.Component:
                                 rx.box(
                                     rx.vstack(
                                         rx.hstack(
-                                            rx.icon("align-left", size=20, color="var(--accent-9)"),
+                                            rx.icon("align-left", size=20, color="var(--blue-9)"),
                                             rx.text(
                                                 "Descripción Detallada",
                                                 weight="bold",
                                                 size="2",
-                                                color="var(--accent-9)",
+                                                color="var(--blue-9)",
                                             ),
                                             spacing="2",
                                             align_items="center",
@@ -238,10 +241,10 @@ def modal_details() -> rx.Component:
                                             color="var(--gray-12)",
                                         ),
                                         padding="1em",
-                                        background_color="var(--gray-3)",
+                                        background_color=styles.BG_PANEL,
                                         border_radius="12px",
                                         width="100%",
-                                        box_shadow="0 2px 4px rgba(0,0,0,0.05)",
+                                        style={"box_shadow": styles.NEU_INSET},
                                     ),
                                     width="100%",
                                     margin_bottom="1em",
@@ -273,7 +276,7 @@ def modal_details() -> rx.Component:
                                         ),
                                         rx.cond(
                                             AuthState.check_action("Incidentes", "EDITAR"),
-                                            rx.button(
+                                            neuro_button(
                                                 "Iniciar Reparación",
                                                 width="100%",
                                                 color_scheme="blue",
@@ -298,7 +301,7 @@ def modal_details() -> rx.Component:
                                         rx.card(
                                             rx.hstack(
                                                 rx.icon(
-                                                    "hard_hat", size=20, color="var(--accent-9)"
+                                                    "hard_hat", size=20, color="var(--blue-9)"
                                                 ),
                                                 rx.vstack(
                                                     rx.text(
@@ -316,12 +319,13 @@ def modal_details() -> rx.Component:
                                             ),
                                             variant="surface",
                                             width="100%",
+                                            style={"box_shadow": styles.NEU_SHADOW},
                                         ),
                                         rx.cond(
                                             ~IncidentesState.show_finalize_form,
                                             rx.cond(
                                                 AuthState.check_action("Incidentes", "EDITAR"),
-                                                rx.button(
+                                                neuro_button(
                                                     "Finalizar Incidente",
                                                     width="100%",
                                                     color_scheme="green",
@@ -337,12 +341,12 @@ def modal_details() -> rx.Component:
                                                 rx.heading(
                                                     "Finalizar Reparación",
                                                     size="3",
-                                                    color="var(--accent-9)",
+                                                    color="var(--blue-9)",
                                                 ),
                                                 rx.text(
                                                     "Fecha de Terminación", weight="bold", size="2"
                                                 ),
-                                                rx.input(
+                                                neuro_input(
                                                     type="date",
                                                     on_change=IncidentesState.set_finalize_date,
                                                     value=IncidentesState.finalize_date,
@@ -354,15 +358,17 @@ def modal_details() -> rx.Component:
                                                     on_change=IncidentesState.set_finalize_obs,
                                                     value=IncidentesState.finalize_obs,
                                                     width="100%",
+                                                    style=styles.NEU_INPUT_STYLE,
                                                 ),
                                                 rx.hstack(
-                                                    rx.button(
+                                                    neuro_button(
                                                         "Cancelar",
                                                         on_click=IncidentesState.toggle_finalize_form,
-                                                        variant="outline",
+                                                        variant="soft",
+                                                        color_scheme="gray",
                                                     ),
                                                     rx.spacer(),
-                                                    rx.button(
+                                                    neuro_button(
                                                         "Confirmar",
                                                         on_click=IncidentesState.confirmar_finalizacion,
                                                         color_scheme="green",
@@ -370,12 +376,13 @@ def modal_details() -> rx.Component:
                                                     width="100%",
                                                     margin_top="0.5em",
                                                 ),
-                                                background_color="var(--gray-2)",
+                                                background_color=styles.BG_PANEL,
                                                 padding="1em",
-                                                border_radius="8px",
+                                                border_radius="12px",
                                                 width="100%",
                                                 spacing="2",
                                                 margin_top="1em",
+                                                style={"box_shadow": styles.NEU_SHADOW},
                                             ),
                                         ),
                                     ),
@@ -405,7 +412,7 @@ def modal_details() -> rx.Component:
                                                             "Fecha Fin:", size="1", color="gray"
                                                         ),
                                                         rx.text(
-                                                            inc.get("fecha_arreglo", "N/A"),
+                                                            inc["fecha_arreglo"],
                                                             weight="medium",
                                                         ),
                                                     ),
@@ -429,14 +436,13 @@ def modal_details() -> rx.Component:
                                                     margin_top="0.5em",
                                                 ),
                                                 rx.text(
-                                                    inc.get(
-                                                        "observaciones_final", "Sin observaciones."
-                                                    ),
+                                                    inc["observaciones_final"],
                                                     size="2",
                                                 ),
                                             ),
                                             variant="surface",
                                             width="100%",
+                                            style={"box_shadow": styles.NEU_SHADOW},
                                         ),
                                     ),
                                 ),
@@ -465,7 +471,7 @@ def modal_details() -> rx.Component:
                                                         rx.icon(
                                                             "file-text",
                                                             size=18,
-                                                            color="var(--accent-9)",
+                                                            color="var(--blue-9)",
                                                         ),
                                                         rx.text(
                                                             cot["proveedor"],
@@ -535,17 +541,19 @@ def modal_details() -> rx.Component:
                                                         & AuthState.check_action(
                                                             "Incidentes", "EDITAR"
                                                         ),
-                                                        rx.button(
+                                                        neuro_button(
                                                             "Aprobar Cotización",
                                                             width="100%",
                                                             margin_top="1em",
                                                             on_click=lambda: IncidentesState.aprobar_cotizacion_event(
                                                                 inc["id"], cot["id"]
                                                             ),
+                                                            color_scheme="green",
                                                         ),
                                                     ),
                                                 ),
                                                 width="100%",
+                                                style={"box_shadow": styles.NEU_SHADOW},
                                             ),
                                         ),
                                         # Botón Finalizar Carga (Si estamos en etapa drafts)
@@ -554,7 +562,7 @@ def modal_details() -> rx.Component:
                                             | (inc["estado"] == "En Revision"),
                                             rx.cond(
                                                 AuthState.check_action("Incidentes", "EDITAR"),
-                                                rx.button(
+                                                neuro_button(
                                                     "Finalizar Carga y Solicitar Aprobación",
                                                     width="100%",
                                                     color_scheme="green",
@@ -585,12 +593,11 @@ def modal_details() -> rx.Component:
                                             ~IncidentesState.show_quote_form,
                                             rx.cond(
                                                 AuthState.check_action("Incidentes", "EDITAR"),
-                                                rx.button(
-                                                    "Nueva Cotización",
-                                                    icon="plus",
+                                                neuro_button(
+                                                    rx.hstack(rx.icon("plus"), rx.text("Nueva Cotización")),
                                                     on_click=IncidentesState.toggle_quote_form,
                                                     width="100%",
-                                                    variant="outline",
+                                                    variant="soft",
                                                 ),
                                             ),
                                         ),
@@ -631,7 +638,7 @@ def modal_details() -> rx.Component:
                 # Footer Close Button
                 rx.flex(
                     rx.dialog.close(
-                        rx.button(
+                        neuro_button(
                             "Cerrar",
                             on_click=IncidentesState.close_details_modal,
                             variant="soft",
@@ -646,6 +653,8 @@ def modal_details() -> rx.Component:
             ),
             width="800px",  # Más ancho para soportar tabs y tablas
             max_width="95vw",
+            background_color=styles.BG_PANEL,
+            style={"border_radius": "24px", "padding": "2em"},
         ),
         open=IncidentesState.details_modal_open,
         on_open_change=IncidentesState.set_details_modal_open,

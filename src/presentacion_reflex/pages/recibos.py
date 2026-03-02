@@ -5,56 +5,60 @@ from src.presentacion_reflex.components.recibos import detail_modal, modal_form,
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.recibos_state import RecibosState
 
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex import styles
 
 def filtros_bar() -> rx.Component:
     return rx.flex(
-        rx.input(
+        neuro_input(
             placeholder="Buscar por propiedad o comprobante...",
             on_change=RecibosState.set_search,
-            width="300px",
-            icon="search",
+            width=["100%", "300px"],
         ),
-        rx.select.root(
-            rx.select.trigger(placeholder="Filtrar Servicio"),
-            rx.select.content(
-                rx.select.group(
-                    rx.select.item("Todos", value="Todos"),
-                    rx.select.item("Agua", value="Agua"),
-                    rx.select.item("Luz", value="Luz"),
-                    rx.select.item("Gas", value="Gas"),
-                    rx.select.item("Internet", value="Internet"),
-                )
-            ),
+        neuro_select_root(
+            [
+                rx.select.item("Todos", value="Todos"),
+                rx.select.item("Agua", value="Agua"),
+                rx.select.item("Luz", value="Luz"),
+                rx.select.item("Gas", value="Gas"),
+                rx.select.item("Internet", value="Internet"),
+            ],
+            placeholder="Filtrar Servicio",
             value=RecibosState.filter_servicio,
             on_change=lambda val: [RecibosState.set_filter_servicio(val), RecibosState.load_data()],
+            width=["100%", "200px"],
         ),
-        rx.select.root(
-            rx.select.trigger(placeholder="Estado"),
-            rx.select.content(
-                rx.select.group(
-                    rx.select.item("Todos", value="Todos"),
-                    rx.select.item("Pendiente", value="Pendiente"),
-                    rx.select.item("Pagado", value="Pagado"),
-                    rx.select.item("Vencido", value="Vencido"),
-                )
-            ),
+        neuro_select_root(
+            [
+                rx.select.item("Todos", value="Todos"),
+                rx.select.item("Pendiente", value="Pendiente"),
+                rx.select.item("Pagado", value="Pagado"),
+                rx.select.item("Vencido", value="Vencido"),
+            ],
+            placeholder="Estado",
             value=RecibosState.filter_estado,
             on_change=lambda val: [RecibosState.set_filter_estado(val), RecibosState.load_data()],
+            width=["100%", "150px"],
         ),
         rx.spacer(),
         rx.cond(
             AuthState.check_action("Recibos Publicos", "CREAR"),
-            rx.button(
-                rx.icon("plus"),
-                "Nuevo Recibo",
+            neuro_button(
+                rx.hstack(rx.icon("plus"), rx.text("Nuevo Recibo")),
                 on_click=RecibosState.open_create_modal,
+                width=["100%", "auto"],
             ),
         ),
         width="100%",
         gap="3",
         align="center",
         wrap="wrap",
-        padding_bottom="4",
+        padding="4",
+        background=styles.BG_PANEL,
+        border_radius="16px",
+        style={"box_shadow": styles.NEU_SHADOW},
+        flex_direction=["column", "row"],
+        margin_bottom="4",
     )
 
 
@@ -137,7 +141,7 @@ def recibos_table() -> rx.Component:
                                         color_scheme="red",
                                         on_click=lambda: RecibosState.delete_recibo(
                                             recibo["id_recibo_publico"]
-                                        ),  # TODO: Add confirmation
+                                        ),
                                     ),
                                     content="Eliminar recibo",
                                 ),
