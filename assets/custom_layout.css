@@ -120,3 +120,28 @@ body,
     background: transparent !important;
     background-color: transparent !important;
 }
+
+/* 
+ * Login Elite Layout Fix.
+ * Fuerza el centrado absoluto y la transparencia para permitir la visibilidad de los fondos Aurora/Matrix.
+ */
+.login-container-elite {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    background: transparent !important;
+    position: relative !important;
+    z-index: 10 !important;
+    overflow: hidden !important;
+}
+
+.login-header-elite {
+    position: absolute !important;
+    top: 10% !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 20 !important;
+    pointer-events: none !important;
+}
