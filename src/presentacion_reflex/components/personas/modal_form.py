@@ -134,7 +134,6 @@ def form_textarea(
             value=value,
             on_change=on_change,
             width="100%",
-            size="3",
         ),
         spacing="1",
         width="100%",
