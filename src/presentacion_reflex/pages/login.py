@@ -99,9 +99,11 @@ def login_card() -> rx.Component:
                         AuthState.error_message != "",
                         rx.text(AuthState.error_message, color="#f87171", size="2", weight="medium"),
                     ),
+                    align="center",
                     spacing="4",
                     width="100%",
                 ),
+
 
                 # Footer
                 rx.text(
