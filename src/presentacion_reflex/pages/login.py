@@ -75,21 +75,25 @@ def login_card() -> rx.Component:
                         width="100%",
                         spacing="2",
                     ),
-                    rx.button(
-                        "Iniciar Sesión",
-                        type="submit",
-                        size="3",
+                    rx.center(
+                        rx.button(
+                            "Iniciar Sesión",
+                            type="submit",
+                            size="3",
+                            width="220px",
+                            color_scheme="blue",
+                            style={
+                                "border_radius": "12px",
+                                "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.4)",
+                                "margin_top": "1rem",
+                                "font_weight": "bold",
+                                "background": "rgba(59, 130, 246, 0.9)",
+                                "backdrop_filter": "blur(4px)",
+                                "cursor": "pointer",
+                            },
+                            loading=AuthState.is_loading,
+                        ),
                         width="100%",
-                        color_scheme="blue",
-                        style={
-                            "border_radius": "12px",
-                            "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.4)",
-                            "margin_top": "1rem",
-                            "font_weight": "bold",
-                            "background": "rgba(59, 130, 246, 0.8)",
-                            "backdrop_filter": "blur(4px)",
-                        },
-                        loading=AuthState.is_loading,
                     ),
                     rx.cond(
                         AuthState.error_message != "",
@@ -98,6 +102,7 @@ def login_card() -> rx.Component:
                     spacing="4",
                     width="100%",
                 ),
+
                 # Footer
                 rx.text(
                     "© 2024 Inmobiliaria Velar SAS. Todos los derechos reservados.",
