@@ -99,7 +99,6 @@ def sidebar_item(
         border="none",
         box_shadow=styles.NEU_SHADOW,
         width="260px",
-        data_state="open",
     )
 
     item_component = rx.hover_card.root(
@@ -506,7 +505,6 @@ def sidebar() -> rx.Component:
                     border="none",
                     box_shadow=styles.NEU_SHADOW,
                     width="280px",
-                    data_state="open",
                     z_index="2000",
                 ),
             ),
