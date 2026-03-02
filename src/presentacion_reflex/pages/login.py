@@ -6,7 +6,7 @@ from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
 
 
 def login_card() -> rx.Component:
-    """Tarjeta de login Neumorphic Executive."""
+    """Tarjeta de login Glassmorphism Elite."""
     return rx.box(
         rx.form(
             rx.vstack(
@@ -21,7 +21,7 @@ def login_card() -> rx.Component:
                             object_fit="contain",
                             margin_bottom="4",
                         ),
-                        rx.icon("building", size=60, color="#3b82f6", margin_bottom="4"),
+                        rx.icon("building", size=60, color="white", margin_bottom="4"),
                     ),
                     rx.heading(
                         rx.cond(
@@ -31,12 +31,12 @@ def login_card() -> rx.Component:
                         ),
                         size="6",
                         weight="bold",
-                        color="#1e293b",
+                        class_name="glass-text-elite",
                     ),
                     rx.text(
                         "Panel de Gestión Corporativa",
                         size="2",
-                        color="#64748b",
+                        class_name="glass-subtext-elite",
                         weight="medium",
                     ),
                     align="center",
@@ -47,25 +47,21 @@ def login_card() -> rx.Component:
                 # Formulario
                 rx.vstack(
                     rx.vstack(
-                        rx.text("Usuario", size="2", weight="bold", color="#475569"),
+                        rx.text("Usuario", size="2", weight="bold", class_name="glass-text-elite"),
                         rx.input(
                             placeholder="Ingrese su usuario",
                             name="username",
                             size="3",
                             width="100%",
                             variant="surface",
-                            style={
-                                "background": "white",
-                                "border_radius": "12px",
-                                "border": "1px solid #e2e8f0",
-                            },
+                            class_name="glass-input-elite",
                         ),
                         align_items="start",
                         width="100%",
                         spacing="2",
                     ),
                     rx.vstack(
-                        rx.text("Contraseña", size="2", weight="bold", color="#475569"),
+                        rx.text("Contraseña", size="2", weight="bold", class_name="glass-text-elite"),
                         rx.input(
                             type="password",
                             placeholder="••••••••",
@@ -73,11 +69,7 @@ def login_card() -> rx.Component:
                             size="3",
                             width="100%",
                             variant="surface",
-                            style={
-                                "background": "white",
-                                "border_radius": "12px",
-                                "border": "1px solid #e2e8f0",
-                            },
+                            class_name="glass-input-elite",
                         ),
                         align_items="start",
                         width="100%",
@@ -91,15 +83,17 @@ def login_card() -> rx.Component:
                         color_scheme="blue",
                         style={
                             "border_radius": "12px",
-                            "box_shadow": "0 10px 15px -3px rgba(59, 130, 246, 0.3)",
+                            "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.4)",
                             "margin_top": "1rem",
                             "font_weight": "bold",
+                            "background": "rgba(59, 130, 246, 0.8)",
+                            "backdrop_filter": "blur(4px)",
                         },
                         loading=AuthState.is_loading,
                     ),
                     rx.cond(
                         AuthState.error_message != "",
-                        rx.text(AuthState.error_message, color="red", size="2", weight="medium"),
+                        rx.text(AuthState.error_message, color="#f87171", size="2", weight="medium"),
                     ),
                     spacing="4",
                     width="100%",
@@ -108,7 +102,7 @@ def login_card() -> rx.Component:
                 rx.text(
                     "© 2024 Inmobiliaria Velar SAS. Todos los derechos reservados.",
                     size="1",
-                    color="#94a3b8",
+                    class_name="glass-subtext-elite",
                     margin_top="8",
                 ),
                 padding="10",
@@ -119,12 +113,10 @@ def login_card() -> rx.Component:
         ),
         width="100%",
         max_width="450px",
-        background="white",
-        border_radius="24px",
-        box_shadow="0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-        overflow="hidden",
+        class_name="glass-card-elite",
         position="relative",
     )
+
 
 
 @rx.page(route="/login", title="Login | Inmobiliaria Velar")
