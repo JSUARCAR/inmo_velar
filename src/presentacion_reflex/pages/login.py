@@ -142,7 +142,7 @@ def login_page() -> rx.Component:
                 aurora_background(),
             ),
             # Header (Title and subtitle)
-            rx.vstack(
+            rx.center(
                 rx.vstack(
                     rx.heading(
                         "VELAR CORE",
@@ -166,9 +166,8 @@ def login_page() -> rx.Component:
                 ),
                 position="absolute",
                 top="10%",
-                left="50%",
-                transform="translateX(-50%)",
-                width="100%",
+                left="0",
+                right="0",
                 z_index="20",
             ),
             # Content
@@ -180,13 +179,9 @@ def login_page() -> rx.Component:
                 align_items="center",
                 justify_content="center",
             ),
-            position="relative", # Necesario para el centrado absoluto del título
+            position="relative",
             width="100%",
             min_height="100vh",
-            background=rx.cond(
-                rx.color_mode == "light",
-                "#f8fafc", # Color base suave para light mode
-                "#0f172a", # Color base profundo para dark mode
-            ),
+            background="transparent", # Totalmente transparente para ver fondos
         ),
     )
