@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
+from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.auditoria_state import AuditoriaState
 
 from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
@@ -64,7 +65,7 @@ def auditoria_table() -> rx.Component:
             rx.foreach(
                 AuditoriaState.logs,
                 lambda log: rx.table.row(
-                    rx.table.cell(log.fecha_formateada),
+                    rx.table.cell(log.fecha_cambio),
                     rx.table.cell(log.usuario),
                     rx.table.cell(rx.badge(log.tabla, variant="soft")),
                     rx.table.cell(
@@ -79,7 +80,7 @@ def auditoria_table() -> rx.Component:
                             ),
                         )
                     ),
-                    rx.table.cell(log.detalles),
+                    rx.table.cell(log.detalle),
                 ),
             )
         ),

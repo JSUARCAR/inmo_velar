@@ -15,7 +15,7 @@ def modal_form() -> rx.Component:
         rx.dialog.content(
             rx.dialog.title(
                 rx.cond(
-                    RecibosState.selected_recibo_id > 0,
+                    RecibosState.is_editing,
                     "Editar Recibo Público",
                     "Nuevo Recibo Público",
                 )
@@ -32,7 +32,7 @@ def modal_form() -> rx.Component:
                                 rx.text("Propiedad *", size="2", weight="bold", margin_bottom="1"),
                                 neuro_select_root(
                                     rx.foreach(
-                                        RecibosState.propiedades_options,
+                                        RecibosState.propiedades_disponibles,
                                         lambda x: rx.select.item(x["label"], value=x["value"]),
                                     ),
                                     placeholder="Seleccione propiedad...",
@@ -96,13 +96,13 @@ def modal_form() -> rx.Component:
                             rx.box(
                                 rx.text("Valor Facturado *", size="2", weight="bold", margin_bottom="1"),
                                 neuro_input(
-                                    name="valor_total",
+                                    name="valor_recibo", # Note: It was valor_total but state uses valor_recibo
                                     type="number",
                                     placeholder="0",
                                     required=True,
-                                    value=RecibosState.form_data["valor_total"],
+                                    value=RecibosState.form_data["valor_recibo"],
                                     on_change=lambda val: RecibosState.set_form_field(
-                                        "valor_total", val
+                                        "valor_recibo", val
                                     ),
                                 ),
                                 width="100%",
@@ -162,7 +162,7 @@ def modal_form() -> rx.Component:
                                 neuro_input(
                                     name="referencia_pago",
                                     placeholder="Número de contrato o factura",
-                                    value=RecibosState.form_data["referencia_pago"],
+                                    value=RecibosState.form_data.get("referencia_pago", ""), # Safe get
                                     on_change=lambda val: RecibosState.set_form_field(
                                         "referencia_pago", val
                                     ),
@@ -200,12 +200,12 @@ def modal_form() -> rx.Component:
                             variant="soft",
                             color_scheme="gray",
                             type="button",
-                            on_click=RecibosState.close_modal,
+                            on_click=lambda: RecibosState.handle_form_open_change(False),
                         )
                     ),
                     rx.button(
                         rx.cond(
-                            RecibosState.selected_recibo_id > 0,
+                            RecibosState.is_editing,
                             "Guardar Cambios",
                             "Crear Recibo",
                         ),
@@ -216,10 +216,10 @@ def modal_form() -> rx.Component:
                     justify="end",
                     margin_top="4",
                 ),
-                on_submit=RecibosState.handle_save_form,
+                on_submit=RecibosState.save_recibo,
             ),
             max_width="700px",
         ),
         open=RecibosState.show_form_modal,
-        on_open_change=RecibosState.set_show_form_modal,
+        on_open_change=RecibosState.handle_form_open_change,
     )
