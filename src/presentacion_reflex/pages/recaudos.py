@@ -134,7 +134,8 @@ def recaudos_table() -> rx.Component:
                         rx.vstack(
                             rx.text(rec["direccion"], size="2", weight="medium"),
                             rx.text(
-                                f"Matrícula: {rec['matricula']}",
+                                "Matrícula: ",
+                                rec["matricula"],
                                 size="1",
                                 color="gray",
                             ),
@@ -283,14 +284,23 @@ def pagination_controls() -> rx.Component:
             ),
             rx.vstack(
                 rx.text(
-                    f"Página {RecaudosState.current_page}",
+                    "Página ",
+                    RecaudosState.current_page,
                     size="3",
                     weight="medium",
                 ),
                 rx.text(
-                    f"Mostrando {(RecaudosState.current_page - 1) * RecaudosState.page_size + 1}-"
-                    f"{rx.cond((RecaudosState.current_page * RecaudosState.page_size) > RecaudosState.total_items, RecaudosState.total_items, RecaudosState.current_page * RecaudosState.page_size)} "
-                    f"de {RecaudosState.total_items}",
+                    "Mostrando ",
+                    (RecaudosState.current_page - 1) * RecaudosState.page_size + 1,
+                    "-",
+                    rx.cond(
+                        (RecaudosState.current_page * RecaudosState.page_size)
+                        > RecaudosState.total_items,
+                        RecaudosState.total_items,
+                        RecaudosState.current_page * RecaudosState.page_size,
+                    ),
+                    " de ",
+                    RecaudosState.total_items,
                     size="1",
                     color="var(--gray-10)",
                 ),
@@ -349,7 +359,7 @@ def recaudos_page() -> rx.Component:
         recaudos_toolbar(),
         # Error message
         rx.cond(
-            RecaudosState.error_message != "",
+            RecaudosState.error_message,
             rx.callout(
                 RecaudosState.error_message,
                 icon="circle-alert",
@@ -383,7 +393,7 @@ def recaudos_page() -> rx.Component:
 
 
 @rx.page(
-    route="/recaudos", title="Recaudos", on_load=[AuthState.require_login, RecaudosState.on_load]
+    route="/recaudos", title="Recaudos | Inmobiliaria Velar", on_load=[AuthState.require_login, RecaudosState.on_load]
 )
 def recaudos() -> rx.Component:
     """Página de recaudos con layout."""
