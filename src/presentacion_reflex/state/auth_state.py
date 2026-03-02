@@ -163,7 +163,7 @@ class AuthState(rx.State):
         import threading
         _debug(
             "require_login CALLED",
-            route=getattr(self.router, "page", {}).path if hasattr(self, "router") else "unknown",
+            route=self.router.url if hasattr(self, "router") else "unknown",
             thread=threading.current_thread().name,
             token_present=bool(self.session_token),
         )

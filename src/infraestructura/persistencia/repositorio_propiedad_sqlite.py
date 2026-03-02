@@ -211,13 +211,14 @@ class RepositorioPropiedadSQLite:
             cols = ["p.MATRICULA_INMOBILIARIA", "p.DIRECCION_PROPIEDAD"]
             cond = self.db.get_search_condition(cols)
             conditions.append(f"({cond})")
-            
+
             term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
             params.extend([term_norm] * len(cols))
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
 
+        print(f"[SQL_DEBUG] Conteo: {query} | Params: {params}")
         cursor.execute(query, params)
         row = cursor.fetchone()
         if row:

@@ -392,9 +392,11 @@ def recaudos_page() -> rx.Component:
     )
 
 
-# @rx.page(
-#     route="/recaudos", title="Recaudos", on_load=[AuthState.require_login, RecaudosState.on_load]
-# )
+@rx.page(
+    route="/recaudos",
+    title="Recaudos | Inmobiliaria Velar",
+    on_load=[AuthState.require_login, RecaudosState.on_load],
+)
 def recaudos() -> rx.Component:
     """Página de recaudos con layout."""
     return dashboard_layout(recaudos_page())
