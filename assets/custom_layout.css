@@ -200,3 +200,10 @@ body,
 .glass-subtext-elite {
     color: rgba(255, 255, 255, 0.7) !important;
 }
+
+.login-button-elite {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 220px !important;
+}
