@@ -15,6 +15,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
 from num2words import num2words
 from datetime import datetime
+import html
 
 
 from ..components.tables import AdvancedTable
@@ -123,13 +124,13 @@ class ContratoMandatoElite(BaseDocumentTemplate):
 
     def __init__(self, output_dir: Path = None):
         super().__init__(output_dir)
-        self.document_title = "CONTRATO DE MANDATO<br>(ADMINISTRACIÓN DE INMUEBLE)"
+        self.document_title = "CONTRATO DE MANDATO (ADMINISTRACIÓN DE INMUEBLE)"
         self.margins = {'top': 60, 'bottom': 80, 'left': 60, 'right': 60}
         
     def _format_fecha_es(self, fecha_str: str) -> str:
         """Convierte fecha YYYY-MM-DD a formato texto español"""
         if not fecha_str or str(fecha_str).strip().upper() in ['N/A', 'NONE', '']:
-            return fecha_str
+            return str(fecha_str)
         try:
             from datetime import datetime
             dt = datetime.strptime(str(fecha_str), '%Y-%m-%d')
@@ -155,8 +156,7 @@ class ContratoMandatoElite(BaseDocumentTemplate):
             if membrete_path.exists():
                 # Dibujar imagen cubriendo toda la página
                 page_width, page_height = doc.pagesize
-                # mask='auto' maneja transparencias si es PNG
-                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask='auto', preserveAspectRatio=False)
+                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask=None, preserveAspectRatio=False)
         except Exception as e:
             # Fallo silencioso o log mínimo para no romper generación
             print(f"Advertencia: No se pudo cargar fondo {membrete_path}: {e}")
@@ -268,8 +268,8 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         # Formatear Fecha
         fecha_sistema = datetime.now().strftime("%Y-%m-%d")
         self.add_paragraph(f"<b>FECHA DE SUSCRIPCIÓN DEL CONTRATO:</b> {self._format_fecha_es(fecha_sistema)}", alignment='LEFT', leftIndent=0)
-        self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b>", align='CENTER')
-        self.add_paragraph("ARMENIA, QUINDÍO", align='CENTER')
+        self.add_paragraph("<b>CIUDAD DEL CONTRATO:</b>", alignment='CENTER')
+        self.add_paragraph("ARMENIA, QUINDÍO", alignment='CENTER')
         self.add_spacer(0.4)
         
         # 2. Resumen de Partes (Tabla inicial del PDF)
@@ -345,9 +345,9 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         # Construcción de filas simulando el layout visual
         
         # Dirección Inmueble (Manejo de N/A gracefully)
-        direccion_inmueble = inmueble.get('direccion', 'N/A')
-        municipio = inmueble.get('municipio', 'ARMENIA')
-        departamento = inmueble.get('departamento', 'QUINDÍO')
+        direccion_inmueble = html.escape(str(inmueble.get('direccion', 'N/A')))
+        municipio = html.escape(str(inmueble.get('municipio', 'ARMENIA')))
+        departamento = html.escape(str(inmueble.get('departamento', 'QUINDÍO')))
         direccion_full = f"{direccion_inmueble}<br>{municipio}, {departamento}"
         row_inm = [
             [p_kw("DIRECCIÓN DEL INMUEBLE:"), p_val(direccion_full)]
@@ -355,10 +355,10 @@ class ContratoMandatoElite(BaseDocumentTemplate):
 
         # Mandatario (Inmobiliaria)
         # Usamos datos quemados si no vienen, o los del objeto
-        nombre_inmo = mandatario.get('nombre', "INMOBILIARIA VELAR S.A.S.")
-        nit_inmo = mandatario.get('nit', "901703515-7")
-        rep_legal = mandatario.get('representante', "CRISTIAN FERNANDO JAMIOY FONSECA")
-        rep_doc = mandatario.get('documento_rep', "1.094.959.215")
+        nombre_inmo = html.escape(str(mandatario.get('nombre', "INMOBILIARIA VELAR S.A.S.")))
+        nit_inmo = html.escape(str(mandatario.get('nit', "901703515-7")))
+        rep_legal = html.escape(str(mandatario.get('representante', "CRISTIAN FERNANDO JAMIOY FONSECA")))
+        rep_doc = html.escape(str(mandatario.get('documento_rep', "1.094.959.215")))
         
         contenido_mandatario = (
             f"{nombre_inmo}<br>"
@@ -373,8 +373,8 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         
         # Mandante (Propietario)
         # Asegurar que si viene N/A se muestre algo decente o se mantenga
-        nombre_mandante = mandante.get('nombre', 'N/A')
-        doc_mandante = mandante.get('documento', 'N/A')
+        nombre_mandante = html.escape(str(mandante.get('nombre', 'N/A')))
+        doc_mandante = html.escape(str(mandante.get('documento', 'N/A')))
         
         row_user = [
             [p_kw("MANDANTE:"), p_val(f"{nombre_mandante}<br>C.C. {doc_mandante}")]
@@ -398,7 +398,6 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         data_table.append([p_kw("FECHA DE INICIO DEL CONTRATO:"), p_val(fecha_inicio)])
         data_table.append([p_kw("FECHA DE TERMINACIÓN DEL CONTRATO:"), p_val(fecha_fin)])
         data_table.append([p_kw("DURACIÓN DEL CONTRATO:"), p_val(duracion)])
-        # data_table.append([p_kw("FECHA:"), p_val(data['fecha'])]) # Redundante si ya están inicio/fin? El diseño original tenía FECHA simple. Dejar opcional o quitar si confunde. En la imagen de "Faltan datos" se veía FECHA pero faltaba inicio/fin. Dejaremos inicio/fin explícitos.
 
         t = Table(data_table, colWidths=[150, 300])
         t.setStyle(TableStyle([
@@ -434,9 +433,6 @@ class ContratoMandatoElite(BaseDocumentTemplate):
                     dt_inicio = datetime.strptime(str(f_inicio_str), '%Y-%m-%d')
                     dt_fin = datetime.strptime(str(f_fin_str), '%Y-%m-%d')
                     
-                    # Cálculo aproximado de meses (diferencia de años * 12 + diferencia de meses)
-                    # Ajuste simple: si día fin < día inicio, se resta un mes (no siempre exacto legalmente pero estándar)
-                    
                     diff_years = dt_fin.year - dt_inicio.year
                     diff_months = dt_fin.month - dt_inicio.month
                     
@@ -469,27 +465,18 @@ class ContratoMandatoElite(BaseDocumentTemplate):
             
         except Exception as e:
             print(f"Error en conversión num2words: {e}")
-            # Variables ya tienen valores por defecto, no es necesario reasignar
 
-        
-        # Mapping para compatibilidad con texto existente (que parece ser copia de arriendo)
-        # Se mapean roles de Mandato a los placeholders de arriendo para que se llene
-        
+        # Mapping para compatibilidad con texto existente
         mapeo = {
-            "[DIRECCION PREDIO]": data['inmueble'].get('direccion', 'N/A').upper(),
-            "[MATRICULA INMOBILIARIA]": data['inmueble'].get('matricula_inmobiliaria', 'N/A'),
+            "[DIRECCION PREDIO]": html.escape(str(data['inmueble'].get('direccion', 'N/A'))).upper(),
+            "[MATRICULA INMOBILIARIA]": html.escape(str(data['inmueble'].get('matricula_inmobiliaria', 'N/A'))),
             "[FECHA ACTUAL DEL SISTEMA]": self._format_fecha_es(data.get('fecha', 'N/A')),
-            # Mapeos de roles - MANDANTE (Propietario)
-            "[NOMBRE PROPIETARIO]": mandante.get('nombre', 'N/A').upper(),
-            "[TELEFONO PROPIETARIO]": mandante.get('telefono', 'N/A'),
-            "[CORREO PROPIETARIO]": mandante.get('email', 'N/A'),
-            
-            # Datos Bancarios (con fallback seguro)
-            "[BANCO PROPIETARIO]": mandante.get('banco', '___BANCO___'),
-            "[TIPO DE CUENTA PROPIETARIO]": mandante.get('tipo_cuenta', '___TIPO___'),
-            "[NUMERO DE CUENTA PROPIETARIO]": mandante.get('numero_cuenta', '___NUMERO___'),
-            
-            # Fechas y valores
+            "[NOMBRE PROPIETARIO]": html.escape(str(mandante.get('nombre', 'N/A'))).upper(),
+            "[TELEFONO PROPIETARIO]": html.escape(str(mandante.get('telefono', 'N/A'))),
+            "[CORREO PROPIETARIO]": html.escape(str(mandante.get('email', 'N/A'))),
+            "[BANCO PROPIETARIO]": html.escape(str(mandante.get('banco', '___BANCO___'))),
+            "[TIPO DE CUENTA PROPIETARIO]": html.escape(str(mandante.get('tipo_cuenta', '___TIPO___'))),
+            "[NUMERO DE CUENTA PROPIETARIO]": html.escape(str(mandante.get('numero_cuenta', '___NUMERO___'))),
             "[FECHA DE INICIO]": self._format_fecha_es(data.get('fecha_inicio', 'N/A')),
             "[FECHA DE FIN]": self._format_fecha_es(data.get('fecha_fin', 'N/A')), 
             "[VALOR CANON ARRENDAMIENTO]": f"${data['condiciones'].get('valor_canon_sugerido', 0):,.0f}",
@@ -508,14 +495,12 @@ class ContratoMandatoElite(BaseDocumentTemplate):
             # Reemplazar con formato Negrita y Subrayado
             for k, v in mapeo.items():
                 if k in texto:
-                    replacement = f"<b><u>{v}</u></b>"
+                    replacement = f"<b><u>{v}</u></b>" if "<u>" not in texto else f"{v}" # Simplificado para evitar tags anidadas
                     texto = texto.replace(k, replacement)
             
-            # Render - Fix for <br> (ReportLab "No content allowed in br tag")
+            # Render
             self.add_heading(titulo, level=2)
             
-            # Split by <br> and add separate paragraphs
-            # This is safer than relying on ReportLab's <br/> handling which is fragile with mixed content
             parts = texto.split('<br>')
             for part in parts:
                 if part.strip():
@@ -532,14 +517,12 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         style_firma = ParagraphStyle('Firma', fontName='Helvetica', fontSize=8, leading=10, alignment=1) # Center
         
         def firma_bloque(titulo, nombre, doc):
-            # FIXED: Avoid <br> in Paragraphs for signature blocks
-            # Return list of Flowables for Table cell
             return [
                 Spacer(1, 40), # Space for signature (~4 lines)
                 Paragraph("_______________________________________", style_firma),
                 Paragraph(f"<b>{titulo}</b>", style_firma),
-                Paragraph(nombre, style_firma),
-                Paragraph(f"C.C./NIT. {doc}", style_firma)
+                Paragraph(html.escape(str(nombre)), style_firma),
+                Paragraph(f"C.C./NIT. {html.escape(str(doc))}", style_firma)
             ]
             
         # Mandatario
