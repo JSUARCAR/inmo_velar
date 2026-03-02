@@ -4,9 +4,15 @@
         chars: 'Velar',
         fontSize: 14,
         speed: 75,
-        color: 'rgba(255, 255, 255, 0.75)',
+        get color() {
+            const isDark = document.documentElement.classList.contains('dark') || 
+                           document.body.classList.contains('dark') ||
+                           document.querySelector('[data-theme="dark"]');
+            return isDark ? 'rgba(34, 197, 94, 0.8)' : 'rgba(21, 128, 61, 0.6)'; 
+        },
         bg: 'rgba(15, 23, 42, 0.05)'
     };
+
 
     // State
     let canvas = null;

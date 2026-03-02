@@ -135,12 +135,9 @@ def login_page() -> rx.Component:
     """
     return rx.fragment(
         rx.box(
-            # Matrix/Aurora effects
-            rx.cond(
-                rx.color_mode == "dark",
-                matrix_background(),
-                aurora_background(),
-            ),
+            # Dual Visual Effects (Aurora base + Matrix rain)
+            aurora_background(),
+            matrix_background(),
             # Header (Title and subtitle)
             rx.box(
                 rx.vstack(
