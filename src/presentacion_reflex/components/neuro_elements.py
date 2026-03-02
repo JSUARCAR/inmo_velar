@@ -52,11 +52,13 @@ def neuro_text_area(*args, **kwargs) -> rx.Component:
     # Reutilizar gran parte del estilo de input
     final_style = {**styles.NEU_INPUT_STYLE, **custom_style}
     
-    kwargs.setdefault("variant", "none")
+    # TextArea de Radix no siempre responde bien a variant="none" como el input
+    # Forzamos los estilos base para asegurar el look hundido
     kwargs.setdefault("min_height", "100px")
     
     return rx.text_area(
         *args,
         style=final_style,
+        variant="surface", # Usamos surface como base pero el style lo sobreescribe
         **kwargs
     )
