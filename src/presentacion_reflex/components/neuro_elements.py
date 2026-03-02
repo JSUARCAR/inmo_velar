@@ -8,7 +8,7 @@ def neuro_input(*args, **kwargs) -> rx.Component:
     final_style = {**styles.NEU_INPUT_STYLE, **custom_style}
     
     # Asegurar que no haya variantes de Radix que rompan el diseño
-    kwargs.setdefault("variant", "none")
+    kwargs.setdefault("variant", "surface")
     
     return rx.input(
         *args,
@@ -38,7 +38,7 @@ def neuro_button(*args, **kwargs) -> rx.Component:
     final_style = {**styles.NEU_BUTTON_STYLE, **custom_style}
     
     # Forzar variante para evitar overrides de Radix
-    kwargs.setdefault("variant", "none")
+    kwargs.setdefault("variant", "surface")
     
     return rx.button(
         *args,
