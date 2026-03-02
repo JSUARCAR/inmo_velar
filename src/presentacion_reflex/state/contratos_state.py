@@ -798,10 +798,8 @@ class ContratosState(DocumentosStateMixin):
         return ContratosState.load_contratos
 
     # Modal CRUD
-    def open_modal(self, mode: str = "crear_mandato"):
-        """Abre el modal de creación según el modo."""
-        if mode == "crear_arrendamiento":
-            return self.open_create_arrendamiento_modal()
+    def open_modal(self):
+        """Abre el modal de creación de mandato (por defecto)."""
         return self.open_create_mandato_modal()
 
     def open_create_mandato_modal(self):
