@@ -50,15 +50,15 @@ def role_selector_card(rol: str) -> rx.Component:
                     rx.icon(
                         icon_name,
                         size=24,
-                        color=rx.cond(is_selected, "white", "var(--accent-9)"),
+                        color=rx.cond(is_selected, "white", styles.ACCENT_COLOR),
                     ),
                     padding="12px",
                     border_radius="12px",
                     style={
                         "background": rx.cond(
                             is_selected,
-                            "var(--accent-9)",
-                            "var(--accent-3)",
+                            styles.ACCENT_COLOR,
+                            styles.ACCENT_BG_SOFT,
                         ),
                         "transition": styles.GLOBAL_TRANSITION,
                     },
@@ -68,10 +68,11 @@ def role_selector_card(rol: str) -> rx.Component:
                 rx.cond(
                     is_selected,
                     rx.box(
-                        rx.icon("check", size=20, color="var(--accent-9)"),
+                        rx.icon("check", size=20, color=styles.ACCENT_COLOR),
                         padding="4px",
-                        background="var(--accent-3)",
+                        background=styles.BG_PANEL,
                         border_radius="full",
+                        box_shadow=styles.NEU_SHADOW,
                     ),
                     rx.box(width="28px", height="28px"), # Placeholder para mantener alineación
                 ),
@@ -83,34 +84,33 @@ def role_selector_card(rol: str) -> rx.Component:
                     rol, 
                     weight="bold", 
                     size="4", 
-                    color=rx.cond(is_selected, "var(--accent-11)", "var(--gray-12)"),
+                    color=rx.cond(is_selected, styles.ACCENT_COLOR, styles.TEXT_PRIMARY),
                 ),
-                rx.text(description, size="2", color="var(--gray-10)"),
+                rx.text(description, size="2", color=styles.TEXT_SECONDARY),
                 spacing="1",
                 align_items="start",
             ),
             width="100%",
             spacing="3",
         ),
-        # Acción de selección (usamos una función lambda que envuelve el evento)
+        # Acción de selección
         on_click=lambda: PersonasState.toggle_rol(rol),
         cursor="pointer",
-        # Aplicamos el color scheme directamente a la tarjeta para habilitar las variables nativas
-        color_scheme=color_scheme,
-        # Border highlighting when selected
+        variant="ghost",
+        # Pneumatic Selection Style: Inset when selected, Raised when not
         style={
-            "border_width": rx.cond(is_selected, "2px", "1px"),
-            "border_style": "solid",
-            "border_color": rx.cond(is_selected, "var(--accent-8)", "var(--gray-6)"),
             "background": styles.BG_PANEL,
-            "transition": styles.GLOBAL_TRANSITION,
+            "box_shadow": rx.cond(is_selected, styles.NEU_INSET, styles.NEU_SHADOW),
+            "border": rx.cond(is_selected, f"1px solid {styles.ACCENT_COLOR}", "none"),
+            "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "border_radius": "16px",
         },
         _hover={
-            "transform": "scale(1.02)",
+            "transform": rx.cond(is_selected, "none", "scale(1.02)"),
             "box_shadow": rx.cond(
                 is_selected,
+                styles.NEU_INSET,
                 styles.NEU_MODAL_SHADOW,
-                styles.NEU_SHADOW,
             ),
         },
     )

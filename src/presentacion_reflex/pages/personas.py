@@ -290,33 +290,34 @@ def personas_page() -> rx.Component:
                     ),
                     rx.cond(
                         PersonasState.view_mode == "table",
-                        # TABLE VIEW - Improved with Neumorphism
+                        # TABLE VIEW - Improved with Neumorphism and Transparency
                         rx.card(
                             rx.box(
                                 rx.table.root(
                                     rx.table.header(
                                         rx.table.row(
                                             rx.table.column_header_cell(
-                                                "Nombre", style={"font-weight": "600", "color": styles.TEXT_PRIMARY}
+                                                "Nombre", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Documento", style={"font-weight": "600", "color": styles.TEXT_PRIMARY}
+                                                "Documento", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Contacto", style={"font-weight": "600", "color": styles.TEXT_PRIMARY}
+                                                "Contacto", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Fecha Creación", style={"font-weight": "600", "color": styles.TEXT_PRIMARY}
+                                                "Fecha Creación", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Roles", style={"font-weight": "600", "color": styles.TEXT_PRIMARY}
+                                                "Roles", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Estado", style={"font-weight": "600", "color": styles.TEXT_PRIMARY}
+                                                "Estado", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Acciones", style={"font-weight": "600", "color": styles.TEXT_PRIMARY}
+                                                "Acciones", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
+                                            style={"background": "transparent"}
                                         ),
                                     ),
                                     rx.table.body(
@@ -344,7 +345,7 @@ def personas_page() -> rx.Component:
                                                             ),
                                                         ),
                                                         rx.text(
-                                                            p["nombre"], weight="medium", size="2", color=styles.TEXT_PRIMARY
+                                                            p["nombre"], weight="bold", size="2", color=styles.TEXT_PRIMARY
                                                         ),
                                                         align="center",
                                                         spacing="3",
@@ -355,6 +356,7 @@ def personas_page() -> rx.Component:
                                                         p["documento"],
                                                         size="2",
                                                         color=styles.TEXT_SECONDARY,
+                                                        weight="medium",
                                                     )
                                                 ),
                                                 rx.table.cell(
@@ -429,6 +431,7 @@ def personas_page() -> rx.Component:
                                                                 variant="soft",
                                                                 margin_right="1",
                                                                 margin_bottom="1",
+                                                                radius="full",
                                                             ),
                                                         )
                                                     )
@@ -441,6 +444,7 @@ def personas_page() -> rx.Component:
                                                         ),
                                                         variant="soft",
                                                         size="2",
+                                                        radius="full",
                                                     )
                                                 ),
                                                 rx.table.cell(
@@ -458,7 +462,8 @@ def personas_page() -> rx.Component:
                                                                         p
                                                                     ),
                                                                     _hover={
-                                                                        "background": "var(--accent-3)",
+                                                                        "background": styles.ACCENT_BG_SOFT,
+                                                                        "color": styles.ACCENT_COLOR,
                                                                     },
                                                                 ),
                                                                 content="Editar persona",
@@ -489,18 +494,26 @@ def personas_page() -> rx.Component:
                                                 },
                                                 style={
                                                     "transition": "background 0.2s ease",
+                                                    "background": "transparent",
                                                 },
                                             ),
                                         ),
                                     ),
                                     width="100%",
                                     variant="ghost",
+                                    style={"background": "transparent"},
                                 ),
                                 width="100%",
                                 overflow_x="auto",
+                                background="transparent",
                             ),
                             width="100%",
-                            style=styles.NEU_PANEL_STYLE,
+                            variant="ghost",
+                            style={
+                                **styles.NEU_PANEL_STYLE,
+                                "box_shadow": styles.NEU_MODAL_SHADOW,
+                                "background": styles.BG_PANEL,
+                            },
                         ),
                         # CARDS VIEW - New
                         rx.box(
