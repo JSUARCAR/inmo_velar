@@ -1128,8 +1128,9 @@ class ContratosState(DocumentosStateMixin):
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
             
             # Combinar datos del formulario con los del estado
-            # Los del estado contienen los IDs de los searchable_select que no viajan en form_data
-            full_data = {**self.form_data, **form_data}
+            # PRIORIDAD: self.form_data contiene los IDs de los searchable_select que el usuario ha modificado.
+            # form_data original que llega del browser puede traer strings vacíos para keys no presentes en el HTML form.
+            full_data = {**form_data, **self.form_data}
 
             # Procesar datos del formulario según el tipo
             if self.modal_mode == "crear_mandato" or self.modal_mode == "editar_mandato":
