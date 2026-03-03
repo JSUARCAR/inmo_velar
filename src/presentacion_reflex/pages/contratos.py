@@ -205,12 +205,12 @@ def contratos_page() -> rx.Component:
                                     neuro_button(
                                         rx.icon("plus", size=18),
                                         "Nuevo Mandato",
-                                        on_click=lambda: ContratosState.open_modal("crear_mandato"),
+                                        on_click=ContratosState.open_create_mandato_modal,
                                     ),
                                     neuro_button(
                                         rx.icon("plus", size=18),
                                         "Nuevo Arriendo",
-                                        on_click=lambda: ContratosState.open_modal("crear_arrendamiento"),
+                                        on_click=ContratosState.open_create_arrendamiento_modal,
                                     ),
                                     spacing="3",
                                 ),
