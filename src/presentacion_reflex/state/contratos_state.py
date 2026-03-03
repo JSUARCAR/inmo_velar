@@ -982,6 +982,7 @@ class ContratosState(DocumentosStateMixin):
                             ),
                             "fecha_inicio": contrato.fecha_inicio_contrato_a,
                             "fecha_fin": contrato.fecha_fin_contrato_a,
+                            "duracion_meses": contrato.duracion_contrato_a,
                             "canon": contrato.canon_arrendamiento,
                             "deposito": contrato.deposito,
                             "fecha_pago": contrato.fecha_pago or "",
@@ -1140,13 +1141,13 @@ class ContratosState(DocumentosStateMixin):
                     "fecha_inicio": full_data["fecha_inicio"],
                     "fecha_fin": full_data["fecha_fin"],
                     "fecha_pago": full_data.get("fecha_pago"),
-                    "duracion_meses": int(full_data["duracion_meses"]),
-                    "canon": int(full_data["canon"]),
+                    "duracion_meses": int(full_data.get("duracion_meses") or 12),
+                    "canon": int(full_data.get("canon") or 0),
                     "comision_porcentaje": int(
-                        float(full_data["comision_porcentaje"]) * 100
+                        float(full_data.get("comision_porcentaje") or 10) * 100
                     ),  # Convertir % a base 10000
                     "iva_porcentaje": int(
-                        float(full_data.get("iva_porcentaje", 19)) * 100
+                        float(full_data.get("iva_porcentaje", 19) or 19) * 100
                     ),  # Convertir % a base 10000
                 }
 
@@ -1168,9 +1169,9 @@ class ContratosState(DocumentosStateMixin):
                     ),
                     "fecha_inicio": full_data["fecha_inicio"],
                     "fecha_fin": full_data["fecha_fin"],
-                    "duracion_meses": int(full_data["duracion_meses"]),
-                    "canon": int(full_data["canon"]),
-                    "deposito": int(full_data.get("deposito", 0)),
+                    "duracion_meses": int(full_data.get("duracion_meses") or 12),
+                    "canon": int(full_data.get("canon") or 0),
+                    "deposito": int(full_data.get("deposito") or 0),
                     "fecha_pago": full_data.get("fecha_pago", ""),
                 }
 
