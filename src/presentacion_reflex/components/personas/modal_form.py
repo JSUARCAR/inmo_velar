@@ -57,7 +57,8 @@ def searchable_select(
                                         width="100%",
                                         padding_x="3",
                                         padding_y="2",
-                                        _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
+                                        transition=styles.GLOBAL_TRANSITION,
+                                        _hover={"bg": styles.BG_HOVER, "color": styles.TEXT_PRIMARY, "cursor": "pointer", "box_shadow": styles.NEU_MODAL_SHADOW},
                                         on_click=lambda: on_select(opt[1], opt[0]),
                                     )
                                 )
@@ -73,8 +74,7 @@ def searchable_select(
                     padding="2",
                     width="320px",
                     spacing="2",
-                    background=styles.BG_PANEL,
-                    style={"box_shadow": styles.NEU_SHADOW, "border": "none"},
+                    style=styles.NEU_PANEL_STYLE,
                 ),
             ),
             open=menu_open,
@@ -216,11 +216,8 @@ def propietario_fields() -> rx.Component:
         spacing="3",
         width="100%",
         padding="4",
-        border_radius="8px",
-        style={
-            "background": "var(--blue-2)",
-            "border": "1px solid var(--blue-6)",
-        },
+        border_radius="16px",
+        style=styles.NEU_PANEL_STYLE,
     )
 
 
@@ -281,11 +278,8 @@ def arrendatario_fields() -> rx.Component:
         spacing="3",
         width="100%",
         padding="4",
-        border_radius="8px",
-        style={
-            "background": "var(--green-2)",
-            "border": "1px solid var(--green-6)",
-        },
+        border_radius="16px",
+        style=styles.NEU_PANEL_STYLE,
     )
 
 
@@ -329,11 +323,8 @@ def asesor_fields() -> rx.Component:
         spacing="3",
         width="100%",
         padding="4",
-        border_radius="8px",
-        style={
-            "background": "var(--purple-2)",
-            "border": "1px solid var(--purple-6)",
-        },
+        border_radius="16px",
+        style=styles.NEU_PANEL_STYLE,
     )
 
 
@@ -373,11 +364,8 @@ def proveedor_fields() -> rx.Component:
         spacing="3",
         width="100%",
         padding="4",
-        border_radius="8px",
-        style={
-            "background": "var(--cyan-2)",
-            "border": "1px solid var(--cyan-6)",
-        },
+        border_radius="16px",
+        style=styles.NEU_PANEL_STYLE,
     )
 
 
@@ -649,11 +637,11 @@ def modal_persona() -> rx.Component:
                 width="100%",
             ),
             style={
+                **styles.NEU_PANEL_STYLE,
                 "max_width": "700px",
                 "width": "95%",
-                "border_radius": "16px",
                 "padding": "24px",
-                "background": styles.BG_PANEL,
+                "transition": styles.GLOBAL_TRANSITION,
             },
             on_escape_key_down=PersonasState.close_modal,
             on_pointer_down_outside=PersonasState.close_modal,

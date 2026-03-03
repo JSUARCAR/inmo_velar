@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.personas_state import PersonasState
+from src.presentacion_reflex import styles
 
 
 def role_selector_card(rol: str) -> rx.Component:
@@ -59,7 +60,7 @@ def role_selector_card(rol: str) -> rx.Component:
                             "var(--accent-9)",
                             "var(--accent-3)",
                         ),
-                        "transition": "all 0.3s ease",
+                        "transition": styles.GLOBAL_TRANSITION,
                     },
                 ),
                 rx.spacer(),
@@ -101,14 +102,15 @@ def role_selector_card(rol: str) -> rx.Component:
             "border_width": rx.cond(is_selected, "2px", "1px"),
             "border_style": "solid",
             "border_color": rx.cond(is_selected, "var(--accent-8)", "var(--gray-6)"),
-            "transition": "all 0.2s ease",
+            "background": styles.BG_PANEL,
+            "transition": styles.GLOBAL_TRANSITION,
         },
         _hover={
             "transform": "scale(1.02)",
             "box_shadow": rx.cond(
                 is_selected,
-                "0 4px 12px var(--accent-4)",
-                "0 2px 8px var(--gray-4)",
+                styles.NEU_MODAL_SHADOW,
+                styles.NEU_SHADOW,
             ),
         },
     )

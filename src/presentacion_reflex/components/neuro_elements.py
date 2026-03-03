@@ -64,3 +64,52 @@ def neuro_text_area(*args, **kwargs) -> rx.Component:
         variant="surface", # Usamos surface como base pero el style lo sobreescribe
         **kwargs
     )
+
+def neuro_panel(*args, **kwargs) -> rx.Component:
+    """Contenedor universal con elevación neumática y bordes suaves."""
+    custom_style = kwargs.pop("style", {})
+    final_style = {**styles.NEU_PANEL_STYLE, **custom_style}
+    
+    return rx.box(
+        *args,
+        style=final_style,
+        **kwargs
+    )
+
+def neuro_table_container(*args, **kwargs) -> rx.Component:
+    """Contenedor para tablas con scroll y estilo neumático (overflow y sombra dual)."""
+    custom_style = kwargs.pop("style", {})
+    final_style = {
+        **styles.NEU_PANEL_STYLE,
+        "padding": "0",
+        "overflow_x": "auto",
+        "overflow_y": "hidden",
+        "border_radius": "16px",
+        "width": "100%",
+        **custom_style
+    }
+    
+    return rx.box(
+        *args,
+        style=final_style,
+        **kwargs
+    )
+
+def neuro_tooltip(content, children: rx.Component, **kwargs) -> rx.Component:
+    """Tooltip con diseño panel neumórfico."""
+    custom_style = kwargs.pop("style", {})
+    final_style = {**styles.NEU_TOOLTIP_STYLE, **custom_style}
+    
+    # Customizando el content_style del tooltip de radix a través del componente HoverCard de reflex
+    # Reflex HoverCard nos permite mayor personalización de estilos que rx.tooltip
+    
+    content_render = content if isinstance(content, rx.Component) else rx.text(content, size="2", color=styles.TEXT_PRIMARY)
+    
+    return rx.hover_card.root(
+        rx.hover_card.trigger(children),
+        rx.hover_card.content(
+            content_render,
+            style=final_style,
+        ),
+        **kwargs
+    )
