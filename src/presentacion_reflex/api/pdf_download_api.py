@@ -54,8 +54,6 @@ async def download_pdf(filename: str):
         media_type="application/pdf",
         filename=safe_filename,
         headers={
-            "Content-Disposition": f'attachment; filename="{safe_filename}"',
-            "Content-Length": str(file_size),
             "Cache-Control": "no-cache, no-store, must-revalidate",
         },
     )

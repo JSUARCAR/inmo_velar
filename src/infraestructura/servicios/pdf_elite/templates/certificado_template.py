@@ -233,8 +233,8 @@ class CertificadoTemplate(BaseDocumentTemplate):
             if membrete_path.exists():
                 # Dibujar imagen cubriendo toda la página
                 page_width, page_height = doc.pagesize
-                # mask='auto' maneja transparencias si es PNG
-                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask='auto', preserveAspectRatio=False)
+                # máscara desactivada para evitar errores en acrobat
+                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask=None, preserveAspectRatio=False)
         except Exception as e:
             # Fallo silencioso o log mínimo para no romper generación
             print(f"Advertencia: No se pudo cargar fondo {membrete_path}: {e}")

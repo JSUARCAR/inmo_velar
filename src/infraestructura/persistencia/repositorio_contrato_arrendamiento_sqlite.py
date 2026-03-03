@@ -198,8 +198,18 @@ class RepositorioContratoArrendamientoSQLite:
 
             # 1. Count
             count_query = f"SELECT COUNT(*) as TOTAL {base_from} {where_clause}"
+            print(f"[SQL_DEBUG_ARRENDAMIENTOS] Conteo Query: {count_query} | Params: {query_params}")
             cursor.execute(count_query, query_params)
-            total = cursor.fetchone()["TOTAL"]
+            row = cursor.fetchone()
+            total = 0
+            if row:
+                # Acceso robusto al total (soporta TOTAL, total o índice 0)
+                try:
+                    total = row["TOTAL"]
+                except (KeyError, TypeError):
+                    total = row.get("total") or list(row.values())[0] if row else 0
+            
+            print(f"[SQL_DEBUG_ARRENDAMIENTOS] Total encontrado: {total}")
 
             # 2. Data
             data_query = f"""
@@ -219,35 +229,41 @@ class RepositorioContratoArrendamientoSQLite:
                     COALESCE(prop_per.NOMBRE_COMPLETO, 'N/A') as PROPIETARIO,
                     COALESCE(prop_per.NUMERO_DOCUMENTO, 'N/A') as PROPIETARIO_DOC
                 {base_from}
-                LEFT JOIN PROPIETARIOS prop_ent ON ca.ID_PROPIEDAD = prop_ent.ID_PROPIEDAD
+                LEFT JOIN PROPIETARIOS prop_ent ON cm.ID_PROPIETARIO = prop_ent.ID_PROPIETARIO
                 LEFT JOIN PERSONAS prop_per ON prop_ent.ID_PERSONA = prop_per.ID_PERSONA
                 {where_clause}
                 ORDER BY ca.ID_CONTRATO_A DESC
                 LIMIT {placeholder} OFFSET {placeholder}
             """
 
-            cursor.execute(data_query, query_params + [params.page_size, params.offset])
+            data_params = query_params + [params.page_size, params.offset]
+            print(f"[SQL_DEBUG_ARRENDAMIENTOS] Data Query: {data_query} | Params: {data_params}")
+            cursor.execute(data_query, data_params)
+            rows = cursor.fetchall()
+            print(f"[SQL_DEBUG_ARRENDAMIENTOS] Filas recuperadas: {len(rows)}")
 
-            items = [
-                {
-                    "id_contrato": row["ID_CONTRATO_A"],
-                    "estado_contrato": row["ESTADO_CONTRATO_A"],
-                    "valor_canon": row["CANON_ARRENDAMIENTO"],
-                    "valor_administracion": 0, # Se podría sumar de la tabla propiedades si existiera campo
-                    "fecha_inicio": row["FECHA_INICIO_CONTRATO_A"],
-                    "fecha_fin": row["FECHA_FIN_CONTRATO_A"],
-                    "propiedad_direccion": row["DIRECCION_PROPIEDAD"],
-                    "propiedad_matricula": row["MATRICULA_INMOBILIARIA"],
-                    "propiedad_tipo": row["TIPO_PROPIEDAD"],
-                    "arrendatario_nombre": row["ARRENDATARIO"],
-                    "arrendatario_documento": row["NUMERO_DOCUMENTO"],
-                    "propietario_nombre": row["PROPIETARIO"],
-                    "propietario_documento": row["PROPIETARIO_DOC"],
-                    "habitante_nombre": row["HABITANTE"] if row["HABITANTE"] else "",
-                    "asesor_nombre": row["ASESOR"] if row["ASESOR"] else "Sin asesor",
-                }
-                for row in cursor.fetchall()
-            ]
+            items = []
+            for row in rows:
+                # Helper para obtener valor insensible a mayúsculas
+                def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+                
+                items.append({
+                    "id_contrato": gv("ID_CONTRATO_A"),
+                    "estado_contrato": gv("ESTADO_CONTRATO_A"),
+                    "valor_canon": gv("CANON_ARRENDAMIENTO"),
+                    "valor_administracion": 0,
+                    "fecha_inicio": gv("FECHA_INICIO_CONTRATO_A"),
+                    "fecha_fin": gv("FECHA_FIN_CONTRATO_A"),
+                    "propiedad_direccion": gv("DIRECCION_PROPIEDAD"),
+                    "propiedad_matricula": gv("MATRICULA_INMOBILIARIA"),
+                    "propiedad_tipo": gv("TIPO_PROPIEDAD"),
+                    "arrendatario_nombre": gv("ARRENDATARIO"),
+                    "arrendatario_documento": gv("NUMERO_DOCUMENTO"),
+                    "propietario_nombre": gv("PROPIETARIO"),
+                    "propietario_documento": gv("PROPIETARIO_DOC"),
+                    "habitante_nombre": gv("HABITANTE") or "",
+                    "asesor_nombre": gv("ASESOR") or "Sin asesor",
+                })
 
             return PaginatedResult(
                 items=items, total=total, page=params.page, page_size=params.page_size

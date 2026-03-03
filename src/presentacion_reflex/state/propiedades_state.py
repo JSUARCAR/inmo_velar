@@ -81,16 +81,18 @@ class PropiedadesState(DocumentosStateMixin):
     # Documentos
     current_entidad_tipo: str = "PROPIEDAD"
 
-    def on_load(self):
-        """Carga inicial al montar la página."""
-        self.load_filter_options()
-        yield PropiedadesState.load_propiedades
+    def set_id_municipio(self, value: str):
+        """Actualiza el municipio en el formulario."""
+        self.form_data["id_municipio"] = value
+
+    def set_form_field(self, key: str, value: Any):
+        """Actualiza un campo específico del formulario."""
+        self.form_data[key] = value
 
     # --- Wizard Logic ---
     def next_modal_step(self):
         """Avanza al siguiente paso del wizard."""
         if self.modal_step < self.total_steps:
-            # Aquí se podría añadir validación por paso
             self.modal_step += 1
 
     def prev_modal_step(self):
@@ -108,21 +110,14 @@ class PropiedadesState(DocumentosStateMixin):
         self.modal_step = 1
         self.form_validation_errors = {}
 
-    def set_id_municipio(self, value: str):
-        """Actualiza el municipio en el formulario."""
-        self.form_data["id_municipio"] = value
-
-    def set_form_field(self, key: str, value: Any):
-        """Actualiza un campo específico del formulario."""
-        self.form_data[key] = value
-
-    def load_filter_options(self):
+    @rx.event(background=True)
+    async def load_filter_options(self):
         """Carga opciones para dropdowns de filtros."""
+        print("[PROPIEDADES_DEBUG] load_filter_options iniciado.")
         try:
             from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
                 RepositorioPropiedadSQLite,
             )
-
             from src.infraestructura.persistencia.repositorio_municipio_sqlite import (
                 RepositorioMunicipioSQLite,
             )
@@ -133,30 +128,57 @@ class PropiedadesState(DocumentosStateMixin):
                 repo_propiedad=repo_propiedad, repo_municipio=repo_municipio
             )
 
-            # Cargar municipios
+            # Cargar municipios y filtrar valores vacíos
             municipios = servicio.obtener_municipios_disponibles()
-            self.municipios_options = [{"value": "0", "label": "Todos"}] + [
-                {"value": str(m["id"]), "label": m["nombre"]} for m in municipios
-            ]
-
-            # Cargar tipos de propiedad
+            municipios_data = [{"value": "0", "label": "Todos"}]
+            for m in municipios:
+                val = str(m["id"]).strip()
+                if val: # Asegurar que no sea vacío
+                    municipios_data.append({"value": val, "label": m["nombre"]})
+            
+            # Cargar tipos y filtrar vacíos
             tipos = servicio.obtener_tipos_propiedad()
-            self.tipos_options = ["Todos"] + tipos
+            tipos_data = ["Todos"] + [t for t in tipos if t and t.strip()]
 
-        except Exception:
-            pass  # print(f"Error cargando opciones: {e}") [OpSec Removed]
-            self.municipios_options = [{"value": "0", "label": "Todos"}]
-            self.tipos_options = ["Todos"]
+            async with self:
+                self.municipios_options = municipios_data
+                self.tipos_options = tipos_data
+                print(f"[PROPIEDADES_DEBUG] Opciones cargadas: {len(self.municipios_options)} municipios.")
+
+        except Exception as e:
+            print(f"[PROPIEDADES_DEBUG] Error en load_filter_options: {str(e)}")
+            async with self:
+                self.municipios_options = [{"value": "0", "label": "Todos"}]
+                self.tipos_options = ["Todos"]
+
+    @rx.event(background=True)
+    async def on_load(self):
+        """Carga inicial al montar la página."""
+        print("[PROPIEDADES_DEBUG] on_load iniciado.")
+        async with self:
+            self.is_loading = True
+            
+        try:
+            # Cargar opciones de filtros
+            yield PropiedadesState.load_filter_options()
+            # Cargar propiedades
+            yield PropiedadesState.load_propiedades()
+        finally:
+            async with self:
+                self.is_loading = False
 
     @rx.event(background=True)
     async def load_propiedades(self):
         """Carga propiedades con filtros y paginación."""
+        print("[PROPIEDADES_DEBUG] load_propiedades iniciado...")
         async with self:
             self.is_loading = True
             self.error_message = ""
 
         try:
-            # Obtener valores de filtros (Reflex maneja el contexto async automáticamente)
+            # Obtener valores de filtros
+            print(f"[PROPIEDADES_DEBUG] Filtros actuales: Tipo={self.filter_tipo}, Disp={self.filter_disponibilidad}, Busqueda='{self.search_text}'")
+            
             page = self.current_page
             page_size = self.page_size
             search = self.search_text
@@ -178,6 +200,8 @@ class PropiedadesState(DocumentosStateMixin):
 
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
+            
+            print("[PROPIEDADES_DEBUG] Llamando a servicio.listar_propiedades_paginado...")
             result = servicio.listar_propiedades_paginado(
                 page=page,
                 page_size=page_size,
@@ -187,7 +211,8 @@ class PropiedadesState(DocumentosStateMixin):
                 solo_activas=solo_activas,
                 busqueda=busqueda,
             )
-            pass  # print(f"Propiedades Loaded from Service: {len(result.items)} items") [OpSec Removed]
+            print(f"[PROPIEDADES_DEBUG] Resultado obtenido: {len(result.items)} items, Total: {result.total}")
+            # print(f"Propiedades Loaded from Service: {len(result.items)} items") [OpSec Removed]
             if len(result.items) > 0:
                 pass  # print(f"First Item Availability: {result.items[0].disponibilidad_propiedad}") [OpSec Removed]
 

@@ -141,12 +141,22 @@ class RepositorioContratoMandatoSQLite:
 
             # 1. Count
             count_query = f"SELECT COUNT(*) as TOTAL {base_from} {where_clause}"
+            print(f"[SQL_DEBUG_MANDATOS] Conteo Query: {count_query} | Params: {query_params}")
             cursor.execute(count_query, query_params)
-            total = cursor.fetchone()["TOTAL"]
+            row = cursor.fetchone()
+            total = 0
+            if row:
+                # Acceso robusto al total (soporta TOTAL, total o índice 0)
+                try:
+                    total = row["TOTAL"]
+                except (KeyError, TypeError):
+                    total = row.get("total") or list(row.values())[0] if row else 0
+
+            print(f"[SQL_DEBUG_MANDATOS] Total encontrado: {total}")
 
             # 2. Data
             data_query = f"""
-                SELECT 
+                SELECT
                     cm.ID_CONTRATO_M,
                     cm.ESTADO_CONTRATO_M,
                     cm.CANON_MANDATO,
@@ -165,29 +175,34 @@ class RepositorioContratoMandatoSQLite:
                 LIMIT {placeholder} OFFSET {placeholder}
             """
 
-            cursor.execute(data_query, query_params + [params.page_size, params.offset])
+            data_params = query_params + [params.page_size, params.offset]
+            print(f"[SQL_DEBUG_MANDATOS] Data Query: {data_query} | Params: {data_params}")
+            cursor.execute(data_query, data_params)
+            rows = cursor.fetchall()
+            print(f"[SQL_DEBUG_MANDATOS] Filas recuperadas: {len(rows)}")
 
-            items = [
-                {
-                    "id_contrato": row["ID_CONTRATO_M"],
-                    "estado_contrato": row["ESTADO_CONTRATO_M"],
-                    "valor_canon": row["CANON_MANDATO"],
-                    "valor_administracion": 0, # Mandatos no suelen tener administración aparte
-                    "fecha_inicio": row["FECHA_INICIO_CONTRATO_M"],
-                    "fecha_fin": row["FECHA_FIN_CONTRATO_M"],
-                    "propiedad_direccion": row["DIRECCION_PROPIEDAD"],
-                    "propiedad_matricula": row["MATRICULA_INMOBILIARIA"],
-                    "propiedad_tipo": row["TIPO_PROPIEDAD"],
-                    "propietario_nombre": row["PROPIETARIO"],
-                    "propietario_documento": row["NUMERO_DOCUMENTO"],
+            items = []
+            for row in rows:
+                # Helper para obtener valor insensible a mayúsculas
+                def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
+                items.append({
+                    "id_contrato": gv("ID_CONTRATO_M"),
+                    "estado_contrato": gv("ESTADO_CONTRATO_M"),
+                    "valor_canon": gv("CANON_MANDATO"),
+                    "valor_administracion": 0,
+                    "fecha_inicio": gv("FECHA_INICIO_CONTRATO_M"),
+                    "fecha_fin": gv("FECHA_FIN_CONTRATO_M"),
+                    "propiedad_direccion": gv("DIRECCION_PROPIEDAD"),
+                    "propiedad_matricula": gv("MATRICULA_INMOBILIARIA"),
+                    "propiedad_tipo": gv("TIPO_PROPIEDAD"),
+                    "propietario_nombre": gv("PROPIETARIO"),
+                    "propietario_documento": gv("NUMERO_DOCUMENTO"),
                     "arrendatario_nombre": "N/A",
                     "arrendatario_documento": "N/A",
                     "habitante_nombre": "",
-                    "asesor_nombre": row["ASESOR"] if row["ASESOR"] else "Sin asesor",
-                }
-                for row in cursor.fetchall()
-            ]
-
+                    "asesor_nombre": gv("ASESOR") or "Sin asesor",
+                })
             return PaginatedResult(
                 items=items, total=total, page=params.page, page_size=params.page_size
             )
