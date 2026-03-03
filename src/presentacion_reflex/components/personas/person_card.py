@@ -27,12 +27,12 @@ def person_card(persona: dict) -> rx.Component:
                         persona["nombre"],
                         size="3",
                         weight="bold",
-                        color="var(--gray-12)",
+                        color=styles.TEXT_PRIMARY,
                     ),
                     rx.text(
                         persona["documento"],
                         size="1",
-                        color="var(--gray-10)",
+                        color=styles.TEXT_TERTIARY,
                     ),
                     spacing="0",
                     align="start",
@@ -44,21 +44,21 @@ def person_card(persona: dict) -> rx.Component:
             # Contact info
             rx.vstack(
                 rx.hstack(
-                    rx.icon("mail", size=14, color="var(--gray-9)"),
+                    rx.icon("mail", size=14, color=styles.TEXT_TERTIARY),
                     rx.text(
                         rx.cond(persona["correo"] != "", persona["correo"], "No especificado"),
                         size="1",
-                        color="var(--gray-11)",
+                        color=styles.TEXT_SECONDARY,
                     ),
                     spacing="2",
                     width="100%",
                 ),
                 rx.hstack(
-                    rx.icon("phone", size=14, color="var(--gray-9)"),
+                    rx.icon("phone", size=14, color=styles.TEXT_TERTIARY),
                     rx.text(
                         persona["contacto"],
                         size="1",
-                        color="var(--gray-11)",
+                        color=styles.TEXT_SECONDARY,
                     ),
                     spacing="2",
                     width="100%",
@@ -111,7 +111,7 @@ def person_card(persona: dict) -> rx.Component:
                     rx.text(
                         persona["fecha_creacion"],
                         size="1",
-                        color="var(--gray-9)",
+                        color=styles.TEXT_TERTIARY,
                         margin_right="2",
                     ),
                     rx.cond(
@@ -123,7 +123,7 @@ def person_card(persona: dict) -> rx.Component:
                                 variant="ghost",
                                 size="2",
                                 color_scheme="gray",
-                                _hover={"background": "var(--gray-3)", "color": "var(--accent-9)"},
+                                _hover={"background": styles.ACCENT_BG_SOFT, "color": styles.ACCENT_COLOR},
                             ),
                             content="Editar persona",
                         ),
@@ -153,23 +153,21 @@ def person_card(persona: dict) -> rx.Component:
             width="100%",
             height="100%",
         ),
-        # Card styling
-        padding="4",
+        # Card styling with Neumorphism
         width="100%",
         height="100%",
         margin="auto",
-        variant="surface",
+        variant="ghost",
         # Hover effects
         _hover={
             "transform": "translateY(-4px)",
-            "box_shadow": "0 12px 24px -10px rgba(0, 0, 0, 0.1)",
-            "border_color": "var(--accent-8)",
+            "box_shadow": styles.NEU_MODAL_SHADOW,
             "cursor": "pointer",
         },
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         style={
-            "border_radius": "16px",
+            **styles.NEU_PANEL_STYLE,
             "overflow": "hidden",
-            "min_height": "200px",
+            "min_height": "220px",
         },
     )
