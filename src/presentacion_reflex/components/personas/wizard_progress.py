@@ -5,45 +5,44 @@ from src.presentacion_reflex import styles
 
 
 def wizard_progress() -> rx.Component:
-    """Premium progress indicator for multi-step wizard."""
+    """Premium progress indicator for multi-step wizard with Neumorphism sculpting."""
 
     def step_indicator(step_num: int, label: str) -> rx.Component:
-        """Individual step circle with label."""
+        """Individual step circle with pneumatic depth."""
         is_current = PersonasState.modal_step == step_num
         is_completed = PersonasState.modal_step > step_num
 
         return rx.vstack(
-            # Step circle
+            # Step circle sculpted
             rx.box(
                 rx.cond(
                     is_completed,
-                    rx.icon("check", size=20, color="white"),
+                    rx.icon("check", size=20, color="var(--green-9)"),
                     rx.text(
                         str(step_num),
                         size="3",
                         weight="bold",
-                        color=rx.cond(is_current, "white", "var(--gray-9)"),
+                        color=rx.cond(is_current, styles.ACCENT_COLOR, styles.TEXT_TERTIARY),
                     ),
                 ),
-                width="40px",
-                height="40px",
-                border_radius="50%",
+                width="42px",
+                height="42px",
+                border_radius="full",
                 display="flex",
                 align_items="center",
                 justify_content="center",
                 style={
-                    "background": rx.cond(
-                        is_completed,
-                        "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
-                        rx.cond(
-                            is_current,
-                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            "var(--gray-4)",
-                        ),
-                    ),
-                    "transition": styles.GLOBAL_TRANSITION,
+                    "background": styles.BG_PANEL,
+                    "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                     "box_shadow": rx.cond(
-                        is_current, styles.NEU_MODAL_SHADOW, "none"
+                        is_completed | is_current,
+                        styles.NEU_INSET, # Completed/Current look "sculpted in"
+                        styles.NEU_SHADOW, # Pending look "raised"
+                    ),
+                    "border": rx.cond(
+                        is_current,
+                        f"2px solid {styles.ACCENT_COLOR}",
+                        "none"
                     ),
                 },
             ),
@@ -51,8 +50,8 @@ def wizard_progress() -> rx.Component:
             rx.text(
                 label,
                 size="2",
-                weight=rx.cond(is_current, "medium", "regular"),
-                color=rx.cond(is_current, "var(--gray-12)", "var(--gray-10)"),
+                weight=rx.cond(is_current, "bold", "medium"),
+                color=rx.cond(is_current, styles.TEXT_PRIMARY, styles.TEXT_TERTIARY),
                 text_align="center",
             ),
             spacing="2",
@@ -61,16 +60,18 @@ def wizard_progress() -> rx.Component:
 
     return rx.hstack(
         step_indicator(1, "Información Básica"),
-        # Connector line 1-2
+        # Connector line with depth
         rx.box(
-            width=["40px", "60px", "80px"],
-            height="2px",
+            width=["30px", "50px", "70px"],
+            height="6px",
             margin_top="19px",
+            border_radius="full",
             style={
-                "background": rx.cond(
+                "background": styles.BG_PANEL,
+                "box_shadow": rx.cond(
                     PersonasState.modal_step > 1,
-                    "linear-gradient(90deg, #11998e 0%, #38ef7d 100%)",
-                    "var(--gray-4)",
+                    "inset 1px 1px 2px rgba(0,0,0,0.1), inset -1px -1px 2px rgba(255,255,255,0.5)",
+                    styles.NEU_INSET,
                 ),
                 "transition": styles.GLOBAL_TRANSITION,
             },
@@ -78,16 +79,18 @@ def wizard_progress() -> rx.Component:
         step_indicator(2, "Roles"),
         # Connector line 2-3
         rx.box(
-            width=["40px", "60px", "80px"],
-            height="2px",
+            width=["30px", "50px", "70px"],
+            height="6px",
             margin_top="19px",
+            border_radius="full",
             style={
-                "background": rx.cond(
+                "background": styles.BG_PANEL,
+                "box_shadow": rx.cond(
                     PersonasState.modal_step > 2,
-                    "linear-gradient(90deg, #11998e 0%, #38ef7d 100%)",
-                    "var(--gray-4)",
+                    "inset 1px 1px 2px rgba(0,0,0,0.1), inset -1px -1px 2px rgba(255,255,255,0.5)",
+                    styles.NEU_INSET,
                 ),
-                "transition": "background 0.3s ease",
+                "transition": styles.GLOBAL_TRANSITION,
             },
         ),
         step_indicator(3, "Detalles"),
