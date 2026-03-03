@@ -41,7 +41,7 @@ def recaudos_toolbar() -> rx.Component:
         # Filtro Estado
         neuro_select_root(
             [
-                rx.select.item("Todos", value=""),
+                rx.select.item("Todos", value="Todos"),
                 rx.select.item("Pendiente", value="Pendiente"),
                 rx.select.item("Aplicado", value="Aplicado"),
                 rx.select.item("Reversado", value="Reversado"),
