@@ -33,12 +33,15 @@ ACCENT_BG_SOFT = "var(--blue-3)"
 # Alias para compatibilidad con código existente
 BORDER_COLOR = BORDER_DEFAULT
 
+# --- Animaciones Globales ---
+GLOBAL_TRANSITION = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+
 # --- Component Styles ---
 NEU_INPUT_STYLE = {
     "background": BG_PANEL,
     "box_shadow": NEU_INSET,
     "border": "none",
-    "transition": "all 0.2s ease",
+    "transition": GLOBAL_TRANSITION,
     "border_radius": "10px",
     "padding": "0.5rem 1rem",
     "color": TEXT_PRIMARY,
@@ -58,7 +61,7 @@ NEU_SELECT_STYLE = {
     "border_radius": "10px",
     "padding": "0 0.5rem",
     "color": TEXT_PRIMARY,
-    "transition": "all 0.2s ease",
+    "transition": GLOBAL_TRANSITION,
     "_focus": {
         "box_shadow": NEU_INSET + ", 0 0 0 2px rgba(102, 126, 234, 0.3)",
     }
@@ -70,7 +73,7 @@ NEU_BUTTON_STYLE = {
     "border": "none",
     "border_radius": "10px",
     "color": TEXT_PRIMARY,
-    "transition": "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    "transition": GLOBAL_TRANSITION,
     "cursor": "pointer",
     "_hover": {
         "transform": "translateY(-2px)",
@@ -89,4 +92,15 @@ NEU_PANEL_STYLE = {
     "border": "none",
     "border_radius": "16px",
     "padding": "1.5rem",
+}
+
+NEU_TOOLTIP_STYLE = {
+    "background": BG_PANEL,
+    "box_shadow": NEU_MODAL_SHADOW,
+    "border": f"1px solid {BORDER_DEFAULT}",
+    "border_radius": "12px",
+    "color": TEXT_PRIMARY,
+    "padding": "0.75rem",
+    "transition": GLOBAL_TRANSITION,
+    "z_index": "9999",
 }

@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.personas_state import PersonasState
+from src.presentacion_reflex import styles
 
 
 def wizard_progress() -> rx.Component:
@@ -40,9 +41,9 @@ def wizard_progress() -> rx.Component:
                             "var(--gray-4)",
                         ),
                     ),
-                    "transition": "all 0.3s ease",
+                    "transition": styles.GLOBAL_TRANSITION,
                     "box_shadow": rx.cond(
-                        is_current, "0 4px 12px rgba(102, 126, 234, 0.4)", "none"
+                        is_current, styles.NEU_MODAL_SHADOW, "none"
                     ),
                 },
             ),
@@ -71,7 +72,7 @@ def wizard_progress() -> rx.Component:
                     "linear-gradient(90deg, #11998e 0%, #38ef7d 100%)",
                     "var(--gray-4)",
                 ),
-                "transition": "background 0.3s ease",
+                "transition": styles.GLOBAL_TRANSITION,
             },
         ),
         step_indicator(2, "Roles"),
