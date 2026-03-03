@@ -118,12 +118,14 @@ class RecaudosState(DocumentosStateMixin):
     @rx.event(background=True)
     async def load_recaudos(self):
         """Carga recaudos con filtros y paginación."""
+        print("[RECAUDOS_DEBUG] Iniciando load_recaudos...")
         async with self:
             self.is_loading = True
             self.error_message = ""
 
         try:
             placeholder = db_manager.get_placeholder()
+            print(f"[RECAUDOS_DEBUG] Placeholder: {placeholder}")
 
             # Construir query con filtros
             query = """
@@ -146,7 +148,7 @@ class RecaudosState(DocumentosStateMixin):
             INNER JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
             WHERE 1=1
             """
-
+            print("[RECAUDOS_DEBUG] Query base preparada.")
             params = []
 
             # Aplicar filtros

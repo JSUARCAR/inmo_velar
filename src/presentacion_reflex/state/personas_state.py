@@ -346,16 +346,14 @@ class PersonasState(rx.State):
 
     # --- Role Management Logic ---
 
-    def toggle_rol(self, rol: str, checked: bool):
+    def toggle_rol(self, rol: str):
         """Toggles a role in the selected_roles list."""
-        logger.debug(f"Ejecutando toggle_rol: rol={rol}, checked={checked}")
-        pass  # print(f"🔄 Toggle Rol: {rol} -> {checked}") [OpSec Removed]
-        if checked:
-            if rol not in self.selected_roles:
-                self.selected_roles.append(rol)
+        logger.debug(f"Ejecutando toggle_rol: rol={rol}")
+        pass  # print(f"🔄 Toggle Rol: {rol}") [OpSec Removed]
+        if rol in self.selected_roles:
+            self.selected_roles.remove(rol)
         else:
-            if rol in self.selected_roles:
-                self.selected_roles.remove(rol)
+            self.selected_roles.append(rol)
         pass  # print(f"✅ Current roles: {self.selected_roles}") [OpSec Removed]
 
     def is_rol_selected(self, rol: str) -> bool:

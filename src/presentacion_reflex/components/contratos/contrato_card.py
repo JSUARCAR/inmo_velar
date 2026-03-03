@@ -221,6 +221,23 @@ def contrato_card(contrato: dict) -> rx.Component:
                             content="Editar",
                         ),
                     ),
+                    # Renovación
+                    rx.cond(
+                        AuthState.check_action("Contratos", "RENOVAR"),
+                        rx.tooltip(
+                            rx.icon_button(
+                                rx.icon("refresh-cw", size=18),
+                                on_click=lambda: ContratosState.confirm_renewal(
+                                    contrato["id_contrato"], contrato["tipo_contrato"]
+                                ),
+                                variant="ghost",
+                                size="2",
+                                color_scheme="green",
+                                disabled=contrato["estado_contrato"] != "Activo",
+                            ),
+                            content="Renovar",
+                        ),
+                    ),
                     # Terminar
                     rx.cond(
                         AuthState.check_action("Contratos", "TERMINAR"),

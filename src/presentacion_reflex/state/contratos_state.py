@@ -637,17 +637,23 @@ class ContratosState(DocumentosStateMixin):
     @rx.event(background=True)
     async def load_contratos(self):
         """Carga contratos con filtros y paginación (unificados)."""
+        print("[CONTRATOS_DEBUG] Iniciando load_contratos...")
         async with self:
             self.is_loading = True
             self.error_message = ""
 
         try:
+            # ... imports ...
+            print(f"[CONTRATOS_DEBUG] Filtros: Tipo={self.filter_tipo}, Estado={self.filter_estado}, Busqueda='{self.search_text}'")
+            
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
             from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
                 RepositorioContratoArrendamientoSQLite,
             )
+            # ... resto de imports ...
+
             from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
                 RepositorioPropiedadSQLite,
             )
@@ -733,20 +739,38 @@ class ContratosState(DocumentosStateMixin):
                     id_asesor=asesor_filter,
                 )
 
+                # Normalizar usando el mismo patrón que en if/elif
                 mandatos = [{"tipo_contrato": "Mandato", **item} for item in resultado_mandatos.items]
-                arrendamientos = [
-                    {"tipo_contrato": "Arrendamiento", **item} for item in resultado_arrendamientos.items
-                ]
+                arrendamientos = [{"tipo_contrato": "Arrendamiento", **item} for item in resultado_arrendamientos.items]
 
                 items = mandatos + arrendamientos
-                # Total combinado
-                resultado = resultado_mandatos  # Para paginación usamos uno como base
-                resultado.items = items
-                resultado.total = resultado_mandatos.total + resultado_arrendamientos.total
+                print(f"[CONTRATOS_DEBUG] Combinados: {len(items)} items. Total calculado: {resultado_mandatos.total + resultado_arrendamientos.total}")
 
+                # Total combinado y estructura de resultado robusta
+                from src.dominio.modelos.pagination import PaginatedResult
+                resultado = PaginatedResult(
+                    items=items,
+                    total=resultado_mandatos.total + resultado_arrendamientos.total,
+                    page=self.current_page,
+                    page_size=self.page_size
+                )
+
+            # Actualización del estado (FUERA del if/elif/else para que funcione siempre)
+            print(f"[CONTRATOS_DEBUG] Actualizando estado con {len(items)} contratos...")
             async with self:
                 self.contratos = items
                 self.total_items = resultado.total
+                self.is_loading = False
+            print("[CONTRATOS_DEBUG] Estado actualizado OK.")
+
+        except Exception as e:
+            print(f"[CONTRATOS_DEBUG] ERROR CRÍTICO en load_contratos: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            async with self:
+                self.error_message = f"Error al cargar contratos: {str(e)}"
+                self.contratos = []
+                self.total_items = 0
                 self.is_loading = False
 
         except Exception as e:
