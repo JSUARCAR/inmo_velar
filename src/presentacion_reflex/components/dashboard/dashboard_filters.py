@@ -25,6 +25,7 @@ def dashboard_filters() -> rx.Component:
         "size": "2",
         "style": styles.NEU_SELECT_STYLE,
         "width": rx.breakpoints(initial="100%", sm="auto"),
+        "variant": "ghost",
     }
 
     return neuro_panel(
@@ -57,7 +58,7 @@ def dashboard_filters() -> rx.Component:
             # Dropdown Asesor
             rx.box(
                 rx.select.root(
-                    rx.select.trigger(placeholder="Todos los asesores", style=styles.NEU_SELECT_STYLE),
+                    rx.select.trigger(placeholder="Todos los asesores", style=styles.NEU_SELECT_STYLE, variant="ghost"),
                     rx.select.content(
                         rx.select.group(
                             rx.select.item("Todos", value="todos_asesores"),
@@ -86,7 +87,7 @@ def dashboard_filters() -> rx.Component:
                 rx.icon("rotate_ccw", size=16),
                 on_click=DashboardState.reset_filters,
                 size="2",
-                variant="surface",
+                variant="ghost",
                 style=styles.NEU_BUTTON_STYLE,
                 width=rx.breakpoints(initial="100%", sm="auto"),
             ),

@@ -8,7 +8,7 @@ def neuro_input(*args, **kwargs) -> rx.Component:
     final_style = {**styles.NEU_INPUT_STYLE, **custom_style}
     
     # Asegurar que no haya variantes de Radix que rompan el diseño
-    kwargs.setdefault("variant", "surface")
+    kwargs.setdefault("variant", "ghost")
     
     return rx.input(
         *args,
@@ -27,6 +27,7 @@ def neuro_select_root(*args, **kwargs) -> rx.Component:
             placeholder=trigger_placeholder,
             style=styles.NEU_SELECT_STYLE,
             width=trigger_width,
+            variant="ghost",
         ),
         rx.select.content(
             *args,
@@ -40,7 +41,7 @@ def neuro_button(*args, **kwargs) -> rx.Component:
     final_style = {**styles.NEU_BUTTON_STYLE, **custom_style}
     
     # Forzar variante para evitar overrides de Radix
-    kwargs.setdefault("variant", "surface")
+    kwargs.setdefault("variant", "ghost")
     
     return rx.button(
         *args,
@@ -61,7 +62,7 @@ def neuro_text_area(*args, **kwargs) -> rx.Component:
     return rx.text_area(
         *args,
         style=final_style,
-        variant="surface", # Usamos surface como base pero el style lo sobreescribe
+        variant="ghost",
         **kwargs
     )
 
