@@ -222,3 +222,12 @@ body,
     background-color: var(--bg-panel) !important;
     box-shadow: var(--neu-inset) !important;
 }
+
+/* Evitar que los triggers inline de Radix colapsen el layout de las tarjetas de bloque, pero no distorsionar SVG */
+.rt-HoverCardTrigger {
+    display: block !important;
+}
+.rt-HoverCardTrigger > .rt-Card {
+    width: 100% !important;
+    height: 100% !important;
+}

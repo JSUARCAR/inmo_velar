@@ -48,14 +48,16 @@ NEU_DIVIDER_STYLE = {
 NEU_INPUT_STYLE = {
     "background": BG_PANEL,
     "box_shadow": NEU_INSET,
-    "border": "none",
+    "border": f"1px solid {BORDER_DEFAULT}",
     "transition": GLOBAL_TRANSITION,
-    "border_radius": "10px",
-    "padding": "0.5rem 1rem",
+    "border_radius": "12px",
+    "padding": "0.75rem 1rem",
     "color": TEXT_PRIMARY,
+    "height": "44px !important",  # Forzado
     "_focus": {
         "box_shadow": NEU_INSET + ", 0 0 0 2px rgba(102, 126, 234, 0.3)",
         "outline": "none",
+        "border_color": ACCENT_COLOR,
     },
     "_placeholder": {
         "color": TEXT_TERTIARY,
@@ -65,22 +67,29 @@ NEU_INPUT_STYLE = {
 NEU_SELECT_STYLE = {
     "background": BG_PANEL,
     "box_shadow": NEU_INSET,
-    "border": "none",
-    "border_radius": "10px",
-    "padding": "0 0.5rem",
+    "border": f"1px solid {BORDER_DEFAULT}",
+    "border_radius": "12px",
+    "padding": "0 1rem",
     "color": TEXT_PRIMARY,
+    "height": "44px !important",  # Forzado
+    "display": "flex",
+    "align_items": "center",
     "transition": GLOBAL_TRANSITION,
     "_focus": {
         "box_shadow": NEU_INSET + ", 0 0 0 2px rgba(102, 126, 234, 0.3)",
+        "border_color": ACCENT_COLOR,
     }
 }
 
 NEU_BUTTON_STYLE = {
     "background": BG_PANEL,
     "box_shadow": NEU_SHADOW,
-    "border": "none",
-    "border_radius": "10px",
+    "border": f"1px solid {BORDER_DEFAULT}",
+    "border_radius": "12px",
     "color": TEXT_PRIMARY,
+    "height": "44px !important",  # Forzado
+    "padding": "0 1.5rem",
+    "font_weight": "600",
     "transition": GLOBAL_TRANSITION,
     "cursor": "pointer",
     "_hover": {
