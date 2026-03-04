@@ -88,20 +88,34 @@ def step_1_content() -> rx.Component:
             spacing="4",
             width="98%",
         ),
-        rx.separator(margin_y="2"),
+        rx.box(
+            height="2px",
+            width="100%",
+            margin_y="4",
+            background=styles.BG_PANEL,
+            box_shadow="inset 0px 1px 1px rgba(184, 195, 218, 0.4), inset 0px -1px 1px rgba(255, 255, 255, 0.9)",
+            border_radius="full"
+        ),
         # Disponibilidad y Observaciones
         rx.vstack(
             form_field(
                 "Estado Inicial",
-                rx.segmented_control.root(
-                    rx.segmented_control.item("Disponible", value="1"),
-                    rx.segmented_control.item("Ocupada", value="0"),
-                    value=PropiedadesState.form_data["disponibilidad"],
-                    on_change=lambda v: PropiedadesState.set_form_field("disponibilidad", v),
-                    radius="full",
-                    color_scheme="indigo",
-                    size="3",
-                ),
+                rx.box(
+                    rx.segmented_control.root(
+                        rx.segmented_control.item("Disponible", value="1"),
+                        rx.segmented_control.item("Ocupada", value="0"),
+                        value=PropiedadesState.form_data["disponibilidad"],
+                        on_change=lambda v: PropiedadesState.set_form_field("disponibilidad", v),
+                        radius="full",
+                        color_scheme="indigo",
+                        size="3",
+                    ),
+                    padding="4px",
+                    border_radius="full",
+                    background=styles.BG_PANEL,
+                    box_shadow=styles.NEU_INSET,
+                    display="inline-block",
+                )
             ),
             form_field(
                 "Observaciones",
@@ -137,6 +151,7 @@ def step_2_content() -> rx.Component:
                     on_change=lambda v: PropiedadesState.set_form_field("area_metros", v),
                     size="2",
                     width="98%",
+                    style={"box_shadow": f"inset 3px 3px 16px rgba(166, 171, 189, 0.5), inset -3px -3px 16px rgba(255, 255, 255, 0.9)"},
                 ),
             ),
             # Estrato
@@ -204,7 +219,14 @@ def step_2_content() -> rx.Component:
             spacing="4",
             width="98%",
         ),
-        rx.divider(margin_y="2"),
+        rx.box(
+            height="2px",
+            width="100%",
+            margin_y="4",
+            background=styles.BG_PANEL,
+            box_shadow="inset 0px 1px 1px rgba(184, 195, 218, 0.4), inset 0px -1px 1px rgba(255, 255, 255, 0.9)",
+            border_radius="full"
+        ),
         rx.text(
             "Servicios Públicos (Códigos de Pago)", size="2", weight="bold", color=styles.TEXT_SECONDARY
         ),
@@ -272,6 +294,7 @@ def step_3_content() -> rx.Component:
                             on_change=lambda v: PropiedadesState.set_form_field("valor_canon", v),
                             size="2",
                             width="98%",
+                            style={"box_shadow": f"inset 4px 4px 16px rgba(166, 171, 189, 0.6), inset -4px -4px 16px rgba(255, 255, 255, 0.95)"},
                         ),
                     ),
                     form_field(
