@@ -349,12 +349,12 @@ class PersonasState(rx.State):
     def toggle_rol(self, rol: str):
         """Toggles a role in the selected_roles list."""
         logger.debug(f"Ejecutando toggle_rol: rol={rol}")
-        pass  # print(f"🔄 Toggle Rol: {rol}") [OpSec Removed]
-        if rol in self.selected_roles:
-            self.selected_roles.remove(rol)
+        roles = self.selected_roles.copy()
+        if rol in roles:
+            roles.remove(rol)
         else:
-            self.selected_roles.append(rol)
-        pass  # print(f"✅ Current roles: {self.selected_roles}") [OpSec Removed]
+            roles.append(rol)
+        self.selected_roles = roles
 
     def is_rol_selected(self, rol: str) -> bool:
         """Helper for UI to check if role is selected."""
@@ -371,6 +371,11 @@ class PersonasState(rx.State):
     def is_arrendatario_selected(self) -> bool:
         """Check if Arrendatario role is selected."""
         return "Arrendatario" in self.selected_roles
+
+    @rx.var
+    def is_codeudor_selected(self) -> bool:
+        """Check if Codeudor role is selected."""
+        return "Codeudor" in self.selected_roles
 
     @rx.var
     def is_asesor_selected(self) -> bool:

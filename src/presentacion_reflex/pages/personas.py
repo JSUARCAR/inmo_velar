@@ -223,14 +223,15 @@ def personas_page() -> rx.Component:
                         # View toggle button
                         rx.hstack(
                             rx.tooltip(
-                                rx.button(
+                                rx.icon_button(
                                     rx.cond(
                                         PersonasState.view_mode == "table",
                                         rx.icon("layout-grid", size=18),
                                         rx.icon("table", size=18),
                                     ),
                                     on_click=PersonasState.toggle_view_mode,
-                                    variant="soft",
+                                    variant="ghost",
+                                    style=styles.NEU_BUTTON_STYLE,
                                     size="3",
                                     color_scheme="gray",
                                 ),
@@ -242,11 +243,11 @@ def personas_page() -> rx.Component:
                             ),
                             # Export button
                             rx.tooltip(
-                                rx.button(
-                                    rx.icon("file-spreadsheet", size=16),
-                                    "Exportar",
+                                rx.icon_button(
+                                    rx.icon("file-spreadsheet", size=18),
                                     color_scheme="green",
-                                    variant="soft",
+                                    variant="ghost",
+                                    style=styles.NEU_BUTTON_STYLE,
                                     on_click=PersonasState.exportar_csv,
                                     size="3",
                                     _hover={
@@ -259,8 +260,9 @@ def personas_page() -> rx.Component:
                             # Refresh button
                             rx.tooltip(
                                 rx.icon_button(
-                                    rx.icon("refresh-cw", size=16),
+                                    rx.icon("refresh-cw", size=18),
                                     variant="ghost",
+                                    style=styles.NEU_BUTTON_STYLE,
                                     size="3",
                                     on_click=PersonasState.load_personas,
                                     _hover={
@@ -282,6 +284,7 @@ def personas_page() -> rx.Component:
                         spacing="3",
                     ),
                     width="100%",
+                    variant="ghost",
                     style={
                         "background": styles.BG_PANEL,
                         "box_shadow": styles.NEU_SHADOW,
@@ -632,6 +635,7 @@ def personas_page() -> rx.Component:
                         wrap="wrap",
                     ),
                     width="100%",
+                    variant="ghost",
                     style=styles.NEU_PANEL_STYLE,
                 ),
                 padding="6",

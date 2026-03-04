@@ -97,6 +97,8 @@ def role_selector_card(rol: str) -> rx.Component:
         on_click=lambda: PersonasState.toggle_rol(rol),
         cursor="pointer",
         variant="ghost",
+        margin="0",
+        padding="1.5rem",
         # Pneumatic Selection Style: Inset when selected, Raised when not
         style={
             "background": styles.BG_PANEL,
@@ -104,6 +106,7 @@ def role_selector_card(rol: str) -> rx.Component:
             "border": rx.cond(is_selected, f"1px solid {styles.ACCENT_COLOR}", "none"),
             "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             "border_radius": "16px",
+            "margin": "0",
         },
         _hover={
             "transform": rx.cond(is_selected, "none", "scale(1.02)"),
