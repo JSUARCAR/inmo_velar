@@ -207,3 +207,18 @@ body,
     margin-right: auto !important;
     width: 220px !important;
 }
+
+/* Fuerza Neumorfismo en Dropdowns y Tooltips */
+.rt-SelectContent,
+.rt-HoverCardContent {
+    background-color: var(--bg-panel) !important;
+    box-shadow: var(--neu-modal-shadow) !important;
+    border: none !important;
+    border-radius: 12px !important;
+}
+
+/* Fuerza Inset en Triggers si el prop style falla */
+.rt-SelectTrigger.rt-variant-ghost {
+    background-color: var(--bg-panel) !important;
+    box-shadow: var(--neu-inset) !important;
+}
