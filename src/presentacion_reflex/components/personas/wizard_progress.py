@@ -39,6 +39,7 @@ def wizard_progress() -> rx.Component:
                         styles.NEU_INSET, # Completed/Current look "sculpted in"
                         styles.NEU_SHADOW, # Pending look "raised"
                     ),
+                    "opacity": rx.cond(is_completed | is_current, "1", "0.6"),
                     "border": rx.cond(
                         is_current,
                         f"2px solid {styles.ACCENT_COLOR}",
@@ -68,11 +69,7 @@ def wizard_progress() -> rx.Component:
             border_radius="full",
             style={
                 "background": styles.BG_PANEL,
-                "box_shadow": rx.cond(
-                    PersonasState.modal_step > 1,
-                    "inset 1px 1px 2px rgba(0,0,0,0.1), inset -1px -1px 2px rgba(255,255,255,0.5)",
-                    styles.NEU_INSET,
-                ),
+                "box_shadow": "inset 1px 1px 2px rgba(0,0,0,0.1), inset -1px -1px 2px rgba(255,255,255,0.5)",
                 "transition": styles.GLOBAL_TRANSITION,
             },
         ),
@@ -85,11 +82,7 @@ def wizard_progress() -> rx.Component:
             border_radius="full",
             style={
                 "background": styles.BG_PANEL,
-                "box_shadow": rx.cond(
-                    PersonasState.modal_step > 2,
-                    "inset 1px 1px 2px rgba(0,0,0,0.1), inset -1px -1px 2px rgba(255,255,255,0.5)",
-                    styles.NEU_INSET,
-                ),
+                "box_shadow": "inset 1px 1px 2px rgba(0,0,0,0.1), inset -1px -1px 2px rgba(255,255,255,0.5)",
                 "transition": styles.GLOBAL_TRANSITION,
             },
         ),

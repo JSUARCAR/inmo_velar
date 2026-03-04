@@ -110,6 +110,11 @@ def form_field(
             on_change=on_change,
             width="100%",
             size="3",
+            style={
+                "_invalid": {
+                    "box_shadow": f"{styles.NEU_INSET}, 0 0 0 2px rgba(220, 38, 38, 0.4)",
+                }
+            }
         ),
         spacing="1",
         width="100%",
@@ -641,7 +646,7 @@ def modal_persona() -> rx.Component:
                 "max_width": "700px",
                 "width": "95%",
                 "padding": "24px",
-                "transition": styles.GLOBAL_TRANSITION,
+                "transition": "box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
             },
             on_escape_key_down=PersonasState.close_modal,
             on_pointer_down_outside=PersonasState.close_modal,

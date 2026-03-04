@@ -10,15 +10,15 @@ def badge_dias(dias: int) -> rx.Component:
     """Retorna un badge de color según los días restantes."""
     return rx.cond(
         dias <= 30,
-        rx.badge(dias.to(str), " días", color_scheme="red", variant="soft"),
+        neuro_badge(dias.to(str), " días", color_scheme="red"),
         rx.cond(
             dias <= 60,
-            rx.badge(dias.to(str), " días", color_scheme="orange", variant="soft"),
-            rx.badge(dias.to(str), " días", color_scheme="amber", variant="soft"),
+            neuro_badge(dias.to(str), " días", color_scheme="orange"),
+            neuro_badge(dias.to(str), " días", color_scheme="amber"),
         )
     )
 
-from src.presentacion_reflex.components.neuro_elements import neuro_table_container, neuro_tooltip
+from src.presentacion_reflex.components.neuro_elements import neuro_table_container, neuro_tooltip, neuro_badge
 
 def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado, tooltip_text: str = "") -> rx.Component:
     """Componente genérico de tabla para mostrar vencimientos."""

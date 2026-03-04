@@ -67,13 +67,21 @@ def property_card(
                     rx.hover_card.content(
                         rx.cond(
                             imagen_id,
-                            rx.image(
-                                src="/api/storage/placeholder/download",
-                                width="280px",
-                                height="200px",
-                                border_radius="8px",
-                                object_fit="cover",
-                                alt="Vista previa propiedad",
+                            rx.box(
+                                rx.image(
+                                    src="/api/storage/placeholder/download",
+                                    width="100%",
+                                    height="100%",
+                                    border_radius="8px",
+                                    object_fit="cover",
+                                    alt="Vista previa propiedad",
+                                ),
+                                padding="4px",
+                                width="288px",
+                                height="208px",
+                                border_radius="12px",
+                                background=styles.BG_PANEL,
+                                box_shadow=styles.NEU_INSET_LIGHT,
                             ),
                             rx.box(
                                 rx.text("Sin imagen", size="1", color="var(--gray-11)"),
@@ -339,12 +347,12 @@ def property_card(
         margin="auto",
         style={
             "border_radius": "16px",
-            "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "transition": "all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
             "overflow": "hidden",
         },
         _hover={
-            "transform": "translateY(-4px)",
-            "box_shadow": "0 12px 24px -10px rgba(0, 0, 0, 0.1)",
+            "transform": "translateY(-8px)",
+            "box_shadow": styles.NEU_MODAL_SHADOW,
             "border_color": "var(--accent-8)",
         },
     )

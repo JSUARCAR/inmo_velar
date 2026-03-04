@@ -37,6 +37,14 @@ BORDER_COLOR = BORDER_DEFAULT
 GLOBAL_TRANSITION = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
 
 # --- Component Styles ---
+NEU_DIVIDER_STYLE = {
+    "height": "2px",
+    "width": "100%",
+    "background": f"linear-gradient(to bottom, rgba(184, 195, 218, 0.4) 0%, rgba(255, 255, 255, 0.8) 100%)",
+    "margin_y": "1rem",
+    "border_radius": "2px",
+}
+
 NEU_INPUT_STYLE = {
     "background": BG_PANEL,
     "box_shadow": NEU_INSET,

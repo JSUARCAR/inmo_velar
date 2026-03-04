@@ -38,28 +38,40 @@ def persona_row(persona: dict) -> rx.Component:
             rx.box(
                 rx.foreach(
                     persona["roles"],
-                    lambda r: rx.badge(
+                    lambda r: rx.box(
                         r,
-                        color_scheme=rx.match(
+                        color=rx.match(
                             r,
-                            ("Propietario", "blue"),
-                            ("Arrendatario", "green"),
-                            ("Asesor", "purple"),
-                            ("Codeudor", "orange"),
-                            ("Proveedor", "cyan"),
-                            "gray",
+                            ("Propietario", "var(--blue-9)"),
+                            ("Arrendatario", "var(--green-9)"),
+                            ("Asesor", "var(--purple-9)"),
+                            ("Codeudor", "var(--orange-9)"),
+                            ("Proveedor", "var(--cyan-9)"),
+                            "var(--gray-9)",
                         ),
-                        variant="soft",
+                        background=styles.BG_PANEL,
+                        border_radius="20px",
+                        padding="2px 10px",
+                        box_shadow=styles.NEU_INSET_LIGHT,
                         margin_right="1",
+                        font_size="0.75rem",
+                        font_weight="bold",
+                        display="inline-block",
                     ),
                 )
-            )
-        ),
+                                    )
+                                ),
         rx.table.cell(
-            rx.badge(
+            rx.box(
                 persona["estado"],
-                color_scheme=rx.cond(persona["estado"] == "Activo", "green", "red"),
-                variant="soft",
+                color=rx.cond(persona["estado"] == "Activo", "var(--green-9)", "var(--red-9)"),
+                background=styles.BG_PANEL,
+                border_radius="20px",
+                padding="2px 10px",
+                box_shadow=styles.NEU_INSET_LIGHT,
+                font_size="0.75rem",
+                font_weight="bold",
+                display="inline-block",
             )
         ),
         rx.table.cell(
@@ -398,7 +410,7 @@ def personas_page() -> rx.Component:
                                                     rx.box(
                                                         rx.foreach(
                                                             p["roles"],
-                                                            lambda r: rx.badge(
+                                                            lambda r: rx.box(
                                                                 rx.hstack(
                                                                     rx.icon(
                                                                         rx.match(
@@ -419,33 +431,42 @@ def personas_page() -> rx.Component:
                                                                     spacing="1",
                                                                     align="center",
                                                                 ),
-                                                                color_scheme=rx.match(
+                                                                color=rx.match(
                                                                     r,
-                                                                    ("Propietario", "blue"),
-                                                                    ("Arrendatario", "green"),
-                                                                    ("Asesor", "purple"),
-                                                                    ("Codeudor", "orange"),
-                                                                    ("Proveedor", "cyan"),
-                                                                    "gray",
+                                                                    ("Propietario", "var(--blue-9)"),
+                                                                    ("Arrendatario", "var(--green-9)"),
+                                                                    ("Asesor", "var(--purple-9)"),
+                                                                    ("Codeudor", "var(--orange-9)"),
+                                                                    ("Proveedor", "var(--cyan-9)"),
+                                                                    "var(--gray-9)",
                                                                 ),
-                                                                variant="soft",
+                                                                background=styles.BG_PANEL,
+                                                                border_radius="20px",
+                                                                padding="2px 10px",
+                                                                box_shadow=styles.NEU_INSET_LIGHT,
                                                                 margin_right="1",
                                                                 margin_bottom="1",
-                                                                radius="full",
+                                                                font_size="0.75rem",
+                                                                font_weight="bold",
+                                                                display="inline-block",
                                                             ),
                                                         )
                                                     )
                                                 ),
                                                 rx.table.cell(
-                                                    rx.badge(
-                                                        p["estado"],
-                                                        color_scheme=rx.cond(
-                                                            p["estado"] == "Activo", "green", "red"
-                                                        ),
-                                                        variant="soft",
-                                                        size="2",
-                                                        radius="full",
-                                                    )
+                                                        rx.box(
+                                                            p["estado"],
+                                                            color=rx.cond(
+                                                                p["estado"] == "Activo", "var(--green-9)", "var(--red-9)"
+                                                            ),
+                                                            background=styles.BG_PANEL,
+                                                            border_radius="20px",
+                                                            padding="2px 10px",
+                                                            box_shadow=styles.NEU_INSET_LIGHT,
+                                                            font_size="0.75rem",
+                                                            font_weight="bold",
+                                                            display="inline-block",
+                                                        )
                                                 ),
                                                 rx.table.cell(
                                                     rx.hstack(

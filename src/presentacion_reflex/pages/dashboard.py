@@ -19,7 +19,7 @@ from src.presentacion_reflex.components.dashboard import (
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.dashboard_state import DashboardState
-from src.presentacion_reflex.components.neuro_elements import neuro_panel
+from src.presentacion_reflex.components.neuro_elements import neuro_panel, neuro_progress
 from src.presentacion_reflex import styles
 
 
@@ -253,7 +253,7 @@ def dashboard_page() -> rx.Component:
                                             size="1",
                                             color=styles.TEXT_SECONDARY,
                                         ),
-                                        rx.progress(
+                                        neuro_progress(
                                             value=DashboardState.flujo_porcentaje_int_view,
                                             color_scheme="green",
                                             height="6px",
