@@ -127,8 +127,8 @@ def step_1_content() -> rx.Component:
             spacing="5", # Aumentado de 4 a 5
             width="100%",
         ),
-        spacing="7", # Elevado para Neumorfismo (escala 7 = 32px/40px aprox)
-        padding="5",
+        spacing="6", # Aumentado de 5 a 6
+        padding="4",
         width="100%",
     )
 
@@ -247,8 +247,8 @@ def step_2_content() -> rx.Component:
             spacing="6", # Aumentado de 4 a 6
             width="100%",
         ),
-        spacing="7",
-        padding="5",
+        spacing="6", # Aumentado de 4 a 6
+        padding="4",
         width="100%",
     )
 
@@ -503,10 +503,7 @@ def modal_propiedad() -> rx.Component:
                         neuro_button(
                             "Cancelar",
                             on_click=PropiedadesState.close_modal,
-                            color_scheme="gray",
-                            variant="soft"
                         ),
-                        rx.spacer(),
                         rx.cond(
                             PropiedadesState.modal_step > 1,
                             neuro_button(
@@ -530,12 +527,10 @@ def modal_propiedad() -> rx.Component:
                             ),
                         ),
                         spacing="5", 
-                        align="center",
-                        width="100%",
                     ),
                     width="100%",
                     justify="between",
-                    padding_top="6", 
+                    padding_top="5", # Aumentado de 4 a 5
                     border_top=f"1px solid {styles.BORDER_DEFAULT}",
                 ),
                 spacing="5", # Aumentado de 4 a 5

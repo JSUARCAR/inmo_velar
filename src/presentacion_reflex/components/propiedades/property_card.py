@@ -334,10 +334,10 @@ def property_card(
                 ),
                 width="100%",
                 align="center",
-                margin_top="5", 
+                margin_top="4", 
             ),
             spacing="5", 
-            padding="7", 
+            padding="6", 
             width="100%",
         ),
         # Elite Card Styling - Neumorphic Raised
