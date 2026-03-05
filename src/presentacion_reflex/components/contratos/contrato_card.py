@@ -1,5 +1,6 @@
 import reflex as rx
 
+from src.presentacion_reflex import styles
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.contratos_state import ContratosState
 from src.presentacion_reflex.state.pdf_state import PDFState
@@ -164,9 +165,10 @@ def contrato_card(contrato: dict) -> rx.Component:
                                     on_click=lambda: PDFState.generar_contrato_arrendamiento_elite(
                                         contrato["id_contrato"], False
                                     ),
-                                    variant="ghost",
+                                    variant="surface",
                                     size="2",
                                     color_scheme="purple",
+                                    style=styles.NEU_ICON_BUTTON_STYLE,
                                 ),
                                 content="Contrato Oficial",
                             ),
@@ -178,10 +180,11 @@ def contrato_card(contrato: dict) -> rx.Component:
                                         on_click=lambda: ContratosState.open_ipc_modal(
                                             contrato["id_contrato"]
                                         ),
-                                        variant="ghost",
+                                        variant="surface",
                                         size="2",
                                         color_scheme="cyan",
                                         disabled=contrato["estado_contrato"] != "Activo",
+                                        style=styles.NEU_ICON_BUTTON_STYLE,
                                     ),
                                     content="Incremento IPC",
                                 ),
@@ -198,9 +201,10 @@ def contrato_card(contrato: dict) -> rx.Component:
                                 on_click=lambda: PDFState.generar_contrato_mandato_elite(
                                     contrato["id_contrato"], False
                                 ),
-                                variant="ghost",
+                                variant="surface",
                                 size="2",
                                 color_scheme="purple",
+                                style=styles.NEU_ICON_BUTTON_STYLE,
                             ),
                             content="Contrato Oficial",
                         ),
@@ -214,9 +218,10 @@ def contrato_card(contrato: dict) -> rx.Component:
                                 on_click=lambda: ContratosState.open_edit_modal(
                                     contrato["id_contrato"], contrato["tipo_contrato"]
                                 ),
-                                variant="ghost",
+                                variant="surface",
                                 size="2",
                                 color_scheme="gray",
+                                style=styles.NEU_ICON_BUTTON_STYLE,
                             ),
                             content="Editar",
                         ),
@@ -230,10 +235,11 @@ def contrato_card(contrato: dict) -> rx.Component:
                                 on_click=lambda: ContratosState.confirm_renewal(
                                     contrato["id_contrato"], contrato["tipo_contrato"]
                                 ),
-                                variant="ghost",
+                                variant="surface",
                                 size="2",
                                 color_scheme="green",
                                 disabled=contrato["estado_contrato"] != "Activo",
+                                style=styles.NEU_ICON_BUTTON_STYLE,
                             ),
                             content="Renovar",
                         ),
@@ -247,10 +253,11 @@ def contrato_card(contrato: dict) -> rx.Component:
                                 on_click=lambda: ContratosState.toggle_estado(
                                     contrato["id_contrato"], contrato["tipo_contrato"], contrato["estado_contrato"]
                                 ),
-                                variant="ghost",
+                                variant="surface",
                                 size="2",
                                 color_scheme="red",
                                 disabled=contrato["estado_contrato"] != "Activo",
+                                style=styles.NEU_ICON_BUTTON_STYLE,
                             ),
                             content="Terminar",
                         ),
@@ -267,18 +274,7 @@ def contrato_card(contrato: dict) -> rx.Component:
             justify="between",
         ),
         padding="4",
-        style={
-            "background": "var(--card-bg)",
-            "border": "1px solid var(--gray-4)",
-            "border_radius": "16px",
-            "box_shadow": "var(--shadow-sm)",
-            "transition": "all 0.2s ease",
-            "_hover": {
-                "transform": "translateY(-4px)",
-                "box_shadow": "var(--shadow-md)",
-                "border_color": "var(--blue-6)",
-            },
-        },
+        style=styles.NEU_CONTRACT_CARD_STYLE,
         width="100%",
         min_height="220px",
     )
