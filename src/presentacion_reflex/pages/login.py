@@ -62,14 +62,42 @@ def login_card() -> rx.Component:
                     ),
                     rx.vstack(
                         rx.text("Contraseña", size="2", weight="bold", class_name="glass-text-elite"),
-                        rx.input(
-                            type="password",
-                            placeholder="••••••••",
-                            name="password",
-                            size="3",
+                        rx.box(
+                            rx.input(
+                                type=rx.cond(AuthState.password_visible, "text", "password"),
+                                placeholder="••••••••",
+                                name="password",
+                                size="3",
+                                width="100%",
+                                variant="surface",
+                                class_name="glass-input-elite",
+                                padding_right="40px",
+                            ),
+                            rx.box(
+                                rx.cond(
+                                    AuthState.password_visible,
+                                    rx.icon(
+                                        "eye-off", size=16,
+                                        color="rgba(255,255,255,0.6)",
+                                        cursor="pointer",
+                                        on_click=AuthState.toggle_password_visibility,
+                                    ),
+                                    rx.icon(
+                                        "eye", size=16,
+                                        color="rgba(255,255,255,0.6)",
+                                        cursor="pointer",
+                                        on_click=AuthState.toggle_password_visibility,
+                                    ),
+                                ),
+                                position="absolute",
+                                right="10px",
+                                top="50%",
+                                transform="translateY(-50%)",
+                                z_index="1",
+                                style={"_hover": {"color": "white"}},
+                            ),
+                            position="relative",
                             width="100%",
-                            variant="surface",
-                            class_name="glass-input-elite",
                         ),
                         align_items="start",
                         width="100%",
@@ -92,11 +120,14 @@ def login_card() -> rx.Component:
                         },
                         loading=AuthState.is_loading,
                     ),
-
-
                     rx.cond(
                         AuthState.error_message != "",
-                        rx.text(AuthState.error_message, color="#f87171", size="2", weight="medium"),
+                        rx.hstack(
+                            rx.icon("alert-circle", size=14, color="#f87171"),
+                            rx.text(AuthState.error_message, color="#f87171", size="2", weight="medium"),
+                            spacing="2",
+                            align="center",
+                        ),
                     ),
                     align="center",
                     spacing="4",
