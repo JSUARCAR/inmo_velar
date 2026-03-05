@@ -5,7 +5,7 @@ from src.presentacion_reflex.components.personas.modal_form import modal_persona
 from src.presentacion_reflex.components.personas.person_card import person_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.personas_state import PersonasState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_spinner, neuro_badge, neuro_table_container
 from src.presentacion_reflex import styles
 
 
@@ -297,7 +297,7 @@ def personas_page() -> rx.Component:
                     PersonasState.is_loading,
                     rx.center(
                         rx.vstack(
-                            rx.spinner(size="3", color="purple"),
+                            neuro_spinner(size="3"),
                             rx.text("Cargando personas...", size="2", color="var(--gray-10)"),
                             spacing="2",
                         ),
@@ -413,63 +413,29 @@ def personas_page() -> rx.Component:
                                                     rx.box(
                                                         rx.foreach(
                                                             p["roles"],
-                                                            lambda r: rx.box(
-                                                                rx.hstack(
-                                                                    rx.icon(
-                                                                        rx.match(
-                                                                            r,
-                                                                            ("Propietario", "home"),
-                                                                            (
-                                                                                "Arrendatario",
-                                                                                "user-check",
-                                                                            ),
-                                                                            ("Asesor", "briefcase"),
-                                                                            ("Codeudor", "shield"),
-                                                                            ("Proveedor", "tool"),
-                                                                            "user",
-                                                                        ),
-                                                                        size=12,
-                                                                    ),
-                                                                    rx.text(r, size="1"),
-                                                                    spacing="1",
-                                                                    align="center",
-                                                                ),
-                                                                color=rx.match(
+                                                            lambda r: neuro_badge(
+                                                                r,
+                                                                color_scheme=rx.match(
                                                                     r,
-                                                                    ("Propietario", "var(--blue-9)"),
-                                                                    ("Arrendatario", "var(--green-9)"),
-                                                                    ("Asesor", "var(--purple-9)"),
-                                                                    ("Codeudor", "var(--orange-9)"),
-                                                                    ("Proveedor", "var(--cyan-9)"),
-                                                                    "var(--gray-9)",
+                                                                    ("Propietario", "blue"),
+                                                                    ("Arrendatario", "green"),
+                                                                    ("Asesor", "violet"),
+                                                                    ("Codeudor", "orange"),
+                                                                    ("Proveedor", "cyan"),
+                                                                    "gray",
                                                                 ),
-                                                                background=styles.BG_PANEL,
-                                                                border_radius="20px",
-                                                                padding="2px 10px",
-                                                                box_shadow=styles.NEU_INSET_LIGHT,
-                                                                margin_right="1",
-                                                                margin_bottom="1",
-                                                                font_size="0.75rem",
-                                                                font_weight="bold",
-                                                                display="inline-block",
+                                                                style={"margin_right": "4px", "margin_bottom": "4px"},
                                                             ),
                                                         )
                                                     )
                                                 ),
                                                 rx.table.cell(
-                                                        rx.box(
-                                                            p["estado"],
-                                                            color=rx.cond(
-                                                                p["estado"] == "Activo", "var(--green-9)", "var(--red-9)"
-                                                            ),
-                                                            background=styles.BG_PANEL,
-                                                            border_radius="20px",
-                                                            padding="2px 10px",
-                                                            box_shadow=styles.NEU_INSET_LIGHT,
-                                                            font_size="0.75rem",
-                                                            font_weight="bold",
-                                                            display="inline-block",
-                                                        )
+                                                    neuro_badge(
+                                                        p["estado"],
+                                                        color_scheme=rx.cond(
+                                                            p["estado"] == "Activo", "green", "red"
+                                                        ),
+                                                    )
                                                 ),
                                                 rx.table.cell(
                                                     rx.hstack(
@@ -539,6 +505,7 @@ def personas_page() -> rx.Component:
                                 "background": styles.BG_PANEL,
                             },
                         ),
+                        # Nota: neuro_table_container gestiona el overflow-x para móviles
                         # CARDS VIEW - New
                         rx.box(
                             rx.cond(
@@ -571,20 +538,15 @@ def personas_page() -> rx.Component:
                     ),
                 ),
                 # --- Premium Pagination ---
-                rx.card(
+                # --- Premium Pagination (neuro_button) ---
+                rx.box(
                     rx.flex(
-                        rx.button(
+                        neuro_button(
                             rx.icon("chevron-left", size=16),
                             "Anterior",
                             on_click=PersonasState.prev_page,
                             disabled=PersonasState.page == 1,
-                            variant="soft",
                             size="3",
-                            _hover={
-                                "transform": "translateX(-2px)",
-                                "background": styles.BG_HOVER,
-                            },
-                            transition="all 0.2s ease",
                         ),
                         rx.vstack(
                             rx.text(
@@ -614,18 +576,12 @@ def personas_page() -> rx.Component:
                             spacing="0",
                             align="center",
                         ),
-                        rx.button(
+                        neuro_button(
                             "Siguiente",
                             rx.icon("chevron-right", size=16),
                             on_click=PersonasState.next_page,
                             disabled=PersonasState.page >= PersonasState.total_pages,
-                            variant="soft",
                             size="3",
-                            _hover={
-                                "transform": "translateX(2px)",
-                                "background": styles.BG_HOVER,
-                            },
-                            transition="all 0.2s ease",
                         ),
                         justify="center",
                         width="100%",
@@ -635,7 +591,6 @@ def personas_page() -> rx.Component:
                         wrap="wrap",
                     ),
                     width="100%",
-                    variant="ghost",
                     style=styles.NEU_PANEL_STYLE,
                 ),
                 padding="6",

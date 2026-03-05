@@ -19,7 +19,7 @@ from src.presentacion_reflex.components.dashboard import (
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.dashboard_state import DashboardState
-from src.presentacion_reflex.components.neuro_elements import neuro_panel, neuro_progress
+from src.presentacion_reflex.components.neuro_elements import neuro_panel, neuro_progress, neuro_spinner, neuro_callout
 from src.presentacion_reflex import styles
 
 
@@ -53,7 +53,7 @@ def dashboard_page() -> rx.Component:
                 DashboardState.is_loading,
                 rx.center(
                     rx.vstack(
-                        rx.spinner(size="3", color="indigo"),
+                        neuro_spinner(size="3"),
                         rx.text("Procesando métricas en tiempo real...", color=styles.TEXT_SECONDARY, size="2"),
                         spacing="3",
                     ),
@@ -64,11 +64,10 @@ def dashboard_page() -> rx.Component:
             # Error Message
             rx.cond(
                 DashboardState.error_message != "",
-                rx.callout(
+                neuro_callout(
                     DashboardState.error_message,
-                    icon="circle_alert",
+                    icon="circle-alert",
                     color_scheme="red",
-                    role="alert",
                     width="100%",
                 ),
             ),
