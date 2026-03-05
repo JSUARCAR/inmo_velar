@@ -1,0 +1,7 @@
+refactor(presentacion): Ajusta espaciado y visual de tarjetas y switches
+
+- Fuerza la variante "surface" en neuro_switch y dimensiones del thumb para evitar estilos nativos Radix.
+- Reduce padding y aplica flex column en property_card para mejorar alineación interna.
+- Modifica el gap en el grid de la vista de propiedades a 2rem.
+
+Consolida la estética responsiva y consistencia del sistema Neumorfismo Élite.
