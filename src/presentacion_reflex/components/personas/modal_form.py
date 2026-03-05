@@ -105,7 +105,6 @@ def form_field(
             placeholder=placeholder,
             type=type,
             required=required,
-            default_value=default_value,
             value=value,
             on_change=on_change,
             width="100%",
@@ -135,7 +134,6 @@ def form_textarea(
         neuro_text_area(
             name=name,
             placeholder=placeholder,
-            default_value=default_value,
             value=value,
             on_change=on_change,
             width="100%",
@@ -144,6 +142,35 @@ def form_textarea(
         width="100%",
     )
 
+
+
+def codeudor_fields() -> rx.Component:
+    """Campos específicos de Codeudor - Elite version."""
+    return neuro_panel(
+        rx.vstack(
+            rx.hstack(
+                rx.icon("shield-check", size=18, color="var(--orange-9)"),
+                rx.text("Información de Garantía", size="3", weight="bold", color="var(--orange-11)"),
+                spacing="2",
+            ),
+            rx.text(
+                "El codeudor actúa como garante del contrato. No se requieren campos adicionales obligatorios en esta etapa, pero puede añadir notas aquí.",
+                size="2",
+                color=styles.TEXT_SECONDARY,
+            ),
+            form_textarea(
+                "Observaciones de Garantía",
+                "observaciones_codeudor",
+                "Ej: Propietario de finca raíz, etc.",
+                default_value=PersonasState.form_data["observaciones_codeudor"],
+                value=PersonasState.form_data["observaciones_codeudor"],
+                on_change=lambda val: PersonasState.set_upper("observaciones_codeudor", val),
+            ),
+            spacing="4",
+            width="100%",
+        ),
+        padding="5",
+    )
 
 
 def propietario_fields() -> rx.Component:
@@ -191,7 +218,7 @@ def propietario_fields() -> rx.Component:
                     width="100%",
                 ),
                 columns=rx.breakpoints(initial="1", sm="2"),
-                spacing="3",
+                spacing="4",
                 width="100%",
             ),
             form_field(
@@ -218,10 +245,10 @@ def propietario_fields() -> rx.Component:
                 value=PersonasState.form_data["observaciones_propietario"],
                 on_change=lambda val: PersonasState.set_upper("observaciones_propietario", val),
             ),
-            spacing="3",
+            spacing="4",
             width="100%",
         ),
-        padding="4",
+        padding="5",
     )
 
 
@@ -254,7 +281,7 @@ def arrendatario_fields() -> rx.Component:
                     PersonasState.select_seguro,
                 ),
                 columns=rx.breakpoints(initial="1", sm="2"),
-                spacing="3",
+                spacing="4",
                 width="100%",
             ),
             rx.grid(
@@ -277,13 +304,13 @@ def arrendatario_fields() -> rx.Component:
                     icon="phone",
                 ),
                 columns=rx.breakpoints(initial="1", sm="2"),
-                spacing="3",
+                spacing="4",
                 width="100%",
             ),
-            spacing="3",
+            spacing="4",
             width="100%",
         ),
-        padding="4",
+        padding="5",
     )
 
 
@@ -314,7 +341,7 @@ def asesor_fields() -> rx.Component:
                     icon="percent",
                 ),
                 columns=rx.breakpoints(initial="1", sm="2"),
-                spacing="3",
+                spacing="4",
                 width="100%",
             ),
             form_field(
@@ -325,10 +352,10 @@ def asesor_fields() -> rx.Component:
                 default_value=PersonasState.form_data["fecha_vinculacion"],
                 icon="calendar",
             ),
-            spacing="3",
+            spacing="4",
             width="100%",
         ),
-        padding="4",
+        padding="5",
     )
 
 
@@ -366,10 +393,10 @@ def proveedor_fields() -> rx.Component:
                 value=PersonasState.form_data["observaciones"],
                 on_change=lambda val: PersonasState.set_upper("observaciones", val),
             ),
-            spacing="3",
+            spacing="4",
             width="100%",
         ),
-        padding="4",
+        padding="5",
     )
 
 
@@ -409,7 +436,7 @@ def step_1_basic_info() -> rx.Component:
             ),
             flex_direction=["column", "row"],
             width="100%",
-            gap="3",
+            gap="4",
         ),
         form_field(
             "Nombre Completo / Razón Social",
@@ -441,7 +468,7 @@ def step_1_basic_info() -> rx.Component:
                 icon="mail",
             ),
             columns=rx.breakpoints(initial="1", sm="2"),
-            spacing="3",
+            spacing="4",
             width="100%",
         ),
         form_field(
@@ -453,7 +480,7 @@ def step_1_basic_info() -> rx.Component:
             on_change=lambda val: PersonasState.set_upper("direccion_principal", val),
             icon="map-pin",
         ),
-        spacing="4",
+        spacing="5",
         width="100%",
     )
 
@@ -466,6 +493,7 @@ def step_2_roles() -> rx.Component:
             size="2",
             color=styles.TEXT_SECONDARY,
             text_align="center",
+            margin_bottom="2",
         ),
         rx.box(
             rx.foreach(PersonasState.available_roles, role_selector_card),            display="grid",
@@ -473,10 +501,10 @@ def step_2_roles() -> rx.Component:
                 "repeat(1, 1fr)",  # mobile
                 "repeat(2, 1fr)",  # tablet+
             ],
-            gap="3",
+            gap="4",
             width="100%",
         ),
-        spacing="3",
+        spacing="4",
         width="100%",
     )
 
@@ -497,6 +525,11 @@ def step_3_role_details() -> rx.Component:
                     PersonasState.is_arrendatario_selected,
                     arrendatario_fields(),
                 ),
+                # Codeudor fields
+                rx.cond(
+                    PersonasState.is_codeudor_selected,
+                    codeudor_fields(),
+                ),
                 # Asesor fields
                 rx.cond(
                     PersonasState.is_asesor_selected,
@@ -507,7 +540,7 @@ def step_3_role_details() -> rx.Component:
                     PersonasState.is_proveedor_selected,
                     proveedor_fields(),
                 ),
-                spacing="4",
+                spacing="6",
                 width="100%",
             ),
             # No roles selected message

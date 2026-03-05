@@ -121,6 +121,7 @@ def kpi_card(
             style={
                 **styles.NEU_PANEL_STYLE,
                 "padding": "0.75rem",
+                "margin": "0",
             },
         )
 
@@ -196,7 +197,10 @@ def kpi_card(
                 "transform": "translateY(-4px)",
                 "box_shadow": styles.NEU_MODAL_SHADOW,
             },
-            style=styles.NEU_PANEL_STYLE,
+            style={
+                **styles.NEU_PANEL_STYLE,
+                "margin": "0",
+            },
         )
 
     else:
