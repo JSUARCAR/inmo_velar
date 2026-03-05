@@ -1,7 +1,13 @@
 import reflex as rx
 
 from src.presentacion_reflex.components.propiedades.wizard_progress import wizard_progress
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_text_area
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_select_root,
+    neuro_button,
+    neuro_text_area,
+    neuro_divider,
+)
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
 from src.presentacion_reflex import styles
 
@@ -13,7 +19,7 @@ def form_field(label: str, content: rx.Component, error: str = None) -> rx.Compo
         content,
         rx.cond(error, rx.text(error, color="red", size="1"), rx.fragment()),
         width="100%",
-        spacing="1",
+        spacing="4", 
     )
 
 
@@ -31,7 +37,6 @@ def step_1_content() -> rx.Component:
                     on_change=lambda v: PropiedadesState.set_form_field(
                         "matricula_inmobiliaria", v
                     ),
-                    size="2",
                     width="100%",
                 ),
             ),
@@ -43,13 +48,12 @@ def step_1_content() -> rx.Component:
                     placeholder="Ej: Calle 123 # 45-67",
                     value=PropiedadesState.form_data["direccion_propiedad"],
                     on_change=lambda v: PropiedadesState.set_form_field("direccion_propiedad", v),
-                    size="2",
                     width="100%",
                 ),
             ),
             columns="2",
-            spacing="4",
-            width="98%",
+            spacing="6",
+            width="100%", # Cambiado de 98% a 100%
         ),
         rx.grid(
             # Tipo
@@ -85,17 +89,10 @@ def step_1_content() -> rx.Component:
                 ),
             ),
             columns="2",
-            spacing="4",
-            width="98%",
+            spacing="6",
+            width="100%", # Cambiado de 98% a 100%
         ),
-        rx.box(
-            height="2px",
-            width="100%",
-            margin_y="4",
-            background=styles.BG_PANEL,
-            box_shadow="inset 0px 1px 1px rgba(184, 195, 218, 0.4), inset 0px -1px 1px rgba(255, 255, 255, 0.9)",
-            border_radius="full"
-        ),
+        neuro_divider(),
         # Disponibilidad y Observaciones
         rx.vstack(
             form_field(
@@ -127,12 +124,12 @@ def step_1_content() -> rx.Component:
                     width="100%",
                 ),
             ),
-            spacing="4",
-            width="98%",
+            spacing="5", # Aumentado de 4 a 5
+            width="100%",
         ),
-        spacing="5",
-        padding="4",
-        width="98%",
+        spacing="7", # Elevado para Neumorfismo (escala 7 = 32px/40px aprox)
+        padding="5",
+        width="100%",
     )
 
 
@@ -149,9 +146,7 @@ def step_2_content() -> rx.Component:
                     placeholder="0",
                     value=PropiedadesState.form_data["area_metros"],
                     on_change=lambda v: PropiedadesState.set_form_field("area_metros", v),
-                    size="2",
-                    width="98%",
-                    style={"box_shadow": f"inset 3px 3px 16px rgba(166, 171, 189, 0.5), inset -3px -3px 16px rgba(255, 255, 255, 0.9)"},
+                    width="100%",
                 ),
             ),
             # Estrato
@@ -175,8 +170,8 @@ def step_2_content() -> rx.Component:
                 ),
             ),
             columns="2",
-            spacing="4",
-            width="98%",
+            spacing="6", # Aumentado de 4 a 6
+            width="100%",
         ),
         rx.grid(
             # Habitaciones
@@ -187,8 +182,7 @@ def step_2_content() -> rx.Component:
                     type="number",
                     value=PropiedadesState.form_data["habitaciones"],
                     on_change=lambda v: PropiedadesState.set_form_field("habitaciones", v),
-                    size="2",
-                    width="98%",
+                    width="100%",
                 ),
             ),
             # Baños
@@ -199,8 +193,7 @@ def step_2_content() -> rx.Component:
                     type="number",
                     value=PropiedadesState.form_data["bano"],
                     on_change=lambda v: PropiedadesState.set_form_field("bano", v),
-                    size="2",
-                    width="98%",
+                    width="100%",
                 ),
             ),
             # Parqueadero
@@ -211,22 +204,14 @@ def step_2_content() -> rx.Component:
                     type="number",
                     value=PropiedadesState.form_data["parqueadero"],
                     on_change=lambda v: PropiedadesState.set_form_field("parqueadero", v),
-                    size="2",
-                    width="98%",
+                    width="100%",
                 ),
             ),
             columns="3",
-            spacing="4",
-            width="98%",
-        ),
-        rx.box(
-            height="2px",
+            spacing="6", # Aumentado de 4 a 6
             width="100%",
-            margin_y="4",
-            background=styles.BG_PANEL,
-            box_shadow="inset 0px 1px 1px rgba(184, 195, 218, 0.4), inset 0px -1px 1px rgba(255, 255, 255, 0.9)",
-            border_radius="full"
         ),
+        neuro_divider(),
         rx.text(
             "Servicios Públicos (Códigos de Pago)", size="2", weight="bold", color=styles.TEXT_SECONDARY
         ),
@@ -237,8 +222,7 @@ def step_2_content() -> rx.Component:
                     rx.input.slot(rx.icon("zap", size=16, color="var(--gray-10)")),
                     value=PropiedadesState.form_data["codigo_energia"],
                     on_change=lambda v: PropiedadesState.set_form_field("codigo_energia", v),
-                    size="2",
-                    width="98%",
+                    width="100%",
                 ),
             ),
             form_field(
@@ -247,8 +231,7 @@ def step_2_content() -> rx.Component:
                     rx.input.slot(rx.icon("droplets", size=16, color="var(--gray-10)")),
                     value=PropiedadesState.form_data["codigo_agua"],
                     on_change=lambda v: PropiedadesState.set_form_field("codigo_agua", v),
-                    size="2",
-                    width="98%",
+                    width="100%",
                 ),
             ),
             form_field(
@@ -257,26 +240,24 @@ def step_2_content() -> rx.Component:
                     rx.input.slot(rx.icon("flame", size=16, color="var(--gray-10)")),
                     value=PropiedadesState.form_data["codigo_gas"],
                     on_change=lambda v: PropiedadesState.set_form_field("codigo_gas", v),
-                    size="2",
-                    width="98%",
+                    width="100%",
                 ),
             ),
             columns="3",
-            spacing="4",
-            width="98%",
+            spacing="6", # Aumentado de 4 a 6
+            width="100%",
         ),
-        spacing="4",
-        padding="4",
-        width="98%",
+        spacing="7",
+        padding="5",
+        width="100%",
     )
-
 
 
 def step_3_content() -> rx.Component:
     """Paso 3: Financiero y Administración"""
     return rx.vstack(
         # Arrendamiento
-        rx.card(
+        rx.box(
             rx.vstack(
                 rx.text(
                     "Información de Arrendamiento", size="2", weight="bold", color="var(--green-9)"
@@ -292,9 +273,7 @@ def step_3_content() -> rx.Component:
                             placeholder="0",
                             value=PropiedadesState.form_data["valor_canon"],
                             on_change=lambda v: PropiedadesState.set_form_field("valor_canon", v),
-                            size="2",
-                            width="98%",
-                            style={"box_shadow": f"inset 4px 4px 16px rgba(166, 171, 189, 0.6), inset -4px -4px 16px rgba(255, 255, 255, 0.95)"},
+                            width="100%",
                         ),
                     ),
                     form_field(
@@ -307,22 +286,21 @@ def step_3_content() -> rx.Component:
                             on_change=lambda v: PropiedadesState.set_form_field(
                                 "valor_administracion", v
                             ),
-                            size="2",
-                            width="98%",
+                            width="100%",
                         ),
                     ),
                     columns="2",
-                    spacing="4",
+                    spacing="6", # Aumentado de 4 a 6
                     width="100%",
                 ),
                 padding="4",
-                background="var(--accent-2)",
-                border_radius="8px",
                 width="100%",
             ),
+            style=styles.NEU_PANEL_STYLE,
+            width="100%",
         ),
         # Venta (Opcional)
-        rx.card(
+        rx.box(
             rx.vstack(
                 rx.text("Opción de Venta", size="2", weight="bold", color="var(--blue-9)"),
                 rx.grid(
@@ -336,8 +314,7 @@ def step_3_content() -> rx.Component:
                             on_change=lambda v: PropiedadesState.set_form_field(
                                 "valor_venta_propiedad", v
                             ),
-                            size="2",
-                            width="98%",
+                            width="100%",
                         ),
                     ),
                     form_field(
@@ -350,21 +327,20 @@ def step_3_content() -> rx.Component:
                             on_change=lambda v: PropiedadesState.set_form_field(
                                 "comision_venta_propiedad", v
                             ),
-                            size="2",
-                            width="98%",
+                            width="100%",
                         ),
                     ),
                     columns="2",
-                    spacing="4",
-                    width="98%",
+                    spacing="6", # Aumentado de 4 a 6
+                    width="100%",
                 ),
                 padding="4",
-                background="var(--blue-2)",
-                border_radius="8px",
-                width="98%",
+                width="100%",
             ),
+            style=styles.NEU_PANEL_STYLE,
+            width="100%",
         ),
-        rx.card(
+        rx.box(
             rx.vstack(
                 rx.text("Datos Administración PH", size="2", weight="bold"),
                 rx.grid(
@@ -377,7 +353,7 @@ def step_3_content() -> rx.Component:
                                 "telefono_administracion", v
                             ),
                             size="3",
-                            width="98%",
+                            width="100%",
                         ),
                     ),
                     form_field(
@@ -389,24 +365,23 @@ def step_3_content() -> rx.Component:
                                 "numero_cuenta_administracion", v
                             ),
                             size="3",
-                            width="98%",
+                            width="100%",
                         ),
                     ),
                     columns="2",
-                    spacing="4",
-                    width="98%",
+                    spacing="6", # Aumentado de 4 a 6
+                    width="100%",
                 ),
                 padding="4",
-                background="var(--accent-2)",
-                border_radius="8px",
-                width="98%",
+                width="100%",
             ),
+            style=styles.NEU_PANEL_STYLE,
+            width="100%",
         ),
-        spacing="5",
+        spacing="6",
         padding="4",
         width="100%",
     )
-
 
 
 from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
@@ -432,7 +407,7 @@ def step_4_content() -> rx.Component:
                     max_files=15,  # Permitir más fotos
                     allow_multiple=True,
                 ),
-                spacing="4",
+                spacing="5", # Aumentado de 4 a 5
                 width="100%",
             ),
             # Mensaje para modo creación
@@ -508,11 +483,12 @@ def modal_propiedad() -> rx.Component:
                         rx.cond(PropiedadesState.modal_step == 2, step_2_content()),
                         rx.cond(PropiedadesState.modal_step == 3, step_3_content()),
                         rx.cond(PropiedadesState.modal_step == 4, step_4_content()),
-                        padding_y="2",
+                        padding_y="4", 
+                        padding_x="6",
                     ),
                     type="always",
                     scrollbars="vertical",
-                    style={"max_height": "500px", "height": "500px"},
+                    style={"max_height": "550px", "height": "550px"}, # Aumentado para evitar clipping
                 ),
                 # Footer Actions
                 rx.hstack(
@@ -527,14 +503,15 @@ def modal_propiedad() -> rx.Component:
                         neuro_button(
                             "Cancelar",
                             on_click=PropiedadesState.close_modal,
-                            size="2",
+                            color_scheme="gray",
+                            variant="soft"
                         ),
+                        rx.spacer(),
                         rx.cond(
                             PropiedadesState.modal_step > 1,
                             neuro_button(
                                 "Anterior",
                                 on_click=PropiedadesState.prev_modal_step,
-                                size="2",
                             ),
                         ),
                         rx.cond(
@@ -542,7 +519,6 @@ def modal_propiedad() -> rx.Component:
                             neuro_button(
                                 rx.hstack(rx.text("Siguiente"), rx.icon("chevron-right", size=16)),
                                 on_click=PropiedadesState.next_modal_step,
-                                size="2",
                             ),
                             # Save Button always visible on last step
                             neuro_button(
@@ -551,25 +527,26 @@ def modal_propiedad() -> rx.Component:
                                     PropiedadesState.form_data
                                 ),
                                 loading=PropiedadesState.is_loading,
-                                size="2",
                             ),
                         ),
-                        spacing="3",
+                        spacing="5", 
+                        align="center",
+                        width="100%",
                     ),
                     width="100%",
                     justify="between",
-                    padding_top="4",
+                    padding_top="6", 
                     border_top=f"1px solid {styles.BORDER_DEFAULT}",
                 ),
-                spacing="4",
+                spacing="5", # Aumentado de 4 a 5
                 width="100%",
             ),
-            width="100%",
+            size="3", # Asegurar tamaño radix adecuado
             style={
-                "max_width": "800px",
+                "max_width": "820px", # Aumentado de 800 a 820 para margen extra
                 "width": "95%",
-                "border_radius": "16px",
-                "padding": "24px",
+                "border_radius": "20px", # Más suavizado elite
+                "padding": "32px", # Más aire interno
                 "background": styles.BG_PANEL,
             },
             on_escape_key_down=PropiedadesState.close_modal,
