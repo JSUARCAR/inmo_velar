@@ -6,16 +6,23 @@ Muestra información completa del contrato en modo solo lectura.
 import reflex as rx
 
 from src.presentacion_reflex.state.contratos_state import ContratosState
+from src.presentacion_reflex.components.neuro_elements import neuro_button
+from src.presentacion_reflex import styles
 
 
 def detail_field(label: str, value: str) -> rx.Component:
     """Campo de detalle solo lectura."""
-    return rx.vstack(
-        rx.text(label, size="2", weight="medium", color="gray.600"),
-        rx.text(value, size="2", weight="regular"),
-        spacing="1",
-        align_items="start",
-        width="100%",
+    return rx.box(
+        rx.vstack(
+            rx.text(label, size="1", weight="bold", color="gray.500", text_transform="uppercase"),
+            rx.text(value, size="3", weight="medium", color="var(--gray-12)"),
+            spacing="1",
+            align_items="start",
+            width="100%",
+        ),
+        padding="0.5em 1em",
+        border_radius="8px",
+        style={"box_shadow": styles.SHADOW_INSET_ELITE, "background": "rgba(255,255,255,0.4)"},
     )
 
 
@@ -33,12 +40,25 @@ def contrato_detail_modal() -> rx.Component:
     """Modal que muestra detalles completos de un contrato."""
     return rx.dialog.root(
         rx.dialog.content(
-            rx.dialog.title(
-                rx.cond(
-                    ContratosState.contrato_detalle["tipo"] == "Mandato",
-                    "Detalle de Contrato de Mandato",
-                    "Detalle de Contrato de Arrendamiento",
-                )
+            # --- ELITE HEADER ---
+            rx.vstack(
+                rx.hstack(
+                    rx.icon("file-search", size=24, color="var(--blue-9)"),
+                    rx.dialog.title(
+                        rx.cond(
+                            ContratosState.contrato_detalle["tipo"] == "Mandato",
+                            "Detalle de Contrato de Mandato",
+                            "Detalle de Contrato de Arrendamiento",
+                        ),
+                        size="6",
+                        weight="bold",
+                    ),
+                    align="center",
+                    spacing="3",
+                ),
+                rx.separator(),
+                spacing="3",
+                padding_bottom="4",
             ),
             rx.vstack(
                 # Información Básica
@@ -207,11 +227,12 @@ def contrato_detail_modal() -> rx.Component:
                 # Botón Cerrar
                 rx.flex(
                     rx.dialog.close(
-                        rx.button(
-                            "Cerrar",
+                        neuro_button(
+                            "Cerrar Detalles",
                             on_click=ContratosState.close_detail_modal,
                             variant="soft",
                             color_scheme="gray",
+                            style={"box_shadow": styles.SHADOW_FLAT_ELITE, "_hover": {"box_shadow": styles.SHADOW_RAISED_ELITE, "transform": "scale(1.02)"}, "_active": {"box_shadow": styles.SHADOW_INSET_ELITE, "transform": "scale(0.98)"}},
                         )
                     ),
                     justify="end",
