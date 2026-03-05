@@ -1,3 +1,4 @@
+import datetime
 import reflex as rx
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.components.shared.aurora_background import aurora_background
@@ -137,7 +138,7 @@ def login_card() -> rx.Component:
 
                 # Footer
                 rx.text(
-                    "© 2024 Inmobiliaria Velar SAS. Todos los derechos reservados.",
+                    f"© {datetime.datetime.now().year} Inmobiliaria Velar SAS. Todos los derechos reservados.",
                     size="1",
                     class_name="glass-subtext-elite",
                     margin_top="8",
