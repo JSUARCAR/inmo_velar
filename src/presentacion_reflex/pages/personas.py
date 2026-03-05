@@ -476,7 +476,7 @@ def personas_page() -> rx.Component:
                                                                 content="Eliminar persona",
                                                             ),
                                                         ),
-                                                        spacing="1",
+                                                        spacing="3",
                                                     )
                                                 ),
                                                 _hover={
@@ -513,7 +513,7 @@ def personas_page() -> rx.Component:
                                 rx.grid(
                                     rx.foreach(PersonasState.personas, person_card),
                                     columns=rx.breakpoints(initial="1", sm="1", md="2", lg="3"),
-                                    gap="5",
+                                    gap="6",
                                     width="100%",
                                     padding="4",
                                 ),

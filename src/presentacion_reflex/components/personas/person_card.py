@@ -146,7 +146,7 @@ def person_card(persona: dict) -> rx.Component:
                             content="Eliminar persona",
                         ),
                     ),
-                    spacing="1",
+                    spacing="3",
                     align="center",
                 ),
                 width="100%",

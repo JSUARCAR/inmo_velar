@@ -67,7 +67,7 @@ def render_property_actions(prop: rx.Var) -> rx.Component:
                     ),
                     content=rx.cond(prop["estado_registro"], "Desactivar", "Activar"),
                 ),
-                spacing="2",
+                spacing="3",
             ),
         ),
     )
@@ -333,7 +333,7 @@ def propiedades_page() -> rx.Component:
                                             ),
                                         ),
                                         columns=rx.breakpoints(initial="1", sm="2", lg="3"),
-                                        gap="2rem",
+                                        gap="3rem",
                                         width="100%",
                                     ),
                                     # Table View (Premium)

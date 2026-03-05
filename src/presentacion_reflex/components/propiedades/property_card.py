@@ -321,7 +321,7 @@ def property_card(
                                     ),
                                     content=rx.cond(estado_registro, "Desactivar", "Activar"),
                                 ),
-                                spacing="2",
+                                spacing="3",
                             ),
                         ),
                     spacing="3",
@@ -330,8 +330,8 @@ def property_card(
                 align="center",
                 margin_top="4", 
             ),
-            spacing="4", 
-            padding="5", 
+            spacing="5", 
+            padding="6", 
             width="100%",
         ),
         # Elite Card Styling - Neumorphic Raised
@@ -341,7 +341,6 @@ def property_card(
         margin="auto",
         style={
             **styles.NEU_PANEL_STYLE,
-            "padding": "0",
             "transition": "all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
             "overflow": "hidden",
             "border": "none",
