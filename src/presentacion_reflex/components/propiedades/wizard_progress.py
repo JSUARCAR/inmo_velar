@@ -49,7 +49,7 @@ def step_indicator(step: int, current_step: int, label: str, icon: str) -> rx.Co
                 rx.cond(is_completed, "var(--purple-9)", "var(--gray-10)"),
             ),
         ),
-        spacing="2",
+        spacing="3",
         align="center",
         flex="1",
         cursor="pointer",
