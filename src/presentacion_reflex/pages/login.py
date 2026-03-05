@@ -78,13 +78,13 @@ def login_card() -> rx.Component:
                                     AuthState.password_visible,
                                     rx.icon(
                                         "eye-off", size=16,
-                                        color="rgba(255,255,255,0.6)",
+                                        class_name="glass-eye-icon",
                                         cursor="pointer",
                                         on_click=AuthState.toggle_password_visibility,
                                     ),
                                     rx.icon(
                                         "eye", size=16,
-                                        color="rgba(255,255,255,0.6)",
+                                        class_name="glass-eye-icon",
                                         cursor="pointer",
                                         on_click=AuthState.toggle_password_visibility,
                                     ),
@@ -94,7 +94,6 @@ def login_card() -> rx.Component:
                                 top="50%",
                                 transform="translateY(-50%)",
                                 z_index="1",
-                                style={"_hover": {"color": "white"}},
                             ),
                             position="relative",
                             width="100%",
@@ -132,6 +131,7 @@ def login_card() -> rx.Component:
                     align="center",
                     spacing="4",
                     width="100%",
+                    max_width="340px",
                 ),
 
 
