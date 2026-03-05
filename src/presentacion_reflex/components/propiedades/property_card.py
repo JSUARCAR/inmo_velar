@@ -61,7 +61,7 @@ def property_card(
                             height="40px",
                             border_radius="12px",
                             # Gradiente neumórfico usando tokens de acento del tema
-                            background=f"linear-gradient(135deg, var(--blue-9) 0%, var(--violet-9) 100%)",
+                            background=f"linear-gradient(45deg, var(--blue-9) 0%, var(--violet-9) 50%, var(--purple-9) 100%)",
                             box_shadow="0 4px 10px var(--blue-a6)",
                             cursor="pointer",
                         ),
