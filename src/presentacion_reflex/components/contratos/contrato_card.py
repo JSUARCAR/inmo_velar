@@ -4,6 +4,7 @@ from src.presentacion_reflex import styles
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.contratos_state import ContratosState
 from src.presentacion_reflex.state.pdf_state import PDFState
+from src.presentacion_reflex.components.neuro_elements import neuro_icon_action_button
 
 
 def contrato_card(contrato: dict) -> rx.Component:
@@ -143,125 +144,91 @@ def contrato_card(contrato: dict) -> rx.Component:
             rx.scroll_area(
                 rx.hstack(
                     # Ver Detalle
-                    rx.tooltip(
-                        rx.icon_button(
-                            rx.icon("eye", size=18),
-                            on_click=lambda: ContratosState.open_detail_modal(
-                                contrato["id_contrato"], contrato["tipo_contrato"]
-                            ),
-                            variant="surface",
-                            size="2",
-                            color_scheme="blue",
+                    neuro_icon_action_button(
+                        "eye",
+                        on_click=lambda: ContratosState.open_detail_modal(
+                            contrato["id_contrato"], contrato["tipo_contrato"]
                         ),
-                        content="Ver Detalle",
+                        color_scheme="blue",
+                        tooltip_content="Ver Detalle",
                     ),
                     # --- ACCIONES ARRENDAMIENTO ---
                     rx.cond(
                         contrato["tipo_contrato"] == "Arrendamiento",
                         rx.hstack(
-                            rx.tooltip(
-                                rx.icon_button(
-                                    rx.icon("file-check", size=18),
-                                    on_click=lambda: PDFState.generar_contrato_arrendamiento_elite(
-                                        contrato["id_contrato"], False
-                                    ),
-                                    variant="surface",
-                                    size="2",
-                                    color_scheme="purple",
-                                    style=styles.NEU_ICON_BUTTON_STYLE,
+                            neuro_icon_action_button(
+                                "file-check",
+                                on_click=lambda: PDFState.generar_contrato_arrendamiento_elite(
+                                    contrato["id_contrato"], False
                                 ),
-                                content="Contrato Oficial",
+                                color_scheme="purple",
+                                tooltip_content="Contrato Oficial",
                             ),
-                            rx.cond(
-                                AuthState.check_action("Contratos", "IPC"),
-                                rx.tooltip(
-                                    rx.icon_button(
-                                        rx.icon("trending-up", size=18),
+                                rx.cond(
+                                    AuthState.check_action("Contratos", "IPC"),
+                                    neuro_icon_action_button(
+                                        "trending-up",
                                         on_click=lambda: ContratosState.open_ipc_modal(
                                             contrato["id_contrato"]
                                         ),
-                                        variant="surface",
-                                        size="2",
                                         color_scheme="cyan",
                                         disabled=contrato["estado_contrato"] != "Activo",
-                                        style=styles.NEU_ICON_BUTTON_STYLE,
+                                        tooltip_content="Incremento IPC",
                                     ),
-                                    content="Incremento IPC",
                                 ),
-                            ),
                             spacing="1",
                         ),
                     ),
                     # --- ACCIONES MANDATO ---
                     rx.cond(
                         contrato["tipo_contrato"] == "Mandato",
-                        rx.tooltip(
-                            rx.icon_button(
-                                rx.icon("file-check", size=18),
-                                on_click=lambda: PDFState.generar_contrato_mandato_elite(
-                                    contrato["id_contrato"], False
-                                ),
-                                variant="surface",
-                                size="2",
-                                color_scheme="purple",
-                                style=styles.NEU_ICON_BUTTON_STYLE,
+                        neuro_icon_action_button(
+                            "file-check",
+                            on_click=lambda: PDFState.generar_contrato_mandato_elite(
+                                contrato["id_contrato"], False
                             ),
-                            content="Contrato Oficial",
+                            color_scheme="purple",
+                            tooltip_content="Contrato Oficial",
                         ),
                     ),
                     # Editar
-                    rx.cond(
-                        AuthState.check_action("Contratos", "EDITAR"),
-                        rx.tooltip(
-                            rx.icon_button(
-                                rx.icon("pencil", size=18),
+                        rx.cond(
+                            AuthState.check_action("Contratos", "EDITAR"),
+                            neuro_icon_action_button(
+                                "pencil",
                                 on_click=lambda: ContratosState.open_edit_modal(
                                     contrato["id_contrato"], contrato["tipo_contrato"]
                                 ),
-                                variant="surface",
-                                size="2",
                                 color_scheme="gray",
-                                style=styles.NEU_ICON_BUTTON_STYLE,
+                                tooltip_content="Editar",
                             ),
-                            content="Editar",
                         ),
-                    ),
                     # Renovación
-                    rx.cond(
-                        AuthState.check_action("Contratos", "RENOVAR"),
-                        rx.tooltip(
-                            rx.icon_button(
-                                rx.icon("refresh-cw", size=18),
+                        rx.cond(
+                            AuthState.check_action("Contratos", "RENOVAR"),
+                            neuro_icon_action_button(
+                                "refresh-cw",
                                 on_click=lambda: ContratosState.confirm_renewal(
                                     contrato["id_contrato"], contrato["tipo_contrato"]
                                 ),
-                                variant="surface",
-                                size="2",
                                 color_scheme="green",
                                 disabled=contrato["estado_contrato"] != "Activo",
-                                style=styles.NEU_ICON_BUTTON_STYLE,
+                                tooltip_content="Renovar",
                             ),
-                            content="Renovar",
                         ),
-                    ),
                     # Terminar
-                    rx.cond(
-                        AuthState.check_action("Contratos", "TERMINAR"),
-                        rx.tooltip(
-                            rx.icon_button(
-                                rx.icon("ban", size=18),
+                        rx.cond(
+                            AuthState.check_action("Contratos", "TERMINAR"),
+                            neuro_icon_action_button(
+                                "ban",
                                 on_click=lambda: ContratosState.toggle_estado(
                                     contrato["id_contrato"], contrato["tipo_contrato"], contrato["estado_contrato"]
                                 ),
-                                variant="surface",
-                                size="2",
                                 color_scheme="red",
                                 disabled=contrato["estado_contrato"] != "Activo",
-                                style=styles.NEU_ICON_BUTTON_STYLE,
+                                tooltip_content="Terminar",
                             ),
-                            content="Terminar",
                         ),
-                    ),
                     spacing="2",
                     padding_y="1",
                 ),

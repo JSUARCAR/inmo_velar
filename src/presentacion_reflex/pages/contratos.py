@@ -10,6 +10,7 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_button,
     neuro_icon_action_button,
     neuro_badge,
+    neuro_panel,
 )
 from src.presentacion_reflex.components.contratos.contrato_card import contrato_card
 from src.presentacion_reflex.components.contratos.contrato_mandato_form import contrato_mandato_form
@@ -222,7 +223,7 @@ def contratos_page() -> rx.Component:
                 ),
 
                 # Barra de Herramientas (Filtros y Búsqueda)
-                rx.card(
+                neuro_panel(
                     rx.flex(
                         neuro_input(
                             rx.input.slot(rx.icon("search", size=18)),
@@ -264,7 +265,6 @@ def contratos_page() -> rx.Component:
                         align="center",
                         gap="4",
                     ),
-                    style=styles.NEU_PANEL_STYLE,
                     width="100%",
                 ),
 
@@ -305,7 +305,7 @@ def contratos_page() -> rx.Component:
                 ),
 
                 # Paginación
-                rx.card(
+                neuro_panel(
                     rx.hstack(
                         neuro_button(
                             rx.hstack(rx.icon("chevron-left", size=16), rx.text("Anterior")),
@@ -323,7 +323,6 @@ def contratos_page() -> rx.Component:
                         spacing="4",
                         align="center",
                     ),
-                    style=styles.NEU_PANEL_STYLE,
                     width="100%",
                 ),
                 spacing="6",
