@@ -224,6 +224,25 @@ body,
     color: rgba(255, 255, 255, 0.7) !important;
 }
 
+.glass-eye-icon {
+    color: rgba(30, 41, 59, 0.55) !important;
+    transition: color 0.2s ease !important;
+}
+
+.glass-eye-icon:hover {
+    color: rgba(30, 41, 59, 0.9) !important;
+}
+
+.dark .glass-eye-icon,
+[data-theme="dark"] .glass-eye-icon {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.dark .glass-eye-icon:hover,
+[data-theme="dark"] .glass-eye-icon:hover {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
 .login-button-elite {
     display: block !important;
     margin-left: auto !important;
