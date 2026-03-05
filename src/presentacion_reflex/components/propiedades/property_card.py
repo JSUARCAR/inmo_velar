@@ -43,7 +43,7 @@ def property_card(
             rx.hstack(
                 rx.hover_card.root(
                     rx.hover_card.trigger(
-                        rx.center(
+                        rx.box(
                             rx.icon(
                                 rx.match(
                                     tipo.to(str),
@@ -54,16 +54,22 @@ def property_card(
                                     ("Lote", "map"),
                                     "home",
                                 ),
-                                size=24,
+                                size=22,
                                 color=styles.TEXT_INVERTED,
+                                style={"line_height": "0", "display": "block"},
                             ),
                             width="40px",
                             height="40px",
+                            min_width="40px",
                             border_radius="12px",
                             # Gradiente radial centrado: el ícono queda en el núcleo del tricolor
                             background="radial-gradient(circle at center, var(--violet-9) 0%, var(--blue-9) 55%, var(--purple-9) 100%)",
                             box_shadow="0 4px 12px var(--violet-a7)",
                             cursor="pointer",
+                            display="flex",
+                            align_items="center",
+                            justify_content="center",
+                            flex_shrink="0",
                         ),
                     ),
                     rx.hover_card.content(
