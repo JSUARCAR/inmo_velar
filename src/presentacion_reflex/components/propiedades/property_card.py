@@ -60,9 +60,9 @@ def property_card(
                             width="40px",
                             height="40px",
                             border_radius="12px",
-                            # Gradiente neumórfico usando tokens de acento del tema
-                            background=f"linear-gradient(45deg, var(--blue-9) 0%, var(--violet-9) 50%, var(--purple-9) 100%)",
-                            box_shadow="0 4px 10px var(--blue-a6)",
+                            # Gradiente radial centrado: el ícono queda en el núcleo del tricolor
+                            background="radial-gradient(circle at center, var(--violet-9) 0%, var(--blue-9) 55%, var(--purple-9) 100%)",
+                            box_shadow="0 4px 12px var(--violet-a7)",
                             cursor="pointer",
                         ),
                     ),
