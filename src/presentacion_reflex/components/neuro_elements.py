@@ -398,3 +398,89 @@ def neuro_card_footer(*children, **kwargs) -> rx.Component:
         style=contenedor_style,
         **kwargs,
     )
+
+
+# ---------------------------------------------------------------------------
+# TAREA 2.2 — neuro_icon_action_button
+# ---------------------------------------------------------------------------
+
+def neuro_icon_action_button(
+    icon_tag: str,
+    *,
+    color_scheme: str = "gray",
+    size: str = "2",
+    tooltip_content: str = "",
+    disabled: bool | rx.Var = False,
+    on_click=None,
+    **kwargs,
+) -> rx.Component:
+    """IconButton neumórfico de acción con ciclo táctil completo.
+
+    Ciclo de sombras:
+    - Reposo → ``shadow-flat-elite`` (superficie limpia, no elevada).
+    - Hover  → ``shadow-raised-elite`` (emerge del plano).
+    - Active → ``shadow-inset-elite`` (se hunde al confirmar la acción).
+
+    Este patrón elimina definitivamente la variante ``ghost`` (transparente)
+    y reemplaza la variante ``surface`` genérica con una semántica táctil
+    propia del sistema Neumorphism Executive de Velar.
+
+    Args:
+        icon_tag: Nombre del icono Lucide (ej. ``"pencil"``).
+        color_scheme: Esquema de color Radix para el icono (ej. ``"blue"``).
+        size: Tamaño del botón Radix (``"1"``, ``"2"``, ``"3"``). Default ``"2"``.
+        tooltip_content: Texto del tooltip. Si vacío, no se envuelve.
+        disabled: Deshabilita el botón. Acepta ``bool`` o ``rx.Var``.
+        on_click: Handler del evento clic.
+        **kwargs: Props adicionales para ``rx.icon_button``.
+
+    Returns:
+        rx.Component: IconButton (opcionalmente envuelto en tooltip).
+
+    Example:
+        neuro_icon_action_button(
+            "pencil",
+            color_scheme="gray",
+            tooltip_content="Editar",
+            on_click=MiState.abrir_edicion,
+        )
+    """
+    btn_style: dict = {
+        "background":  styles.BG_PANEL,
+        "box_shadow":  styles.SHADOW_FLAT_ELITE,
+        "border":      f"1px solid {styles.BORDER_DEFAULT}",
+        "border_radius": "10px",
+        "color":       f"var(--{color_scheme}-9)",
+        "transition":  styles.GLOBAL_TRANSITION,
+        "cursor":      "pointer",
+        "_hover": {
+            "box_shadow":  styles.SHADOW_RAISED_ELITE,
+            "background":  styles.BG_HOVER,
+            "transform":   "translateY(-1px)",
+        },
+        "_active": {
+            "box_shadow":  styles.SHADOW_INSET_ELITE,
+            "transform":   "scale(0.96)",
+        },
+        "_disabled": {
+            "opacity":     "0.4",
+            "cursor":      "not-allowed",
+            "box_shadow":  "none",
+        },
+        **kwargs.pop("style", {}),
+    }
+
+    btn = rx.icon_button(
+        rx.icon(tag=icon_tag, size=16),
+        variant="surface",
+        size=size,
+        color_scheme=color_scheme,
+        disabled=disabled,
+        on_click=on_click,
+        style=btn_style,
+        **kwargs,
+    )
+
+    if tooltip_content:
+        return rx.tooltip(btn, content=tooltip_content)
+    return btn

@@ -4,16 +4,105 @@ from src.presentacion_reflex import styles
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.contratos_state import ContratosState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_select_root,
+    neuro_button,
+    neuro_icon_action_button,
+    neuro_badge,
+)
 from src.presentacion_reflex.components.contratos.contrato_card import contrato_card
 from src.presentacion_reflex.components.contratos.contrato_mandato_form import contrato_mandato_form
 from src.presentacion_reflex.components.contratos.contrato_arrendamiento_form import contrato_arrendamiento_form
 from src.presentacion_reflex.components.contratos.contrato_detail_modal import contrato_detail_modal
 from src.presentacion_reflex.components.contratos.ipc_increment_modal import ipc_increment_modal
+from src.presentacion_reflex.components.shared.elite_gradient_icon import elite_gradient_icon_labeled
 from src.presentacion_reflex.state.pdf_state import PDFState
 
 def render_table_view() -> rx.Component:
-    """Renderiza la vista de tabla para los contratos."""
+    """Tabla de contratos con botones del ciclo flat-raised-inset."""
+
+    def _tabla_acciones(c: dict) -> rx.Component:
+        return rx.hstack(
+            # Detalle
+            neuro_icon_action_button(
+                "eye",
+                color_scheme="blue",
+                size="1",
+                tooltip_content="Ver Detalle",
+                on_click=lambda: ContratosState.open_detail_modal(
+                    c["id_contrato"], c["tipo_contrato"]
+                ),
+            ),
+            # Editar
+            rx.cond(
+                AuthState.check_action("Contratos", "EDITAR"),
+                neuro_icon_action_button(
+                    "pencil",
+                    color_scheme="gray",
+                    size="1",
+                    tooltip_content="Editar",
+                    on_click=lambda: ContratosState.open_edit_modal(
+                        c["id_contrato"], c["tipo_contrato"]
+                    ),
+                ),
+            ),
+            # Renovar
+            rx.cond(
+                AuthState.check_action("Contratos", "RENOVAR"),
+                neuro_icon_action_button(
+                    "refresh-cw",
+                    color_scheme="green",
+                    size="1",
+                    tooltip_content="Renovar Contrato",
+                    disabled=c["estado_contrato"] != "Activo",
+                    on_click=lambda: ContratosState.confirm_renewal(
+                        c["id_contrato"], c["tipo_contrato"]
+                    ),
+                ),
+            ),
+            # IPC — solo Arrendamiento
+            rx.cond(
+                (c["tipo_contrato"] == "Arrendamiento") &
+                AuthState.check_action("Contratos", "IPC"),
+                neuro_icon_action_button(
+                    "trending-up",
+                    color_scheme="cyan",
+                    size="1",
+                    tooltip_content="Aplicar IPC",
+                    disabled=c["estado_contrato"] != "Activo",
+                    on_click=lambda: ContratosState.open_ipc_modal(c["id_contrato"]),
+                ),
+            ),
+            # PDF Contrato Oficial
+            neuro_icon_action_button(
+                "file-check",
+                color_scheme="purple",
+                size="1",
+                tooltip_content="Generar Contrato Oficial",
+                on_click=lambda: rx.cond(
+                    c["tipo_contrato"] == "Mandato",
+                    PDFState.generar_contrato_mandato_elite(c["id_contrato"], False),
+                    PDFState.generar_contrato_arrendamiento_elite(c["id_contrato"], False),
+                ),
+            ),
+            # Terminar
+            rx.cond(
+                AuthState.check_action("Contratos", "TERMINAR"),
+                neuro_icon_action_button(
+                    "ban",
+                    color_scheme="red",
+                    size="1",
+                    tooltip_content="Terminar Contrato",
+                    disabled=c["estado_contrato"] != "Activo",
+                    on_click=lambda: ContratosState.toggle_estado(
+                        c["id_contrato"], c["tipo_contrato"], c["estado_contrato"]
+                    ),
+                ),
+            ),
+            spacing="2",
+        )
+
     return rx.table.root(
         rx.table.header(
             rx.table.row(
@@ -38,17 +127,15 @@ def render_table_view() -> rx.Component:
                         )
                     ),
                     rx.table.cell(
-                        rx.badge(
+                        neuro_badge(
                             c["tipo_contrato"],
                             color_scheme=rx.cond(c["tipo_contrato"] == "Mandato", "blue", "green"),
-                            variant="soft",
                         )
                     ),
                     rx.table.cell(
-                        rx.badge(
+                        neuro_badge(
                             c["estado_contrato"],
                             color_scheme=rx.cond(c["estado_contrato"] == "Activo", "green", "red"),
-                            variant="surface",
                         )
                     ),
                     rx.table.cell(
@@ -80,101 +167,12 @@ def render_table_view() -> rx.Component:
                             spacing="1",
                         )
                     ),
-                    rx.table.cell(
-                        rx.hstack(
-                            # Detalle (Ojo)
-                            rx.tooltip(
-                                rx.icon_button(
-                                    rx.icon("eye", size=16),
-                                    size="1",
-                                    variant="ghost",
-                                    color_scheme="blue",
-                                    on_click=lambda: ContratosState.open_detail_modal(c["id_contrato"], c["tipo_contrato"]),
-                                ),
-                                content="Ver Detalle",
-                            ),
-                            # Editar (Lápiz)
-                            rx.cond(
-                                AuthState.check_action("Contratos", "EDITAR"),
-                                rx.tooltip(
-                                    rx.icon_button(
-                                        rx.icon("pencil", size=16),
-                                        size="1",
-                                        variant="ghost",
-                                        color_scheme="gray",
-                                        on_click=lambda: ContratosState.open_edit_modal(c["id_contrato"], c["tipo_contrato"]),
-                                    ),
-                                    content="Editar",
-                                ),
-                            ),
-                            # Renovación (Refresco)
-                            rx.cond(
-                                AuthState.check_action("Contratos", "RENOVAR"),
-                                rx.tooltip(
-                                    rx.icon_button(
-                                        rx.icon("refresh-cw", size=16),
-                                        size="1",
-                                        variant="ghost",
-                                        color_scheme="green",
-                                        on_click=lambda: ContratosState.confirm_renewal(c["id_contrato"], c["tipo_contrato"]),
-                                        disabled=c["estado_contrato"] != "Activo",
-                                    ),
-                                    content="Renovar Contrato",
-                                ),
-                            ),
-                            # IPC (Tendencia arriba) - Solo Arrendamiento
-                            rx.cond(
-                                (c["tipo_contrato"] == "Arrendamiento") & 
-                                AuthState.check_action("Contratos", "IPC"),
-                                rx.tooltip(
-                                    rx.icon_button(
-                                        rx.icon("trending-up", size=16),
-                                        size="1",
-                                        variant="ghost",
-                                        color_scheme="cyan",
-                                        on_click=lambda: ContratosState.open_ipc_modal(c["id_contrato"]),
-                                        disabled=c["estado_contrato"] != "Activo",
-                                    ),
-                                    content="Aplicar IPC",
-                                ),
-                            ),
-                            # PDF Contrato Oficial
-                            rx.tooltip(
-                                rx.icon_button(
-                                    rx.icon("file-check", size=16),
-                                    size="1",
-                                    variant="ghost",
-                                    color_scheme="purple",
-                                    on_click=lambda: rx.cond(
-                                        c["tipo_contrato"] == "Mandato",
-                                        PDFState.generar_contrato_mandato_elite(c["id_contrato"], False),
-                                        PDFState.generar_contrato_arrendamiento_elite(c["id_contrato"], False),
-                                    ),
-                                ),
-                                content="Generar Contrato Oficial",
-                            ),
-                            # Terminar (Prohibido/Ban)
-                            rx.cond(
-                                AuthState.check_action("Contratos", "TERMINAR"),
-                                rx.tooltip(
-                                    rx.icon_button(
-                                        rx.icon("ban", size=16),
-                                        size="1",
-                                        variant="ghost",
-                                        color_scheme="red",
-                                        on_click=lambda: ContratosState.toggle_estado(c["id_contrato"], c["tipo_contrato"], c["estado_contrato"]),
-                                        disabled=c["estado_contrato"] != "Activo",
-                                    ),
-                                    content="Terminar Contrato",
-                                ),
-                            ),
-                            spacing="2",
-                        )
-                    ),
+                    rx.table.cell(_tabla_acciones(c)),
                 )
             )
         ),
         width="100%",
+        class_name="neu-table-elite",
     )
 
 def contratos_page() -> rx.Component:
@@ -186,16 +184,12 @@ def contratos_page() -> rx.Component:
                 # Encabezado
                 rx.box(
                     rx.hstack(
-                        rx.vstack(
-                            rx.heading("Gestión de Contratos", size="8", weight="bold"),
-                            rx.text("Administración de mandatos y arrendamientos", size="3", color=styles.TEXT_SECONDARY),
-                            rx.hstack(
-                                rx.icon("file-text", size=18, color=styles.ACCENT_COLOR),
-                                rx.text(f"Total: {ContratosState.total_items} contratos", size="2", weight="medium"),
-                                spacing="2",
-                                align="center",
-                            ),
-                            spacing="1",
+                        elite_gradient_icon_labeled(
+                            "file-text",
+                            "Gestión de Contratos",
+                            description="Administración de mandatos y arrendamientos",
+                            size=28,
+                            accent="purple",
                         ),
                         rx.spacer(),
                         rx.hstack(
@@ -233,6 +227,11 @@ def contratos_page() -> rx.Component:
                             on_change=ContratosState.set_search,
                             on_key_down=ContratosState.handle_search_key_down,
                             width=rx.breakpoints(initial="100%", md="400px"),
+                            style={
+                                **{
+                                    "box_shadow": styles.SHADOW_INSET_ELITE,
+                                }
+                            },
                         ),
                         rx.spacer(),
                         rx.hstack(

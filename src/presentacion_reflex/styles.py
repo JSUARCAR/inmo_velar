@@ -10,11 +10,17 @@ BG_APP = "var(--bg-app)"
 BG_PANEL = "var(--bg-panel)"
 BG_HOVER = "var(--bg-hover)"
 
-# --- Neumorphism Shadows ---
+# --- Neumorphism Shadows (aliases retrocompatibles) ---
 NEU_SHADOW = "var(--neu-shadow)"
 NEU_MODAL_SHADOW = "var(--neu-modal-shadow)"
 NEU_INSET = "var(--neu-inset)"
 NEU_INSET_LIGHT = "var(--neu-inset-light)"
+
+# --- ELITE Named Shadows (fuente de verdad) ---
+SHADOW_RAISED_ELITE = "var(--shadow-raised-elite)"
+SHADOW_FLAT_ELITE   = "var(--shadow-flat-elite)"
+SHADOW_INSET_ELITE  = "var(--shadow-inset-elite)"
+SHADOW_MODAL_ELITE  = "var(--shadow-modal-elite)"
 
 # --- Textos ---
 TEXT_PRIMARY = "var(--gray-12)"
@@ -120,4 +126,36 @@ NEU_TOOLTIP_STYLE = {
     "padding": "0.75rem",
     "transition": GLOBAL_TRANSITION,
     "z_index": "9999",
+}
+
+# Botones de icono: raised → flat → inset (sombras táctiles)
+NEU_ICON_BUTTON_STYLE = {
+    "background": BG_PANEL,
+    "box_shadow": SHADOW_RAISED_ELITE,
+    "border": f"1px solid {BORDER_DEFAULT}",
+    "border_radius": "10px",
+    "color": TEXT_PRIMARY,
+    "transition": GLOBAL_TRANSITION,
+    "cursor": "pointer",
+    "_hover": {
+        "box_shadow": SHADOW_FLAT_ELITE,
+        "background": BG_HOVER,
+    },
+    "_active": {
+        "box_shadow": SHADOW_INSET_ELITE,
+        "transform": "scale(0.97)",
+    },
+}
+
+# Card de contrato con sombra raised y hover elevado
+NEU_CONTRACT_CARD_STYLE = {
+    "background": BG_PANEL,
+    "box_shadow": SHADOW_RAISED_ELITE,
+    "border": "none",
+    "border_radius": "16px",
+    "transition": GLOBAL_TRANSITION,
+    "_hover": {
+        "box_shadow": SHADOW_MODAL_ELITE,
+        "transform": "translateY(-4px)",
+    },
 }
