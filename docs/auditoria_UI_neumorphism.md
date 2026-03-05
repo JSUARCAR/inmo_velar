@@ -48,7 +48,30 @@ Tras la inspección técnica en `extraordinary-joy-production-2fd2.up.railway.ap
     -   Anti-patrones erradicados (variante de botón `ghost` y padding manual reemplazados por componentes custom).
     -   Ilusión de profundidad restaurada en el 100% de la tabla del módulo Contratos.
 
-## SECCIÓN E: RECOMENDACIÓN ARQUITECTÓNICA
+---
+
+## SECCIÓN E: AUDITORÍA EN PRODUCCIÓN (MÓDULO CONTRATOS)
+*Fecha de auditoría: 04 de Marzo 2026*
+*Entorno:* `extraordinary-joy-production-2fd2.up.railway.app`
+
+Tras la auditoría visual mediante el subagente Playwright en el entorno productivo real, se detectan las siguientes brechas que impiden la adopción 100% del estilo **Neumorphism Executive**:
+
+### 1. Panel de Acción Principal
+- **Botones Superiores (+ Nuevo Mandato / Arriendo):** Actualmente renderizan como `ghost` o texto plano sin fondo. **Deben usarse** `neuro_button` con `variant="surface"` y `shadow_raised` para darles jerarquía de acción principal.
+- **Selectores de Filtro (Estado/Tipo):** Solo el campo de búsqueda de texto adoptó el `shadow_inset`. Los selects desplegables permanecen planos.
+
+### 2. Modales de Creación
+- **Inputs de Fecha (`type="date"`):** Renderizan planos con el borde HTML nativo del navegador, rompiendo por completo la inmersión táctil. Se debe aplicar el `shadow_inset` característico de los `neuro_inputs`.
+- **Inputs Secundarios (Comisión, IVA, Fecha de pago):** Estos campos de texto o numéricos no han heredado la clase de estilo Neumórfica y lucen planos en comparación con los campos superiores.
+- **Botones de Envío:** Los botones "Cancelar" y "Guardar Contrato" carecen del ciclo táctil (raised -> inset).
+
+### 3. Modal de Ver Detalles
+- **Inconsistencia de Cabecera:** Carece del `elite_gradient_icon_labeled` que sí ostenta el módulo principal, luciendo desprovisto de la marca corporativa.
+- **Contenido Plano:** Las etiquetas de solo lectura carecen de profundidad, dando sensación de un modal "sin terminar".
+
+**Plan de Acción:** Proceder con una fase de "Cirugía Fina" para inyectar los componentes compartidos (`neuro_input`, `neuro_button`, `elite_gradient_icon`) en los archivos `contratos.py`, `contrato_mandato_form.py` y `contrato_detail_modal.py`.
+
+## SECCIÓN F: RECOMENDACIÓN ARQUITECTÓNICA
 
 Se propone la siguiente estructura para asegurar el centrado absoluto y la consistencia del gradiente:
 
