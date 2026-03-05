@@ -90,26 +90,41 @@ def neuro_divider(**kwargs) -> rx.Component:
     return rx.box(style=final_style, **kwargs)
 
 def neuro_badge(text, *args, **kwargs) -> rx.Component:
-    """Badge con estilo neumático y mapeo semántico de colores."""
+    """Badge neumórfico con color semántico basado en la escala Radix CSS.
+
+    Compatible con Vars reactivos (rx.match, rx.cond) en color_scheme.
+    Usa var(--{color_scheme}-N) directamente para evitar comparaciones Python
+    contra Vars que romperían la compilación de Reflex.
+
+    Args:
+        text: Texto o Var a mostrar en el badge.
+        color_scheme: Nombre de escala Radix: "blue", "green", "red", "orange",
+                      "cyan", "violet", "gray", etc. Acepta rx.Var.
+        style: Estilos CSS adicionales a fusionar.
+    """
     color_scheme = kwargs.pop("color_scheme", "gray")
     custom_style = kwargs.pop("style", {})
-    
-    bg_color = f"var(--{color_scheme}-3)" if color_scheme != "gray" else styles.BG_PANEL
-    text_color = f"var(--{color_scheme}-11)" if color_scheme != "gray" else styles.TEXT_PRIMARY
-    
-    kwargs.setdefault("variant", "outline") 
-    
+
+    # ── Usar siempre la escala Radix pura ──────────────────────────────────
+    # var(--gray-3), var(--gray-6), var(--gray-11) son tokens válidos en Radix,
+    # igual que var(--blue-3), var(--green-3), etc.  No se necesita bifurcación.
+    bg_color   = f"var(--{color_scheme}-3)"
+    text_color = f"var(--{color_scheme}-11)"
+    border_val = f"1px solid var(--{color_scheme}-6)"
+
+    kwargs.setdefault("variant", "outline")
+
     final_style = {
-        "background": bg_color,
-        "box_shadow": styles.NEU_INSET_LIGHT,
-        "border": f"1px solid var(--{color_scheme}-6)" if color_scheme != "gray" else f"1px solid {styles.BORDER_DEFAULT}",
+        "background":    bg_color,
+        "box_shadow":    styles.NEU_INSET_LIGHT,
+        "border":        border_val,
         "border_radius": "12px",
-        "padding": "0.25rem 0.75rem",
-        "color": text_color,
-        "font_weight": "bold",
-        **custom_style
+        "padding":       "0.25rem 0.75rem",
+        "color":         text_color,
+        "font_weight":   "bold",
+        **custom_style,
     }
-    
+
     return rx.badge(text, *args, style=final_style, **kwargs)
 
 def neuro_progress(*args, **kwargs) -> rx.Component:
@@ -216,3 +231,170 @@ def neuro_switch(*args, **kwargs) -> rx.Component:
     }
     
     return rx.switch(*args, color_scheme=color_scheme, style=final_style, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# TAREA 1.1 — neuro_spinner
+# ---------------------------------------------------------------------------
+
+def neuro_spinner(size: str = "3", **kwargs) -> rx.Component:
+    """Spinner neumórfico con color de acento dinámico y rotación suave.
+
+    Args:
+        size: Tamaño Radix del spinner ("1"–"3"). Default "3".
+        **kwargs: Props adicionales pasados a rx.spinner.
+
+    Returns:
+        rx.Component: Spinner con color ACCENT_COLOR y efecto glow.
+    """
+    custom_style = kwargs.pop("style", {})
+    final_style = {
+        # Color de marca: hereda la variable CSS para soporte dark-mode automático
+        "color": styles.ACCENT_COLOR,
+        # Halo sutil que refuerza la sensación neumórfica sin peso visual
+        # 'neu-pulse' combina el glow con la rotación nativa del spinner Radix
+        "filter": "drop-shadow(0 0 6px var(--blue-6))",
+        # @keyframes spin definido globalmente en assets/custom_layout.css
+        "animation": "spin 1s linear infinite",
+        "transition": styles.GLOBAL_TRANSITION,
+        **custom_style,
+    }
+
+    return rx.spinner(size=size, style=final_style, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# TAREA 1.2 — neuro_callout
+# ---------------------------------------------------------------------------
+
+# Mapa semántico: color_scheme → var CSS de Radix para fondo y texto
+_CALLOUT_COLOR_MAP: dict[str, dict[str, str]] = {
+    "blue":   {"bg": "var(--blue-3)",   "border": "var(--blue-6)",   "icon_color": "var(--blue-9)"},
+    "green":  {"bg": "var(--green-3)",  "border": "var(--green-6)",  "icon_color": "var(--green-9)"},
+    "red":    {"bg": "var(--red-3)",    "border": "var(--red-6)",    "icon_color": "var(--red-9)"},
+    "yellow": {"bg": "var(--yellow-3)", "border": "var(--yellow-6)", "icon_color": "var(--yellow-9)"},
+    "gray":   {"bg": styles.BG_PANEL,   "border": styles.BORDER_DEFAULT, "icon_color": styles.TEXT_SECONDARY},
+}
+
+
+def neuro_callout(
+    text: str | rx.Component,
+    icon: str = "info",
+    color_scheme: str = "blue",
+    **kwargs,
+) -> rx.Component:
+    """Callout con elevación neumórfica (border-radius 12px, NEU_MODAL_SHADOW).
+
+    Construido manualmente para no depender del renderizado plano de rx.callout.
+
+    Args:
+        text: Mensaje del callout (str o componente Reflex).
+        icon: Nombre del icono Lucide/Radix. Default "info".
+        color_scheme: Esquema semántico: "blue", "green", "red", "yellow", "gray".
+        **kwargs: Props adicionales pasados al rx.box contenedor.
+
+    Returns:
+        rx.Component: Callout neumórfico con icono, sombra modal y borde redondeado.
+    """
+    custom_style = kwargs.pop("style", {})
+    colors = _CALLOUT_COLOR_MAP.get(color_scheme, _CALLOUT_COLOR_MAP["blue"])
+
+    contenedor_style = {
+        "background": colors["bg"],
+        "box_shadow": styles.NEU_MODAL_SHADOW,
+        "border": f"1px solid {colors['border']}",
+        "border_radius": "12px",
+        "padding": "1rem 1.25rem",
+        "transition": styles.GLOBAL_TRANSITION,
+        "width": "100%",
+        **custom_style,
+    }
+
+    cuerpo_texto = (
+        rx.text(text, size="2", color=styles.TEXT_PRIMARY)
+        if isinstance(text, str)
+        else text
+    )
+
+    return rx.box(
+        rx.hstack(
+            rx.icon(
+                tag=icon,
+                size=18,
+                color=colors["icon_color"],
+                flex_shrink="0",
+            ),
+            cuerpo_texto,
+            align="center",
+            gap="0.75rem",
+            width="100%",
+        ),
+        style=contenedor_style,
+        **kwargs,
+    )
+
+
+# ---------------------------------------------------------------------------
+# TAREA 1.3 — neuro_card_footer
+# ---------------------------------------------------------------------------
+
+def neuro_card_footer(*children, **kwargs) -> rx.Component:
+    """Footer estandarizado para tarjetas neumórficas.
+
+    Muestra un divisor superior y distribuye el contenido en dos zonas:
+    - Zona izquierda (precio / información secundaria).
+    - Zona derecha (acciones / botones).
+
+    Args:
+        *children: Componentes hijo. El primero va a la izquierda, el resto a la derecha.
+        **kwargs: Props adicionales pasados al rx.box contenedor.
+
+    Returns:
+        rx.Component: Footer con divisor y layoute justify-between.
+
+    Example:
+        neuro_card_footer(
+            rx.text("$1.200.000", weight="bold"),
+            neuro_button("Ver", on_click=...),
+            neuro_button("Editar", on_click=...),
+        )
+    """
+    custom_style = kwargs.pop("style", {})
+
+    contenedor_style = {
+        "width": "100%",
+        "padding_top": "1rem",
+        "margin_top": "0.75rem",
+        # Divisor superior tallado (neumorfismo inset)
+        "border_top": f"1.5px solid transparent",
+        "background_image": (
+            "linear-gradient(var(--bg-panel), var(--bg-panel)), "
+            "linear-gradient(to right, rgba(163,177,198,0.5), rgba(255,255,255,0.9), rgba(163,177,198,0.5))"
+        ),
+        "background_origin": "border-box",
+        "background_clip": "padding-box, border-box",
+        **custom_style,
+    }
+
+    # Primer hijo → zona izquierda (precio). Resto → zona derecha (acciones).
+    zona_izq = children[0] if children else rx.fragment()
+    zona_der_hijos = children[1:] if len(children) > 1 else []
+
+    return rx.box(
+        rx.hstack(
+            # Zona izquierda
+            rx.box(zona_izq),
+            # Zona derecha — acciones agrupadas con gap estándar
+            rx.hstack(
+                *zona_der_hijos,
+                gap="0.5rem",
+                align="center",
+                flex_shrink="0",
+            ),
+            justify="between",
+            align="center",
+            width="100%",
+        ),
+        style=contenedor_style,
+        **kwargs,
+    )

@@ -1,6 +1,18 @@
 /* Custom responsive rules for Inmobiliaria Velar Layout */
 /* Bypasses Reflex and Radix UI SSR bugs */
 
+/* Animaciones globales reutilizables */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@keyframes neu-pulse {
+    0%, 100% { filter: drop-shadow(0 0 4px var(--blue-6)); }
+    50%       { filter: drop-shadow(0 0 10px var(--blue-7)); }
+}
+
+
 @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap');
 
 :root {

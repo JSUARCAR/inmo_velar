@@ -10,63 +10,64 @@ from src.presentacion_reflex.components.propiedades.modal_form import modal_prop
 from src.presentacion_reflex.components.propiedades.property_card import property_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_switch
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_switch, neuro_spinner, neuro_badge
 from src.presentacion_reflex import styles
 
 
 
 
 def render_property_actions(prop: rx.Var) -> rx.Component:
-    """Renderiza los botones de acción para una propiedad."""
+    """Renderiza los botones de acción para una propiedad con estilo neumórfico."""
     return rx.hstack(
         rx.cond(
             AuthState.check_action("Propiedades", "EDITAR"),
             rx.hstack(
                 rx.tooltip(
-                    rx.icon_button(
-                        rx.icon("refresh-ccw", size=16),
+                    neuro_button(
+                        rx.icon("refresh-ccw", size=14),
                         size="1",
-                        variant="ghost",
-                        color_scheme="blue",
                         on_click=lambda: PropiedadesState.toggle_disponibilidad(
                             prop["id_propiedad"],
                             rx.cond(prop["disponibilidad"] == 1, 0, 1),
                         ),
+                        style={"min_width": "32px", "height": "32px", "padding": "0"},
                     ),
                     content="Cambiar Estado",
                 ),
                 rx.tooltip(
-                    rx.icon_button(
-                        rx.icon("pencil", size=16),
+                    neuro_button(
+                        rx.icon("pencil", size=14),
                         size="1",
-                        variant="ghost",
                         on_click=lambda: PropiedadesState.open_edit_modal(prop["id_propiedad"]),
+                        style={"min_width": "32px", "height": "32px", "padding": "0"},
                     ),
                     content="Editar",
                 ),
                 rx.tooltip(
                     rx.cond(
                         prop["estado_registro"],
-                        rx.icon_button(
-                            rx.icon("power-off", size=16),
-                            size="2",
-                            variant="ghost",
-                            color_scheme="red",
+                        neuro_button(
+                            rx.icon("power-off", size=14),
+                            size="1",
                             on_click=lambda: PropiedadesState.toggle_activa(prop["id_propiedad"], 1),
-                            _hover={"background": "var(--red-3)", "color": "var(--red-9)"},
+                            style={
+                                "min_width": "32px", "height": "32px", "padding": "0",
+                                "color": "var(--red-9)",
+                            },
                         ),
-                        rx.icon_button(
-                            rx.icon("power", size=16),
-                            size="2",
-                            variant="ghost",
-                            color_scheme="green",
+                        neuro_button(
+                            rx.icon("power", size=14),
+                            size="1",
                             on_click=lambda: PropiedadesState.toggle_activa(prop["id_propiedad"], 0),
-                            _hover={"background": "var(--green-3)", "color": "var(--green-9)"},
+                            style={
+                                "min_width": "32px", "height": "32px", "padding": "0",
+                                "color": "var(--green-9)",
+                            },
                         ),
                     ),
                     content=rx.cond(prop["estado_registro"], "Desactivar", "Activar"),
                 ),
-                spacing="3",
+                spacing="2",
             ),
         ),
     )
@@ -138,7 +139,8 @@ def propiedades_page() -> rx.Component:
                     ),
                     width="100%",
                     padding_bottom="2",
-                    border_radius="12px",
+                    border_radius="16px",
+                    style=styles.NEU_PANEL_STYLE,
                 ),
                 # --- Main Content Area ---
                 rx.vstack(
@@ -261,7 +263,7 @@ def propiedades_page() -> rx.Component:
                         PropiedadesState.is_loading,
                         rx.center(
                             rx.vstack(
-                                rx.spinner(size="3", color="var(--accent-9)"),
+                                neuro_spinner(size="3"),
                                 rx.text("Cargando inventario...", color="var(--gray-10)"),
                                 spacing="4",
                             ),
@@ -384,19 +386,18 @@ def propiedades_page() -> rx.Component:
                                                                 align="center",
                                                             )
                                                         ),
-                                                        rx.table.cell(
-                                                            rx.badge(
+                                                         rx.table.cell(
+                                                            neuro_badge( # Converted to neuro_badge
                                                                 prop["tipo_propiedad"],
-                                                                variant="surface",
                                                                 color_scheme="blue",
                                                             )
                                                         ),
-                                                        rx.table.cell(prop["municipio_nombre"]),
-                                                        rx.table.cell(
+                                                         rx.table.cell(prop["municipio_nombre"]),
+                                                         rx.table.cell(
                                                             rx.cond(
                                                                 prop["disponibilidad"],
-                                                                rx.badge("Disponible", color_scheme="green", variant="soft"),
-                                                                rx.badge("Ocupada", color_scheme="gray", variant="soft"),
+                                                                neuro_badge("Disponible", color_scheme="green"), # Converted to neuro_badge
+                                                                neuro_badge("Ocupada", color_scheme="gray"), # Converted to neuro_badge
                                                             )
                                                         ),
                                                         rx.table.cell(

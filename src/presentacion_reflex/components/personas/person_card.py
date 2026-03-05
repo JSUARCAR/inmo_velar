@@ -11,6 +11,7 @@ def person_card(persona: dict) -> rx.Component:
     initials = persona["nombre"][:2]
 
     from src.presentacion_reflex import styles
+    from src.presentacion_reflex.components.neuro_elements import neuro_badge, neuro_button
 
     return rx.card(
         rx.vstack(
@@ -67,33 +68,38 @@ def person_card(persona: dict) -> rx.Component:
                 width="100%",
                 padding_y="2",
             ),
-            # Roles badges
+            # Roles badges (neuro_badge neumórfico)
             rx.box(
                 rx.foreach(
                     persona["roles"],
-                    lambda r: rx.match(
-                        r,
-                        (
-                            "Propietario",
-                            rx.badge(rx.hstack(rx.icon("home", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="blue", variant="soft", margin_right="1", margin_bottom="1", radius="full")
+                    lambda r: neuro_badge(
+                        rx.hstack(
+                            rx.icon(
+                                rx.match(
+                                    r,
+                                    ("Propietario", "home"),
+                                    ("Arrendatario", "user-check"),
+                                    ("Asesor", "briefcase"),
+                                    ("Codeudor", "shield"),
+                                    ("Proveedor", "wrench"),
+                                    "user",
+                                ),
+                                size=12,
+                            ),
+                            rx.text(r, size="1"),
+                            spacing="1",
+                            align="center",
                         ),
-                        (
-                            "Arrendatario",
-                            rx.badge(rx.hstack(rx.icon("user-check", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="green", variant="soft", margin_right="1", margin_bottom="1", radius="full")
+                        color_scheme=rx.match(
+                            r,
+                            ("Propietario", "blue"),
+                            ("Arrendatario", "green"),
+                            ("Asesor", "violet"),
+                            ("Codeudor", "orange"),
+                            ("Proveedor", "cyan"),
+                            "gray",
                         ),
-                        (
-                            "Asesor",
-                            rx.badge(rx.hstack(rx.icon("briefcase", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="purple", variant="soft", margin_right="1", margin_bottom="1", radius="full")
-                        ),
-                        (
-                            "Codeudor",
-                            rx.badge(rx.hstack(rx.icon("shield", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="orange", variant="soft", margin_right="1", margin_bottom="1", radius="full")
-                        ),
-                        (
-                            "Proveedor",
-                            rx.badge(rx.hstack(rx.icon("wrench", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="cyan", variant="soft", margin_right="1", margin_bottom="1", radius="full")
-                        ),
-                        rx.badge(rx.hstack(rx.icon("user", size=12), rx.text(r, size="1"), spacing="1", align="center"), color_scheme="gray", variant="soft", margin_right="1", margin_bottom="1", radius="full")
+                        style={"margin_right": "4px", "margin_bottom": "4px"},
                     ),
                 ),
                 width="100%",
@@ -103,8 +109,8 @@ def person_card(persona: dict) -> rx.Component:
             rx.hstack(
                 rx.cond(
                     persona["estado"] == "Activo",
-                    rx.badge("Activo", color_scheme="green", variant="soft", radius="full"),
-                    rx.badge("Inactivo", color_scheme="red", variant="soft", radius="full"),
+                    neuro_badge("Activo", color_scheme="green"),
+                    neuro_badge("Inactivo", color_scheme="red"),
                 ),
                 rx.spacer(),
                 rx.hstack(
@@ -117,13 +123,11 @@ def person_card(persona: dict) -> rx.Component:
                     rx.cond(
                         AuthState.check_action("Personas", "EDITAR"),
                         rx.tooltip(
-                            rx.icon_button(
-                                rx.icon("pencil", size=18),
+                            neuro_button(
+                                rx.icon("pencil", size=16),
                                 on_click=lambda: PersonasState.open_edit_modal(persona),
-                                variant="ghost",
-                                size="2",
-                                color_scheme="gray",
-                                _hover={"background": styles.ACCENT_BG_SOFT, "color": styles.ACCENT_COLOR},
+                                size="1",
+                                style={"min_width": "32px", "height": "32px", "padding": "0"},
                             ),
                             content="Editar persona",
                         ),
@@ -131,13 +135,13 @@ def person_card(persona: dict) -> rx.Component:
                     rx.cond(
                         AuthState.check_action("Personas", "ELIMINAR"),
                         rx.tooltip(
-                            rx.icon_button(
-                                rx.icon("trash-2", size=18),
-                                # Pendiente: Implementar delete con confirmación
-                                variant="ghost",
-                                size="2",
-                                color_scheme="red",
-                                _hover={"background": "var(--red-3)", "color": "var(--red-9)"},
+                            neuro_button(
+                                rx.icon("trash-2", size=16),
+                                size="1",
+                                style={
+                                    "min_width": "32px", "height": "32px",
+                                    "padding": "0", "color": "var(--red-9)",
+                                },
                             ),
                             content="Eliminar persona",
                         ),
