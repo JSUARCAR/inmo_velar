@@ -123,7 +123,7 @@ def login_card() -> rx.Component:
                     rx.cond(
                         AuthState.error_message != "",
                         rx.hstack(
-                            rx.icon("alert-circle", size=14, color="#f87171"),
+                            rx.icon("circle_alert", size=14, color="#f87171"),
                             rx.text(AuthState.error_message, color="#f87171", size="2", weight="medium"),
                             spacing="2",
                             align="center",
