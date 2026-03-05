@@ -180,31 +180,37 @@ def neuro_switch(*args, **kwargs) -> rx.Component:
     color_scheme = kwargs.pop("color_scheme", "green")
     
     # Reflex usa Radix bajo el capó para el switch.
-    # El estilo debe afectar al contenedor (root) y al thumb.
+    # Forzamos variant soft/surface para minimizar estilos nativos que interfieran
+    kwargs.setdefault("variant", "surface")
+    
     final_style = {
-        "box_shadow": styles.NEU_INSET,
-        "background": styles.BG_PANEL,
-        "border": f"1px solid {styles.BORDER_DEFAULT}",
+        "box_shadow": styles.NEU_INSET + " !important",
+        "background": styles.BG_PANEL + " !important",
+        "border": f"1px solid {styles.BORDER_DEFAULT} !important",
         "cursor": "pointer",
         "border_radius": "9999px",
         "transition": styles.GLOBAL_TRANSITION,
+        "padding": "2px",
+        "width": "44px",
+        "height": "24px",
         
         # Estado activo/encendido
         "&[data-state='checked']": {
-             "background": f"var(--{color_scheme}-9)",
-             "box_shadow": f"inset 0 2px 4px rgba(0,0,0,0.3), 0 0 8px var(--{color_scheme}-6)",
+             "background": f"var(--{color_scheme}-9) !important",
+             "box_shadow": f"inset 0 2px 4px rgba(0,0,0,0.3), 0 0 8px var(--{color_scheme}-6) !important",
         },
         
-        # El "thumb" del switch en Radix
+        # El "thumb" del switch en Radix - Target exacto por clase y atributo
         "& .rt-SwitchThumb": { 
-            "background": styles.BG_PANEL,
-            "box_shadow": "4px 4px 8px rgba(163, 177, 198, 0.4), -4px -4px 8px rgba(255, 255, 255, 0.8), inset 1px 1px 2px rgba(255,255,255,1), inset -1px -1px 2px rgba(163, 177, 198, 0.2)",
-            "border": f"1px solid {styles.BORDER_DEFAULT}",
+            "background": "white !important",
+            "box_shadow": "2px 2px 5px rgba(0,0,0,0.2) !important",
+            "transform": "translateX(2px)",
+            "transition": "transform 250ms cubic-bezier(0.4, 0, 0.2, 1)",
         },
         
         "&[data-state='checked'] .rt-SwitchThumb": {
-             "box_shadow": "2px 2px 4px rgba(0,0,0,0.2), inset 1px 1px 2px rgba(255,255,255,0.4)",
-             "border": "none",
+             "transform": "translateX(20px)",
+             "background": "white !important",
         },
         **custom_style
     }

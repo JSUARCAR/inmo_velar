@@ -331,7 +331,7 @@ def propiedades_page() -> rx.Component:
                                             ),
                                         ),
                                         columns=rx.breakpoints(initial="1", sm="2", lg="3"),
-                                        gap="6",
+                                        gap="2rem",
                                         width="100%",
                                     ),
                                     # Table View (Premium)
