@@ -8,6 +8,7 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_icon_action_button,
     neuro_badge,
     neuro_divider,
+    neuro_panel,
 )
 
 
@@ -16,7 +17,7 @@ def contrato_card(contrato: dict) -> rx.Component:
     Tarjeta visual para un contrato (Mandato o Arrendamiento).
     Estilo Elite estandarizado.
     """
-    return rx.card(
+    return neuro_panel(
         rx.vstack(
             # Header: Tipo y Estado
             rx.hstack(
