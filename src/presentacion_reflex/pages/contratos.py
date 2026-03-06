@@ -292,8 +292,9 @@ def contratos_page() -> rx.Component:
                                     rx.grid(
                                         rx.foreach(ContratosState.contratos, contrato_card),
                                         columns=rx.breakpoints(initial="1", sm="2", lg="3"),
-                                        gap="6",
+                                        gap=rx.breakpoints(initial="6", sm="2"),
                                         width="100%",
+                                        padding="4",
                                     ),
                                     render_table_view(),
                                 ),
