@@ -4,7 +4,11 @@ from src.presentacion_reflex import styles
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.contratos_state import ContratosState
 from src.presentacion_reflex.state.pdf_state import PDFState
-from src.presentacion_reflex.components.neuro_elements import neuro_icon_action_button
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_icon_action_button,
+    neuro_badge,
+    neuro_divider,
+)
 
 
 def contrato_card(contrato: dict) -> rx.Component:
@@ -16,7 +20,7 @@ def contrato_card(contrato: dict) -> rx.Component:
         rx.vstack(
             # Header: Tipo y Estado
             rx.hstack(
-                rx.badge(
+                neuro_badge(
                     contrato["tipo_contrato"],
                     color_scheme=rx.cond(
                         contrato["tipo_contrato"] == "Mandato",
@@ -24,17 +28,15 @@ def contrato_card(contrato: dict) -> rx.Component:
                         "green",
                     ),
                     radius="full",
-                    variant="soft",
                 ),
                 rx.spacer(),
-                rx.badge(
+                neuro_badge(
                     contrato["estado_contrato"],
                     color_scheme=rx.cond(
                         contrato["estado_contrato"] == "Activo",
                         "green",
                         "red",
                     ),
-                    variant="surface",
                 ),
                 width="100%",
                 align="center",
@@ -47,9 +49,8 @@ def contrato_card(contrato: dict) -> rx.Component:
                     weight="bold",
                     color="var(--gray-12)",
                 ),
-                rx.badge(
+                neuro_badge(
                     contrato["propiedad_tipo"],
-                    variant="soft",
                     color_scheme="indigo",
                     size="1",
                     radius="full",
@@ -62,7 +63,7 @@ def contrato_card(contrato: dict) -> rx.Component:
                 spacing="1",
                 align="start",
             ),
-            rx.separator(),
+            neuro_divider(),
             # Info: Partes (Propietario / Arrendatario)
             rx.hstack(
                 rx.icon("user", size=16, color="var(--blue-9)"),
