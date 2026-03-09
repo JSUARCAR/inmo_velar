@@ -50,7 +50,7 @@ class ContratosState(DocumentosStateMixin):
     filter_estado: str = "Activo"  # Todos, Activo, Cancelado
     filter_propiedad_id: str = ""
     filter_persona_id: str = ""
-    filter_asesor_id: str = ""
+    filter_asesor_id: str = "todos"
     solo_activos: bool = True
 
     # Opciones de filtros (para dropdowns)
@@ -94,6 +94,17 @@ class ContratosState(DocumentosStateMixin):
     def set_form_field(self, name: str, value: Any):
         """Actualiza un campo del formulario."""
         self.form_data[name] = value
+
+    @rx.var
+    def asesores_filter_options(self) -> List[List[str]]:
+        """Opciones de asesores para el select del filtro principal."""
+        return [["Todos los Asesores", "todos"]] + self.asesores_select_options
+
+    def set_filter_asesor_id(self, val: str):
+        """Setter para el filtro de asesores que recarga la página."""
+        self.filter_asesor_id = val
+        self.current_page = 1
+        return ContratosState.load_contratos
 
     def toggle_view(self):
         """Alterna entre vista de tabla y grid."""
