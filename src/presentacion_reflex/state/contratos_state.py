@@ -1456,6 +1456,7 @@ class ContratosState(DocumentosStateMixin):
             repo_codeudor = RepositorioCodeudorSQLite(db_manager)
 
             servicio = ServicioContratos(
+                db_manager=db_manager,
                 repo_mandato=repo_mandato,
                 repo_arriendo=repo_arriendo,
                 repo_propiedad=repo_propiedad,
