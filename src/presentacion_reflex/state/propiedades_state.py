@@ -226,7 +226,7 @@ class PropiedadesState(DocumentosStateMixin):
                 self.kpi_ocupadas_inactivas = 0
                 
                 for row in rows:
-                    disp = row.get("DISPONIBILIDAD_PROPIEDAD") or row.get("disponibilidad")
+                    disp = row.get("DISPONIBILIDAD") or row.get("disponibilidad")
                     if disp in (1, True, "1", "true", "True"):
                         self.kpi_disponibles_total = row.get("TOTAL", row.get("total", 0)) or 0
                         self.kpi_disponibles_activas = row.get("ACTIVAS", row.get("activas", 0)) or 0
