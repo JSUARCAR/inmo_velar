@@ -122,6 +122,12 @@ def render_table_view() -> rx.Component:
                 lambda c: rx.table.row(
                     rx.table.cell(
                         rx.vstack(
+                            rx.hstack(
+                                rx.icon("hash", size=14, color="var(--gray-9)"),
+                                rx.text(f"ID: {c['id_contrato']}", weight="bold", size="1", color="var(--gray-11)"),
+                                align="center",
+                                spacing="1"
+                            ),
                             rx.text(c["propiedad_direccion"], weight="bold", size="2"),
                             rx.text(c["propiedad_matricula"], size="1", color=styles.TEXT_SECONDARY),
                             spacing="1",
