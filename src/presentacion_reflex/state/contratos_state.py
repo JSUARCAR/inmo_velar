@@ -113,7 +113,7 @@ class ContratosState(DocumentosStateMixin):
         """Setter para el filtro de asesores que recarga la página."""
         self.filter_asesor_id = val
         self.current_page = 1
-        return ContratosState.load_contratos
+        return [ContratosState.load_contratos, ContratosState.load_kpis]
 
     def toggle_view(self):
         """Alterna entre vista de tabla y grid."""
@@ -210,29 +210,38 @@ class ContratosState(DocumentosStateMixin):
     @rx.event(background=True)
     async def load_kpis(self):
         """Carga los contadores KPI directos desde la BD."""
-        query_mandatos = """
+        
+        asesor_where = ""
+        params = ()
+        if self.filter_asesor_id and self.filter_asesor_id != "todos":
+            asesor_where = "WHERE ID_ASESOR = %s"
+            params = (self.filter_asesor_id,)
+            
+        query_mandatos = f"""
         SELECT 
             COUNT(*) as total,
             SUM(CASE WHEN ESTADO_CONTRATO_M = 'Activo' THEN 1 ELSE 0 END) as activos,
             SUM(CASE WHEN ESTADO_CONTRATO_M != 'Activo' THEN 1 ELSE 0 END) as inactivos
         FROM CONTRATOS_MANDATOS
+        {asesor_where}
         """
         
-        query_arriendos = """
+        query_arriendos = f"""
         SELECT 
             COUNT(*) as total,
             SUM(CASE WHEN ESTADO_CONTRATO_A = 'Activo' THEN 1 ELSE 0 END) as activos,
             SUM(CASE WHEN ESTADO_CONTRATO_A != 'Activo' THEN 1 ELSE 0 END) as inactivos
         FROM CONTRATOS_ARRENDAMIENTOS
+        {asesor_where}
         """
         
         with db_manager.obtener_conexion() as conn:
             cursor = db_manager.get_dict_cursor(conn)
             
-            cursor.execute(query_mandatos)
+            cursor.execute(query_mandatos, params)
             r_mandato = cursor.fetchone()
             
-            cursor.execute(query_arriendos)
+            cursor.execute(query_arriendos, params)
             r_arriendo = cursor.fetchone()
             
             async with self:
