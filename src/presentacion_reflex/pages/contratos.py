@@ -194,6 +194,40 @@ def render_table_view() -> rx.Component:
         class_name="neu-table-elite",
     )
 
+def _render_kpi_card(title: str, icon: str, total: int, activos: int, inactivos: int, color_scheme: str) -> rx.Component:
+    """Componente para renderizar un KPI de Elite."""
+    return neuro_panel(
+        rx.hstack(
+            rx.box(
+                rx.icon(icon, size=24, color=f"var(--{color_scheme}-9)"),
+                padding="3",
+                border_radius="12px",
+                background=f"var(--{color_scheme}-3)",
+            ),
+            rx.vstack(
+                rx.text(title, size="2", color=styles.TEXT_SECONDARY, weight="medium"),
+                rx.hstack(
+                    rx.text(total.to_string(), size="6", weight="bold", color="var(--gray-12)"),
+                    rx.spacer(),
+                    rx.hstack(
+                        neuro_badge(f"{activos.to_string()} Activos", color_scheme="green", size="1"),
+                        neuro_badge(f"{inactivos.to_string()} Inactivos", color_scheme="gray", size="1"),
+                        spacing="2",
+                    ),
+                    align="center",
+                    width="100%"
+                ),
+                width="100%",
+                spacing="1"
+            ),
+            spacing="4",
+            align="center",
+            width="100%",
+        ),
+        width="100%",
+        min_width="320px",
+    )
+
 def contratos_page() -> rx.Component:
     """Componente principal de la página de contratos."""
     return rx.fragment(
@@ -237,6 +271,29 @@ def contratos_page() -> rx.Component:
                         padding="5",
                         align="center",
                     ),
+                    width="100%",
+                ),
+
+                # Contenedor KPIs
+                rx.grid(
+                    _render_kpi_card(
+                        "Mandatos", 
+                        "briefcase", 
+                        ContratosState.kpi_mandatos_total,
+                        ContratosState.kpi_mandatos_activos,
+                        ContratosState.kpi_mandatos_inactivos,
+                        "blue"
+                    ),
+                    _render_kpi_card(
+                        "Arrendamientos", 
+                        "key", 
+                        ContratosState.kpi_arriendos_total,
+                        ContratosState.kpi_arriendos_activos,
+                        ContratosState.kpi_arriendos_inactivos,
+                        "indigo"
+                    ),
+                    columns=rx.breakpoints(initial="1", md="2"),
+                    spacing="4",
                     width="100%",
                 ),
 

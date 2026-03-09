@@ -44,6 +44,15 @@ class ContratosState(DocumentosStateMixin):
     error_message: str = ""
     is_grid_view: bool = False  # Default to Table, or True for Elite default
 
+    # KPIs
+    kpi_mandatos_total: int = 0
+    kpi_mandatos_activos: int = 0
+    kpi_mandatos_inactivos: int = 0
+    
+    kpi_arriendos_total: int = 0
+    kpi_arriendos_activos: int = 0
+    kpi_arriendos_inactivos: int = 0
+
     # Búsqueda y Filtros
     search_text: str = ""
     filter_tipo: str = "Todos"  # Todos, Mandato, Arrendamiento
@@ -192,9 +201,54 @@ class ContratosState(DocumentosStateMixin):
             yield ContratosState.load_filter_options()
             # Cargar contratos
             yield ContratosState.load_contratos()
+            # Cargar KPIs
+            yield ContratosState.load_kpis()
         finally:
             async with self:
                 self.is_loading = False
+
+    @rx.event(background=True)
+    async def load_kpis(self):
+        """Carga los contadores KPI directos desde la BD."""
+        query_mandatos = """
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN ESTADO_CONTRATO_M = 'Activo' THEN 1 ELSE 0 END) as activos,
+            SUM(CASE WHEN ESTADO_CONTRATO_M != 'Activo' THEN 1 ELSE 0 END) as inactivos
+        FROM CONTRATOS_MANDATOS
+        """
+        
+        query_arriendos = """
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN ESTADO_CONTRATO_A = 'Activo' THEN 1 ELSE 0 END) as activos,
+            SUM(CASE WHEN ESTADO_CONTRATO_A != 'Activo' THEN 1 ELSE 0 END) as inactivos
+        FROM CONTRATOS_ARRENDAMIENTOS
+        """
+        
+        with db_manager.obtener_conexion() as conn:
+            cursor = db_manager.get_dict_cursor(conn)
+            
+            cursor.execute(query_mandatos)
+            r_mandato = cursor.fetchone()
+            
+            cursor.execute(query_arriendos)
+            r_arriendo = cursor.fetchone()
+            
+            async with self:
+                if r_mandato:
+                    self.kpi_mandatos_total = r_mandato.get("TOTAL", r_mandato.get("total", 0)) or 0
+                    self.kpi_mandatos_activos = r_mandato.get("ACTIVOS", r_mandato.get("activos", 0)) or 0
+                    self.kpi_mandatos_inactivos = r_mandato.get("INACTIVOS", r_mandato.get("inactivos", 0)) or 0
+                else:
+                    self.kpi_mandatos_total = self.kpi_mandatos_activos = self.kpi_mandatos_inactivos = 0
+                    
+                if r_arriendo:
+                    self.kpi_arriendos_total = r_arriendo.get("TOTAL", r_arriendo.get("total", 0)) or 0
+                    self.kpi_arriendos_activos = r_arriendo.get("ACTIVOS", r_arriendo.get("activos", 0)) or 0
+                    self.kpi_arriendos_inactivos = r_arriendo.get("INACTIVOS", r_arriendo.get("inactivos", 0)) or 0
+                else:
+                    self.kpi_arriendos_total = self.kpi_arriendos_activos = self.kpi_arriendos_inactivos = 0
 
     @rx.event(background=True)
     async def load_filter_options(self):
