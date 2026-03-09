@@ -639,6 +639,14 @@ class PropiedadesState(DocumentosStateMixin):
                     pass  # print("❌ Error: ID de propiedad no encontrado en form_data durante edición") [OpSec Removed]
                     raise ValueError("ID de propiedad no encontrado")
 
+                # REGLA DE ÉLITE: Prevenir estado "Disponible" si tiene Arrendamiento Activo
+                if datos["disponibilidad_propiedad"] == 1:
+                    query_check_arr = "SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'Activo'"
+                    if db_manager.execute_query_one(query_check_arr.replace("%s", db_manager.get_placeholder()), (int(id_prop),)):
+                        self.is_loading = False
+                        yield rx.toast.error("No se puede cambiar a Disponible: existe un Arrendamiento Activo vinculado.", position="bottom-right")
+                        return
+
                 pass  # print(f"🔄 Actualizando propiedad ID: {id_prop}") [OpSec Removed]
                 servicio.actualizar_propiedad(int(id_prop), datos, usuario_sistema="admin")
                 msg = "Propiedad actualizada correctamente"
@@ -670,6 +678,13 @@ class PropiedadesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
                 RepositorioPropiedadSQLite,
             )
+
+            # REGLA DE ÉLITE: Prevenir estado "Disponible" si tiene Arrendamiento Activo
+            if nueva_disponibilidad == 1:
+                query_check_arr = "SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'Activo'"
+                if db_manager.execute_query_one(query_check_arr.replace("%s", db_manager.get_placeholder()), (int(id_propiedad),)):
+                    yield rx.toast.error("No se puede cambiar a Disponible: existe un Arrendamiento Activo vinculado.", position="bottom-right")
+                    return
 
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
