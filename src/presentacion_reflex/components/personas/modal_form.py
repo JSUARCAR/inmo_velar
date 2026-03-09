@@ -1,7 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex import styles
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root, neuro_text_area
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root, neuro_text_area, neuro_panel
 from src.presentacion_reflex.components.personas.role_selector_card import role_selector_card
 from src.presentacion_reflex.components.personas.wizard_progress import wizard_progress
 from src.presentacion_reflex.state.personas_state import PersonasState
@@ -57,7 +57,8 @@ def searchable_select(
                                         width="100%",
                                         padding_x="3",
                                         padding_y="2",
-                                        _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
+                                        transition=styles.GLOBAL_TRANSITION,
+                                        _hover={"bg": styles.BG_HOVER, "color": styles.TEXT_PRIMARY, "cursor": "pointer", "box_shadow": styles.NEU_MODAL_SHADOW},
                                         on_click=lambda: on_select(opt[1], opt[0]),
                                     )
                                 )
@@ -73,8 +74,7 @@ def searchable_select(
                     padding="2",
                     width="320px",
                     spacing="2",
-                    background=styles.BG_PANEL,
-                    style={"box_shadow": styles.NEU_SHADOW, "border": "none"},
+                    style=styles.NEU_PANEL_STYLE,
                 ),
             ),
             open=menu_open,
@@ -105,11 +105,15 @@ def form_field(
             placeholder=placeholder,
             type=type,
             required=required,
-            default_value=default_value,
             value=value,
             on_change=on_change,
             width="100%",
             size="3",
+            style={
+                "_invalid": {
+                    "box_shadow": f"{styles.NEU_INSET}, 0 0 0 2px rgba(220, 38, 38, 0.4)",
+                }
+            }
         ),
         spacing="1",
         width="100%",
@@ -130,7 +134,6 @@ def form_textarea(
         neuro_text_area(
             name=name,
             placeholder=placeholder,
-            default_value=default_value,
             value=value,
             on_change=on_change,
             width="100%",
@@ -141,244 +144,261 @@ def form_textarea(
 
 
 
-def propietario_fields() -> rx.Component:
-    """Campos específicos de Propietario - Elite version."""
-    return rx.vstack(
-        rx.hstack(
-            rx.icon("landmark", size=18, color="var(--blue-9)"),
-            rx.text("Información Bancaria", size="3", weight="bold", color="var(--blue-11)"),
-            spacing="2",
-        ),
-        form_field(
-            "Banco",
-            "banco_propietario",
-            "Ej: Bancolombia",
-            default_value=PersonasState.form_data["banco_propietario"],
-            value=PersonasState.form_data["banco_propietario"],
-            on_change=lambda val: PersonasState.set_upper("banco_propietario", val),
-            icon="landmark",
-        ),
-        rx.grid(
-            form_field(
-                "Número de Cuenta",
-                "numero_cuenta_propietario",
-                "Ej: 123456789",
-                default_value=PersonasState.form_data["numero_cuenta_propietario"],
-                icon="hash",
+def codeudor_fields() -> rx.Component:
+    """Campos específicos de Codeudor - Elite version."""
+    return neuro_panel(
+        rx.vstack(
+            rx.hstack(
+                rx.icon("shield-check", size=18, color="var(--orange-9)"),
+                rx.text("Información de Garantía", size="3", weight="bold", color="var(--orange-11)"),
+                spacing="2",
             ),
-            rx.vstack(
-                rx.text("Tipo de Cuenta", size="2", weight="bold", color=styles.TEXT_PRIMARY),
-                neuro_select_root(
-                    [
-                        rx.select.item("Ahorros", value="Ahorros"),
-                        rx.select.item("Corriente", value="Corriente"),
-                    ],
-                    name="tipo_cuenta",
-                    value=rx.cond(
-                        PersonasState.form_data["tipo_cuenta"] != "",
-                        PersonasState.form_data["tipo_cuenta"],
-                        "Ahorros",
-                    ),
-                    width="100%",
-                ),
-                spacing="1",
-                width="100%",
+            rx.text(
+                "El codeudor actúa como garante del contrato. No se requieren campos adicionales obligatorios en esta etapa, pero puede añadir notas aquí.",
+                size="2",
+                color=styles.TEXT_SECONDARY,
             ),
-            columns=rx.breakpoints(initial="1", sm="2"),
-            spacing="3",
+            form_textarea(
+                "Observaciones de Garantía",
+                "observaciones_codeudor",
+                "Ej: Propietario de finca raíz, etc.",
+                default_value=PersonasState.form_data["observaciones_codeudor"],
+                value=PersonasState.form_data["observaciones_codeudor"],
+                on_change=lambda val: PersonasState.set_upper("observaciones_codeudor", val),
+            ),
+            spacing="4",
             width="100%",
         ),
-        form_field(
-            "Cédula Consignatario",
-            "documento_consignatario",
-            "Documento de quien recibe el pago",
-            default_value=PersonasState.form_data["documento_consignatario"],
-            icon="credit-card",
-        ),
-        form_field(
-            "Nombre Consignatario",
-            "consignatario",
-            "Nombre de quien recibe el pago",
-            default_value=PersonasState.form_data["consignatario"],
-            value=PersonasState.form_data["consignatario"],
-            on_change=lambda val: PersonasState.set_upper("consignatario", val),
-            icon="user-check",
-        ),
-        form_textarea(
-            "Observaciones",
-            "observaciones_propietario",
-            "Notas adicionales...",
-            default_value=PersonasState.form_data["observaciones_propietario"],
-            value=PersonasState.form_data["observaciones_propietario"],
-            on_change=lambda val: PersonasState.set_upper("observaciones_propietario", val),
-        ),
+        padding="5",
+    )
 
-        spacing="3",
-        width="100%",
-        padding="4",
-        border_radius="8px",
-        style={
-            "background": "var(--blue-2)",
-            "border": "1px solid var(--blue-6)",
-        },
+
+def propietario_fields() -> rx.Component:
+    """Campos específicos de Propietario - Elite version."""
+    return neuro_panel(
+        rx.vstack(
+            rx.hstack(
+                rx.icon("landmark", size=18, color=styles.ACCENT_COLOR),
+                rx.text("Información Bancaria", size="3", weight="bold", color=styles.ACCENT_COLOR),
+                spacing="2",
+            ),
+            form_field(
+                "Banco",
+                "banco_propietario",
+                "Ej: Bancolombia",
+                default_value=PersonasState.form_data["banco_propietario"],
+                value=PersonasState.form_data["banco_propietario"],
+                on_change=lambda val: PersonasState.set_upper("banco_propietario", val),
+                icon="landmark",
+            ),
+            rx.grid(
+                form_field(
+                    "Número de Cuenta",
+                    "numero_cuenta_propietario",
+                    "Ej: 123456789",
+                    default_value=PersonasState.form_data["numero_cuenta_propietario"],
+                    icon="hash",
+                ),
+                rx.vstack(
+                    rx.text("Tipo de Cuenta", size="2", weight="bold", color=styles.TEXT_PRIMARY),
+                    neuro_select_root(
+                        [
+                            rx.select.item("Ahorros", value="Ahorros"),
+                            rx.select.item("Corriente", value="Corriente"),
+                        ],
+                        name="tipo_cuenta",
+                        value=rx.cond(
+                            PersonasState.form_data["tipo_cuenta"] != "",
+                            PersonasState.form_data["tipo_cuenta"],
+                            "Ahorros",
+                        ),
+                        width="100%",
+                    ),
+                    spacing="1",
+                    width="100%",
+                ),
+                columns=rx.breakpoints(initial="1", sm="2"),
+                spacing="4",
+                width="100%",
+            ),
+            form_field(
+                "Cédula Consignatario",
+                "documento_consignatario",
+                "Documento de quien recibe el pago",
+                default_value=PersonasState.form_data["documento_consignatario"],
+                icon="credit-card",
+            ),
+            form_field(
+                "Nombre Consignatario",
+                "consignatario",
+                "Nombre de quien recibe el pago",
+                default_value=PersonasState.form_data["consignatario"],
+                value=PersonasState.form_data["consignatario"],
+                on_change=lambda val: PersonasState.set_upper("consignatario", val),
+                icon="user-check",
+            ),
+            form_textarea(
+                "Observaciones",
+                "observaciones_propietario",
+                "Notas adicionales...",
+                default_value=PersonasState.form_data["observaciones_propietario"],
+                value=PersonasState.form_data["observaciones_propietario"],
+                on_change=lambda val: PersonasState.set_upper("observaciones_propietario", val),
+            ),
+            spacing="4",
+            width="100%",
+        ),
+        padding="5",
     )
 
 
 def arrendatario_fields() -> rx.Component:
     """Campos específicos de Arrendatario - Elite version."""
-    return rx.vstack(
-        rx.hstack(
-            rx.icon("shield-check", size=18, color="var(--green-9)"),
-            rx.text("Información de Seguro", size="3", weight="bold", color="var(--green-11)"),
-            spacing="2",
-        ),
-        rx.grid(
-            form_field(
-                "Código Aprobación Seguro",
-                "codigo_aprobacion_seguro",
-                "Ej: AB-123",
-                default_value=PersonasState.form_data["codigo_aprobacion_seguro"],
-                icon="file-check",
+    return neuro_panel(
+        rx.vstack(
+            rx.hstack(
+                rx.icon("shield-check", size=18, color=styles.ACCENT_COLOR),
+                rx.text("Información de Seguro", size="3", weight="bold", color=styles.TEXT_PRIMARY),
+                spacing="2",
             ),
-            searchable_select(
-                "ID Seguro (Opcional)",
-                "Seleccione un seguro...",
-                PersonasState.seguro_selected_label,
-                PersonasState.seguro_search,
-                PersonasState.seguro_menu_open,
-                PersonasState.filtered_seguros_options,
-                PersonasState.set_seguro_search,
-                PersonasState.toggle_seguro_menu,
-                PersonasState.select_seguro,
+            rx.grid(
+                form_field(
+                    "Código Aprobación Seguro",
+                    "codigo_aprobacion_seguro",
+                    "Ej: AB-123",
+                    default_value=PersonasState.form_data["codigo_aprobacion_seguro"],
+                    icon="file-check",
+                ),
+                searchable_select(
+                    "ID Seguro (Opcional)",
+                    "Seleccione un seguro...",
+                    PersonasState.seguro_selected_label,
+                    PersonasState.seguro_search,
+                    PersonasState.seguro_menu_open,
+                    PersonasState.filtered_seguros_options,
+                    PersonasState.set_seguro_search,
+                    PersonasState.toggle_seguro_menu,
+                    PersonasState.select_seguro,
+                ),
+                columns=rx.breakpoints(initial="1", sm="2"),
+                spacing="4",
+                width="100%",
             ),
-            columns=rx.breakpoints(initial="1", sm="2"),
-            spacing="3",
+            rx.grid(
+                form_field(
+                    "Nombre Completo Habitante",
+                    "nombre_habitante",
+                    "Ej: JOSE MARÍA VACA",
+                    default_value=PersonasState.form_data["nombre_habitante"],
+                    value=PersonasState.form_data["nombre_habitante"],
+                    on_change=lambda val: PersonasState.set_upper("nombre_habitante", val),
+                    icon="user",
+                ),
+                form_field(
+                    "Teléfono Habitante",
+                    "telefono_habitante",
+                    "Ej: 3001234567",
+                    default_value=PersonasState.form_data["telefono_habitante"],
+                    value=PersonasState.form_data["telefono_habitante"],
+                    on_change=lambda val: PersonasState.set_telefono_habitante(val),
+                    icon="phone",
+                ),
+                columns=rx.breakpoints(initial="1", sm="2"),
+                spacing="4",
+                width="100%",
+            ),
+            spacing="4",
             width="100%",
         ),
-        rx.grid(
-            form_field(
-                "Nombre Completo Habitante",
-                "nombre_habitante",
-                "Ej: JOSE MARÍA VACA",
-                default_value=PersonasState.form_data["nombre_habitante"],
-                value=PersonasState.form_data["nombre_habitante"],
-                on_change=lambda val: PersonasState.set_upper("nombre_habitante", val),
-                icon="user",
-            ),
-            form_field(
-                "Teléfono Habitante",
-                "telefono_habitante",
-                "Ej: 3001234567",
-                default_value=PersonasState.form_data["telefono_habitante"],
-                value=PersonasState.form_data["telefono_habitante"],
-                on_change=lambda val: PersonasState.set_telefono_habitante(val),
-                icon="phone",
-            ),
-            columns=rx.breakpoints(initial="1", sm="2"),
-            spacing="3",
-            width="100%",
-        ),
-        spacing="3",
-        width="100%",
-        padding="4",
-        border_radius="8px",
-        style={
-            "background": "var(--green-2)",
-            "border": "1px solid var(--green-6)",
-        },
+        padding="5",
     )
 
 
 def asesor_fields() -> rx.Component:
     """Campos específicos de Asesor - Elite version."""
-    return rx.vstack(
-        rx.hstack(
-            rx.icon("percent", size=18, color="var(--purple-9)"),
-            rx.text("Comisiones", size="3", weight="bold", color="var(--purple-11)"),
-            spacing="2",
-        ),
-        rx.grid(
-            form_field(
-                "Comisión % Arriendo",
-                "comision_porcentaje_arriendo",
-                "Ej: 10",
-                type="number",
-                default_value=PersonasState.form_data["comision_porcentaje_arriendo"],
-                icon="percent",
+    return neuro_panel(
+        rx.vstack(
+            rx.hstack(
+                rx.icon("percent", size=18, color="var(--purple-9)"),
+                rx.text("Comisiones", size="3", weight="bold", color="var(--purple-11)"),
+                spacing="2",
+            ),
+            rx.grid(
+                form_field(
+                    "Comisión % Arriendo",
+                    "comision_porcentaje_arriendo",
+                    "Ej: 10",
+                    type="number",
+                    default_value=PersonasState.form_data["comision_porcentaje_arriendo"],
+                    icon="percent",
+                ),
+                form_field(
+                    "Comisión % Venta",
+                    "comision_porcentaje_venta",
+                    "Ej: 3",
+                    type="number",
+                    default_value=PersonasState.form_data["comision_porcentaje_venta"],
+                    icon="percent",
+                ),
+                columns=rx.breakpoints(initial="1", sm="2"),
+                spacing="4",
+                width="100%",
             ),
             form_field(
-                "Comisión % Venta",
-                "comision_porcentaje_venta",
-                "Ej: 3",
-                type="number",
-                default_value=PersonasState.form_data["comision_porcentaje_venta"],
-                icon="percent",
+                "Fecha Vinculación",
+                "fecha_vinculacion",
+                "YYYY-MM-DD",
+                type="date",
+                default_value=PersonasState.form_data["fecha_vinculacion"],
+                icon="calendar",
             ),
-            columns=rx.breakpoints(initial="1", sm="2"),
-            spacing="3",
+            spacing="4",
             width="100%",
         ),
-        form_field(
-            "Fecha Vinculación",
-            "fecha_vinculacion",
-            "YYYY-MM-DD",
-            type="date",
-            default_value=PersonasState.form_data["fecha_vinculacion"],
-            icon="calendar",
-        ),
-        spacing="3",
-        width="100%",
-        padding="4",
-        border_radius="8px",
-        style={
-            "background": "var(--purple-2)",
-            "border": "1px solid var(--purple-6)",
-        },
+        padding="5",
     )
 
 
 def proveedor_fields() -> rx.Component:
     """Campos específicos de Proveedor - Elite version."""
-    return rx.vstack(
-        rx.hstack(
-            rx.icon("wrench", size=18, color="var(--cyan-9)"),
-            rx.text("Información Profesional", size="3", weight="bold", color="var(--cyan-11)"),
-            spacing="2",
+    return neuro_panel(
+        rx.vstack(
+            rx.hstack(
+                rx.icon("wrench", size=18, color="var(--cyan-9)"),
+                rx.text("Información Profesional", size="3", weight="bold", color="var(--cyan-11)"),
+                spacing="2",
+            ),
+            form_field(
+                "Especialidad",
+                "especialidad",
+                "Ej: Plomería, Electricidad",
+                default_value=PersonasState.form_data["especialidad"],
+                value=PersonasState.form_data["especialidad"],
+                on_change=lambda val: PersonasState.set_upper("especialidad", val),
+                icon="wrench",
+            ),
+            form_field(
+                "Calificación (1-5)",
+                "calificacion",
+                "Ej: 5",
+                type="number",
+                default_value=PersonasState.form_data["calificacion"],
+                icon="star",
+            ),
+            form_textarea(
+                "Observaciones",
+                "observaciones",
+                "Ej: Disponible fines de semana",
+                default_value=PersonasState.form_data["observaciones"],
+                value=PersonasState.form_data["observaciones"],
+                on_change=lambda val: PersonasState.set_upper("observaciones", val),
+            ),
+            spacing="4",
+            width="100%",
         ),
-        form_field(
-            "Especialidad",
-            "especialidad",
-            "Ej: Plomería, Electricidad",
-            default_value=PersonasState.form_data["especialidad"],
-            value=PersonasState.form_data["especialidad"],
-            on_change=lambda val: PersonasState.set_upper("especialidad", val),
-            icon="wrench",
-        ),
-        form_field(
-            "Calificación (1-5)",
-            "calificacion",
-            "Ej: 5",
-            type="number",
-            default_value=PersonasState.form_data["calificacion"],
-            icon="star",
-        ),
-        form_textarea(
-            "Observaciones",
-            "observaciones",
-            "Ej: Disponible fines de semana",
-            default_value=PersonasState.form_data["observaciones"],
-            value=PersonasState.form_data["observaciones"],
-            on_change=lambda val: PersonasState.set_upper("observaciones", val),
-        ),
-        spacing="3",
-        width="100%",
-        padding="4",
-        border_radius="8px",
-        style={
-            "background": "var(--cyan-2)",
-            "border": "1px solid var(--cyan-6)",
-        },
+        padding="5",
     )
+
 
 
 # Wizard Steps
@@ -416,7 +436,7 @@ def step_1_basic_info() -> rx.Component:
             ),
             flex_direction=["column", "row"],
             width="100%",
-            gap="3",
+            gap="4",
         ),
         form_field(
             "Nombre Completo / Razón Social",
@@ -448,7 +468,7 @@ def step_1_basic_info() -> rx.Component:
                 icon="mail",
             ),
             columns=rx.breakpoints(initial="1", sm="2"),
-            spacing="3",
+            spacing="4",
             width="100%",
         ),
         form_field(
@@ -460,7 +480,7 @@ def step_1_basic_info() -> rx.Component:
             on_change=lambda val: PersonasState.set_upper("direccion_principal", val),
             icon="map-pin",
         ),
-        spacing="4",
+        spacing="5",
         width="100%",
     )
 
@@ -473,6 +493,7 @@ def step_2_roles() -> rx.Component:
             size="2",
             color=styles.TEXT_SECONDARY,
             text_align="center",
+            margin_bottom="2",
         ),
         rx.box(
             rx.foreach(PersonasState.available_roles, role_selector_card),            display="grid",
@@ -480,10 +501,10 @@ def step_2_roles() -> rx.Component:
                 "repeat(1, 1fr)",  # mobile
                 "repeat(2, 1fr)",  # tablet+
             ],
-            gap="3",
+            gap="4",
             width="100%",
         ),
-        spacing="3",
+        spacing="4",
         width="100%",
     )
 
@@ -504,6 +525,11 @@ def step_3_role_details() -> rx.Component:
                     PersonasState.is_arrendatario_selected,
                     arrendatario_fields(),
                 ),
+                # Codeudor fields
+                rx.cond(
+                    PersonasState.is_codeudor_selected,
+                    codeudor_fields(),
+                ),
                 # Asesor fields
                 rx.cond(
                     PersonasState.is_asesor_selected,
@@ -514,7 +540,7 @@ def step_3_role_details() -> rx.Component:
                     PersonasState.is_proveedor_selected,
                     proveedor_fields(),
                 ),
-                spacing="4",
+                spacing="6",
                 width="100%",
             ),
             # No roles selected message
@@ -649,11 +675,11 @@ def modal_persona() -> rx.Component:
                 width="100%",
             ),
             style={
+                **styles.NEU_PANEL_STYLE,
                 "max_width": "700px",
                 "width": "95%",
-                "border_radius": "16px",
                 "padding": "24px",
-                "background": styles.BG_PANEL,
+                "transition": "box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
             },
             on_escape_key_down=PersonasState.close_modal,
             on_pointer_down_outside=PersonasState.close_modal,

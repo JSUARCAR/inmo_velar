@@ -96,7 +96,7 @@ def kpi_card(
                             size="1",
                             font_size=["10px", "10px", "12px"],
                             weight="medium",
-                            color="gray.10",
+                            color=styles.TEXT_TERTIARY,
                         ),
                         align="center",
                         spacing="1",
@@ -116,10 +116,13 @@ def kpi_card(
                 align="center",
             ),
             size="1",
-            bg=bg_color,
+            variant="ghost",
             width="100%",
-            style={"box_shadow": "0 1px 3px rgba(0,0,0,0.05)"},
-            color_scheme=color_icono,
+            style={
+                **styles.NEU_PANEL_STYLE,
+                "padding": "0.75rem",
+                "margin": "0",
+            },
         )
 
     elif variant == "elite":
@@ -132,7 +135,7 @@ def kpi_card(
                                 titulo,
                                 size="1",
                                 weight="bold",
-                                color="gray.9",
+                                color=styles.TEXT_TERTIARY,
                                 text_transform="uppercase",
                                 letter_spacing="0.05em",
                                 max_width="100%",
@@ -179,7 +182,7 @@ def kpi_card(
                         rx.text(subtitulo, size="1", weight="medium", color=subtitle_color),
                         margin_top="8px",
                         padding_top="8px",
-                        border_top="1px solid var(--gray-4)",
+                        border_top=f"1px solid {styles.BORDER_DEFAULT}",
                         width="100%",
                     ),
                 ),
@@ -187,23 +190,17 @@ def kpi_card(
                 width="100%",
             ),
             size="3",
-            bg=bg_color,
+            variant="ghost",
             width="100%",
-            transition="all 0.3s ease",
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             _hover={
                 "transform": "translateY(-4px)",
-                "box_shadow": "0 20px 25px -5px var(--accent-4), 0 8px 10px -6px var(--accent-3)",
-                "border_color": "var(--accent-6)",
+                "box_shadow": styles.NEU_MODAL_SHADOW,
             },
             style={
-                "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03)",
-                "border": "1px solid var(--gray-4)",
-                "border_top_width": "3px",
-                "border_top_style": "solid",
-                "border_top_color": "var(--accent-9)",
-                "border_radius": "16px",
+                **styles.NEU_PANEL_STYLE,
+                "margin": "0",
             },
-            color_scheme=color_icono,
         )
 
     else:
@@ -220,7 +217,7 @@ def kpi_card(
                         justify_content="center",
                     ),
                     rx.hstack(
-                        rx.text(titulo, size="2", weight="medium", color="gray.10"),
+                        rx.text(titulo, size="2", weight="medium", color=styles.TEXT_TERTIARY),
                         align="center",
                         spacing="1",
                     ),
@@ -245,19 +242,17 @@ def kpi_card(
                 width="100%",
             ),
             size="2",
-            bg=bg_color,
+            variant="ghost",
             width="100%",
             transition="all 0.2s ease",
             _hover={
-                "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                "border_color": "var(--gray-6)",
+                "box_shadow": styles.NEU_MODAL_SHADOW,
             },
-            style={
-                "box_shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
-                "border": "1px solid var(--gray-4)",
-                "border_radius": "12px",
-            },
-            color_scheme=color_icono,
+            style=styles.NEU_PANEL_STYLE,
         )
+
+    if hover_content is not None:
+        from src.presentacion_reflex.components.neuro_elements import neuro_tooltip
+        return neuro_tooltip(content=hover_content, children=card_component)
 
     return card_component

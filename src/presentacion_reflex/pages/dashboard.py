@@ -19,6 +19,7 @@ from src.presentacion_reflex.components.dashboard import (
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.dashboard_state import DashboardState
+from src.presentacion_reflex.components.neuro_elements import neuro_panel, neuro_progress, neuro_spinner, neuro_callout
 from src.presentacion_reflex import styles
 
 
@@ -37,7 +38,7 @@ def dashboard_page() -> rx.Component:
                     size="8",
                     font_size=["1.75em", "2em", "2.5em", "3em"],
                     weight="bold",
-                    color="gray.12",
+                    color=styles.TEXT_PRIMARY,
                 ),
                 rx.spacer(),
                 dashboard_filters(),
@@ -52,8 +53,8 @@ def dashboard_page() -> rx.Component:
                 DashboardState.is_loading,
                 rx.center(
                     rx.vstack(
-                        rx.spinner(size="3", color="indigo"),
-                        rx.text("Procesando métricas en tiempo real...", color="gray.11", size="2"),
+                        neuro_spinner(size="3"),
+                        rx.text("Procesando métricas en tiempo real...", color=styles.TEXT_SECONDARY, size="2"),
                         spacing="3",
                     ),
                     padding="100px",
@@ -63,11 +64,10 @@ def dashboard_page() -> rx.Component:
             # Error Message
             rx.cond(
                 DashboardState.error_message != "",
-                rx.callout(
+                neuro_callout(
                     DashboardState.error_message,
-                    icon="circle_alert",
+                    icon="circle-alert",
                     color_scheme="red",
-                    role="alert",
                     width="100%",
                 ),
             ),
@@ -80,8 +80,8 @@ def dashboard_page() -> rx.Component:
                         rx.text(
                             "VISIÓN ESTRATÉGICA",
                             size="2",
-                            weight="bold",
-                            color="gray.9",
+                            weight="medium",
+                            color=styles.TEXT_SECONDARY,
                             letter_spacing="0.1em",
                         ),
                         rx.box(
@@ -98,7 +98,7 @@ def dashboard_page() -> rx.Component:
                                     rx.text(
                                         "Mide qué porcentaje del valor potencial total de la cartera se está recaudando efectivamente.",
                                         size="2",
-                                        color="gray.11",
+                                        color=styles.TEXT_SECONDARY,
                                     ),
                                     rx.hstack(
                                         rx.text("Recaudo Real:", weight="medium", size="2"),
@@ -115,7 +115,7 @@ def dashboard_page() -> rx.Component:
                                         rx.text(
                                             DashboardState.kpi_potencial_total_view,
                                             weight="bold",
-                                            color="gray.9",
+                                            color=styles.TEXT_TERTIARY,
                                         ),
                                         justify="between",
                                         width="100%",
@@ -157,7 +157,7 @@ def dashboard_page() -> rx.Component:
                                     rx.text(
                                         "Es la suma total del canon esperado de todos los contratos activos.",
                                         size="1",
-                                        color="gray.11",
+                                        color=styles.TEXT_SECONDARY,
                                     ),
                                     spacing="1",
                                     width="100%",
@@ -165,9 +165,9 @@ def dashboard_page() -> rx.Component:
                             ),
                             class_name="grid-elite",
                         ),
-                        spacing="3",
+                        spacing="5",
                         width="100%",
-                        margin_bottom="6",
+                        margin_bottom="8",
                     ),
                     tablas_vencimientos_detalle(),
                     rx.divider(margin_y="4"),
@@ -176,11 +176,9 @@ def dashboard_page() -> rx.Component:
                         # COLUMNA IZQUIERDA (Análisis Profundo - Span 2)
                         rx.vstack(
                             # A. Evolución (Tendencia Clave)
-                            rx.box(
+                            neuro_panel(
                                 evolucion_chart(),
                                 width="100%",
-                                box_shadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                                border_radius="12px",
                                 overflow="hidden",
                             ),
                             rx.spacer(),
@@ -204,8 +202,8 @@ def dashboard_page() -> rx.Component:
                             rx.text(
                                 "PULSO OPERATIVO",
                                 size="2",
-                                weight="bold",
-                                color="gray.9",
+                                weight="medium",
+                                color=styles.TEXT_SECONDARY,
                                 letter_spacing="0.1em",
                             ),
                             # KPIs Compactos
@@ -225,7 +223,7 @@ def dashboard_page() -> rx.Component:
                                         rx.text(
                                             "Total pendiente de cobro fuera de fecha límite.",
                                             size="1",
-                                            color="gray.11",
+                                            color=styles.TEXT_SECONDARY,
                                         ),
                                         rx.hstack(
                                             rx.text("Contratos:", size="1"),
@@ -252,9 +250,9 @@ def dashboard_page() -> rx.Component:
                                         rx.text(
                                             "Ingresos procesados en el mes corriente.",
                                             size="1",
-                                            color="gray.11",
+                                            color=styles.TEXT_SECONDARY,
                                         ),
-                                        rx.progress(
+                                        neuro_progress(
                                             value=DashboardState.flujo_porcentaje_int_view,
                                             color_scheme="green",
                                             height="6px",
@@ -329,7 +327,7 @@ def dashboard_page() -> rx.Component:
                                 rx.text(
                                     "ACCIÓN REQUERIDA",
                                     size="2",
-                                    weight="bold",
+                                    weight="medium",
                                     color="orange.10",
                                     letter_spacing="0.1em",
                                     margin_bottom="2",
@@ -338,9 +336,7 @@ def dashboard_page() -> rx.Component:
                                 width="100%",
                             ),
                             padding="5",
-                            bg=styles.BG_PANEL,
-                            border="1px solid var(--gray-4)",
-                            border_radius="16px",
+                            style=styles.NEU_PANEL_STYLE,
                             height="fit-content",
                             width="100%",
                             class_name="grid-main-right",
@@ -356,10 +352,10 @@ def dashboard_page() -> rx.Component:
             spacing="4",
             width="100%",
             padding=["4", "6", "8", "32px"],
-            # background removed to use default theme background
             min_height="100vh",
         ),
     )
+
 
 
 from src.presentacion_reflex.state.alertas_state import AlertasState

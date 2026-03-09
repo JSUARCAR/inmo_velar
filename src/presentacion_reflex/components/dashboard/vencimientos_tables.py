@@ -10,13 +10,15 @@ def badge_dias(dias: int) -> rx.Component:
     """Retorna un badge de color según los días restantes."""
     return rx.cond(
         dias <= 30,
-        rx.badge(dias.to(str), " días", color_scheme="red", variant="soft"),
+        neuro_badge(dias.to(str), " días", color_scheme="red"),
         rx.cond(
             dias <= 60,
-            rx.badge(dias.to(str), " días", color_scheme="orange", variant="soft"),
-            rx.badge(dias.to(str), " días", color_scheme="amber", variant="soft"),
+            neuro_badge(dias.to(str), " días", color_scheme="orange"),
+            neuro_badge(dias.to(str), " días", color_scheme="amber"),
         )
     )
+
+from src.presentacion_reflex.components.neuro_elements import neuro_table_container, neuro_tooltip, neuro_badge
 
 def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado, tooltip_text: str = "") -> rx.Component:
     """Componente genérico de tabla para mostrar vencimientos."""
@@ -28,20 +30,9 @@ def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado,
                     rx.text(titulo, size="4", weight="bold", color=styles.TEXT_PRIMARY),
                     rx.cond(
                         tooltip_text != "",
-                        rx.hover_card.root(
-                            rx.hover_card.trigger(rx.icon("info", size=16, color="gray.8", cursor="help")),
-                            rx.hover_card.content(
-                                rx.text(tooltip_text, size="2", color="gray.11"),
-                                side="top",
-                                align="center",
-                                side_offset=5,
-                                background_color=styles.BG_PANEL,
-                                border="1px solid var(--gray-4)",
-                                box_shadow="0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                                border_radius="12px",
-                                padding="12px",
-                                max_width="250px",
-                            )
+                        neuro_tooltip(
+                            content=tooltip_text,
+                            children=rx.icon("info", size=16, color="gray.8", cursor="help")
                         )
                     ),
                     align="center",
@@ -52,16 +43,16 @@ def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado,
                 spacing="2",
             ),
             rx.divider(),
-            rx.box(
+            neuro_table_container(
                 rx.cond(
                     lista_estado.length() > 0,
                     rx.table.root(
                         rx.table.header(
                             rx.table.row(
-                                rx.table.column_header_cell("Contratante", color=styles.TEXT_SECONDARY),
-                                rx.table.column_header_cell("Propiedad", color=styles.TEXT_SECONDARY),
-                                rx.table.column_header_cell("Fecha Fin", color=styles.TEXT_SECONDARY),
-                                rx.table.column_header_cell("Vence En", color=styles.TEXT_SECONDARY),
+                                rx.table.column_header_cell("Contratante", color=styles.TEXT_SECONDARY, weight="medium"),
+                                rx.table.column_header_cell("Propiedad", color=styles.TEXT_SECONDARY, weight="medium"),
+                                rx.table.column_header_cell("Fecha Fin", color=styles.TEXT_SECONDARY, weight="medium"),
+                                rx.table.column_header_cell("Vence En", color=styles.TEXT_SECONDARY, weight="medium"),
                             )
                         ),
                         rx.table.body(
@@ -76,7 +67,7 @@ def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado,
                                 )
                             )
                         ),
-                        variant="surface",
+                        variant="ghost",
                         size="1",
                         width="100%",
                     ),
@@ -86,14 +77,13 @@ def _tabla_vencimientos(titulo: str, icon: str, color_scheme: str, lista_estado,
                         width="100%",
                     ),
                 ),
-                width="100%",
-                overflow_x="auto",
             ),
             spacing="3",
             width="100%",
         ),
         size="2",
-        bg=styles.BG_PANEL,
+        variant="ghost",
+        style=styles.NEU_PANEL_STYLE,
         width="100%",
         height="100%",
     )
