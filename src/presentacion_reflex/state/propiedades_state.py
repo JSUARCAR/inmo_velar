@@ -61,6 +61,15 @@ class PropiedadesState(DocumentosStateMixin):
     is_loading: bool = False
     error_message: str = ""
 
+    # KPIs
+    kpi_disponibles_total: int = 0
+    kpi_disponibles_activas: int = 0
+    kpi_disponibles_inactivas: int = 0
+    
+    kpi_ocupadas_total: int = 0
+    kpi_ocupadas_activas: int = 0
+    kpi_ocupadas_inactivas: int = 0
+
     # Datos
     propiedades: List[PropiedadDict] = []
 
@@ -163,9 +172,68 @@ class PropiedadesState(DocumentosStateMixin):
             yield PropiedadesState.load_filter_options()
             # Cargar propiedades
             yield PropiedadesState.load_propiedades()
+            # Cargar KPIs
+            yield PropiedadesState.load_kpis()
         finally:
             async with self:
                 self.is_loading = False
+
+    @rx.event(background=True)
+    async def load_kpis(self):
+        """Carga los contadores KPI directos desde la BD."""
+        
+        conditions = []
+        params = []
+        
+        if self.filter_tipo and self.filter_tipo != "Todos":
+            conditions.append("TIPO_PROPIEDAD = %s")
+            params.append(self.filter_tipo)
+            
+        if self.filter_municipio and self.filter_municipio != "0":
+            conditions.append("ID_MUNICIPIO = %s")
+            params.append(self.filter_municipio)
+            
+        if self.search_text:
+            search_where = "(DIRECCION_PROPIEDAD LIKE %s OR MATRICULA_INMOBILIARIA LIKE %s)"
+            conditions.append(search_where)
+            term_norm = f"%{self.search_text.strip().lower()}%"
+            params.extend([term_norm, term_norm])
+            
+        where_clause = "WHERE " + " AND ".join(conditions) if conditions else ""
+        
+        query_general = f"""
+        SELECT 
+            DISPONIBILIDAD_PROPIEDAD as disponibilidad,
+            COUNT(*) as total,
+            SUM(CASE WHEN ESTADO_REGISTRO = 1 THEN 1 ELSE 0 END) as activas,
+            SUM(CASE WHEN ESTADO_REGISTRO = 0 THEN 1 ELSE 0 END) as inactivas
+        FROM PROPIEDADES
+        {where_clause}
+        GROUP BY DISPONIBILIDAD_PROPIEDAD
+        """
+        
+        with db_manager.obtener_conexion() as conn:
+            cursor = db_manager.get_dict_cursor(conn)
+            cursor.execute(query_general, params)
+            rows = cursor.fetchall()
+            
+            async with self:
+                self.kpi_disponibles_total = 0
+                self.kpi_disponibles_activas = 0
+                self.kpi_disponibles_inactivas = 0
+                self.kpi_ocupadas_total = 0
+                self.kpi_ocupadas_activas = 0
+                self.kpi_ocupadas_inactivas = 0
+                
+                for row in rows:
+                    if row.get("DISPONIBILIDAD_PROPIEDAD") or row.get("disponibilidad") == 1:
+                        self.kpi_disponibles_total = row.get("TOTAL", row.get("total", 0)) or 0
+                        self.kpi_disponibles_activas = row.get("ACTIVAS", row.get("activas", 0)) or 0
+                        self.kpi_disponibles_inactivas = row.get("INACTIVAS", row.get("inactivas", 0)) or 0
+                    else:
+                        self.kpi_ocupadas_total = row.get("TOTAL", row.get("total", 0)) or 0
+                        self.kpi_ocupadas_activas = row.get("ACTIVAS", row.get("activas", 0)) or 0
+                        self.kpi_ocupadas_inactivas = row.get("INACTIVAS", row.get("inactivas", 0)) or 0
 
     @rx.event(background=True)
     async def load_propiedades(self):
@@ -305,30 +373,30 @@ class PropiedadesState(DocumentosStateMixin):
         """Actualiza búsqueda."""
         self.search_text = value
         self.current_page = 1
-        yield PropiedadesState.load_propiedades
+        return [PropiedadesState.load_propiedades, PropiedadesState.load_kpis]
 
     def search_propiedades(self):
         """Ejecuta búsqueda."""
         self.current_page = 1
-        yield PropiedadesState.load_propiedades
+        return [PropiedadesState.load_propiedades, PropiedadesState.load_kpis]
 
     def set_filter_tipo(self, value: str):
         """Cambia filtro de tipo."""
         self.filter_tipo = value
         self.current_page = 1
-        yield PropiedadesState.load_propiedades
+        return [PropiedadesState.load_propiedades, PropiedadesState.load_kpis]
 
     def set_filter_disponibilidad(self, value: str):
         """Cambia filtro de disponibilidad."""
         self.filter_disponibilidad = value
         self.current_page = 1
-        yield PropiedadesState.load_propiedades
+        return [PropiedadesState.load_propiedades, PropiedadesState.load_kpis]
 
     def set_filter_municipio(self, value: str):
         """Cambia filtro de municipio."""
         self.filter_municipio = value
         self.current_page = 1
-        yield PropiedadesState.load_propiedades
+        return [PropiedadesState.load_propiedades, PropiedadesState.load_kpis]
 
     def toggle_solo_activas(self, checked: bool):
         """Toggle solo activas."""

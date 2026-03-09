@@ -10,7 +10,7 @@ from src.presentacion_reflex.components.propiedades.modal_form import modal_prop
 from src.presentacion_reflex.components.propiedades.property_card import property_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_switch, neuro_spinner, neuro_badge
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_switch, neuro_spinner, neuro_badge, neuro_panel
 from src.presentacion_reflex import styles
 
 
@@ -70,6 +70,41 @@ def render_property_actions(prop: rx.Var) -> rx.Component:
                 spacing="3",
             ),
         ),
+    )
+
+
+def _render_kpi_card(title: str, icon: str, total: int, activas: int, inactivas: int, color_scheme: str) -> rx.Component:
+    """Componente para renderizar un KPI de Elite."""
+    return neuro_panel(
+        rx.hstack(
+            rx.box(
+                rx.icon(icon, size=24, color=f"var(--{color_scheme}-9)"),
+                padding="3",
+                border_radius="12px",
+                background=f"var(--{color_scheme}-3)",
+            ),
+            rx.vstack(
+                rx.text(title, size="2", color=styles.TEXT_SECONDARY, weight="medium"),
+                rx.hstack(
+                    rx.text(total.to_string(), size="6", weight="bold", color="var(--gray-12)"),
+                    rx.spacer(),
+                    rx.hstack(
+                        neuro_badge(f"{activas.to_string()} Activas", color_scheme="green", size="1"),
+                        neuro_badge(f"{inactivas.to_string()} Inactivas", color_scheme="gray", size="1"),
+                        spacing="2",
+                    ),
+                    align="center",
+                    width="100%"
+                ),
+                width="100%",
+                spacing="1"
+            ),
+            spacing="4",
+            align="center",
+            width="100%",
+        ),
+        width="100%",
+        min_width="320px",
     )
 
 
@@ -142,6 +177,30 @@ def propiedades_page() -> rx.Component:
                     border_radius="16px",
                     style=styles.NEU_PANEL_STYLE,
                 ),
+
+                # --- KPIs ---
+                rx.grid(
+                    _render_kpi_card(
+                        "Disponibles", 
+                        "home", 
+                        PropiedadesState.kpi_disponibles_total,
+                        PropiedadesState.kpi_disponibles_activas,
+                        PropiedadesState.kpi_disponibles_inactivas,
+                        "blue"
+                    ),
+                    _render_kpi_card(
+                        "Ocupadas", 
+                        "key", 
+                        PropiedadesState.kpi_ocupadas_total,
+                        PropiedadesState.kpi_ocupadas_activas,
+                        PropiedadesState.kpi_ocupadas_inactivas,
+                        "indigo"
+                    ),
+                    columns=rx.breakpoints(initial="1", md="2"),
+                    spacing="4",
+                    width="100%",
+                ),
+
                 # --- Main Content Area ---
                 rx.vstack(
                     # Toolbar Section
