@@ -157,6 +157,24 @@ def render_table_view() -> rx.Component:
                                 ),
                                 size="1", color=styles.TEXT_SECONDARY
                             ),
+                            rx.cond(
+                                c["habitante_nombre"] != "",
+                                rx.hstack(
+                                    rx.icon("home", size=12, color=styles.TEXT_SECONDARY),
+                                    rx.text(c["habitante_nombre"], size="1", color=styles.TEXT_SECONDARY),
+                                    spacing="1",
+                                    align="center"
+                                )
+                            ),
+                            rx.cond(
+                                c["asesor_nombre"] != "",
+                                rx.hstack(
+                                    rx.icon("headset", size=12, color=styles.TEXT_SECONDARY),
+                                    rx.text(c["asesor_nombre"], size="1", color=styles.TEXT_SECONDARY),
+                                    spacing="1",
+                                    align="center"
+                                )
+                            ),
                             spacing="1",
                         )
                     ),
@@ -240,6 +258,13 @@ def contratos_page() -> rx.Component:
                         ),
                         rx.spacer(),
                         rx.hstack(
+                            neuro_select_root(
+                                rx.foreach(ContratosState.asesores_filter_options, lambda opt: rx.select.item(opt[0], value=opt[1])),
+                                value=ContratosState.filter_asesor_id,
+                                on_change=ContratosState.set_filter_asesor_id,
+                                width="200px",
+                                style={"box_shadow": styles.SHADOW_INSET_ELITE, "border_radius": "8px"},
+                            ),
                             neuro_select_root(
                                 rx.foreach(ContratosState.tipo_options, lambda opt: rx.select.item(opt, value=opt)),
                                 value=ContratosState.filter_tipo,
