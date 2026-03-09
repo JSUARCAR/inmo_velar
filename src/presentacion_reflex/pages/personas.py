@@ -5,7 +5,7 @@ from src.presentacion_reflex.components.personas.modal_form import modal_persona
 from src.presentacion_reflex.components.personas.person_card import person_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.personas_state import PersonasState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_spinner, neuro_badge, neuro_table_container
 from src.presentacion_reflex import styles
 
 
@@ -38,28 +38,40 @@ def persona_row(persona: dict) -> rx.Component:
             rx.box(
                 rx.foreach(
                     persona["roles"],
-                    lambda r: rx.badge(
+                    lambda r: rx.box(
                         r,
-                        color_scheme=rx.match(
+                        color=rx.match(
                             r,
-                            ("Propietario", "blue"),
-                            ("Arrendatario", "green"),
-                            ("Asesor", "purple"),
-                            ("Codeudor", "orange"),
-                            ("Proveedor", "cyan"),
-                            "gray",
+                            ("Propietario", "var(--blue-9)"),
+                            ("Arrendatario", "var(--green-9)"),
+                            ("Asesor", "var(--purple-9)"),
+                            ("Codeudor", "var(--orange-9)"),
+                            ("Proveedor", "var(--cyan-9)"),
+                            "var(--gray-9)",
                         ),
-                        variant="soft",
+                        background=styles.BG_PANEL,
+                        border_radius="20px",
+                        padding="2px 10px",
+                        box_shadow=styles.NEU_INSET_LIGHT,
                         margin_right="1",
+                        font_size="0.75rem",
+                        font_weight="bold",
+                        display="inline-block",
                     ),
                 )
-            )
-        ),
+                                    )
+                                ),
         rx.table.cell(
-            rx.badge(
+            rx.box(
                 persona["estado"],
-                color_scheme=rx.cond(persona["estado"] == "Activo", "green", "red"),
-                variant="soft",
+                color=rx.cond(persona["estado"] == "Activo", "var(--green-9)", "var(--red-9)"),
+                background=styles.BG_PANEL,
+                border_radius="20px",
+                padding="2px 10px",
+                box_shadow=styles.NEU_INSET_LIGHT,
+                font_size="0.75rem",
+                font_weight="bold",
+                display="inline-block",
             )
         ),
         rx.table.cell(
@@ -105,7 +117,7 @@ def personas_page() -> rx.Component:
             rx.vstack(
                 # Modal Component
                 modal_persona(),
-                # --- Elite Header with Gradient ---
+                # --- Elite Header with Neumorphism ---
                 rx.box(
                     rx.flex(
                         rx.vstack(
@@ -113,27 +125,22 @@ def personas_page() -> rx.Component:
                                 "Gestión de Personas",
                                 size="8",
                                 weight="bold",
-                                style={
-                                    "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                    "background_clip": "text",
-                                    "-webkit-background-clip": "text",
-                                    "-webkit-text-fill-color": "transparent",
-                                },
+                                color=styles.TEXT_PRIMARY,
                             ),
                             rx.text(
                                 "Administre propietarios, arrendatarios y asesores con facilidad.",
-                                color="var(--gray-10)",
+                                color=styles.TEXT_SECONDARY,
                                 size="3",
                             ),
                             rx.hstack(
-                                rx.icon("users", size=18, color="var(--gray-9)"),
+                                rx.icon("users", size=18, color=styles.TEXT_TERTIARY),
                                 rx.text(
                                     "Total: ",
                                     PersonasState.total_items,
                                     " personas",
                                     size="2",
                                     weight="medium",
-                                    color="var(--gray-11)",
+                                    color=styles.TEXT_SECONDARY,
                                 ),
                                 spacing="2",
                                 align="center",
@@ -145,21 +152,16 @@ def personas_page() -> rx.Component:
                         rx.cond(
                             AuthState.check_action("Personas", "CREAR"),
                             rx.tooltip(
-                                rx.button(
+                                neuro_button(
                                     rx.icon("plus", size=18),
                                     "Nueva Persona",
                                     size="3",
                                     on_click=PersonasState.open_create_modal,
                                     width=["100%", "100%", "auto"],
                                     style={
-                                        "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                        "color": "white",
+                                        "color": styles.ACCENT_COLOR,
+                                        "font_weight": "bold",
                                     },
-                                    _hover={
-                                        "transform": "scale(1.05)",
-                                        "box_shadow": "0 4px 12px rgba(102, 126, 234, 0.4)",
-                                    },
-                                    transition="all 0.2s ease",
                                 ),
                                 content="Crear nueva persona",
                             ),
@@ -172,12 +174,7 @@ def personas_page() -> rx.Component:
                         spacing="4",
                     ),
                     width="100%",
-                    padding_bottom="2",
-                    border_radius="12px",
-                    style={
-                        "background": "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)",
-                        "backdrop_filter": "blur(10px)",
-                    },
+                    style=styles.NEU_PANEL_STYLE,
                 ),
                 # --- Elite Toolbar ---
                 rx.card(
@@ -226,14 +223,15 @@ def personas_page() -> rx.Component:
                         # View toggle button
                         rx.hstack(
                             rx.tooltip(
-                                rx.button(
+                                rx.icon_button(
                                     rx.cond(
                                         PersonasState.view_mode == "table",
                                         rx.icon("layout-grid", size=18),
                                         rx.icon("table", size=18),
                                     ),
                                     on_click=PersonasState.toggle_view_mode,
-                                    variant="soft",
+                                    variant="ghost",
+                                    style=styles.NEU_BUTTON_STYLE,
                                     size="3",
                                     color_scheme="gray",
                                 ),
@@ -245,11 +243,11 @@ def personas_page() -> rx.Component:
                             ),
                             # Export button
                             rx.tooltip(
-                                rx.button(
-                                    rx.icon("file-spreadsheet", size=16),
-                                    "Exportar",
+                                rx.icon_button(
+                                    rx.icon("file-spreadsheet", size=18),
                                     color_scheme="green",
-                                    variant="soft",
+                                    variant="ghost",
+                                    style=styles.NEU_BUTTON_STYLE,
                                     on_click=PersonasState.exportar_csv,
                                     size="3",
                                     _hover={
@@ -262,8 +260,9 @@ def personas_page() -> rx.Component:
                             # Refresh button
                             rx.tooltip(
                                 rx.icon_button(
-                                    rx.icon("refresh-cw", size=16),
+                                    rx.icon("refresh-cw", size=18),
                                     variant="ghost",
+                                    style=styles.NEU_BUTTON_STYLE,
                                     size="3",
                                     on_click=PersonasState.load_personas,
                                     _hover={
@@ -285,6 +284,7 @@ def personas_page() -> rx.Component:
                         spacing="3",
                     ),
                     width="100%",
+                    variant="ghost",
                     style={
                         "background": styles.BG_PANEL,
                         "box_shadow": styles.NEU_SHADOW,
@@ -297,7 +297,7 @@ def personas_page() -> rx.Component:
                     PersonasState.is_loading,
                     rx.center(
                         rx.vstack(
-                            rx.spinner(size="3", color="purple"),
+                            neuro_spinner(size="3"),
                             rx.text("Cargando personas...", size="2", color="var(--gray-10)"),
                             spacing="2",
                         ),
@@ -305,33 +305,34 @@ def personas_page() -> rx.Component:
                     ),
                     rx.cond(
                         PersonasState.view_mode == "table",
-                        # TABLE VIEW - Improved
+                        # TABLE VIEW - Improved with Neumorphism and Transparency
                         rx.card(
                             rx.box(
                                 rx.table.root(
                                     rx.table.header(
                                         rx.table.row(
                                             rx.table.column_header_cell(
-                                                "Nombre", style={"font-weight": "600"}
+                                                "Nombre", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Documento", style={"font-weight": "600"}
+                                                "Documento", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Contacto", style={"font-weight": "600"}
+                                                "Contacto", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Fecha Creación", style={"font-weight": "600"}
+                                                "Fecha Creación", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Roles", style={"font-weight": "600"}
+                                                "Roles", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Estado", style={"font-weight": "600"}
+                                                "Estado", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
                                             rx.table.column_header_cell(
-                                                "Acciones", style={"font-weight": "600"}
+                                                "Acciones", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
+                                            style={"background": "transparent"}
                                         ),
                                     ),
                                     rx.table.body(
@@ -359,7 +360,7 @@ def personas_page() -> rx.Component:
                                                             ),
                                                         ),
                                                         rx.text(
-                                                            p["nombre"], weight="medium", size="2"
+                                                            p["nombre"], weight="bold", size="2", color=styles.TEXT_PRIMARY
                                                         ),
                                                         align="center",
                                                         spacing="3",
@@ -369,7 +370,8 @@ def personas_page() -> rx.Component:
                                                     rx.text(
                                                         p["documento"],
                                                         size="2",
-                                                        color="var(--gray-11)",
+                                                        color=styles.TEXT_SECONDARY,
+                                                        weight="medium",
                                                     )
                                                 ),
                                                 rx.table.cell(
@@ -378,21 +380,21 @@ def personas_page() -> rx.Component:
                                                             rx.icon(
                                                                 "mail",
                                                                 size=12,
-                                                                color="var(--gray-9)",
+                                                                color=styles.TEXT_TERTIARY,
                                                             ),
-                                                            rx.text(p["correo"], size="1"),
+                                                            rx.text(p["correo"], size="1", color=styles.TEXT_SECONDARY),
                                                             spacing="1",
                                                         ),
                                                         rx.hstack(
                                                             rx.icon(
                                                                 "phone",
                                                                 size=12,
-                                                                color="var(--gray-9)",
+                                                                color=styles.TEXT_TERTIARY,
                                                             ),
                                                             rx.text(
                                                                 p["contacto"],
                                                                 size="1",
-                                                                color="gray",
+                                                                color=styles.TEXT_TERTIARY,
                                                             ),
                                                             spacing="1",
                                                         ),
@@ -404,58 +406,35 @@ def personas_page() -> rx.Component:
                                                     rx.text(
                                                         p["fecha_creacion"],
                                                         size="2",
-                                                        color="var(--gray-10)",
+                                                        color=styles.TEXT_TERTIARY,
                                                     )
                                                 ),
                                                 rx.table.cell(
                                                     rx.box(
                                                         rx.foreach(
                                                             p["roles"],
-                                                            lambda r: rx.badge(
-                                                                rx.hstack(
-                                                                    rx.icon(
-                                                                        rx.match(
-                                                                            r,
-                                                                            ("Propietario", "home"),
-                                                                            (
-                                                                                "Arrendatario",
-                                                                                "user-check",
-                                                                            ),
-                                                                            ("Asesor", "briefcase"),
-                                                                            ("Codeudor", "shield"),
-                                                                            ("Proveedor", "tool"),
-                                                                            "user",
-                                                                        ),
-                                                                        size=12,
-                                                                    ),
-                                                                    rx.text(r, size="1"),
-                                                                    spacing="1",
-                                                                    align="center",
-                                                                ),
+                                                            lambda r: neuro_badge(
+                                                                r,
                                                                 color_scheme=rx.match(
                                                                     r,
                                                                     ("Propietario", "blue"),
                                                                     ("Arrendatario", "green"),
-                                                                    ("Asesor", "purple"),
+                                                                    ("Asesor", "violet"),
                                                                     ("Codeudor", "orange"),
                                                                     ("Proveedor", "cyan"),
                                                                     "gray",
                                                                 ),
-                                                                variant="soft",
-                                                                margin_right="1",
-                                                                margin_bottom="1",
+                                                                style={"margin_right": "4px", "margin_bottom": "4px"},
                                                             ),
                                                         )
                                                     )
                                                 ),
                                                 rx.table.cell(
-                                                    rx.badge(
+                                                    neuro_badge(
                                                         p["estado"],
                                                         color_scheme=rx.cond(
                                                             p["estado"] == "Activo", "green", "red"
                                                         ),
-                                                        variant="soft",
-                                                        size="2",
                                                     )
                                                 ),
                                                 rx.table.cell(
@@ -473,7 +452,8 @@ def personas_page() -> rx.Component:
                                                                         p
                                                                     ),
                                                                     _hover={
-                                                                        "background": "var(--accent-3)",
+                                                                        "background": styles.ACCENT_BG_SOFT,
+                                                                        "color": styles.ACCENT_COLOR,
                                                                     },
                                                                 ),
                                                                 content="Editar persona",
@@ -496,27 +476,36 @@ def personas_page() -> rx.Component:
                                                                 content="Eliminar persona",
                                                             ),
                                                         ),
-                                                        spacing="1",
+                                                        spacing="3",
                                                     )
                                                 ),
                                                 _hover={
-                                                    "background": "var(--gray-2)",
+                                                    "background": styles.BG_HOVER,
                                                 },
                                                 style={
                                                     "transition": "background 0.2s ease",
+                                                    "background": "transparent",
                                                 },
                                             ),
                                         ),
                                     ),
                                     width="100%",
-                                    variant="surface",
+                                    variant="ghost",
+                                    style={"background": "transparent"},
                                 ),
                                 width="100%",
                                 overflow_x="auto",
+                                background="transparent",
                             ),
-                            padding="0",
                             width="100%",
+                            variant="ghost",
+                            style={
+                                **styles.NEU_PANEL_STYLE,
+                                "box_shadow": styles.NEU_MODAL_SHADOW,
+                                "background": styles.BG_PANEL,
+                            },
                         ),
+                        # Nota: neuro_table_container gestiona el overflow-x para móviles
                         # CARDS VIEW - New
                         rx.box(
                             rx.cond(
@@ -524,20 +513,20 @@ def personas_page() -> rx.Component:
                                 rx.grid(
                                     rx.foreach(PersonasState.personas, person_card),
                                     columns=rx.breakpoints(initial="1", sm="1", md="2", lg="3"),
-                                    gap="5",
+                                    gap="6",
                                     width="100%",
                                     padding="4",
                                 ),
                                 # Empty state for cards
                                 rx.center(
                                     rx.vstack(
-                                        rx.icon("users", size=48, color="var(--gray-8)"),
+                                        rx.icon("users", size=48, color=styles.TEXT_TERTIARY),
                                         rx.heading(
-                                            "No hay personas", size="5", color="var(--gray-11)"
+                                            "No hay personas", size="5", color=styles.TEXT_PRIMARY
                                         ),
                                         rx.text(
                                             "Crea tu primera persona haciendo clic en el botón superior",
-                                            color="var(--gray-10)",
+                                            color=styles.TEXT_SECONDARY,
                                         ),
                                         spacing="2",
                                     ),
@@ -549,19 +538,15 @@ def personas_page() -> rx.Component:
                     ),
                 ),
                 # --- Premium Pagination ---
-                rx.card(
+                # --- Premium Pagination (neuro_button) ---
+                rx.box(
                     rx.flex(
-                        rx.button(
+                        neuro_button(
                             rx.icon("chevron-left", size=16),
                             "Anterior",
                             on_click=PersonasState.prev_page,
                             disabled=PersonasState.page == 1,
-                            variant="soft",
                             size="3",
-                            _hover={
-                                "transform": "translateX(-2px)",
-                            },
-                            transition="transform 0.2s ease",
                         ),
                         rx.vstack(
                             rx.text(
@@ -571,6 +556,7 @@ def personas_page() -> rx.Component:
                                 PersonasState.total_pages,
                                 size="3",
                                 weight="medium",
+                                color=styles.TEXT_PRIMARY,
                             ),
                             rx.text(
                                 "Mostrando ",
@@ -585,22 +571,17 @@ def personas_page() -> rx.Component:
                                 " de ",
                                 PersonasState.total_items,
                                 size="1",
-                                color="var(--gray-10)",
+                                color=styles.TEXT_TERTIARY,
                             ),
                             spacing="0",
                             align="center",
                         ),
-                        rx.button(
+                        neuro_button(
                             "Siguiente",
                             rx.icon("chevron-right", size=16),
                             on_click=PersonasState.next_page,
                             disabled=PersonasState.page >= PersonasState.total_pages,
-                            variant="soft",
                             size="3",
-                            _hover={
-                                "transform": "translateX(2px)",
-                            },
-                            transition="transform 0.2s ease",
                         ),
                         justify="center",
                         width="100%",
@@ -610,9 +591,7 @@ def personas_page() -> rx.Component:
                         wrap="wrap",
                     ),
                     width="100%",
-                    style={
-                        "background": "var(--color-panel-solid)",
-                    },
+                    style=styles.NEU_PANEL_STYLE,
                 ),
                 padding="6",
                 width="100%",

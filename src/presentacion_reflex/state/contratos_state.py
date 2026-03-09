@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, TypedDict
 
 import reflex as rx
+import unicodedata
 
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
 from src.infraestructura.persistencia.database import db_manager
@@ -44,13 +45,22 @@ class ContratosState(DocumentosStateMixin):
     error_message: str = ""
     is_grid_view: bool = False  # Default to Table, or True for Elite default
 
+    # KPIs
+    kpi_mandatos_total: int = 0
+    kpi_mandatos_activos: int = 0
+    kpi_mandatos_inactivos: int = 0
+    
+    kpi_arriendos_total: int = 0
+    kpi_arriendos_activos: int = 0
+    kpi_arriendos_inactivos: int = 0
+
     # Búsqueda y Filtros
     search_text: str = ""
     filter_tipo: str = "Todos"  # Todos, Mandato, Arrendamiento
     filter_estado: str = "Activo"  # Todos, Activo, Cancelado
     filter_propiedad_id: str = ""
     filter_persona_id: str = ""
-    filter_asesor_id: str = ""
+    filter_asesor_id: str = "todos"
     solo_activos: bool = True
 
     # Opciones de filtros (para dropdowns)
@@ -94,6 +104,17 @@ class ContratosState(DocumentosStateMixin):
     def set_form_field(self, name: str, value: Any):
         """Actualiza un campo del formulario."""
         self.form_data[name] = value
+
+    @rx.var
+    def asesores_filter_options(self) -> List[List[str]]:
+        """Opciones de asesores para el select del filtro principal."""
+        return [["Todos los Asesores", "todos"]] + self.asesores_select_options
+
+    def set_filter_asesor_id(self, val: str):
+        """Setter para el filtro de asesores que recarga la página."""
+        self.filter_asesor_id = val
+        self.current_page = 1
+        return [ContratosState.load_contratos, ContratosState.load_kpis]
 
     def toggle_view(self):
         """Alterna entre vista de tabla y grid."""
@@ -181,9 +202,66 @@ class ContratosState(DocumentosStateMixin):
             yield ContratosState.load_filter_options()
             # Cargar contratos
             yield ContratosState.load_contratos()
+            # Cargar KPIs
+            yield ContratosState.load_kpis()
         finally:
             async with self:
                 self.is_loading = False
+
+    @rx.event(background=True)
+    async def load_kpis(self):
+        """Carga los contadores KPI directos desde la BD."""
+        
+        asesor_where_mandatos = ""
+        asesor_where_arriendos = ""
+        params = ()
+        
+        if self.filter_asesor_id and self.filter_asesor_id != "todos":
+            asesor_where_mandatos = "WHERE ID_ASESOR = %s"
+            asesor_where_arriendos = "WHERE EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm WHERE cm.ID_PROPIEDAD = CONTRATOS_ARRENDAMIENTOS.ID_PROPIEDAD AND cm.ID_ASESOR = %s)"
+            params = (self.filter_asesor_id,)
+            
+        query_mandatos = f"""
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN ESTADO_CONTRATO_M = 'Activo' THEN 1 ELSE 0 END) as activos,
+            SUM(CASE WHEN ESTADO_CONTRATO_M != 'Activo' THEN 1 ELSE 0 END) as inactivos
+        FROM CONTRATOS_MANDATOS
+        {asesor_where_mandatos}
+        """
+        
+        query_arriendos = f"""
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN ESTADO_CONTRATO_A = 'Activo' THEN 1 ELSE 0 END) as activos,
+            SUM(CASE WHEN ESTADO_CONTRATO_A != 'Activo' THEN 1 ELSE 0 END) as inactivos
+        FROM CONTRATOS_ARRENDAMIENTOS
+        {asesor_where_arriendos}
+        """
+        
+        with db_manager.obtener_conexion() as conn:
+            cursor = db_manager.get_dict_cursor(conn)
+            
+            cursor.execute(query_mandatos, params)
+            r_mandato = cursor.fetchone()
+            
+            cursor.execute(query_arriendos, params)
+            r_arriendo = cursor.fetchone()
+            
+            async with self:
+                if r_mandato:
+                    self.kpi_mandatos_total = r_mandato.get("TOTAL", r_mandato.get("total", 0)) or 0
+                    self.kpi_mandatos_activos = r_mandato.get("ACTIVOS", r_mandato.get("activos", 0)) or 0
+                    self.kpi_mandatos_inactivos = r_mandato.get("INACTIVOS", r_mandato.get("inactivos", 0)) or 0
+                else:
+                    self.kpi_mandatos_total = self.kpi_mandatos_activos = self.kpi_mandatos_inactivos = 0
+                    
+                if r_arriendo:
+                    self.kpi_arriendos_total = r_arriendo.get("TOTAL", r_arriendo.get("total", 0)) or 0
+                    self.kpi_arriendos_activos = r_arriendo.get("ACTIVOS", r_arriendo.get("activos", 0)) or 0
+                    self.kpi_arriendos_inactivos = r_arriendo.get("INACTIVOS", r_arriendo.get("inactivos", 0)) or 0
+                else:
+                    self.kpi_arriendos_total = self.kpi_arriendos_activos = self.kpi_arriendos_inactivos = 0
 
     @rx.event(background=True)
     async def load_filter_options(self):
@@ -448,6 +526,12 @@ class ContratosState(DocumentosStateMixin):
     arrendatario_menu_open: bool = False
     codeudor_menu_open: bool = False
 
+
+    def _strip_accents(self, s: str) -> str:
+        """Helper to remove accents for search."""
+        if not s: return ""
+        return "".join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+
     @rx.var
     def filtered_propiedades_options(self) -> List[List[str]]:
         """Filtra opciones de propiedad según el texto de búsqueda."""
@@ -462,7 +546,7 @@ class ContratosState(DocumentosStateMixin):
             return options
         return [
             opt for opt in options 
-            if self.propiedad_search.lower() in opt[0].lower()
+            if self._strip_accents(self.propiedad_search).lower() in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -472,7 +556,7 @@ class ContratosState(DocumentosStateMixin):
             return self.propietarios_select_options
         return [
             opt for opt in self.propietarios_select_options 
-            if self.propietario_search.lower() in opt[0].lower()
+            if self._strip_accents(self.propietario_search).lower() in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -482,7 +566,7 @@ class ContratosState(DocumentosStateMixin):
             return self.asesores_select_options
         return [
             opt for opt in self.asesores_select_options 
-            if self.asesor_search.lower() in opt[0].lower()
+            if self._strip_accents(self.asesor_search).lower() in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -492,7 +576,7 @@ class ContratosState(DocumentosStateMixin):
             return self.arrendatarios_select_options
         return [
             opt for opt in self.arrendatarios_select_options 
-            if self.arrendatario_search.lower() in opt[0].lower()
+            if self._strip_accents(self.arrendatario_search).lower() in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -502,7 +586,7 @@ class ContratosState(DocumentosStateMixin):
             return self.codeudores_select_options
         return [
             opt for opt in self.codeudores_select_options 
-            if self.codeudor_search.lower() in opt[0].lower()
+            if self._strip_accents(self.codeudor_search).lower() in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -1379,6 +1463,7 @@ class ContratosState(DocumentosStateMixin):
             repo_codeudor = RepositorioCodeudorSQLite(db_manager)
 
             servicio = ServicioContratos(
+                db_manager=db_manager,
                 repo_mandato=repo_mandato,
                 repo_arriendo=repo_arriendo,
                 repo_propiedad=repo_propiedad,

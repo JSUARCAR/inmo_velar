@@ -10,65 +10,101 @@ from src.presentacion_reflex.components.propiedades.modal_form import modal_prop
 from src.presentacion_reflex.components.propiedades.property_card import property_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_switch, neuro_spinner, neuro_badge, neuro_panel
 from src.presentacion_reflex import styles
 
 
 
 
 def render_property_actions(prop: rx.Var) -> rx.Component:
-    """Renderiza los botones de acción para una propiedad."""
+    """Renderiza los botones de acción para una propiedad con estilo neumórfico."""
     return rx.hstack(
         rx.cond(
             AuthState.check_action("Propiedades", "EDITAR"),
             rx.hstack(
                 rx.tooltip(
-                    rx.icon_button(
-                        rx.icon("refresh-ccw", size=16),
+                    neuro_button(
+                        rx.icon("refresh-ccw", size=14),
                         size="1",
-                        variant="ghost",
-                        color_scheme="blue",
                         on_click=lambda: PropiedadesState.toggle_disponibilidad(
                             prop["id_propiedad"],
                             rx.cond(prop["disponibilidad"] == 1, 0, 1),
                         ),
+                        style={"min_width": "32px", "height": "32px", "padding": "0"},
                     ),
                     content="Cambiar Estado",
                 ),
                 rx.tooltip(
-                    rx.icon_button(
-                        rx.icon("pencil", size=16),
+                    neuro_button(
+                        rx.icon("pencil", size=14),
                         size="1",
-                        variant="ghost",
                         on_click=lambda: PropiedadesState.open_edit_modal(prop["id_propiedad"]),
+                        style={"min_width": "32px", "height": "32px", "padding": "0"},
                     ),
                     content="Editar",
                 ),
                 rx.tooltip(
                     rx.cond(
                         prop["estado_registro"],
-                        rx.icon_button(
-                            rx.icon("power-off", size=16),
+                        neuro_button(
+                            rx.icon("power-off", size=14),
                             size="1",
-                            variant="ghost",
-                            color_scheme="red",
                             on_click=lambda: PropiedadesState.toggle_activa(prop["id_propiedad"], 1),
-                            _hover={"background": "var(--red-3)", "color": "var(--red-9)"},
+                            style={
+                                "min_width": "32px", "height": "32px", "padding": "0",
+                                "color": "var(--red-9)",
+                            },
                         ),
-                        rx.icon_button(
-                            rx.icon("power", size=16),
+                        neuro_button(
+                            rx.icon("power", size=14),
                             size="1",
-                            variant="ghost",
-                            color_scheme="green",
                             on_click=lambda: PropiedadesState.toggle_activa(prop["id_propiedad"], 0),
-                            _hover={"background": "var(--green-3)", "color": "var(--green-9)"},
+                            style={
+                                "min_width": "32px", "height": "32px", "padding": "0",
+                                "color": "var(--green-9)",
+                            },
                         ),
                     ),
                     content=rx.cond(prop["estado_registro"], "Desactivar", "Activar"),
                 ),
-                spacing="1",
+                spacing="3",
             ),
         ),
+    )
+
+
+def _render_kpi_card(title: str, icon: str, total: int, activas: int, inactivas: int, color_scheme: str) -> rx.Component:
+    """Componente para renderizar un KPI de Elite."""
+    return neuro_panel(
+        rx.hstack(
+            rx.box(
+                rx.icon(icon, size=24, color=f"var(--{color_scheme}-9)"),
+                padding="3",
+                border_radius="12px",
+                background=f"var(--{color_scheme}-3)",
+            ),
+            rx.vstack(
+                rx.text(title, size="2", color=styles.TEXT_SECONDARY, weight="medium"),
+                rx.hstack(
+                    rx.text(total.to_string(), size="6", weight="bold", color="var(--gray-12)"),
+                    rx.spacer(),
+                    rx.hstack(
+                        neuro_badge(f"{activas.to_string()} Activas", color_scheme="green", size="1"),
+                        neuro_badge(f"{inactivas.to_string()} Inactivas", color_scheme="gray", size="1"),
+                        spacing="2",
+                    ),
+                    align="center",
+                    width="100%"
+                ),
+                width="100%",
+                spacing="1"
+            ),
+            spacing="4",
+            align="center",
+            width="100%",
+        ),
+        width="100%",
+        min_width="320px",
     )
 
 
@@ -113,11 +149,21 @@ def propiedades_page() -> rx.Component:
                         rx.cond(
                             AuthState.check_action("Propiedades", "CREAR"),
                             rx.tooltip(
-                                rx.button(
-                                    rx.icon("plus", size=18),
-                                    "Nueva Propiedad",
-                                    size="3",
+                                neuro_button(
+                                    rx.hstack(
+                                        rx.icon("plus", size=18),
+                                        rx.text("Nueva Propiedad"),
+                                        spacing="2",
+                                        align="center",
+                                    ),
                                     on_click=PropiedadesState.open_create_modal,
+                                    size="3",
+                                    variant="solid", # Destacar botón principal
+                                    style={
+                                        "background": "var(--accent-9)",
+                                        "color": "white",
+                                        "padding": "0 2rem",
+                                    }
                                 ),
                                 content="Crear nueva propiedad",
                             ),
@@ -128,12 +174,37 @@ def propiedades_page() -> rx.Component:
                     ),
                     width="100%",
                     padding_bottom="2",
-                    border_radius="12px",
+                    border_radius="16px",
+                    style=styles.NEU_PANEL_STYLE,
                 ),
+
+                # --- KPIs ---
+                rx.grid(
+                    _render_kpi_card(
+                        "Disponibles", 
+                        "home", 
+                        PropiedadesState.kpi_disponibles_total,
+                        PropiedadesState.kpi_disponibles_activas,
+                        PropiedadesState.kpi_disponibles_inactivas,
+                        "blue"
+                    ),
+                    _render_kpi_card(
+                        "Ocupadas", 
+                        "key", 
+                        PropiedadesState.kpi_ocupadas_total,
+                        PropiedadesState.kpi_ocupadas_activas,
+                        PropiedadesState.kpi_ocupadas_inactivas,
+                        "indigo"
+                    ),
+                    columns=rx.breakpoints(initial="1", md="2"),
+                    spacing="4",
+                    width="100%",
+                ),
+
                 # --- Main Content Area ---
                 rx.vstack(
                     # Toolbar Section
-                    rx.card(
+                    rx.box(
                         rx.flex(
                             # Search Bar with enhanced styling
                             neuro_input(
@@ -142,7 +213,7 @@ def propiedades_page() -> rx.Component:
                                 value=PropiedadesState.search_text,
                                 on_change=PropiedadesState.set_search,
                                 size="3",
-                                width=rx.breakpoints(initial="100%", md="320px"),
+                                width=rx.breakpoints(initial="100%", md="350px"), # Aumentado de 320 a 350
                             ),
                             rx.spacer(),
                             # Filters Row
@@ -155,7 +226,7 @@ def propiedades_page() -> rx.Component:
                                     placeholder="Tipo",
                                     value=PropiedadesState.filter_tipo,
                                     on_change=PropiedadesState.set_filter_tipo,
-                                    width=rx.breakpoints(initial="100%", sm="150px"),
+                                    width=rx.breakpoints(initial="100%", sm="160px"), # Aumentado
                                 ),
                                 neuro_select_root(
                                     [
@@ -168,50 +239,54 @@ def propiedades_page() -> rx.Component:
                                     on_change=PropiedadesState.set_filter_disponibilidad,
                                     width=rx.breakpoints(initial="100%", sm="180px"),
                                 ),
-                                # View Toggle Button
-                                rx.tooltip(
-                                    neuro_button(
-                                        rx.cond(
-                                            PropiedadesState.vista_tipo == "cards",
-                                            rx.icon("table", size=18),
-                                            rx.icon("layout-grid", size=18),
+                                # View Toggle and Export Button Container
+                                rx.hstack(
+                                    rx.tooltip(
+                                        neuro_button(
+                                            rx.cond(
+                                                PropiedadesState.vista_tipo == "cards",
+                                                rx.icon("table", size=18),
+                                                rx.icon("layout-grid", size=18),
+                                            ),
+                                            on_click=PropiedadesState.toggle_vista,
+                                            size="3",
+                                            style={"min_width": "44px"}
                                         ),
-                                        on_click=PropiedadesState.toggle_vista,
-                                        size="3",
+                                        content=rx.cond(
+                                            PropiedadesState.vista_tipo == "cards",
+                                            "Cambiar a vista de tabla",
+                                            "Cambiar a vista de cards",
+                                        ),
                                     ),
-                                    content=rx.cond(
-                                        PropiedadesState.vista_tipo == "cards",
-                                        "Cambiar a vista de tabla",
-                                        "Cambiar a vista de cards",
+                                    rx.tooltip(
+                                        neuro_button(
+                                            rx.icon("file-spreadsheet", size=16),
+                                            on_click=PropiedadesState.exportar_csv,
+                                            size="3",
+                                            style={"min_width": "44px"}
+                                        ),
+                                        content="Exportar a Excel",
                                     ),
+                                    spacing="3",
+                                    align="center"
                                 ),
-                                # Export Button
-                                rx.tooltip(
-                                    neuro_button(
-                                        rx.icon("file-spreadsheet", size=16),
-                                        on_click=PropiedadesState.exportar_csv,
-                                        size="3",
-                                    ),
-                                    content="Exportar a Excel",
-                                ),
-                                spacing="3",
+                                spacing="5",
                                 flex_direction=rx.breakpoints(initial="column", sm="row"),
                                 width=rx.breakpoints(initial="100%", md="auto"),
+                                align="center",
                             ),
-                            spacing="3",
+                            spacing="4", # Aumentado de 3 a 4
                             width="100%",
                             align=rx.breakpoints(initial="start", md="center"),
                             flex_direction=rx.breakpoints(initial="column", md="row"),
                             wrap="wrap",
                         ),
-                        width="100%",
                         style={
-                            "background": styles.BG_PANEL,
-                            "box_shadow": styles.NEU_SHADOW,
-                            "border": "none",
-                            "border_radius": "16px",
+                            **styles.NEU_PANEL_STYLE,
                             "padding": "1.5rem",
+                            "border": "none",
                         },
+                        width="100%",
                     ),
 
                     # Stats/Counter
@@ -229,15 +304,15 @@ def propiedades_page() -> rx.Component:
                         rx.spacer(),
                         # Toggle solo activas
                         rx.hstack(
-                            rx.text("Solo Activas", size="2", color="var(--gray-10)"),
-                            rx.switch(
+                            rx.text("Solo Activas", size="2", color="var(--gray-10)", weight="bold"),
+                            neuro_switch(
                                 checked=PropiedadesState.solo_activas,
                                 on_change=PropiedadesState.toggle_solo_activas,
-                                size="1",
+                                size="2",
                                 color_scheme="green",
                             ),
                             align="center",
-                            spacing="2",
+                            spacing="3",
                         ),
                         width="100%",
                         padding_x="2",
@@ -247,7 +322,7 @@ def propiedades_page() -> rx.Component:
                         PropiedadesState.is_loading,
                         rx.center(
                             rx.vstack(
-                                rx.spinner(size="3", color="var(--accent-9)"),
+                                neuro_spinner(size="3"),
                                 rx.text("Cargando inventario...", color="var(--gray-10)"),
                                 spacing="4",
                             ),
@@ -317,11 +392,11 @@ def propiedades_page() -> rx.Component:
                                             ),
                                         ),
                                         columns=rx.breakpoints(initial="1", sm="2", lg="3"),
-                                        gap="6",
+                                        gap="3rem",
                                         width="100%",
                                     ),
                                     # Table View (Premium)
-                                    rx.card(
+                                    rx.box(
                                         rx.table.root(
                                             rx.table.header(
                                                 rx.table.row(
@@ -345,10 +420,10 @@ def propiedades_page() -> rx.Component:
                                                                     rx.icon(
                                                                         "home",
                                                                         size=20,
-                                                                        color="var(--accent-9)",
+                                                                        color=styles.ACCENT_COLOR,
                                                                     ),
                                                                     padding="8px",
-                                                                    background="var(--accent-3)",
+                                                                    background=styles.ACCENT_BG_SOFT,
                                                                     border_radius="8px",
                                                                 ),
                                                                 rx.vstack(
@@ -362,7 +437,7 @@ def propiedades_page() -> rx.Component:
                                                                             "matricula_inmobiliaria"
                                                                         ],
                                                                         size="1",
-                                                                        color="var(--gray-10)",
+                                                                        color=styles.TEXT_TERTIARY,
                                                                     ),
                                                                     spacing="1",
                                                                 ),
@@ -370,19 +445,18 @@ def propiedades_page() -> rx.Component:
                                                                 align="center",
                                                             )
                                                         ),
-                                                        rx.table.cell(
-                                                            rx.badge(
+                                                         rx.table.cell(
+                                                            neuro_badge( # Converted to neuro_badge
                                                                 prop["tipo_propiedad"],
-                                                                variant="surface",
                                                                 color_scheme="blue",
                                                             )
                                                         ),
-                                                        rx.table.cell(prop["municipio_nombre"]),
-                                                        rx.table.cell(
+                                                         rx.table.cell(prop["municipio_nombre"]),
+                                                         rx.table.cell(
                                                             rx.cond(
                                                                 prop["disponibilidad"],
-                                                                rx.badge("Disponible", color_scheme="green", variant="soft"),
-                                                                rx.badge("Ocupada", color_scheme="gray", variant="soft"),
+                                                                neuro_badge("Disponible", color_scheme="green"), # Converted to neuro_badge
+                                                                neuro_badge("Ocupada", color_scheme="gray"), # Converted to neuro_badge
                                                             )
                                                         ),
                                                         rx.table.cell(
@@ -411,7 +485,7 @@ def propiedades_page() -> rx.Component:
                                                                     ],
                                                                     ")",
                                                                     size="1",
-                                                                    color="var(--gray-10)",
+                                                                    color=styles.TEXT_TERTIARY,
                                                                     style={
                                                                         "font_variant_numeric": "tabular-nums"
                                                                     },
@@ -467,6 +541,11 @@ def propiedades_page() -> rx.Component:
                                             variant="surface",
                                             width="100%",
                                         ),
+                                        style={
+                                            **styles.NEU_PANEL_STYLE,
+                                            "padding": "0",
+                                            "overflow": "hidden",
+                                        },
                                         width="100%",
                                     ),
                                 ),
@@ -475,7 +554,7 @@ def propiedades_page() -> rx.Component:
                         ),
                     ),
                     # --- Premium Pagination ---
-                    rx.card(
+                    rx.box(
                         rx.hstack(
                             neuro_button(
                                 rx.hstack(rx.icon("chevron-left", size=16), rx.text("Anterior")),
@@ -525,11 +604,9 @@ def propiedades_page() -> rx.Component:
                         ),
                         width="100%",
                         style={
-                            "background": styles.BG_PANEL,
-                            "box_shadow": styles.NEU_SHADOW,
-                            "border": "none",
-                            "border_radius": "16px",
+                            **styles.NEU_PANEL_STYLE,
                             "margin_top": "24px",
+                            "border": "none",
                         },
                     ),
 

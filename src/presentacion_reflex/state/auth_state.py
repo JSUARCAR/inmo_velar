@@ -69,6 +69,11 @@ class AuthState(rx.State):
     # Estado de UX
     is_loading: bool = False
     error_message: str = ""
+    password_visible: bool = False
+
+    def toggle_password_visibility(self):
+        """Alterna la visibilidad del campo de contraseña en el login."""
+        self.password_visible = not self.password_visible
 
     # ── Computed Vars (sin efectos secundarios) ────────────────────────────────
 

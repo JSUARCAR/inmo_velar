@@ -1,3 +1,4 @@
+import datetime
 import reflex as rx
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.components.shared.aurora_background import aurora_background
@@ -62,14 +63,41 @@ def login_card() -> rx.Component:
                     ),
                     rx.vstack(
                         rx.text("Contraseña", size="2", weight="bold", class_name="glass-text-elite"),
-                        rx.input(
-                            type="password",
-                            placeholder="••••••••",
-                            name="password",
-                            size="3",
+                        rx.box(
+                            rx.input(
+                                type=rx.cond(AuthState.password_visible, "text", "password"),
+                                placeholder="••••••••",
+                                name="password",
+                                size="3",
+                                width="100%",
+                                variant="surface",
+                                class_name="glass-input-elite",
+                                padding_right="40px",
+                            ),
+                            rx.box(
+                                rx.cond(
+                                    AuthState.password_visible,
+                                    rx.icon(
+                                        "eye-off", size=16,
+                                        class_name="glass-eye-icon",
+                                        cursor="pointer",
+                                        on_click=AuthState.toggle_password_visibility,
+                                    ),
+                                    rx.icon(
+                                        "eye", size=16,
+                                        class_name="glass-eye-icon",
+                                        cursor="pointer",
+                                        on_click=AuthState.toggle_password_visibility,
+                                    ),
+                                ),
+                                position="absolute",
+                                right="10px",
+                                top="50%",
+                                transform="translateY(-50%)",
+                                z_index="1",
+                            ),
+                            position="relative",
                             width="100%",
-                            variant="surface",
-                            class_name="glass-input-elite",
                         ),
                         align_items="start",
                         width="100%",
@@ -92,21 +120,25 @@ def login_card() -> rx.Component:
                         },
                         loading=AuthState.is_loading,
                     ),
-
-
                     rx.cond(
                         AuthState.error_message != "",
-                        rx.text(AuthState.error_message, color="#f87171", size="2", weight="medium"),
+                        rx.hstack(
+                            rx.icon("circle_alert", size=14, color="#f87171"),
+                            rx.text(AuthState.error_message, color="#f87171", size="2", weight="medium"),
+                            spacing="2",
+                            align="center",
+                        ),
                     ),
                     align="center",
                     spacing="4",
                     width="100%",
+                    max_width="340px",
                 ),
 
 
                 # Footer
                 rx.text(
-                    "© 2024 Inmobiliaria Velar SAS. Todos los derechos reservados.",
+                    f"© {datetime.datetime.now().year} Inmobiliaria Velar SAS. Todos los derechos reservados.",
                     size="1",
                     class_name="glass-subtext-elite",
                     margin_top="8",

@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
+from src.presentacion_reflex import styles
 
 
 def step_indicator(step: int, current_step: int, label: str, icon: str) -> rx.Component:
@@ -20,12 +21,18 @@ def step_indicator(step: int, current_step: int, label: str, icon: str) -> rx.Co
             width="40px",
             height="40px",
             border_radius="full",
-            background=rx.cond(
+            background=styles.BG_PANEL,
+            box_shadow=rx.cond(
                 is_active | is_completed,
-                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",  # Blue/Purple Gradient
-                "var(--gray-3)",
+                styles.NEU_INSET,
+                styles.NEU_SHADOW,
             ),
-            box_shadow=rx.cond(is_active, "0 4px 12px rgba(118, 75, 162, 0.4)", "none"),
+            opacity=rx.cond(is_active | is_completed, "1", "0.6"),
+            border=rx.cond(
+                is_active,
+                f"2px solid {styles.ACCENT_COLOR}",
+                "none"
+            ),
             transition="all 0.3s ease",
             style={
                 "transform": rx.cond(is_active, "scale(1.1)", "scale(1)"),
@@ -42,7 +49,7 @@ def step_indicator(step: int, current_step: int, label: str, icon: str) -> rx.Co
                 rx.cond(is_completed, "var(--purple-9)", "var(--gray-10)"),
             ),
         ),
-        spacing="2",
+        spacing="3",
         align="center",
         flex="1",
         cursor="pointer",
@@ -55,9 +62,10 @@ def connector_line(active: bool) -> rx.Component:
     return rx.box(
         height="2px",
         flex="1",
-        background=rx.cond(active, "var(--purple-9)", "var(--gray-4)"),
+        background=styles.BG_PANEL,
+        box_shadow="inset 1px 1px 2px rgba(0,0,0,0.1), inset -1px -1px 2px rgba(255,255,255,0.5)",
         margin_top="20px",
-        transition="all 0.4s ease",
+        transition=styles.GLOBAL_TRANSITION,
         margin_x="2",
     )
 

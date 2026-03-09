@@ -2,6 +2,7 @@ import reflex as rx
 
 from src.presentacion_reflex import styles
 from src.presentacion_reflex.state.auth_state import AuthState
+from src.presentacion_reflex.components.neuro_elements import neuro_badge, neuro_button
 
 
 def property_card(
@@ -42,7 +43,7 @@ def property_card(
             rx.hstack(
                 rx.hover_card.root(
                     rx.hover_card.trigger(
-                        rx.center(
+                        rx.box(
                             rx.icon(
                                 rx.match(
                                     tipo.to(str),
@@ -53,30 +54,45 @@ def property_card(
                                     ("Lote", "map"),
                                     "home",
                                 ),
-                                size=24,
-                                color="white",
+                                size=22,
+                                color=styles.TEXT_INVERTED,
+                                style={"line_height": "0", "display": "block"},
                             ),
                             width="40px",
                             height="40px",
+                            min_width="40px",
                             border_radius="12px",
-                            background="linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            box_shadow="0 4px 10px rgba(102, 126, 234, 0.3)",
+                            # Gradiente radial centrado: el ícono queda en el núcleo del tricolor
+                            background="radial-gradient(circle at center, var(--violet-9) 0%, var(--blue-9) 55%, var(--purple-9) 100%)",
+                            box_shadow="0 4px 12px var(--violet-a7)",
                             cursor="pointer",
+                            display="flex",
+                            align_items="center",
+                            justify_content="center",
+                            flex_shrink="0",
                         ),
                     ),
                     rx.hover_card.content(
                         rx.cond(
                             imagen_id,
-                            rx.image(
-                                src="/api/storage/placeholder/download",
-                                width="280px",
-                                height="200px",
-                                border_radius="8px",
-                                object_fit="cover",
-                                alt="Vista previa propiedad",
+                            rx.box(
+                                rx.image(
+                                    src="/api/storage/placeholder/download",
+                                    width="100%",
+                                    height="100%",
+                                    border_radius="8px",
+                                    object_fit="cover",
+                                    alt="Vista previa propiedad",
+                                ),
+                                padding="4px",
+                                width="288px",
+                                height="208px",
+                                border_radius="12px",
+                                background=styles.BG_PANEL,
+                                box_shadow=styles.NEU_INSET_LIGHT,
                             ),
                             rx.box(
-                                rx.text("Sin imagen", size="1", color="var(--gray-11)"),
+                                rx.text("Sin imagen", size="1", color=styles.TEXT_TERTIARY),
                                 padding="2",
                             ),
                         ),
@@ -89,14 +105,14 @@ def property_card(
                         tipo.to(str),
                         size="1",
                         weight="bold",
-                        color="var(--accent-9)",
+                        color=styles.ACCENT_COLOR,
                         text_transform="uppercase",
                         letter_spacing="0.5px",
                     ),
                     rx.text(
                         municipio.to(str),
                         size="1",
-                        color="var(--gray-10)",
+                        color=styles.TEXT_TERTIARY,
                     ),
                     spacing="0",
                     align="start",
@@ -104,52 +120,52 @@ def property_card(
                 rx.spacer(),
                 rx.cond(
                     disponibilidad,
-                    rx.badge("Disponible", color_scheme="green", variant="soft", radius="full"),
-                    rx.badge("Ocupada", color_scheme="gray", variant="soft", radius="full"),
+                    neuro_badge("Disponible", color_scheme="green"),
+                    neuro_badge("Ocupada", color_scheme="gray"),
                 ),
                 width="100%",
                 align="center",
                 spacing="3",
             ),
-            rx.divider(margin_y="2", color="var(--gray-4)"),
+            rx.divider(margin_y="3", color=styles.BORDER_DEFAULT), # Aumentado de 2 a 3
             # Main Info
             rx.vstack(
                 rx.text(
                     direccion.to(str),
                     size="3",
                     weight="bold",
-                    color="var(--gray-12)",
+                    color=styles.TEXT_PRIMARY,
                     no_of_lines=1,
                 ),
                 rx.text(
                     "Mat: ",
                     matricula,
                     size="1",
-                    color="var(--gray-10)",
+                    color=styles.TEXT_TERTIARY,
                 ),
-                spacing="1",
+                spacing="2", # Aumentado de 1 a 2
                 align="start",
                 width="100%",
             ),
             # Stats Grid (Compact)
             rx.grid(
                 rx.hstack(
-                    rx.icon("scan", size=14, color="var(--gray-9)"),
-                    rx.text(area_metros_view, size="1", color="var(--gray-11)"),
-                    spacing="1",
+                    rx.icon("scan", size=14, color=styles.TEXT_TERTIARY),
+                    rx.text(area_metros_view, size="1", color=styles.TEXT_SECONDARY),
+                    spacing="2", # Aumentado de 1 a 2
                     align="center",
                 ),
                 rx.cond(
                     habitaciones.to(int) > 0,
                     rx.hstack(
-                        rx.icon("bed", size=14, color="var(--gray-9)"),
+                        rx.icon("bed", size=14, color=styles.TEXT_TERTIARY),
                         rx.text(
                             habitaciones.to(str),
                             " Hab",
                             size="1",
-                            color="var(--gray-11)",
+                            color=styles.TEXT_SECONDARY,
                         ),
-                        spacing="1",
+                        spacing="2", # Aumentado de 1 a 2
                         align="center",
                     ),
                     rx.fragment(),
@@ -157,22 +173,22 @@ def property_card(
                 rx.cond(
                     banos.to(int) > 0,
                     rx.hstack(
-                        rx.icon("bath", size=14, color="var(--gray-9)"),
+                        rx.icon("bath", size=14, color=styles.TEXT_TERTIARY),
                         rx.text(
                             banos.to(str),
                             " Baños",
                             size="1",
-                            color="var(--gray-11)",
+                            color=styles.TEXT_SECONDARY,
                         ),
-                        spacing="1",
+                        spacing="2", # Aumentado de 1 a 2
                         align="center",
                     ),
                     rx.fragment(),
                 ),
                 columns="3",
-                gap="2",
+                gap="4", # Aumentado de 2 a 4 para más aire entre columnas
                 width="100%",
-                padding_y="2",
+                padding_y="3", # Aumentado de 2 a 3
             ),
             # Utility Codes (Compact Row)
             rx.cond(
@@ -185,8 +201,8 @@ def property_card(
                         rx.tooltip(
                             rx.hstack(
                                 rx.icon("zap", size=14, color="var(--yellow-9)"),
-                                rx.text(codigo_energia, size="1", color="var(--gray-11)"),
-                                spacing="1",
+                                rx.text(codigo_energia, size="1", color=styles.TEXT_SECONDARY),
+                                spacing="2", # Aumentado de 1 a 2
                                 align="center",
                             ),
                             content="Energía",
@@ -197,8 +213,8 @@ def property_card(
                         rx.tooltip(
                             rx.hstack(
                                 rx.icon("droplet", size=14, color="var(--blue-9)"),
-                                rx.text(codigo_agua, size="1", color="var(--gray-11)"),
-                                spacing="1",
+                                rx.text(codigo_agua, size="1", color=styles.TEXT_SECONDARY),
+                                spacing="2", # Aumentado de 1 a 2
                                 align="center",
                             ),
                             content="Acueducto",
@@ -209,30 +225,30 @@ def property_card(
                         rx.tooltip(
                             rx.hstack(
                                 rx.icon("flame", size=14, color="var(--orange-9)"),
-                                rx.text(codigo_gas, size="1", color="var(--gray-11)"),
-                                spacing="1",
+                                rx.text(codigo_gas, size="1", color=styles.TEXT_SECONDARY),
+                                spacing="2", # Aumentado de 1 a 2
                                 align="center",
                             ),
                             content="Gas",
                         ),
                     ),
-                    spacing="3",
+                    spacing="4", # Aumentado de 3 a 4
                     width="100%",
-                    padding_y="1",
+                    padding_y="2", # Aumentado de 1 a 2
                     justify="start",
-                    border_top="1px solid var(--gray-3)",
-                    margin_top="1",
+                    border_top=f"1px solid {styles.BORDER_DEFAULT}",
+                    margin_top="2", # Aumentado de 1 a 2
                 ),
             ),
             # Footer: Price & Actions
             rx.hstack(
                 rx.vstack(
-                    rx.text("Canon", size="1", color="var(--gray-9)"),
+                    rx.text("Canon", size="1", color=styles.TEXT_TERTIARY),
                     rx.text(
                         valor_canon_view,
                         size="4",
                         weight="bold",
-                        color="var(--accent-9)",
+                        color=styles.ACCENT_COLOR,
                         style={"font_variant_numeric": "tabular-nums"},
                     ),
                     spacing="0",
@@ -240,7 +256,7 @@ def property_card(
                 rx.cond(
                     valor_venta.to(float) > 0,
                     rx.vstack(
-                        rx.text("Venta / Comisión", size="1", color="var(--gray-9)"),
+                        rx.text("Venta / Comisión", size="1", color=styles.TEXT_TERTIARY),
                         rx.hstack(
                             rx.text(
                                 valor_venta_view,
@@ -255,7 +271,7 @@ def property_card(
                                 size="2",
                                 color="var(--red-8)",
                             ),
-                            spacing="1",
+                            spacing="2", # Aumentado de 1 a 2
                             align="baseline",
                         ),
                         spacing="0",
@@ -264,87 +280,81 @@ def property_card(
                 ),
                 rx.spacer(),
                 rx.hstack(
-                    rx.cond(
-                        AuthState.check_action("Propiedades", "EDITAR"),
-                        rx.hstack(
-                            rx.tooltip(
-                                rx.icon_button(
-                                    rx.icon("refresh-ccw", size=16),
-                                    on_click=lambda: on_toggle_disponibilidad(
-                                        id_propiedad, rx.cond(disponibilidad == 1, 0, 1)
+                        rx.cond(
+                            AuthState.check_action("Propiedades", "EDITAR"),
+                            rx.hstack(
+                                rx.tooltip(
+                                    neuro_button(
+                                        rx.icon("refresh-ccw", size=14),
+                                        on_click=lambda: on_toggle_disponibilidad(
+                                            id_propiedad, rx.cond(disponibilidad == 1, 0, 1)
+                                        ),
+                                        size="1",
+                                        style={"min_width": "32px", "height": "32px", "padding": "0"},
                                     ),
-                                    variant="ghost",
-                                    size="2",
-                                    color_scheme="blue",
-                                    _hover={
-                                        "background": "var(--blue-3)",
-                                        "color": "var(--blue-9)",
-                                    },
+                                    content="Cambiar Estado",
                                 ),
-                                content="Cambiar Estado",
-                            ),
-                            rx.tooltip(
-                                rx.icon_button(
-                                    rx.icon("pencil", size=16),
-                                    on_click=lambda: on_edit(id_propiedad),
-                                    variant="ghost",
-                                    size="2",
-                                    color_scheme="gray",
-                                    _hover={
-                                        "background": "var(--gray-3)",
-                                        "color": "var(--accent-9)",
-                                    },
-                                ),
-                                content="Editar",
-                            ),
-                            rx.tooltip(
-                                rx.cond(
-                                    estado_registro,
-                                    rx.icon_button(
-                                        rx.icon("power-off", size=16),
-                                        on_click=lambda: on_toggle_activa(id_propiedad, 1),
-                                        variant="ghost",
-                                        size="2",
-                                        color_scheme="red",
-                                        _hover={"background": "var(--red-3)", "color": "var(--red-9)"},
+                                rx.tooltip(
+                                    neuro_button(
+                                        rx.icon("pencil", size=14),
+                                        on_click=lambda: on_edit(id_propiedad),
+                                        size="1",
+                                        style={"min_width": "32px", "height": "32px", "padding": "0"},
                                     ),
-                                    rx.icon_button(
-                                        rx.icon("power", size=16),
-                                        on_click=lambda: on_toggle_activa(id_propiedad, 0),
-                                        variant="ghost",
-                                        size="2",
-                                        color_scheme="green",
-                                        _hover={"background": "var(--green-3)", "color": "var(--green-9)"},
-                                    ),
+                                    content="Editar",
                                 ),
-                                content=rx.cond(estado_registro, "Desactivar", "Activar"),
+                                rx.tooltip(
+                                    rx.cond(
+                                        estado_registro,
+                                        neuro_button(
+                                            rx.icon("power-off", size=14),
+                                            on_click=lambda: on_toggle_activa(id_propiedad, 1),
+                                            size="1",
+                                            style={
+                                                "min_width": "32px", "height": "32px",
+                                                "padding": "0", "color": "var(--red-9)",
+                                            },
+                                        ),
+                                        neuro_button(
+                                            rx.icon("power", size=14),
+                                            on_click=lambda: on_toggle_activa(id_propiedad, 0),
+                                            size="1",
+                                            style={
+                                                "min_width": "32px", "height": "32px",
+                                                "padding": "0", "color": "var(--green-9)",
+                                            },
+                                        ),
+                                    ),
+                                    content=rx.cond(estado_registro, "Desactivar", "Activar"),
+                                ),
+                                spacing="3",
                             ),
-                            spacing="1",
                         ),
-                    ),
-                    spacing="1",
+                    spacing="3",
                 ),
                 width="100%",
                 align="center",
-                margin_top="1",
+                margin_top="4", 
             ),
-            spacing="3",
-            padding="4",
+            spacing="5", 
+            padding="6", 
             width="100%",
         ),
-        # Elite Card Styling - White & Clean
-        variant="surface",
+        # Elite Card Styling - Neumorphic Raised
+        variant="ghost",
         width="100%",
         height="100%",
         margin="auto",
         style={
-            "border_radius": "16px",
-            "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            **styles.NEU_PANEL_STYLE,
+            "transition": "all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)",
             "overflow": "hidden",
+            "border": "none",
+            "display": "flex",
+            "flex_direction": "column",
         },
         _hover={
-            "transform": "translateY(-4px)",
-            "box_shadow": "0 12px 24px -10px rgba(0, 0, 0, 0.1)",
-            "border_color": "var(--accent-8)",
+            "transform": "translateY(-8px)",
+            "box_shadow": styles.NEU_MODAL_SHADOW,
         },
     )
