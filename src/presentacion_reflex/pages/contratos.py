@@ -340,6 +340,15 @@ def contratos_page() -> rx.Component:
                                 rx.cond(ContratosState.is_grid_view, rx.icon("table"), rx.icon("layout-grid")),
                                 on_click=ContratosState.toggle_view,
                             ),
+                            rx.tooltip(
+                                neuro_button(
+                                    rx.icon("file-spreadsheet", size=16),
+                                    on_click=ContratosState.exportar_csv,
+                                    size="3",
+                                    style={"min_width": "44px"}
+                                ),
+                                content="Exportar a Excel",
+                            ),
                             spacing="3",
                         ),
                         width="100%",
