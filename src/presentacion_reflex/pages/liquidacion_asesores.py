@@ -13,7 +13,7 @@ def liquidacion_asesores_content() -> rx.Component:
     return rx.vstack(
         # Header
         rx.box(
-            rx.hstack(
+            rx.flex(
                 rx.vstack(
                     rx.heading(
                         "Liquidaciones de Asesores",
@@ -25,15 +25,19 @@ def liquidacion_asesores_content() -> rx.Component:
                     spacing="1",
                     align="start",
                 ),
-                rx.spacer(),
                 neuro_button(
                     rx.hstack(rx.icon("refresh-cw", size=18), rx.text("Recargar")),
                     on_click=LiquidacionAsesoresState.load_liquidaciones,
                     size="3",
+                    width=rx.breakpoints(initial="100%", md="auto"),
                 ),
                 width="100%",
                 padding="5",
-                align="center",
+                justify="between",
+                align=rx.breakpoints(initial="start", md="center"),
+                flex_direction=rx.breakpoints(initial="column", md="row"),
+                flex_wrap="wrap",
+                gap="4",
             ),
             width="100%",
             padding_bottom="2",
@@ -46,13 +50,13 @@ def liquidacion_asesores_content() -> rx.Component:
         ),
         # Toolbar
         rx.card(
-            rx.hstack(
+            rx.flex(
                 neuro_input(
                     rx.input.slot(rx.icon("search", size=18)),
                     placeholder="Buscar asesor o contrato...",
                     value=LiquidacionAsesoresState.search_text,
                     on_change=LiquidacionAsesoresState.set_search,
-                    width="350px",
+                    width=rx.breakpoints(initial="100%", md="350px"),
                     size="3",
                 ),
                 neuro_select_root(
@@ -63,20 +67,22 @@ def liquidacion_asesores_content() -> rx.Component:
                     value=LiquidacionAsesoresState.filter_periodo,
                     on_change=LiquidacionAsesoresState.set_filter_periodo,
                     placeholder="Período",
-                    width="150px",
+                    width=rx.breakpoints(initial="100%", md="150px"),
                 ),
-                rx.spacer(),
                 rx.cond(
                     AuthState.check_action("Liquidaciones Asesores", "LIQUIDAR"),
                     neuro_button(
                         rx.hstack(rx.icon("calculator"), rx.text("Generar Liquidaciones")),
                         on_click=LiquidacionAsesoresState.open_bulk_modal,
                         color_scheme="blue",
+                        width=rx.breakpoints(initial="100%", md="auto"),
                     ),
                 ),
-                spacing="3",
+                gap="3",
                 width="100%",
-                align="center",
+                align=rx.breakpoints(initial="stretch", md="center"),
+                flex_direction=rx.breakpoints(initial="column", md="row"),
+                flex_wrap="wrap",
             ),
             width="100%",
             style={
@@ -149,7 +155,8 @@ def liquidacion_asesores_content() -> rx.Component:
         rx.card(
             rx.hstack(
                 neuro_button(
-                    rx.hstack(rx.icon("chevron-left", size=16), rx.text("Anterior")),
+                    rx.icon("chevron-left", size=16),
+                    rx.text("Anterior", display=rx.breakpoints(initial="none", md="block")),
                     on_click=LiquidacionAsesoresState.prev_page,
                     disabled=LiquidacionAsesoresState.current_page == 1,
                     size="3",
@@ -157,7 +164,7 @@ def liquidacion_asesores_content() -> rx.Component:
                 rx.vstack(
                     rx.text(
                         "Página ", LiquidacionAsesoresState.current_page,
-                        size="3",
+                        size=rx.breakpoints(initial="2", md="3"),
                         weight="medium",
                         color=styles.TEXT_PRIMARY,
                     ),
@@ -167,12 +174,14 @@ def liquidacion_asesores_content() -> rx.Component:
                         " de ", LiquidacionAsesoresState.total_items,
                         size="1",
                         color=styles.TEXT_SECONDARY,
+                        display=rx.breakpoints(initial="none", md="block"),
                     ),
                     spacing="0",
                     align="center",
                 ),
                 neuro_button(
-                    rx.hstack(rx.text("Siguiente"), rx.icon("chevron-right", size=16)),
+                    rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
+                    rx.icon("chevron-right", size=16),
                     on_click=LiquidacionAsesoresState.next_page,
                     disabled=LiquidacionAsesoresState.current_page * LiquidacionAsesoresState.page_size
                     >= LiquidacionAsesoresState.total_items,
