@@ -205,8 +205,8 @@ class PropiedadesState(DocumentosStateMixin):
         SELECT 
             DISPONIBILIDAD_PROPIEDAD as disponibilidad,
             COUNT(*) as total,
-            SUM(CASE WHEN ESTADO_REGISTRO = 1 THEN 1 ELSE 0 END) as activas,
-            SUM(CASE WHEN ESTADO_REGISTRO = 0 THEN 1 ELSE 0 END) as inactivas
+            SUM(CASE WHEN ESTADO_REGISTRO = TRUE THEN 1 ELSE 0 END) as activas,
+            SUM(CASE WHEN ESTADO_REGISTRO = FALSE THEN 1 ELSE 0 END) as inactivas
         FROM PROPIEDADES
         {where_clause}
         GROUP BY DISPONIBILIDAD_PROPIEDAD
@@ -226,7 +226,8 @@ class PropiedadesState(DocumentosStateMixin):
                 self.kpi_ocupadas_inactivas = 0
                 
                 for row in rows:
-                    if row.get("DISPONIBILIDAD_PROPIEDAD") or row.get("disponibilidad") == 1:
+                    disp = row.get("DISPONIBILIDAD_PROPIEDAD") or row.get("disponibilidad")
+                    if disp in (1, True, "1", "true", "True"):
                         self.kpi_disponibles_total = row.get("TOTAL", row.get("total", 0)) or 0
                         self.kpi_disponibles_activas = row.get("ACTIVAS", row.get("activas", 0)) or 0
                         self.kpi_disponibles_inactivas = row.get("INACTIVAS", row.get("inactivas", 0)) or 0
