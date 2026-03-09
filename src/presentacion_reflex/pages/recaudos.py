@@ -28,14 +28,14 @@ def render_estado_badge(estado: rx.Var) -> rx.Component:
 
 def recaudos_toolbar() -> rx.Component:
     """Barra de herramientas con filtros y búsqueda."""
-    return rx.hstack(
+    return rx.flex(
         # Búsqueda
         neuro_input(
             placeholder="Buscar por propiedad, arrendatario, matrícula...",
             value=RecaudosState.search_text,
             on_change=RecaudosState.set_search,
             on_key_down=lambda key: RecaudosState.handle_search_key_down(key),
-            width="350px",
+            width=["100%", "100%", "350px"],
             size="3",
         ),
         # Filtro Estado
@@ -49,7 +49,7 @@ def recaudos_toolbar() -> rx.Component:
             placeholder="Estado",
             value=RecaudosState.filter_estado,
             on_change=RecaudosState.set_filter_estado,
-            width="150px",
+            width=["100%", "100%", "150px"],
         ),
         # Filtro Fecha Desde
         neuro_input(
@@ -57,7 +57,7 @@ def recaudos_toolbar() -> rx.Component:
             type="date",
             value=RecaudosState.filter_fecha_desde,
             on_change=RecaudosState.set_filter_fecha_desde,
-            width="150px",
+            width=["100%", "100%", "150px"],
             size="3",
         ),
         # Filtro Fecha Hasta
@@ -66,43 +66,54 @@ def recaudos_toolbar() -> rx.Component:
             type="date",
             value=RecaudosState.filter_fecha_hasta,
             on_change=RecaudosState.set_filter_fecha_hasta,
-            width="150px",
+            width=["100%", "100%", "150px"],
             size="3",
         ),
-        rx.spacer(),
-        # Botón Registrar Pago
-        rx.cond(
-            AuthState.check_action("Recaudos", "CREAR"),
+        # Grupo de acciones (sin rx.spacer)
+        rx.flex(
+            # Botón Registrar Pago
+            rx.cond(
+                AuthState.check_action("Recaudos", "CREAR"),
+                neuro_button(
+                    rx.hstack(rx.icon("plus"), rx.text("Registrar Pago")),
+                    on_click=RecaudosState.open_create_modal,
+                    size="3",
+                    width=rx.breakpoints(initial="100%", md="auto"),
+                ),
+            ),
+            # Botón Generar Pagos Masivos
+            rx.cond(
+                AuthState.check_action("Recaudos", "CREAR"),
+                rx.tooltip(
+                    neuro_button(
+                        rx.icon("copy-plus"),
+                        on_click=RecaudosState.generar_pagos_masivos,
+                        size="3",
+                    ),
+                    content="Generar pagos masivos para contratos activos",
+                ),
+            ),
+            # Botón Refresh
             neuro_button(
-                rx.hstack(rx.icon("plus"), rx.text("Registrar Pago")),
-                on_click=RecaudosState.open_create_modal,
+                rx.icon("refresh-cw"),
+                on_click=RecaudosState.load_recaudos,
                 size="3",
             ),
-        ),
-        # Botón Generar Pagos Masivos
-        rx.cond(
-            AuthState.check_action("Recaudos", "CREAR"),
-            rx.tooltip(
-                neuro_button(
-                    rx.icon("copy-plus"),
-                    on_click=RecaudosState.generar_pagos_masivos,
-                    size="3",
-                ),
-                content="Generar pagos masivos para contratos activos",
-            ),
-        ),
-        # Botón Refresh
-        neuro_button(
-            rx.icon("refresh-cw"),
-            on_click=RecaudosState.load_recaudos,
-            size="3",
+            gap="3",
+            align="center",
+            flex_wrap="wrap",
+            justify=rx.breakpoints(initial="start", md="end"),
+            width=rx.breakpoints(initial="100%", md="auto"),
         ),
         width="100%",
         padding="1em",
         background=styles.BG_PANEL,
         border_radius="16px",
         style={"box_shadow": styles.NEU_SHADOW},
-        spacing="3",
+        gap="3",
+        flex_direction=rx.breakpoints(initial="column", md="row"),
+        flex_wrap="wrap",
+        align=rx.breakpoints(initial="stretch", md="center"),
     )
 
 
@@ -272,7 +283,7 @@ def pagination_controls() -> rx.Component:
         rx.hstack(
             rx.button(
                 rx.icon("chevron-left", size=16),
-                "Anterior",
+                rx.text("Anterior", display=rx.breakpoints(initial="none", md="block")),
                 on_click=RecaudosState.prev_page,
                 disabled=RecaudosState.current_page == 1,
                 variant="soft",
@@ -286,7 +297,7 @@ def pagination_controls() -> rx.Component:
                 rx.text(
                     "Página ",
                     RecaudosState.current_page,
-                    size="3",
+                    size=rx.breakpoints(initial="2", md="3"),
                     weight="medium",
                 ),
                 rx.text(
@@ -303,12 +314,13 @@ def pagination_controls() -> rx.Component:
                     RecaudosState.total_items,
                     size="1",
                     color="var(--gray-10)",
+                    display=rx.breakpoints(initial="none", md="block"),
                 ),
                 spacing="0",
                 align="center",
             ),
             rx.button(
-                "Siguiente",
+                rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
                 rx.icon("chevron-right", size=16),
                 on_click=RecaudosState.next_page,
                 disabled=RecaudosState.current_page * RecaudosState.page_size

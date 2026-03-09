@@ -148,7 +148,6 @@ def personas_page() -> rx.Component:
                             spacing="1",
                             align="start",
                         ),
-                        rx.spacer(),
                         rx.cond(
                             AuthState.check_action("Personas", "CREAR"),
                             rx.tooltip(
@@ -166,12 +165,12 @@ def personas_page() -> rx.Component:
                                 content="Crear nueva persona",
                             ),
                         ),
-                        width="100%",
-                        padding="5",
-                        
                         flex_direction=rx.breakpoints(initial="column", md="row"),
                         align=rx.breakpoints(initial="start", md="center"),
+                        justify="between",
                         spacing="4",
+                        width="100%",
+                        padding="5",
                     ),
                     width="100%",
                     style=styles.NEU_PANEL_STYLE,
@@ -219,7 +218,6 @@ def personas_page() -> rx.Component:
                             size="3",
                             width=["100%", "100%", "auto"],
                         ),
-                        rx.spacer(),
                         # View toggle button
                         rx.hstack(
                             rx.tooltip(
