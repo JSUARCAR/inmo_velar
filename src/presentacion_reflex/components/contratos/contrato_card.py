@@ -56,10 +56,16 @@ def contrato_card(contrato: dict) -> rx.Component:
                     size="1",
                     radius="full",
                 ),
-                rx.text(
-                    "ID: ", contrato["id_contrato"],
-                    size="1",
-                    color="var(--gray-9)",
+                rx.hstack(
+                    rx.icon("hash", size=14, color="var(--gray-9)"),
+                    rx.text(
+                        "ID: ", contrato["id_contrato"],
+                        size="1",
+                        weight="bold",
+                        color="var(--gray-11)",
+                    ),
+                    align="center",
+                    spacing="1"
                 ),
                 spacing="1",
                 align="start",
