@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, TypedDict
 
 import reflex as rx
+import unicodedata
 
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
 from src.infraestructura.persistencia.database import db_manager
@@ -525,6 +526,12 @@ class ContratosState(DocumentosStateMixin):
     arrendatario_menu_open: bool = False
     codeudor_menu_open: bool = False
 
+
+    def _strip_accents(self, s: str) -> str:
+        """Helper to remove accents for search."""
+        if not s: return ""
+        return "".join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+
     @rx.var
     def filtered_propiedades_options(self) -> List[List[str]]:
         """Filtra opciones de propiedad según el texto de búsqueda."""
@@ -539,7 +546,7 @@ class ContratosState(DocumentosStateMixin):
             return options
         return [
             opt for opt in options 
-            if self.propiedad_search.lower() in opt[0].lower()
+            if self._strip_accents(self.propiedad_search).lower() in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -549,7 +556,7 @@ class ContratosState(DocumentosStateMixin):
             return self.propietarios_select_options
         return [
             opt for opt in self.propietarios_select_options 
-            if self.propietario_search.lower() in opt[0].lower()
+            if self._strip_accents(self.propietario_search).lower() in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -559,7 +566,7 @@ class ContratosState(DocumentosStateMixin):
             return self.asesores_select_options
         return [
             opt for opt in self.asesores_select_options 
-            if self.asesor_search.lower() in opt[0].lower()
+            if self._strip_accents(self.asesor_search).lower() in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -569,7 +576,7 @@ class ContratosState(DocumentosStateMixin):
             return self.arrendatarios_select_options
         return [
             opt for opt in self.arrendatarios_select_options 
-            if self.arrendatario_search.lower() in opt[0].lower()
+            if self._strip_accents(self.arrendatario_search).lower() in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -579,7 +586,7 @@ class ContratosState(DocumentosStateMixin):
             return self.codeudores_select_options
         return [
             opt for opt in self.codeudores_select_options 
-            if self.codeudor_search.lower() in opt[0].lower()
+            if self._strip_accents(self.codeudor_search).lower() in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
