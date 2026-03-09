@@ -211,10 +211,13 @@ class ContratosState(DocumentosStateMixin):
     async def load_kpis(self):
         """Carga los contadores KPI directos desde la BD."""
         
-        asesor_where = ""
+        asesor_where_mandatos = ""
+        asesor_where_arriendos = ""
         params = ()
+        
         if self.filter_asesor_id and self.filter_asesor_id != "todos":
-            asesor_where = "WHERE ID_ASESOR = %s"
+            asesor_where_mandatos = "WHERE ID_ASESOR = %s"
+            asesor_where_arriendos = "WHERE EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm WHERE cm.ID_PROPIEDAD = CONTRATOS_ARRENDAMIENTOS.ID_PROPIEDAD AND cm.ID_ASESOR = %s)"
             params = (self.filter_asesor_id,)
             
         query_mandatos = f"""
@@ -223,7 +226,7 @@ class ContratosState(DocumentosStateMixin):
             SUM(CASE WHEN ESTADO_CONTRATO_M = 'Activo' THEN 1 ELSE 0 END) as activos,
             SUM(CASE WHEN ESTADO_CONTRATO_M != 'Activo' THEN 1 ELSE 0 END) as inactivos
         FROM CONTRATOS_MANDATOS
-        {asesor_where}
+        {asesor_where_mandatos}
         """
         
         query_arriendos = f"""
@@ -232,7 +235,7 @@ class ContratosState(DocumentosStateMixin):
             SUM(CASE WHEN ESTADO_CONTRATO_A = 'Activo' THEN 1 ELSE 0 END) as activos,
             SUM(CASE WHEN ESTADO_CONTRATO_A != 'Activo' THEN 1 ELSE 0 END) as inactivos
         FROM CONTRATOS_ARRENDAMIENTOS
-        {asesor_where}
+        {asesor_where_arriendos}
         """
         
         with db_manager.obtener_conexion() as conn:
