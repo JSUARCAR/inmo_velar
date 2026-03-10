@@ -37,6 +37,13 @@ class PersonasState(rx.State):
     page_size: int = 10
     total_pages: int = 1
 
+    # --- KPIs Globales ---
+    kpi_propietarios: int = 0
+    kpi_arrendatarios: int = 0
+    kpi_codeudores: int = 0
+    kpi_asesores: int = 0
+    kpi_proveedores: int = 0
+
     # --- Filtros ---
     search_query: str = ""
     filtro_rol: str = "Todos"
@@ -171,6 +178,14 @@ class PersonasState(rx.State):
             )
 
             self.total_items = resultado.total
+            
+            # Cargar KPIs
+            conteos = servicio.obtener_conteos_por_rol(solo_activos=True)
+            self.kpi_propietarios = conteos.get("Propietario", 0)
+            self.kpi_arrendatarios = conteos.get("Arrendatario", 0)
+            self.kpi_codeudores = conteos.get("Codeudor", 0)
+            self.kpi_asesores = conteos.get("Asesor", 0)
+            self.kpi_proveedores = conteos.get("Proveedor", 0)
 
             # Convertir objetos a diccionarios para serialización Reflex
             self.personas = [

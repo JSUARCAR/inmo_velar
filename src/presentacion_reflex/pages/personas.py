@@ -145,6 +145,17 @@ def personas_page() -> rx.Component:
                                 spacing="2",
                                 align="center",
                             ),
+                            # KPI Indicators
+                            rx.hstack(
+                                rx.badge(rx.icon("home", size=14), "Propietarios ", PersonasState.kpi_propietarios, color_scheme="blue", radius="full", size="2", variant="surface"),
+                                rx.badge(rx.icon("key", size=14), "Arrendatarios ", PersonasState.kpi_arrendatarios, color_scheme="green", radius="full", size="2", variant="surface"),
+                                rx.badge(rx.icon("briefcase", size=14), "Asesores ", PersonasState.kpi_asesores, color_scheme="purple", radius="full", size="2", variant="surface"),
+                                rx.badge(rx.icon("handshake", size=14), "Codeudores ", PersonasState.kpi_codeudores, color_scheme="orange", radius="full", size="2", variant="surface"),
+                                rx.badge(rx.icon("truck", size=14), "Proveedores ", PersonasState.kpi_proveedores, color_scheme="cyan", radius="full", size="2", variant="surface"),
+                                spacing="3",
+                                wrap="wrap",
+                                margin_top="2"
+                            ),
                             spacing="1",
                             align="start",
                         ),
