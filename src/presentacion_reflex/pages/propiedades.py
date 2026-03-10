@@ -120,7 +120,7 @@ def propiedades_page() -> rx.Component:
                 # --- Elite Header ---
                 # --- Elite Header with Gradient (Personas Style) ---
                 rx.box(
-                    rx.hstack(
+                    rx.flex(
                         rx.vstack(
                             rx.heading(
                                 "Gestión de Propiedades",
@@ -145,7 +145,6 @@ def propiedades_page() -> rx.Component:
                             spacing="1",
                             align="start",
                         ),
-                        rx.spacer(),
                         rx.cond(
                             AuthState.check_action("Propiedades", "CREAR"),
                             rx.tooltip(
@@ -158,7 +157,8 @@ def propiedades_page() -> rx.Component:
                                     ),
                                     on_click=PropiedadesState.open_create_modal,
                                     size="3",
-                                    variant="solid", # Destacar botón principal
+                                    variant="solid",
+                                    width=["100%", "100%", "auto"],
                                     style={
                                         "background": "var(--accent-9)",
                                         "color": "white",
@@ -170,7 +170,11 @@ def propiedades_page() -> rx.Component:
                         ),
                         width="100%",
                         padding="5",
-                        align="center",
+                        align=rx.breakpoints(initial="start", md="center"),
+                        justify="between",
+                        flex_direction=rx.breakpoints(initial="column", md="row"),
+                        flex_wrap="wrap",
+                        gap="4",
                     ),
                     width="100%",
                     padding_bottom="2",
@@ -290,7 +294,7 @@ def propiedades_page() -> rx.Component:
                     ),
 
                     # Stats/Counter
-                    rx.hstack(
+                    rx.flex(
                         rx.text(
                             "Mostrando ",
                             PropiedadesState.propiedades.length(),
@@ -301,9 +305,8 @@ def propiedades_page() -> rx.Component:
                             weight="medium",
                             color="var(--gray-10)",
                         ),
-                        rx.spacer(),
                         # Toggle solo activas
-                        rx.hstack(
+                        rx.flex(
                             rx.text("Solo Activas", size="2", color="var(--gray-10)", weight="bold"),
                             neuro_switch(
                                 checked=PropiedadesState.solo_activas,
@@ -312,10 +315,14 @@ def propiedades_page() -> rx.Component:
                                 color_scheme="green",
                             ),
                             align="center",
-                            spacing="3",
+                            gap="3",
                         ),
                         width="100%",
                         padding_x="2",
+                        justify="between",
+                        align="center",
+                        flex_wrap="wrap",
+                        gap="3",
                     ),
                     # Content Area (Grid or Table)
                     rx.cond(
@@ -557,7 +564,8 @@ def propiedades_page() -> rx.Component:
                     rx.box(
                         rx.hstack(
                             neuro_button(
-                                rx.hstack(rx.icon("chevron-left", size=16), rx.text("Anterior")),
+                                rx.icon("chevron-left", size=16),
+                                rx.text("Anterior", display=rx.breakpoints(initial="none", md="block")),
                                 on_click=PropiedadesState.prev_page,
                                 disabled=PropiedadesState.current_page == 1,
                                 size="3",
@@ -566,7 +574,7 @@ def propiedades_page() -> rx.Component:
                                 rx.text(
                                     "Página ",
                                     PropiedadesState.current_page,
-                                    size="3",
+                                    size=rx.breakpoints(initial="2", md="3"),
                                     weight="medium",
                                     color=styles.TEXT_PRIMARY,
                                 ),
@@ -583,12 +591,14 @@ def propiedades_page() -> rx.Component:
                                     PropiedadesState.total_items,
                                     size="1",
                                     color=styles.TEXT_SECONDARY,
+                                    display=rx.breakpoints(initial="none", md="block"),
                                 ),
                                 spacing="0",
                                 align="center",
                             ),
                             neuro_button(
-                                rx.hstack(rx.text("Siguiente"), rx.icon("chevron-right", size=16)),
+                                rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
+                                rx.icon("chevron-right", size=16),
                                 on_click=PropiedadesState.next_page,
                                 disabled=(
                                     PropiedadesState.current_page * PropiedadesState.page_size

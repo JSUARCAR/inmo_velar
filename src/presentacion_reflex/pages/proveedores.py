@@ -190,7 +190,8 @@ def proveedores_content() -> rx.Component:
         rx.card(
             rx.hstack(
                 neuro_button(
-                    rx.hstack(rx.icon("chevron-left", size=16), rx.text("Anterior")),
+                    rx.icon("chevron-left", size=16),
+                    rx.text("Anterior", display=rx.breakpoints(initial="none", md="block")),
                     on_click=ProveedoresState.prev_page,
                     disabled=ProveedoresState.current_page == 1,
                     size="3",
@@ -198,7 +199,7 @@ def proveedores_content() -> rx.Component:
                 rx.vstack(
                     rx.text(
                         "Página ", ProveedoresState.current_page,
-                        size="3",
+                        size=rx.breakpoints(initial="2", md="3"),
                         weight="medium",
                         color=styles.TEXT_PRIMARY,
                     ),
@@ -208,12 +209,14 @@ def proveedores_content() -> rx.Component:
                         " de ", ProveedoresState.total_items,
                         size="1",
                         color=styles.TEXT_SECONDARY,
+                        display=rx.breakpoints(initial="none", md="block"),
                     ),
                     spacing="0",
                     align="center",
                 ),
                 neuro_button(
-                    rx.hstack(rx.text("Siguiente"), rx.icon("chevron-right", size=16)),
+                    rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
+                    rx.icon("chevron-right", size=16),
                     on_click=ProveedoresState.next_page,
                     disabled=ProveedoresState.current_page * ProveedoresState.page_size
                     >= ProveedoresState.total_items,

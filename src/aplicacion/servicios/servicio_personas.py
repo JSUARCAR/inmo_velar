@@ -158,6 +158,12 @@ class ServicioPersonas:
             items=items, total=total, page=params.page, page_size=params.page_size
         )
 
+    @cache_manager.cached("personas_kpis", level=1, ttl=300)
+    def obtener_conteos_por_rol(self, solo_activos: bool = True) -> dict[str, int]:
+        """Obtiene un diccionario con el total de personas por cada rol."""
+        logger.debug(f"Obteniendo KPIs de conteos por rol: solo_activos={solo_activos}")
+        return self.repo_persona.obtener_conteos_por_rol(solo_activos=solo_activos)
+
     def exportar_personas_csv(
         self,
         filtro_rol: Optional[str] = None,
