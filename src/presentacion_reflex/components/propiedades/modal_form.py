@@ -47,7 +47,7 @@ def step_1_content() -> rx.Component:
                     rx.input.slot(rx.icon("map-pin", size=16, color="var(--gray-10)")),
                     placeholder="Ej: Calle 123 # 45-67",
                     value=PropiedadesState.form_data["direccion_propiedad"],
-                    on_change=lambda v: PropiedadesState.set_form_field("direccion_propiedad", v),
+                    on_change=lambda v: PropiedadesState.set_upper_field("direccion_propiedad", v),
                     width="100%",
                 ),
             ),

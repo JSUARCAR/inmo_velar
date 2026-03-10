@@ -98,6 +98,13 @@ class PropiedadesState(DocumentosStateMixin):
         """Actualiza un campo específico del formulario."""
         self.form_data[key] = value
 
+    def set_upper_field(self, key: str, value: str):
+        """Actualiza un campo tipo texto convirtiéndolo a mayúscula."""
+        if value:
+            self.form_data[key] = value.upper()
+        else:
+            self.form_data[key] = ""
+
     # --- Wizard Logic ---
     def next_modal_step(self):
         """Avanza al siguiente paso del wizard."""
