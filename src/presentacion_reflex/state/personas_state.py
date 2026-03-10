@@ -439,6 +439,12 @@ class PersonasState(rx.State):
         logger.debug(f"Ejecutando set_upper: field={field}, value={value}")
         self.form_data[field] = value.upper()
 
+    def set_numero_documento(self, value: str):
+        """Solo permite números y puntos para el número de documento."""
+        logger.debug(f"Ejecutando set_numero_documento: {value}")
+        cleaned = "".join(c for c in value if c.isdigit() or c == ".")
+        self.form_data["numero_documento"] = cleaned
+
     def set_telefono_habitante(self, value: str):
         """Establece el teléfono habitante."""
         logger.debug(f"Ejecutando set_telefono_habitante: {value}")
@@ -534,7 +540,7 @@ class PersonasState(rx.State):
             self.form_data = {
                 "nombre_completo": (p_entidad.nombre_completo or "").upper(),
                 "tipo_documento": p_entidad.tipo_documento or "CC",
-                "numero_documento": p_entidad.numero_documento,
+                "numero_documento": str(p_entidad.numero_documento) if p_entidad.numero_documento else "",
                 "telefono_principal": p_entidad.telefono_principal or "",
                 "correo_electronico": (p_entidad.correo_electronico or "").upper(),
                 "direccion_principal": (p_entidad.direccion_principal or "").upper(),
@@ -628,12 +634,16 @@ class PersonasState(rx.State):
         logger.debug(f"Ejecutando validate_form_data: is_editing={is_editing}, roles={selected_roles}")
         pass  # print("\n🔍 === VALIDATE_FORM START ===") [OpSec Removed]
 
+        # Sanitizar número de documento: eliminar puntos (ej: 1.000.000.000 -> 1000000000)
+        if "numero_documento" in form_data:
+            form_data["numero_documento"] = "".join(filter(str.isdigit, form_data["numero_documento"]))
+
         # Required fields for all personas
         if not form_data.get("nombre_completo", "").strip():
             return False, "El nombre completo es obligatorio"
 
         if not form_data.get("numero_documento", "").strip():
-            return False, "El número de documento es obligatorio"
+            return False, "El número de documento es obligatorio y debe contener números"
 
         if not form_data.get("telefono_principal", "").strip():
             return False, "El teléfono principal es obligatorio"

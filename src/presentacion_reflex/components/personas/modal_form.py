@@ -97,23 +97,33 @@ def form_field(
     on_change: str = None,
 ) -> rx.Component:
     """Elite form field with icon and enhanced styling."""
+    
+    input_props = {
+        "name": name,
+        "placeholder": placeholder,
+        "type": type,
+        "required": required,
+        "width": "100%",
+        "size": "3",
+        "style": {
+            "_invalid": {
+                "box_shadow": f"{styles.NEU_INSET}, 0 0 0 2px rgba(220, 38, 38, 0.4)",
+            }
+        }
+    }
+    
+    if value is not None:
+        input_props["value"] = value
+        if on_change is not None:
+            input_props["on_change"] = on_change
+    else:
+        input_props["default_value"] = default_value
+
     return rx.vstack(
         rx.text(label, size="2", weight="bold", color=styles.TEXT_PRIMARY),
         neuro_input(
             rx.cond(icon != "", rx.input.slot(rx.icon(icon, size=16)), rx.fragment()),
-            name=name,
-            placeholder=placeholder,
-            type=type,
-            required=required,
-            value=value,
-            on_change=on_change,
-            width="100%",
-            size="3",
-            style={
-                "_invalid": {
-                    "box_shadow": f"{styles.NEU_INSET}, 0 0 0 2px rgba(220, 38, 38, 0.4)",
-                }
-            }
+            **input_props
         ),
         spacing="1",
         width="100%",
@@ -129,15 +139,23 @@ def form_textarea(
     on_change: str = None,
 ) -> rx.Component:
     """Elite textarea field."""
+    
+    input_props = {
+        "name": name,
+        "placeholder": placeholder,
+        "width": "100%",
+    }
+    
+    if value is not None:
+        input_props["value"] = value
+        if on_change is not None:
+            input_props["on_change"] = on_change
+    else:
+        input_props["default_value"] = default_value
+
     return rx.vstack(
         rx.text(label, size="2", weight="bold", color=styles.TEXT_PRIMARY),
-        neuro_text_area(
-            name=name,
-            placeholder=placeholder,
-            value=value,
-            on_change=on_change,
-            width="100%",
-        ),
+        neuro_text_area(**input_props),
         spacing="1",
         width="100%",
     )
@@ -430,6 +448,8 @@ def step_1_basic_info() -> rx.Component:
                     "Ej: 123456789",
                     required=True,
                     default_value=PersonasState.form_data["numero_documento"],
+                    value=PersonasState.form_data["numero_documento"],
+                    on_change=lambda val: PersonasState.set_numero_documento(val),
                     icon="credit-card",
                 ),
                 width=["100%", "75%"],
