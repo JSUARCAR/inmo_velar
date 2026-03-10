@@ -1,7 +1,7 @@
 import reflex as rx
 
+from src.presentacion_reflex import styles
 from src.presentacion_reflex.state.alertas_state import AlertasState
-
 
 def notification_item(item: dict) -> rx.Component:
     return rx.box(
@@ -132,8 +132,6 @@ def bell_icon() -> rx.Component:
                                 ),
                             ),
                             position="relative",
-                            display="flex",
-                            align_items="center",
                             display="flex",
                             align_items="center",
                             justify_content="center",
