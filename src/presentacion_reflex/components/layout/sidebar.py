@@ -326,36 +326,44 @@ def sidebar_footer() -> rx.Component:
                 size="2",
                 weight="bold",
                 color=rx.cond(rx.color_mode == "light", "#1e293b", "white"),
-                max_width="120px",
+                max_width="100px",  # Reducido para evitar overlap con botones
                 overflow="hidden",
+                white_space="nowrap",
                 text_overflow="ellipsis",
             ),
             rx.text(
                 AuthState.user_rol,
                 size="1",
                 color=rx.cond(rx.color_mode == "light", "#64748b", "white"),
-                max_width="120px",
+                max_width="100px",
                 overflow="hidden",
+                white_space="nowrap",
                 text_overflow="ellipsis",
             ),
             spacing="0",
             align_items="start",
         ),
         rx.spacer(),
-        theme_toggle_icon(), # Elite Toggle Integration
-        bell_icon(),  # Restored bell icon
-        rx.icon_button(
-            rx.icon("log-out", size=20),
-            size="2",
-            variant="ghost",
-            color_scheme="red",
-            on_click=AuthState.logout,
-            tooltip="Cerrar Sesión",
+        rx.hstack(
+            theme_toggle_icon(),
+            bell_icon(),
+            rx.icon_button(
+                rx.icon("log-out", size=18),
+                size="1", # Reducido tamaño del stack para apretar iconos
+                variant="soft", # Neumorphic feel en lugar de ghost que expande
+                color_scheme="red",
+                on_click=AuthState.logout,
+                tooltip="Cerrar Sesión",
+                radius="medium"
+            ),
+            spacing="2", # Ajuste de espaciado entre iconos de acción
+            align_items="center",
         ),
-        spacing="3",
+        spacing="2", # Reducido padding del flex base
         width="100%",
         align_items="center",
         padding_top="2",
+        padding_x="2"
     )
 
 
