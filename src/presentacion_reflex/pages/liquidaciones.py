@@ -41,9 +41,9 @@ def render_estado_badge(estado: rx.Var) -> rx.Component:
 
 def liquidaciones_toolbar() -> rx.Component:
     """Barra de herramientas con filtros y búsqueda con diseño neumórfico."""
-    return rx.hstack(
+    return rx.flex(
         # Toggle Vista Agrupada
-        rx.hstack(
+        rx.flex(
             rx.switch(
                 checked=LiquidacionesState.vista_agrupada,
                 on_change=LiquidacionesState.toggle_vista_agrupada,
@@ -57,11 +57,13 @@ def liquidaciones_toolbar() -> rx.Component:
                 size="2",
                 color=styles.TEXT_PRIMARY,
             ),
-            spacing="2",
+            gap="2",
+            align="center",
             padding="0.5em",
             background=styles.BG_PANEL,
             border_radius="10px",
             style={"box_shadow": styles.NEU_INSET},
+            flex_shrink="0",
         ),
         # Búsqueda
         neuro_input(
@@ -69,7 +71,7 @@ def liquidaciones_toolbar() -> rx.Component:
             value=LiquidacionesState.search_text,
             on_change=LiquidacionesState.set_search,
             on_key_down=lambda key: LiquidacionesState.handle_search_key_down(key),
-            width="250px",
+            width=["100%", "100%", "250px"],
         ),
         # Filtro Período
         neuro_select_root(
@@ -80,7 +82,7 @@ def liquidaciones_toolbar() -> rx.Component:
             placeholder="Período",
             value=LiquidacionesState.filter_periodo,
             on_change=LiquidacionesState.set_filter_periodo,
-            width="150px",
+            width=["100%", "100%", "150px"],
         ),
         # Filtro Estado
         neuro_select_root(
@@ -91,38 +93,50 @@ def liquidaciones_toolbar() -> rx.Component:
             placeholder="Estado",
             value=LiquidacionesState.filter_estado,
             on_change=LiquidacionesState.set_filter_estado,
-            width="150px",
+            width=["100%", "100%", "150px"],
         ),
-        rx.spacer(),
-        # Botón Nueva Liquidación Individual o Masiva
-        rx.cond(
-            LiquidacionesState.vista_agrupada,
+        # Grupo de acciones (sin rx.spacer)
+        rx.flex(
+            # Botón Nueva Liquidación Individual o Masiva
             rx.cond(
-                AuthState.check_action("Liquidaciones", "CREAR"),
-                neuro_button(
-                    rx.hstack(rx.icon("users"), rx.text("Liquidación Masiva")),
-                    on_click=LiquidacionesState.open_bulk_create_modal,
+                LiquidacionesState.vista_agrupada,
+                rx.cond(
+                    AuthState.check_action("Liquidaciones", "CREAR"),
+                    neuro_button(
+                        rx.hstack(rx.icon("users"), rx.text("Liquidación Masiva")),
+                        on_click=LiquidacionesState.open_bulk_create_modal,
+                        width=rx.breakpoints(initial="100%", md="auto"),
+                    ),
+                ),
+                rx.cond(
+                    AuthState.check_action("Liquidaciones", "CREAR"),
+                    neuro_button(
+                        rx.hstack(rx.icon("plus"), rx.text("Nueva Liquidación")),
+                        on_click=LiquidacionesState.open_create_modal,
+                        width=rx.breakpoints(initial="100%", md="auto"),
+                    ),
                 ),
             ),
-            rx.cond(
-                AuthState.check_action("Liquidaciones", "CREAR"),
-                neuro_button(
-                    rx.hstack(rx.icon("plus"), rx.text("Nueva Liquidación")),
-                    on_click=LiquidacionesState.open_create_modal,
-                ),
+            # Botón Refresh
+            neuro_button(
+                rx.icon("refresh-cw"),
+                on_click=LiquidacionesState.load_liquidaciones,
             ),
-        ),
-        # Botón Refresh
-        neuro_button(
-            rx.icon("refresh-cw"),
-            on_click=LiquidacionesState.load_liquidaciones,
+            gap="3",
+            align="center",
+            flex_wrap="wrap",
+            justify=rx.breakpoints(initial="start", md="end"),
+            width=rx.breakpoints(initial="100%", md="auto"),
         ),
         width="100%",
         padding="1em",
         background=styles.BG_PANEL,
         border_radius="16px",
         style={"box_shadow": styles.NEU_SHADOW},
-        spacing="3",
+        gap="3",
+        flex_direction=rx.breakpoints(initial="column", md="row"),
+        flex_wrap="wrap",
+        align=rx.breakpoints(initial="stretch", md="center"),
     )
 
 
@@ -131,7 +145,8 @@ def pagination_controls() -> rx.Component:
     return rx.card(
         rx.hstack(
             neuro_button(
-                rx.hstack(rx.icon("chevron-left", size=16), rx.text("Anterior")),
+                rx.icon("chevron-left", size=16),
+                rx.text("Anterior", display=rx.breakpoints(initial="none", md="block")),
                 on_click=LiquidacionesState.prev_page,
                 disabled=LiquidacionesState.current_page == 1,
                 size="3",
@@ -139,7 +154,7 @@ def pagination_controls() -> rx.Component:
             rx.vstack(
                 rx.text(
                     "Página ", LiquidacionesState.current_page,
-                    size="3",
+                    size=rx.breakpoints(initial="2", md="3"),
                     weight="medium",
                     color=styles.TEXT_PRIMARY,
                 ),
@@ -149,12 +164,14 @@ def pagination_controls() -> rx.Component:
                     " de ", LiquidacionesState.total_items,
                     size="1",
                     color=styles.TEXT_SECONDARY,
+                    display=rx.breakpoints(initial="none", md="block"),
                 ),
                 spacing="0",
                 align="center",
             ),
             neuro_button(
-                rx.hstack(rx.text("Siguiente"), rx.icon("chevron-right", size=16)),
+                rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
+                rx.icon("chevron-right", size=16),
                 on_click=LiquidacionesState.next_page,
                 disabled=LiquidacionesState.current_page * LiquidacionesState.page_size
                 >= LiquidacionesState.total_items,

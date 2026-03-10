@@ -326,36 +326,63 @@ def sidebar_footer() -> rx.Component:
                 size="2",
                 weight="bold",
                 color=rx.cond(rx.color_mode == "light", "#1e293b", "white"),
-                max_width="120px",
+                max_width="100px",  # Reducido para evitar overlap con botones
                 overflow="hidden",
+                white_space="nowrap",
                 text_overflow="ellipsis",
             ),
             rx.text(
                 AuthState.user_rol,
                 size="1",
                 color=rx.cond(rx.color_mode == "light", "#64748b", "white"),
-                max_width="120px",
+                max_width="100px",
                 overflow="hidden",
+                white_space="nowrap",
                 text_overflow="ellipsis",
             ),
             spacing="0",
             align_items="start",
         ),
         rx.spacer(),
-        theme_toggle_icon(), # Elite Toggle Integration
-        bell_icon(),  # Restored bell icon
-        rx.icon_button(
-            rx.icon("log-out", size=20),
-            size="2",
-            variant="ghost",
-            color_scheme="red",
-            on_click=AuthState.logout,
-            tooltip="Cerrar Sesión",
+        rx.hstack(
+            theme_toggle_icon(),
+            bell_icon(),
+            rx.tooltip(
+                rx.icon_button(
+                    rx.icon("log-out", size=18, color="var(--red-9)"),
+                    size="2",
+                    variant="soft",
+                    color_scheme="gray",
+                    radius="full",
+                    background=styles.BG_PANEL,
+                    border="none",
+                    box_shadow=styles.NEU_SHADOW,
+                    _active={
+                        "box_shadow": styles.NEU_INSET,
+                        "transform": "scale(0.95)",
+                    },
+                    _hover={
+                        "transform": "translateY(-1px)",
+                        "box_shadow": styles.NEU_SHADOW,
+                    },
+                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    on_click=AuthState.logout,
+                    width="32px",
+                    height="32px",
+                    display="flex",
+                    align_items="center",
+                    justify_content="center",
+                ),
+                content="Cerrar Sesión",
+            ),
+            spacing="3", # Ajuste a 3 para respiración eq. a 12px
+            align_items="center",
         ),
-        spacing="3",
+        spacing="2", # Reducido padding del flex base
         width="100%",
         align_items="center",
         padding_top="2",
+        padding_x="2"
     )
 
 

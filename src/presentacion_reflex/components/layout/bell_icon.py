@@ -1,7 +1,7 @@
 import reflex as rx
 
+from src.presentacion_reflex import styles
 from src.presentacion_reflex.state.alertas_state import AlertasState
-
 
 def notification_item(item: dict) -> rx.Component:
     return rx.box(
@@ -136,18 +136,34 @@ def bell_icon() -> rx.Component:
                             align_items="center",
                             justify_content="center",
                         ),
-                        variant="ghost",
-                        size="3",
-                        padding="2",
+                        # Aplicación Estricta de Neumorfismo Élite
+                        variant="soft", # Base
+                        color_scheme="gray",
+                        size="2",
+                        radius="full",
+                        padding="0",
+                        background=styles.BG_PANEL,
+                        border="none",
+                        box_shadow=styles.NEU_SHADOW,
                         on_click=AlertasState.check_alerts,
+                        _active={
+                            "box_shadow": styles.NEU_INSET,
+                            "transform": "scale(0.95)",
+                        },
                         _hover={
-                            "bg": "rgba(255, 255, 255, 0.1)",
-                            "transform": "scale(1.05)",
+                            "transform": "translateY(-1px)",
+                            "box_shadow": styles.NEU_SHADOW,
                         },
                         style={"transition": "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"},
+                        width="32px",
+                        height="32px",
+                        display="flex",
+                        align_items="center",
+                        justify_content="center",
                     ),
                     cursor="pointer",
-                )
+                ),
+                content="Notificaciones",
             ),
             rx.popover.content(
                 rx.vstack(

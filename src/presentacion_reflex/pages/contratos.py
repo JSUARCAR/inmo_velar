@@ -242,7 +242,7 @@ def contratos_page() -> rx.Component:
             rx.vstack(
                 # Encabezado
                 rx.box(
-                    rx.hstack(
+                    rx.flex(
                         elite_gradient_icon_labeled(
                             "file-text",
                             "Gestión de Contratos",
@@ -250,32 +250,38 @@ def contratos_page() -> rx.Component:
                             size=28,
                             accent="purple",
                         ),
-                        rx.spacer(),
-                        rx.hstack(
-                            rx.cond(
-                                AuthState.check_action("Contratos", "CREAR"),
-                                rx.hstack(
-                                    neuro_button(
-                                        rx.icon("plus", size=18),
-                                        "Nuevo Mandato",
-                                        on_click=ContratosState.open_create_mandato_modal,
-                                        variant="surface",
-                                        style={"box_shadow": styles.SHADOW_RAISED_ELITE},
-                                    ),
-                                    neuro_button(
-                                        rx.icon("plus", size=18),
-                                        "Nuevo Arriendo",
-                                        on_click=ContratosState.open_create_arrendamiento_modal,
-                                        variant="surface",
-                                        style={"box_shadow": styles.SHADOW_RAISED_ELITE},
-                                    ),
-                                    spacing="3",
+                        rx.cond(
+                            AuthState.check_action("Contratos", "CREAR"),
+                            rx.flex(
+                                neuro_button(
+                                    rx.icon("plus", size=18),
+                                    "Nuevo Mandato",
+                                    on_click=ContratosState.open_create_mandato_modal,
+                                    variant="surface",
+                                    style={"box_shadow": styles.SHADOW_RAISED_ELITE},
+                                    width=rx.breakpoints(initial="100%", md="auto"),
                                 ),
+                                neuro_button(
+                                    rx.icon("plus", size=18),
+                                    "Nuevo Arriendo",
+                                    on_click=ContratosState.open_create_arrendamiento_modal,
+                                    variant="surface",
+                                    style={"box_shadow": styles.SHADOW_RAISED_ELITE},
+                                    width=rx.breakpoints(initial="100%", md="auto"),
+                                ),
+                                gap="3",
+                                flex_wrap="wrap",
+                                justify=rx.breakpoints(initial="start", md="end"),
+                                width=rx.breakpoints(initial="100%", md="auto"),
                             ),
                         ),
                         width="100%",
                         padding="5",
-                        align="center",
+                        align=rx.breakpoints(initial="start", md="center"),
+                        justify="between",
+                        flex_direction=rx.breakpoints(initial="column", md="row"),
+                        flex_wrap="wrap",
+                        gap="4",
                     ),
                     width="100%",
                 ),
@@ -312,34 +318,30 @@ def contratos_page() -> rx.Component:
                             value=ContratosState.search_text,
                             on_change=ContratosState.set_search,
                             on_key_down=ContratosState.handle_search_key_down,
-                            width=rx.breakpoints(initial="100%", md="400px"),
-                            style={
-                                **{
-                                    "box_shadow": styles.SHADOW_INSET_ELITE,
-                                }
-                            },
+                            width=["100%", "100%", "400px"],
+                            style={"box_shadow": styles.SHADOW_INSET_ELITE},
                         ),
-                        rx.spacer(),
-                        rx.hstack(
+                        # Filtros y acciones agrupados (sin rx.spacer)
+                        rx.flex(
                             neuro_select_root(
                                 rx.foreach(ContratosState.asesores_filter_options, lambda opt: rx.select.item(opt[0], value=opt[1])),
                                 value=ContratosState.filter_asesor_id,
                                 on_change=ContratosState.set_filter_asesor_id,
-                                width="200px",
+                                width=["100%", "100%", "200px"],
                                 style={"box_shadow": styles.SHADOW_INSET_ELITE, "border_radius": "8px"},
                             ),
                             neuro_select_root(
                                 rx.foreach(ContratosState.tipo_options, lambda opt: rx.select.item(opt, value=opt)),
                                 value=ContratosState.filter_tipo,
                                 on_change=ContratosState.set_filter_tipo,
-                                width="160px",
+                                width=["100%", "100%", "160px"],
                                 style={"box_shadow": styles.SHADOW_INSET_ELITE, "border_radius": "8px"},
                             ),
                             neuro_select_root(
                                 rx.foreach(ContratosState.estado_options, lambda opt: rx.select.item(opt, value=opt)),
                                 value=ContratosState.filter_estado,
                                 on_change=ContratosState.set_filter_estado,
-                                width="140px",
+                                width=["100%", "100%", "140px"],
                                 style={"box_shadow": styles.SHADOW_INSET_ELITE, "border_radius": "8px"},
                             ),
                             neuro_button(
@@ -355,11 +357,15 @@ def contratos_page() -> rx.Component:
                                 ),
                                 content="Exportar a Excel",
                             ),
-                            spacing="3",
+                            gap="3",
+                            flex_wrap="wrap",
+                            flex_direction=rx.breakpoints(initial="column", md="row"),
+                            align=rx.breakpoints(initial="stretch", md="center"),
+                            width=rx.breakpoints(initial="100%", md="auto"),
                         ),
                         width="100%",
                         flex_direction=rx.breakpoints(initial="column", md="row"),
-                        align="center",
+                        align=rx.breakpoints(initial="stretch", md="center"),
                         gap="4",
                     ),
                     width="100%",
@@ -406,13 +412,19 @@ def contratos_page() -> rx.Component:
                 neuro_panel(
                     rx.hstack(
                         neuro_button(
-                            rx.hstack(rx.icon("chevron-left", size=16), rx.text("Anterior")),
+                            rx.icon("chevron-left", size=16),
+                            rx.text("Anterior", display=rx.breakpoints(initial="none", md="block")),
                             on_click=ContratosState.prev_page,
                             disabled=ContratosState.current_page == 1,
                         ),
-                        rx.text(f"Página {ContratosState.current_page}", weight="medium"),
+                        rx.text(
+                            "Pág. ", ContratosState.current_page,
+                            weight="medium",
+                            size=rx.breakpoints(initial="2", md="3"),
+                        ),
                         neuro_button(
-                            rx.hstack(rx.text("Siguiente"), rx.icon("chevron-right", size=16)),
+                            rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
+                            rx.icon("chevron-right", size=16),
                             on_click=ContratosState.next_page,
                             disabled=ContratosState.current_page * ContratosState.page_size >= ContratosState.total_items,
                         ),

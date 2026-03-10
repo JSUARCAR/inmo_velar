@@ -229,9 +229,54 @@ class RepositorioPersonaSQLite:
                     except (IndexError, TypeError):
                         pass
                     # Intento 4: Primer valor de dict (si las keys son raras)
-                    if isinstance(row, dict):
-                        return list(row.values())[0] if row else 0
         return 0
+
+    def obtener_conteos_por_rol(self, solo_activos: bool = True) -> dict[str, int]:
+        """Obtiene el número total de personas que tienen cada rol (Propietario, Arrendatario, etc.)"""
+        logger.debug(f"Ejecutando obtener_conteos_por_rol: solo_activos={solo_activos}")
+        conn = self.db.obtener_conexion()
+        cursor = conn.cursor()
+
+        condition = "WHERE p.ESTADO_REGISTRO = TRUE" if solo_activos else ""
+
+        query = f"""
+        SELECT 
+            (SELECT COUNT(pr.ID_PERSONA) FROM PROPIETARIOS pr INNER JOIN PERSONAS p ON p.ID_PERSONA = pr.ID_PERSONA {condition}) as total_propietarios,
+            (SELECT COUNT(ar.ID_PERSONA) FROM ARRENDATARIOS ar INNER JOIN PERSONAS p ON p.ID_PERSONA = ar.ID_PERSONA {condition}) as total_arrendatarios,
+            (SELECT COUNT(co.ID_PERSONA) FROM CODEUDORES co INNER JOIN PERSONAS p ON p.ID_PERSONA = co.ID_PERSONA {condition}) as total_codeudores,
+            (SELECT COUNT(ase.ID_PERSONA) FROM ASESORES ase INNER JOIN PERSONAS p ON p.ID_PERSONA = ase.ID_PERSONA {condition}) as total_asesores,
+            (SELECT COUNT(prov.ID_PERSONA) FROM PROVEEDORES prov INNER JOIN PERSONAS p ON p.ID_PERSONA = prov.ID_PERSONA {condition}) as total_proveedores
+        """
+        
+        cursor.execute(query)
+        row = cursor.fetchone()
+        
+        conteos = {
+            "Propietario": 0,
+            "Arrendatario": 0,
+            "Codeudor": 0,
+            "Asesor": 0,
+            "Proveedor": 0
+        }
+
+        if row:
+            if isinstance(row, dict) or hasattr(row, "keys"):
+                # dict-like (psycopg2 RealDictRow v. sqlite3.Row)
+                r_dict = dict(row)
+                conteos["Propietario"] = r_dict.get("total_propietarios") or r_dict.get("TOTAL_PROPIETARIOS") or 0
+                conteos["Arrendatario"] = r_dict.get("total_arrendatarios") or r_dict.get("TOTAL_ARRENDATARIOS") or 0
+                conteos["Codeudor"] = r_dict.get("total_codeudores") or r_dict.get("TOTAL_CODEUDORES") or 0
+                conteos["Asesor"] = r_dict.get("total_asesores") or r_dict.get("TOTAL_ASESORES") or 0
+                conteos["Proveedor"] = r_dict.get("total_proveedores") or r_dict.get("TOTAL_PROVEEDORES") or 0
+            else:
+                # tuple fallback
+                conteos["Propietario"] = row[0] or 0
+                conteos["Arrendatario"] = row[1] or 0
+                conteos["Codeudor"] = row[2] or 0
+                conteos["Asesor"] = row[3] or 0
+                conteos["Proveedor"] = row[4] or 0
+                
+        return conteos
 
     def crear(self, persona: Persona, usuario_sistema: str) -> Persona:
         """Crea una nueva persona en la BD."""
