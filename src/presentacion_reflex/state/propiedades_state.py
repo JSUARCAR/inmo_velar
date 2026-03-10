@@ -478,9 +478,7 @@ class PropiedadesState(DocumentosStateMixin):
                         else "0"
                     ),
                     "disponibilidad": (
-                        str(propiedad.disponibilidad_propiedad)
-                        if propiedad.disponibilidad_propiedad is not None
-                        else "1"
+                        "1" if propiedad.disponibilidad_propiedad else "0"
                     ),
                     "observaciones": propiedad.observaciones_propiedad or "",
                     # Detalles Físicos
