@@ -46,6 +46,10 @@ class IRepositorioPersona(Protocol):
         """Cuenta total de personas con filtros."""
         ...
 
+    def obtener_conteos_por_rol(self, solo_activos: bool = True) -> dict[str, int]:
+        """Obtiene un diccionario con el total global de personas por rol."""
+        ...
+
     def agregar(self, persona: Persona, usuario_sistema: str) -> Persona:
         """Agrega una nueva persona."""
         ...
