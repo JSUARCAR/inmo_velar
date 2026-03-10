@@ -439,6 +439,11 @@ class PersonasState(rx.State):
         logger.debug(f"Ejecutando set_upper: field={field}, value={value}")
         self.form_data[field] = value.upper()
 
+    def set_form_value(self, field: str, value: str):
+        """Establece el valor del campo sin alterar el case original."""
+        logger.debug(f"Ejecutando set_form_value: field={field}, value={value}")
+        self.form_data[field] = value
+
     def set_numero_documento(self, value: str):
         """Solo permite números y puntos para el número de documento."""
         logger.debug(f"Ejecutando set_numero_documento: {value}")
