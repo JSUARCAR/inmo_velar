@@ -37,7 +37,8 @@ def theme_toggle_icon() -> rx.Component:
                 rx.icon("sun", size=18, color="var(--gray-11)"),
             ),
             on_click=rx.toggle_color_mode,
-            size="3",
+            size="2", # Reducido para encajar con el stack apretado
+            padding="2", # Homologado con los demás botones
             radius="full",
             background=styles.BG_PANEL,
             border="none",
@@ -48,8 +49,14 @@ def theme_toggle_icon() -> rx.Component:
             },
             _hover={
                 "transform": "translateY(-1px)",
+                "box_shadow": styles.NEU_SHADOW, # Mantener sombra en hover
             },
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            width="32px",
+            height="32px",
+            display="flex",
+            align_items="center",
+            justify_content="center",
         ),
         content="Cambiar Tema",
     )

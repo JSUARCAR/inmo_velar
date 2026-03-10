@@ -347,16 +347,35 @@ def sidebar_footer() -> rx.Component:
         rx.hstack(
             theme_toggle_icon(),
             bell_icon(),
-            rx.icon_button(
-                rx.icon("log-out", size=18),
-                size="1", # Reducido tamaño del stack para apretar iconos
-                variant="soft", # Neumorphic feel en lugar de ghost que expande
-                color_scheme="red",
-                on_click=AuthState.logout,
-                tooltip="Cerrar Sesión",
-                radius="medium"
+            rx.tooltip(
+                rx.icon_button(
+                    rx.icon("log-out", size=18, color="var(--red-9)"),
+                    size="2",
+                    variant="soft",
+                    color_scheme="gray",
+                    radius="full",
+                    background=styles.BG_PANEL,
+                    border="none",
+                    box_shadow=styles.NEU_SHADOW,
+                    _active={
+                        "box_shadow": styles.NEU_INSET,
+                        "transform": "scale(0.95)",
+                    },
+                    _hover={
+                        "transform": "translateY(-1px)",
+                        "box_shadow": styles.NEU_SHADOW,
+                    },
+                    transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    on_click=AuthState.logout,
+                    width="32px",
+                    height="32px",
+                    display="flex",
+                    align_items="center",
+                    justify_content="center",
+                ),
+                content="Cerrar Sesión",
             ),
-            spacing="2", # Ajuste de espaciado entre iconos de acción
+            spacing="3", # Ajuste a 3 para respiración eq. a 12px
             align_items="center",
         ),
         spacing="2", # Reducido padding del flex base
