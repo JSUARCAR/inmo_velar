@@ -7,8 +7,8 @@ from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
 from src.aplicacion.servicios.servicio_recibos_publicos import ServicioRecibosPublicos
 from src.infraestructura.persistencia.database import db_manager
 from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-from src.infraestructura.repositorios.repositorio_recibo_publico_sqlite import (
-    RepositorioReciboPublicoSQLite,
+from src.infraestructura.repositorios.repositorio_recibo_publico import (
+    RepositorioReciboPublico,
 )
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 
@@ -96,7 +96,7 @@ class RecibosState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            repo_recibo = RepositorioReciboPublicoSQLite(db_manager)
+            repo_recibo = RepositorioReciboPublico(db_manager)
             repo_prop = RepositorioPropiedadSQLite(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
 
@@ -244,7 +244,7 @@ class RecibosState(DocumentosStateMixin):
             self.is_loading = True
 
         try:
-            repo_recibo = RepositorioReciboPublicoSQLite(db_manager)
+            repo_recibo = RepositorioReciboPublico(db_manager)
             repo_prop = RepositorioPropiedadSQLite(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
 
@@ -299,7 +299,7 @@ class RecibosState(DocumentosStateMixin):
             self.is_loading = True
 
         try:
-            repo_recibo = RepositorioReciboPublicoSQLite(db_manager)
+            repo_recibo = RepositorioReciboPublico(db_manager)
             repo_prop = RepositorioPropiedadSQLite(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
 
@@ -351,7 +351,7 @@ class RecibosState(DocumentosStateMixin):
             self.is_loading = True
 
         try:
-            repo_recibo = RepositorioReciboPublicoSQLite(db_manager)
+            repo_recibo = RepositorioReciboPublico(db_manager)
             repo_prop = RepositorioPropiedadSQLite(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
 
