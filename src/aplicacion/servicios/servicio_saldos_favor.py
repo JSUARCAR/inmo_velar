@@ -8,8 +8,8 @@ from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.saldo_favor import SaldoFavor
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.repositorios.repositorio_saldo_favor_sqlite import (
-    RepositorioSaldoFavorSQLite,
+from src.infraestructura.repositorios.repositorio_saldo_favor import (
+    RepositorioSaldoFavor,
 )
 
 
@@ -23,7 +23,7 @@ class ServicioSaldosFavor:
 
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
-        self.repositorio = RepositorioSaldoFavorSQLite(db_manager)
+        self.repositorio = RepositorioSaldoFavor(db_manager)
 
     def registrar_saldo(
         self,
