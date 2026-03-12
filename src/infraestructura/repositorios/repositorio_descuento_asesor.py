@@ -10,8 +10,8 @@ from src.dominio.entidades.descuento_asesor import DescuentoAsesor
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
-class RepositorioDescuentoAsesorSQLite:
-    """Repositorio para gestión de descuentos de asesores en SQLite"""
+class RepositorioDescuentoAsesor:
+    """Repositorio para gestión de descuentos de asesores"""
 
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
@@ -72,18 +72,10 @@ class RepositorioDescuentoAsesorSQLite:
         query = f"SELECT * FROM DESCUENTOS_ASESORES WHERE ID_DESCUENTO_ASESOR = {ph}"
 
         with self.db_manager.obtener_conexion() as conn:
-            # Try to set row_factory, but respect connection type
-            try:
-                conn.row_factory = sqlite3.Row
-            except:
-                pass
-
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_descuento,))
             row = cursor.fetchone()
 
-            # If standard cursor in PG, we might need DictCursor or handle tuple
-            # Assuming row_to_entity handles both if robust
             return self._row_to_entity(row) if row else None
 
     def listar_por_liquidacion(self, id_liquidacion: int) -> List[DescuentoAsesor]:

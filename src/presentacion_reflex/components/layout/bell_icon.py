@@ -163,7 +163,6 @@ def bell_icon() -> rx.Component:
                     ),
                     cursor="pointer",
                 ),
-                content="Notificaciones",
             ),
             rx.popover.content(
                 rx.vstack(

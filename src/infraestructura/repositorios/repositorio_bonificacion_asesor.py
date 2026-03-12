@@ -5,8 +5,8 @@ from src.dominio.entidades.bonificacion_asesor import BonificacionAsesor
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
-class RepositorioBonificacionAsesorSQLite:
-    """Repositorio SQLite para gestión de bonificaciones de asesores"""
+class RepositorioBonificacionAsesor:
+    """Repositorio para gestión de bonificaciones de asesores"""
 
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
@@ -33,17 +33,17 @@ class RepositorioBonificacionAsesorSQLite:
         )
 
         with self.db_manager.obtener_conexion() as conn:
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, params)
             row = cursor.fetchone()
+            
             if row:
-                if hasattr(row, "keys") or isinstance(row, dict):
-                    bonificacion.id_bonificacion_asesor = row.get(
-                        "ID_BONIFICACION_ASESOR"
-                    ) or row.get("id_bonificacion_asesor")
-                    bonificacion.fecha_registro = row.get("FECHA_REGISTRO") or row.get(
-                        "fecha_registro"
-                    )
+                # Acceso robusto a columnas (soporta dict, Row o tuple via helper)
+                def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+                
+                if hasattr(row, "get") or isinstance(row, dict):
+                    bonificacion.id_bonificacion_asesor = gv("ID_BONIFICACION_ASESOR")
+                    bonificacion.fecha_registro = gv("FECHA_REGISTRO")
                 else:
                     bonificacion.id_bonificacion_asesor = row[0]
                     bonificacion.fecha_registro = row[1]
@@ -57,8 +57,7 @@ class RepositorioBonificacionAsesorSQLite:
         query = f"SELECT * FROM BONIFICACIONES_ASESORES WHERE ID_BONIFICACION_ASESOR = {ph}"
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_bonificacion,))
             row = cursor.fetchone()
             return self._row_to_entity(row) if row else None
@@ -69,8 +68,7 @@ class RepositorioBonificacionAsesorSQLite:
         query = f"SELECT * FROM BONIFICACIONES_ASESORES WHERE ID_LIQUIDACION_ASESOR = {ph} ORDER BY FECHA_REGISTRO DESC"
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_liquidacion,))
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]

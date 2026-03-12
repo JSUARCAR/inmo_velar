@@ -4,7 +4,7 @@ import shutil
 import sqlite3
 from datetime import datetime
 from src.dominio.entidades.documento import Documento
-from src.infraestructura.repositorios.repositorio_documento_sqlite import RepositorioDocumentoSQLite
+from src.infraestructura.repositorios.repositorio_documento import RepositorioDocumento
 from src.aplicacion.servicios.servicio_documental import ServicioDocumental
 from src.infraestructura.persistencia.database import DatabaseManager
 
@@ -60,7 +60,7 @@ class TestGestionDocumental(unittest.TestCase):
             """)
             conn.commit()
             
-        self.repo = RepositorioDocumentoSQLite(self.db_manager)
+        self.repo = RepositorioDocumento(self.db_manager)
         self.servicio = ServicioDocumental(self.repo)
 
     def tearDown(self):

@@ -11,8 +11,8 @@ from src.dominio.entidades.liquidacion_asesor import LiquidacionAsesor
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
-class RepositorioLiquidacionAsesorSQLite:
-    """Repositorio para gestión de liquidaciones de asesores en SQLite"""
+class RepositorioLiquidacionAsesor:
+    """Repositorio para gestión de liquidaciones de asesores"""
 
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
@@ -146,8 +146,7 @@ class RepositorioLiquidacionAsesorSQLite:
         """
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_liquidacion,))
             row = cursor.fetchone()
 
@@ -167,8 +166,7 @@ class RepositorioLiquidacionAsesorSQLite:
         query = f"SELECT * FROM LIQUIDACIONES_ASESORES WHERE ID_ASESOR = {ph} ORDER BY PERIODO_LIQUIDACION DESC"
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_asesor,))
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -187,8 +185,7 @@ class RepositorioLiquidacionAsesorSQLite:
         query = f"SELECT * FROM LIQUIDACIONES_ASESORES WHERE PERIODO_LIQUIDACION = {ph} ORDER BY ID_ASESOR"
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (periodo,))
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -207,8 +204,7 @@ class RepositorioLiquidacionAsesorSQLite:
         query = f"SELECT * FROM LIQUIDACIONES_ASESORES WHERE ESTADO_LIQUIDACION = {ph} ORDER BY PERIODO_LIQUIDACION DESC"
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (estado,))
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -249,8 +245,7 @@ class RepositorioLiquidacionAsesorSQLite:
         query += " ORDER BY PERIODO_LIQUIDACION DESC, ID_ASESOR"
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, tuple(params))
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -348,8 +343,7 @@ class RepositorioLiquidacionAsesorSQLite:
         """
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query)
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -372,8 +366,7 @@ class RepositorioLiquidacionAsesorSQLite:
         query = f"SELECT * FROM LIQUIDACIONES_ASESORES WHERE ID_CONTRATO_A = {ph} AND PERIODO_LIQUIDACION = {ph}"
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_contrato, periodo))
             row = cursor.fetchone()
 
@@ -440,8 +433,7 @@ class RepositorioLiquidacionAsesorSQLite:
         query = f"SELECT lc.ID_CONTRATO_A, lc.CANON_INCLUIDO, ca.CANON_ARRENDAMIENTO, p.DIRECCION_PROPIEDAD, p.MATRICULA_INMOBILIARIA, per.NOMBRE_COMPLETO as ARRENDATARIO FROM LIQUIDACIONES_CONTRATOS lc JOIN CONTRATOS_ARRENDAMIENTOS ca ON lc.ID_CONTRATO_A = ca.ID_CONTRATO_A JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA WHERE lc.ID_LIQUIDACION_ASESOR = {ph} ORDER BY p.DIRECCION_PROPIEDAD"
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_liquidacion,))
             rows = cursor.fetchall()
 
