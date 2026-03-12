@@ -988,25 +988,25 @@ class PDFState(rx.State):
             from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
                 RepositorioPropiedadSQLite,
             )
-            from src.infraestructura.repositorios.repositorio_bonificacion_asesor_sqlite import (
-                RepositorioBonificacionAsesorSQLite,
+            from src.infraestructura.repositorios.repositorio_bonificacion_asesor import (
+                RepositorioBonificacionAsesor,
             )
-            from src.infraestructura.repositorios.repositorio_descuento_asesor_sqlite import (
-                RepositorioDescuentoAsesorSQLite,
+            from src.infraestructura.repositorios.repositorio_descuento_asesor import (
+                RepositorioDescuentoAsesor,
             )
-            from src.infraestructura.repositorios.repositorio_liquidacion_asesor_sqlite import (
-                RepositorioLiquidacionAsesorSQLite,
+            from src.infraestructura.repositorios.repositorio_liquidacion_asesor import (
+                RepositorioLiquidacionAsesor,
             )
-            from src.infraestructura.repositorios.repositorio_pago_asesor_sqlite import (
-                RepositorioPagoAsesorSQLite,
+            from src.infraestructura.repositorios.repositorio_pago_asesor import (
+                RepositorioPagoAsesor,
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
             # Create only required repositories (matching pattern from liquidacion_asesores_state.py)
-            repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
-            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
-            repo_pago = RepositorioPagoAsesorSQLite(db_manager)
-            repo_bonificacion = RepositorioBonificacionAsesorSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
+            repo_descuento = RepositorioDescuentoAsesor(db_manager)
+            repo_pago = RepositorioPagoAsesor(db_manager)
+            repo_bonificacion = RepositorioBonificacionAsesor(db_manager)
             repo_contrato = RepositorioContratoArrendamientoSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_asesor = RepositorioAsesorSQLite(db_manager)

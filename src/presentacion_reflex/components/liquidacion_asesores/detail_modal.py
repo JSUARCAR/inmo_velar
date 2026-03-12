@@ -2,6 +2,7 @@ import reflex as rx
 
 from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
 from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
+from src.presentacion_reflex.state.pdf_state import PDFState
 
 
 def detail_modal() -> rx.Component:
@@ -279,9 +280,60 @@ def detail_modal() -> rx.Component:
                 max_height="600px",
             ),
             rx.flex(
+                rx.hstack(
+                    rx.cond(
+                        LiquidacionAsesoresState.liquidacion_actual["estado"] != "Anulada",
+                        rx.button(
+                            rx.icon("file-text"),
+                            "Descargar PDF",
+                            color_scheme="blue",
+                            on_click=lambda: PDFState.generar_liquidacion_asesor_pdf(
+                                LiquidacionAsesoresState.liquidacion_actual["id_liquidacion"]
+                            ),
+                            loading=PDFState.generating,
+                        ),
+                    ),
+                    rx.cond(
+                        LiquidacionAsesoresState.liquidacion_actual["estado"] == "Pendiente",
+                        rx.button(
+                            rx.icon("check-circle"),
+                            "Aprobar",
+                            color_scheme="green",
+                            on_click=lambda: LiquidacionAsesoresState.aprobar_liquidacion(
+                                LiquidacionAsesoresState.liquidacion_actual["id_liquidacion"]
+                            ),
+                        ),
+                    ),
+                    rx.cond(
+                        LiquidacionAsesoresState.liquidacion_actual["estado"] == "Aprobada",
+                        rx.button(
+                            rx.icon("banknote"),
+                            "Marcar Pagada",
+                            color_scheme="blue",
+                            on_click=lambda: LiquidacionAsesoresState.marcar_como_pagada(
+                                LiquidacionAsesoresState.liquidacion_actual["id_liquidacion"]
+                            ),
+                        ),
+                    ),
+                    rx.cond(
+                        (LiquidacionAsesoresState.liquidacion_actual["estado"] != "Pagada") & 
+                        (LiquidacionAsesoresState.liquidacion_actual["estado"] != "Anulada"),
+                        rx.button(
+                            rx.icon("x-circle"),
+                            "Anular",
+                            color_scheme="red",
+                            variant="soft",
+                            on_click=lambda: LiquidacionAsesoresState.open_annul_modal(
+                                LiquidacionAsesoresState.liquidacion_actual["id_liquidacion"]
+                            ),
+                        ),
+                    ),
+                    spacing="3",
+                ),
                 rx.dialog.close(rx.button("Cerrar", variant="soft", color_scheme="gray")),
-                justify="end",
+                justify="between",
                 margin_top="4",
+                width="100%",
             ),
         ),
         open=LiquidacionAsesoresState.show_detail_modal,

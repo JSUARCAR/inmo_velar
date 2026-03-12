@@ -10,17 +10,17 @@ from src.dominio.entidades.descuento_asesor import DescuentoAsesor
 from src.dominio.entidades.liquidacion_asesor import LiquidacionAsesor
 from src.dominio.entidades.pago_asesor import PagoAsesor
 from src.infraestructura.cache.cache_manager import cache_manager, invalidate_cache
-from src.infraestructura.repositorios.repositorio_bonificacion_asesor_sqlite import (
-    RepositorioBonificacionAsesorSQLite,
+from src.infraestructura.repositorios.repositorio_bonificacion_asesor import (
+    RepositorioBonificacionAsesor,
 )
-from src.infraestructura.repositorios.repositorio_descuento_asesor_sqlite import (
-    RepositorioDescuentoAsesorSQLite,
+from src.infraestructura.repositorios.repositorio_descuento_asesor import (
+    RepositorioDescuentoAsesor,
 )
-from src.infraestructura.repositorios.repositorio_liquidacion_asesor_sqlite import (
-    RepositorioLiquidacionAsesorSQLite,
+from src.infraestructura.repositorios.repositorio_liquidacion_asesor import (
+    RepositorioLiquidacionAsesor,
 )
-from src.infraestructura.repositorios.repositorio_pago_asesor_sqlite import (
-    RepositorioPagoAsesorSQLite,
+from src.infraestructura.repositorios.repositorio_pago_asesor import (
+    RepositorioPagoAsesor,
 )
 from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
@@ -33,10 +33,10 @@ class ServicioLiquidacionAsesores:
 
     def __init__(
         self,
-        repo_liquidacion: RepositorioLiquidacionAsesorSQLite,
-        repo_descuento: RepositorioDescuentoAsesorSQLite,
-        repo_pago: RepositorioPagoAsesorSQLite,
-        repo_bonificacion: Optional[RepositorioBonificacionAsesorSQLite] = None,
+        repo_liquidacion: RepositorioLiquidacionAsesor,
+        repo_descuento: RepositorioDescuentoAsesor,
+        repo_pago: RepositorioPagoAsesor,
+        repo_bonificacion: Optional[RepositorioBonificacionAsesor] = None,
         repo_contrato_arrendamiento=None,
         repo_propiedad=None,
         servicio_pdf: Optional[ServicioDocumentosPDF] = None,
@@ -222,38 +222,32 @@ class ServicioLiquidacionAsesores:
     ) -> LiquidacionAsesor:
         """
         Genera una nueva liquidación de comisión para un asesor con múltiples contratos.
-
-        Args:
-            id_asesor: ID del asesor
-            periodo: Período de liquidación (YYYY-MM)
-            contratos_lista: Lista de dicts con {'id': x, 'canon': y} para cada contrato
-            porcentaje_comision: Porcentaje de comisión (0-10000, representa 0.00%-100.00%)
-            datos_adicionales: Dict opcional con observaciones, etc.
-            usuario: Usuario que genera la liquidación
-
-        Returns:
-            LiquidacionAsesor creada con contratos asociados
-
-        Raises:
-            ValueError: Si ya existe liquidación para ese asesor+período
         """
+        print(f"[SERVICE] Iniciando generar_liquidacion_multi_contrato para Asesor {id_asesor}, Periodo {periodo}")
+        
         # Validar que no exista liquidación duplicada (asesor + período)
-        existente = self.repo_liquidacion.obtener_por_asesor_periodo(id_asesor, periodo)
-        if existente:
-            raise ValueError(
-                f"Ya existe una liquidación para el asesor {id_asesor} " f"en el período {periodo}"
-            )
+        try:
+            existente = self.repo_liquidacion.obtener_por_asesor_periodo(id_asesor, periodo)
+            if existente:
+                print(f"[SERVICE] Error: Ya existe liquidación para Asesor {id_asesor} en {periodo}")
+                raise ValueError(
+                    f"Ya existe una liquidación para el asesor {id_asesor} en el período {periodo}"
+                )
+        except Exception as e:
+            print(f"[SERVICE] Error verificando duplicados: {e}")
+            raise
 
         # Calcular suma total de cánones
         canon_total = sum(c.get("canon", 0) for c in contratos_lista)
+        print(f"[SERVICE] Canon total calculado: {canon_total} sobre {len(contratos_lista)} contratos")
 
         # Calcular comisión bruta sobre el total
         comision_bruta = LiquidacionAsesor.calcular_comision_bruta(canon_total, porcentaje_comision)
+        print(f"[SERVICE] Comisión bruta: {comision_bruta} (Porcentaje: {porcentaje_comision})")
 
         # Crear entidad de liquidación
-        # id_contrato_a se deja en None (campo legacy)
         liquidacion = LiquidacionAsesor(
-            id_contrato_a=None,  # Ya no usamos este campo
+            id_contrato_a=None,
             id_asesor=id_asesor,
             periodo_liquidacion=periodo,
             canon_arrendamiento_liquidado=canon_total,
@@ -269,18 +263,31 @@ class ServicioLiquidacionAsesores:
         )
 
         # Guardar liquidación en BD
-        liquidacion_creada = self.repo_liquidacion.crear(liquidacion, usuario)
+        print("[SERVICE] Guardando liquidación en repositorio...")
+        try:
+            liquidacion_creada = self.repo_liquidacion.crear(liquidacion, usuario)
+            print(f"[SERVICE] Liquidación guardada con ID: {liquidacion_creada.id_liquidacion_asesor}")
+        except Exception as e:
+            print(f"[SERVICE] ERROR al guardar liquidación en repositorio: {e}")
+            raise
 
         # Guardar relaciones con contratos en tabla intermedia
-        # Deduplicar contratos por ID para evitar IntegrityError
         contratos_unicos = {c["id"]: c for c in contratos_lista}.values()
-
         contratos_tuplas = [(c["id"], c.get("canon", 0)) for c in contratos_unicos]
-        self.repo_liquidacion.guardar_contratos_liquidacion(
-            liquidacion_creada.id_liquidacion_asesor, contratos_tuplas, usuario
-        )
+        
+        print(f"[SERVICE] Asociando {len(contratos_tuplas)} contratos a la liquidación {liquidacion_creada.id_liquidacion_asesor}...")
+        try:
+            self.repo_liquidacion.guardar_contratos_liquidacion(
+                liquidacion_creada.id_liquidacion_asesor, contratos_tuplas, usuario
+            )
+            print("[SERVICE] Contratos asociados exitosamente")
+        except Exception as e:
+            print(f"[SERVICE] ERROR al asociar contratos: {e}")
+            # Considerar si revertir la liquidación creada o dejarla así
+            raise
 
         self._invalidar_caches()
+        print("[SERVICE] Proceso de generación completado exitosamente")
         return liquidacion_creada
 
     def actualizar_liquidacion(
