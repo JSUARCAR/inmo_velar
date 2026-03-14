@@ -151,16 +151,83 @@ class ServicioFinanciero:
         )
         return self.repo_liquidacion.crear(liquidacion, usuario_sistema)
 
+    def generar_liquidacion_propietario(
+        self, id_propietario: int, periodo: str, datos_adicionales_por_contrato: Optional[Dict], usuario_sistema: str
+    ) -> int:
+        """
+        Genera liquidaciones individuales para todos los contratos de mandato activos de un propietario.
+        Retorna la cantidad de liquidaciones generadas.
+        """
+        from src.infraestructura.persistencia.database import db_manager
+        
+        with db_manager.obtener_conexion() as conn:
+            cursor = db_manager.get_dict_cursor(conn)
+            query = """
+            SELECT ID_CONTRATO_M 
+            FROM CONTRATOS_MANDATOS
+            WHERE ID_PROPIETARIO = %s AND ESTADO_CONTRATO_M = 'Activo'
+            """
+            cursor.execute(query, (id_propietario,))
+            contratos = cursor.fetchall()
+            
+        if not contratos:
+            return 0
+            
+        generadas = 0
+        for row in contratos:
+            id_contrato_m = row["ID_CONTRATO_M"]
+            datos_adicionales = {}
+            if datos_adicionales_por_contrato and id_contrato_m in datos_adicionales_por_contrato:
+                datos_adicionales = datos_adicionales_por_contrato[id_contrato_m]
+                
+            try:
+                self.generar_liquidacion_mensual(
+                    id_contrato_m=id_contrato_m,
+                    periodo=periodo,
+                    datos_adicionales=datos_adicionales,
+                    usuario_sistema=usuario_sistema
+                )
+                generadas += 1
+            except ValueError:
+                pass
+                
+        if generadas == 0:
+            raise ValueError(f"Ya existían liquidaciones para las propiedades de este propietario en el período {periodo}")
+            
+        return generadas
+
     def listar_todas_liquidaciones(self) -> List[Dict[str, Any]]:
         return self.repo_liquidacion.listar_todas()
 
     def aprobar_liquidacion(self, id_liquidacion: int, usuario_sistema: str) -> None:
         self.repo_liquidacion.aprobar(id_liquidacion, usuario_sistema)
 
+    def aprobar_liquidacion_propietario(
+        self, id_propietario: int, periodo: str, usuario_sistema: str
+    ) -> int:
+        """Aprueba todas las liquidaciones en proceso de un propietario para un periodo."""
+        return self.repo_liquidacion.aprobar_por_propietario_y_periodo(
+            id_propietario, periodo, usuario_sistema
+        )
+
     def marcar_liquidacion_pagada(
         self, id_liquidacion: int, fecha_pago: str, metodo_pago: str, referencia_pago: str, usuario_sistema: str
     ) -> None:
         self.repo_liquidacion.marcar_como_pagada(id_liquidacion, fecha_pago, metodo_pago, referencia_pago, usuario_sistema)
+
+    def marcar_liquidacion_propietario_pagada(
+        self, id_propietario: int, periodo: str, fecha_pago: str, metodo_pago: str, referencia_pago: str, usuario_sistema: str
+    ) -> int:
+        """Marca como pagadas todas las liquidaciones aprobadas de un propietario para un periodo."""
+        liquidaciones = self.repo_liquidacion.listar_por_propietario_y_periodo(id_propietario, periodo)
+        afectadas = 0
+        for liq in liquidaciones:
+            if liq.estado_liquidacion == 'Aprobada':
+                self.repo_liquidacion.marcar_como_pagada(
+                    liq.id_liquidacion, fecha_pago, metodo_pago, referencia_pago, usuario_sistema
+                )
+                afectadas += 1
+        return afectadas
 
     def cancelar_liquidacion(self, id_liquidacion: int, motivo: str, usuario_sistema: str) -> None:
         self.repo_liquidacion.cancelar(id_liquidacion, motivo, usuario_sistema)
