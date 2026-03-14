@@ -12,8 +12,8 @@ from src.infraestructura.persistencia.repositorio_renovacion_sqlite import Repos
 from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
 from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
 from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
-from src.infraestructura.repositorios.repositorio_recibo_publico_sqlite import (
-    RepositorioReciboPublicoSQLite,
+from src.infraestructura.repositorios.repositorio_recibo_publico import (
+    RepositorioReciboPublico,
 )
 
 
@@ -34,7 +34,7 @@ class ServicioAlertas:
         repo_ipc = RepositorioIPCSQLite(db_manager)
         repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
         repo_codeudor = RepositorioCodeudorSQLite(db_manager)
-        repo_recibos = RepositorioReciboPublicoSQLite(db_manager)
+        repo_recibos = RepositorioReciboPublico(db_manager)
 
         # Servicio de Configuración para parámetros globales
         self.servicio_config = ServicioConfiguracion(db_manager)

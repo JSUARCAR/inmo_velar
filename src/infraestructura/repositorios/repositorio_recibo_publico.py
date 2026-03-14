@@ -11,7 +11,7 @@ from src.dominio.entidades.recibo_publico import ReciboPublico
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
-class RepositorioReciboPublicoSQLite:
+class RepositorioReciboPublico:
     """Repositorio para gestión de recibos públicos en SQLite"""
 
     def __init__(self, db_manager: DatabaseManager):

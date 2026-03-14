@@ -6,7 +6,7 @@ import reflex as rx
 
 from src.dominio.constantes.tipos_documento import TIPOS_DOCUMENTO_MODULO
 from src.dominio.entidades.documento import Documento
-from src.infraestructura.repositorios.repositorio_documento_sqlite import RepositorioDocumentoSQLite
+from src.infraestructura.repositorios.repositorio_documento import RepositorioDocumento
 
 # Tenta importar PIL, manejo de error si no está instaldo
 try:
@@ -18,8 +18,8 @@ except ImportError:
 
 
 class ServicioDocumental:
-    def __init__(self, repositorio: RepositorioDocumentoSQLite = None):
-        self.repositorio = repositorio or RepositorioDocumentoSQLite()
+    def __init__(self, repositorio: RepositorioDocumento = None):
+        self.repositorio = repositorio or RepositorioDocumento()
 
     def subir_documento(
         self,
