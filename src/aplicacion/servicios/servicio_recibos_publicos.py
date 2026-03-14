@@ -8,8 +8,8 @@ from typing import Dict, List, Optional
 
 from src.dominio.entidades.recibo_publico import ReciboPublico
 from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-from src.infraestructura.repositorios.repositorio_recibo_publico_sqlite import (
-    RepositorioReciboPublicoSQLite,
+from src.infraestructura.repositorios.repositorio_recibo_publico import (
+    RepositorioReciboPublico,
 )
 
 
@@ -18,7 +18,7 @@ class ServicioRecibosPublicos:
 
     def __init__(
         self,
-        repo_recibo: RepositorioReciboPublicoSQLite,
+        repo_recibo: RepositorioReciboPublico,
         repo_propiedad: RepositorioPropiedadSQLite,
     ):
         self.repo_recibo = repo_recibo

@@ -11,7 +11,7 @@ from src.dominio.entidades.saldo_favor import SaldoFavor
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
-class RepositorioSaldoFavorSQLite:
+class RepositorioSaldoFavor:
     """Repositorio para gestión de saldos a favor en SQLite"""
 
     def __init__(self, db_manager: DatabaseManager):

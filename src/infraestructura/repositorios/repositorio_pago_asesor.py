@@ -11,8 +11,8 @@ from src.dominio.entidades.pago_asesor import PagoAsesor
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
-class RepositorioPagoAsesorSQLite:
-    """Repositorio para gestión de pagos a asesores en SQLite"""
+class RepositorioPagoAsesor:
+    """Repositorio para gestión de pagos a asesores"""
 
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
@@ -39,6 +39,7 @@ class RepositorioPagoAsesorSQLite:
                 MOTIVO_RECHAZO, COMPROBANTE_PAGO, OBSERVACIONES_PAGO,
                 FECHA_CONFIRMACION, CREATED_BY, UPDATED_BY
             ) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})
+            RETURNING ID_PAGO_ASESOR
         """
 
         params = (
@@ -60,9 +61,15 @@ class RepositorioPagoAsesorSQLite:
 
         try:
             with self.db_manager.obtener_conexion() as conn:
-                cursor = conn.cursor()
+                cursor = self.db_manager.get_dict_cursor(conn)
                 cursor.execute(query, params)
-                pago.id_pago_asesor = cursor.lastrowid
+                row = cursor.fetchone()
+                if row:
+                    if hasattr(row, "keys") or isinstance(row, dict):
+                        pago.id_pago_asesor = row.get("ID_PAGO_ASESOR") or row.get("id_pago_asesor")
+                    else:
+                        pago.id_pago_asesor = row[0]
+                
                 pago.created_by = usuario
                 pago.updated_by = usuario
                 return pago
@@ -141,8 +148,7 @@ class RepositorioPagoAsesorSQLite:
         """
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_pago,))
             row = cursor.fetchone()
 
@@ -166,8 +172,7 @@ class RepositorioPagoAsesorSQLite:
         """
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_liquidacion,))
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -190,8 +195,7 @@ class RepositorioPagoAsesorSQLite:
         """
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (estado,))
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -210,8 +214,7 @@ class RepositorioPagoAsesorSQLite:
         """
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query)
             rows = cursor.fetchall()
             return [self._row_to_entity(row) for row in rows]
@@ -233,8 +236,7 @@ class RepositorioPagoAsesorSQLite:
         """
 
         with self.db_manager.obtener_conexion() as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (referencia,))
             row = cursor.fetchone()
 

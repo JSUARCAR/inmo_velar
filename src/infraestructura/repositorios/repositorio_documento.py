@@ -5,7 +5,7 @@ from src.dominio.entidades.documento import Documento
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
-class RepositorioDocumentoSQLite:
+class RepositorioDocumento:
     def __init__(self, db_manager: DatabaseManager = None):
         self.db = db_manager or DatabaseManager()
 

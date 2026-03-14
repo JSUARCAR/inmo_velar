@@ -1,7 +1,7 @@
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import Response
 
-from src.infraestructura.repositorios.repositorio_documento_sqlite import RepositorioDocumentoSQLite
+from src.infraestructura.repositorios.repositorio_documento import RepositorioDocumento
 
 # Router para descargas de documentos genéricos (DB BLOBs)
 document_download_router = APIRouter(tags=["Document Downloads"])
@@ -14,7 +14,7 @@ async def download_document(id_documento: int, force_download: bool = False):
     Sirve para visualizar imágenes y descargar archivos.
     """
     try:
-        repo = RepositorioDocumentoSQLite()
+        repo = RepositorioDocumento()
         # Usamos el método explícito que trae el contenido (BLOB)
         documento = repo.obtener_por_id_con_contenido(id_documento)
 
