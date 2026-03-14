@@ -10,17 +10,15 @@ import reflex as rx
 
 def bulk_liquidacion_form(
     form_data: rx.Var,
-    propietarios_options: rx.Var,  # Lista de strings "Nombre - Documento"
     on_submit: Callable,
     on_cancel: Callable,
     is_loading: rx.Var,
 ):
     """
-    Formulario para generar liquidación masiva de un propietario.
+    Formulario para generar liquidación masiva de TODOS los propietarios.
 
     Args:
-        form_data: Dict con id_propietario y periodo
-        propietarios_options: Lista de propietarios como "Nombre - Documento"
+        form_data: Dict con periodo
         on_submit: Callback al enviar
         on_cancel: Callback al cancelar
         is_loading: Estado de carga
@@ -34,7 +32,7 @@ def bulk_liquidacion_form(
                 margin_bottom="1rem",
             ),
             rx.dialog.description(
-                "Genera liquidaciones para todas las propiedades activas de un propietario en el período seleccionado.",
+                "Genera liquidaciones para todas las propiedades activas de TODOS los propietarios en el período seleccionado.",
                 size="2",
                 margin_bottom="1rem",
                 color="#666",
@@ -42,18 +40,6 @@ def bulk_liquidacion_form(
             # Formulario
             rx.form(
                 rx.vstack(
-                    # Selector de propietario
-                    rx.box(
-                        rx.text("Propietario", font_weight="600", margin_bottom="0.5rem"),
-                        rx.select(
-                            propietarios_options,
-                            placeholder="Seleccione un propietario...",
-                            name="id_propietario",
-                            required=True,
-                            width="100%",
-                        ),
-                        width="100%",
-                    ),
                     # Período
                     rx.box(
                         rx.text("Período (YYYY-MM)", font_weight="600", margin_bottom="0.5rem"),
