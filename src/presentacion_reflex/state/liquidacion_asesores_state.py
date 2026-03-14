@@ -942,9 +942,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 raise ValueError("Debe seleccionar un período")
 
             # Inicializar repositorios y servicios
-            repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
-            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
-            repo_pago = RepositorioPagoAsesorSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
+            repo_descuento = RepositorioDescuentoAsesor(db_manager)
+            repo_pago = RepositorioPagoAsesor(db_manager)
             repo_contrato = RepositorioContratoArrendamientoSQLite(db_manager)
             
             servicio = ServicioLiquidacionAsesores(
@@ -1052,9 +1052,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
-            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
-            repo_pago = RepositorioPagoAsesorSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
+            repo_descuento = RepositorioDescuentoAsesor(db_manager)
+            repo_pago = RepositorioPagoAsesor(db_manager)
             RepositorioContratoArrendamientoSQLite(db_manager)
 
             servicio = ServicioLiquidacionAsesores(
@@ -1148,9 +1148,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
-            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
-            repo_pago = RepositorioPagoAsesorSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
+            repo_descuento = RepositorioDescuentoAsesor(db_manager)
+            repo_pago = RepositorioPagoAsesor(db_manager)
 
             servicio = ServicioLiquidacionAsesores(
                 repo_liquidacion=repo_liquidacion,
@@ -1183,9 +1183,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
-            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
-            repo_pago = RepositorioPagoAsesorSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
+            repo_descuento = RepositorioDescuentoAsesor(db_manager)
+            repo_pago = RepositorioPagoAsesor(db_manager)
 
             servicio = ServicioLiquidacionAsesores(
                 repo_liquidacion=repo_liquidacion,
@@ -1225,9 +1225,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            repo_liquidacion = RepositorioLiquidacionAsesorSQLite(db_manager)
-            repo_descuento = RepositorioDescuentoAsesorSQLite(db_manager)
-            repo_pago = RepositorioPagoAsesorSQLite(db_manager)
+            repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
+            repo_descuento = RepositorioDescuentoAsesor(db_manager)
+            repo_pago = RepositorioPagoAsesor(db_manager)
 
             servicio = ServicioLiquidacionAsesores(
                 repo_liquidacion=repo_liquidacion,
