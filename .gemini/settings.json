@@ -6,6 +6,16 @@
         "-y",
         "@executeautomation/playwright-mcp-server"
       ]
+    },
+    "runway-api": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\PC\\OneDrive\\Desktop\\inmobiliaria velar\\PYTHON-REFLEX\\runway-api-mcp-server\\build\\index.js"
+      ],
+      "env": {
+        "RUNWAYML_API_SECRET": "key_c78a4c4082140ed7bd5b6026ba4b70b03eacff78bb1ec9f53d509f37ec70168cb1140be38c7d333a56af597dfd4c50b0f8f9c35d9665bfd24385700004fe28a3",
+        "MCP_TOOL_TIMEOUT": "1000000"
+      }
     }
   }
 }

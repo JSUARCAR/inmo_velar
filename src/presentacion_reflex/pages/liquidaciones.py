@@ -1,4 +1,4 @@
-﻿"""
+"""
 Página de Liquidaciones de Propietarios
 Gestión completa de estados de cuenta mensuales
 """
@@ -510,7 +510,6 @@ def liquidaciones_page() -> rx.Component:
             LiquidacionesState.show_bulk_create_modal,
             bulk_liquidacion_form(
                 form_data=LiquidacionesState.form_data,
-                propietarios_options=LiquidacionesState.propietarios_select_options,
                 on_submit=LiquidacionesState.generar_liquidacion_masiva,
                 on_cancel=LiquidacionesState.close_modal,
                 is_loading=LiquidacionesState.is_loading,

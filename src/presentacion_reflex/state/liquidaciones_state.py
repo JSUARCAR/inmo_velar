@@ -292,22 +292,7 @@ class LiquidacionesState(DocumentosStateMixin):
         self.current_page = 1
         return LiquidacionesState.load_liquidaciones
 
-    def open_bulk_create_modal(self):
-        """Abre modal para generar liquidación masiva por propietario."""
-        from datetime import datetime
 
-        # Asegurar que las opciones estén cargadas
-        if not self.propietarios_select_options:
-            return self.load_filter_options()
-
-        # Prellenar con periodo actual
-        self.form_data = {"id_propietario": "", "periodo": datetime.now().strftime("%Y-%m")}
-        self.show_bulk_create_modal = True
-        self.show_create_modal = False
-        self.show_edit_modal = False
-        self.show_detail_modal = False
-        self.show_payment_modal = False
-        self.error_message = ""
 
     # Búsqueda y Filtros
     def set_search(self, value: str):
@@ -859,7 +844,7 @@ class LiquidacionesState(DocumentosStateMixin):
         return LiquidacionesState.load_liquidaciones
 
     def open_bulk_create_modal(self):
-        """Abre modal para generar liquidación masiva de un propietario."""
+        """Abre modal para generar liquidación masiva de TODOS los propietarios."""
         from datetime import datetime
 
         periodo_actual = datetime.now().strftime("%Y-%m")
@@ -870,35 +855,23 @@ class LiquidacionesState(DocumentosStateMixin):
         self.show_edit_modal = False
         self.show_payment_modal = False
         self.form_data = {
-            "id_propietario": "",
             "periodo": periodo_actual,
-            "propiedades_preview": [],  # Se llenará al seleccionar propietario
         }
         self.error_message = ""
 
     @rx.event(background=True)
     async def generar_liquidacion_masiva(self, form_data: Dict):
-        """Genera liquidaciones consolidadas para todas las propiedades de un propietario."""
+        """Genera liquidaciones consolidadas para TODAS las propiedades de TODOS los propietarios."""
         async with self:
             self.is_loading = True
             self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
-                RepositorioLiquidacionSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
-                RepositorioContratoArrendamientoSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
-                RepositorioContratoMandatoSQLite,
-            )
+            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import RepositorioRecaudoSQLite
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import RepositorioLiquidacionSQLite
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
             repo_recaudo = RepositorioRecaudoSQLite(db_manager)
@@ -918,45 +891,47 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
-            # Parsear id_propietario que viene como "NOMBRE - DOCUMENTO"
-            propietario_texto = form_data.get("id_propietario", "")
             periodo = form_data.get("periodo", "")
 
-            if not propietario_texto or not periodo:
-                raise ValueError("Debe seleccionar un propietario y un período")
+            if not periodo:
+                raise ValueError("Debe seleccionar un período")
 
-            # Extraer el número de documento del string "Nombre - Documento"
-            try:
-                documento = propietario_texto.split(" - ")[-1].strip()
-            except:
-                raise ValueError("Error al procesar el propietario seleccionado")
-
-            # Buscar ID_PROPIETARIO en la base de datos usando el documento
-            id_propietario = None
+            # Buscar TODOS los ID_PROPIETARIO con contratos activos
+            id_propietarios_activos = []
             with db_manager.obtener_conexion() as conn:
                 cursor = db_manager.get_dict_cursor(conn)
                 query = """
-                SELECT prop.ID_PROPIETARIO
-                FROM PERSONAS per
-                INNER JOIN PROPIETARIOS prop ON per.ID_PERSONA = prop.ID_PERSONA
-                WHERE per.NUMERO_DOCUMENTO = %s
-                LIMIT 1
+                SELECT DISTINCT prop.ID_PROPIETARIO
+                FROM PROPIETARIOS prop
+                INNER JOIN CONTRATOS_MANDATOS cm ON prop.ID_PROPIETARIO = cm.ID_PROPIETARIO
+                WHERE cm.ESTADO_CONTRATO_M = 'Activo'
                 """
-                cursor.execute(query, (documento,))
-                row = cursor.fetchone()
-                if row:
-                    id_propietario = row["ID_PROPIETARIO"]
+                cursor.execute(query)
+                rows = cursor.fetchall()
+                id_propietarios_activos = [row["ID_PROPIETARIO"] for row in rows]
 
-            if not id_propietario:
-                raise ValueError(f"No se encontró propietario con documento {documento}")
+            if not id_propietarios_activos:
+                raise ValueError("No se encontraron propietarios con contratos de mandato activos")
 
-            # Generar liquidación consolidada (crea N liquidaciones individuales)
-            servicio.generar_liquidacion_propietario(
-                id_propietario=id_propietario,
-                periodo=periodo,
-                datos_adicionales_por_contrato=None,  # Valores por defecto
-                usuario_sistema=usuario_sistema,
-            )
+            generadas = 0
+            errores = 0
+            
+            # Generar liquidación consolidada para cada propietario
+            for id_propietario in id_propietarios_activos:
+                try:
+                    servicio.generar_liquidacion_propietario(
+                        id_propietario=id_propietario,
+                        periodo=periodo,
+                        datos_adicionales_por_contrato=None,
+                        usuario_sistema=usuario_sistema,
+                    )
+                    generadas += 1
+                except Exception as e:
+                    print(f"Error generando liquidacion masiva para id_propietario={id_propietario}: {e}")
+                    errores += 1
+
+            if generadas == 0 and errores > 0:
+                raise ValueError("Hubo errores generando todas las liquidaciones.")
 
             async with self:
                 self.show_bulk_create_modal = False
@@ -977,9 +952,10 @@ class LiquidacionesState(DocumentosStateMixin):
                 self.is_loading = False
 
             if not self.error_message:
-                yield rx.toast.success(
-                    f"Liquidaciones generadas para {propietario_texto}", position="bottom-right"
-                )
+                mensaje = f"Se generaron {generadas} liquidaciones exitosamente."
+                if errores > 0:
+                    mensaje += f" (Omitidas/Error: {errores})"
+                yield rx.toast.success(mensaje, position="bottom-right")
             else:
                 yield rx.toast.error(self.error_message, position="bottom-right")
 
