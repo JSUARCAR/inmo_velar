@@ -14,7 +14,8 @@ class RepositorioRenovacionPostgres:
         self.db = db_manager
 
     def crear(self, renovacion: RenovacionContrato, usuario: str) -> RenovacionContrato:
-        query = """
+        placeholder = self.db.get_placeholder()
+        query = f"""
         INSERT INTO RENOVACIONES_CONTRATOS (
             ID_CONTRATO_M, ID_CONTRATO_A, TIPO_CONTRATO,
             FECHA_INICIO_ORIGINAL, FECHA_FIN_ORIGINAL,
@@ -22,7 +23,8 @@ class RepositorioRenovacionPostgres:
             CANON_ANTERIOR, CANON_NUEVO, PORCENTAJE_INCREMENTO,
             MOTIVO_RENOVACION, FECHA_RENOVACION,
             CREATED_BY, CREATED_AT
-        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, datetime(f'now', 'localtime'))
+        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, CURRENT_TIMESTAMP)
+        RETURNING ID_RENOVACION
         """
         params = (
             renovacion.id_contrato_m,
@@ -43,19 +45,21 @@ class RepositorioRenovacionPostgres:
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
-            renovacion.id_renovacion = cursor.lastrowid
+            row = cursor.fetchone()
+            if row:
+                renovacion.id_renovacion = row[0] if isinstance(row, tuple) else list(row.values())[0] if isinstance(row, dict) else row[0]
             conn.commit()
             return renovacion
 
     def listar_por_contrato_arrendamiento(self, id_contrato_a: int) -> List[RenovacionContrato]:
-        query = """
+        placeholder = self.db.get_placeholder()
+        query = f"""
         SELECT * FROM RENOVACIONES_CONTRATOS 
         WHERE ID_CONTRATO_A = {placeholder}
         ORDER BY FECHA_RENOVACION DESC
         """
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
-        self.db.get_placeholder()
         cursor.execute(query, (id_contrato_a,))
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
