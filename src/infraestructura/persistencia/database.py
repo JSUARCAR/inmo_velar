@@ -12,9 +12,14 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Optional
 import unicodedata
+from contextvars import ContextVar
 
 import psycopg2
+from psycopg2 import pool
 from dotenv import load_dotenv
+
+# ContextVar for managing connections per asyncio task smoothly
+_pg_conn_ctx = ContextVar("pg_conn_ctx", default=None)
 
 # Cargar variables de entorno
 load_dotenv()
@@ -37,14 +42,16 @@ print(f"DEBUG [database.py]: Final DB_MODE: {DB_MODE}")
 # Importar el módulo correcto según el modo
 if DB_MODE == "postgresql":
     import psycopg2
+    import psycopg2.pool
 
     USE_POSTGRESQL = True
 
     import psycopg2.extensions
 
     class UpperCaseCursorWrapper:
-        def __init__(self, cursor):
+        def __init__(self, cursor, conn_wrapper=None):
             self._cursor = cursor
+            self._conn_wrapper = conn_wrapper  # Stong reference to prevent premature GC
 
         def _make_dict(self, row):
             if row is None:
@@ -78,9 +85,14 @@ if DB_MODE == "postgresql":
         def __getattr__(self, name):
             return getattr(self._cursor, name)
 
+        def close(self):
+            return self._cursor.close()
+
     class UpperCaseConnectionWrapper:
-        def __init__(self, conn):
+        def __init__(self, pool_ref, conn):
+            self._pool = pool_ref
             self._conn = conn
+            self._is_returned = False
 
         def cursor(self, *args, **kwargs):
             # Always force RealDictCursor if not specified to ensure dict access
@@ -90,16 +102,33 @@ if DB_MODE == "postgresql":
                 kwargs["cursor_factory"] = RealDictCursor
 
             cursor = self._conn.cursor(*args, **kwargs)
-            return UpperCaseCursorWrapper(cursor)
+            return UpperCaseCursorWrapper(cursor, conn_wrapper=self)
 
         def __getattr__(self, name):
             return getattr(self._conn, name)
+            
+        def close(self):
+            if not self._is_returned and self._conn:
+                try:
+                    self._pool.putconn(self._conn)
+                except Exception:
+                    pass
+                self._is_returned = True
 
         def __enter__(self):
             return self
 
         def __exit__(self, exc_type, exc_val, exc_tb):
-            return self._conn.__exit__(exc_type, exc_val, exc_tb)
+            # No retornamos aqui para permitir operaciones multiplexadas. Se hara GC en __del__
+            return False
+            
+        def __del__(self):
+            if not self._is_returned and self._conn:
+                try:
+                    self._pool.putconn(self._conn)
+                except Exception:
+                    pass
+                self._is_returned = True
 
 else:
     import sqlite3
@@ -168,6 +197,11 @@ class DatabaseManager:
                     "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", 10)),
                     "application_name": os.getenv("DB_APPLICATION_NAME", "InmobiliariaVelar"),
                 }
+            
+            # Inicializar ThreadedConnectionPool (Min 1, Max 20 sockets independientes)
+            self._pg_pool = psycopg2.pool.ThreadedConnectionPool(
+                minconn=1, maxconn=20, **self.pg_config
+            )
         else:
             # Configuración SQLite
             config = obtener_configuracion()
@@ -178,59 +212,61 @@ class DatabaseManager:
 
     def _obtener_connection_thread_local(self) -> Any:
         """
-        Obtiene una conexión para el thread actual.
-
-        Retorna conexión apropiada según el modo (SQLite o PostgreSQL).
+        Obtiene una conexión para el contexto actual.
+        Usa ContextVars nativo para Postgres o Thread_id para SQLite.
         """
+        if self.use_postgresql:
+            conn_wrapper = _pg_conn_ctx.get()
+            
+            if conn_wrapper is None or conn_wrapper._is_returned or not self._validar_conexion(conn_wrapper):
+                # Limpiar la desconectada si hubo alguna
+                if conn_wrapper and not conn_wrapper._is_returned:
+                    conn_wrapper.close()
+
+                try:
+                    real_conn = self._pg_pool.getconn()
+                except psycopg2.pool.PoolError:
+                    # En caso de agotar el pool, forzar spawn de una off-pool JIT (Safety measure)
+                    real_conn = psycopg2.connect(**self.pg_config)
+                
+                real_conn.autocommit = False
+                conn_wrapper = UpperCaseConnectionWrapper(self._pg_pool, real_conn)
+                _pg_conn_ctx.set(conn_wrapper)
+
+            return conn_wrapper
+
+        # Metodo clasico SQLite Thread-Local
         thread_id = threading.get_ident()
 
         if thread_id not in self._connection_pool:
-            if self.use_postgresql:
-                # Conexión PostgreSQL
-                real_conn = psycopg2.connect(**self.pg_config)
-                real_conn.autocommit = False
-                # Wrap it to ensure cursors return uppercase dicts
-                conexion = UpperCaseConnectionWrapper(real_conn)
-            else:
-                # Conexión SQLite
-                conexion = sqlite3.connect(str(self.database_path), check_same_thread=False)
-                conexion.row_factory = sqlite3.Row
-                conexion.execute("PRAGMA foreign_keys = ON")
-                # Registrar función de búsqueda sin acentos
-                conexion.create_function("unaccent_lower", 1, self.normalize_search_term)
+            # Conexión SQLite
+            conexion = sqlite3.connect(str(self.database_path), check_same_thread=False)
+            conexion.row_factory = sqlite3.Row
+            conexion.execute("PRAGMA foreign_keys = ON")
+            # Registrar función de búsqueda sin acentos
+            conexion.create_function("unaccent_lower", 1, self.normalize_search_term)
 
             self._connection_pool[thread_id] = conexion
-
-        # Validar conexión antes de retornarla (Solo PostgreSQL)
-        if self.use_postgresql:
-            conn = self._connection_pool[thread_id]
-            if not self._validar_conexion(conn):
-                # Si falló, reconectar
-                # print(f"DEBUG [database.py]: Connection for thread {thread_id} is dead. Reconnecting...")
-                try:
-                    conn.close()
-                except:
-                    pass
-                
-                real_conn = psycopg2.connect(**self.pg_config)
-                real_conn.autocommit = False
-                self._connection_pool[thread_id] = UpperCaseConnectionWrapper(real_conn)
 
         return self._connection_pool[thread_id]
 
     def _validar_conexion(self, conn) -> bool:
         """
-        Verifica si la conexión sigue viva.
+        Verifica si la conexión sigue viva orgánicamente usando el socket subyacente de psycopg2
         """
+        if not self.use_postgresql:
+            return True
+
         try:
+            real_conn = getattr(conn, "_conn", conn)
             # Poll returns 0 (POLL_OK) if connection is active
-            if conn.closed != 0:
+            if real_conn.closed != 0:
                 return False
                 
-            if conn.poll() != psycopg2.extensions.POLL_OK:
+            if real_conn.poll() != psycopg2.extensions.POLL_OK:
                 return False
             # Execute a lightweight query just to be sure
-            with conn.cursor() as cur:
+            with real_conn.cursor() as cur:
                cur.execute("SELECT 1")
             return True
         except Exception:
