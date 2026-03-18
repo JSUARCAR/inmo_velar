@@ -3,7 +3,7 @@ Repositorio Postgres para IPC.
 Implementa mapeo 1:1 estricto con tabla IPC.
 """
 
-import Postgres3
+import psycopg2
 from datetime import datetime
 from typing import List, Optional
 
@@ -17,10 +17,10 @@ class RepositorioIPCPostgres:
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
 
-    def _row_to_entity(self, row: Postgres3.Row) -> IPC:
+    def _row_to_entity(self, row: dict) -> IPC:
         """Convierte una fila SQL a entidad IPC."""
 
-        # Manejar tanto Postgres3.Row como dict (PostgreSQL)
+        # Manejar tanto dict como dict (PostgreSQL)
 
         if row is None:
 
@@ -185,3 +185,4 @@ class RepositorioIPCPostgres:
 
             conn.commit()
             return cursor.rowcount > 0
+

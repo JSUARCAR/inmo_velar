@@ -3,7 +3,7 @@ Repositorio Postgres para Codeudor.
 Implementa mapeo 1:1 estricto con tabla CODEUDORES.
 """
 
-import Postgres3
+import psycopg2
 from datetime import datetime
 from typing import List, Optional
 
@@ -17,10 +17,10 @@ class RepositorioCodeudorPostgres:
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
 
-    def _row_to_entity(self, row: Postgres3.Row) -> Codeudor:
+    def _row_to_entity(self, row: dict) -> Codeudor:
         """Convierte una fila SQL a entidad Codeudor."""
 
-        # Manejar tanto Postgres3.Row como dict (PostgreSQL)
+        # Manejar tanto dict como dict (PostgreSQL)
 
         if row is None:
 
@@ -146,3 +146,4 @@ class RepositorioCodeudorPostgres:
             cursor.execute(f"DELETE FROM CODEUDORES WHERE ID_PERSONA = {placeholder}", (id_persona,))
             conn.commit()
             return cursor.rowcount > 0
+

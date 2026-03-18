@@ -31,7 +31,7 @@ class RepositorioPropiedadPostgres:
             # Nota: dependemos de que las columnas se llamen igual que en la BD
             data = dict(row)
         else:
-            # Fallback para Postgres3.Row o tuplas (aunque deberíamos usar siempre dict cursor)
+            # Fallback para dict o tuplas (aunque deberíamos usar siempre dict cursor)
             data = dict(row)
 
         # Helper para obtener valor ignorando mayúsculas/minúsculas si fuera necesario (Postgres devuelve minusculas por defecto con psycopg2 a veces)
@@ -222,7 +222,7 @@ class RepositorioPropiedadPostgres:
         cursor.execute(query, params)
         row = cursor.fetchone()
         if row:
-            # Soporte robusto para Postgres3.Row (acceso key/index) y dict (Postgres wrapper, keys may be Upper)
+            # Soporte robusto para dict (acceso key/index) y dict (Postgres wrapper, keys may be Upper)
             # Primero intentar acceso por llave estándar (TOTAL)
             try:
                 return row["TOTAL"]
@@ -234,7 +234,7 @@ class RepositorioPropiedadPostgres:
                     # Si es dict y no tiene las llaves, devolver primer value
                     if isinstance(row, dict):
                         return list(row.values())[0] if row else 0
-                    # Si es tupla o Postgres3.Row, acceso por índice
+                    # Si es tupla o dict, acceso por índice
                     try:
                         return row[0]
                     except (IndexError, TypeError):
@@ -431,3 +431,4 @@ class RepositorioPropiedadPostgres:
             )
 
             return cursor.rowcount > 0
+
