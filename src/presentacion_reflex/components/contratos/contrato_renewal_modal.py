@@ -47,7 +47,7 @@ def contrato_renewal_modal() -> rx.Component:
                         rx.box(
                             rx.text("Canon Anterior", size="1", color="var(--gray-11)", weight="medium"),
                             rx.text(
-                                f"${ContratosState.renewal_proyeccion['canon_actual']}",
+                                f"${ContratosState.renewal_proyeccion['canon_actual'].to(str)}",
                                 weight="bold",
                                 size="4",
                             ),
@@ -61,14 +61,14 @@ def contrato_renewal_modal() -> rx.Component:
                             rx.text("Nuevo Canon Proyectado", size="1", color="var(--gray-11)", weight="medium"),
                             rx.hstack(
                                 rx.text(
-                                    f"${ContratosState.renewal_proyeccion['canon_nuevo']}",
+                                    f"${ContratosState.renewal_proyeccion['canon_nuevo'].to(str)}",
                                     weight="bold",
                                     size="4",
                                     color="var(--green-11)",
                                 ),
                                 rx.cond(
                                     ContratosState.renewal_proyeccion.contains("porcentaje_ipc"),
-                                    neuro_badge(f"{ContratosState.renewal_proyeccion['porcentaje_ipc']}% IPC", color_scheme="cyan", size="1"),
+                                    neuro_badge(f"{ContratosState.renewal_proyeccion['porcentaje_ipc'].to(str)}% IPC", color_scheme="cyan", size="1"),
                                 ),
                             ),
                             padding="3",
