@@ -1,0 +1,179 @@
+"""
+Repositorio Postgres para Arrendatario.
+Implementa mapeo 1:1 estricto con tabla ARRENDATARIOS.
+"""
+
+import Postgres3
+from datetime import datetime
+from typing import Optional
+
+from src.dominio.entidades.arrendatario import Arrendatario
+from src.infraestructura.persistencia.database import DatabaseManager
+
+
+class RepositorioArrendatarioPostgres:
+    """Repositorio Postgres para la entidad Arrendatario."""
+
+    def __init__(self, db_manager: DatabaseManager):
+        self.db = db_manager
+
+    def _row_to_entity(self, row: Postgres3.Row) -> Arrendatario:
+        """Convierte una fila SQL a entidad Arrendatario."""
+
+        # Manejar tanto Postgres3.Row como dict (PostgreSQL)
+
+        if row is None:
+
+            return None
+
+        # Convertir a dict si es necesario
+
+        if hasattr(row, "keys"):
+
+            row_dict = dict(row)
+
+        else:
+
+            row_dict = row
+
+        return Arrendatario(
+            id_arrendatario=(row_dict.get("id_arrendatario") or row_dict.get("ID_ARRENDATARIO")),
+            id_persona=(row_dict.get("id_persona") or row_dict.get("ID_PERSONA")),
+            id_seguro=(row_dict.get("id_seguro") or row_dict.get("ID_SEGURO")),
+            codigo_aprobacion_seguro=(
+                row_dict.get("codigo_aprobacion_seguro") or row_dict.get("CODIGO_APROBACION_SEGURO")
+            ),
+            estado_arrendatario=(
+                row_dict.get("estado_arrendatario") or row_dict.get("ESTADO_ARRENDATARIO")
+            ),
+            fecha_ingreso_arrendatario=(
+                row_dict.get("fecha_ingreso_arrendatario")
+                or row_dict.get("FECHA_INGRESO_ARRENDATARIO")
+            ),
+            motivo_inactivacion=(
+                row_dict.get("motivo_inactivacion") or row_dict.get("MOTIVO_INACTIVACION")
+            ),
+            nombre_habitante=(row_dict.get("nombre_habitante") or row_dict.get("NOMBRE_HABITANTE")),
+            telefono_habitante=(row_dict.get("telefono_habitante") or row_dict.get("TELEFONO_HABITANTE")),
+            created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
+            created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
+            updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),
+            updated_by=(row_dict.get("updated_by") or row_dict.get("UPDATED_BY")),
+        )
+
+    def obtener_por_id(self, id_arrendatario: int) -> Optional[Arrendatario]:
+        """Obtiene un arrendatario por su ID."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        cursor.execute(
+            f"SELECT * FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = {placeholder}", (id_arrendatario,)
+        )
+
+        row = cursor.fetchone()
+        return self._row_to_entity(row) if row else None
+
+    def obtener_por_persona(self, id_persona: int) -> Optional[Arrendatario]:
+        """Obtiene un arrendatario por ID de persona."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        cursor.execute(
+            f"SELECT * FROM ARRENDATARIOS WHERE ID_PERSONA = {placeholder}", (id_persona,)
+        )
+
+        row = cursor.fetchone()
+        return self._row_to_entity(row) if row else None
+
+    def crear(self, arrendatario: Arrendatario, usuario_sistema: str) -> Arrendatario:
+        """Crea un nuevo arrendatario."""
+        with self.db.obtener_conexion() as conn:
+            cursor = conn.cursor()
+            placeholder = self.db.get_placeholder()
+
+            cursor.execute(
+                f"""
+                INSERT INTO ARRENDATARIOS (
+                    ID_PERSONA,
+                    ID_SEGURO,
+                    CODIGO_APROBACION_SEGURO,
+                    ESTADO_ARRENDATARIO,
+                    FECHA_INGRESO_ARRENDATARIO,
+                    NOMBRE_HABITANTE,
+                    TELEFONO_HABITANTE,
+                    CREATED_AT,
+                    CREATED_BY
+                ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                """,
+                (
+                    arrendatario.id_persona,
+                    arrendatario.id_seguro,
+                    arrendatario.codigo_aprobacion_seguro,
+                    (
+                        bool(arrendatario.estado_arrendatario)
+                        if arrendatario.estado_arrendatario is not None
+                        else True
+                    ),
+                    arrendatario.fecha_ingreso_arrendatario or datetime.now().isoformat(),
+                    arrendatario.nombre_habitante,
+                    arrendatario.telefono_habitante,
+                    datetime.now().isoformat(),
+                    usuario_sistema,
+                ),
+            )
+
+            conn.commit()
+            arrendatario.id_arrendatario = self.db.get_last_insert_id(
+                cursor, "ARRENDATARIOS", "ID_ARRENDATARIO"
+            )
+
+            return arrendatario
+
+    def actualizar(self, arrendatario: Arrendatario, usuario_sistema: str) -> bool:
+        """Actualiza un arrendatario existente."""
+        with self.db.obtener_conexion() as conn:
+            cursor = conn.cursor()
+            placeholder = self.db.get_placeholder()
+
+            cursor.execute(
+                f"""
+                UPDATE ARRENDATARIOS SET
+                    ID_SEGURO = {placeholder},
+                    CODIGO_APROBACION_SEGURO = {placeholder},
+                    ESTADO_ARRENDATARIO = {placeholder},
+                    NOMBRE_HABITANTE = {placeholder},
+                    TELEFONO_HABITANTE = {placeholder},
+                    UPDATED_AT = {placeholder},
+                    UPDATED_BY = {placeholder}
+                WHERE ID_ARRENDATARIO = {placeholder}
+                """,
+                (
+                    arrendatario.id_seguro,
+                    arrendatario.codigo_aprobacion_seguro,
+                    (
+                        bool(arrendatario.estado_arrendatario)
+                        if arrendatario.estado_arrendatario is not None
+                        else True
+                    ),
+                    arrendatario.nombre_habitante,
+                    arrendatario.telefono_habitante,
+                    datetime.now().isoformat(),
+                    usuario_sistema,
+                    arrendatario.id_arrendatario,
+                ),
+            )
+
+            conn.commit()
+            return cursor.rowcount > 0
+
+    def eliminar_por_persona(self, id_persona: int) -> bool:
+        """Elimina físicamente el registro de arrendatario asociado a una persona."""
+        with self.db.obtener_conexion() as conn:
+            cursor = conn.cursor()
+            placeholder = self.db.get_placeholder()
+
+            cursor.execute(f"DELETE FROM ARRENDATARIOS WHERE ID_PERSONA = {placeholder}", (id_persona,))
+            conn.commit()
+            return cursor.rowcount > 0
