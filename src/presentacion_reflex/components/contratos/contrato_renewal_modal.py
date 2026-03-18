@@ -40,67 +40,79 @@ def contrato_renewal_modal() -> rx.Component:
             rx.cond(
                 ContratosState.renewal_loading_proyeccion,
                 rx.center(rx.spinner(size="3"), height="150px"),
-                rx.vstack(
-                    # KPIs View of Proyecciones
-                    rx.grid(
-                        # Canon Anterior
-                        rx.box(
-                            rx.text("Canon Anterior", size="1", color="var(--gray-11)", weight="medium"),
-                            rx.text(
-                                f"${ContratosState.renewal_proyeccion['canon_actual'].to(str)}",
-                                weight="bold",
-                                size="4",
-                            ),
-                            padding="3",
-                            border_radius="8px",
-                            bg="var(--gray-3)",
-                            style={"box_shadow": styles.SHADOW_INSET_ELITE},
-                        ),
-                        # Nuevo Canon / Incremento
-                        rx.box(
-                            rx.text("Nuevo Canon Proyectado", size="1", color="var(--gray-11)", weight="medium"),
-                            rx.hstack(
+                rx.cond(
+                    ContratosState.renewal_proyeccion.contains("error"),
+                    # Visor de Error en Proyección
+                    rx.callout(
+                        ContratosState.renewal_proyeccion["error"],
+                        icon="triangle-alert",
+                        color_scheme="ruby",
+                        margin_y="1rem",
+                        width="100%",
+                    ),
+                    # Vista Normal de Proyecciones
+                    rx.vstack(
+                        # KPIs View of Proyecciones
+                        rx.grid(
+                            # Canon Anterior
+                            rx.box(
+                                rx.text("Canon Anterior", size="1", color="var(--gray-11)", weight="medium"),
                                 rx.text(
-                                    f"${ContratosState.renewal_proyeccion['canon_nuevo'].to(str)}",
+                                    f"${ContratosState.renewal_proyeccion['canon_actual'].to(str)}",
                                     weight="bold",
                                     size="4",
-                                    color="var(--green-11)",
                                 ),
-                                rx.cond(
-                                    ContratosState.renewal_proyeccion.contains("porcentaje_ipc"),
-                                    neuro_badge(f"{ContratosState.renewal_proyeccion['porcentaje_ipc'].to(str)}% IPC", color_scheme="cyan", size="1"),
-                                ),
+                                padding="3",
+                                border_radius="8px",
+                                bg="var(--gray-3)",
+                                style={"box_shadow": styles.SHADOW_INSET_ELITE},
                             ),
-                            padding="3",
-                            border_radius="8px",
-                            bg="var(--green-3)",
-                            style={"box_shadow": styles.SHADOW_INSET_ELITE},
+                            # Nuevo Canon / Incremento
+                            rx.box(
+                                rx.text("Nuevo Canon Proyectado", size="1", color="var(--gray-11)", weight="medium"),
+                                rx.hstack(
+                                    rx.text(
+                                        f"${ContratosState.renewal_proyeccion['canon_nuevo'].to(str)}",
+                                        weight="bold",
+                                        size="4",
+                                        color="var(--green-11)",
+                                    ),
+                                    rx.cond(
+                                        ContratosState.renewal_proyeccion.contains("porcentaje_ipc"),
+                                        neuro_badge(f"{ContratosState.renewal_proyeccion['porcentaje_ipc'].to(str)}% IPC", color_scheme="cyan", size="1"),
+                                    ),
+                                ),
+                                padding="3",
+                                border_radius="8px",
+                                bg="var(--green-3)",
+                                style={"box_shadow": styles.SHADOW_INSET_ELITE},
+                            ),
+                            columns="2",
+                            spacing="3",
+                            width="100%",
+                            margin_bottom="1rem",
                         ),
-                        columns="2",
-                        spacing="3",
-                        width="100%",
-                        margin_bottom="1rem",
-                    ),
 
-                    # Nueva Fecha de Fin (Editable)
-                    rx.vstack(
-                        rx.text("Nueva Fecha de Vencimiento", size="2", weight="bold"),
-                        neuro_input(
-                            rx.input.slot(rx.icon("calendar")),
-                            type="date",
-                            value=ContratosState.renewal_nueva_fecha_fin,
-                            on_change=ContratosState.set_renewal_fecha_fin,
+                        # Nueva Fecha de Fin (Editable)
+                        rx.vstack(
+                            rx.text("Nueva Fecha de Vencimiento", size="2", weight="bold"),
+                            neuro_input(
+                                rx.input.slot(rx.icon("calendar")),
+                                type="date",
+                                value=ContratosState.renewal_nueva_fecha_fin,
+                                on_change=ContratosState.set_renewal_fecha_fin,
+                                width="100%",
+                            ),
+                            rx.cond(
+                                ContratosState.renewal_proyeccion.contains("mensaje"),
+                                rx.text(ContratosState.renewal_proyeccion["mensaje"], size="1", color="var(--blue-11)"),
+                            ),
+                            spacing="1",
                             width="100%",
                         ),
-                        rx.cond(
-                            ContratosState.renewal_proyeccion.contains("mensaje"),
-                            rx.text(ContratosState.renewal_proyeccion["mensaje"], size="1", color="var(--blue-11)"),
-                        ),
-                        spacing="1",
+                        spacing="4",
                         width="100%",
-                    ),
-                    spacing="4",
-                    width="100%",
+                    )
                 ),
             ),
 
@@ -114,13 +126,17 @@ def contrato_renewal_modal() -> rx.Component:
                         on_click=ContratosState.cancel_renewal,
                     )
                 ),
-                neuro_button(
-                    rx.cond(
-                        ContratosState.is_loading, rx.spinner(size="1"), rx.text("Confirmar Renovación")
+                rx.cond(
+                    ContratosState.renewal_proyeccion.contains("error"),
+                    rx.box(display="none"), # Oculta el botón de confirmación si hay error en la proyección
+                    neuro_button(
+                        rx.cond(
+                            ContratosState.is_loading, rx.spinner(size="1"), rx.text("Confirmar Renovación")
+                        ),
+                        color_scheme="green",
+                        on_click=ContratosState.execute_renewal,
+                        disabled=ContratosState.is_loading | ContratosState.renewal_loading_proyeccion,
                     ),
-                    color_scheme="green",
-                    on_click=ContratosState.execute_renewal,
-                    disabled=ContratosState.is_loading | ContratosState.renewal_loading_proyeccion,
                 ),
                 spacing="3",
                 margin_top="1.5rem",
