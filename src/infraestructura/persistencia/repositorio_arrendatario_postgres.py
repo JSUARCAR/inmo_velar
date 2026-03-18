@@ -3,7 +3,7 @@ Repositorio Postgres para Arrendatario.
 Implementa mapeo 1:1 estricto con tabla ARRENDATARIOS.
 """
 
-import Postgres3
+import psycopg2
 from datetime import datetime
 from typing import Optional
 
@@ -17,10 +17,10 @@ class RepositorioArrendatarioPostgres:
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
 
-    def _row_to_entity(self, row: Postgres3.Row) -> Arrendatario:
+    def _row_to_entity(self, row: dict) -> Arrendatario:
         """Convierte una fila SQL a entidad Arrendatario."""
 
-        # Manejar tanto Postgres3.Row como dict (PostgreSQL)
+        # Manejar tanto dict como dict (PostgreSQL)
 
         if row is None:
 
@@ -177,3 +177,4 @@ class RepositorioArrendatarioPostgres:
             cursor.execute(f"DELETE FROM ARRENDATARIOS WHERE ID_PERSONA = {placeholder}", (id_persona,))
             conn.commit()
             return cursor.rowcount > 0
+

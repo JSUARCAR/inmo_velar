@@ -308,3 +308,4 @@ class RepositorioContratoMandatoPostgres:
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),
             updated_by=(row_dict.get("updated_by") or row_dict.get("UPDATED_BY")),
         )
+

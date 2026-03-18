@@ -2,7 +2,7 @@
 Repositorio Postgres: RenovacionContrato
 """
 
-import Postgres3
+import psycopg2
 from typing import List
 
 from src.dominio.entidades.renovacion_contrato import RenovacionContrato
@@ -59,8 +59,8 @@ class RepositorioRenovacionPostgres:
         cursor.execute(query, (id_contrato_a,))
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
-    def _row_to_entity(self, row: Postgres3.Row) -> RenovacionContrato:
-        # Manejar tanto Postgres3.Row como dict (PostgreSQL)
+    def _row_to_entity(self, row: dict) -> RenovacionContrato:
+        # Manejar tanto dict como dict (PostgreSQL)
         if row is None:
             return None
 
@@ -99,3 +99,4 @@ class RepositorioRenovacionPostgres:
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
         )
+
