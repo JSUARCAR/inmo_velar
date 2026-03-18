@@ -1313,21 +1313,21 @@ class ContratosState(DocumentosStateMixin):
             self.show_renewal_confirm = True
 
         try:
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import RepositorioRenovacionSQLite
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
-            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
-            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import RepositorioContratoMandatoPostgres
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import RepositorioContratoArrendamientoPostgres
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+            from src.infraestructura.persistencia.repositorio_renovacion_postgres import RepositorioRenovacionPostgres
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
 
-            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-            repo_ipc = RepositorioIPCSQLite(db_manager)
-            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+            repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
+            repo_renovacion = RepositorioRenovacionPostgres(db_manager)
+            repo_ipc = RepositorioIPCPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
 
             servicio = ServicioContratos(
                 db_manager,
@@ -1373,21 +1373,21 @@ class ContratosState(DocumentosStateMixin):
             self.is_loading = True
 
         try:
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
-            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import RepositorioRenovacionSQLite
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
-            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
-            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import RepositorioContratoMandatoPostgres
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import RepositorioContratoArrendamientoPostgres
+            from src.infraestructura.persistencia.repositorio_renovacion_postgres import RepositorioRenovacionPostgres
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
 
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-            repo_ipc = RepositorioIPCSQLite(db_manager)
-            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
+            repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
+            repo_renovacion = RepositorioRenovacionPostgres(db_manager)
+            repo_ipc = RepositorioIPCPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
 
             servicio = ServicioContratos(
                 db_manager,
@@ -1434,33 +1434,33 @@ class ContratosState(DocumentosStateMixin):
         """Genera y descarga el CSV de contratos."""
         try:
             # Instanciar repositorios y servicio
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
-                RepositorioContratoMandatoSQLite,
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+                RepositorioContratoMandatoPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
-                RepositorioContratoArrendamientoSQLite,
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
-                RepositorioRenovacionSQLite,
+            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
+                RepositorioRenovacionPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
-            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
-                RepositorioArrendatarioSQLite,
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
-                RepositorioCodeudorSQLite,
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
             )
 
-            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-            repo_ipc = RepositorioIPCSQLite(db_manager)
-            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+            repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
+            repo_renovacion = RepositorioRenovacionPostgres(db_manager)
+            repo_ipc = RepositorioIPCPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
 
             servicio = ServicioContratos(
                 db_manager=db_manager,

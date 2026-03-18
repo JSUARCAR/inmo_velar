@@ -17,6 +17,7 @@ from src.presentacion_reflex.components.contratos.contrato_mandato_form import c
 from src.presentacion_reflex.components.contratos.contrato_arrendamiento_form import contrato_arrendamiento_form
 from src.presentacion_reflex.components.contratos.contrato_detail_modal import contrato_detail_modal
 from src.presentacion_reflex.components.contratos.ipc_increment_modal import ipc_increment_modal
+from src.presentacion_reflex.components.contratos.contrato_renewal_modal import contrato_renewal_modal
 from src.presentacion_reflex.components.shared.elite_gradient_icon import elite_gradient_icon_labeled
 from src.presentacion_reflex.state.pdf_state import PDFState
 
@@ -446,6 +447,7 @@ def contratos_page() -> rx.Component:
         contrato_arrendamiento_form(),
         contrato_detail_modal(),
         ipc_increment_modal(),
+        contrato_renewal_modal(),
     )
 
 # Ruta protegida
