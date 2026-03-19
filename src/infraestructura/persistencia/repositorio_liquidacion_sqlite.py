@@ -119,7 +119,7 @@ class RepositorioLiquidacionSQLite:
                 row_dict.get("gastos_reparaciones") or row_dict.get("GASTOS_REPARACIONES")
             ),
             pago_predial=(row_dict.get("pago_predial") or row_dict.get("PAGO_PREDIAL")),
-            otros_egresos=(row_dict.get("otros_egresos") or row_dict.get("OTROS_EGRESOS")),
+            otros_egresos=(row_dict.get("otros_egresos") or row_dict.get("OTROS_EGRESOS") or 0),
             total_egresos=(row_dict.get("total_egresos") or row_dict.get("TOTAL_EGRESOS")),
             neto_a_pagar=(row_dict.get("neto_a_pagar") or row_dict.get("NETO_A_PAGAR")),
             estado_liquidacion=(
@@ -334,7 +334,7 @@ class RepositorioLiquidacionSQLite:
                         row_dict.get("pago_predial") or row_dict.get("PAGO_PREDIAL")
                     ),
                     "otros_egresos": (
-                        row_dict.get("otros_egresos") or row_dict.get("OTROS_EGRESOS")
+                        row_dict.get("otros_egresos") or row_dict.get("OTROS_EGRESOS") or 0
                     ),
                     "total_egresos": (
                         row_dict.get("total_egresos") or row_dict.get("TOTAL_EGRESOS")
@@ -947,7 +947,7 @@ class RepositorioLiquidacionSQLite:
             "gastos_serv": row.get("GASTOS_SERVICIOS"),
             "gastos_rep": row.get("GASTOS_REPARACIONES"),
             "pago_predial": row.get("PAGO_PREDIAL"),
-            "otros_egr": row.get("OTROS_EGRESOS"),
+            "otros_egr": row.get("OTROS_EGRESOS") or 0,
             
             "total_egresos": row.get("TOTAL_EGRESOS"),
             "neto_pagar": row.get("NETO_A_PAGAR"),

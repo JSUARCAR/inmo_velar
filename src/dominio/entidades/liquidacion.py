@@ -93,8 +93,8 @@ class Liquidacion:
             + self.gastos_administracion
             + self.gastos_servicios
             + self.gastos_reparaciones
-            + self.pago_predial
-            + self.otros_egresos
+            + (self.pago_predial or 0)
+            + (self.otros_egresos or 0)
         )
 
         self.neto_a_pagar = self.total_ingresos - self.total_egresos
