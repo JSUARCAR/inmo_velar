@@ -46,6 +46,7 @@ class RepositorioLiquidacionSQLite:
             GASTOS_ADMINISTRACION INTEGER DEFAULT 0,
             GASTOS_SERVICIOS INTEGER DEFAULT 0,
             GASTOS_REPARACIONES INTEGER DEFAULT 0,
+            PAGO_PREDIAL INTEGER DEFAULT 0,
             OTROS_EGRESOS INTEGER DEFAULT 0,
             TOTAL_EGRESOS INTEGER NOT NULL,
             
@@ -117,6 +118,7 @@ class RepositorioLiquidacionSQLite:
             gastos_reparaciones=(
                 row_dict.get("gastos_reparaciones") or row_dict.get("GASTOS_REPARACIONES")
             ),
+            pago_predial=(row_dict.get("pago_predial") or row_dict.get("PAGO_PREDIAL")),
             otros_egresos=(row_dict.get("otros_egresos") or row_dict.get("OTROS_EGRESOS")),
             total_egresos=(row_dict.get("total_egresos") or row_dict.get("TOTAL_EGRESOS")),
             neto_a_pagar=(row_dict.get("neto_a_pagar") or row_dict.get("NETO_A_PAGAR")),
@@ -155,11 +157,11 @@ class RepositorioLiquidacionSQLite:
                 ID_CONTRATO_M, PERIODO, FECHA_GENERACION,
                 CANON_BRUTO, OTROS_INGRESOS, TOTAL_INGRESOS,
                 COMISION_PORCENTAJE, COMISION_MONTO, IVA_COMISION, IMPUESTO_4X1000,
-                GASTOS_ADMINISTRACION, GASTOS_SERVICIOS, GASTOS_REPARACIONES, OTROS_EGRESOS,
+                GASTOS_ADMINISTRACION, GASTOS_SERVICIOS, GASTOS_REPARACIONES, PAGO_PREDIAL, OTROS_EGRESOS,
                 TOTAL_EGRESOS, NETO_A_PAGAR,
                 ESTADO_LIQUIDACION, OBSERVACIONES,
                 CREATED_AT, CREATED_BY
-            ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+            ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
         """,
             (
                 liquidacion.id_contrato_m,
@@ -175,6 +177,7 @@ class RepositorioLiquidacionSQLite:
                 liquidacion.gastos_administracion,
                 liquidacion.gastos_servicios,
                 liquidacion.gastos_reparaciones,
+                liquidacion.pago_predial,
                 liquidacion.otros_egresos,
                 liquidacion.total_egresos,
                 liquidacion.neto_a_pagar,
@@ -255,6 +258,7 @@ class RepositorioLiquidacionSQLite:
            l.GASTOS_ADMINISTRACION,
             l.GASTOS_SERVICIOS,
             l.GASTOS_REPARACIONES,
+            l.PAGO_PREDIAL,
             l.OTROS_EGRESOS,
             l.TOTAL_EGRESOS,
             l.NETO_A_PAGAR,
@@ -326,6 +330,9 @@ class RepositorioLiquidacionSQLite:
                     "gastos_reparaciones": (
                         row_dict.get("gastos_reparaciones") or row_dict.get("GASTOS_REPARACIONES")
                     ),
+                    "pago_predial": (
+                        row_dict.get("pago_predial") or row_dict.get("PAGO_PREDIAL")
+                    ),
                     "otros_egresos": (
                         row_dict.get("otros_egresos") or row_dict.get("OTROS_EGRESOS")
                     ),
@@ -361,7 +368,7 @@ class RepositorioLiquidacionSQLite:
                 FECHA_GENERACION = {placeholder},
                 CANON_BRUTO = {placeholder}, OTROS_INGRESOS = {placeholder}, TOTAL_INGRESOS = {placeholder},
                 COMISION_PORCENTAJE = {placeholder}, COMISION_MONTO = {placeholder}, IVA_COMISION = {placeholder}, IMPUESTO_4X1000 = {placeholder},
-                GASTOS_ADMINISTRACION = {placeholder}, GASTOS_SERVICIOS = {placeholder}, GASTOS_REPARACIONES = {placeholder}, OTROS_EGRESOS = {placeholder},
+                GASTOS_ADMINISTRACION = {placeholder}, GASTOS_SERVICIOS = {placeholder}, GASTOS_REPARACIONES = {placeholder}, PAGO_PREDIAL = {placeholder}, OTROS_EGRESOS = {placeholder},
                 TOTAL_EGRESOS = {placeholder}, NETO_A_PAGAR = {placeholder},
                 OBSERVACIONES = {placeholder},
                 UPDATED_AT = {placeholder},
@@ -380,6 +387,7 @@ class RepositorioLiquidacionSQLite:
                 liquidacion.gastos_administracion,
                 liquidacion.gastos_servicios,
                 liquidacion.gastos_reparaciones,
+                liquidacion.pago_predial,
                 liquidacion.otros_egresos,
                 liquidacion.total_egresos,
                 liquidacion.neto_a_pagar,
@@ -681,6 +689,7 @@ class RepositorioLiquidacionSQLite:
                     SUM(l.GASTOS_ADMINISTRACION) as TOTAL_GASTOS_ADMIN,
                     SUM(l.GASTOS_SERVICIOS) as TOTAL_GASTOS_SERV,
                     SUM(l.GASTOS_REPARACIONES) as TOTAL_GASTOS_REP,
+                    SUM(l.PAGO_PREDIAL) as TOTAL_PAGO_PREDIAL,
                     SUM(l.OTROS_EGRESOS) as TOTAL_OTROS_EGRESOS,
                     SUM(l.TOTAL_EGRESOS) as TOTAL_EGRESOS,
                     SUM(l.NETO_A_PAGAR) as NETO_TOTAL
@@ -937,6 +946,7 @@ class RepositorioLiquidacionSQLite:
             # Claves renombradas para coincidir con servicio PDF legacy
             "gastos_serv": row.get("GASTOS_SERVICIOS"),
             "gastos_rep": row.get("GASTOS_REPARACIONES"),
+            "pago_predial": row.get("PAGO_PREDIAL"),
             "otros_egr": row.get("OTROS_EGRESOS"),
             
             "total_egresos": row.get("TOTAL_EGRESOS"),
@@ -1018,6 +1028,7 @@ class RepositorioLiquidacionSQLite:
         gastos_admin = sum(l.get("GASTOS_ADMINISTRACION", 0) for l in liquidaciones)
         gastos_serv = sum(l.get("GASTOS_SERVICIOS", 0) for l in liquidaciones)
         gastos_rep = sum(l.get("GASTOS_REPARACIONES", 0) for l in liquidaciones)
+        pago_predial = sum(l.get("PAGO_PREDIAL", 0) for l in liquidaciones)
         otros_egr = sum(l.get("OTROS_EGRESOS", 0) for l in liquidaciones)
         
         # 4. Formatear lista de propiedades
@@ -1034,6 +1045,7 @@ class RepositorioLiquidacionSQLite:
                 "gastos_admin": l.get("GASTOS_ADMINISTRACION"),
                 "gastos_serv": l.get("GASTOS_SERVICIOS"),
                 "gastos_rep": l.get("GASTOS_REPARACIONES"),
+                "pago_predial": l.get("PAGO_PREDIAL"),
                 "otros_egr": l.get("OTROS_EGRESOS"),
                 "neto": l.get("NETO_A_PAGAR"),
                 "porcentaje_seguro": l.get("PORCENTAJE_SEGURO", 0)
@@ -1064,6 +1076,7 @@ class RepositorioLiquidacionSQLite:
             "gastos_admin": gastos_admin,
             "gastos_serv": gastos_serv,
             "gastos_rep": gastos_rep,
+            "pago_predial": pago_predial,
             "otros_egr": otros_egr,
             
             "observaciones": f"Estado de cuenta consolidado para {len(liquidaciones)} inmuebles."

@@ -432,23 +432,26 @@ class ServicioDocumentosPDF:
         pdf.cell(50, 7, valor_str, border=1, align="R", new_x="LMARGIN", new_y="NEXT")
         total_egresos_calc += val_serv
 
-        # 7. Pago Predial (Mapeado desde 'otros_egr' alias 'otros_egresos')
-        # Según requerimiento, 'Otros Egresos' del form ahora es 'Pago Predial'
-        val_predial = datos.get("otros_egr") or 0
+        # 7. Pago Predial
+        val_predial = datos.get("pago_predial") or 0
         pdf.cell(140, 7, "Pago Predial", border=1)
         valor_str = f"${val_predial:,}" if val_predial > 0 else "$ -"
         pdf.cell(50, 7, valor_str, border=1, align="R", new_x="LMARGIN", new_y="NEXT")
         total_egresos_calc += val_predial
 
-        # 8. Incidentes (Mapeado desde 'gastos_rep' alias 'gastos_reparaciones')
+        # 8. Incidentes
         val_rep = datos.get("gastos_rep") or 0
         pdf.cell(140, 7, "Incidentes", border=1)
         valor_str = f"${val_rep:,}" if val_rep > 0 else "$ -"
         pdf.cell(50, 7, valor_str, border=1, align="R", new_x="LMARGIN", new_y="NEXT")
         total_egresos_calc += val_rep
         
-        # 9. Otros Egresos (Eliminado o vacío ya que se reasignó a Pago Predial)
-        # Si hubiera un campo extra REAL de otros egresos, iría aquí. Por ahora, el mapping es 1:1 con la UI modificada.
+        # 9. Otros Egresos
+        val_otros = datos.get("otros_egr") or 0
+        pdf.cell(140, 7, "Otros Egresos", border=1)
+        valor_str = f"${val_otros:,}" if val_otros > 0 else "$ -"
+        pdf.cell(50, 7, valor_str, border=1, align="R", new_x="LMARGIN", new_y="NEXT")
+        total_egresos_calc += val_otros
 
         # TOTAL EGRESOS (Recalculado)
         pdf.set_font("helvetica", "B", 10)

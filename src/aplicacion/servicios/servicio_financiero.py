@@ -145,6 +145,7 @@ class ServicioFinanciero:
             gastos_administracion=datos_adicionales.get("gastos_administracion", 0),
             gastos_servicios=datos_adicionales.get("gastos_servicios", 0),
             gastos_reparaciones=datos_adicionales.get("gastos_reparaciones", 0),
+            pago_predial=datos_adicionales.get("pago_predial", 0),
             otros_egresos=datos_adicionales.get("otros_egresos", 0),
             estado_liquidacion="En Proceso",
             observaciones=datos_adicionales.get("observaciones"),
@@ -341,6 +342,7 @@ class ServicioFinanciero:
         liquidacion.gastos_administracion = datos_actualizados.get("gastos_administracion", liquidacion.gastos_administracion)
         liquidacion.gastos_servicios = datos_actualizados.get("gastos_servicios", liquidacion.gastos_servicios)
         liquidacion.gastos_reparaciones = datos_actualizados.get("gastos_reparaciones", liquidacion.gastos_reparaciones)
+        liquidacion.pago_predial = datos_actualizados.get("pago_predial", liquidacion.pago_predial)
         liquidacion.otros_egresos = datos_actualizados.get("otros_egresos", liquidacion.otros_egresos)
         liquidacion.observaciones = datos_actualizados.get("observaciones", liquidacion.observaciones)
         

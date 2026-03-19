@@ -42,6 +42,7 @@ class Liquidacion:
     gastos_administracion: int = 0  # Cuota admin del conjunto pagada por inmob.
     gastos_servicios: int = 0  # Agua, luz común pagada por inmob.
     gastos_reparaciones: int = 0  # Incidentes/mantenimientos del mes
+    pago_predial: int = 0  # Pagos prediales
     otros_egresos: int = 0  # Imprevistos
     total_egresos: int = 0  # Suma de todos los egresos
 
@@ -92,6 +93,7 @@ class Liquidacion:
             + self.gastos_administracion
             + self.gastos_servicios
             + self.gastos_reparaciones
+            + self.pago_predial
             + self.otros_egresos
         )
 

@@ -141,6 +141,12 @@ def liquidacion_edit_form() -> rx.Component:
                         ),
                         form_field(
                             "Pago Predial",
+                            "pago_predial",
+                            LiquidacionesState.form_data["pago_predial"].to(str),
+                            type="number",
+                        ),
+                        form_field(
+                            "Otros Egresos",
                             "otros_egresos",
                             LiquidacionesState.form_data["otros_egresos"].to(str),
                             type="number",

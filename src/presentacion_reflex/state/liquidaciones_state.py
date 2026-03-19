@@ -350,6 +350,7 @@ class LiquidacionesState(DocumentosStateMixin):
             "gastos_administracion": 0,
             "gastos_servicios": 0,
             "gastos_reparaciones": 0,
+            "pago_predial": 0,
             "otros_egresos": 0,
             "observaciones": "",
         }
@@ -554,7 +555,8 @@ class LiquidacionesState(DocumentosStateMixin):
                         ),
                         "gastos_servicios": liquidacion["gastos_serv"],
                         "gastos_reparaciones": liquidacion["gastos_rep"],
-                        "otros_egresos": liquidacion["otros_egr"],
+                        "pago_predial": liquidacion.get("pago_predial", 0),
+                        "otros_egresos": liquidacion.get("otros_egr", 0),
                         "observaciones": liquidacion["observaciones"],
                     }
                     self.show_edit_modal = True
@@ -629,6 +631,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 l_fmt["gastos_admin_view"] = format_currency(liquidacion.get("gastos_admin", 0))
                 l_fmt["gastos_serv_view"] = format_currency(liquidacion.get("gastos_serv", 0))
                 l_fmt["gastos_rep_view"] = format_currency(liquidacion.get("gastos_rep", 0))
+                l_fmt["pago_predial_view"] = format_currency(liquidacion.get("pago_predial", 0))
                 l_fmt["otros_egr_view"] = format_currency(liquidacion.get("otros_egr", 0))
                 
                 # Formatear listas internas si existen
@@ -743,21 +746,23 @@ class LiquidacionesState(DocumentosStateMixin):
                         "comision_monto": sum(d["comision_monto"] for d in detalles_lista),
                         "iva_comision": sum(d["iva_comision"] for d in detalles_lista),
                         "impuesto_4x1000": sum(d["impuesto_4x1000"] for d in detalles_lista),
-                        "gastos_admin": sum(d["gastos_admin"] for d in detalles_lista),
-                        "gastos_serv": sum(d["gastos_serv"] for d in detalles_lista),
-                        "gastos_rep": sum(d["gastos_rep"] for d in detalles_lista),
-                        "otros_egr": sum(d["otros_egr"] for d in detalles_lista),
-                        "total_egresos": sum(d["total_egresos"] for d in detalles_lista),
+                        "gastos_admin": sum(d.get("gastos_admin", 0) for d in detalles_lista),
+                        "gastos_serv": sum(d.get("gastos_serv", 0) for d in detalles_lista),
+                        "gastos_rep": sum(d.get("gastos_rep", 0) for d in detalles_lista),
+                        "pago_predial": sum(d.get("pago_predial", 0) for d in detalles_lista),
+                        "otros_egr": sum(d.get("otros_egr", 0) for d in detalles_lista),
+                        "total_egresos": sum(d.get("total_egresos", 0) for d in detalles_lista),
                         "neto_pagar": sum(d["neto_pagar"] for d in detalles_lista),
                         # Formatted View Values
                         "comision_monto_view": format_currency(sum(d["comision_monto"] for d in detalles_lista)),
                         "iva_comision_view": format_currency(sum(d["iva_comision"] for d in detalles_lista)),
                         "impuesto_4x1000_view": format_currency(sum(d["impuesto_4x1000"] for d in detalles_lista)),
-                        "gastos_admin_view": format_currency(sum(d["gastos_admin"] for d in detalles_lista)),
-                        "gastos_serv_view": format_currency(sum(d["gastos_serv"] for d in detalles_lista)),
-                        "gastos_rep_view": format_currency(sum(d["gastos_rep"] for d in detalles_lista)),
-                        "otros_egr_view": format_currency(sum(d["otros_egr"] for d in detalles_lista)),
-                        "total_egresos_view": format_currency(sum(d["total_egresos"] for d in detalles_lista)),
+                        "gastos_admin_view": format_currency(sum(d.get("gastos_admin", 0) for d in detalles_lista)),
+                        "gastos_serv_view": format_currency(sum(d.get("gastos_serv", 0) for d in detalles_lista)),
+                        "gastos_rep_view": format_currency(sum(d.get("gastos_rep", 0) for d in detalles_lista)),
+                        "pago_predial_view": format_currency(sum(d.get("pago_predial", 0) for d in detalles_lista)),
+                        "otros_egr_view": format_currency(sum(d.get("otros_egr", 0) for d in detalles_lista)),
+                        "total_egresos_view": format_currency(sum(d.get("total_egresos", 0) for d in detalles_lista)),
                         "neto_pagar_view": format_currency(sum(d["neto_pagar"] for d in detalles_lista)),
                         # Pago
                         "fecha_pago": detalles_lista[0].get("fecha_pago"),
