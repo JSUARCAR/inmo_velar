@@ -1184,7 +1184,8 @@ class RepositorioLiquidacionSQLite:
             SELECT 
                 l.ID_LIQUIDACION, l.PERIODO, l.ESTADO_LIQUIDACION, l.CANON_BRUTO,
                 l.OTROS_INGRESOS, l.COMISION_MONTO, l.IVA_COMISION, l.IMPUESTO_4X1000,
-                l.GASTOS_ADMINISTRACION, l.GASTOS_SERVICIOS, l.GASTOS_REPARACIONES, l.OTROS_EGRESOS,
+                l.GASTOS_ADMINISTRACION, l.GASTOS_SERVICIOS, l.GASTOS_REPARACIONES, 
+                l.PAGO_PREDIAL, l.OTROS_EGRESOS, l.NETO_A_PAGAR,
                 p.DIRECCION_PROPIEDAD
             {base_from} {where_clause}
             ORDER BY l.PERIODO DESC, l.ID_LIQUIDACION DESC
@@ -1195,23 +1196,13 @@ class RepositorioLiquidacionSQLite:
 
         items = []
         for row in cursor.fetchall():
-            ingresos = (row["CANON_BRUTO"] or 0) + (row["OTROS_INGRESOS"] or 0)
-            egresos = (
-                (row["COMISION_MONTO"] or 0)
-                + (row["IVA_COMISION"] or 0)
-                + (row["IMPUESTO_4X1000"] or 0)
-                + (row["GASTOS_ADMINISTRACION"] or 0)
-                + (row["GASTOS_SERVICIOS"] or 0)
-                + (row["GASTOS_REPARACIONES"] or 0)
-                + (row["OTROS_EGRESOS"] or 0)
-            )
             items.append(
                 {
                     "id": row["ID_LIQUIDACION"],
                     "periodo": row["PERIODO"],
                     "estado": row["ESTADO_LIQUIDACION"],
                     "canon": row["CANON_BRUTO"],
-                    "neto": ingresos - egresos,
+                    "neto": row["NETO_A_PAGAR"],
                     "contrato": row["DIRECCION_PROPIEDAD"],
                 }
             )
