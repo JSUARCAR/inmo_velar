@@ -1144,6 +1144,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 "gastos_administracion": int(form_data.get("gastos_administracion", 0)),
                 "gastos_servicios": int(form_data.get("gastos_servicios", 0)),
                 "gastos_reparaciones": int(form_data.get("gastos_reparaciones", 0)),
+                "pago_predial": int(form_data.get("pago_predial", 0)),
                 "otros_egresos": int(form_data.get("otros_egresos", 0)),
                 "observaciones": form_data.get("observaciones", ""),
             }
