@@ -70,6 +70,7 @@ def crear_liquidacion_form_view(
             suma_gastos_admin = 0
             suma_gastos_servicios = 0
             suma_gastos_reparaciones = 0
+            suma_pago_predial = 0
             suma_otros_egresos = 0
             comision_porcentaje = 0  # Tomamos el del primer contrato (debería ser el mismo)
             observaciones_list = []
@@ -81,6 +82,7 @@ def crear_liquidacion_form_view(
                 suma_gastos_admin += liq.gastos_administracion or 0
                 suma_gastos_servicios += liq.gastos_servicios or 0
                 suma_gastos_reparaciones += liq.gastos_reparaciones or 0
+                suma_pago_predial += liq.pago_predial or 0
                 suma_otros_egresos += liq.otros_egresos or 0
 
                 # Tomar el porcentaje de comisión del primer contrato
@@ -124,6 +126,7 @@ def crear_liquidacion_form_view(
                 "suma_gastos_admin": suma_gastos_admin,
                 "suma_gastos_servicios": suma_gastos_servicios,
                 "suma_gastos_reparaciones": suma_gastos_reparaciones,
+                "suma_pago_predial": suma_pago_predial,
                 "suma_otros_egresos": suma_otros_egresos,
                 "comision_porcentaje": comision_porcentaje,
                 "observaciones": observaciones_consolidadas,
@@ -155,6 +158,7 @@ def crear_liquidacion_form_view(
     txt_gastos_admin = ft.Ref[ft.TextField]()
     txt_gastos_servicios = ft.Ref[ft.TextField]()
     txt_gastos_reparaciones = ft.Ref[ft.TextField]()
+    txt_pago_predial = ft.Ref[ft.TextField]()
     txt_otros_egresos = ft.Ref[ft.TextField]()
     txt_total_egresos = ft.Ref[ft.TextField]()
     txt_neto_a_pagar = ft.Ref[ft.TextField]()
@@ -183,6 +187,7 @@ def crear_liquidacion_form_view(
             gastos_admin = int(txt_gastos_admin.current.value or 0)
             gastos_serv = int(txt_gastos_servicios.current.value or 0)
             gastos_rep = int(txt_gastos_reparaciones.current.value or 0)
+            pago_predial = int(txt_pago_predial.current.value or 0)
             otros_egr = int(txt_otros_egresos.current.value or 0)
 
             total_egr = (
@@ -192,6 +197,7 @@ def crear_liquidacion_form_view(
                 + gastos_admin
                 + gastos_serv
                 + gastos_rep
+                + pago_predial
                 + otros_egr
             )
             txt_total_egresos.current.value = str(total_egr)
@@ -269,6 +275,7 @@ def crear_liquidacion_form_view(
                 "gastos_administracion": int(txt_gastos_admin.current.value or 0),
                 "gastos_servicios": int(txt_gastos_servicios.current.value or 0),
                 "gastos_reparaciones": int(txt_gastos_reparaciones.current.value or 0),
+                "pago_predial": int(txt_pago_predial.current.value or 0),
                 "otros_egresos": int(txt_otros_egresos.current.value or 0),
                 "observaciones": txt_observaciones.current.value,
                 "comision_porcentaje": int(txt_comision_porcentaje.current.value),
@@ -537,6 +544,20 @@ def crear_liquidacion_form_view(
                             prefix_text="$",
                             value=(
                                 str(liquidacion_propietario_info["suma_gastos_reparaciones"])
+                                if liquidacion_propietario_info
+                                else "0"
+                            ),
+                            width=180,
+                            keyboard_type=ft.KeyboardType.NUMBER,
+                            on_change=calcular_totales,
+                        ),
+                        ft.TextField(
+                            ref=txt_pago_predial,
+                            label="Pago Predial",
+                            hint_text="0",
+                            prefix_text="$",
+                            value=(
+                                str(liquidacion_propietario_info["suma_pago_predial"])
                                 if liquidacion_propietario_info
                                 else "0"
                             ),

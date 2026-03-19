@@ -48,6 +48,7 @@ class LiquidacionPropietario:
     total_gastos_administracion: int = 0
     total_gastos_servicios: int = 0
     total_gastos_reparaciones: int = 0
+    total_pago_predial: int = 0
     total_otros_egresos: int = 0
     total_egresos: int = 0
 
@@ -107,6 +108,7 @@ class LiquidacionPropietario:
         self.total_gastos_administracion = 0
         self.total_gastos_servicios = 0
         self.total_gastos_reparaciones = 0
+        self.total_pago_predial = 0
         self.total_otros_egresos = 0
         self.total_egresos = 0
 
@@ -130,6 +132,7 @@ class LiquidacionPropietario:
             self.total_gastos_administracion += liq.gastos_administracion
             self.total_gastos_servicios += liq.gastos_servicios
             self.total_gastos_reparaciones += liq.gastos_reparaciones
+            self.total_pago_predial += liq.pago_predial
             self.total_otros_egresos += liq.otros_egresos
             self.total_egresos += liq.total_egresos
 

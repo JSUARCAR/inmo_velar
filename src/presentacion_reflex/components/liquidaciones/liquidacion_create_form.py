@@ -260,6 +260,16 @@ def liquidacion_create_form() -> rx.Component:
                         ),
                         form_field(
                             "Pago Predial",
+                            "pago_predial",
+                            "0",
+                            type="number",
+                            value=LiquidacionesState.form_data["pago_predial"],
+                            on_change=lambda val: LiquidacionesState.set_form_field(
+                                "pago_predial", val
+                            ),
+                        ),
+                        form_field(
+                            "Otros Egresos",
                             "otros_egresos",
                             "0",
                             type="number",
