@@ -132,6 +132,50 @@ class ServicioFinanciero:
         iva_comision = int(comision_monto * (iva_val / 10000.0))
         impuesto_4x1000 = int(total_ingresos * (imp_4x1000_val / 1000.0))
 
+        # Cálculo del Seguro: obtener porcentaje desde Póliza o Arrendatario
+        seguro_monto = 0
+        try:
+            from src.infraestructura.persistencia.database import db_manager
+
+            with db_manager.obtener_conexion() as conn:
+                cursor = db_manager.get_dict_cursor(conn)
+                placeholder = db_manager.get_placeholder()
+
+                # Obtener propiedad del contrato de mandato
+                cursor.execute(
+                    f"SELECT ID_PROPIEDAD FROM CONTRATOS_MANDATOS WHERE ID_CONTRATO_M = {placeholder}",
+                    (id_contrato_m,),
+                )
+                row_prop = cursor.fetchone()
+
+                if row_prop:
+                    id_propiedad = row_prop["ID_PROPIEDAD"]
+
+                    # Buscar seguro: Póliza activa → Seguro del arrendatario
+                    query_seguro = f"""
+                    SELECT COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0) as PCT_SEGURO
+                    FROM PROPIEDADES p
+                    LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON p.ID_PROPIEDAD = ca.ID_PROPIEDAD AND ca.ESTADO_CONTRATO_A = 'Activo'
+                    LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+                    LEFT JOIN POLIZAS pol ON ca.ID_CONTRATO_A = pol.ID_CONTRATO AND pol.ESTADO = 'Activa'
+                    LEFT JOIN SEGUROS seg ON pol.ID_SEGURO = seg.ID_SEGURO
+                    LEFT JOIN SEGUROS seg_arr ON arr.ID_SEGURO = seg_arr.ID_SEGURO
+                    WHERE p.ID_PROPIEDAD = {placeholder}
+                    LIMIT 1
+                    """
+                    cursor.execute(query_seguro, (id_propiedad,))
+                    row_seguro = cursor.fetchone()
+
+                    if row_seguro:
+                        pct_seguro = row_seguro["PCT_SEGURO"] or 0
+                        # Normalizar: si viene en base 100+ (ej: 200 → 2.0%)
+                        if pct_seguro > 100:
+                            pct_seguro = pct_seguro / 100
+                        if pct_seguro > 0:
+                            seguro_monto = int(canon_bruto * pct_seguro / 100)
+        except Exception:
+            seguro_monto = 0
+
         liquidacion = Liquidacion(
             id_contrato_m=id_contrato_m,
             periodo=periodo,
@@ -146,6 +190,7 @@ class ServicioFinanciero:
             gastos_servicios=datos_adicionales.get("gastos_servicios", 0),
             gastos_reparaciones=datos_adicionales.get("gastos_reparaciones", 0),
             pago_predial=datos_adicionales.get("pago_predial", 0),
+            seguro_monto=seguro_monto,
             otros_egresos=datos_adicionales.get("otros_egresos", 0),
             estado_liquidacion="En Proceso",
             observaciones=datos_adicionales.get("observaciones"),
