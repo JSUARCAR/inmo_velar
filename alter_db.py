@@ -1,38 +1,43 @@
-import sys
+"""
+Script de migración: Agregar columna SEGURO_MONTO a LIQUIDACIONES.
+Idempotente - seguro para ejecutar múltiples veces.
+"""
 import os
+import sys
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Agregar raíz del proyecto al path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from migraciones.database_config import get_database_connection
+from src.infraestructura.persistencia.database import db_manager
 
 
-def apply_migration():
-    """Agrega columnas PAGO_PREDIAL y OTROS_EGRESOS a LIQUIDACIONES si no existen."""
-    print("Obteniendo conexion a produccion...")
-    conn = get_database_connection()
+def migrar() -> None:
+    """Agrega la columna SEGURO_MONTO si no existe."""
+    conn = db_manager.obtener_conexion()
     cursor = conn.cursor()
 
-    columnas = [
-        ("PAGO_PREDIAL", "INTEGER DEFAULT 0"),
-        ("OTROS_EGRESOS", "INTEGER DEFAULT 0"),
+    columnas_a_agregar = [
+        ("SEGURO_MONTO", "INTEGER DEFAULT 0"),
     ]
 
-    for nombre_col, tipo_col in columnas:
+    for nombre_col, tipo_col in columnas_a_agregar:
         try:
-            print(f"Ejecutando ALTER TABLE LIQUIDACIONES ADD COLUMN {nombre_col}...")
             cursor.execute(
-                f"ALTER TABLE LIQUIDACIONES ADD COLUMN {nombre_col} {tipo_col};"
+                f"ALTER TABLE LIQUIDACIONES ADD COLUMN {nombre_col} {tipo_col}"
             )
             conn.commit()
-            print(f"  -> Columna {nombre_col} agregada exitosamente.")
+            print(f"✅ Columna '{nombre_col}' agregada exitosamente.")
         except Exception as e:
-            conn.rollback()
-            print(f"  -> {nombre_col} ya existe o error: {e}")
+            if "already exists" in str(e).lower() or "duplicate column" in str(e).lower():
+                print(f"ℹ️  Columna '{nombre_col}' ya existe. Sin cambios.")
+            else:
+                print(f"❌ Error al agregar '{nombre_col}': {e}")
+                conn.rollback()
 
     cursor.close()
     conn.close()
-    print("Migracion finalizada.")
+    print("\n🏁 Migración completada.")
 
 
 if __name__ == "__main__":
-    apply_migration()
+    migrar()

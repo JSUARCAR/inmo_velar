@@ -632,6 +632,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 l_fmt["gastos_serv_view"] = format_currency(liquidacion.get("gastos_serv", 0))
                 l_fmt["gastos_rep_view"] = format_currency(liquidacion.get("gastos_rep", 0))
                 l_fmt["pago_predial_view"] = format_currency(liquidacion.get("pago_predial", 0))
+                l_fmt["seguro_monto_view"] = format_currency(liquidacion.get("seguro_monto", 0))
                 l_fmt["otros_egr_view"] = format_currency(liquidacion.get("otros_egr", 0))
                 
                 # Formatear listas internas si existen

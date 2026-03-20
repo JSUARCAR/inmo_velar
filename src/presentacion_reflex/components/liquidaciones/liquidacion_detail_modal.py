@@ -192,6 +192,10 @@ def liquidacion_detail_modal() -> rx.Component:
                             LiquidacionesState.liquidacion_actual["pago_predial_view"],
                         ),
                         info_row(
+                            "Seguro:",
+                            LiquidacionesState.liquidacion_actual["seguro_monto_view"],
+                        ),
+                        info_row(
                             "Otros Egresos:",
                             LiquidacionesState.liquidacion_actual["otros_egr_view"],
                         ),

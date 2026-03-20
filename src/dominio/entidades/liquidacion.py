@@ -43,6 +43,7 @@ class Liquidacion:
     gastos_servicios: int = 0  # Agua, luz común pagada por inmob.
     gastos_reparaciones: int = 0  # Incidentes/mantenimientos del mes
     pago_predial: int = 0  # Pagos prediales
+    seguro_monto: int = 0  # Monto del seguro (canon × porcentaje_seguro / 100)
     otros_egresos: int = 0  # Imprevistos
     total_egresos: int = 0  # Suma de todos los egresos
 
@@ -94,6 +95,7 @@ class Liquidacion:
             + self.gastos_servicios
             + self.gastos_reparaciones
             + (self.pago_predial or 0)
+            + (self.seguro_monto or 0)
             + (self.otros_egresos or 0)
         )
 
