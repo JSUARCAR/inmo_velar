@@ -229,6 +229,150 @@ class ServicioPersonas:
         datos_roles = self._obtener_datos_roles_persona(id_persona)
         return PersonaConRoles(persona=persona, datos_roles=datos_roles)
 
+    def obtener_detalles_completos(self, id_persona: int) -> Dict[str, Any]:
+        """
+        Orquesta la recuperación de detalles extendidos de una persona según sus roles.
+        Consolida datos de propiedades, contratos y estados financieros.
+        """
+        logger.debug(f"Obteniendo detalles completos para persona ID: {id_persona}")
+        
+        persona_dto = self.obtener_persona_completa(id_persona)
+        if not persona_dto:
+            return {}
+
+        resultado = {
+            "persona": {
+                "id": persona_dto.persona.id_persona,
+                "nombre": persona_dto.nombre_completo,
+                "documento": f"{persona_dto.persona.tipo_documento} {persona_dto.persona.numero_documento}",
+                "tipo_documento": persona_dto.persona.tipo_documento,
+                "numero_documento": persona_dto.persona.numero_documento,
+                "telefono": persona_dto.telefono_principal,
+                "correo": persona_dto.correo_principal,
+                "direccion": persona_dto.persona.direccion_principal,
+                "roles": persona_dto.roles,
+                "estado": "Activo" if persona_dto.esta_activa else "Inactivo",
+                "fecha_creacion": persona_dto.persona.created_at[:10] if persona_dto.persona.created_at else "N/A",
+            },
+            "detalles_roles": {}
+        }
+
+        from src.infraestructura.persistencia.database import db_manager
+        placeholder = db_manager.get_placeholder()
+
+        # Detalle Propietario: Propiedades y Cuentas
+        if "Propietario" in persona_dto.roles:
+            propietario = persona_dto.datos_roles["Propietario"]
+            propiedades = []
+            
+            query_prop = f"""
+                SELECT p.ID_PROPIEDAD, p.MATRICULA_INMOBILIARIA, p.DIRECCION_PROPIEDAD, p.TIPO_PROPIEDAD, p.DISPONIBILIDAD_PROPIEDAD
+                FROM PROPIEDADES p
+                WHERE p.ID_PROPIEDAD IN (
+                    SELECT ID_PROPIEDAD FROM CONTRATOS_MANDATOS WHERE ID_PROPIETARIO = {placeholder} AND ESTADO_CONTRATO_M = 'Activo'
+                )
+            """
+            
+            with db_manager.obtener_conexion() as conn:
+                cursor = db_manager.get_dict_cursor(conn)
+                cursor.execute(query_prop, (propietario.id_propietario,))
+                for row in cursor.fetchall():
+                    propiedades.append({
+                        "id": row["ID_PROPIEDAD"],
+                        "matricula": row["MATRICULA_INMOBILIARIA"],
+                        "direccion": row["DIRECCION_PROPIEDAD"],
+                        "tipo": row["TIPO_PROPIEDAD"],
+                        "disponible": "Sí" if row["DISPONIBILIDAD_PROPIEDAD"] else "No"
+                    })
+
+            resultado["detalles_roles"]["Propietario"] = {
+                "banco": propietario.banco_propietario,
+                "cuenta": propietario.numero_cuenta_propietario,
+                "tipo_cuenta": propietario.tipo_cuenta,
+                "consignatario": propietario.consignatario,
+                "documento_consignatario": propietario.documento_consignatario,
+                "propiedades_activas": propiedades
+            }
+
+        # Detalle Arrendatario: Contratos Activos
+        if "Arrendatario" in persona_dto.roles:
+            arrendatario = persona_dto.datos_roles["Arrendatario"]
+            contratos = []
+            
+            query_arr = f"""
+                SELECT ca.ID_CONTRATO_A, ca.FECHA_INICIO_CONTRATO_A, ca.FECHA_FIN_CONTRATO_A, ca.CANON_ARRENDAMIENTO, p.DIRECCION_PROPIEDAD
+                FROM CONTRATOS_ARRENDAMIENTOS ca
+                JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+                WHERE ca.ID_ARRENDATARIO = {placeholder} AND ca.ESTADO_CONTRATO_A = 'Activo'
+            """
+            
+            with db_manager.obtener_conexion() as conn:
+                cursor = db_manager.get_dict_cursor(conn)
+                cursor.execute(query_arr, (arrendatario.id_arrendatario,))
+                for row in cursor.fetchall():
+                    contratos.append({
+                        "id": row["ID_CONTRATO_A"],
+                        "inicio": row["FECHA_INICIO_CONTRATO_A"],
+                        "fin": row["FECHA_FIN_CONTRATO_A"],
+                        "canon": row["CANON_ARRENDAMIENTO"],
+                        "propiedad": row["DIRECCION_PROPIEDAD"]
+                    })
+
+            resultado["detalles_roles"]["Arrendatario"] = {
+                "codigo_seguro": arrendatario.codigo_aprobacion_seguro,
+                "habitante": arrendatario.nombre_habitante,
+                "telefono_habitante": arrendatario.telefono_habitante,
+                "contratos_activos": contratos
+            }
+
+        # Detalle Codeudor: Garantías en contratos
+        if "Codeudor" in persona_dto.roles:
+            codeudor = persona_dto.datos_roles["Codeudor"]
+            garantias = []
+            
+            query_cod = f"""
+                SELECT ca.ID_CONTRATO_A, ca.FECHA_INICIO_CONTRATO_A, ca.ESTADO_CONTRATO_A, p.DIRECCION_PROPIEDAD
+                FROM CONTRATOS_ARRENDAMIENTOS ca
+                JOIN CONTRATOS_ARRENDAMIENTOS_CODEUDORES cac ON ca.ID_CONTRATO_A = cac.ID_CONTRATO_A
+                JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+                WHERE cac.ID_CODEUDOR = {placeholder}
+            """
+            
+            with db_manager.obtener_conexion() as conn:
+                cursor = db_manager.get_dict_cursor(conn)
+                cursor.execute(query_cod, (codeudor.id_codeudor,))
+                for row in cursor.fetchall():
+                    garantias.append({
+                        "id": row["ID_CONTRATO_A"],
+                        "inicio": row["FECHA_INICIO_CONTRATO_A"],
+                        "estado": row["ESTADO_CONTRATO_A"],
+                        "propiedad": row["DIRECCION_PROPIEDAD"]
+                    })
+
+            resultado["detalles_roles"]["Codeudor"] = {
+                "garantias_activas": garantias
+            }
+
+        # Detalle Asesor: Métricas básicas
+        if "Asesor" in persona_dto.roles:
+            asesor = persona_dto.datos_roles["Asesor"]
+            resultado["detalles_roles"]["Asesor"] = {
+                "comision_arriendo": f"{asesor.comision_porcentaje_arriendo}%",
+                "comision_venta": f"{asesor.comision_porcentaje_venta}%",
+                "fecha_ingreso": asesor.fecha_ingreso
+            }
+
+        # Detalle Proveedor: Especialidad y Calificación
+        if "Proveedor" in persona_dto.roles:
+            proveedor = persona_dto.datos_roles["Proveedor"]
+            resultado["detalles_roles"]["Proveedor"] = {
+                "especialidad": proveedor.especialidad,
+                "calificacion": proveedor.calificacion,
+                "observaciones": proveedor.observaciones
+            }
+
+        return resultado
+
     def crear_persona_con_roles(
         self,
         datos_persona: Dict,

@@ -120,6 +120,15 @@ def person_card(persona: dict) -> rx.Component:
                         color=styles.TEXT_TERTIARY,
                         margin_right="2",
                     ),
+                    rx.tooltip(
+                        neuro_button(
+                            rx.icon("eye", size=16),
+                            on_click=lambda: PersonasState.open_details_modal(persona),
+                            size="1",
+                            style={"min_width": "32px", "height": "32px", "padding": "0"},
+                        ),
+                        content="Ver detalles completos",
+                    ),
                     rx.cond(
                         AuthState.check_action("Personas", "EDITAR"),
                         rx.tooltip(
