@@ -58,6 +58,11 @@ class PersonasState(rx.State):
     is_editing: bool = False
     current_persona_id: Optional[int] = None
 
+    # --- Details Modal State ---
+    show_details_modal: bool = False
+    current_persona_details: Dict[str, Any] = {}
+    is_loading_details: bool = False
+
     # --- Form State ---
     form_data: Dict[str, str] = {}
     error_message: str = ""
@@ -646,6 +651,58 @@ class PersonasState(rx.State):
         self.form_data = {}
         self.selected_roles = []
         self.current_persona_id = None
+
+    def close_details_modal(self):
+        """Cierra el modal de detalles."""
+        logger.debug("Ejecutando close_details_modal")
+        self.show_details_modal = False
+        self.current_persona_details = {}
+
+    @rx.event(background=True)
+    async def open_details_modal(self, persona: Dict):
+        """Abre el modal de detalles y carga la información completa."""
+        logger.debug(f"Ejecutando open_details_modal para persona ID: {persona.get('id')}")
+        
+        async with self:
+            self.show_details_modal = True
+            self.is_loading_details = True
+            self.current_persona_details = {"persona": persona} # Datos básicos mientras carga
+        
+        try:
+            from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
+            from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
+            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
+            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
+            from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
+            from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
+
+            repo_persona = RepositorioPersonaSQLite(db_manager)
+            repo_propietario = RepositorioPropietarioSQLite(db_manager)
+            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
+            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+            repo_asesor = RepositorioAsesorSQLite(db_manager)
+            repo_proveedor = RepositorioProveedoresSQLite(db_manager)
+
+            servicio = ServicioPersonas(
+                repo_persona=repo_persona,
+                repo_propietario=repo_propietario,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+                repo_asesor=repo_asesor,
+                repo_proveedor=repo_proveedor,
+            )
+            
+            detalles = servicio.obtener_detalles_completos(persona["id"])
+            
+            async with self:
+                self.current_persona_details = detalles
+                
+        except Exception as e:
+            logger.error(f"Error cargando detalles: {e}")
+            yield rx.toast.error(f"Error al cargar detalles: {str(e)}")
+        finally:
+            async with self:
+                self.is_loading_details = False
 
     def validate_form_data(
         self, form_data: dict, is_editing: bool, selected_roles: List[str]

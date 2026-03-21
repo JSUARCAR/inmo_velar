@@ -2,6 +2,7 @@ import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.components.personas.modal_form import modal_persona
+from src.presentacion_reflex.components.personas.modal_detalles import modal_detalles
 from src.presentacion_reflex.components.personas.person_card import person_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.personas_state import PersonasState
@@ -117,6 +118,7 @@ def personas_page() -> rx.Component:
             rx.vstack(
                 # Modal Component
                 modal_persona(),
+                modal_detalles(),
                 # --- Elite Header with Neumorphism ---
                 rx.box(
                     rx.flex(
@@ -448,6 +450,19 @@ def personas_page() -> rx.Component:
                                                 ),
                                                 rx.table.cell(
                                                     rx.hstack(
+                                                        rx.tooltip(
+                                                            rx.icon_button(
+                                                                rx.icon("eye", size=16),
+                                                                variant="ghost",
+                                                                size="2",
+                                                                on_click=lambda: PersonasState.open_details_modal(p),
+                                                                _hover={
+                                                                    "background": styles.ACCENT_BG_SOFT,
+                                                                    "color": styles.ACCENT_COLOR,
+                                                                },
+                                                            ),
+                                                            content="Ver detalles completos",
+                                                        ),
                                                         rx.cond(
                                                             AuthState.check_action(
                                                                 "Personas", "EDITAR"
