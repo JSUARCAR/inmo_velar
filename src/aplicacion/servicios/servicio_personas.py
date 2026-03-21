@@ -333,9 +333,8 @@ class ServicioPersonas:
             query_cod = f"""
                 SELECT ca.ID_CONTRATO_A, ca.FECHA_INICIO_CONTRATO_A, ca.ESTADO_CONTRATO_A, p.DIRECCION_PROPIEDAD
                 FROM CONTRATOS_ARRENDAMIENTOS ca
-                JOIN CONTRATOS_ARRENDAMIENTOS_CODEUDORES cac ON ca.ID_CONTRATO_A = cac.ID_CONTRATO_A
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-                WHERE cac.ID_CODEUDOR = {placeholder}
+                WHERE ca.ID_CODEUDOR = {placeholder}
             """
             
             with db_manager.obtener_conexion() as conn:
