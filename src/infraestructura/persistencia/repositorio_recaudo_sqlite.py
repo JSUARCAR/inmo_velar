@@ -445,3 +445,84 @@ class RepositorioRecaudoSQLite:
                 return row["total"]
             return row[0]
         return 0
+
+    def obtener_ids_contratos_con_recaudo(self, periodo: str) -> List[int]:
+        """Retorna los IDs de contratos que ya tienen un recaudo en el periodo indicado."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        query = f"""
+            SELECT DISTINCT ID_CONTRATO_A 
+            FROM RECAUDO_CONCEPTOS rc
+            JOIN RECAUDOS r ON rc.ID_RECAUDO = r.ID_RECAUDO
+            WHERE rc.PERIODO = {placeholder}
+        """
+        cursor.execute(query, (periodo,))
+        return [row["ID_CONTRATO_A"] for row in cursor.fetchall()]
+
+    def crear_masivo(self, recaudos_y_conceptos: List[tuple[Recaudo, List[RecaudoConcepto]]], usuario_sistema: str) -> int:
+        """Crea múltiples recaudos y sus conceptos en una sola transacción."""
+        if not recaudos_y_conceptos:
+            return 0
+
+        conn = self.db.obtener_conexion()
+        cursor = conn.cursor()
+        placeholder = self.db.get_placeholder()
+        ahora = datetime.now().isoformat()
+        count = 0
+
+        try:
+            for recaudo, conceptos in recaudos_y_conceptos:
+                # Validar suma de conceptos
+                suma_conceptos = sum(c.valor for c in conceptos)
+                if suma_conceptos != recaudo.valor_total:
+                    continue
+
+                # Insertar recaudo
+                cursor.execute(
+                    f"""
+                    INSERT INTO RECAUDOS (
+                        ID_CONTRATO_A, FECHA_PAGO, VALOR_TOTAL, METODO_PAGO,
+                        REFERENCIA_BANCARIA, ESTADO_RECAUDO, OBSERVACIONES,
+                        CREATED_AT, CREATED_BY
+                    ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                    """,
+                    (
+                        recaudo.id_contrato_a,
+                        recaudo.fecha_pago,
+                        recaudo.valor_total,
+                        recaudo.metodo_pago,
+                        recaudo.referencia_bancaria,
+                        recaudo.estado_recaudo,
+                        recaudo.observaciones,
+                        ahora,
+                        usuario_sistema,
+                    ),
+                )
+
+                id_recaudo = self.db.get_last_insert_id(cursor, "RECAUDOS", "ID_RECAUDO")
+
+                # Insertar conceptos
+                for concepto in conceptos:
+                    cursor.execute(
+                        f"""
+                        INSERT INTO RECAUDO_CONCEPTOS (
+                            ID_RECAUDO, TIPO_CONCEPTO, PERIODO, VALOR, CREATED_AT
+                        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                        """,
+                        (
+                            id_recaudo,
+                            concepto.tipo_concepto,
+                            concepto.periodo,
+                            concepto.valor,
+                            ahora,
+                        ),
+                    )
+                count += 1
+
+            conn.commit()
+            return count
+        except Exception as e:
+            conn.rollback()
+            raise e
