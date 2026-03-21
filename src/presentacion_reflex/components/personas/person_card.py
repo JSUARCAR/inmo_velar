@@ -78,7 +78,7 @@ def person_card(persona: dict) -> rx.Component:
                                 rx.match(
                                     r,
                                     ("Propietario", "home"),
-                                    ("Arrendatario", "user-check"),
+                                    ("Arrendatario", "user_check"),
                                     ("Asesor", "briefcase"),
                                     ("Codeudor", "shield"),
                                     ("Proveedor", "wrench"),
@@ -145,7 +145,7 @@ def person_card(persona: dict) -> rx.Component:
                         AuthState.check_action("Personas", "ELIMINAR"),
                         rx.tooltip(
                             neuro_button(
-                                rx.icon("trash-2", size=16),
+                                rx.icon("trash_2", size=16),
                                 size="1",
                                 style={
                                     "min_width": "32px", "height": "32px",

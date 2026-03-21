@@ -124,7 +124,7 @@ def contrato_mandato_form() -> rx.Component:
                 ContratosState.error_message != "",
                 rx.callout(
                     ContratosState.error_message,
-                    icon="circle-alert",
+                    icon="circle_alert",
                     color="red",
                     role="alert",
                     margin_bottom="1rem",

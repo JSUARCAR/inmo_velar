@@ -93,7 +93,7 @@ def persona_row(persona: dict) -> rx.Component:
                     AuthState.check_action("Personas", "ELIMINAR"),
                     rx.tooltip(
                         rx.icon_button(
-                            rx.icon("trash-2", size=16),
+                            rx.icon("trash_2", size=16),
                             variant="ghost",
                             color_scheme="red",
                             size="2",
@@ -237,7 +237,7 @@ def personas_page() -> rx.Component:
                                 rx.icon_button(
                                     rx.cond(
                                         PersonasState.view_mode == "table",
-                                        rx.icon("layout-grid", size=18),
+                                        rx.icon("layout_grid", size=18),
                                         rx.icon("table", size=18),
                                     ),
                                     on_click=PersonasState.toggle_view_mode,
@@ -255,7 +255,7 @@ def personas_page() -> rx.Component:
                             # Export button
                             rx.tooltip(
                                 rx.icon_button(
-                                    rx.icon("file-spreadsheet", size=18),
+                                    rx.icon("file_spreadsheet", size=18),
                                     color_scheme="green",
                                     variant="ghost",
                                     style=styles.NEU_BUTTON_STYLE,
@@ -271,7 +271,7 @@ def personas_page() -> rx.Component:
                             # Refresh button
                             rx.tooltip(
                                 rx.icon_button(
-                                    rx.icon("refresh-cw", size=18),
+                                    rx.icon("refresh_cw", size=18),
                                     variant="ghost",
                                     style=styles.NEU_BUTTON_STYLE,
                                     size="3",
@@ -489,7 +489,7 @@ def personas_page() -> rx.Component:
                                                             ),
                                                             rx.tooltip(
                                                                 rx.icon_button(
-                                                                    rx.icon("trash-2", size=16),
+                                                                    rx.icon("trash_2", size=16),
                                                                     variant="ghost",
                                                                     color_scheme="red",
                                                                     size="2",
@@ -566,7 +566,7 @@ def personas_page() -> rx.Component:
                 rx.box(
                     rx.flex(
                         neuro_button(
-                            rx.icon("chevron-left", size=16),
+                            rx.icon("chevron_left", size=16),
                             "Anterior",
                             on_click=PersonasState.prev_page,
                             disabled=PersonasState.page == 1,
@@ -602,7 +602,7 @@ def personas_page() -> rx.Component:
                         ),
                         neuro_button(
                             "Siguiente",
-                            rx.icon("chevron-right", size=16),
+                            rx.icon("chevron_right", size=16),
                             on_click=PersonasState.next_page,
                             disabled=PersonasState.page >= PersonasState.total_pages,
                             size="3",

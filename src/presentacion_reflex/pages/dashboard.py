@@ -66,7 +66,7 @@ def dashboard_page() -> rx.Component:
                 DashboardState.error_message != "",
                 neuro_callout(
                     DashboardState.error_message,
-                    icon="circle-alert",
+                    icon="circle_alert",
                     color_scheme="red",
                     width="100%",
                 ),
