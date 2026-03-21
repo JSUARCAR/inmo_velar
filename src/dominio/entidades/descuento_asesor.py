@@ -35,9 +35,8 @@ class DescuentoAsesor:
     created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
     created_by: Optional[str] = None
 
-    # Tipos que realmente existen en la base de datos
-    # Consultados desde DESCUENTOS_ASESORES el 2026-01-17
-    TIPOS_DESCUENTO = ["Debug", "Otros", "Préstamo"]
+    # Tipos que realmente existen en la base de datos y reglas de negocio
+    TIPOS_DESCUENTO = ["Debug", "Otros", "Préstamo", "Anticipo", "Sanción", "Ajuste"]
 
     def __post_init__(self):
         """Validaciones de reglas de negocio"""
