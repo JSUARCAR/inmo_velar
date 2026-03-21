@@ -296,7 +296,7 @@ def detail_modal() -> rx.Component:
                     rx.cond(
                         LiquidacionAsesoresState.liquidacion_actual["estado"] == "Pendiente",
                         rx.button(
-                            rx.icon("check-circle"),
+                            rx.icon("circle_check"),
                             "Aprobar",
                             color_scheme="green",
                             on_click=lambda: LiquidacionAsesoresState.aprobar_liquidacion(
@@ -319,7 +319,7 @@ def detail_modal() -> rx.Component:
                         (LiquidacionAsesoresState.liquidacion_actual["estado"] != "Pagada") & 
                         (LiquidacionAsesoresState.liquidacion_actual["estado"] != "Anulada"),
                         rx.button(
-                            rx.icon("x-circle"),
+                            rx.icon("circle_x"),
                             "Anular",
                             color_scheme="red",
                             variant="soft",

@@ -35,7 +35,7 @@ def role_selector_card(rol: str) -> rx.Component:
     icon_name = rx.match(
         rol,
         ("Propietario", "home"),
-        ("Arrendatario", "user-check"),
+        ("Arrendatario", "user_check"),
         ("Asesor", "briefcase"),
         ("Codeudor", "shield"),
         ("Proveedor", "wrench"),

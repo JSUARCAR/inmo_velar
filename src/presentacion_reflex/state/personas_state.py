@@ -63,6 +63,84 @@ class PersonasState(rx.State):
     current_persona_details: Dict[str, Any] = {}
     is_loading_details: bool = False
 
+    @rx.var
+    def detail_persona(self) -> Dict[str, Any]:
+        """Acceso seguro al diccionario de la persona en detalles."""
+        return self.current_persona_details.get("persona", {})
+
+    @rx.var
+    def detail_roles(self) -> Dict[str, Any]:
+        """Acceso seguro al diccionario de roles en detalles."""
+        return self.current_persona_details.get("detalles_roles", {})
+
+    @rx.var
+    def detail_propietario(self) -> Dict[str, Any]:
+        """Acceso seguro a datos de Propietario."""
+        return self.detail_roles.get("Propietario", {})
+
+    @rx.var
+    def detail_arrendatario(self) -> Dict[str, Any]:
+        """Acceso seguro a datos de Arrendatario."""
+        return self.detail_roles.get("Arrendatario", {})
+
+    @rx.var
+    def detail_codeudor(self) -> Dict[str, Any]:
+        """Acceso seguro a datos de Codeudor."""
+        return self.detail_roles.get("Codeudor", {})
+
+    @rx.var
+    def detail_asesor(self) -> Dict[str, Any]:
+        """Acceso seguro a datos de Asesor."""
+        return self.detail_roles.get("Asesor", {})
+
+    @rx.var
+    def detail_propiedades_activas(self) -> List[Dict[str, Any]]:
+        """Lista de propiedades del propietario."""
+        return self.detail_propietario.get("propiedades_activas", [])
+
+    @rx.var
+    def detail_contratos_activos(self) -> List[Dict[str, Any]]:
+        """Lista de contratos del arrendatario."""
+        return self.detail_arrendatario.get("contratos_activos", [])
+
+    @rx.var
+    def detail_garantias_activas(self) -> List[Dict[str, Any]]:
+        """Lista de garantías del codeudor."""
+        return self.detail_codeudor.get("garantias_activas", [])
+
+    @rx.var
+    def detail_proveedor(self) -> Dict[str, Any]:
+        """Acceso seguro a datos de Proveedor."""
+        return self.detail_roles.get("Proveedor", {})
+
+    @rx.var
+    def detail_nombre(self) -> str:
+        return str(self.detail_persona.get("nombre", "N/A"))
+
+    @rx.var
+    def detail_documento(self) -> str:
+        return str(self.detail_persona.get("documento", "N/A"))
+
+    @rx.var
+    def detail_telefono(self) -> str:
+        return str(self.detail_persona.get("telefono", "N/A"))
+
+    @rx.var
+    def detail_correo(self) -> str:
+        return str(self.detail_persona.get("correo", "N/A"))
+
+    @rx.var
+    def detail_direccion(self) -> str:
+        return str(self.detail_persona.get("direccion", "N/A"))
+
+    @rx.var
+    def detail_fecha_creacion(self) -> str:
+        return str(self.detail_persona.get("fecha_creacion", "N/A"))
+
+    @rx.var
+    def detail_roles_list(self) -> List[str]:
+        return list(self.detail_persona.get("roles", []))
+
     # --- Form State ---
     form_data: Dict[str, str] = {}
     error_message: str = ""

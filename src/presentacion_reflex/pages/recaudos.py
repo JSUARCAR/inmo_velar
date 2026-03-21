@@ -374,7 +374,7 @@ def recaudos_page() -> rx.Component:
             RecaudosState.error_message,
             rx.callout(
                 RecaudosState.error_message,
-                icon="circle-alert",
+                icon="circle_alert",
                 color_scheme="red",
                 role="alert",
             ),

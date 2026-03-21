@@ -29,7 +29,7 @@ def searchable_select(
                             rx.text(placeholder, color=styles.TEXT_TERTIARY),
                             rx.text(value_label, color=styles.TEXT_PRIMARY),
                         ),
-                        rx.icon("chevron-down", size=16),
+                        rx.icon("chevron_down", size=16),
                         width="100%",
                         justify="between",
                     ),
@@ -167,7 +167,7 @@ def codeudor_fields() -> rx.Component:
     return neuro_panel(
         rx.vstack(
             rx.hstack(
-                rx.icon("shield-check", size=18, color="var(--orange-9)"),
+                rx.icon("shield_check", size=18, color="var(--orange-9)"),
                 rx.text("Información de Garantía", size="3", weight="bold", color="var(--orange-11)"),
                 spacing="2",
             ),
@@ -244,7 +244,7 @@ def propietario_fields() -> rx.Component:
                 "Documento de quien recibe el pago",
                 value=PersonasState.form_data["documento_consignatario"],
                 on_change=lambda val: PersonasState.set_form_value("documento_consignatario", val),
-                icon="credit-card",
+                icon="credit_card",
             ),
             form_field(
                 "Nombre Consignatario",
@@ -252,7 +252,7 @@ def propietario_fields() -> rx.Component:
                 "Nombre de quien recibe el pago",
                 value=PersonasState.form_data["consignatario"],
                 on_change=lambda val: PersonasState.set_upper("consignatario", val),
-                icon="user-check",
+                icon="user_check",
             ),
             form_textarea(
                 "Observaciones",
@@ -284,7 +284,7 @@ def arrendatario_fields() -> rx.Component:
                     "Ej: AB-123",
                     value=PersonasState.form_data["codigo_aprobacion_seguro"],
                     on_change=lambda val: PersonasState.set_upper("codigo_aprobacion_seguro", val),
-                    icon="file-check",
+                    icon="file_check",
                 ),
                 searchable_select(
                     "ID Seguro (Opcional)",
@@ -494,7 +494,7 @@ def step_1_basic_info() -> rx.Component:
             "Ej: Calle 123 # 45-67",
             value=PersonasState.form_data["direccion_principal"],
             on_change=lambda val: PersonasState.set_upper("direccion_principal", val),
-            icon="map-pin",
+            icon="map_pin",
         ),
         spacing="5",
         width="100%",
@@ -562,7 +562,7 @@ def step_3_role_details() -> rx.Component:
             # No roles selected message
             rx.center(
                 rx.vstack(
-                    rx.icon("circle-alert", size=32, color="var(--gray-8)"),
+                    rx.icon("circle_alert", size=32, color="var(--gray-8)"),
                     rx.text(
                         "No hay roles seleccionados",
                         size="3",
@@ -594,7 +594,7 @@ def modal_persona() -> rx.Component:
                 rx.dialog.title(
                     rx.hstack(
                         rx.icon(
-                            rx.cond(PersonasState.is_editing, "user-pen", "user-plus"),
+                            rx.cond(PersonasState.is_editing, "user_pen", "user_plus"),
                             size=24,
                             color="var(--purple-9)",
                         ),
@@ -614,7 +614,7 @@ def modal_persona() -> rx.Component:
                     PersonasState.error_message != "",
                     rx.callout(
                         PersonasState.error_message,
-                        icon="triangle-alert",
+                        icon="triangle_alert",
                         color_scheme="red",
                         role="alert",
                         width="100%",
@@ -644,7 +644,7 @@ def modal_persona() -> rx.Component:
                             rx.cond(
                                 PersonasState.modal_step > 1,
                                 neuro_button(
-                                    rx.hstack(rx.icon("chevron-left", size=16), rx.text("Anterior")),
+                                    rx.hstack(rx.icon("chevron_left", size=16), rx.text("Anterior")),
                                     type="button",
                                     on_click=PersonasState.prev_modal_step,
                                     size="3",
@@ -664,7 +664,7 @@ def modal_persona() -> rx.Component:
                             rx.cond(
                                 PersonasState.modal_step < 3,
                                 neuro_button(
-                                    rx.hstack(rx.text("Siguiente"), rx.icon("chevron-right", size=16)),
+                                    rx.hstack(rx.text("Siguiente"), rx.icon("chevron_right", size=16)),
                                     type="submit",  # Changed to submit to capture form data
                                     size="3",
                                 ),

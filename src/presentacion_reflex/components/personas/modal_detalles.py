@@ -16,7 +16,7 @@ def detail_item(label: str, value: str, icon: str = None) -> rx.Component:
             spacing="2",
         ),
         rx.text(
-            value if value else "N/A",
+            rx.cond(value, value, "N/A"),
             size="2",
             color=styles.TEXT_PRIMARY,
             weight="bold",
@@ -69,12 +69,12 @@ def modal_detalles() -> rx.Component:
     tab_general = tab_content_container(
         section_title("Información Básica", "user"),
         rx.grid(
-            detail_item("Nombre Completo", PersonasState.current_persona_details["persona"]["nombre"], "user_round"),
-            detail_item("Documento", PersonasState.current_persona_details["persona"]["documento"], "fingerprint"),
-            detail_item("Teléfono", PersonasState.current_persona_details["persona"]["telefono"], "phone"),
-            detail_item("Correo Electrónico", PersonasState.current_persona_details["persona"]["correo"], "mail"),
-            detail_item("Dirección", PersonasState.current_persona_details["persona"]["direccion"], "map_pin"),
-            detail_item("Fecha Registro", PersonasState.current_persona_details["persona"]["fecha_creacion"], "calendar"),
+            detail_item("Nombre Completo", PersonasState.detail_nombre, "user_round"),
+            detail_item("Documento", PersonasState.detail_documento, "fingerprint"),
+            detail_item("Teléfono", PersonasState.detail_telefono, "phone"),
+            detail_item("Correo Electrónico", PersonasState.detail_correo, "mail"),
+            detail_item("Dirección", PersonasState.detail_direccion, "map_pin"),
+            detail_item("Fecha Registro", PersonasState.detail_fecha_creacion, "calendar"),
             columns="2",
             spacing="4",
             width="100%",
@@ -83,14 +83,14 @@ def modal_detalles() -> rx.Component:
 
     # Pestaña Propietario
     tab_propietario = rx.cond(
-        PersonasState.current_persona_details["detalles_roles"]["Propietario"],
+        PersonasState.detail_propietario,
         tab_content_container(
             section_title("Información Financiera", "banknote"),
             rx.grid(
-                detail_item("Banco", PersonasState.current_persona_details["detalles_roles"]["Propietario"]["banco"], "building_2"),
-                detail_item("Número de Cuenta", PersonasState.current_persona_details["detalles_roles"]["Propietario"]["cuenta"], "credit_card"),
-                detail_item("Tipo de Cuenta", PersonasState.current_persona_details["detalles_roles"]["Propietario"]["tipo_cuenta"], "info"),
-                detail_item("Consignatario", PersonasState.current_persona_details["detalles_roles"]["Propietario"]["consignatario"], "user_check"),
+                detail_item("Banco", PersonasState.detail_propietario["banco"].to(str), "building_2"),
+                detail_item("Número de Cuenta", PersonasState.detail_propietario["cuenta"].to(str), "credit_card"),
+                detail_item("Tipo de Cuenta", PersonasState.detail_propietario["tipo_cuenta"].to(str), "info"),
+                detail_item("Consignatario", PersonasState.detail_propietario["consignatario"].to(str), "user_check"),
                 columns="2",
                 spacing="4",
                 width="100%",
@@ -107,12 +107,12 @@ def modal_detalles() -> rx.Component:
                 ),
                 rx.table.body(
                     rx.foreach(
-                        PersonasState.current_persona_details["detalles_roles"]["Propietario"]["propiedades_activas"],
+                        PersonasState.detail_propiedades_activas,
                         lambda prop: rx.table.row(
-                            rx.table.cell(prop["matricula"]),
-                            rx.table.cell(prop["direccion"]),
-                            rx.table.cell(prop["tipo"]),
-                            rx.table.cell(prop["disponible"]),
+                            rx.table.cell(prop["matricula"].to(str)),
+                            rx.table.cell(prop["direccion"].to(str)),
+                            rx.table.cell(prop["tipo"].to(str)),
+                            rx.table.cell(prop["disponible"].to(str)),
                         )
                     )
                 ),
@@ -125,13 +125,13 @@ def modal_detalles() -> rx.Component:
 
     # Pestaña Arrendatario
     tab_arrendatario = rx.cond(
-        PersonasState.current_persona_details["detalles_roles"]["Arrendatario"],
+        PersonasState.detail_arrendatario,
         tab_content_container(
             section_title("Gestión de Arrendamiento", "clipboard_list"),
             rx.grid(
-                detail_item("Código Seguro", PersonasState.current_persona_details["detalles_roles"]["Arrendatario"]["codigo_seguro"], "shield_check"),
-                detail_item("Nombre Habitante", PersonasState.current_persona_details["detalles_roles"]["Arrendatario"]["habitante"], "user"),
-                detail_item("Teléfono Habitante", PersonasState.current_persona_details["detalles_roles"]["Arrendatario"]["telefono_habitante"], "phone"),
+                detail_item("Código Seguro", PersonasState.detail_arrendatario["codigo_seguro"].to(str), "shield_check"),
+                detail_item("Nombre Habitante", PersonasState.detail_arrendatario["habitante"].to(str), "user"),
+                detail_item("Teléfono Habitante", PersonasState.detail_arrendatario["telefono_habitante"].to(str), "phone"),
                 columns="2",
                 spacing="4",
                 width="100%",
@@ -148,12 +148,12 @@ def modal_detalles() -> rx.Component:
                 ),
                 rx.table.body(
                     rx.foreach(
-                        PersonasState.current_persona_details["detalles_roles"]["Arrendatario"]["contratos_activos"],
+                        PersonasState.detail_contratos_activos,
                         lambda cont: rx.table.row(
-                            rx.table.cell(cont["propiedad"]),
-                            rx.table.cell(cont["inicio"]),
-                            rx.table.cell(cont["fin"]),
-                            rx.table.cell(f"${cont['canon']:,}".replace(",", ".")),
+                            rx.table.cell(cont["propiedad"].to(str)),
+                            rx.table.cell(cont["inicio"].to(str)),
+                            rx.table.cell(cont["fin"].to(str)),
+                            rx.table.cell(cont["canon"].to(str)),
                         )
                     )
                 ),
@@ -166,7 +166,7 @@ def modal_detalles() -> rx.Component:
 
     # Pestaña Codeudor
     tab_codeudor = rx.cond(
-        PersonasState.current_persona_details["detalles_roles"]["Codeudor"],
+        PersonasState.detail_codeudor,
         tab_content_container(
             section_title("Garantías Respaldadas", "shield"),
             rx.table.root(
@@ -179,11 +179,11 @@ def modal_detalles() -> rx.Component:
                 ),
                 rx.table.body(
                     rx.foreach(
-                        PersonasState.current_persona_details["detalles_roles"]["Codeudor"]["garantias_activas"],
+                        PersonasState.detail_garantias_activas,
                         lambda gar: rx.table.row(
-                            rx.table.cell(gar["propiedad"]),
-                            rx.table.cell(gar["inicio"]),
-                            rx.table.cell(gar["estado"]),
+                            rx.table.cell(gar["propiedad"].to(str)),
+                            rx.table.cell(gar["inicio"].to(str)),
+                            rx.table.cell(gar["estado"].to(str)),
                         )
                     )
                 ),
@@ -197,13 +197,13 @@ def modal_detalles() -> rx.Component:
     # Pestaña Asesor/Proveedor
     tab_otros = tab_content_container(
         rx.cond(
-            PersonasState.current_persona_details["detalles_roles"]["Asesor"],
+            PersonasState.detail_asesor,
             rx.vstack(
                 section_title("Información Asesor", "briefcase"),
                 rx.grid(
-                    detail_item("Comisión Arriendo", PersonasState.current_persona_details["detalles_roles"]["Asesor"]["comision_arriendo"], "percent"),
-                    detail_item("Comisión Venta", PersonasState.current_persona_details["detalles_roles"]["Asesor"]["comision_venta"], "percent"),
-                    detail_item("Fecha Ingreso", PersonasState.current_persona_details["detalles_roles"]["Asesor"]["fecha_ingreso"], "calendar_days"),
+                    detail_item("Comisión Arriendo", PersonasState.detail_asesor["comision_arriendo"].to(str), "percent"),
+                    detail_item("Comisión Venta", PersonasState.detail_asesor["comision_venta"].to(str), "percent"),
+                    detail_item("Fecha Ingreso", PersonasState.detail_asesor["fecha_ingreso"].to(str), "calendar_days"),
                     columns="3",
                     spacing="4",
                     width="100%",
@@ -212,17 +212,17 @@ def modal_detalles() -> rx.Component:
             )
         ),
         rx.cond(
-            PersonasState.current_persona_details["detalles_roles"]["Proveedor"],
+            PersonasState.detail_proveedor,
             rx.vstack(
                 section_title("Información Proveedor", "wrench"),
                 rx.grid(
-                    detail_item("Especialidad", PersonasState.current_persona_details["detalles_roles"]["Proveedor"]["especialidad"], "award"),
-                    detail_item("Calificación", PersonasState.current_persona_details["detalles_roles"]["Proveedor"]["calificacion"], "star"),
+                    detail_item("Especialidad", PersonasState.detail_proveedor["especialidad"].to(str), "award"),
+                    detail_item("Calificación", PersonasState.detail_proveedor["calificacion"].to(str), "star"),
                     columns="2",
                     spacing="4",
                     width="100%",
                 ),
-                detail_item("Observaciones", PersonasState.current_persona_details["detalles_roles"]["Proveedor"]["observaciones"], "message_square"),
+                detail_item("Observaciones", PersonasState.detail_proveedor["observaciones"].to(str), "message_square"),
                 width="100%",
             )
         )
@@ -233,7 +233,7 @@ def modal_detalles() -> rx.Component:
             # Header del Modal
             rx.hstack(
                 rx.avatar(
-                    fallback=PersonasState.current_persona_details["persona"]["nombre"][0:2],
+                    fallback=PersonasState.detail_nombre[0:2],
                     size="7",
                     variant="soft",
                     color_scheme="indigo",
@@ -241,13 +241,13 @@ def modal_detalles() -> rx.Component:
                 ),
                 rx.vstack(
                     rx.heading(
-                        PersonasState.current_persona_details["persona"]["nombre"],
+                        PersonasState.detail_nombre,
                         size="6",
                         color=styles.TEXT_PRIMARY,
                     ),
                     rx.hstack(
                         rx.foreach(
-                            PersonasState.current_persona_details["persona"]["roles"],
+                            PersonasState.detail_roles_list,
                             role_badge
                         ),
                         spacing="2",
@@ -283,12 +283,12 @@ def modal_detalles() -> rx.Component:
                 rx.tabs.root(
                     rx.tabs.list(
                         rx.tabs.trigger("General", value="general"),
-                        rx.cond(PersonasState.current_persona_details["detalles_roles"]["Propietario"], rx.tabs.trigger("Propietario", value="propietario")),
-                        rx.cond(PersonasState.current_persona_details["detalles_roles"]["Arrendatario"], rx.tabs.trigger("Arrendatario", value="arrendatario")),
-                        rx.cond(PersonasState.current_persona_details["detalles_roles"]["Codeudor"], rx.tabs.trigger("Codeudor", value="codeudor")),
+                        rx.cond(PersonasState.detail_propietario, rx.tabs.trigger("Propietario", value="propietario")),
+                        rx.cond(PersonasState.detail_arrendatario, rx.tabs.trigger("Arrendatario", value="arrendatario")),
+                        rx.cond(PersonasState.detail_codeudor, rx.tabs.trigger("Codeudor", value="codeudor")),
                         rx.cond(
-                            PersonasState.current_persona_details["detalles_roles"]["Asesor"] | 
-                            PersonasState.current_persona_details["detalles_roles"]["Proveedor"], 
+                            PersonasState.detail_asesor | 
+                            PersonasState.detail_proveedor, 
                             rx.tabs.trigger("Profesional", value="otros")
                         ),
                         justify_content="start",
