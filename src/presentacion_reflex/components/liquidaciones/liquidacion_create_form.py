@@ -101,6 +101,7 @@ def form_field(
     return rx.vstack(
         rx.text(label, size="2", weight="medium", color="gray.700"),
         rx.input(
+            name=name,
             placeholder=placeholder,
             type=type,
             default_value=default_value,
