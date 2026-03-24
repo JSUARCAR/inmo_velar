@@ -104,14 +104,13 @@ class LiquidacionesState(DocumentosStateMixin):
 
         try:
             # Cargar opciones de filtros
-            yield LiquidacionesState.load_filter_options()
+            await self.load_filter_options()
             # Cargar liquidaciones
-            yield LiquidacionesState.load_liquidaciones()
+            await self.load_liquidaciones()
         finally:
             async with self:
                 self.is_loading = False
 
-    @rx.event(background=True)
     async def load_filter_options(self):
         """Carga opciones para dropdowns de filtros."""
         from datetime import datetime
@@ -194,7 +193,8 @@ class LiquidacionesState(DocumentosStateMixin):
             SELECT a.ID_ASESOR, p.NOMBRE_COMPLETO 
             FROM ASESORES a 
             JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA 
-            WHERE p.ESTADO_REGISTRO = 1 AND a.ESTADO = 1
+            WHERE (p.ESTADO_REGISTRO = 1 OR p.ESTADO_REGISTRO IS TRUE) 
+              AND (a.ESTADO = 1 OR a.ESTADO IS TRUE)
             ORDER BY p.NOMBRE_COMPLETO
         """
         try:
