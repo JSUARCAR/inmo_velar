@@ -551,22 +551,22 @@ class PDFState(rx.State):
         """
         from src.aplicacion.servicios.servicio_contratos import ServicioContratos
         from src.infraestructura.persistencia.database import db_manager
-        from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
-        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
-        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-        from src.infraestructura.persistencia.repositorio_renovacion_sqlite import RepositorioRenovacionSQLite
-        from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
-        from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
-        from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import RepositorioContratoMandatoPostgres
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import RepositorioContratoArrendamientoPostgres
+        from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+        from src.infraestructura.persistencia.repositorio_renovacion_postgres import RepositorioRenovacionPostgres
+        from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+        from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+        from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
 
         # Instanciar repositorios requeridos
-        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-        repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-        repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-        repo_ipc = RepositorioIPCSQLite(db_manager)
-        repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-        repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+        repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
+        repo_propiedad = RepositorioPropiedadPostgres(db_manager)
+        repo_renovacion = RepositorioRenovacionPostgres(db_manager)
+        repo_ipc = RepositorioIPCPostgres(db_manager)
+        repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+        repo_codeudor = RepositorioCodeudorPostgres(db_manager)
 
         servicio = ServicioContratos(
             db_manager,
@@ -648,22 +648,22 @@ class PDFState(rx.State):
         """
         from src.aplicacion.servicios.servicio_contratos import ServicioContratos
         from src.infraestructura.persistencia.database import db_manager
-        from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
-        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
-        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-        from src.infraestructura.persistencia.repositorio_renovacion_sqlite import RepositorioRenovacionSQLite
-        from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
-        from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
-        from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import RepositorioContratoMandatoPostgres
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import RepositorioContratoArrendamientoPostgres
+        from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+        from src.infraestructura.persistencia.repositorio_renovacion_postgres import RepositorioRenovacionPostgres
+        from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+        from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+        from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
 
         # Instanciar repositorios requeridos
-        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-        repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-        repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-        repo_ipc = RepositorioIPCSQLite(db_manager)
-        repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-        repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+        repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
+        repo_propiedad = RepositorioPropiedadPostgres(db_manager)
+        repo_renovacion = RepositorioRenovacionPostgres(db_manager)
+        repo_ipc = RepositorioIPCPostgres(db_manager)
+        repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+        repo_codeudor = RepositorioCodeudorPostgres(db_manager)
 
         servicio = ServicioContratos(
             db_manager,
@@ -783,19 +783,19 @@ class PDFState(rx.State):
         from src.infraestructura.persistencia.database import db_manager
         
         # Importar repositorios requeridos para ServicioFinanciero
-        from src.infraestructura.persistencia.repositorio_recaudo_sqlite import RepositorioRecaudoSQLite
+        from src.infraestructura.persistencia.repositorio_recaudo import RepositorioRecaudo
         from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import RepositorioLiquidacionSQLite
-        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
-        from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
+        from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import RepositorioContratoArrendamientoPostgres
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import RepositorioContratoMandatoPostgres
         from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
         
         # Instanciar dependencias
-        repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+        repo_recaudo = RepositorioRecaudo(db_manager)
         repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
-        repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+        repo_propiedad = RepositorioPropiedadPostgres(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
+        repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
         servicio_pdf = ServicioDocumentosPDF()
         
         # Instanciar servicio financiero con todas sus dependencias
@@ -971,7 +971,6 @@ class PDFState(rx.State):
         try:
             logger.debug("📊 Paso 1: Inicializando servicio de liquidaciones asesores...")
 
-            # Import correct repositories (matching liquidacion_asesores_state.py pattern)
             from src.aplicacion.servicios.servicio_liquidacion_asesores import (
                 ServicioLiquidacionAsesores,
             )
@@ -979,14 +978,14 @@ class PDFState(rx.State):
             from src.infraestructura.persistencia.repositorio_asesor_sqlite import (
                 RepositorioAsesorSQLite,
             )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
-                RepositorioContratoArrendamientoSQLite,
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
             )
             from src.infraestructura.persistencia.repositorio_persona_sqlite import (
                 RepositorioPersonaSQLite,
             )
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
             from src.infraestructura.repositorios.repositorio_bonificacion_asesor import (
                 RepositorioBonificacionAsesor,
@@ -1001,14 +1000,14 @@ class PDFState(rx.State):
                 RepositorioPagoAsesor,
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
-
+ 
             # Create only required repositories (matching pattern from liquidacion_asesores_state.py)
             repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
             repo_descuento = RepositorioDescuentoAsesor(db_manager)
             repo_pago = RepositorioPagoAsesor(db_manager)
             repo_bonificacion = RepositorioBonificacionAsesor(db_manager)
-            repo_contrato = RepositorioContratoArrendamientoSQLite(db_manager)
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_contrato = RepositorioContratoArrendamientoPostgres(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             repo_asesor = RepositorioAsesorSQLite(db_manager)
             repo_persona = RepositorioPersonaSQLite(db_manager)
             servicio_pdf = ServicioDocumentosPDF()
@@ -1088,11 +1087,11 @@ class PDFState(rx.State):
             logger.debug("📊 Paso 1: Obteniendo datos del recaudo...")
 
             from src.infraestructura.persistencia.database import db_manager
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
-            )
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
+)
 
-            RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
 
             # Fetch recaudo with all related data
             placeholder = db_manager.get_placeholder()  # Get correct placeholder for DB type
@@ -1304,19 +1303,19 @@ class PDFState(rx.State):
         from src.infraestructura.persistencia.database import db_manager
         
         # Importar repositorios requeridos para ServicioFinanciero
-        from src.infraestructura.persistencia.repositorio_recaudo_sqlite import RepositorioRecaudoSQLite
+        from src.infraestructura.persistencia.repositorio_recaudo import RepositorioRecaudo
         from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import RepositorioLiquidacionSQLite
-        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
-        from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
+        from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import RepositorioContratoArrendamientoPostgres
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import RepositorioContratoMandatoPostgres
         from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
         
         # Instanciar dependencias
-        repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+        repo_recaudo = RepositorioRecaudo(db_manager)
         repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
-        repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
+        repo_propiedad = RepositorioPropiedadPostgres(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
+        repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
         servicio_pdf = ServicioDocumentosPDF()
 
         # Instanciar servicio financiero con todas sus dependencias
