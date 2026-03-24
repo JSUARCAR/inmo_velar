@@ -188,9 +188,8 @@ class LiquidacionesState(DocumentosStateMixin):
         # Cargar asesores
         await self.load_asesores_options()
 
-    @rx.event(background=True)
     async def load_asesores_options(self):
-        """Carga los asesores para el select de filtros."""
+        """Carga los asesores para el select de filtros de forma segura en fondo."""
         query = """
             SELECT a.ID_ASESOR, p.NOMBRE_COMPLETO 
             FROM ASESORES a 
@@ -199,12 +198,22 @@ class LiquidacionesState(DocumentosStateMixin):
             ORDER BY p.NOMBRE_COMPLETO
         """
         try:
+            # Obtener datos de BD (sin bloquear el hilo principal)
             with db_manager.obtener_conexion() as conn:
                 cursor = db_manager.get_dict_cursor(conn)
                 cursor.execute(query)
                 rows = cursor.fetchall()
-                async with self:
-                    self.asesores_select_options = ["Todos"] + [f"{r['NOMBRE_COMPLETO']} ({r['ID_ASESOR']})" for r in rows]
+            
+            # Formatear fuera del lock para eficiencia
+            opciones = ["Todos"] + [
+                f"{r['NOMBRE_COMPLETO']} ({r['ID_ASESOR']})" 
+                for r in rows
+            ]
+
+            # Actualizar estado de forma segura
+            async with self:
+                self.asesores_select_options = opciones
+
         except Exception as e:
             print(f"Error cargando asesores: {e}")
 
