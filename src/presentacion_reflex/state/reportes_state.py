@@ -441,17 +441,86 @@ class ReportesState(rx.State):
                             
                         return clean_data, final_headers_keys, total
                     return [], [], 0
-                    
                 except Exception as ex:
                     print(f"Error executing report role query: {ex}")
                     return [], [], 0
+
+        elif report_id == "liquidaciones":
+            # Reporte especializado con inyección de columnas (Direccion, Propietario, Asesor)
+            # Posicionadas inmediatamente después de ID_CONTRATO_M
+            query = """
+                SELECT 
+                    l.ID_LIQUIDACION,
+                    l.ID_CONTRATO_M,
+                    p.DIRECCION_PROPIEDAD AS "Direccion_Predio",
+                    per_prop.NOMBRE_COMPLETO AS "Nombre_Propietario",
+                    per_ase.NOMBRE_COMPLETO AS "Nombre_Asesor",
+                    l.PERIODO,
+                    l.FECHA_GENERACION,
+                    l.CANON_BRUTO,
+                    l.OTROS_INGRESOS,
+                    l.TOTAL_INGRESOS,
+                    l.COMISION_PORCENTAJE,
+                    l.COMISION_MONTO,
+                    l.IVA_COMISION,
+                    l.IMPUESTO_4X1000,
+                    l.GASTOS_ADMINISTRACION,
+                    l.GASTOS_SERVICIOS,
+                    l.GASTOS_REPARACIONES,
+                    l.PAGO_PREDIAL,
+                    l.OTROS_EGRESOS,
+                    l.TOTAL_EGRESOS,
+                    l.NETO_A_PAGAR,
+                    l.ESTADO_LIQUIDACION,
+                    l.FECHA_PAGO,
+                    l.METODO_PAGO,
+                    l.REFERENCIA_PAGO,
+                    l.OBSERVACIONES,
+                    l.MOTIVO_CANCELACION,
+                    l.APROBADA_POR,
+                    l.APROBADA_EN,
+                    l.PAGADA_POR,
+                    l.PAGADA_EN,
+                    l.CREATED_AT,
+                    l.CREATED_BY,
+                    l.UPDATED_AT,
+                    l.UPDATED_BY
+                FROM liquidaciones l
+                LEFT JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+                LEFT JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+                LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
+                LEFT JOIN PERSONAS per_prop ON prop.ID_PERSONA = per_prop.ID_PERSONA
+                LEFT JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR
+                LEFT JOIN PERSONAS per_ase ON a.ID_PERSONA = per_ase.ID_PERSONA
+            """
+            
+            with db_manager.obtener_conexion() as conn:
+                cursor = db_manager.get_dict_cursor(conn)
+                try:
+                    cursor.execute(query)
+                    rows = cursor.fetchall()
+                    
+                    if self.filter_busqueda_tabla:
+                        t = self.filter_busqueda_tabla.lower()
+                        rows = [r for r in rows if any(t in str(v).lower() for v in r.values())]
+
+                    total = len(rows)
+                    paginated = rows[offset : offset + limit]
+                    
+                    if paginated:
+                        headers = list(paginated[0].keys())
+                        clean_data = [{k: self._sanitize_value(v) for k,v in row.items()} for row in paginated]
+                        return clean_data, headers, total
+                except Exception as ex:
+                    print(f"Error querying specialized liquidaciones: {ex}")
+                    return [], [], 0
+            return [], [], 0
 
         # Mapeo de reportes a tablas para lógica genérica "SELECT *"
         table_map = {
             "contratos_mandato": "CONTRATOS_MANDATOS",
             "contratos_arrendamiento": "CONTRATOS_ARRENDAMIENTOS",
             "proveedores": "PROVEEDORES",
-            "liquidaciones": "liquidaciones", # user indicated this is the populated table
             "liquidacion_asesores": "LIQUIDACIONES_ASESORES",
             "desocupaciones": "DESOCUPACIONES",
             "incidentes": "INCIDENTES",
