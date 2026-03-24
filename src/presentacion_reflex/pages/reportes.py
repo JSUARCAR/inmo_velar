@@ -100,6 +100,17 @@ def reports_content():
                     size="2",
                     width="150px",
                 ),
+                rx.cond(
+                    ReportesState.selected_report_id == "liquidaciones",
+                    rx.select(
+                        ReportesState.asesor_options,
+                        placeholder="Asesor",
+                        on_change=ReportesState.set_filter_asesor,
+                        value=ReportesState.filter_asesor_id,
+                        size="2",
+                        width="200px",
+                    ),
+                ),
                 rx.input(
                     placeholder="Filtrar en tabla...",
                     icon="search",

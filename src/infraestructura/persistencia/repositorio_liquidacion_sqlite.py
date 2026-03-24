@@ -665,6 +665,7 @@ class RepositorioLiquidacionSQLite:
         estado: Optional[str] = None,
         periodo: Optional[str] = None,
         busqueda: Optional[str] = None,
+        id_asesor: Optional[int] = None,
     ):
         """
         Lista liquidaciones agrupadas por propietario con totales consolidados.
@@ -727,6 +728,10 @@ class RepositorioLiquidacionSQLite:
                 
                 term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
                 query_params.extend([term_norm] * len(cols))
+
+            if id_asesor:
+                conditions.append(f"cm.ID_ASESOR = {placeholder}")
+                query_params.append(id_asesor)
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
             group_by = (
@@ -1152,6 +1157,7 @@ class RepositorioLiquidacionSQLite:
         estado: Optional[str] = None,
         periodo: Optional[str] = None,
         busqueda: Optional[str] = None,
+        id_asesor: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """Lista liquidaciones con paginación y filtros complejos."""
         conn = self.db.obtener_conexion()
@@ -1184,6 +1190,10 @@ class RepositorioLiquidacionSQLite:
             
             term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
             query_params.extend([term_norm] * len(cols))
+
+        if id_asesor:
+            conditions.append(f"cm.ID_ASESOR = {placeholder}")
+            query_params.append(id_asesor)
 
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
@@ -1220,6 +1230,7 @@ class RepositorioLiquidacionSQLite:
         estado: Optional[str] = None,
         periodo: Optional[str] = None,
         busqueda: Optional[str] = None,
+        id_asesor: Optional[int] = None,
     ) -> int:
         """Cuenta total de liquidaciones filtradas."""
         conn = self.db.obtener_conexion()
@@ -1252,6 +1263,10 @@ class RepositorioLiquidacionSQLite:
             
             term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
             query_params.extend([term_norm] * len(cols))
+
+        if id_asesor:
+            conditions.append(f"cm.ID_ASESOR = {placeholder}")
+            query_params.append(id_asesor)
 
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
         query = f"SELECT COUNT(*) as TOTAL {base_from} {where_clause}"

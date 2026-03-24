@@ -68,6 +68,7 @@ class ReportesState(rx.State):
     filter_fecha_fin: str = ""
     filter_estado: str = "Todos"
     filter_rol: str = "Todos"
+    filter_asesor_id: str = "Todos"
     filter_busqueda_tabla: str = ""  # Busqueda especifica en tabla
 
     # Paginación y Datos
@@ -83,6 +84,7 @@ class ReportesState(rx.State):
     # Opciones para dropdowns de filtros
     estado_options: List[str] = ["Todos", "Activo", "Inactivo"]
     rol_options: List[str] = ["Todos", "Propietario", "Arrendatario", "Codeudor", "Asesor"]
+    asesor_options: List[str] = ["Todos"]
 
     @rx.var
     def active_report(self) -> Dict[str, Any]:
@@ -151,6 +153,7 @@ class ReportesState(rx.State):
         self.filter_fecha_fin = ""
         self.filter_estado = "Todos"
         self.filter_rol = "Todos"
+        self.filter_asesor_id = "Todos"
         self.preview_data = []
         self.preview_headers = []
         return ReportesState.load_preview_data()
@@ -168,6 +171,11 @@ class ReportesState(rx.State):
 
     def set_filter_rol(self, rol: str):
         self.filter_rol = rol
+        self.current_page = 1
+        return ReportesState.load_preview_data()
+
+    def set_filter_asesor(self, asesor_id: str):
+        self.filter_asesor_id = asesor_id
         self.current_page = 1
         return ReportesState.load_preview_data()
 
@@ -189,6 +197,10 @@ class ReportesState(rx.State):
                 return
             self.is_loading = True
             self.error_message = ""
+            
+            # Cargar asesores si no están cargados
+            if len(self.asesor_options) <= 1:
+                await self._load_asesores()
 
         try:
             # Seleccionar estrategia de carga según ID
@@ -211,6 +223,26 @@ class ReportesState(rx.State):
         finally:
             async with self:
                 self.is_loading = False
+
+    async def _load_asesores(self):
+        """Carga la lista de asesores para los filtros."""
+        query = """
+            SELECT a.ID_ASESOR, p.NOMBRE_COMPLETO 
+            FROM ASESORES a 
+            JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA 
+            WHERE p.ESTADO_REGISTRO = 1
+            ORDER BY p.NOMBRE_COMPLETO
+        """
+        try:
+            with db_manager.obtener_conexion() as conn:
+                cursor = db_manager.get_dict_cursor(conn)
+                cursor.execute(query)
+                rows = cursor.fetchall()
+                options = ["Todos"] + [f"{r['NOMBRE_COMPLETO']} ({r['ID_ASESOR']})" for r in rows]
+                async with self:
+                    self.asesor_options = options
+        except Exception as e:
+            print(f"Error cargando asesores en reportes: {e}")
 
     async def download_csv(self):
         """Genera y descarga todo el dataset en CSV UTF-8 con BOM."""
@@ -494,10 +526,26 @@ class ReportesState(rx.State):
                 LEFT JOIN PERSONAS per_ase ON a.ID_PERSONA = per_ase.ID_PERSONA
             """
             
+            conditions = []
+            params = []
+            placeholder = db_manager.get_placeholder()
+
+            if self.filter_asesor_id != "Todos":
+                try:
+                    # Extraer ID del formato "Nombre (ID)"
+                    id_asesor = int(self.filter_asesor_id.split('(')[-1].replace(')', ''))
+                    conditions.append(f"cm.ID_ASESOR = {placeholder}")
+                    params.append(id_asesor)
+                except:
+                    pass
+
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+
             with db_manager.obtener_conexion() as conn:
                 cursor = db_manager.get_dict_cursor(conn)
                 try:
-                    cursor.execute(query)
+                    cursor.execute(query, tuple(params))
                     rows = cursor.fetchall()
                     
                     if self.filter_busqueda_tabla:

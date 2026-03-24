@@ -45,6 +45,7 @@ class LiquidacionesState(DocumentosStateMixin):
     search_text: str = ""
     filter_periodo: str = ""  # YYYY-MM format
     filter_estado: str = "Todos"
+    filter_asesor_id: str = "Todos"
     filter_propiedad_id: str = ""
     filter_propietario_id: str = ""
 
@@ -58,6 +59,7 @@ class LiquidacionesState(DocumentosStateMixin):
     periodos_select_options: List[str] = []
     propiedades_select_options: List[str] = []
     propietarios_select_options: List[str] = []  # Strings "Nombre - Documento"
+    asesores_select_options: List[str] = ["Todos"]
 
     # Combobox Propiedad (formulario de creación de liquidación)
     propiedad_liq_search: str = ""
@@ -182,6 +184,27 @@ class LiquidacionesState(DocumentosStateMixin):
             self.propiedades_select_options = propiedades_select
             self.propietarios_options = propietarios
             self.propietarios_select_options = propietarios_select
+        
+        # Cargar asesores
+        LiquidacionesState.load_asesores_options()
+
+    def load_asesores_options(self):
+        """Carga los asesores para el select de filtros."""
+        query = """
+            SELECT a.ID_ASESOR, p.NOMBRE_COMPLETO 
+            FROM ASESORES a 
+            JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA 
+            WHERE p.ESTADO_REGISTRO = 1
+            ORDER BY p.NOMBRE_COMPLETO
+        """
+        try:
+            with db_manager.obtener_conexion() as conn:
+                cursor = db_manager.get_dict_cursor(conn)
+                cursor.execute(query)
+                rows = cursor.fetchall()
+                self.asesores_select_options = ["Todos"] + [f"{r['NOMBRE_COMPLETO']} ({r['ID_ASESOR']})" for r in rows]
+        except Exception as e:
+            print(f"Error cargando asesores: {e}")
 
     async def load_liquidaciones(self):
         """Carga liquidaciones con filtros y paginación (modo individual o agrupado)."""
@@ -231,6 +254,14 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             estado = self.filter_estado if self.filter_estado != "Todos" else None
             busqueda = self.search_text.strip() if self.search_text else None
+            
+            # Resolver ID de asesor si no es "Todos"
+            id_asesor_filt = None
+            if self.filter_asesor_id != "Todos":
+                try:
+                    id_asesor_filt = int(self.filter_asesor_id.split('(')[-1].replace(')', ''))
+                except:
+                    pass
 
             # Llamar al servicio según el modo de vista
             if self.vista_agrupada:
@@ -241,6 +272,7 @@ class LiquidacionesState(DocumentosStateMixin):
                     periodo=periodo,
                     estado=estado,
                     busqueda=busqueda,
+                    id_asesor=id_asesor_filt,
                 )
             else:
                 # Vista individual por propiedad
@@ -250,6 +282,7 @@ class LiquidacionesState(DocumentosStateMixin):
                     periodo=periodo,
                     estado=estado,
                     busqueda=busqueda,
+                    id_asesor=id_asesor_filt,
                 )
 
             async with self:
@@ -318,6 +351,12 @@ class LiquidacionesState(DocumentosStateMixin):
     def set_filter_estado(self, value: str):
         """Cambia filtro de estado."""
         self.filter_estado = value
+        self.current_page = 1
+        return LiquidacionesState.load_liquidaciones
+
+    def set_filter_asesor(self, value: str):
+        """Cambia filtro de asesor comercial."""
+        self.filter_asesor_id = value
         self.current_page = 1
         return LiquidacionesState.load_liquidaciones
 
