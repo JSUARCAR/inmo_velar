@@ -230,7 +230,7 @@ class ReportesState(rx.State):
             SELECT a.ID_ASESOR, p.NOMBRE_COMPLETO 
             FROM ASESORES a 
             JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA 
-            WHERE p.ESTADO_REGISTRO = 1
+            WHERE p.ESTADO_REGISTRO IS TRUE
             ORDER BY p.NOMBRE_COMPLETO
         """
         try:

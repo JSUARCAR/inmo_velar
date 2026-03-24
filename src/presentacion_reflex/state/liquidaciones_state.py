@@ -193,8 +193,7 @@ class LiquidacionesState(DocumentosStateMixin):
             SELECT a.ID_ASESOR, p.NOMBRE_COMPLETO 
             FROM ASESORES a 
             JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA 
-            WHERE (p.ESTADO_REGISTRO = 1 OR p.ESTADO_REGISTRO IS TRUE) 
-              AND (a.ESTADO = 1 OR a.ESTADO IS TRUE)
+            WHERE p.ESTADO_REGISTRO IS TRUE AND a.ESTADO IS TRUE
             ORDER BY p.NOMBRE_COMPLETO
         """
         try:
