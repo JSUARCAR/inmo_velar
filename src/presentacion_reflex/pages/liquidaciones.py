@@ -95,6 +95,17 @@ def liquidaciones_toolbar() -> rx.Component:
             on_change=LiquidacionesState.set_filter_estado,
             width=["100%", "100%", "150px"],
         ),
+        # Filtro Asesor
+        neuro_select_root(
+            rx.foreach(
+                LiquidacionesState.asesores_select_options,
+                lambda opt: rx.select.item(opt, value=opt),
+            ),
+            placeholder="Asesor",
+            value=LiquidacionesState.filter_asesor_id,
+            on_change=LiquidacionesState.set_filter_asesor,
+            width=["100%", "100%", "200px"],
+        ),
         # Grupo de acciones (sin rx.spacer)
         rx.flex(
             # Botón Nueva Liquidación Individual o Masiva
