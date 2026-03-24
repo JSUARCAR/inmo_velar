@@ -223,8 +223,8 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
             )
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
@@ -240,7 +240,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -542,8 +542,8 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
             )
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
@@ -559,7 +559,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -633,8 +633,8 @@ class LiquidacionesState(DocumentosStateMixin):
             self.cargar_documentos()
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
             )
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
@@ -650,7 +650,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -725,8 +725,8 @@ class LiquidacionesState(DocumentosStateMixin):
 
             if liquidaciones and len(liquidaciones) > 0:
                 # Obtener detalles de TODAS las liquidaciones y consolidar
-                from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                    RepositorioRecaudoSQLite,
+                from src.infraestructura.persistencia.repositorio_recaudo import (
+                    RepositorioRecaudo,
                 )
                 from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                     RepositorioLiquidacionSQLite,
@@ -742,7 +742,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 )
                 from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-                repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+                repo_recaudo = RepositorioRecaudo(db_manager)
                 repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
                 repo_propiedad = RepositorioPropiedadSQLite(db_manager)
                 repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -922,14 +922,14 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import RepositorioRecaudoSQLite
+            from src.infraestructura.persistencia.repositorio_recaudo import RepositorioRecaudo
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import RepositorioLiquidacionSQLite
             from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
             from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -1022,8 +1022,8 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
             )
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
@@ -1039,7 +1039,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -1084,8 +1084,8 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
             )
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
@@ -1101,7 +1101,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -1154,8 +1154,8 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
             )
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
@@ -1171,7 +1171,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -1251,8 +1251,8 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
             )
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
@@ -1268,7 +1268,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -1311,8 +1311,8 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
             )
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
@@ -1328,7 +1328,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -1378,8 +1378,8 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
             )
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
@@ -1395,7 +1395,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -1453,8 +1453,8 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
             )
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
@@ -1470,7 +1470,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
@@ -1535,8 +1535,8 @@ class LiquidacionesState(DocumentosStateMixin):
                 yield rx.toast.warning("El motivo es muy corto", position="bottom-right")
                 return
 
-            from src.infraestructura.persistencia.repositorio_recaudo_sqlite import (
-                RepositorioRecaudoSQLite,
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
             )
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
@@ -1552,7 +1552,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
-            repo_recaudo = RepositorioRecaudoSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
             repo_propiedad = RepositorioPropiedadSQLite(db_manager)
             repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)

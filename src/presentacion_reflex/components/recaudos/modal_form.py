@@ -121,16 +121,24 @@ def modal_recaudo() -> rx.Component:
                     # Contrato (solo en creación)
                     rx.cond(
                         ~RecaudosState.is_editing,
-                        searchable_select(
-                            "Contrato *",
-                            "Seleccione un contrato...",
-                            RecaudosState.contrato_selected_label,
-                            RecaudosState.contrato_search,
-                            RecaudosState.contrato_menu_open,
-                            RecaudosState.filtered_contratos_options,
-                            RecaudosState.set_contrato_search,
-                            RecaudosState.toggle_contrato_menu,
-                            RecaudosState.select_contrato,
+                        rx.fragment(
+                            searchable_select(
+                                "Contrato *",
+                                "Seleccione un contrato...",
+                                RecaudosState.contrato_selected_label,
+                                RecaudosState.contrato_search,
+                                RecaudosState.contrato_menu_open,
+                                RecaudosState.filtered_contratos_options,
+                                RecaudosState.set_contrato_search,
+                                RecaudosState.toggle_contrato_menu,
+                                RecaudosState.select_contrato,
+                            ),
+                            # ID Oculto para rx.form (Fix KeyError: 'id_contrato_a')
+                            rx.input(
+                                type="hidden",
+                                name="id_contrato_a",
+                                value=RecaudosState.form_data["id_contrato_a"],
+                            ),
                         ),
                     ),
                     # Fecha de Pago

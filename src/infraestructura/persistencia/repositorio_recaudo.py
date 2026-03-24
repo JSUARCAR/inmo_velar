@@ -1,6 +1,7 @@
 """
-Repositorio SQLite para Recaudo.
+Repositorio para Recaudo.
 Implementa persistencia para pagos recibidos de inquilinos.
+Compatible con PostgreSQL (Producción) y SQLite (Desarrollo).
 """
 
 from datetime import datetime
@@ -11,8 +12,8 @@ from src.dominio.entidades.recaudo_concepto import RecaudoConcepto
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
-class RepositorioRecaudoSQLite:
-    """Repositorio SQLite para la entidad Recaudo."""
+class RepositorioRecaudo:
+    """Repositorio para la entidad Recaudo con soporte Dual."""
 
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
@@ -22,7 +23,7 @@ class RepositorioRecaudoSQLite:
         if self.db.use_postgresql:
             return
 
-        """Crea las tablas RECAUDOS y RECAUDO_CONCEPTOS si no existen"""
+        """Crea las tablas RECAUDOS y RECAUDO_CONCEPTOS si no existen (SQLite)"""
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
 
@@ -77,21 +78,23 @@ class RepositorioRecaudoSQLite:
         if not row_dict:
             return None
 
+        # Handle case-insensitive keys from different DBs
+        def get_val(key):
+            return row_dict.get(key.lower()) or row_dict.get(key.upper())
+
         return Recaudo(
-            id_recaudo=(row_dict.get("id_recaudo") or row_dict.get("ID_RECAUDO")),
-            id_contrato_a=(row_dict.get("id_contrato_a") or row_dict.get("ID_CONTRATO_A")),
-            fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
-            valor_total=(row_dict.get("valor_total") or row_dict.get("VALOR_TOTAL")),
-            metodo_pago=(row_dict.get("metodo_pago") or row_dict.get("METODO_PAGO")),
-            referencia_bancaria=(
-                row_dict.get("referencia_bancaria") or row_dict.get("REFERENCIA_BANCARIA")
-            ),
-            estado_recaudo=(row_dict.get("estado_recaudo") or row_dict.get("ESTADO_RECAUDO")),
-            observaciones=(row_dict.get("observaciones") or row_dict.get("OBSERVACIONES")),
-            created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
-            created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
-            updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),
-            updated_by=(row_dict.get("updated_by") or row_dict.get("UPDATED_BY")),
+            id_recaudo=get_val("ID_RECAUDO"),
+            id_contrato_a=get_val("ID_CONTRATO_A"),
+            fecha_pago=get_val("FECHA_PAGO"),
+            valor_total=get_val("VALOR_TOTAL"),
+            metodo_pago=get_val("METODO_PAGO"),
+            referencia_bancaria=get_val("REFERENCIA_BANCARIA"),
+            estado_recaudo=get_val("ESTADO_RECAUDO"),
+            observaciones=get_val("OBSERVACIONES"),
+            created_at=get_val("CREATED_AT"),
+            created_by=get_val("CREATED_BY"),
+            updated_at=get_val("UPDATED_AT"),
+            updated_by=get_val("UPDATED_BY"),
         )
 
     def _concepto_row_to_entity(self, row) -> RecaudoConcepto:
@@ -100,15 +103,16 @@ class RepositorioRecaudoSQLite:
         if not row_dict:
             return None
 
+        def get_val(key):
+            return row_dict.get(key.lower()) or row_dict.get(key.upper())
+
         return RecaudoConcepto(
-            id_recaudo_concepto=(
-                row_dict.get("id_recaudo_concepto") or row_dict.get("ID_RECAUDO_CONCEPTO")
-            ),
-            id_recaudo=(row_dict.get("id_recaudo") or row_dict.get("ID_RECAUDO")),
-            tipo_concepto=(row_dict.get("tipo_concepto") or row_dict.get("TIPO_CONCEPTO")),
-            periodo=(row_dict.get("periodo") or row_dict.get("PERIODO")),
-            valor=(row_dict.get("valor") or row_dict.get("VALOR")),
-            created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
+            id_recaudo_concepto=get_val("ID_RECAUDO_CONCEPTO"),
+            id_recaudo=get_val("ID_RECAUDO"),
+            tipo_concepto=get_val("TIPO_CONCEPTO"),
+            periodo=get_val("PERIODO"),
+            valor=get_val("VALOR"),
+            created_at=get_val("CREATED_AT"),
         )
 
     def crear(
@@ -118,7 +122,6 @@ class RepositorioRecaudoSQLite:
         Crea un nuevo recaudo con sus conceptos asociados.
         Valida que la suma de conceptos = valor_total.
         """
-        # Validar que la suma de conceptos sea igual al valor total
         suma_conceptos = sum(c.valor for c in conceptos)
         if suma_conceptos != recaudo.valor_total:
             raise ValueError(
@@ -129,15 +132,19 @@ class RepositorioRecaudoSQLite:
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
 
-        # Insertar recaudo
-        cursor.execute(
-            f"""
+        # Insertar recaudo con RETURNING para PostgreSQL elite compatibility
+        sql_recaudo = f"""
             INSERT INTO RECAUDOS (
                 ID_CONTRATO_A, FECHA_PAGO, VALOR_TOTAL, METODO_PAGO,
                 REFERENCIA_BANCARIA, ESTADO_RECAUDO, OBSERVACIONES,
                 CREATED_AT, CREATED_BY
             ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-        """,
+            RETURNING ID_RECAUDO
+        """
+        
+        # En PostgreSQL RealDictCursor/UpperCaseWrapper retornan dict, en SQLite fetchone retorna Row
+        cursor.execute(
+            sql_recaudo,
             (
                 recaudo.id_contrato_a,
                 recaudo.fecha_pago,
@@ -150,8 +157,13 @@ class RepositorioRecaudoSQLite:
                 usuario_sistema,
             ),
         )
-
-        recaudo.id_recaudo = self.db.get_last_insert_id(cursor, "RECAUDOS", "ID_RECAUDO")
+        
+        res = cursor.fetchone()
+        if res:
+            if hasattr(res, "keys"): # Wrapper dict
+                recaudo.id_recaudo = res.get("ID_RECAUDO") or res.get("id_recaudo")
+            else: # Row or Tuple
+                recaudo.id_recaudo = res[0]
 
         # Insertar conceptos
         for concepto in conceptos:
@@ -211,44 +223,6 @@ class RepositorioRecaudoSQLite:
 
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
-    def listar_todos(self) -> List[Recaudo]:
-        """
-        Lista todos los recaudos del sistema con información del contrato.
-
-        Returns:
-            Lista de todos los recaudos ordenados por fecha descendente
-        """
-        query = """
-        SELECT 
-            r.*,
-            ca.ID_PROPIEDAD,
-            p.DIRECCION_PROPIEDAD as direccion_propiedad
-        FROM RECAUDOS r
-        INNER JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
-        INNER JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-        ORDER BY r.FECHA_PAGO DESC, r.ID_RECAUDO DESC
-        """
-
-        conn = self.db.obtener_conexion()
-        cursor = self.db.get_dict_cursor(conn)
-        self.db.get_placeholder()
-        cursor.execute(query)
-        rows = cursor.fetchall()
-
-        recaudos = []
-        for row in rows:
-            recaudo = self._row_to_entity(row)
-            if recaudo:
-                # Agregar información adicional del contrato/propiedad
-                # Usar helper _get_row_dict para seguridad
-                row_dict = self._get_row_dict(row)
-                recaudo.direccion_propiedad = row_dict.get("direccion_propiedad") or row_dict.get(
-                    "direccion_propiedad"
-                )
-                recaudos.append(recaudo)
-
-        return recaudos
-
     def cambiar_estado(self, id_recaudo: int, nuevo_estado: str, usuario_sistema: str) -> None:
         """Cambia el estado de un recaudo (Pendiente → Aplicado o Reversado)"""
         if nuevo_estado not in ["Pendiente", "Aplicado", "Reversado"]:
@@ -272,24 +246,18 @@ class RepositorioRecaudoSQLite:
         conn.commit()
 
     def eliminar(self, id_recaudo: int, usuario_sistema: str) -> None:
-        """Elimina un recaudo y sus conceptos asociados (soft delete o hard delete)."""
+        """Elimina un recaudo y sus conceptos asociados."""
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
 
-        # Primero eliminar conceptos asociados
         cursor.execute(
-            f"""
-            DELETE FROM RECAUDO_CONCEPTOS WHERE ID_RECAUDO = {placeholder}
-        """,
+            f"DELETE FROM RECAUDO_CONCEPTOS WHERE ID_RECAUDO = {placeholder}",
             (id_recaudo,),
         )
 
-        # Luego eliminar el recaudo
         cursor.execute(
-            f"""
-            DELETE FROM RECAUDOS WHERE ID_RECAUDO = {placeholder}
-        """,
+            f"DELETE FROM RECAUDOS WHERE ID_RECAUDO = {placeholder}",
             (id_recaudo,),
         )
 
@@ -326,73 +294,6 @@ class RepositorioRecaudoSQLite:
         )
 
         conn.commit()
-
-    def listar_paginado(
-        self,
-        limit: int,
-        offset: int,
-        estado: Optional[str] = None,
-        fecha_desde: Optional[str] = None,
-        fecha_hasta: Optional[str] = None,
-        busqueda: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
-        """Lista recaudos con paginación y filtros complejos."""
-        conn = self.db.obtener_conexion()
-        cursor = self.db.get_dict_cursor(conn)
-        placeholder = self.db.get_placeholder()
-
-        base_from = """
-            FROM RECAUDOS r
-            JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
-            JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-        """
-
-        conditions = []
-        query_params = []
-
-        if estado and estado != "Todos":
-            conditions.append(f"r.ESTADO_RECAUDO = {placeholder}")
-            query_params.append(estado)
-
-        if fecha_desde:
-            conditions.append(f"r.FECHA_PAGO >= {placeholder}")
-            query_params.append(fecha_desde)
-
-        if fecha_hasta:
-            conditions.append(f"r.FECHA_PAGO <= {placeholder}")
-            query_params.append(fecha_hasta)
-
-        if busqueda:
-            cols = ["r.REFERENCIA_BANCARIA", "p.DIRECCION_PROPIEDAD", "CAST(r.ID_RECAUDO AS TEXT)"]
-            cond = self.db.get_search_condition(cols)
-            conditions.append(f"({cond})")
-            
-            term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
-            query_params.extend([term_norm] * len(cols))
-
-        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
-
-        query = f"""
-            SELECT 
-                r.ID_RECAUDO, r.FECHA_PAGO, r.ESTADO_RECAUDO, r.VALOR_TOTAL, r.METODO_PAGO,
-                p.DIRECCION_PROPIEDAD
-            {base_from} {where_clause}
-            ORDER BY r.FECHA_PAGO DESC, r.ID_RECAUDO DESC
-            LIMIT {placeholder} OFFSET {placeholder}
-        """
-
-        cursor.execute(query, query_params + [limit, offset])
-        return [
-            {
-                "id": row["ID_RECAUDO"],
-                "fecha": row["FECHA_PAGO"],
-                "estado": row["ESTADO_RECAUDO"],
-                "valor": row["VALOR_TOTAL"],
-                "metodo": row["METODO_PAGO"],
-                "contrato": row["DIRECCION_PROPIEDAD"]
-            }
-            for row in cursor.fetchall()
-        ]
 
     def contar_con_filtros(
         self,
@@ -442,7 +343,7 @@ class RepositorioRecaudoSQLite:
         row = cursor.fetchone()
         if row:
             if hasattr(row, "keys"):
-                return row["total"]
+                return row.get("total") or row.get("TOTAL") or 0
             return row[0]
         return 0
 
@@ -453,13 +354,13 @@ class RepositorioRecaudoSQLite:
         placeholder = self.db.get_placeholder()
 
         query = f"""
-            SELECT DISTINCT ID_CONTRATO_A 
+            SELECT DISTINCT r.ID_CONTRATO_A 
             FROM RECAUDO_CONCEPTOS rc
             JOIN RECAUDOS r ON rc.ID_RECAUDO = r.ID_RECAUDO
             WHERE rc.PERIODO = {placeholder}
         """
         cursor.execute(query, (periodo,))
-        return [row["ID_CONTRATO_A"] for row in cursor.fetchall()]
+        return [row["ID_CONTRATO_A"] or row["id_contrato_a"] for row in cursor.fetchall()]
 
     def crear_masivo(self, recaudos_y_conceptos: List[tuple[Recaudo, List[RecaudoConcepto]]], usuario_sistema: str) -> int:
         """Crea múltiples recaudos y sus conceptos en una sola transacción."""
@@ -474,20 +375,21 @@ class RepositorioRecaudoSQLite:
 
         try:
             for recaudo, conceptos in recaudos_y_conceptos:
-                # Validar suma de conceptos
                 suma_conceptos = sum(c.valor for c in conceptos)
                 if suma_conceptos != recaudo.valor_total:
                     continue
 
-                # Insertar recaudo
-                cursor.execute(
-                    f"""
+                sql_recaudo = f"""
                     INSERT INTO RECAUDOS (
                         ID_CONTRATO_A, FECHA_PAGO, VALOR_TOTAL, METODO_PAGO,
                         REFERENCIA_BANCARIA, ESTADO_RECAUDO, OBSERVACIONES,
                         CREATED_AT, CREATED_BY
                     ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-                    """,
+                    RETURNING ID_RECAUDO
+                """
+                
+                cursor.execute(
+                    sql_recaudo,
                     (
                         recaudo.id_contrato_a,
                         recaudo.fecha_pago,
@@ -500,8 +402,16 @@ class RepositorioRecaudoSQLite:
                         usuario_sistema,
                     ),
                 )
-
-                id_recaudo = self.db.get_last_insert_id(cursor, "RECAUDOS", "ID_RECAUDO")
+                
+                res = cursor.fetchone()
+                if res:
+                    if hasattr(res, "keys"): # Wrapper dict
+                        id_recaudo = res.get("ID_RECAUDO") or res.get("id_recaudo")
+                    else: # Row or Tuple
+                        id_recaudo = res[0]
+                else:
+                    # Fallback for old SQLite without RETURNING if needed, but we assume modern or DB Manager handling
+                    id_recaudo = self.db.get_last_insert_id(cursor, "RECAUDOS", "ID_RECAUDO")
 
                 # Insertar conceptos
                 for concepto in conceptos:

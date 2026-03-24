@@ -6,7 +6,7 @@ import reflex as rx
 from src.dominio.entidades.recaudo import Recaudo
 from src.dominio.entidades.recaudo_concepto import RecaudoConcepto
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.persistencia.repositorio_recaudo_sqlite import RepositorioRecaudoSQLite
+from src.infraestructura.persistencia.repositorio_recaudo import RepositorioRecaudo
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 from src.presentacion_reflex.utils.formatters import format_currency, format_number
 
@@ -350,7 +350,7 @@ class RecaudosState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            repo = RepositorioRecaudoSQLite(db_manager)
+            repo = RepositorioRecaudo(db_manager)
             recaudo = repo.obtener_por_id(id_recaudo)
 
             if not recaudo:
@@ -419,7 +419,7 @@ class RecaudosState(DocumentosStateMixin):
             self.cargar_documentos()
 
         try:
-            repo = RepositorioRecaudoSQLite(db_manager)
+            repo = RepositorioRecaudo(db_manager)
             recaudo = repo.obtener_por_id(id_recaudo)
             conceptos = repo.obtener_conceptos_por_recaudo(id_recaudo)
 
@@ -492,12 +492,18 @@ class RecaudosState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            repo = RepositorioRecaudoSQLite(db_manager)
+            repo = RepositorioRecaudo(db_manager)
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
-            # Validaciones
             # Validaciones y parsing de ID Contrato
-            id_contrato = form_data["id_contrato_a"]
+            id_contrato = form_data.get("id_contrato_a") or self.form_data.get("id_contrato_a")
+            
+            if not id_contrato:
+                async with self:
+                    self.error_message = "Debe seleccionar un contrato"
+                    self.is_loading = False
+                return
+
             if isinstance(id_contrato, str) and not id_contrato.isdigit():
                 # Buscar en las opciones
                 contrato_opt = next(
@@ -521,7 +527,7 @@ class RecaudosState(DocumentosStateMixin):
                 return
 
             metodo_pago = form_data.get("metodo_pago", "")
-            if metodo_pago != "Efectivo" and not form_data.get("referencia _bancaria", "").strip():
+            if metodo_pago != "Efectivo" and not form_data.get("referencia_bancaria", "").strip():
                 async with self:
                     self.error_message = (
                         "La referencia bancaria es obligatoria para pagos electrónicos"
@@ -582,7 +588,7 @@ class RecaudosState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            repo = RepositorioRecaudoSQLite(db_manager)
+            repo = RepositorioRecaudo(db_manager)
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             # Verificar que esté pendiente
@@ -620,7 +626,7 @@ class RecaudosState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            repo = RepositorioRecaudoSQLite(db_manager)
+            repo = RepositorioRecaudo(db_manager)
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             # Verificar estado actual
@@ -668,7 +674,7 @@ class RecaudosState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            repo = RepositorioRecaudoSQLite(db_manager)
+            repo = RepositorioRecaudo(db_manager)
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             # Verificar estado actual
@@ -714,7 +720,7 @@ class RecaudosState(DocumentosStateMixin):
         try:
             from src.aplicacion.servicios.servicio_recaudo import ServicioRecaudo
             
-            repo = RepositorioRecaudoSQLite(db_manager)
+            repo = RepositorioRecaudo(db_manager)
             servicio = ServicioRecaudo(repo, db_manager)
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
             
