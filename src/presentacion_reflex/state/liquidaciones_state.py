@@ -186,15 +186,16 @@ class LiquidacionesState(DocumentosStateMixin):
             self.propietarios_select_options = propietarios_select
         
         # Cargar asesores
-        LiquidacionesState.load_asesores_options()
+        await self.load_asesores_options()
 
-    def load_asesores_options(self):
+    @rx.event(background=True)
+    async def load_asesores_options(self):
         """Carga los asesores para el select de filtros."""
         query = """
             SELECT a.ID_ASESOR, p.NOMBRE_COMPLETO 
             FROM ASESORES a 
             JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA 
-            WHERE p.ESTADO_REGISTRO = 1
+            WHERE p.ESTADO_REGISTRO = 1 AND a.ESTADO = 1
             ORDER BY p.NOMBRE_COMPLETO
         """
         try:
@@ -202,7 +203,8 @@ class LiquidacionesState(DocumentosStateMixin):
                 cursor = db_manager.get_dict_cursor(conn)
                 cursor.execute(query)
                 rows = cursor.fetchall()
-                self.asesores_select_options = ["Todos"] + [f"{r['NOMBRE_COMPLETO']} ({r['ID_ASESOR']})" for r in rows]
+                async with self:
+                    self.asesores_select_options = ["Todos"] + [f"{r['NOMBRE_COMPLETO']} ({r['ID_ASESOR']})" for r in rows]
         except Exception as e:
             print(f"Error cargando asesores: {e}")
 
