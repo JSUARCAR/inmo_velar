@@ -26,7 +26,7 @@ class RepositorioReportes:
             try:
                 cursor.execute(count_query, params)
                 res = cursor.fetchone()
-                total = res["total"] if res else 0
+                total = res.get("TOTAL", res.get("total", 0)) if res else 0
             finally:
                 cursor.close()
             
