@@ -170,38 +170,11 @@ class DatabaseManager:
 
         self.db_mode = DB_MODE
         self.use_postgresql = USE_POSTGRESQL
+        self._pg_pool = None
 
         if self.use_postgresql:
-            # Configuración PostgreSQL
-            # Parse DATABASE_URL if available (Railway, Heroku, etc.)
-            database_url = os.getenv("DATABASE_URL", "")
-            if database_url and database_url.startswith("postgresql"):
-                from urllib.parse import urlparse
-                parsed = urlparse(database_url)
-                self.pg_config = {
-                    "host": parsed.hostname or "localhost",
-                    "port": parsed.port or 5432,
-                    "database": (parsed.path or "/railway").lstrip("/"),
-                    "user": parsed.username or "postgres",
-                    "password": parsed.password or "",
-                    "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", 10)),
-                    "application_name": os.getenv("DB_APPLICATION_NAME", "InmobiliariaVelar"),
-                }
-            else:
-                self.pg_config = {
-                    "host": os.getenv("DB_HOST", "localhost"),
-                    "port": int(os.getenv("DB_PORT", 5432)),
-                    "database": os.getenv("DB_NAME", "db_inmo_velar"),
-                    "user": os.getenv("DB_USER", "inmo_user"),
-                    "password": os.getenv("DB_PASSWORD"),
-                    "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", 10)),
-                    "application_name": os.getenv("DB_APPLICATION_NAME", "InmobiliariaVelar"),
-                }
-            
-            # Inicializar ThreadedConnectionPool (Min 1, Max 20 sockets independientes)
-            self._pg_pool = psycopg2.pool.ThreadedConnectionPool(
-                minconn=1, maxconn=20, **self.pg_config
-            )
+            # Solo guardamos configuración, no conectamos todavía
+            self._configurar_postgresql()
         else:
             # Configuración SQLite
             config = obtener_configuracion()
@@ -210,12 +183,51 @@ class DatabaseManager:
         self._connection_pool: dict[int, Any] = {}
         self._initialized = True
 
+    def _configurar_postgresql(self):
+        """Carga la configuración de Postgres desde el entorno."""
+        database_url = os.getenv("DATABASE_URL", "")
+        if database_url and database_url.startswith("postgresql"):
+            from urllib.parse import urlparse
+            parsed = urlparse(database_url)
+            self.pg_config = {
+                "host": parsed.hostname or "localhost",
+                "port": parsed.port or 5432,
+                "database": (parsed.path or "/railway").lstrip("/"),
+                "user": parsed.username or "postgres",
+                "password": parsed.password or "",
+                "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", 10)),
+                "application_name": os.getenv("DB_APPLICATION_NAME", "InmobiliariaVelar"),
+            }
+        else:
+            self.pg_config = {
+                "host": os.getenv("DB_HOST", "localhost"),
+                "port": int(os.getenv("DB_PORT", 5432)),
+                "database": os.getenv("DB_NAME", "db_inmo_velar"),
+                "user": os.getenv("DB_USER", "inmo_user"),
+                "password": os.getenv("DB_PASSWORD"),
+                "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", 10)),
+                "application_name": os.getenv("DB_APPLICATION_NAME", "InmobiliariaVelar"),
+            }
+
+    def _inicializar_pg_pool(self):
+        """Carga perezosa del connection pool de Postgres."""
+        if self._pg_pool is None:
+            with self._lock:
+                if self._pg_pool is None:
+                    # Inicializar ThreadedConnectionPool (Min 1, Max 20 sockets independientes)
+                    self._pg_pool = psycopg2.pool.ThreadedConnectionPool(
+                        minconn=1, maxconn=20, **self.pg_config
+                    )
+
     def _obtener_connection_thread_local(self) -> Any:
         """
         Obtiene una conexión para el contexto actual.
         Usa ContextVars nativo para Postgres o Thread_id para SQLite.
         """
         if self.use_postgresql:
+            if self._pg_pool is None:
+                self._inicializar_pg_pool()
+
             conn_wrapper = _pg_conn_ctx.get()
             
             if conn_wrapper is None or conn_wrapper._is_returned or not self._validar_conexion(conn_wrapper):

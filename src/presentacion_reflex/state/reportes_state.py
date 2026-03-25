@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional
 
 import reflex as rx
 from pydantic import BaseModel
-from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.auth_state import AuthState
+from src.aplicacion.servicios.servicio_reportes import ServicioReportes
 
 # Importación diferida de servicios para evitar ciclos y carga innecesaria
 # Se realizarán dentro de los métodos
@@ -225,22 +225,12 @@ class ReportesState(rx.State):
                 self.is_loading = False
 
     async def _load_asesores(self):
-        """Carga la lista de asesores para los filtros."""
-        query = """
-            SELECT a.ID_ASESOR, p.NOMBRE_COMPLETO 
-            FROM ASESORES a 
-            JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA 
-            WHERE p.ESTADO_REGISTRO IS TRUE
-            ORDER BY p.NOMBRE_COMPLETO
-        """
+        """Carga la lista de asesores para los filtros delegando al servicio."""
         try:
-            with db_manager.obtener_conexion() as conn:
-                cursor = db_manager.get_dict_cursor(conn)
-                cursor.execute(query)
-                rows = cursor.fetchall()
-                options = ["Todos"] + [f"{r['NOMBRE_COMPLETO']} ({r['ID_ASESOR']})" for r in rows]
-                async with self:
-                    self.asesor_options = options
+            servicio = ServicioReportes()
+            options = servicio.obtener_asesores_filtro()
+            async with self:
+                self.asesor_options = options
         except Exception as e:
             print(f"Error cargando asesores en reportes: {e}")
 
@@ -287,322 +277,33 @@ class ReportesState(rx.State):
 
     async def _fetch_data(self, report_id: str, page: int, limit: int, is_export: bool):
         """
-        Hub central de lógica de obtención de datos.
-        Retorna: (List[Dict], List[Headers], TotalCount)
+        Hub central de lógica de obtención de datos delegando al ServicioReportes.
         """
-        offset = (page - 1) * limit
-        
-        # --- INSTANCIACIÓN DE SERVICIOS (Lazy) ---
-        if report_id == "personas":
-            from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
-            repo = RepositorioPersonaSQLite(db_manager)
-            
-            # Construir filtros
-            solo_activos = True if self.filter_estado == "Activo" else False
-            if self.filter_estado == "Todos": solo_activos = False # Logica custom: repo suele pedir booleano
-            
-            # TODO: Ajustar repo para soportar 'Todos', por ahora asumiremos Activos por defecto si no es export
-            # Si es export, y filtro es todos, traer inactivos tambien? 
-            # El repo tiene 'solo_activos' bool parameter.
-            
-            # Obtener datos usando obtener_todos con offset/limit custom si lo soportara,
-            # pero el repo usa un metodo estandar. Simularemos paginacion en memoria si repo no soporta
-            # O llamaremos al conteo.
-            
-            # Nota: El servicio tiene listar_personas_paginado, usémoslo o modifiquémoslo.
-            # ServicioPersonas ya lo instanciamos? No, directo al repo para raw data si es mas rapido?
-            # Mejor usar servicio si tiene logica.
-            
-            personas = repo.obtener_todos(
-                busqueda=self.filter_busqueda_tabla if self.filter_busqueda_tabla else None,
-                solo_activos=False if self.filter_estado == "Todos" else (True if self.filter_estado == "Activo" else False),
-                filtro_rol=self.filter_rol if self.filter_rol != "Todos" else None
-            )
-            
-            # Filtrado en memoria si el repo no filtra todo (ej. fechas, o si queremos 'Inactivo' especifico)
-            if self.filter_estado == "Inactivo":
-                personas = [p for p in personas if not p.estado_registro]
-            elif self.filter_estado == "Activo":
-                personas = [p for p in personas if p.estado_registro]
-
-            total = len(personas)
-            # Paginación en memoria
-            paginated = personas[offset : offset + limit]
-            
-            # Serializar TODAS las columnas
-            data = [p.__dict__ for p in paginated] 
-            # Limpiar campos internos de SQLAlchemy/DB si los hay (usually _sa_instance_state)
-            if data:
-                headers = list(data[0].keys())
-                # Clean headers
-                headers = [h for h in headers if not h.startswith('_')]
-                # Rebuild data dicts with clean headers y strings
-                clean_data = []
-                for item in data:
-                    new_item = {k: self._sanitize_value(v) for k, v in item.items() if k in headers}
-                    clean_data.append(new_item)
-                return clean_data, headers, total
-            else:
-                return [], [], 0
-
-        elif report_id == "propiedades":
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-            repo = RepositorioPropiedadSQLite(db_manager)
-            
-            # Use listar_con_filtros instead of listar_todos
-            props = repo.listar_con_filtros(
-                busqueda=self.filter_busqueda_tabla if self.filter_busqueda_tabla else None,
-                solo_activas=False if self.filter_estado == "Todos" else (True if self.filter_estado == "Activo" else False)
-            )
-            
-            total = len(props)
-            paginated = props[offset : offset + limit]
-            
-            data = [p.__dict__ for p in paginated]
-            if data:
-                headers = [h for h in list(data[0].keys()) if not h.startswith('_')]
-                clean_data = []
-                for item in data:
-                    new_item = {k: self._sanitize_value(v) for k, v in item.items() if k in headers}
-                    clean_data.append(new_item)
-                return clean_data, headers, total
-            return [], [], 0
-
-        # Lógica para reportes de Roles Específicos (JOINs)
-        elif report_id in ["reporte_propietarios", "reporte_arrendatarios", "reporte_codeudores", "reporte_asesores"]:
-            table_map_roles = {
-                "reporte_propietarios": "PROPIETARIOS",
-                "reporte_arrendatarios": "ARRENDATARIOS",
-                "reporte_codeudores": "CODEUDORES",
-                "reporte_asesores": "ASESORES"
-            }
-            
-            role_table = table_map_roles[report_id]
-            
-            # Query con JOIN para traer datos de Persona + Datos del Rol
-            # Usamos alias para evitar conflictos de ID_PERSONA, aunque en dict cursor se sobreescriben si no cuidamos los nombres
-            # Preferimos seleccionar columnas explicitas o dejar que el driver maneje duplicados (normalmente el ultimo gana)
-            # Para mas seguridad, p.* y r.*
-            
-            query = f"""
-                SELECT p.TIPO_DOCUMENTO, p.NUMERO_DOCUMENTO, p.NOMBRE_COMPLETO, 
-                       p.TELEFONO_PRINCIPAL, p.CORREO_ELECTRONICO, p.DIRECCION_PRINCIPAL,
-                       r.* 
-                FROM PERSONAS p
-                INNER JOIN {role_table} r ON p.ID_PERSONA = r.ID_PERSONA
-            """
-            
-            conditions = []
-            params = []
-            
-            if self.filter_busqueda_tabla:
-                # Busqueda simple en nombre o documento
-                conditions.append(f"(p.NOMBRE_COMPLETO LIKE ? OR p.NUMERO_DOCUMENTO LIKE ?)")
-                params.extend([f"%{self.filter_busqueda_tabla}%", f"%{self.filter_busqueda_tabla}%"])
-            
-            if self.filter_estado != "Todos":
-                # Asumimos que la tabla del rol tiene alguna columna de estado o usamos la de persona
-                # Para simplificar, usamos la de PERSONA (ESTADO_REGISTRO) o la del ROL si es estandar
-                # Propietarios: ESTADO_PROPIETARIO (int 1/0), Arrendatarios: ESTADO_ARRENDATARIO (bool?)
-                # Codeudores: ESTADO_REGISTRO (bool), Asesores: ESTADO (int 1/0)
-                
-                # Normalización de estados es compleja dinamicamente, usaremos ESTADO_REGISTRO de Persona como base fiable
-                # Si el usuario quiere estado del rol especifico, lo agregamos.
-                # Por ahora: Filtramos por el estado de la PERSONA para consistencia
-                
-                is_active = 1 if self.filter_estado == "Activo" else 0
-                conditions.append(f"p.ESTADO_REGISTRO = ?")
-                params.append(is_active)
-
-            if conditions:
-                query += " WHERE " + " AND ".join(conditions)
-                
-            # Ejecucion
-            with db_manager.obtener_conexion() as conn:
-                cursor = db_manager.get_dict_cursor(conn) # Importante: devuelve dict
-                # SQLite placeholder es ?
-                # Adapt params to generic placeholder of db_manager if needed, usually its ? for sqlite
-                # Pero db_manager.get_placeholder() devuelve ? o %s.
-                placeholder = db_manager.get_placeholder()
-                
-                # Reconstruir query con placeholders correctos (hack simple replace ?)
-                query = query.replace("?", placeholder)
-                
-                try:
-                    cursor.execute(query, tuple(params))
-                    rows = cursor.fetchall()
-                    
-                    total = len(rows)
-                    
-                    # Paginación en memoria (simple)
-                    paginated = rows[offset : offset + limit]
-                    
-                    if paginated:
-                        # Convertir a dict serializable y limpiar headers
-                        clean_data = []
-                        # Obtener headers del primer row
-                        # Nota: Si hay columnas duplicadas en JOIN (ej ID_PERSONA), 
-                        # sqlite3.Row / dict cursor puede que solo muestre una.
-                        
-                        # Definir orden de headers para que sea bonito: Datos Persona primero
-                        priority_headers = ["tipo_documento", "numero_documento", "nombre_completo", "telefono_principal", "correo_electronico"]
-                        
-                        all_keys = list(paginated[0].keys())
-                        # Keys devuelve nombres en minuscula o mayuscula dependinedo de config.
-                        # Normalizamos a lowercase para chequeo
-                        
-                        other_keys = [k for k in all_keys if k.lower() not in priority_headers and not k.startswith('_')]
-                        
-                        # Combine headers
-                        # Note: we use actual keys from row to avoid case mismatches
-                        final_headers_keys = []
-                        
-                        # Find actual key names for priority
-                        for pk in priority_headers:
-                            found = next((k for k in all_keys if k.lower() == pk), None)
-                            if found: final_headers_keys.append(found)
-                            
-                        # Add others
-                        for ok in other_keys:
-                            if ok not in final_headers_keys:
-                                final_headers_keys.append(ok)
-                        
-                        for row in paginated:
-                            item = {k: self._sanitize_value(row[k]) for k in final_headers_keys}
-                            clean_data.append(item)
-                            
-                        return clean_data, final_headers_keys, total
-                    return [], [], 0
-                except Exception as ex:
-                    print(f"Error executing report role query: {ex}")
-                    return [], [], 0
-
-        elif report_id == "liquidaciones":
-            # Reporte especializado con inyección de columnas (Direccion, Propietario, Asesor)
-            # Posicionadas inmediatamente después de ID_CONTRATO_M
-            query = """
-                SELECT 
-                    l.ID_LIQUIDACION,
-                    l.ID_CONTRATO_M,
-                    p.DIRECCION_PROPIEDAD AS "Direccion_Predio",
-                    per_prop.NOMBRE_COMPLETO AS "Nombre_Propietario",
-                    per_ase.NOMBRE_COMPLETO AS "Nombre_Asesor",
-                    l.PERIODO,
-                    l.FECHA_GENERACION,
-                    l.CANON_BRUTO,
-                    l.OTROS_INGRESOS,
-                    l.TOTAL_INGRESOS,
-                    l.COMISION_PORCENTAJE,
-                    l.COMISION_MONTO,
-                    l.IVA_COMISION,
-                    l.IMPUESTO_4X1000,
-                    l.GASTOS_ADMINISTRACION,
-                    l.GASTOS_SERVICIOS,
-                    l.GASTOS_REPARACIONES,
-                    l.PAGO_PREDIAL,
-                    l.OTROS_EGRESOS,
-                    l.TOTAL_EGRESOS,
-                    l.NETO_A_PAGAR,
-                    l.ESTADO_LIQUIDACION,
-                    l.FECHA_PAGO,
-                    l.METODO_PAGO,
-                    l.REFERENCIA_PAGO,
-                    l.OBSERVACIONES,
-                    l.MOTIVO_CANCELACION,
-                    l.APROBADA_POR,
-                    l.APROBADA_EN,
-                    l.PAGADA_POR,
-                    l.PAGADA_EN,
-                    l.CREATED_AT,
-                    l.CREATED_BY,
-                    l.UPDATED_AT,
-                    l.UPDATED_BY
-                FROM liquidaciones l
-                LEFT JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
-                LEFT JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
-                LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
-                LEFT JOIN PERSONAS per_prop ON prop.ID_PERSONA = per_prop.ID_PERSONA
-                LEFT JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR
-                LEFT JOIN PERSONAS per_ase ON a.ID_PERSONA = per_ase.ID_PERSONA
-            """
-            
-            conditions = []
-            params = []
-            placeholder = db_manager.get_placeholder()
-
-            if self.filter_asesor_id != "Todos":
-                try:
-                    # Extraer ID del formato "Nombre (ID)"
-                    id_asesor = int(self.filter_asesor_id.split('(')[-1].replace(')', ''))
-                    conditions.append(f"cm.ID_ASESOR = {placeholder}")
-                    params.append(id_asesor)
-                except:
-                    pass
-
-            if conditions:
-                query += " WHERE " + " AND ".join(conditions)
-
-            with db_manager.obtener_conexion() as conn:
-                cursor = db_manager.get_dict_cursor(conn)
-                try:
-                    cursor.execute(query, tuple(params))
-                    rows = cursor.fetchall()
-                    
-                    if self.filter_busqueda_tabla:
-                        t = self.filter_busqueda_tabla.lower()
-                        rows = [r for r in rows if any(t in str(v).lower() for v in r.values())]
-
-                    total = len(rows)
-                    paginated = rows[offset : offset + limit]
-                    
-                    if paginated:
-                        headers = list(paginated[0].keys())
-                        clean_data = [{k: self._sanitize_value(v) for k,v in row.items()} for row in paginated]
-                        return clean_data, headers, total
-                except Exception as ex:
-                    print(f"Error querying specialized liquidaciones: {ex}")
-                    return [], [], 0
-            return [], [], 0
-
-        # Mapeo de reportes a tablas para lógica genérica "SELECT *"
-        table_map = {
-            "contratos_mandato": "CONTRATOS_MANDATOS",
-            "contratos_arrendamiento": "CONTRATOS_ARRENDAMIENTOS",
-            "proveedores": "PROVEEDORES",
-            "liquidacion_asesores": "LIQUIDACIONES_ASESORES",
-            "desocupaciones": "DESOCUPACIONES",
-            "incidentes": "INCIDENTES",
-            "seguros": "SEGUROS",
-            "recibos_publicos": "RECIBOS_PUBLICOS",
-            "saldos_favor": "SALDOS_FAVOR"
+        filtros = {
+            "busqueda": self.filter_busqueda_tabla,
+            "estado": self.filter_estado,
+            "rol": self.filter_rol,
+            "asesor_id": self.filter_asesor_id
         }
-
-        if report_id in table_map:
-            table_name = table_map[report_id]
-            query = f"SELECT * FROM {table_name}"
-            
-            with db_manager.obtener_conexion() as conn:
-                cursor = db_manager.get_dict_cursor(conn)
-                try:
-                    cursor.execute(query)
-                    rows = cursor.fetchall()
-                    
-                    # Filtrado básico en memoria (Búsqueda global sencilla)
-                    if self.filter_busqueda_tabla:
-                        t = self.filter_busqueda_tabla.lower()
-                        rows = [r for r in rows if any(t in str(v).lower() for v in r.values())]
-
-                    total = len(rows)
-                    paginated = rows[offset : offset + limit]
-                    
-                    if paginated:
-                        headers = list(paginated[0].keys())
-                        clean_data = [{k: self._sanitize_value(v) for k,v in row.items()} for row in paginated]
-                        return clean_data, headers, total
-                except Exception as ex:
-                    print(f"Error querying {table_name}: {ex}")
-                    return [], [], 0
-            
-            return [], [], 0
         
-        return [], [], 0
+        try:
+            servicio = ServicioReportes()
+            data, headers, total = await servicio.obtener_datos_reporte(
+                report_id=report_id,
+                filtros=filtros,
+                pagina=page,
+                limite=limit,
+                es_exportacion=is_export
+            )
+            
+            # Sanitización final para UI
+            clean_data = []
+            for row in data:
+                clean_row = {k: self._sanitize_value(v) for k, v in row.items()}
+                clean_data.append(clean_row)
+                
+            return clean_data, headers, total
+            
+        except Exception as e:
+            print(f"Error en _fetch_data: {e}")
+            raise e
