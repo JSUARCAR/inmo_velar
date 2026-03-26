@@ -281,7 +281,7 @@ class IncidenteTemplateElite(BaseDocumentTemplate):
         for c in cots:
             rows.append([
                 c.get('proveedor', 'N/A'),
-                Paragraph(c.get('descripcion', '')[:50]+"...", self.styles["Small"]),
+                Paragraph(c.get('descripcion', ''), self.styles["Small"]),
                 str(c.get('dias', 0)),
                 f"${c.get('mano_obra', 0):,.0f}",
                 f"${c.get('materiales', 0):,.0f}",
