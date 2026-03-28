@@ -61,7 +61,7 @@ class ServicioReportes:
             solo_activas = True if estado == "Activo" else (False if estado == "Inactivo" else None)
             props = self.repo_propiedades.listar_con_filtros(
                 busqueda=busqueda,
-                solo_activas=solo_activas if solo_activas is not None else False
+                solo_activas=solo_activas
             )
             total = len(props)
             offset = (pagina - 1) * limite
