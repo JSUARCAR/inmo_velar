@@ -602,7 +602,14 @@ class IncidentesState(DocumentosStateMixin):
             )
 
             yield rx.toast.success("Cotización aprobada y Orden de Trabajo creada.")
+            
+            async with self:
+                if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+                    self.selected_incidente["estado"] = "Aprobado"
+                    
             yield IncidentesState.load_incidentes()
+            if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+                yield IncidentesState.select_incidente(self.selected_incidente)
 
         except Exception as e:
             yield rx.toast.error(f"Error al aprobar: {str(e)}")
@@ -622,7 +629,14 @@ class IncidentesState(DocumentosStateMixin):
             servicio.iniciar_reparacion(id_incidente, usuario)
 
             yield rx.toast.success("Reparación iniciada.")
+            
+            async with self:
+                if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+                    self.selected_incidente["estado"] = "En Reparacion"
+                    
             yield IncidentesState.load_incidentes()
+            if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+                yield IncidentesState.select_incidente(self.selected_incidente)
 
         except Exception as e:
             yield rx.toast.error(f"Error al iniciar reparación: {str(e)}")
@@ -642,7 +656,14 @@ class IncidentesState(DocumentosStateMixin):
             servicio.finalizar_incidente(id_incidente, usuario)
 
             yield rx.toast.success("Incidente finalizado exitosamente.")
+            
+            async with self:
+                if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+                    self.selected_incidente["estado"] = "Finalizado"
+
             yield IncidentesState.load_incidentes()
+            if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+                yield IncidentesState.select_incidente(self.selected_incidente)
 
         except Exception as e:
             yield rx.toast.error(f"Error al finalizar: {str(e)}")
