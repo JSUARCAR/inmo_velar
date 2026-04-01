@@ -154,7 +154,7 @@ def proveedores_content() -> rx.Component:
                                                         rx.icon("pencil", size=16),
                                                         variant="ghost",
                                                         on_click=lambda: ProveedoresState.open_edit_modal(
-                                                            p["id_proveedor"]
+                                                            p
                                                         ),
                                                     ),
                                                     content="Editar Proveedor",
