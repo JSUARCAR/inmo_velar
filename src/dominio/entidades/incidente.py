@@ -1,9 +1,9 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Optional
 
 
-@dataclass
+@dataclass(frozen=True)
 class Incidente:
     id_incidente: Optional[int] = None
     id_propiedad: int = 0
@@ -33,9 +33,9 @@ class Incidente:
     direccion_propiedad: Optional[str] = None
     nombre_proveedor: Optional[str] = None
 
-    def avanzar_estado(self, nuevo_estado: str, usuario: str) -> None:
+    def avanzar_estado(self, nuevo_estado: str, usuario: str) -> "Incidente":
         """
-        Validar y ejecutar transiciones de estado.
+        Validar y ejecutar transiciones de estado devolviendo una nueva instancia.
         Flujo: Reportado -> En Revision -> Cotizado -> Aprobado -> En Reparacion -> Finalizado
         """
         transiciones_validas = {
@@ -55,9 +55,13 @@ class Incidente:
         if nuevo_estado not in transiciones_validas.get(self.estado, []):
             raise ValueError(f"No se puede pasar de {self.estado} a {nuevo_estado}")
 
-        self.estado = nuevo_estado
-        self.updated_by = usuario
-        self.updated_at = datetime.now()
+        cambios = {
+            "estado": nuevo_estado,
+            "updated_by": usuario,
+            "updated_at": datetime.now()
+        }
 
         if nuevo_estado == "Finalizado":
-            self.fecha_arreglo = datetime.now()
+            cambios["fecha_arreglo"] = datetime.now()
+
+        return replace(self, **cambios)

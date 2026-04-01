@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 
-@dataclass
+@dataclass(frozen=True)
 class HistorialIncidente:
     """
     Entidad para registrar el historial de cambios de estado de un incidente.
