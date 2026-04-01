@@ -4,7 +4,9 @@ import reflex as rx
 
 from src.aplicacion.servicios.servicio_proveedores import ServicioProveedores
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
+from src.infraestructura.persistencia.repositorio_persona_sqlite import (
+    RepositorioPersonaSQLite,
+)
 from src.infraestructura.persistencia.repositorio_proveedores_sqlite import (
     RepositorioProveedoresSQLite,
 )
@@ -53,7 +55,10 @@ class ProveedoresState(rx.State):
 
     def on_load(self):
         """Carga inicial de datos."""
-        return [ProveedoresState.load_proveedores, ProveedoresState.load_personas_options]
+        return [
+            ProveedoresState.load_proveedores,
+            ProveedoresState.load_personas_options,
+        ]
 
     @rx.event(background=True)
     async def load_proveedores(self):
@@ -84,7 +89,8 @@ class ProveedoresState(rx.State):
                     "id_proveedor": p.id_proveedor,
                     "id_persona": p.id_persona,
                     "nombre": p.nombre_completo or "Sin Nombre",
-                    "contacto": p.contacto or "Sin Contacto",
+                    "telefono": p.contacto or "Sin Contacto",
+                    "documento": p.documento or "Sin Registro",
                     "especialidad": p.especialidad,
                     "calificacion": p.calificacion,
                     "observaciones": p.observaciones or "",
@@ -128,7 +134,10 @@ class ProveedoresState(rx.State):
 
             # Simple conversion for select
             options = [
-                {"value": str(p.id_persona), "label": f"{p.nombre_completo} ({p.numero_documento})"}
+                {
+                    "value": str(p.id_persona),
+                    "label": f"{p.nombre_completo} ({p.numero_documento})",
+                }
                 for p in personas
             ]
             async with self:

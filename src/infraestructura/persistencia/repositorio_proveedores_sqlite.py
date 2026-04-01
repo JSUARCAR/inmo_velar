@@ -23,8 +23,17 @@ class RepositorioProveedoresSQLite(RepositorioProveedores):
             created_at=row["CREATED_AT"],
             created_by=row["CREATED_BY"],
             # Datos de persona (si hay join)
-            nombre_completo=row["NOMBRE_COMPLETO"] if "NOMBRE_COMPLETO" in row.keys() else None,
-            contacto=row["TELEFONO_PRINCIPAL"] if "TELEFONO_PRINCIPAL" in row.keys() else None,
+            nombre_completo=(
+                row["NOMBRE_COMPLETO"] if "NOMBRE_COMPLETO" in row.keys() else None
+            ),
+            contacto=(
+                row["TELEFONO_PRINCIPAL"]
+                if "TELEFONO_PRINCIPAL" in row.keys()
+                else None
+            ),
+            documento=(
+                row["NUMERO_DOCUMENTO"] if "NUMERO_DOCUMENTO" in row.keys() else None
+            ),
         )
 
     def guardar(self, proveedor: Proveedor) -> int:
@@ -51,7 +60,7 @@ class RepositorioProveedoresSQLite(RepositorioProveedores):
         query = f"""
         SELECT P.ID_PROVEEDOR, P.ID_PERSONA, P.ESPECIALIDAD, P.CALIFICACION, P.OBSERVACIONES, 
                P.ESTADO_REGISTRO, P.CREATED_AT, P.CREATED_BY,
-               PER.NOMBRE_COMPLETO, PER.TELEFONO_PRINCIPAL
+               PER.NOMBRE_COMPLETO, PER.TELEFONO_PRINCIPAL, PER.NUMERO_DOCUMENTO
         FROM PROVEEDORES P
         JOIN PERSONAS PER ON P.ID_PERSONA = PER.ID_PERSONA
         WHERE P.ID_PROVEEDOR = {placeholder}
@@ -67,7 +76,7 @@ class RepositorioProveedoresSQLite(RepositorioProveedores):
         query = f"""
         SELECT P.ID_PROVEEDOR, P.ID_PERSONA, P.ESPECIALIDAD, P.CALIFICACION, P.OBSERVACIONES, 
                P.ESTADO_REGISTRO, P.CREATED_AT, P.CREATED_BY,
-               PER.NOMBRE_COMPLETO, PER.TELEFONO_PRINCIPAL
+               PER.NOMBRE_COMPLETO, PER.TELEFONO_PRINCIPAL, PER.NUMERO_DOCUMENTO
         FROM PROVEEDORES P
         JOIN PERSONAS PER ON P.ID_PERSONA = PER.ID_PERSONA
         WHERE P.ID_PERSONA = {placeholder}
@@ -82,7 +91,7 @@ class RepositorioProveedoresSQLite(RepositorioProveedores):
         query = """
         SELECT P.ID_PROVEEDOR, P.ID_PERSONA, P.ESPECIALIDAD, P.CALIFICACION, P.OBSERVACIONES, 
                P.ESTADO_REGISTRO, P.CREATED_AT, P.CREATED_BY,
-               PER.NOMBRE_COMPLETO, PER.TELEFONO_PRINCIPAL
+               PER.NOMBRE_COMPLETO, PER.TELEFONO_PRINCIPAL, PER.NUMERO_DOCUMENTO
         FROM PROVEEDORES P
         JOIN PERSONAS PER ON P.ID_PERSONA = PER.ID_PERSONA
         WHERE P.ESTADO_REGISTRO = TRUE
