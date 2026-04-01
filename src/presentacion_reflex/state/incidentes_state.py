@@ -461,6 +461,8 @@ class IncidentesState(DocumentosStateMixin):
 
                 # Actualizar datos del incidente completo
                 inc_obj = detalle["incidente"]
+                current_inc["estado"] = inc_obj.estado
+                current_inc["prioridad"] = inc_obj.prioridad
                 current_inc["costo_incidente"] = inc_obj.costo_incidente
 
                 # Manejo robusto de fecha_arreglo (str o datetime)
