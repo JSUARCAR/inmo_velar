@@ -195,8 +195,16 @@ class ServicioIncidentes:
 
             # Actualizar estado incidente si estaba en Reportado o En Revision
             if incidente.estado == "Reportado":
+                estado_anterior = incidente.estado
                 incidente = incidente.avanzar_estado("En Revision", usuario_sistema)
                 self.repo_incidentes.actualizar(incidente)
+                self._registrar_historial(
+                    id_incidente=id_incidente,
+                    estado_anterior=estado_anterior,
+                    estado_nuevo="En Revision",
+                    usuario=usuario_sistema,
+                    tipo_accion="CAMBIO_ESTADO"
+                )
 
             return cotizacion
 
@@ -218,8 +226,17 @@ class ServicioIncidentes:
                     f"Solo se puede iniciar reparación desde estado Aprobado. Estado actual: {incidente.estado}"
                 )
 
+            estado_anterior = incidente.estado
             incidente = incidente.avanzar_estado("En Reparacion", usuario_sistema)
             self.repo_incidentes.actualizar(incidente)
+            
+            self._registrar_historial(
+                id_incidente=id_incidente,
+                estado_anterior=estado_anterior,
+                estado_nuevo="En Reparacion",
+                usuario=usuario_sistema,
+                tipo_accion="INICIAR_REPARACION"
+            )
 
     def aprobar_cotizacion(
         self, id_incidente: int, id_cotizacion: int, usuario_sistema: str, responsable_pago: str
@@ -249,9 +266,19 @@ class ServicioIncidentes:
                                 id_proveedor_asignado=cotizacion_aprobada.id_proveedor,
                                 costo_incidente=cotizacion_aprobada.valor_total,
                                 responsable_pago=responsable_pago)
+            estado_anterior = incidente.estado
             incidente = incidente.avanzar_estado("Aprobado", usuario_sistema)
 
             self.repo_incidentes.actualizar(incidente)
+            
+            self._registrar_historial(
+                id_incidente=id_incidente,
+                estado_anterior=estado_anterior,
+                estado_nuevo="Aprobado",
+                usuario=usuario_sistema,
+                tipo_accion="APROBAR_COTIZACION",
+                datos_extra={"id_cotizacion_aprobada": id_cotizacion, "costo": cotizacion_aprobada.valor_total}
+            )
 
         # Crear Orden de Trabajo automáticamente (DISABLED PER USER REQUEST)
         # orden = OrdenTrabajo(
@@ -316,6 +343,25 @@ class ServicioIncidentes:
             datos_adicionales=json.dumps(datos_extra) if datos_extra else None,
         )
         self.repo_incidentes.guardar_historial(historial)
+        
+        # Inyección a tabla Global de Auditoría (FASE 3)
+        query_audit = """
+            INSERT INTO AUDITORIA_CAMBIOS 
+            (TABLA, ID_REGISTRO, TIPO_OPERACION, VALOR_ANTERIOR, VALOR_NUEVO, USUARIO, MOTIVO_CAMBIO)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        params_audit = (
+            "incidentes",
+            id_incidente,
+            "ESTADO_CHANGE" if estado_anterior != estado_nuevo else "UPDATE",
+            estado_anterior,
+            estado_nuevo,
+            usuario,
+            f"Acción: {tipo_accion} | Comentario: {comentario or 'N/A'}"
+        )
+        with self.db_manager.obtener_conexion() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query_audit, params_audit)
 
     def rechazar_cotizacion(
         self, id_incidente: int, id_cotizacion: int, usuario_sistema: str, motivo: str = None
