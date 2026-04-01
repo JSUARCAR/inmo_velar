@@ -91,8 +91,8 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
-            new_id = cursor.fetchone()[0]
-            return new_id
+            row = cursor.fetchone()
+            return list(row.values())[0] if row else None
 
     def actualizar(self, incidente: Incidente) -> None:
         query = """
@@ -182,8 +182,8 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
-            new_id = cursor.fetchone()[0]
-            return new_id
+            row = cursor.fetchone()
+            return list(row.values())[0] if row else None
 
     def obtener_cotizaciones(self, id_incidente: int) -> List[Cotizacion]:
         query = "SELECT * FROM COTIZACIONES WHERE ID_INCIDENTE = %s"
@@ -241,8 +241,8 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
-            new_id = cursor.fetchone()[0]
-            return new_id
+            row = cursor.fetchone()
+            return list(row.values())[0] if row else None
 
     def obtener_historial(self, id_incidente: int) -> List[HistorialIncidente]:
         query = """
