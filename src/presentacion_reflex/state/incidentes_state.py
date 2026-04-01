@@ -694,6 +694,9 @@ class IncidentesState(DocumentosStateMixin):
                 if self.selected_incidente and self.selected_incidente["id"] == id_incidente:
                     self.selected_incidente["estado"] = "Cotizado"
                     self.details_modal_open = True
+            
+            if self.selected_incidente and self.selected_incidente["id"] == id_incidente:
+                yield IncidentesState.select_incidente(self.selected_incidente)
 
         except Exception as e:
             yield rx.toast.error(f"Error al cambiar estado: {str(e)}")

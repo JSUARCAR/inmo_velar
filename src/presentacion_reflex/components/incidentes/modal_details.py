@@ -158,7 +158,8 @@ def _cotizado_view() -> rx.Component:
                             ),
                             rx.text(cot["descripcion"], size="2", color="gray", margin_top="0.5em"),
                             rx.cond(
-                                AuthState.check_action("Incidentes", "EDITAR"),
+                                AuthState.check_action("Incidentes", "EDITAR")
+                                & (IncidentesState.selected_incidente["estado"] == "Cotizado"),
                                 neuro_button(
                                     "Aprobar Cotización",
                                     width="100%",
@@ -550,12 +551,13 @@ def modal_details() -> rx.Component:
                                                         color="gray",
                                                         margin_top="0.5em",
                                                     ),
-                                                    # Botón Aprobar solo si está pendiente y usuario puede editar
+                                                    # Botón Aprobar solo si está pendiente y usuario puede editar e incidente está en Cotizado
                                                     rx.cond(
                                                         (cot["estado"] == "Pendiente")
                                                         & AuthState.check_action(
                                                             "Incidentes", "EDITAR"
-                                                        ),
+                                                        )
+                                                        & (IncidentesState.selected_incidente["estado"] == "Cotizado"),
                                                         neuro_button(
                                                             "Aprobar Cotización",
                                                             width="100%",
