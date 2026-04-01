@@ -33,17 +33,18 @@ class ServicioIncidentes:
         Reporta un nuevo incidente.
         Estado inicial: Reportado.
         """
-        incidente = Incidente(
-            id_propiedad=datos["id_propiedad"],
-            id_contrato_m=datos.get("id_contrato_m"),
-            descripcion_incidente=datos["descripcion"],
-            fecha_incidente=datos.get("fecha_incidente", datetime.now().isoformat()),
-            prioridad=datos.get("prioridad", "Media"),
-            origen_reporte=datos.get("origen_reporte", "Inquilino"),
-            created_by=usuario_sistema,
-        )
-        id_new = self.repo_incidentes.guardar(incidente)
-        return replace(incidente, id_incidente=id_new)
+        with self.db_manager.transaccion() as conn:
+            incidente = Incidente(
+                id_propiedad=datos["id_propiedad"],
+                id_contrato_m=datos.get("id_contrato_m"),
+                descripcion_incidente=datos["descripcion"],
+                fecha_incidente=datos.get("fecha_incidente", datetime.now().isoformat()),
+                prioridad=datos.get("prioridad", "Media"),
+                origen_reporte=datos.get("origen_reporte", "Inquilino"),
+                created_by=usuario_sistema,
+            )
+            id_new = self.repo_incidentes.guardar(incidente)
+            return replace(incidente, id_incidente=id_new)
 
     def listar_incidentes(
         self, id_propiedad: Optional[int] = None, estado: Optional[str] = None
@@ -142,27 +143,28 @@ class ServicioIncidentes:
         """
         Gestiona transiciones de estado.
         """
-        incidente = self.repo_incidentes.obtener_por_id(id_incidente)
-        if not incidente:
-            raise ValueError(f"Incidente {id_incidente} no encontrado")
+        with self.db_manager.transaccion() as conn:
+            incidente = self.repo_incidentes.obtener_por_id(id_incidente)
+            if not incidente:
+                raise ValueError(f"Incidente {id_incidente} no encontrado")
 
-        incidente = incidente.avanzar_estado(nuevo_estado, usuario_sistema)
+            incidente = incidente.avanzar_estado(nuevo_estado, usuario_sistema)
 
-        # Lógica específica por estado
-        if nuevo_estado == "Aprobado" and datos_extra:
-            cambios = {}
-            # Si se aprueba manualmente sin cotización formal (ej: emergencia menor)
-            if "costo" in datos_extra:
-                cambios["costo_incidente"] = datos_extra["costo"]
-            if "id_proveedor" in datos_extra:
-                cambios["id_proveedor_asignado"] = datos_extra["id_proveedor"]
-            if "responsable_pago" in datos_extra:
-                cambios["responsable_pago"] = datos_extra["responsable_pago"]
-            if cambios:
-                incidente = replace(incidente, **cambios)
+            # Lógica específica por estado
+            if nuevo_estado == "Aprobado" and datos_extra:
+                cambios = {}
+                # Si se aprueba manualmente sin cotización formal (ej: emergencia menor)
+                if "costo" in datos_extra:
+                    cambios["costo_incidente"] = datos_extra["costo"]
+                if "id_proveedor" in datos_extra:
+                    cambios["id_proveedor_asignado"] = datos_extra["id_proveedor"]
+                if "responsable_pago" in datos_extra:
+                    cambios["responsable_pago"] = datos_extra["responsable_pago"]
+                if cambios:
+                    incidente = replace(incidente, **cambios)
 
-        self.repo_incidentes.actualizar(incidente)
-        return incidente
+            self.repo_incidentes.actualizar(incidente)
+            return incidente
 
     def registrar_cotizacion(
         self, id_incidente: int, datos_cotizacion: Dict[str, Any], usuario_sistema: str
@@ -170,63 +172,33 @@ class ServicioIncidentes:
         """
         Registra una cotización y pasa el incidente a 'Cotizado'.
         """
-        pass  # print("\n" + "="*80) [OpSec Removed]
-        pass  # print("DEBUG SERVICIO: registrar_cotizacion INICIADO") [OpSec Removed]
-        pass  # print("="*80) [OpSec Removed]
-        pass  # print(f"DEBUG SERVICIO: id_incidente = {id_incidente}") [OpSec Removed]
-        pass  # print(f"DEBUG SERVICIO: datos_cotizacion = {datos_cotizacion}") [OpSec Removed]
-        pass  # print(f"DEBUG SERVICIO: usuario_sistema = {usuario_sistema}") [OpSec Removed]
+        with self.db_manager.transaccion() as conn:
+            incidente = self.repo_incidentes.obtener_por_id(id_incidente)
 
-        pass  # print("DEBUG SERVICIO: Obteniendo incidente...") [OpSec Removed]
-        incidente = self.repo_incidentes.obtener_por_id(id_incidente)
-        pass  # print(f"DEBUG SERVICIO: Incidente obtenido = {incidente}") [OpSec Removed]
+            if not incidente:
+                raise ValueError("Incidente no encontrado")
 
-        if not incidente:
-            pass  # print("DEBUG SERVICIO: ERROR - Incidente no encontrado") [OpSec Removed]
-            raise ValueError("Incidente no encontrado")
+            cotizacion = Cotizacion(
+                id_incidente=id_incidente,
+                id_proveedor=datos_cotizacion["id_proveedor"],
+                valor_materiales=datos_cotizacion.get("materiales", 0),
+                valor_mano_obra=datos_cotizacion.get("mano_obra", 0),
+                descripcion_trabajo=datos_cotizacion.get("descripcion"),
+                dias_estimados=datos_cotizacion.get("dias", 1),
+                created_by=usuario_sistema,
+            )
 
-        pass  # print("DEBUG SERVICIO: Creando objeto Cotizacion...") [OpSec Removed]
-        pass  # print(f"DEBUG SERVICIO: - id_proveedor de datos = {datos_cotizacion.get('id_proveedor')}") [OpSec Removed]
-        pass  # print(f"DEBUG SERVICIO: - materiales (buscando 'materiales') = {datos_cotizacion.get('materiales', 'NO_ENCONTRADO')}") [OpSec Removed]
-        pass  # print(f"DEBUG SERVICIO: - materiales (buscando 'costo_materiales') = {datos_cotizacion.get('costo_materiales', 'NO_ENCONTRADO')}") [OpSec Removed]
-        pass  # print(f"DEBUG SERVICIO: - mano_obra (buscando 'mano_obra') = {datos_cotizacion.get('mano_obra', 'NO_ENCONTRADO')}") [OpSec Removed]
-        pass  # print(f"DEBUG SERVICIO: - mano_obra (buscando 'costo_mano_obra') = {datos_cotizacion.get('costo_mano_obra', 'NO_ENCONTRADO')}") [OpSec Removed]
+            cotizacion = cotizacion.con_total_calculado()  # Suma materiales + mano de obra
 
-        cotizacion = Cotizacion(
-            id_incidente=id_incidente,
-            id_proveedor=datos_cotizacion["id_proveedor"],
-            valor_materiales=datos_cotizacion.get("materiales", 0),
-            valor_mano_obra=datos_cotizacion.get("mano_obra", 0),
-            descripcion_trabajo=datos_cotizacion.get("descripcion"),
-            dias_estimados=datos_cotizacion.get("dias", 1),
-            created_by=usuario_sistema,
-        )
-        pass  # print(f"DEBUG SERVICIO: Cotizacion creada = {cotizacion}") [OpSec Removed]
+            new_id = self.repo_incidentes.guardar_cotizacion(cotizacion)
+            cotizacion = replace(cotizacion, id_cotizacion=new_id)
 
-        pass  # print("DEBUG SERVICIO: Calculando total...") [OpSec Removed]
-        cotizacion = cotizacion.con_total_calculado()  # Suma materiales + mano de obra
-        pass  # print(f"DEBUG SERVICIO: Total calculado = {cotizacion.valor_total}") [OpSec Removed]
+            # Actualizar estado incidente si estaba en Reportado o En Revision
+            if incidente.estado == "Reportado":
+                incidente = incidente.avanzar_estado("En Revision", usuario_sistema)
+                self.repo_incidentes.actualizar(incidente)
 
-        pass  # print("DEBUG SERVICIO: Llamando repo_incidentes.guardar_cotizacion...") [OpSec Removed]
-        new_id = self.repo_incidentes.guardar_cotizacion(cotizacion)
-        cotizacion = replace(cotizacion, id_cotizacion=new_id)
-        pass  # print(f"DEBUG SERVICIO: Resultado de guardar = {resultado}") [OpSec Removed]
-
-        # Actualizar estado incidente si estaba en Reportado o En Revision
-        pass  # print(f"DEBUG SERVICIO: Estado actual del incidente = {incidente.estado}") [OpSec Removed]
-        # Actualizar estado incidente si estaba en Reportado
-        if incidente.estado == "Reportado":
-            pass  # print("DEBUG SERVICIO: Actualizando estado Reportado -> En Revision...") [OpSec Removed]
-            incidente = incidente.avanzar_estado("En Revision", usuario_sistema)
-            self.repo_incidentes.actualizar(incidente)
-            pass  # print("DEBUG SERVICIO: Estado actualizado a En Revision") [OpSec Removed]
-
-        # NOTA: Ya no pasamos automáticamente a "Cotizado".
-        # El usuario debe hacerlo explícitamente desde el UI cuando termine de cargar cotizaciones.
-
-        pass  # print("DEBUG SERVICIO: registrar_cotizacion COMPLETADO") [OpSec Removed]
-        pass  # print("="*80 + "\n") [OpSec Removed]
-        return cotizacion
+            return cotizacion
 
         pass  # print("DEBUG SERVICIO: registrar_cotizacion COMPLETADO") [OpSec Removed]
         pass  # print("="*80 + "\n") [OpSec Removed]
@@ -236,17 +208,18 @@ class ServicioIncidentes:
         """
         Inicia la reparación, cambiando el estado de Aprobado a En Reparacion.
         """
-        incidente = self.repo_incidentes.obtener_por_id(id_incidente)
-        if not incidente:
-            raise ValueError(f"Incidente {id_incidente} no encontrado")
+        with self.db_manager.transaccion() as conn:
+            incidente = self.repo_incidentes.obtener_por_id(id_incidente)
+            if not incidente:
+                raise ValueError(f"Incidente {id_incidente} no encontrado")
 
-        if incidente.estado != "Aprobado":
-            raise ValueError(
-                f"Solo se puede iniciar reparación desde estado Aprobado. Estado actual: {incidente.estado}"
-            )
+            if incidente.estado != "Aprobado":
+                raise ValueError(
+                    f"Solo se puede iniciar reparación desde estado Aprobado. Estado actual: {incidente.estado}"
+                )
 
-        incidente = incidente.avanzar_estado("En Reparacion", usuario_sistema)
-        self.repo_incidentes.actualizar(incidente)
+            incidente = incidente.avanzar_estado("En Reparacion", usuario_sistema)
+            self.repo_incidentes.actualizar(incidente)
 
     def aprobar_cotizacion(
         self, id_incidente: int, id_cotizacion: int, usuario_sistema: str, responsable_pago: str
@@ -254,30 +227,31 @@ class ServicioIncidentes:
         """
         Aprueba una cotización, asigna el proveedor y costo, y pasa a 'Aprobado'.
         """
-        incidente = self.repo_incidentes.obtener_por_id(id_incidente)
-        cotizaciones = self.repo_incidentes.obtener_cotizaciones(id_incidente)
+        with self.db_manager.transaccion() as conn:
+            incidente = self.repo_incidentes.obtener_por_id(id_incidente)
+            cotizaciones = self.repo_incidentes.obtener_cotizaciones(id_incidente)
 
-        cotizacion_aprobada = next(
-            (c for c in cotizaciones if c.id_cotizacion == id_cotizacion), None
-        )
-        if not cotizacion_aprobada:
-            raise ValueError("Cotización no encontrada")
+            cotizacion_aprobada = next(
+                (c for c in cotizaciones if c.id_cotizacion == id_cotizacion), None
+            )
+            if not cotizacion_aprobada:
+                raise ValueError("Cotización no encontrada")
 
-        # Actualizar todas las cotizaciones
-        for c in cotizaciones:
-            nuevo_est = "Aprobada" if c.id_cotizacion == id_cotizacion else "Rechazada"
-            c_update = replace(c, estado_cotizacion=nuevo_est)
-            self.repo_incidentes.actualizar_cotizacion(c_update)
+            # Actualizar todas las cotizaciones
+            for c in cotizaciones:
+                nuevo_est = "Aprobada" if c.id_cotizacion == id_cotizacion else "Rechazada"
+                c_update = replace(c, estado_cotizacion=nuevo_est)
+                self.repo_incidentes.actualizar_cotizacion(c_update)
 
-        # Actualizar Incidente
-        incidente = replace(incidente,
-                            id_cotizacion_aprobada=id_cotizacion,
-                            id_proveedor_asignado=cotizacion_aprobada.id_proveedor,
-                            costo_incidente=cotizacion_aprobada.valor_total,
-                            responsable_pago=responsable_pago)
-        incidente = incidente.avanzar_estado("Aprobado", usuario_sistema)
+            # Actualizar Incidente
+            incidente = replace(incidente,
+                                id_cotizacion_aprobada=id_cotizacion,
+                                id_proveedor_asignado=cotizacion_aprobada.id_proveedor,
+                                costo_incidente=cotizacion_aprobada.valor_total,
+                                responsable_pago=responsable_pago)
+            incidente = incidente.avanzar_estado("Aprobado", usuario_sistema)
 
-        self.repo_incidentes.actualizar(incidente)
+            self.repo_incidentes.actualizar(incidente)
 
         # Crear Orden de Trabajo automáticamente (DISABLED PER USER REQUEST)
         # orden = OrdenTrabajo(
@@ -350,40 +324,41 @@ class ServicioIncidentes:
         Rechaza una cotización específica sin afectar el estado del incidente.
         Permite solicitar nuevas cotizaciones.
         """
-        # Obtener incidente para saber su estado actual
-        incidente = self.repo_incidentes.obtener_por_id(id_incidente)
-        if not incidente:
-            raise ValueError(f"Incidente {id_incidente} no encontrado")
+        with self.db_manager.transaccion() as conn:
+            # Obtener incidente para saber su estado actual
+            incidente = self.repo_incidentes.obtener_por_id(id_incidente)
+            if not incidente:
+                raise ValueError(f"Incidente {id_incidente} no encontrado")
 
-        cotizaciones = self.repo_incidentes.obtener_cotizaciones(id_incidente)
-        cotizacion = next((c for c in cotizaciones if c.id_cotizacion == id_cotizacion), None)
+            cotizaciones = self.repo_incidentes.obtener_cotizaciones(id_incidente)
+            cotizacion = next((c for c in cotizaciones if c.id_cotizacion == id_cotizacion), None)
 
-        if not cotizacion:
-            raise ValueError("Cotización no encontrada")
+            if not cotizacion:
+                raise ValueError("Cotización no encontrada")
 
-        if cotizacion.estado_cotizacion != "Pendiente":
-            raise ValueError(
-                f"Solo se pueden rechazar cotizaciones pendientes. Estado actual: {cotizacion.estado_cotizacion}"
+            if cotizacion.estado_cotizacion != "Pendiente":
+                raise ValueError(
+                    f"Solo se pueden rechazar cotizaciones pendientes. Estado actual: {cotizacion.estado_cotizacion}"
+                )
+
+            # Actualizar estado de la cotización
+            cotizacion = replace(cotizacion, estado_cotizacion="Rechazada")
+            self.repo_incidentes.actualizar_cotizacion(cotizacion)
+
+            # Registrar en historial (estado del incidente no cambia)
+            self._registrar_historial(
+                id_incidente=id_incidente,
+                estado_anterior=incidente.estado,
+                estado_nuevo=incidente.estado,  # No hay cambio de estado
+                usuario=usuario_sistema,
+                tipo_accion="COTIZACION_RECHAZADA",
+                comentario=motivo,
+                datos_extra={
+                    "id_cotizacion": id_cotizacion,
+                    "id_proveedor": cotizacion.id_proveedor,
+                    "valor_total": cotizacion.valor_total,
+                },
             )
-
-        # Actualizar estado de la cotización
-        cotizacion = replace(cotizacion, estado_cotizacion="Rechazada")
-        self.repo_incidentes.actualizar_cotizacion(cotizacion)
-
-        # Registrar en historial (estado del incidente no cambia)
-        self._registrar_historial(
-            id_incidente=id_incidente,
-            estado_anterior=incidente.estado,
-            estado_nuevo=incidente.estado,  # No hay cambio de estado
-            usuario=usuario_sistema,
-            tipo_accion="COTIZACION_RECHAZADA",
-            comentario=motivo,
-            datos_extra={
-                "id_cotizacion": id_cotizacion,
-                "id_proveedor": cotizacion.id_proveedor,
-                "valor_total": cotizacion.valor_total,
-            },
-        )
 
     def finalizar_incidente(
         self,
@@ -397,46 +372,47 @@ class ServicioIncidentes:
         Finaliza un incidente que está En Reparación.
         Permite registrar el costo final real si difiere del presupuestado.
         """
-        incidente = self.repo_incidentes.obtener_por_id(id_incidente)
-        if not incidente:
-            raise ValueError(f"Incidente {id_incidente} no encontrado")
+        with self.db_manager.transaccion() as conn:
+            incidente = self.repo_incidentes.obtener_por_id(id_incidente)
+            if not incidente:
+                raise ValueError(f"Incidente {id_incidente} no encontrado")
 
-        if incidente.estado != "En Reparacion":
-            raise ValueError(
-                f"Solo se pueden finalizar incidentes En Reparación. Estado actual: {incidente.estado}"
+            if incidente.estado != "En Reparacion":
+                raise ValueError(
+                    f"Solo se pueden finalizar incidentes En Reparación. Estado actual: {incidente.estado}"
+                )
+
+            estado_anterior = incidente.estado
+            costo_anterior = incidente.costo_incidente
+
+            # Actualizar costo si se proporciona uno diferente
+            if costo_final is not None and costo_final != incidente.costo_incidente:
+                incidente = replace(incidente, costo_incidente=costo_final)
+
+            # Cambiar estado
+            incidente = incidente.avanzar_estado("Finalizado", usuario_sistema)
+
+            # Establecer fecha de arreglo (usar la provista o now)
+            if fecha_arreglo:
+                incidente = replace(incidente, fecha_arreglo=fecha_arreglo)
+
+            self.repo_incidentes.actualizar(incidente)
+
+            # Registrar en historial
+            self._registrar_historial(
+                id_incidente=id_incidente,
+                estado_anterior=estado_anterior,
+                estado_nuevo="Finalizado",
+                usuario=usuario_sistema,
+                tipo_accion="CAMBIO_ESTADO",
+                comentario=comentario,
+                datos_extra={
+                    "costo_presupuestado": costo_anterior,
+                    "costo_final": incidente.costo_incidente,
+                },
             )
 
-        estado_anterior = incidente.estado
-        costo_anterior = incidente.costo_incidente
-
-        # Actualizar costo si se proporciona uno diferente
-        if costo_final is not None and costo_final != incidente.costo_incidente:
-            incidente = replace(incidente, costo_incidente=costo_final)
-
-        # Cambiar estado
-        incidente = incidente.avanzar_estado("Finalizado", usuario_sistema)
-
-        # Establecer fecha de arreglo (usar la provista o now)
-        if fecha_arreglo:
-            incidente = replace(incidente, fecha_arreglo=fecha_arreglo)
-
-        self.repo_incidentes.actualizar(incidente)
-
-        # Registrar en historial
-        self._registrar_historial(
-            id_incidente=id_incidente,
-            estado_anterior=estado_anterior,
-            estado_nuevo="Finalizado",
-            usuario=usuario_sistema,
-            tipo_accion="CAMBIO_ESTADO",
-            comentario=comentario,
-            datos_extra={
-                "costo_presupuestado": costo_anterior,
-                "costo_final": incidente.costo_incidente,
-            },
-        )
-
-        return incidente
+            return incidente
 
     def cancelar_incidente(self, id_incidente: int, usuario_sistema: str, motivo: str) -> Incidente:
         """
@@ -446,37 +422,38 @@ class ServicioIncidentes:
         if not motivo or not motivo.strip():
             raise ValueError("Se requiere un motivo para cancelar el incidente")
 
-        incidente = self.repo_incidentes.obtener_por_id(id_incidente)
-        if not incidente:
-            raise ValueError(f"Incidente {id_incidente} no encontrado")
+        with self.db_manager.transaccion() as conn:
+            incidente = self.repo_incidentes.obtener_por_id(id_incidente)
+            if not incidente:
+                raise ValueError(f"Incidente {id_incidente} no encontrado")
 
-        if incidente.estado in ["Finalizado", "Cancelado"]:
-            raise ValueError(f"No se puede cancelar un incidente {incidente.estado}")
+            if incidente.estado in ["Finalizado", "Cancelado"]:
+                raise ValueError(f"No se puede cancelar un incidente {incidente.estado}")
 
-        estado_anterior = incidente.estado
+            estado_anterior = incidente.estado
 
-        # Cambiar estado
-        incidente = replace(
-            incidente,
-            estado="Cancelado",
-            motivo_cancelacion=motivo,
-            updated_by=usuario_sistema,
-            updated_at=datetime.now()
-        )
+            # Cambiar estado
+            incidente = replace(
+                incidente,
+                estado="Cancelado",
+                motivo_cancelacion=motivo,
+                updated_by=usuario_sistema,
+                updated_at=datetime.now()
+            )
 
-        self.repo_incidentes.actualizar(incidente)
+            self.repo_incidentes.actualizar(incidente)
 
-        # Registrar en historial
-        self._registrar_historial(
-            id_incidente=id_incidente,
-            estado_anterior=estado_anterior,
-            estado_nuevo="Cancelado",
-            usuario=usuario_sistema,
-            tipo_accion="CANCELACION",
-            comentario=motivo,
-        )
+            # Registrar en historial
+            self._registrar_historial(
+                id_incidente=id_incidente,
+                estado_anterior=estado_anterior,
+                estado_nuevo="Cancelado",
+                usuario=usuario_sistema,
+                tipo_accion="CANCELACION",
+                comentario=motivo,
+            )
 
-        return incidente
+            return incidente
 
     def obtener_historial(self, id_incidente: int) -> List[HistorialIncidente]:
         """
