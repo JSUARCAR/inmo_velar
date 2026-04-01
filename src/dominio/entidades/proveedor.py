@@ -17,3 +17,4 @@ class Proveedor:
     # Propiedades de negocio
     nombre_completo: Optional[str] = None  # Se llenará al consultar con join
     contacto: Optional[str] = None  # Se llenará al consultar con join
+    documento: Optional[str] = None  # NIT o Cédula mapeado de PERSONAS
