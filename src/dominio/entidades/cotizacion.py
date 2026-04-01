@@ -1,9 +1,9 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Optional
 
 
-@dataclass
+@dataclass(frozen=True)
 class Cotizacion:
     id_cotizacion: Optional[int] = None
     id_incidente: int = 0
@@ -21,6 +21,6 @@ class Cotizacion:
     # Propiedades de negocio
     nombre_proveedor: Optional[str] = None  # Se llenará al consultar
 
-    def calcular_total(self) -> int:
-        self.valor_total = self.valor_materiales + self.valor_mano_obra
-        return self.valor_total
+    def con_total_calculado(self) -> "Cotizacion":
+        nuevo_total = self.valor_materiales + self.valor_mano_obra
+        return replace(self, valor_total=nuevo_total)

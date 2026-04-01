@@ -182,11 +182,11 @@ class IncidentesState(DocumentosStateMixin):
             # TODO: Usar repositorio o servicio adecuado
             # Por simplicidad query directa o servicio propiedades si disponible
             from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
 
-            repo_prop = RepositorioPropiedadSQLite(db_manager)
+            repo_prop = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioPropiedades(repo_prop)
             props = servicio.listar_propiedades()  # Limit removed as not supported by service
 
@@ -237,11 +237,11 @@ class IncidentesState(DocumentosStateMixin):
 
             # Cargar propiedades para mapeo de direcciones
             from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
 
-            repo_prop = RepositorioPropiedadSQLite(db_manager)
+            repo_prop = RepositorioPropiedadPostgres(db_manager)
             servicio_props = ServicioPropiedades(repo_prop)
             props = servicio_props.listar_propiedades()
             props_map = {p.id_propiedad: p.direccion_propiedad for p in props}
@@ -308,25 +308,17 @@ class IncidentesState(DocumentosStateMixin):
     async def load_proveedores(self):
         """Carga lista de proveedores."""
         try:
-            # Query directa para obtener proveedores con nombre
-            query = """
-                SELECT pr.ID_PROVEEDOR, p.NOMBRE_COMPLETO, pr.ESPECIALIDAD 
-                FROM PROVEEDORES pr
-                JOIN PERSONAS p ON pr.ID_PERSONA = p.ID_PERSONA
-                WHERE pr.ESTADO_REGISTRO = TRUE
-            """
-
-            conn = db_manager.obtener_conexion()
-            cursor = db_manager.get_dict_cursor(conn)
-            cursor.execute(query)
-            rows = cursor.fetchall()
+            from src.aplicacion.servicios.servicio_proveedores import ServicioProveedores
+            
+            servicio = ServicioProveedores(db_manager)
+            proveedores = servicio.listar_proveedores()
 
             options = [
                 {
-                    "id": str(r["ID_PROVEEDOR"]),
-                    "texto": f"{r['NOMBRE_COMPLETO']} ({r['ESPECIALIDAD']})",
+                    "id": str(p.id_proveedor),
+                    "texto": f"{p.nombre_completo or 'Proveedor'} ({p.especialidad})",
                 }
-                for r in rows
+                for p in proveedores if p.estado_registro
             ]
 
             async with self:

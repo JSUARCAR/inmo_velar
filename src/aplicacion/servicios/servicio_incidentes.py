@@ -1,13 +1,15 @@
 import json
+from dataclasses import replace
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.cotizacion import Cotizacion
 from src.dominio.entidades.historial_incidente import HistorialIncidente
 from src.dominio.entidades.incidente import Incidente
+from src.dominio.interfaces.repositorio_incidentes import RepositorioIncidentes
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_incidentes_sqlite import (
-    RepositorioIncidentesSQLite,
+from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
+    RepositorioIncidentesPostgres,
 )
 from src.infraestructura.persistencia.repositorio_orden_trabajo_sqlite import (
     RepositorioOrdenTrabajoSQLite,
@@ -19,9 +21,9 @@ from src.infraestructura.persistencia.repositorio_proveedores_sqlite import (
 
 
 class ServicioIncidentes:
-    def __init__(self, db_manager: DatabaseManager):
+    def __init__(self, db_manager: DatabaseManager, repo_incidentes: RepositorioIncidentes = None):
         self.db_manager = db_manager
-        self.repo_incidentes = RepositorioIncidentesSQLite(db_manager)
+        self.repo_incidentes = repo_incidentes if repo_incidentes else RepositorioIncidentesPostgres(db_manager)
         self.repo_proveedores = RepositorioProveedoresSQLite(db_manager)
         self.repo_propiedades = RepositorioPropiedadSQLite(db_manager)
         self.repo_ordenes = RepositorioOrdenTrabajoSQLite(db_manager)
@@ -41,8 +43,7 @@ class ServicioIncidentes:
             created_by=usuario_sistema,
         )
         id_new = self.repo_incidentes.guardar(incidente)
-        incidente.id_incidente = id_new
-        return incidente
+        return replace(incidente, id_incidente=id_new)
 
     def listar_incidentes(
         self, id_propiedad: Optional[int] = None, estado: Optional[str] = None
@@ -145,17 +146,20 @@ class ServicioIncidentes:
         if not incidente:
             raise ValueError(f"Incidente {id_incidente} no encontrado")
 
-        incidente.avanzar_estado(nuevo_estado, usuario_sistema)
+        incidente = incidente.avanzar_estado(nuevo_estado, usuario_sistema)
 
         # Lógica específica por estado
         if nuevo_estado == "Aprobado" and datos_extra:
+            cambios = {}
             # Si se aprueba manualmente sin cotización formal (ej: emergencia menor)
             if "costo" in datos_extra:
-                incidente.costo_incidente = datos_extra["costo"]
+                cambios["costo_incidente"] = datos_extra["costo"]
             if "id_proveedor" in datos_extra:
-                incidente.id_proveedor_asignado = datos_extra["id_proveedor"]
+                cambios["id_proveedor_asignado"] = datos_extra["id_proveedor"]
             if "responsable_pago" in datos_extra:
-                incidente.responsable_pago = datos_extra["responsable_pago"]
+                cambios["responsable_pago"] = datos_extra["responsable_pago"]
+            if cambios:
+                incidente = replace(incidente, **cambios)
 
         self.repo_incidentes.actualizar(incidente)
         return incidente
@@ -200,11 +204,12 @@ class ServicioIncidentes:
         pass  # print(f"DEBUG SERVICIO: Cotizacion creada = {cotizacion}") [OpSec Removed]
 
         pass  # print("DEBUG SERVICIO: Calculando total...") [OpSec Removed]
-        cotizacion.calcular_total()  # Suma materiales + mano de obra
+        cotizacion = cotizacion.con_total_calculado()  # Suma materiales + mano de obra
         pass  # print(f"DEBUG SERVICIO: Total calculado = {cotizacion.valor_total}") [OpSec Removed]
 
         pass  # print("DEBUG SERVICIO: Llamando repo_incidentes.guardar_cotizacion...") [OpSec Removed]
-        self.repo_incidentes.guardar_cotizacion(cotizacion)
+        new_id = self.repo_incidentes.guardar_cotizacion(cotizacion)
+        cotizacion = replace(cotizacion, id_cotizacion=new_id)
         pass  # print(f"DEBUG SERVICIO: Resultado de guardar = {resultado}") [OpSec Removed]
 
         # Actualizar estado incidente si estaba en Reportado o En Revision
@@ -212,7 +217,7 @@ class ServicioIncidentes:
         # Actualizar estado incidente si estaba en Reportado
         if incidente.estado == "Reportado":
             pass  # print("DEBUG SERVICIO: Actualizando estado Reportado -> En Revision...") [OpSec Removed]
-            incidente.avanzar_estado("En Revision", usuario_sistema)
+            incidente = incidente.avanzar_estado("En Revision", usuario_sistema)
             self.repo_incidentes.actualizar(incidente)
             pass  # print("DEBUG SERVICIO: Estado actualizado a En Revision") [OpSec Removed]
 
@@ -240,7 +245,7 @@ class ServicioIncidentes:
                 f"Solo se puede iniciar reparación desde estado Aprobado. Estado actual: {incidente.estado}"
             )
 
-        incidente.avanzar_estado("En Reparacion", usuario_sistema)
+        incidente = incidente.avanzar_estado("En Reparacion", usuario_sistema)
         self.repo_incidentes.actualizar(incidente)
 
     def aprobar_cotizacion(
@@ -260,15 +265,17 @@ class ServicioIncidentes:
 
         # Actualizar todas las cotizaciones
         for c in cotizaciones:
-            c.estado_cotizacion = "Aprobada" if c.id_cotizacion == id_cotizacion else "Rechazada"
-            self.repo_incidentes.actualizar_cotizacion(c)
+            nuevo_est = "Aprobada" if c.id_cotizacion == id_cotizacion else "Rechazada"
+            c_update = replace(c, estado_cotizacion=nuevo_est)
+            self.repo_incidentes.actualizar_cotizacion(c_update)
 
         # Actualizar Incidente
-        incidente.id_cotizacion_aprobada = id_cotizacion
-        incidente.id_proveedor_asignado = cotizacion_aprobada.id_proveedor
-        incidente.costo_incidente = cotizacion_aprobada.valor_total
-        incidente.responsable_pago = responsable_pago
-        incidente.avanzar_estado("Aprobado", usuario_sistema)
+        incidente = replace(incidente,
+                            id_cotizacion_aprobada=id_cotizacion,
+                            id_proveedor_asignado=cotizacion_aprobada.id_proveedor,
+                            costo_incidente=cotizacion_aprobada.valor_total,
+                            responsable_pago=responsable_pago)
+        incidente = incidente.avanzar_estado("Aprobado", usuario_sistema)
 
         self.repo_incidentes.actualizar(incidente)
 
@@ -360,7 +367,7 @@ class ServicioIncidentes:
             )
 
         # Actualizar estado de la cotización
-        cotizacion.estado_cotizacion = "Rechazada"
+        cotizacion = replace(cotizacion, estado_cotizacion="Rechazada")
         self.repo_incidentes.actualizar_cotizacion(cotizacion)
 
         # Registrar en historial (estado del incidente no cambia)
@@ -404,13 +411,14 @@ class ServicioIncidentes:
 
         # Actualizar costo si se proporciona uno diferente
         if costo_final is not None and costo_final != incidente.costo_incidente:
-            incidente.costo_incidente = costo_final
+            incidente = replace(incidente, costo_incidente=costo_final)
 
         # Cambiar estado
-        incidente.avanzar_estado("Finalizado", usuario_sistema)
+        incidente = incidente.avanzar_estado("Finalizado", usuario_sistema)
 
         # Establecer fecha de arreglo (usar la provista o now)
-        incidente.fecha_arreglo = fecha_arreglo if fecha_arreglo else datetime.now()
+        if fecha_arreglo:
+            incidente = replace(incidente, fecha_arreglo=fecha_arreglo)
 
         self.repo_incidentes.actualizar(incidente)
 
@@ -448,10 +456,13 @@ class ServicioIncidentes:
         estado_anterior = incidente.estado
 
         # Cambiar estado
-        incidente.estado = "Cancelado"  # Bypass avanzar_estado ya que cancelar es especial
-        incidente.motivo_cancelacion = motivo
-        incidente.updated_by = usuario_sistema
-        incidente.updated_at = datetime.now()
+        incidente = replace(
+            incidente,
+            estado="Cancelado",
+            motivo_cancelacion=motivo,
+            updated_by=usuario_sistema,
+            updated_at=datetime.now()
+        )
 
         self.repo_incidentes.actualizar(incidente)
 
