@@ -24,10 +24,13 @@ from .pdf_elite.templates.certificado_template import CertificadoTemplate
 # Importar nuevos templates élite
 # Importar nuevos templates élite
 from .pdf_elite.templates.contrato_template import ContratoArrendamientoElite
-from .pdf_elite.templates.contrato_template_local import ContratoArrendamientoElite as ContratoLocalElite
+from .pdf_elite.templates.contrato_template_local import (
+    ContratoArrendamientoElite as ContratoLocalElite,
+)
 from .pdf_elite.templates.contrato_template_mandato import ContratoMandatoElite
 from .pdf_elite.templates.estado_cuenta_elite import EstadoCuentaElite
 from .pdf_elite.templates.recibo_recaudo_elite import ReciboRecaudoElite
+from .pdf_elite.templates.informe_recaudos_elite import InformeRecaudosElite
 
 
 class ServicioPDFFacade:
@@ -61,7 +64,9 @@ class ServicioPDFFacade:
             elite_enabled: Habilitar características élite
         """
         # Servicio legacy
-        self.legacy_service = ServicioDocumentosPDF(output_dir=output_dir or "documentos_generados")
+        self.legacy_service = ServicioDocumentosPDF(
+            output_dir=output_dir or "documentos_generados"
+        )
 
         # Configuración
         self.elite_enabled = elite_enabled
@@ -74,6 +79,7 @@ class ServicioPDFFacade:
         self._certificado_gen: Optional[CertificadoTemplate] = None
         self._estado_cuenta_gen: Optional[EstadoCuentaElite] = None
         self._recibo_recaudo_gen: Optional[ReciboRecaudoElite] = None
+        self._informe_recaudos_gen: Optional[InformeRecaudosElite] = None
 
     # ========================================================================
     # MÉTODOS LEGACY (100% COMPATIBILIDAD)
@@ -133,7 +139,9 @@ class ServicioPDFFacade:
     # MÉTODOS ÉLITE (NUEVAS CAPACIDADES)
     # ========================================================================
 
-    def generar_contrato_elite(self, datos: Dict[str, Any], usar_borrador: bool = False) -> str:
+    def generar_contrato_elite(
+        self, datos: Dict[str, Any], usar_borrador: bool = False
+    ) -> str:
         """
         Genera contrato de arrendamiento élite
 
@@ -164,7 +172,7 @@ class ServicioPDFFacade:
         # Determinación de tipo de contrato y propiedad
         tipo_contrato = datos.get("tipo_contrato", "Arrendamiento")
         tipo_propiedad = datos.get("inmueble", {}).get("tipo", "")
-        
+
         logger.debug(f"📋 Contract Type: {tipo_contrato}")
         logger.debug(f"🏠 Property Type: {tipo_propiedad}")
 
@@ -177,7 +185,7 @@ class ServicioPDFFacade:
             if not getattr(self, "_contrato_mandato_gen", None):
                 self._contrato_mandato_gen = ContratoMandatoElite(self.output_dir)
             generator = self._contrato_mandato_gen
-            
+
         elif tipo_contrato == "Arrendamiento":
             if tipo_propiedad == "Local Comercial":
                 if not getattr(self, "_contrato_local_gen", None):
@@ -190,7 +198,9 @@ class ServicioPDFFacade:
                 generator = self._contrato_gen
         else:
             # Fallback a Arrendamiento estándar si no coincide nada
-            logger.warning(f"⚠️ Tipo de contrato desconocido: {tipo_contrato}. Usando estándar.")
+            logger.warning(
+                f"⚠️ Tipo de contrato desconocido: {tipo_contrato}. Usando estándar."
+            )
             if not self._contrato_gen:
                 self._contrato_gen = ContratoArrendamientoElite(self.output_dir)
             generator = self._contrato_gen
@@ -226,7 +236,9 @@ class ServicioPDFFacade:
         if not self.elite_enabled:
             raise ValueError("Características élite no habilitadas")
 
-        logger.debug("🔧 SERVICE LAYER: Facade method called - generar_certificado_elite")
+        logger.debug(
+            "🔧 SERVICE LAYER: Facade method called - generar_certificado_elite"
+        )
         logger.debug(f"📦 Data keys received: {list(datos.keys())}")
         logger.debug(f"🏅 Certificate type: {datos.get('tipo', 'unknown')}")
 
@@ -259,7 +271,9 @@ class ServicioPDFFacade:
         if not self.elite_enabled:
             raise ValueError("Características élite no habilitadas")
 
-        logger.debug("🔧 SERVICE LAYER: Facade method called - generar_estado_cuenta_elite")
+        logger.debug(
+            "🔧 SERVICE LAYER: Facade method called - generar_estado_cuenta_elite"
+        )
         logger.debug(f"📦 Data keys received: {list(datos.keys())}")
         logger.debug(f"📊 Movements count: {len(datos.get('movimientos', []))}")
 
@@ -286,7 +300,9 @@ class ServicioPDFFacade:
         if not self.elite_enabled:
             raise ValueError("Características élite no habilitadas")
 
-        logger.debug("🔧 SERVICE LAYER: Facade method called - generar_recibo_recaudo_elite")
+        logger.debug(
+            "🔧 SERVICE LAYER: Facade method called - generar_recibo_recaudo_elite"
+        )
         logger.debug(f"📦 Data keys received: {list(datos.keys())}")
 
         if not getattr(self, "_recibo_recaudo_gen", None):
@@ -296,6 +312,34 @@ class ServicioPDFFacade:
 
         if not path:
             raise ValueError("Error generando recibo de recaudo élite")
+
+        return str(path)
+
+    def generar_informe_recaudos(self, datos: Dict[str, Any]) -> str:
+        """
+        Genera informe consolidado de recaudos.
+
+        Args:
+            datos: Datos del informe (periodo_inicio, periodo_fin, resumen, detalles)
+
+        Returns:
+            Path del PDF generado
+        """
+        if not self.elite_enabled:
+            raise ValueError("Características élite no habilitadas")
+
+        logger.debug(
+            "🔧 SERVICE LAYER: Facade method called - generar_informe_recaudos"
+        )
+        logger.debug(f"📦 Data keys received: {list(datos.keys())}")
+
+        if not getattr(self, "_informe_recaudos_gen", None):
+            self._informe_recaudos_gen = InformeRecaudosElite(self.output_dir)
+
+        path = self._informe_recaudos_gen.generate_safe(datos)
+
+        if not path:
+            raise ValueError("Error generando informe de recaudos")
 
         return str(path)
 

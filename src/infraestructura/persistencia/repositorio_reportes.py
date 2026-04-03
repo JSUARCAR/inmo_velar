@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Tuple, Optional
 from src.infraestructura.persistencia.database import db_manager
 
+
 class RepositorioReportes:
     """Repositorio especializado en consultas analíticas y generación de reportes para PostgreSQL."""
 
@@ -12,10 +13,10 @@ class RepositorioReportes:
     ) -> Tuple[List[Dict[str, Any]], int]:
         """Ejecuta una consulta con paginación y retorna los datos y el conteo total."""
         offset = (page - 1) * limit
-        
+
         # 1. Obtener el total de registros (Count)
         count_query = f"SELECT COUNT(*) as total FROM ({query}) AS subquery"
-        
+
         # 2. Agregar LIMIT y OFFSET
         paginated_query = f"{query} LIMIT %s OFFSET %s"
         paginated_params = params + [limit, offset]
@@ -29,7 +30,7 @@ class RepositorioReportes:
                 total = res.get("TOTAL", res.get("total", 0)) if res else 0
             finally:
                 cursor.close()
-            
+
             # Data
             cursor = self.db.get_dict_cursor(conn)
             try:
@@ -37,11 +38,16 @@ class RepositorioReportes:
                 rows = cursor.fetchall()
             finally:
                 cursor.close()
-                
+
         return rows, total
 
     def obtener_reporte_roles(
-        self, role_table: str, busqueda: Optional[str] = None, solo_activos: bool = True, page: int = 1, limit: int = 20
+        self,
+        role_table: str,
+        busqueda: Optional[str] = None,
+        solo_activos: bool = True,
+        page: int = 1,
+        limit: int = 20,
     ) -> Tuple[List[Dict[str, Any]], int]:
         """Obtiene datos de personas con un rol específico (Propietarios, Arrendatarios, etc)."""
         query = f"""
@@ -55,9 +61,11 @@ class RepositorioReportes:
         params = []
 
         if busqueda:
-            conditions.append("(p.NOMBRE_COMPLETO ILIKE %s OR p.NUMERO_DOCUMENTO ILIKE %s)")
+            conditions.append(
+                "(p.NOMBRE_COMPLETO ILIKE %s OR p.NUMERO_DOCUMENTO ILIKE %s)"
+            )
             params.extend([f"%{busqueda}%", f"%{busqueda}%"])
-        
+
         if solo_activos:
             conditions.append("p.ESTADO_REGISTRO = %s")
             params.append(True)
@@ -68,7 +76,11 @@ class RepositorioReportes:
         return self._ejecutar_query_paginada(query, params, page, limit)
 
     def obtener_reporte_liquidaciones(
-        self, asesor_id: Optional[int] = None, busqueda: Optional[str] = None, page: int = 1, limit: int = 20
+        self,
+        asesor_id: Optional[int] = None,
+        busqueda: Optional[str] = None,
+        page: int = 1,
+        limit: int = 20,
     ) -> Tuple[List[Dict[str, Any]], int]:
         """Reporte especializado de liquidaciones con datos de contrato, propiedad y asesor."""
         query = """
@@ -98,7 +110,7 @@ class RepositorioReportes:
         if asesor_id:
             conditions.append("cm.ID_ASESOR = %s")
             params.append(asesor_id)
-        
+
         if busqueda:
             conditions.append("""(
                 per_prop.NOMBRE_COMPLETO ILIKE %s OR 
@@ -119,7 +131,7 @@ class RepositorioReportes:
         """Obtiene todos los registros de una tabla con búsqueda simple y paginación."""
         query = f"SELECT * FROM {tabla}"
         params = []
-        
+
         if busqueda:
             # En PostgreSQL necesitamos saber las columnas para ILIKE o usar un truco con cast a text
             # Para reportes genéricos, buscaremos en todas las columnas convirtiendo la fila a texto (simple pero efectivo)
@@ -144,3 +156,73 @@ class RepositorioReportes:
                 return cursor.fetchall()
             finally:
                 cursor.close()
+
+    def obtener_reporte_recaudos(
+        self,
+        estado: Optional[str] = None,
+        metodo_pago: Optional[str] = None,
+        periodo_inicio: Optional[str] = None,
+        periodo_fin: Optional[str] = None,
+        busqueda: Optional[str] = None,
+        page: int = 1,
+        limit: int = 20,
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """Reporte especializado de recaudos con JOINs a contratos, propiedades y arrendatarios."""
+        query = """
+            SELECT 
+                r.ID_RECAUDO,
+                r.ID_CONTRATO_A,
+                p.DIRECCION_PROPIEDAD AS "Direccion_Inmueble",
+                p.MATRICULA_INMOBILIARIA AS "Matricula",
+                per.NOMBRE_COMPLETO AS "Nombre_Arrendatario",
+                per.TELEFONO_PRINCIPAL AS "Telefono_Arrendatario",
+                per.CORREO_ELECTRONICO AS "Email_Arrendatario",
+                r.FECHA_PAGO,
+                r.VALOR_TOTAL,
+                r.METODO_PAGO,
+                r.REFERENCIA_BANCARIA,
+                r.ESTADO_RECAUDO,
+                rc.PERIODO AS "Periodo_Facturado",
+                r.OBSERVACIONES,
+                r.CREATED_AT
+            FROM RECAUDOS r
+            LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
+            LEFT JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+            LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+            LEFT JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+            LEFT JOIN RECAUDO_CONCEPTOS rc ON r.ID_RECAUDO = rc.ID_RECAUDO
+        """
+        conditions = []
+        params = []
+
+        if estado and estado != "Todos":
+            conditions.append("r.ESTADO_RECAUDO = %s")
+            params.append(estado)
+
+        if metodo_pago and metodo_pago != "Todos":
+            conditions.append("r.METODO_PAGO = %s")
+            params.append(metodo_pago)
+
+        if periodo_inicio:
+            conditions.append("rc.PERIODO >= %s")
+            params.append(periodo_inicio)
+
+        if periodo_fin:
+            conditions.append("rc.PERIODO <= %s")
+            params.append(periodo_fin)
+
+        if busqueda:
+            conditions.append("""(
+                per.NOMBRE_COMPLETO ILIKE %s OR 
+                p.DIRECCION_PROPIEDAD ILIKE %s OR
+                r.REFERENCIA_BANCARIA ILIKE %s OR
+                CAST(r.ID_RECAUDO AS TEXT) ILIKE %s
+            )""")
+            params.extend([f"%{busqueda}%"] * 4)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY r.FECHA_PAGO DESC, r.ID_RECAUDO DESC"
+
+        return self._ejecutar_query_paginada(query, params, page, limit)

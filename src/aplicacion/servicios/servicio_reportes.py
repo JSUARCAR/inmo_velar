@@ -1,8 +1,13 @@
 from typing import List, Dict, Any, Tuple, Optional
 from src.infraestructura.persistencia.repositorio_reportes import RepositorioReportes
-from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
-from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+from src.infraestructura.persistencia.repositorio_persona_sqlite import (
+    RepositorioPersonaSQLite,
+)
+from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+    RepositorioPropiedadSQLite,
+)
 from src.infraestructura.persistencia.database import db_manager
+
 
 class ServicioReportes:
     """Servicio de aplicación para coordinar la generación de reportes."""
@@ -14,12 +19,12 @@ class ServicioReportes:
         self.repo_propiedades = RepositorioPropiedadSQLite(db_manager)
 
     async def obtener_datos_reporte(
-        self, 
-        report_id: str, 
-        filtros: Dict[str, Any], 
-        pagina: int = 1, 
-        limite: int = 20, 
-        es_exportacion: bool = False
+        self,
+        report_id: str,
+        filtros: Dict[str, Any],
+        pagina: int = 1,
+        limite: int = 20,
+        es_exportacion: bool = False,
     ) -> Tuple[List[Dict[str, Any]], List[str], int]:
         """
         Orquestador principal de datos para reportes.
@@ -27,23 +32,27 @@ class ServicioReportes:
         """
         if es_exportacion:
             pagina = 1
-            limite = 50000 # Límite de seguridad para exportación
+            limite = 50000  # Límite de seguridad para exportación
 
         busqueda = filtros.get("busqueda")
         estado = filtros.get("estado", "Todos")
-        
+
         # 1. Reportes de Entidades Base (Uso de repositorios existentes)
         if report_id == "personas":
-            solo_activos = True if estado == "Activo" else (False if estado == "Inactivo" else None)
+            solo_activos = (
+                True
+                if estado == "Activo"
+                else (False if estado == "Inactivo" else None)
+            )
             rol = filtros.get("rol") if filtros.get("rol") != "Todos" else None
-            
+
             # Nota: Estos repositorios cargan todo en memoria, se debe mejorar en sus clases base
             personas = self.repo_personas.obtener_todos(
                 busqueda=busqueda,
                 solo_activos=solo_activos if solo_activos is not None else False,
-                filtro_rol=rol
+                filtro_rol=rol,
             )
-            
+
             if estado == "Inactivo":
                 personas = [p for p in personas if not p.estado_registro]
             elif estado == "Activo":
@@ -52,16 +61,19 @@ class ServicioReportes:
             total = len(personas)
             offset = (pagina - 1) * limite
             paginated = personas[offset : offset + limite]
-            
+
             data = [self._limpiar_dict(p.__dict__) for p in paginated]
             headers = list(data[0].keys()) if data else []
             return data, headers, total
 
         if report_id == "propiedades":
-            solo_activas = True if estado == "Activo" else (False if estado == "Inactivo" else None)
+            solo_activas = (
+                True
+                if estado == "Activo"
+                else (False if estado == "Inactivo" else None)
+            )
             props = self.repo_propiedades.listar_con_filtros(
-                busqueda=busqueda,
-                solo_activas=solo_activas
+                busqueda=busqueda, solo_activas=solo_activas
             )
             total = len(props)
             offset = (pagina - 1) * limite
@@ -75,38 +87,72 @@ class ServicioReportes:
             "reporte_propietarios": "PROPIETARIOS",
             "reporte_arrendatarios": "ARRENDATARIOS",
             "reporte_codeudores": "CODEUDORES",
-            "reporte_asesores": "ASESORES"
+            "reporte_asesores": "ASESORES",
         }
         if report_id in role_map:
-            solo_activos = True if estado == "Activo" else (False if estado == "Inactivo" else True)
+            solo_activos = (
+                True
+                if estado == "Activo"
+                else (False if estado == "Inactivo" else True)
+            )
             data, total = self.repo_reportes.obtener_reporte_roles(
                 role_table=role_map[report_id],
                 busqueda=busqueda,
                 solo_activos=solo_activos,
                 page=pagina,
-                limit=limite
+                limit=limite,
             )
             headers = self._definir_headers_roles(data)
             return data, headers, total
 
-        # 3. Reporte Liquidaciones (Paginación Real en DB)
+        # 3. Reporte Recaudos (Paginación Real en DB)
+        if report_id == "recaudos":
+            data, total = self.repo_reportes.obtener_reporte_recaudos(
+                estado=filtros.get("estado_recaudo"),
+                metodo_pago=filtros.get("metodo_pago"),
+                periodo_inicio=filtros.get("periodo_inicio"),
+                periodo_fin=filtros.get("periodo_fin"),
+                busqueda=busqueda,
+                page=pagina,
+                limit=limite,
+            )
+            headers = [
+                "ID_RECAUDO",
+                "ID_CONTRATO_A",
+                "Direccion_Inmueble",
+                "Matricula",
+                "Nombre_Arrendatario",
+                "Telefono_Arrendatario",
+                "Email_Arrendatario",
+                "Fecha_Pago",
+                "Valor_Total",
+                "Metodo_Pago",
+                "Referencia_Bancaria",
+                "Estado_Recaudo",
+                "Periodo_Facturado",
+                "Observaciones",
+                "Created_At",
+            ]
+            return data, headers, total
+
+        # 5. Reporte Liquidaciones (Paginación Real en DB)
         if report_id == "liquidaciones":
             asesor_id = None
             if filtros.get("asesor_id") and filtros.get("asesor_id") != "Todos":
                 try:
-                    asesor_id = int(filtros.get("asesor_id").split('(')[-1].replace(')', ''))
-                except: pass
-            
+                    asesor_id = int(
+                        filtros.get("asesor_id").split("(")[-1].replace(")", "")
+                    )
+                except:
+                    pass
+
             data, total = self.repo_reportes.obtener_reporte_liquidaciones(
-                asesor_id=asesor_id,
-                busqueda=busqueda,
-                page=pagina,
-                limit=limite
+                asesor_id=asesor_id, busqueda=busqueda, page=pagina, limit=limite
             )
             headers = list(data[0].keys()) if data else []
             return data, headers, total
 
-        # 4. Reportes Genéricos (Paginación Real en DB)
+        # 6. Reportes Genéricos (Paginación Real en DB)
         table_map = {
             "contratos_mandato": "CONTRATOS_MANDATOS",
             "contratos_arrendamiento": "CONTRATOS_ARRENDAMIENTOS",
@@ -116,14 +162,11 @@ class ServicioReportes:
             "incidentes": "INCIDENTES",
             "seguros": "SEGUROS",
             "recibos_publicos": "RECIBOS_PUBLICOS",
-            "saldos_favor": "SALDOS_FAVOR"
+            "saldos_favor": "SALDOS_FAVOR",
         }
         if report_id in table_map:
             data, total = self.repo_reportes.obtener_reporte_generico(
-                tabla=table_map[report_id],
-                busqueda=busqueda,
-                page=pagina,
-                limit=limite
+                tabla=table_map[report_id], busqueda=busqueda, page=pagina, limit=limite
             )
             headers = list(data[0].keys()) if data else []
             return data, headers, total
@@ -137,21 +180,29 @@ class ServicioReportes:
 
     def _limpiar_dict(self, d: Dict) -> Dict:
         """Limpia metadatos de SQLAlchemy/DB."""
-        return {k: v for k, v in d.items() if not k.startswith('_')}
+        return {k: v for k, v in d.items() if not k.startswith("_")}
 
     def _definir_headers_roles(self, data: List[Dict]) -> List[str]:
         """Ordena los headers para reportes de roles para mejor legibilidad."""
-        if not data: return []
-        priority = ["tipo_documento", "numero_documento", "nombre_completo", "telefono_principal", "correo_electronico"]
+        if not data:
+            return []
+        priority = [
+            "tipo_documento",
+            "numero_documento",
+            "nombre_completo",
+            "telefono_principal",
+            "correo_electronico",
+        ]
         all_keys = list(data[0].keys())
         headers = []
-        
+
         # Encontrar nombres exactos (respetando case-sensitivity del driver)
         for p in priority:
             found = next((k for k in all_keys if k.lower() == p), None)
-            if found: headers.append(found)
-            
+            if found:
+                headers.append(found)
+
         for k in all_keys:
-            if k not in headers and not k.startswith('_'):
+            if k not in headers and not k.startswith("_"):
                 headers.append(k)
         return headers
