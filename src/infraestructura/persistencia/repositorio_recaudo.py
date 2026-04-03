@@ -436,3 +436,102 @@ class RepositorioRecaudo:
         except Exception as e:
             conn.rollback()
             raise e
+
+    def listar_paginado(
+        self,
+        limit: int,
+        offset: int,
+        estado: Optional[str] = None,
+        fecha_desde: Optional[str] = None,
+        fecha_hasta: Optional[str] = None,
+        busqueda: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Lista recaudos paginados con JOINs a contratos, propiedades y arrendatarios.
+
+        Args:
+            limit: Cantidad máxima de registros
+            offset: Registros a saltar
+            estado: Filtro por estado del recaudo
+            fecha_desde: Filtro por fecha mínima
+            fecha_hasta: Filtro por fecha máxima
+            busqueda: Texto de búsqueda general
+
+        Returns:
+            Lista de diccionarios con datos del recaudo y relaciones
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        query = """
+            SELECT 
+                r.ID_RECAUDO,
+                r.ID_CONTRATO_A,
+                r.FECHA_PAGO,
+                r.VALOR_TOTAL,
+                r.METODO_PAGO,
+                r.REFERENCIA_BANCARIA,
+                r.ESTADO_RECAUDO,
+                r.OBSERVACIONES,
+                p.DIRECCION_PROPIEDAD,
+                p.MATRICULA_INMOBILIARIA,
+                per.NOMBRE_COMPLETO as NOMBRE_ARRENDATARIO
+            FROM RECAUDOS r
+            INNER JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
+            INNER JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+            INNER JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+            INNER JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+            WHERE 1=1
+        """
+        params: list = []
+
+        if estado and estado != "Todos":
+            query += f" AND r.ESTADO_RECAUDO = {placeholder}"
+            params.append(estado)
+
+        if fecha_desde:
+            query += f" AND r.FECHA_PAGO >= {placeholder}"
+            params.append(fecha_desde)
+
+        if fecha_hasta:
+            query += f" AND r.FECHA_PAGO <= {placeholder}"
+            params.append(fecha_hasta)
+
+        if busqueda:
+            cols = [
+                "r.REFERENCIA_BANCARIA",
+                "p.DIRECCION_PROPIEDAD",
+                "per.NOMBRE_COMPLETO",
+                "CAST(r.ID_RECAUDO AS TEXT)",
+            ]
+            cond = self.db.get_search_condition(cols)
+            query += f" AND ({cond})"
+
+            term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
+            params.extend([term_norm] * len(cols))
+
+        query += " ORDER BY r.FECHA_PAGO DESC"
+        query += f" LIMIT {placeholder} OFFSET {placeholder}"
+        params.extend([limit, offset])
+
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+
+        return [
+            {
+                "id_recaudo": row["ID_RECAUDO"],
+                "id_contrato": row["ID_CONTRATO_A"],
+                "codigo_contrato": f"ID:{row['ID_CONTRATO_A']}",
+                "direccion": row["DIRECCION_PROPIEDAD"],
+                "matricula": row["MATRICULA_INMOBILIARIA"],
+                "arrendatario": row["NOMBRE_ARRENDATARIO"],
+                "fecha_pago": row["FECHA_PAGO"],
+                "valor_total": row["VALOR_TOTAL"],
+                "metodo_pago": row["METODO_PAGO"],
+                "referencia": row["REFERENCIA_BANCARIA"] or "",
+                "estado": row["ESTADO_RECAUDO"],
+                "observaciones": row["OBSERVACIONES"] or "",
+            }
+            for row in rows
+        ]
