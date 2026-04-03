@@ -168,30 +168,63 @@ class RepositorioReportes:
         limit: int = 20,
     ) -> Tuple[List[Dict[str, Any]], int]:
         """Reporte especializado de recaudos con JOINs a contratos, propiedades y arrendatarios."""
-        query = """
-            SELECT 
-                r.ID_RECAUDO,
-                r.ID_CONTRATO_A,
-                p.DIRECCION_PROPIEDAD AS "Direccion_Inmueble",
-                p.MATRICULA_INMOBILIARIA AS "Matricula",
-                per.NOMBRE_COMPLETO AS "Nombre_Arrendatario",
-                per.TELEFONO_PRINCIPAL AS "Telefono_Arrendatario",
-                per.CORREO_ELECTRONICO AS "Email_Arrendatario",
-                r.FECHA_PAGO,
-                r.VALOR_TOTAL,
-                r.METODO_PAGO,
-                r.REFERENCIA_BANCARIA,
-                r.ESTADO_RECAUDO,
-                rc.PERIODO AS "Periodo_Facturado",
-                r.OBSERVACIONES,
-                r.CREATED_AT
-            FROM RECAUDOS r
-            LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
-            LEFT JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-            LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
-            LEFT JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-            LEFT JOIN RECAUDO_CONCEPTOS rc ON r.ID_RECAUDO = rc.ID_RECAUDO
-        """
+
+        necesita_filtro_periodo = periodo_inicio or periodo_fin
+
+        if necesita_filtro_periodo:
+            query = """
+                SELECT DISTINCT
+                    r.ID_RECAUDO,
+                    r.ID_CONTRATO_A,
+                    COALESCE(p.DIRECCION_PROPIEDAD, 'N/A') AS "Direccion_Inmueble",
+                    COALESCE(p.MATRICULA_INMOBILIARIA, 'N/A') AS "Matricula",
+                    COALESCE(per.NOMBRE_COMPLETO, 'N/A') AS "Nombre_Arrendatario",
+                    COALESCE(per.TELEFONO_PRINCIPAL, 'N/A') AS "Telefono_Arrendatario",
+                    COALESCE(per.CORREO_ELECTRONICO, 'N/A') AS "Email_Arrendatario",
+                    r.FECHA_PAGO,
+                    r.VALOR_TOTAL,
+                    r.METODO_PAGO,
+                    COALESCE(r.REFERENCIA_BANCARIA, 'N/A') AS "Referencia_Bancaria",
+                    r.ESTADO_RECAUDO,
+                    MIN(rc.PERIODO) AS "Periodo_Facturado",
+                    COALESCE(r.OBSERVACIONES, '') AS "Observaciones",
+                    r.CREATED_AT
+                FROM RECAUDOS r
+                LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
+                LEFT JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+                LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+                LEFT JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+                LEFT JOIN RECAUDO_CONCEPTOS rc ON r.ID_RECAUDO = rc.ID_RECAUDO
+                GROUP BY r.ID_RECAUDO, r.ID_CONTRATO_A, p.DIRECCION_PROPIEDAD, p.MATRICULA_INMOBILIARIA,
+                         per.NOMBRE_COMPLETO, per.TELEFONO_PRINCIPAL, per.CORREO_ELECTRONICO,
+                         r.FECHA_PAGO, r.VALOR_TOTAL, r.METODO_PAGO, r.REFERENCIA_BANCARIA,
+                         r.ESTADO_RECAUDO, r.OBSERVACIONES, r.CREATED_AT
+            """
+        else:
+            query = """
+                SELECT 
+                    r.ID_RECAUDO,
+                    r.ID_CONTRATO_A,
+                    COALESCE(p.DIRECCION_PROPIEDAD, 'N/A') AS "Direccion_Inmueble",
+                    COALESCE(p.MATRICULA_INMOBILIARIA, 'N/A') AS "Matricula",
+                    COALESCE(per.NOMBRE_COMPLETO, 'N/A') AS "Nombre_Arrendatario",
+                    COALESCE(per.TELEFONO_PRINCIPAL, 'N/A') AS "Telefono_Arrendatario",
+                    COALESCE(per.CORREO_ELECTRONICO, 'N/A') AS "Email_Arrendatario",
+                    r.FECHA_PAGO,
+                    r.VALOR_TOTAL,
+                    r.METODO_PAGO,
+                    COALESCE(r.REFERENCIA_BANCARIA, 'N/A') AS "Referencia_Bancaria",
+                    r.ESTADO_RECAUDO,
+                    (SELECT MIN(rc2.PERIODO) FROM RECAUDO_CONCEPTOS rc2 WHERE rc2.ID_RECAUDO = r.ID_RECAUDO) AS "Periodo_Facturado",
+                    COALESCE(r.OBSERVACIONES, '') AS "Observaciones",
+                    r.CREATED_AT
+                FROM RECAUDOS r
+                LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
+                LEFT JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+                LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+                LEFT JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+            """
+
         conditions = []
         params = []
 
@@ -203,19 +236,24 @@ class RepositorioReportes:
             conditions.append("r.METODO_PAGO = %s")
             params.append(metodo_pago)
 
-        if periodo_inicio:
-            conditions.append("rc.PERIODO >= %s")
-            params.append(periodo_inicio)
+        if necesita_filtro_periodo:
+            if periodo_inicio:
+                conditions.append(
+                    "EXISTS (SELECT 1 FROM RECAUDO_CONCEPTOS rc3 WHERE rc3.ID_RECAUDO = r.ID_RECAUDO AND rc3.PERIODO >= %s)"
+                )
+                params.append(periodo_inicio)
 
-        if periodo_fin:
-            conditions.append("rc.PERIODO <= %s")
-            params.append(periodo_fin)
+            if periodo_fin:
+                conditions.append(
+                    "EXISTS (SELECT 1 FROM RECAUDO_CONCEPTOS rc4 WHERE rc4.ID_RECAUDO = r.ID_RECAUDO AND rc4.PERIODO <= %s)"
+                )
+                params.append(periodo_fin)
 
         if busqueda:
             conditions.append("""(
-                per.NOMBRE_COMPLETO ILIKE %s OR 
-                p.DIRECCION_PROPIEDAD ILIKE %s OR
-                r.REFERENCIA_BANCARIA ILIKE %s OR
+                COALESCE(per.NOMBRE_COMPLETO, '') ILIKE %s OR 
+                COALESCE(p.DIRECCION_PROPIEDAD, '') ILIKE %s OR
+                COALESCE(r.REFERENCIA_BANCARIA, '') ILIKE %s OR
                 CAST(r.ID_RECAUDO AS TEXT) ILIKE %s
             )""")
             params.extend([f"%{busqueda}%"] * 4)
