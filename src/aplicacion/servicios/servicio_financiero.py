@@ -46,7 +46,8 @@ class ServicioFinanciero:
     def registrar_recaudo(
         self, datos: Dict[str, Any], conceptos_data: List[Dict[str, Any]], usuario_sistema: str
     ) -> Recaudo:
-        """Registra un nuevo pago del inquilino."""
+        """DEPRECATED - Usar ServicioRecaudo.registrar_pago() en su lugar.
+        Registra un nuevo pago del inquilino."""
         recaudo = Recaudo(
             id_contrato_a=datos["id_contrato_a"],
             fecha_pago=datos["fecha_pago"],
@@ -324,9 +325,11 @@ class ServicioFinanciero:
         }
 
     def aprobar_recaudo(self, id_recaudo: int, usuario_sistema: str) -> None:
+        """DEPRECATED - Usar ServicioRecaudo.aplicar_pago() en su lugar."""
         self.repo_recaudo.cambiar_estado(id_recaudo, "Aplicado", usuario_sistema)
 
     def reversar_recaudo(self, id_recaudo: int, usuario_sistema: str) -> None:
+        """DEPRECATED - Usar ServicioRecaudo.reversar_pago() en su lugar."""
         self.repo_recaudo.cambiar_estado(id_recaudo, "Reversado", usuario_sistema)
 
     def listar_liquidaciones_propietarios_paginado(

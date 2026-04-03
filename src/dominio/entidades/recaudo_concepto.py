@@ -8,6 +8,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
+from src.dominio.constantes.recaudo import TipoConcepto
+
 
 @dataclass
 class RecaudoConcepto:
@@ -25,21 +27,26 @@ class RecaudoConcepto:
     id_recaudo: int = 0  # FK a RECAUDOS
 
     # Detalles del Concepto
-    tipo_concepto: str = ""  # 'Canon', 'Administración', 'Mora', 'Servicios', 'Otro'
-    periodo: str = ""  # Formato 'YYYY-MM' (ej: '2024-10' para indicar qué mes se está pagando)
+    tipo_concepto: TipoConcepto = TipoConcepto.CANON
+    periodo: str = ""  # Formato 'YYYY-MM' (ej: '2024-10')
     valor: int = 0  # Cuánto de este pago fue para este concepto
 
     # Auditoría
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
 
-    def __post_init__(self):
-        """Validaciones de reglas de negocio"""
+    def __post_init__(self) -> None:
+        """Validaciones de reglas de negocio."""
+        # Normalizar string → Enum si viene de la BD
+        if isinstance(self.tipo_concepto, str):
+            self.tipo_concepto = TipoConcepto(self.tipo_concepto)
+
         if self.valor <= 0:
             raise ValueError("El valor del concepto debe ser mayor a cero")
 
-        if self.tipo_concepto not in ["Canon", "Administración", "Mora", "Servicios", "Otro"]:
-            raise ValueError(f"Tipo de concepto inválido: {self.tipo_concepto}")
-
         # Validar formato de período (YYYY-MM)
         if len(self.periodo) != 7 or self.periodo[4] != "-":
-            raise ValueError(f"Formato de período inválido: {self.periodo}. Use YYYY-MM")
+            raise ValueError(
+                f"Formato de período inválido: {self.periodo}. Use YYYY-MM"
+            )
