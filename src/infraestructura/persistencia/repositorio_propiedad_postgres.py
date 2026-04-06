@@ -62,6 +62,9 @@ class RepositorioPropiedadPostgres:
             telefono_administracion=get_val("TELEFONO_ADMINISTRACION"),
             tipo_cuenta_administracion=get_val("TIPO_CUENTA_ADMINISTRACION"),
             numero_cuenta_administracion=get_val("NUMERO_CUENTA_ADMINISTRACION"),
+            fecha_pago_administracion=get_val("FECHA_PAGO_ADMINISTRACION"),
+            link_pago_administracion=get_val("LINK_PAGO_ADMINISTRACION"),
+            cuota_extra_ordinaria=get_val("CUOTA_EXTRA_ORDINARIA"),
             fecha_ingreso_propiedad=get_val("FECHA_INGRESO_PROPIEDAD"),
             estado_registro=get_val("ESTADO_REGISTRO"),
             motivo_inactivacion=get_val("MOTIVO_INACTIVACION"),
@@ -297,11 +300,13 @@ class RepositorioPropiedadPostgres:
                 VALOR_VENTA_PROPIEDAD, COMISION_VENTA_PROPIEDAD, OBSERVACIONES_PROPIEDAD,
                 CODIGO_ENERGIA, CODIGO_AGUA, CODIGO_GAS,
                 TELEFONO_ADMINISTRACION, TIPO_CUENTA_ADMINISTRACION, NUMERO_CUENTA_ADMINISTRACION,
+                FECHA_PAGO_ADMINISTRACION, LINK_PAGO_ADMINISTRACION, CUOTA_EXTRA_ORDINARIA,
                 FECHA_INGRESO_PROPIEDAD, ESTADO_REGISTRO,
                 CREATED_AT, CREATED_BY
             ) VALUES (
                 {placeholder}, {placeholder}, {placeholder}, {placeholder},
                 {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder},
+                {placeholder}, {placeholder}, {placeholder},
                 {placeholder}, {placeholder}, {placeholder},
                 {placeholder}, {placeholder}, {placeholder},
                 {placeholder}, {placeholder}, {placeholder},
@@ -339,6 +344,9 @@ class RepositorioPropiedadPostgres:
                     propiedad.telefono_administracion,
                     propiedad.tipo_cuenta_administracion,
                     propiedad.numero_cuenta_administracion,
+                    propiedad.fecha_pago_administracion,
+                    propiedad.link_pago_administracion,
+                    propiedad.cuota_extra_ordinaria,
                     propiedad.fecha_ingreso_propiedad or datetime.now().isoformat(),
                     True,  # ESTADO_REGISTRO activo (True)
                     datetime.now().isoformat(),
@@ -384,6 +392,9 @@ class RepositorioPropiedadPostgres:
                 TELEFONO_ADMINISTRACION = {placeholder},
                 TIPO_CUENTA_ADMINISTRACION = {placeholder},
                 NUMERO_CUENTA_ADMINISTRACION = {placeholder},
+                FECHA_PAGO_ADMINISTRACION = {placeholder},
+                LINK_PAGO_ADMINISTRACION = {placeholder},
+                CUOTA_EXTRA_ORDINARIA = {placeholder},
                 ESTADO_REGISTRO = {placeholder},
                 UPDATED_AT = {placeholder},
                 UPDATED_BY = {placeholder}
@@ -418,6 +429,9 @@ class RepositorioPropiedadPostgres:
                     propiedad.telefono_administracion,
                     propiedad.tipo_cuenta_administracion,
                     propiedad.numero_cuenta_administracion,
+                    propiedad.fecha_pago_administracion,
+                    propiedad.link_pago_administracion,
+                    propiedad.cuota_extra_ordinaria,
                     # CAMBIO: Castear explícitamente a bool si es necesario, o pasar el valor tal cual
                     (
                         bool(propiedad.estado_registro)

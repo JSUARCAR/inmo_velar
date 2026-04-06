@@ -120,6 +120,16 @@ class ServicioPropiedades:
         if datos.get("estrato") and not (1 <= datos["estrato"] <= 6):
             raise ValueError("El estrato debe estar entre 1 y 6")
 
+        # Validar fecha de pago (1-28)
+        fecha_pago = datos.get("fecha_pago_administracion")
+        if fecha_pago and not (1 <= fecha_pago <= 28):
+            raise ValueError("La fecha de pago debe estar entre 1 y 28")
+
+        # Validar URL del link (si viene con http/https)
+        link_pago = datos.get("link_pago_administracion")
+        if link_pago and not (link_pago.startswith(("http://", "https://")) or link_pago == ""):
+            datos["link_pago_administracion"] = f"https://{link_pago}"
+
         propiedad = Propiedad(
             matricula_inmobiliaria=datos["matricula_inmobiliaria"],
             id_municipio=datos["id_municipio"],
@@ -142,6 +152,9 @@ class ServicioPropiedades:
             telefono_administracion=datos.get("telefono_administracion"),
             tipo_cuenta_administracion=datos.get("tipo_cuenta_administracion"),
             numero_cuenta_administracion=datos.get("numero_cuenta_administracion"),
+            fecha_pago_administracion=datos.get("fecha_pago_administracion"),
+            link_pago_administracion=datos.get("link_pago_administracion"),
+            cuota_extra_ordinaria=datos.get("cuota_extra_ordinaria"),
             fecha_ingreso_propiedad=datos.get("fecha_ingreso_propiedad", datetime.now().date().isoformat()),
             created_at=datetime.now().isoformat(),
             created_by=usuario_sistema,
@@ -169,6 +182,16 @@ class ServicioPropiedades:
 
         if "estrato" in datos and datos["estrato"] and not (1 <= datos["estrato"] <= 6):
             raise ValueError("El estrato debe estar entre 1 y 6")
+
+        # Validar fecha de pago (1-28)
+        fecha_pago = datos.get("fecha_pago_administracion")
+        if fecha_pago and not (1 <= fecha_pago <= 28):
+            raise ValueError("La fecha de pago debe estar entre 1 y 28")
+
+        # Validar URL del link (si viene con http/https)
+        link_pago = datos.get("link_pago_administracion")
+        if link_pago and not (link_pago.startswith(("http://", "https://")) or link_pago == ""):
+            datos["link_pago_administracion"] = f"https://{link_pago}"
 
         # Actualizar campos
         for k, v in datos.items():
