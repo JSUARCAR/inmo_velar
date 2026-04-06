@@ -343,6 +343,8 @@ def step_3_content() -> rx.Component:
         rx.box(
             rx.vstack(
                 rx.text("Datos Administración PH", size="2", weight="bold"),
+                
+                # === ROW 1: Contacto y Cuenta ===
                 rx.grid(
                     form_field(
                         "Teléfono Admin",
@@ -369,9 +371,67 @@ def step_3_content() -> rx.Component:
                         ),
                     ),
                     columns="2",
-                    spacing="6", # Aumentado de 4 a 6
+                    spacing="6",
                     width="100%",
                 ),
+                
+                # === ROW 2: Fecha y Link de Pago (NUEVO) ===
+                rx.grid(
+                    form_field(
+                        "Fecha Pago Admin",
+                        neuro_input(
+                            rx.input.slot(rx.icon("calendar", size=16, color="var(--gray-10)")),
+                            type="number",
+                            min_="1",
+                            max_="28",
+                            placeholder="Día 1-28",
+                            value=PropiedadesState.form_data["fecha_pago_administracion"],
+                            on_change=lambda v: PropiedadesState.set_form_field(
+                                "fecha_pago_administracion", v
+                            ),
+                            size="3",
+                            width="100%",
+                        ),
+                    ),
+                    form_field(
+                        "Link de Pago",
+                        neuro_input(
+                            rx.input.slot(rx.icon("link", size=16, color="var(--gray-10)")),
+                            type="url",
+                            placeholder="https://...",
+                            value=PropiedadesState.form_data["link_pago_administracion"],
+                            on_change=lambda v: PropiedadesState.set_form_field(
+                                "link_pago_administracion", v
+                            ),
+                            size="3",
+                            width="100%",
+                        ),
+                    ),
+                    columns="2",
+                    spacing="6",
+                    width="100%",
+                ),
+                
+                # === ROW 3: Cuota Extra (NUEVO - colspan 2) ===
+                rx.grid(
+                    form_field(
+                        "Cuota Extra Ordinaria",
+                        neuro_input(
+                            rx.input.slot(rx.icon("wallet", size=16, color="var(--gray-10)")),
+                            type="number",
+                            placeholder="0",
+                            value=PropiedadesState.form_data["cuota_extra_ordinaria"],
+                            on_change=lambda v: PropiedadesState.set_form_field(
+                                "cuota_extra_ordinaria", v
+                            ),
+                            width="100%",
+                        ),
+                    ),
+                    columns="1",
+                    width="100%",
+                ),
+                
+                spacing="4",
                 padding="4",
                 width="100%",
             ),

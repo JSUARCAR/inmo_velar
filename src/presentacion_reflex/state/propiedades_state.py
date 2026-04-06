@@ -449,6 +449,10 @@ class PropiedadesState(DocumentosStateMixin):
             "telefono_administracion": "",
             "tipo_cuenta_administracion": "Ahorros",
             "numero_cuenta_administracion": "",
+            # === NUEVOS CAMPOS ===
+            "fecha_pago_administracion": "1",        # Día por defecto
+            "link_pago_administracion": "",          # URL vacío
+            "cuota_extra_ordinaria": "0",           # Sin cuota extra por defecto
         }
         self.show_modal = True
         self.error_message = ""
@@ -521,6 +525,17 @@ class PropiedadesState(DocumentosStateMixin):
                     "telefono_administracion": propiedad.telefono_administracion or "",
                     "tipo_cuenta_administracion": propiedad.tipo_cuenta_administracion or "Ahorros",
                     "numero_cuenta_administracion": propiedad.numero_cuenta_administracion or "",
+                    "fecha_pago_administracion": (
+                        str(propiedad.fecha_pago_administracion) 
+                        if propiedad.fecha_pago_administracion else "1"
+                    ),
+                    "link_pago_administracion": (
+                        propiedad.link_pago_administracion or ""
+                    ),
+                    "cuota_extra_ordinaria": (
+                        str(propiedad.cuota_extra_ordinaria) 
+                        if propiedad.cuota_extra_ordinaria else "0"
+                    ),
                 }
                 self.show_modal = True
                 self.error_message = ""
@@ -633,6 +648,10 @@ class PropiedadesState(DocumentosStateMixin):
                 "telefono_administracion": form_data.get("telefono_administracion", ""),
                 "tipo_cuenta_administracion": form_data.get("tipo_cuenta_administracion", ""),
                 "numero_cuenta_administracion": form_data.get("numero_cuenta_administracion", ""),
+                # === NUEVOS CAMPOS ===
+                "fecha_pago_administracion": safe_int("fecha_pago_administracion", 1),
+                "link_pago_administracion": form_data.get("link_pago_administracion", ""),
+                "cuota_extra_ordinaria": safe_int("cuota_extra_ordinaria", 0),
             }
 
             pass  # print(f"📦 Datos Procesados para Servicio: {datos}") [OpSec Removed]

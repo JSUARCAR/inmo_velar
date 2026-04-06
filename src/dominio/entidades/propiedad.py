@@ -6,6 +6,7 @@ Mapeo exacto de la tabla PROPIEDADES.
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from decimal import Decimal
 from typing import Optional
 
 
@@ -69,6 +70,11 @@ class Propiedad:
     telefono_administracion: Optional[str] = None  # Teléfono de contacto administración
     tipo_cuenta_administracion: Optional[str] = None  # "Ahorros" | "Corriente"
     numero_cuenta_administracion: Optional[str] = None  # Número de cuenta bancaria
+
+    # === NUEVOS CAMPOS ===
+    fecha_pago_administracion: Optional[int] = None  # Día 1-28 del mes para pago
+    link_pago_administracion: Optional[str] = None   # URL portal de pago en línea
+    cuota_extra_ordinaria: Optional[Decimal] = None  # Valor cuota extraordinaria (COP)
 
     fecha_ingreso_propiedad: Optional[str] = None
 
