@@ -82,11 +82,7 @@ def render_table_view() -> rx.Component:
                 color_scheme="purple",
                 size="1",
                 tooltip_content="Generar Contrato Oficial",
-                on_click=lambda: rx.cond(
-                    c["tipo_contrato"] == "Mandato",
-                    PDFState.generar_contrato_mandato_elite(c["id_contrato"], False),
-                    PDFState.generar_contrato_arrendamiento_elite(c["id_contrato"], False),
-                ),
+                on_click=lambda: PDFState.generar_contrato_oficial_elite(c["id_contrato"], c["tipo_contrato"], False),
             ),
             # Terminar
             rx.cond(
