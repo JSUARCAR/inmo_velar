@@ -1501,42 +1501,44 @@ class ContratosState(DocumentosStateMixin):
 
     @rx.event(background=True)
     async def toggle_estado(self, id_contrato: int, tipo: str, estado_actual: str):
-        """Cambia estado de un contrato (Activo <-> Cancelado)."""
+        """Cambia estado de un contrato (Activo <-> Cancelado) y emite PDF."""
         async with self:
             self.is_loading = True
             self.error_message = ""
 
         try:
-            # Instanciar repositorios y servicio
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
-                RepositorioContratoMandatoSQLite,
+            # Instanciar repositorios Postgres y servicio
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+                RepositorioContratoMandatoPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
-                RepositorioContratoArrendamientoSQLite,
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
-                RepositorioRenovacionSQLite,
+            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
+                RepositorioRenovacionPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
-            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
-                RepositorioArrendatarioSQLite,
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
-                RepositorioCodeudorSQLite,
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
             )
+            from src.presentacion_reflex.state.pdf_state import PDFState
 
-            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-            repo_ipc = RepositorioIPCSQLite(db_manager)
-            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+            repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
+            repo_renovacion = RepositorioRenovacionPostgres(db_manager)
+            repo_ipc = RepositorioIPCPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
 
             servicio = ServicioContratos(
+                db_manager,
                 repo_mandato=repo_mandato,
                 repo_arriendo=repo_arriendo,
                 repo_propiedad=repo_propiedad,
@@ -1548,12 +1550,24 @@ class ContratosState(DocumentosStateMixin):
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             if estado_actual == "Activo":
+                # Obtener detalles para el PDF antes de cancelar
+                detalle = servicio.obtener_detalle_contrato_ui(id_contrato, tipo)
+                beneficiario = "Interesado"
+                if detalle:
+                    if tipo == "Mandato":
+                        beneficiario = detalle.get("propietario", "Propietario")
+                    else:
+                        beneficiario = detalle.get("arrendatario", "Arrendatario")
+
                 # Cancelar contrato
                 motivo = "Cancelación manual desde interfaz"
                 if tipo == "Mandato":
                     servicio.terminar_mandato(id_contrato, motivo, usuario_sistema)
                 else:
                     servicio.terminar_arrendamiento(id_contrato, motivo, usuario_sistema)
+                
+                # Generar Acta de Terminación / Paz y Salvo
+                yield PDFState.generar_certificado_paz_y_salvo(id_contrato, beneficiario)
             else:
                 # No implementado: reactivar contrato cancelado
                 # Por ahora solo permitimos desactivar

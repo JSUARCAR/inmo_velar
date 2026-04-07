@@ -154,6 +154,23 @@ class PDFState(rx.State):
     # EVENT HANDLERS - DOCUMENTOS ÉLITE
     # ========================================================================
 
+    @rx.event(background=True)
+    async def generar_contrato_oficial_elite(self, contrato_id: int, tipo_contrato: str, es_borrador: bool = False):
+        """
+        Punto de entrada seguro para evitar colisiones de eventos en Reflex (rx.cond en lambdas).
+        
+        Args:
+            contrato_id: ID del contrato
+            tipo_contrato: 'Mandato' o 'Arrendamiento'
+            es_borrador: Si es formato borrador u oficial
+        """
+        if tipo_contrato == "Mandato":
+            for _evt in self.generar_contrato_mandato_elite(contrato_id, es_borrador):
+                yield _evt
+        else:
+            for _evt in self.generar_contrato_arrendamiento_elite(contrato_id, es_borrador):
+                yield _evt
+
     def generar_contrato_arrendamiento_elite(self, contrato_id: int, es_borrador: bool = False):
         """
         Genera contrato de arrendamiento élite
