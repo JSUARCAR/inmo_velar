@@ -75,6 +75,7 @@ class Propiedad:
     fecha_pago_administracion: Optional[int] = None  # Día 1-28 del mes para pago
     link_pago_administracion: Optional[str] = None   # URL portal de pago en línea
     cuota_extra_ordinaria: Optional[Decimal] = None  # Valor cuota extraordinaria (COP)
+    observaciones_admin_ph: Optional[str] = None  # Notas específicas de la admin del PH
 
     fecha_ingreso_propiedad: Optional[str] = None
 

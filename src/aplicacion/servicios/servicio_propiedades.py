@@ -155,6 +155,7 @@ class ServicioPropiedades:
             fecha_pago_administracion=datos.get("fecha_pago_administracion"),
             link_pago_administracion=datos.get("link_pago_administracion"),
             cuota_extra_ordinaria=datos.get("cuota_extra_ordinaria"),
+            observaciones_admin_ph=datos.get("observaciones_admin_ph"),
             fecha_ingreso_propiedad=datos.get("fecha_ingreso_propiedad", datetime.now().date().isoformat()),
             created_at=datetime.now().isoformat(),
             created_by=usuario_sistema,
