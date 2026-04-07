@@ -1,0 +1,26 @@
+============================================================
+AUDITORIA: Campos de Administracion PH
+============================================================
+
+[INFO] Base de datos: postgresql
+[INFO] Host: desconocido
+
+[ERROR] al consultar BD:
+
+============================================================
+AUDITORIA: Carga de Propiedad con Campos Nuevos
+============================================================
+
+[INFO] Propiedad ID: 100043
+
+[VERIFICACION] Valores de campos de administracion:
+  fecha_pago_administracion: None
+  link_pago_administracion: None
+  cuota_extra_ordinaria: None
+  observaciones_admin_ph: None
+  telefono_administracion: None
+
+[OK] Carga de propiedad exitosa
+
+
+RESUMEN: Columnas=False, Carga=True

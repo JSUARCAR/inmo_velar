@@ -65,6 +65,7 @@ class RepositorioPropiedadPostgres:
             fecha_pago_administracion=get_val("FECHA_PAGO_ADMINISTRACION"),
             link_pago_administracion=get_val("LINK_PAGO_ADMINISTRACION"),
             cuota_extra_ordinaria=get_val("CUOTA_EXTRA_ORDINARIA"),
+            observaciones_admin_ph=get_val("OBSERVACIONES_ADMIN_PH"),
             fecha_ingreso_propiedad=get_val("FECHA_INGRESO_PROPIEDAD"),
             estado_registro=get_val("ESTADO_REGISTRO"),
             motivo_inactivacion=get_val("MOTIVO_INACTIVACION"),
@@ -301,7 +302,7 @@ class RepositorioPropiedadPostgres:
                 CODIGO_ENERGIA, CODIGO_AGUA, CODIGO_GAS,
                 TELEFONO_ADMINISTRACION, TIPO_CUENTA_ADMINISTRACION, NUMERO_CUENTA_ADMINISTRACION,
                 FECHA_PAGO_ADMINISTRACION, LINK_PAGO_ADMINISTRACION, CUOTA_EXTRA_ORDINARIA,
-                FECHA_INGRESO_PROPIEDAD, ESTADO_REGISTRO,
+                OBSERVACIONES_ADMIN_PH, FECHA_INGRESO_PROPIEDAD, ESTADO_REGISTRO,
                 CREATED_AT, CREATED_BY
             ) VALUES (
                 {placeholder}, {placeholder}, {placeholder}, {placeholder},
@@ -311,8 +312,8 @@ class RepositorioPropiedadPostgres:
                 {placeholder}, {placeholder}, {placeholder},
                 {placeholder}, {placeholder}, {placeholder},
                 {placeholder}, {placeholder}, {placeholder},
+                {placeholder}, {placeholder}, {placeholder},
                 {placeholder}, {placeholder},
-                {placeholder}, {placeholder}
             )
             """
 
@@ -347,6 +348,7 @@ class RepositorioPropiedadPostgres:
                     propiedad.fecha_pago_administracion,
                     propiedad.link_pago_administracion,
                     propiedad.cuota_extra_ordinaria,
+                    propiedad.observaciones_admin_ph,
                     propiedad.fecha_ingreso_propiedad or datetime.now().isoformat(),
                     True,  # ESTADO_REGISTRO activo (True)
                     datetime.now().isoformat(),
@@ -395,6 +397,7 @@ class RepositorioPropiedadPostgres:
                 FECHA_PAGO_ADMINISTRACION = {placeholder},
                 LINK_PAGO_ADMINISTRACION = {placeholder},
                 CUOTA_EXTRA_ORDINARIA = {placeholder},
+                OBSERVACIONES_ADMIN_PH = {placeholder},
                 ESTADO_REGISTRO = {placeholder},
                 UPDATED_AT = {placeholder},
                 UPDATED_BY = {placeholder}
@@ -432,6 +435,7 @@ class RepositorioPropiedadPostgres:
                     propiedad.fecha_pago_administracion,
                     propiedad.link_pago_administracion,
                     propiedad.cuota_extra_ordinaria,
+                    propiedad.observaciones_admin_ph,
                     # CAMBIO: Castear explícitamente a bool si es necesario, o pasar el valor tal cual
                     (
                         bool(propiedad.estado_registro)

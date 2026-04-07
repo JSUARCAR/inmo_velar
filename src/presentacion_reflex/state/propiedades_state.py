@@ -131,14 +131,14 @@ class PropiedadesState(DocumentosStateMixin):
         """Carga opciones para dropdowns de filtros."""
         print("[PROPIEDADES_DEBUG] load_filter_options iniciado.")
         try:
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
             from src.infraestructura.persistencia.repositorio_municipio_sqlite import (
                 RepositorioMunicipioSQLite,
             )
 
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             repo_municipio = RepositorioMunicipioSQLite(db_manager)
             servicio = ServicioPropiedades(
                 repo_propiedad=repo_propiedad, repo_municipio=repo_municipio
@@ -270,11 +270,11 @@ class PropiedadesState(DocumentosStateMixin):
             busqueda = search.strip() if search else None
 
             # Servicio
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
 
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
             
             print("[PROPIEDADES_DEBUG] Llamando a servicio.listar_propiedades_paginado...")
@@ -453,6 +453,7 @@ class PropiedadesState(DocumentosStateMixin):
             "fecha_pago_administracion": "1",        # Día por defecto
             "link_pago_administracion": "",          # URL vacío
             "cuota_extra_ordinaria": "0",           # Sin cuota extra por defecto
+            "observaciones_admin_ph": "",
         }
         self.show_modal = True
         self.error_message = ""
@@ -466,11 +467,11 @@ class PropiedadesState(DocumentosStateMixin):
     def open_edit_modal(self, id_propiedad: int):
         """Abre modal para editar propiedad existente."""
         try:
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
 
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
             propiedad = servicio.obtener_propiedad(id_propiedad)
 
@@ -536,6 +537,9 @@ class PropiedadesState(DocumentosStateMixin):
                         str(propiedad.cuota_extra_ordinaria) 
                         if propiedad.cuota_extra_ordinaria else "0"
                     ),
+                    "observaciones_admin_ph": (
+                        propiedad.observaciones_admin_ph or ""
+                    ),
                 }
                 self.show_modal = True
                 self.error_message = ""
@@ -571,11 +575,11 @@ class PropiedadesState(DocumentosStateMixin):
         self.error_message = ""
 
         try:
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
 
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
 
             # Validaciones básicas
@@ -652,6 +656,7 @@ class PropiedadesState(DocumentosStateMixin):
                 "fecha_pago_administracion": safe_int("fecha_pago_administracion", 1),
                 "link_pago_administracion": form_data.get("link_pago_administracion", ""),
                 "cuota_extra_ordinaria": safe_int("cuota_extra_ordinaria", 0),
+                "observaciones_admin_ph": form_data.get("observaciones_admin_ph", ""),
             }
 
             pass  # print(f"📦 Datos Procesados para Servicio: {datos}") [OpSec Removed]
@@ -710,7 +715,7 @@ class PropiedadesState(DocumentosStateMixin):
                     yield rx.toast.error("No se puede cambiar a Disponible: existe un Arrendamiento Activo vinculado.", position="bottom-right")
                     return
 
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
             servicio.cambiar_disponibilidad(
                 id_propiedad, nueva_disponibilidad, usuario_sistema="admin"
@@ -726,11 +731,11 @@ class PropiedadesState(DocumentosStateMixin):
     def toggle_activa(self, id_propiedad: int, estado_actual: int):
         """Activa o desactiva una propiedad."""
         try:
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
 
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
             
             if estado_actual == 1:
@@ -751,11 +756,11 @@ class PropiedadesState(DocumentosStateMixin):
         try:
             yield rx.toast.info("Generando archivo...", position="bottom-right")
 
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
 
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
 
             # Preparar filtros

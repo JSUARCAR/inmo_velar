@@ -431,6 +431,20 @@ def step_3_content() -> rx.Component:
                     width="100%",
                 ),
                 
+                # === ROW 4: Observaciones Admin PH (NUEVO) ===
+                form_field(
+                    "Observaciones Administración PH",
+                    neuro_text_area(
+                        placeholder="Notas específicas sobre la administración: reglas del conjunto, horarios de instalaciones, comités activos, contactos importantes...",
+                        value=PropiedadesState.form_data["observaciones_admin_ph"],
+                        on_change=lambda v: PropiedadesState.set_form_field(
+                            "observaciones_admin_ph", v
+                        ),
+                        width="100%",
+                        style={"min_height": "100px"},
+                    ),
+                ),
+                
                 spacing="4",
                 padding="4",
                 width="100%",
