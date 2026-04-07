@@ -64,7 +64,7 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         },
         {
             "titulo": "QUINTA. CANON DE ARRENDAMIENTO",
-            "texto": "El valor acordado por las partes asciende a la suma de [VALOR CANON ARRENDAMIENTO] ([VALOR CANON ARRENDAMIENTO EN TEXTO]) la cual el ARRENDATARIO pagará en su totalidad, dentro de los cinco (5) primeros días calendario de cada período mensual (del 01 al 05 de cada mes), por anticipado, al ARRENDADOR o a su orden."
+            "texto": "El valor acordado por las partes asciende a la suma de [VALOR CANON ARRENDAMIENTO] ([VALOR CANON ARRENDAMIENTO EN TEXTO]), el cual el ARRENDATARIO se obliga a pagar al ARRENDADOR o a su orden el día [DÍA DE PAGO] ([DÍA DE PAGO EN TEXTO]) de cada mes. A partir de dicha fecha, el ARRENDATARIO contará con un plazo máximo de cinco (5) días hábiles para efectuar el pago correspondiente. En caso de que la fecha de pago coincida con un día festivo, se entenderá trasladada al día hábil siguiente."
         },
         {
             "titulo": "SEXTA. INCREMENTOS DEL CANON",
@@ -404,6 +404,26 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
 
     def _add_clausulas_reales(self, data: Dict[str, Any]):
         """Itera y reemplaza placeholders en las cláusulas"""
+        
+        # Lógica de Fecha de Pago Dinámica
+        fecha_pago_texto = "CINCO"
+        fecha_pago_num = "5"
+        # Maneja casos donde la clave 'fecha_pago' no exista de forma segura
+        fecha_pago_raw = data.get('condiciones', {}).get('fecha_pago', '5')
+
+        try:
+            if "-" in str(fecha_pago_raw):
+                from datetime import datetime
+                dt_pago = datetime.strptime(str(fecha_pago_raw), '%Y-%m-%d')
+                dia_num = dt_pago.day
+            else:
+                dia_num = int(fecha_pago_raw)
+
+            fecha_pago_texto = num2words(dia_num, lang='es').upper()
+            fecha_pago_num = str(dia_num)
+        except Exception:
+            pass # Mantiene el default de "5" y "CINCO" si algo falla
+
         mapeo = {
             "[DIRECCION PREDIO]": data['inmueble']['direccion'].upper(),
             "[MATRICULA INMOBILIARIA]": data['inmueble']['matricula_inmobiliaria'],
@@ -424,7 +444,11 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
             "[CORREO CODEUDOR]": data['codeudor']['email'],
             "[CORREO CODEUDOR]": data['codeudor']['email'],
             "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO]": str(data['condiciones']['duracion_meses']), # Simplificado, asumimos viene calculado o data raw
-            "[VALOR CANON ARRENDAMIENTO EN TEXTO]": num2words(data['condiciones']['canon'], lang='es').upper() + " PESOS M/CTE"
+            "[VALOR CANON ARRENDAMIENTO EN TEXTO]": num2words(data['condiciones']['canon'], lang='es').upper() + " PESOS M/CTE",
+            
+            # --- NUEVOS PLACEHOLDERS ---
+            "[DÍA DE PAGO]": fecha_pago_num,
+            "[DÍA DE PAGO EN TEXTO]": fecha_pago_texto
         }
 
         # Fix placeholder variations
