@@ -305,7 +305,7 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         )
         self.add_spacer(0.2)
         self.add_paragraph(
-            f"Para constancia de lo anterior se firma el día {self._format_date_spanish(data['fecha'])}, en dos ejemplares de un mismo tenor literal ordenado por la Ley."
+            f"Para constancia de lo anterior se firma el día {self._format_date_spanish(fecha_sistema)}, en dos ejemplares de un mismo tenor literal ordenado por la Ley."
         )
         self.add_spacer(0.5)
         
