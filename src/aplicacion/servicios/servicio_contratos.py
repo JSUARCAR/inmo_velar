@@ -795,6 +795,7 @@ class ServicioContratos:
                 ca.MOTIVO_CANCELACION,
                 ca.ALERTA_VENCIMIENTO_CONTRATO_A,
                 ca.FECHA_RENOVACION_CONTRATO_A,
+                ca.FECHA_PAGO,
                 ca.CREATED_AT,
                 ca.CREATED_BY,
                 p.MATRICULA_INMOBILIARIA,

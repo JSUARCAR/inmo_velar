@@ -636,7 +636,7 @@ class PDFState(rx.State):
             "condiciones": {
                 "canon": detalle.get("canon", 0),
                 "duracion_meses": detalle.get("duracion", 12),
-                "dia_pago": 5,  # Default, not in result set directly yet? Check query. Query has logic? No field dia_pago in query.
+                "fecha_pago": detalle.get("fecha_pago", 5),
                 "deposito": detalle.get("deposito", 0),
                 "administracion": 0, # Not in query explicitly
             },
