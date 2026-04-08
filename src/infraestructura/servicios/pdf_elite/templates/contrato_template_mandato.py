@@ -240,7 +240,8 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         if data.get("estado") == "borrador":
             self.set_watermark("BORRADOR VELAR SAS", opacity=0.1)
             
-        filename = self._generate_filename("contrato_mandato", data["contrato_id"])
+        identificador = data.get("inmueble", {}).get("direccion", str(data.get("contrato_id", "0")))
+        filename = self._generate_filename("contrato_mandato", identificador)
         self.create_document(filename, self.document_title)
         
         # 1. Título y Ciudad

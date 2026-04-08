@@ -249,6 +249,9 @@ class BasePDFGenerator(ABC):
 
         for char in invalid_chars:
             filename = filename.replace(char, "_")
+            
+        # Reemplazar espacios por guiones bajos para mayor compatibilidad
+        filename = filename.replace(" ", "_")
 
         return filename
 
