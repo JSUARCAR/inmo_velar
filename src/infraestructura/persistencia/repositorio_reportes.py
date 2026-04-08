@@ -264,3 +264,52 @@ class RepositorioReportes:
         query += " ORDER BY r.FECHA_PAGO DESC, r.ID_RECAUDO DESC"
 
         return self._ejecutar_query_paginada(query, params, page, limit)
+
+    def obtener_reporte_incidentes_enriquecido(
+        self,
+        estado: Optional[str] = None,
+        busqueda: Optional[str] = None,
+        page: int = 1,
+        limit: int = 20,
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """Reporte especializado de incidentes con metadata del propietario y la propiedad."""
+        query = """
+            SELECT 
+                i.ID_INCIDENTE AS "ID",
+                i.FECHA_INCIDENTE AS "Fecha Reporte",
+                i.ID_PROPIEDAD AS "ID Propiedad",
+                COALESCE(p.DIRECCION_PROPIEDAD, 'N/A') AS "Dirección Propiedad",
+                i.ID_CONTRATO_M AS "ID Contrato Mandato",
+                COALESCE(per.NOMBRE_COMPLETO, 'N/A') AS "Nombre Propietario",
+                i.DESCRIPCION_INCIDENTE AS "Descripción",
+                i.ESTADO AS "Estado"
+            FROM INCIDENTES i
+            LEFT JOIN PROPIEDADES p ON i.ID_PROPIEDAD = p.ID_PROPIEDAD
+            LEFT JOIN CONTRATOS_MANDATOS cm ON i.ID_CONTRATO_M = cm.ID_CONTRATO_M OR p.ID_PROPIEDAD = cm.ID_PROPIEDAD
+            LEFT JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO
+            LEFT JOIN PERSONAS per ON pr.ID_PERSONA = per.ID_PERSONA
+        """
+        
+        conditions = []
+        params = []
+
+        if estado and estado != "Todos":
+            conditions.append("i.ESTADO = %s")
+            params.append(estado)
+
+        if busqueda:
+            conditions.append("""(
+                COALESCE(per.NOMBRE_COMPLETO, '') ILIKE %s OR 
+                COALESCE(p.DIRECCION_PROPIEDAD, '') ILIKE %s OR
+                i.DESCRIPCION_INCIDENTE ILIKE %s OR
+                CAST(i.ID_INCIDENTE AS TEXT) ILIKE %s
+            )""")
+            params.extend([f"%{busqueda}%"] * 4)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY i.FECHA_INCIDENTE DESC, i.ID_INCIDENTE DESC"
+
+        return self._ejecutar_query_paginada(query, params, page, limit)
+

@@ -135,6 +135,17 @@ class ServicioReportes:
             ]
             return data, headers, total
 
+        # 4. Reporte Incidentes (Enriquecido)
+        if report_id == "incidentes":
+            data, total = self.repo_reportes.obtener_reporte_incidentes_enriquecido(
+                estado=estado,
+                busqueda=busqueda,
+                page=pagina,
+                limit=limite
+            )
+            headers = list(data[0].keys()) if data else []
+            return data, headers, total
+
         # 5. Reporte Liquidaciones (Paginación Real en DB)
         if report_id == "liquidaciones":
             asesor_id = None
@@ -159,7 +170,6 @@ class ServicioReportes:
             "proveedores": "PROVEEDORES",
             "liquidacion_asesores": "LIQUIDACIONES_ASESORES",
             "desocupaciones": "DESOCUPACIONES",
-            "incidentes": "INCIDENTES",
             "seguros": "SEGUROS",
             "recibos_publicos": "RECIBOS_PUBLICOS",
             "saldos_favor": "SALDOS_FAVOR",

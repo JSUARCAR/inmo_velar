@@ -229,8 +229,8 @@ class IncidenteTemplateElite(BaseDocumentTemplate):
         prop_block = [
             Paragraph("UBICACIÓN / PROPIEDAD", s_label),
             Paragraph(f"<b>{data.get('direccion', 'N/A')}</b>", s_val),
-            Paragraph(f"Propiedad ID: {data.get('id_propiedad', '')}", s_val),
-            Paragraph("Tipo: Residencial", s_val) # Placeholder o data real
+            Paragraph(f"Propietario: {data.get('nombre_propietario', 'N/D')}", s_val),
+            Paragraph(f"Propiedad ID: {data.get('id_propiedad', '')}", s_val)
         ]
         
         # Solicitante
