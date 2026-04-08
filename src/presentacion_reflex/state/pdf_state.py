@@ -330,7 +330,7 @@ class PDFState(rx.State):
             datos = {
                 "certificado_id": contrato_id * 1000,  # ID único
                 "tipo": "paz_y_salvo",
-                "fecha": rx.moment().format("YYYY-MM-DD"),
+                "fecha": datetime.now().strftime("%Y-%m-%d"),
                 "beneficiario": {
                     "nombre": beneficiario_nombre,
                     "documento": "N/A",  # TODO: obtener de DB
