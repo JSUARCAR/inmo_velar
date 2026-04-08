@@ -483,6 +483,25 @@ class IncidentesState(DocumentosStateMixin):
                         prop, "direccion_propiedad", str(prop)
                     )
 
+                # Fetch owner name
+                current_inc["nombre_propietario"] = "N/D"
+                try:
+                    with db_manager.obtener_conexion() as conn:
+                        cursor = conn.cursor()
+                        cursor.execute("""
+                            SELECT per.NOMBRE_COMPLETO 
+                            FROM CONTRATOS_MANDATOS cm
+                            JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO
+                            JOIN PERSONAS per ON pr.ID_PERSONA = per.ID_PERSONA
+                            WHERE cm.ID_CONTRATO_M = %s OR cm.ID_PROPIEDAD = %s
+                            LIMIT 1
+                        """, (inc_obj.id_contrato_m, inc_obj.id_propiedad))
+                        res_prop = cursor.fetchone()
+                        if res_prop:
+                            current_inc["nombre_propietario"] = res_prop[0] if isinstance(res_prop, tuple) else res_prop.get("NOMBRE_COMPLETO", res_prop.get("nombre_completo"))
+                except Exception:
+                    pass
+
                 # Actualizar nombre proveedor si existe
                 current_inc["nombre_proveedor"] = "Proveedor No Asignado"
                 if pid := inc_obj.id_proveedor_asignado:  # Usar del objeto real, mas seguro
@@ -569,8 +588,24 @@ class IncidentesState(DocumentosStateMixin):
             if not self.form_data["id_propiedad"] or not self.form_data["descripcion"]:
                 raise ValueError("Propiedad y Descripción son obligatorias")
 
+            # Obtener ID_CONTRATO_M activo para la propiedad seleccionada
+            id_contrato_m = None
+            try:
+                with db_manager.obtener_conexion() as conn:
+                    cursor = conn.cursor()
+                    cursor.execute(
+                        "SELECT ID_CONTRATO_M FROM CONTRATOS_MANDATOS WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO = 'Activo' LIMIT 1",
+                        (int(self.form_data["id_propiedad"]),)
+                    )
+                    res = cursor.fetchone()
+                    if res:
+                        id_contrato_m = res[0] if isinstance(res, tuple) else res.get("ID_CONTRATO_M", res.get("id_contrato_m"))
+            except Exception as e:
+                pass  # Fallback a None
+
             datos = {
                 "id_propiedad": int(self.form_data["id_propiedad"]),
+                "id_contrato_m": id_contrato_m,
                 "descripcion": self.form_data["descripcion"],
                 "prioridad": self.form_data["prioridad"],
                 "origen_reporte": self.form_data["origen_reporte"],
