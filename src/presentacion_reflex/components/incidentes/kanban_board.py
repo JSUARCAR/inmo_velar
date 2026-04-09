@@ -31,7 +31,9 @@ def _empty_state(title: str) -> rx.Component:
     )
 
 
-def _kanban_column(title: str, items: List[Dict[str, Any]], color_scheme: str) -> rx.Component:
+def _kanban_column(
+    title: str, items: List[Dict[str, Any]], color_scheme: str
+) -> rx.Component:
     return rx.vstack(
         # --- Header ---
         rx.hstack(
@@ -63,22 +65,28 @@ def _kanban_column(title: str, items: List[Dict[str, Any]], color_scheme: str) -
                     spacing="3",
                     width="100%",
                     padding_y="4px",
-                    padding_x="2px",  # Espacio para el glow del hover
+                    padding_x="2px",
                 ),
                 _empty_state(title),
             ),
-            type="hover",
+            type="always",
             scrollbars="vertical",
-            style={"height": "calc(100vh - 280px)"},  # Ajuste fino
+            style={
+                "flex": "1",
+                "padding_bottom": "80px",
+                "scrollbar_width": "thin",
+                "scrollbar_color": "#a3b1c6 transparent",
+            },
         ),
         # --- Container Styles ---
-        width="320px",  # Un poco más ancho para mejor lectura
-        height="100%",
+        width="min(320px, 25vw)",
+        flex="1",
+        min_height="0",
         padding="1rem",
-        background_color="transparent",  # Fondo sutil del kanban base
+        background_color="transparent",
         border="none",
         border_radius="lg",
-        flex_shrink=0,
+        overflow="hidden",
     )
 
 
@@ -89,16 +97,21 @@ def kanban_board() -> rx.Component:
             _kanban_column("Reportado", IncidentesState.incidentes_reportado, "red"),
             _kanban_column("Cotizado", IncidentesState.incidentes_cotizado, "orange"),
             _kanban_column("Aprobado", IncidentesState.incidentes_aprobado, "green"),
-            _kanban_column("En Reparación", IncidentesState.incidentes_en_reparacion, "blue"),
+            _kanban_column(
+                "En Reparación", IncidentesState.incidentes_en_reparacion, "blue"
+            ),
             _kanban_column("Finalizado", IncidentesState.incidentes_finalizado, "gray"),
             spacing="4",
-            width="100%",  # Scroll content width
-            height="100%",
+            width="auto",
+            flex="1",
+            min_height="0",
             align_items="start",
-            padding_bottom="1em",
+            padding_bottom="5em",
             padding_right="1em",
         ),
-        type="auto",
+        type="always",
         scrollbars="horizontal",
-        style={"width": "100%", "height": "100%"},
+        flex="1",
+        min_height="0",
+        style={"width": "100%", "min_width": "100%", "overflow": "auto"},
     )

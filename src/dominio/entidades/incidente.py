@@ -19,9 +19,7 @@ class Incidente:
     quien_arregla: Optional[str] = None
     aprobado_por: Optional[str] = None
     fecha_arreglo: Optional[datetime] = None
-    estado: str = (
-        "Reportado"  # Reportado, En Revision, Cotizado, Aprobado, En Reparacion, Finalizado, Cancelado
-    )
+    estado: str = "Reportado"  # Reportado, En Revision, Cotizado, Aprobado, En Reparacion, Finalizado, Cancelado
     dias_sin_resolver: int = 0
     motivo_cancelacion: Optional[str] = None
     created_at: datetime = field(default_factory=datetime.now)
@@ -58,10 +56,17 @@ class Incidente:
         cambios = {
             "estado": nuevo_estado,
             "updated_by": usuario,
-            "updated_at": datetime.now()
+            "updated_at": datetime.now(),
         }
 
         if nuevo_estado == "Finalizado":
             cambios["fecha_arreglo"] = datetime.now()
+            cambios["dias_sin_resolver"] = 0
 
         return replace(self, **cambios)
+
+    def calcular_dias_sin_resolver(self) -> int:
+        if self.estado in ["Finalizado", "Cancelado"]:
+            return 0
+        dias = (datetime.now() - self.fecha_incidente).days
+        return max(0, dias)

@@ -5,8 +5,13 @@ from src.presentacion_reflex.components.layout.dashboard_layout import dashboard
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
 
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_button,
+    neuro_select_root,
+)
 from src.presentacion_reflex import styles
+
 
 def _filter_bar() -> rx.Component:
     return rx.flex(
@@ -67,7 +72,6 @@ def _filter_bar() -> rx.Component:
     )
 
 
-
 def _list_view() -> rx.Component:
     return rx.table.root(
         rx.table.header(
@@ -101,13 +105,22 @@ from src.presentacion_reflex.components.incidentes.modal_details import modal_de
 from src.presentacion_reflex.components.incidentes.modal_form import modal_form
 
 
-@rx.page(route="/incidentes", on_load=[AuthState.require_login, IncidentesState.on_load])
+@rx.page(
+    route="/incidentes", on_load=[AuthState.require_login, IncidentesState.on_load]
+)
 def incidentes() -> rx.Component:
     return dashboard_layout(
         rx.vstack(
             rx.heading("Gestión de Incidentes", size="6", margin_bottom="1em"),
             _filter_bar(),
-            rx.cond(IncidentesState.view_mode == "kanban", kanban_board(), _list_view()),
+            rx.box(
+                rx.cond(
+                    IncidentesState.view_mode == "kanban", kanban_board(), _list_view()
+                ),
+                flex="1",
+                width="100%",
+                min_height="0",
+            ),
             # Pagination Controls
             rx.flex(
                 rx.button(
@@ -119,7 +132,12 @@ def incidentes() -> rx.Component:
                     color_scheme="gray",
                 ),
                 rx.text(
-                    rx.text("Página ", IncidentesState.page, " de ", IncidentesState.total_pages),
+                    rx.text(
+                        "Página ",
+                        IncidentesState.page,
+                        " de ",
+                        IncidentesState.total_pages,
+                    ),
                     weight="medium",
                     color="gray",
                 ),
@@ -141,7 +159,9 @@ def incidentes() -> rx.Component:
             modal_form(),
             modal_details(),
             width="100%",
-            height="calc(100vh - 100px)",
+            flex="1",
+            height="100%",
+            overflow="hidden",
             spacing="4",
         )
     )
