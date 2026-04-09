@@ -166,6 +166,33 @@ class IncidentesState(DocumentosStateMixin):
         "dias": 1,
     }
 
+    # --- EDIT MODAL ---
+    edit_modal_open: bool = False
+    editing_incidente: Dict[str, Any] = {}
+    edit_form_data: Dict[str, Any] = {
+        "descripcion": "",
+        "prioridad": "Media",
+        "origen_reporte": "Inquilino",
+        "responsable_pago": "Inquilino",
+        "costo_incidente": 0,
+        "id_proveedor_asignado": None,
+    }
+    edit_error: str = ""
+
+    # --- CANCEL MODAL ---
+    cancel_modal_open: bool = False
+    cancel_incidente: Dict[str, Any] = {}
+    cancel_motivo: str = ""
+    cancel_error: str = ""
+
+    # --- DIRECT FINISH FORM ---
+    show_direct_finish_form: bool = False
+    direct_finish_date: str = ""
+    direct_finish_obs: str = ""
+    direct_finish_costo: int = 0
+    direct_finish_proveedor: Optional[str] = None
+    direct_finish_error: str = ""
+
     @rx.var
     def incidentes_reportado(self) -> List[IncidenteDict]:
         return self.incidentes_kanban.get("Reportado", [])
@@ -925,6 +952,261 @@ class IncidentesState(DocumentosStateMixin):
 
         except Exception as e:
             yield rx.toast.error(f"Error generando PDF: {str(e)}")
+        finally:
+            async with self:
+                self.is_loading = False
+
+    # === EDIT METHODS ===
+    @rx.event
+    def open_edit_modal(self, incidente: Dict[str, Any]):
+        self.edit_modal_open = True
+        self.editing_incidente = incidente
+        self.edit_form_data = {
+            "descripcion": incidente.get("descripcion", ""),
+            "prioridad": incidente.get("prioridad", "Media"),
+            "origen_reporte": incidente.get("origen", "Inquilino"),
+            "responsable_pago": "Inquilino",
+            "costo_incidente": float(incidente.get("costo_incidente", 0) or 0),
+            "id_proveedor_asignado": incidente.get("id_proveedor"),
+        }
+        self.edit_error = ""
+
+    @rx.event
+    def close_edit_modal(self):
+        self.edit_modal_open = False
+        self.editing_incidente = {}
+        self.edit_form_data = {
+            "descripcion": "",
+            "prioridad": "Media",
+            "origen_reporte": "Inquilino",
+            "responsable_pago": "Inquilino",
+            "costo_incidente": 0,
+            "id_proveedor_asignado": None,
+        }
+        self.edit_error = ""
+
+    @rx.event
+    def set_edit_field(self, key: str, value: Any):
+        self.edit_form_data[key] = value
+
+    @rx.event(background=True)
+    async def save_edit_incidente(self):
+        async with self:
+            self.is_loading = True
+            self.edit_error = ""
+
+        try:
+            if not self.editing_incidente:
+                raise ValueError("No hay incidente seleccionado para editar")
+
+            servicio = ServicioIncidentes(db_manager)
+            usuario = obtener_usuario_actual()
+
+            id_incidente = self.editing_incidente["id"]
+
+            datos_actualizacion = {}
+            if self.edit_form_data.get("descripcion"):
+                datos_actualizacion["descripcion_incidente"] = self.edit_form_data[
+                    "descripcion"
+                ]
+            if self.edit_form_data.get("prioridad"):
+                datos_actualizacion["prioridad"] = self.edit_form_data["prioridad"]
+            if self.edit_form_data.get("origen_reporte"):
+                datos_actualizacion["origen_reporte"] = self.edit_form_data[
+                    "origen_reporte"
+                ]
+            if self.edit_form_data.get("responsable_pago"):
+                datos_actualizacion["responsable_pago"] = self.edit_form_data[
+                    "responsable_pago"
+                ]
+            if self.edit_form_data.get("costo_incidente"):
+                datos_actualizacion["costo_incidente"] = int(
+                    self.edit_form_data["costo_incidente"]
+                )
+            if self.edit_form_data.get("id_proveedor_asignado"):
+                datos_actualizacion["id_proveedor_asignado"] = self.edit_form_data[
+                    "id_proveedor_asignado"
+                ]
+
+            servicio.editar_incidente(id_incidente, datos_actualizacion, usuario)
+
+            yield rx.toast.success("Incidente actualizado exitosamente.")
+
+            async with self:
+                self.edit_modal_open = False
+
+            yield IncidentesState.load_incidentes()
+            if (
+                self.selected_incidente
+                and self.selected_incidente.get("id") == id_incidente
+            ):
+                yield IncidentesState.select_incidente(self.selected_incidente)
+
+        except Exception as e:
+            yield rx.toast.error(f"Error al editar incidente: {str(e)}")
+            async with self:
+                self.edit_error = str(e)
+        finally:
+            async with self:
+                self.is_loading = False
+
+    # === CANCEL METHODS ===
+    @rx.event
+    def open_cancel_modal(self, incidente: Dict[str, Any]):
+        self.cancel_modal_open = True
+        self.cancel_incidente = incidente
+        self.cancel_motivo = ""
+        self.cancel_error = ""
+
+    @rx.event
+    def close_cancel_modal(self):
+        self.cancel_modal_open = False
+        self.cancel_incidente = {}
+        self.cancel_motivo = ""
+        self.cancel_error = ""
+
+    @rx.event
+    def set_cancel_motivo(self, value: str):
+        self.cancel_motivo = value
+        self.cancel_error = ""
+
+    @rx.event(background=True)
+    async def confirmar_cancelacion(self):
+        async with self:
+            self.is_loading = True
+            self.cancel_error = ""
+
+        if not self.cancel_motivo or not self.cancel_motivo.strip():
+            yield rx.toast.error("Debe ingresar un motivo para cancelar")
+            async with self:
+                self.cancel_error = "El motivo es obligatorio"
+                self.is_loading = False
+            return
+
+        try:
+            if not self.cancel_incidente:
+                raise ValueError("No hay incidente seleccionado para cancelar")
+
+            servicio = ServicioIncidentes(db_manager)
+            usuario = obtener_usuario_actual()
+
+            id_incidente = self.cancel_incidente["id"]
+            estado_actual = self.cancel_incidente.get("estado", "")
+
+            if estado_actual in ["Finalizado", "Cancelado"]:
+                raise ValueError(
+                    f"No se puede cancelar un incidente en estado {estado_actual}"
+                )
+
+            servicio.cancelar_incidente(
+                id_incidente, usuario, self.cancel_motivo.strip()
+            )
+
+            yield rx.toast.success("Incidente cancelado exitosamente.")
+
+            async with self:
+                self.cancel_modal_open = False
+                self.details_modal_open = False
+
+            yield IncidentesState.load_incidentes()
+
+        except Exception as e:
+            yield rx.toast.error(f"Error al cancelar incidente: {str(e)}")
+            async with self:
+                self.cancel_error = str(e)
+        finally:
+            async with self:
+                self.is_loading = False
+
+    # === DIRECT FINISH METHODS ===
+    @rx.event
+    def toggle_direct_finish_form(self):
+        self.show_direct_finish_form = not self.show_direct_finish_form
+        if self.show_direct_finish_form:
+            self.direct_finish_date = datetime.now().strftime("%Y-%m-%d")
+            self.direct_finish_obs = ""
+            self.direct_finish_costo = 0
+            self.direct_finish_proveedor = None
+            self.direct_finish_error = ""
+
+    @rx.event
+    def set_direct_finish_field(self, key: str, value: Any):
+        if key == "fecha":
+            self.direct_finish_date = value
+        elif key == "observacion":
+            self.direct_finish_obs = value
+        elif key == "costo":
+            self.direct_finish_costo = int(value) if value else 0
+        elif key == "proveedor":
+            self.direct_finish_proveedor = value
+
+    @rx.event(background=True)
+    async def confirmar_finalizacion_directa(self):
+        async with self:
+            self.is_loading = True
+            self.direct_finish_error = ""
+
+        try:
+            if not self.selected_incidente:
+                raise ValueError("No hay incidente seleccionado")
+
+            servicio = ServicioIncidentes(db_manager)
+            usuario = obtener_usuario_actual()
+
+            id_incidente = self.selected_incidente["id"]
+            estado_actual = self.selected_incidente.get("estado", "")
+
+            if estado_actual in ["Finalizado", "Cancelado"]:
+                raise ValueError(
+                    f"No se puede finalizar un incidente en estado {estado_actual}"
+                )
+
+            # Preparar datos
+            costo_final = self.direct_finish_costo if self.direct_finish_costo else None
+            comentario = (
+                self.direct_finish_obs if self.direct_finish_obs.strip() else None
+            )
+            fecha_fin = None
+
+            if self.direct_finish_date:
+                fecha_fin = datetime.strptime(self.direct_finish_date, "%Y-%m-%d")
+
+            # Determinar si es finalización directa
+            es_directo = estado_actual not in ["En Reparacion"]
+
+            # Pasar proveedor directamente al método de finalización
+            id_proveedor = (
+                int(self.direct_finish_proveedor)
+                if self.direct_finish_proveedor
+                else None
+            )
+
+            servicio.finalizar_incidente(
+                id_incidente=id_incidente,
+                usuario_sistema=usuario,
+                costo_final=costo_final,
+                comentario=comentario,
+                fecha_arreglo=fecha_fin,
+                es_finalizacion_directa=es_directo,
+                id_proveedor=id_proveedor,
+            )
+
+            yield rx.toast.success("Incidente finalizado exitosamente.")
+
+            async with self:
+                self.show_direct_finish_form = False
+
+            yield IncidentesState.load_incidentes()
+            if (
+                self.selected_incidente
+                and self.selected_incidente.get("id") == id_incidente
+            ):
+                yield IncidentesState.select_incidente(self.selected_incidente)
+
+        except Exception as e:
+            yield rx.toast.error(f"Error al finalizar incidente: {str(e)}")
+            async with self:
+                self.direct_finish_error = str(e)
         finally:
             async with self:
                 self.is_loading = False

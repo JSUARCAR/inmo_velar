@@ -14,21 +14,31 @@ from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
 from src.infraestructura.persistencia.repositorio_orden_trabajo_sqlite import (
     RepositorioOrdenTrabajoSQLite,
 )
-from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+    RepositorioPropiedadSQLite,
+)
 from src.infraestructura.persistencia.repositorio_proveedores_sqlite import (
     RepositorioProveedoresSQLite,
 )
 
 
 class ServicioIncidentes:
-    def __init__(self, db_manager: DatabaseManager, repo_incidentes: RepositorioIncidentes = None):
+    def __init__(
+        self, db_manager: DatabaseManager, repo_incidentes: RepositorioIncidentes = None
+    ):
         self.db_manager = db_manager
-        self.repo_incidentes = repo_incidentes if repo_incidentes else RepositorioIncidentesPostgres(db_manager)
+        self.repo_incidentes = (
+            repo_incidentes
+            if repo_incidentes
+            else RepositorioIncidentesPostgres(db_manager)
+        )
         self.repo_proveedores = RepositorioProveedoresSQLite(db_manager)
         self.repo_propiedades = RepositorioPropiedadSQLite(db_manager)
         self.repo_ordenes = RepositorioOrdenTrabajoSQLite(db_manager)
 
-    def reportar_incidente(self, datos: Dict[str, Any], usuario_sistema: str) -> Incidente:
+    def reportar_incidente(
+        self, datos: Dict[str, Any], usuario_sistema: str
+    ) -> Incidente:
         """
         Reporta un nuevo incidente.
         Estado inicial: Reportado.
@@ -38,7 +48,9 @@ class ServicioIncidentes:
                 id_propiedad=datos["id_propiedad"],
                 id_contrato_m=datos.get("id_contrato_m"),
                 descripcion_incidente=datos["descripcion"],
-                fecha_incidente=datos.get("fecha_incidente", datetime.now().isoformat()),
+                fecha_incidente=datos.get(
+                    "fecha_incidente", datetime.now().isoformat()
+                ),
                 prioridad=datos.get("prioridad", "Media"),
                 origen_reporte=datos.get("origen_reporte", "Inquilino"),
                 created_by=usuario_sistema,
@@ -72,7 +84,8 @@ class ServicioIncidentes:
             incidentes = [
                 i
                 for i in incidentes
-                if term_norm in self.db_manager.normalize_search_term(i.descripcion_incidente)
+                if term_norm
+                in self.db_manager.normalize_search_term(i.descripcion_incidente)
                 or str(i.id_incidente) == busqueda
             ]
 
@@ -86,7 +99,9 @@ class ServicioIncidentes:
 
         # Filtro por proveedor asignado
         if id_proveedor:
-            incidentes = [i for i in incidentes if i.id_proveedor_asignado == id_proveedor]
+            incidentes = [
+                i for i in incidentes if i.id_proveedor_asignado == id_proveedor
+            ]
 
         # Filtro por días sin resolver
         if dias_min is not None:
@@ -134,8 +149,8 @@ class ServicioIncidentes:
         }
 
     def obtener_datos_propietario_incidente(
-            self, id_contrato_m: Optional[int], id_propiedad: int
-        ) -> Optional[tuple[str, str]]:
+        self, id_contrato_m: Optional[int], id_propiedad: int
+    ) -> Optional[tuple[str, str]]:
         """Obtiene (nombre, telefono) del propietario."""
         query = """
             SELECT per.NOMBRE_COMPLETO, per.TELEFONO_PRINCIPAL
@@ -150,13 +165,19 @@ class ServicioIncidentes:
             cursor.execute(query, (id_contrato_m, id_propiedad))
             res = cursor.fetchone()
             if res:
-                nombre = res[0] if isinstance(res, tuple) else res.get('NOMBRE_COMPLETO')
-                telefono = res[1] if isinstance(res, tuple) else res.get('TELEFONO_PRINCIPAL')
+                nombre = (
+                    res[0] if isinstance(res, tuple) else res.get("NOMBRE_COMPLETO")
+                )
+                telefono = (
+                    res[1] if isinstance(res, tuple) else res.get("TELEFONO_PRINCIPAL")
+                )
                 if nombre:
                     return (nombre, telefono or "")
         return None
 
-    def obtener_datos_inquilino_incidente(self, id_propiedad: int) -> Optional[tuple[str, str]]:
+    def obtener_datos_inquilino_incidente(
+        self, id_propiedad: int
+    ) -> Optional[tuple[str, str]]:
         """Obtiene (nombre, telefono) del inquilino."""
         query = """
             SELECT per.NOMBRE_COMPLETO, per.TELEFONO_PRINCIPAL
@@ -171,13 +192,19 @@ class ServicioIncidentes:
             cursor.execute(query, (id_propiedad,))
             res = cursor.fetchone()
             if res:
-                nombre = res[0] if isinstance(res, tuple) else res.get('NOMBRE_COMPLETO')
-                telefono = res[1] if isinstance(res, tuple) else res.get('TELEFONO_PRINCIPAL')
+                nombre = (
+                    res[0] if isinstance(res, tuple) else res.get("NOMBRE_COMPLETO")
+                )
+                telefono = (
+                    res[1] if isinstance(res, tuple) else res.get("TELEFONO_PRINCIPAL")
+                )
                 if nombre:
                     return (nombre, telefono or "")
         return None
 
-    def obtener_datos_habitante_incidente(self, id_propiedad: int) -> Optional[tuple[str, str]]:
+    def obtener_datos_habitante_incidente(
+        self, id_propiedad: int
+    ) -> Optional[tuple[str, str]]:
         """Obtiene (nombre, telefono) del habitante."""
         query = """
             SELECT arr.NOMBRE_HABITANTE, arr.TELEFONO_HABITANTE
@@ -192,16 +219,20 @@ class ServicioIncidentes:
             cursor.execute(query, (id_propiedad,))
             res = cursor.fetchone()
             if res:
-                nombre = res[0] if isinstance(res, tuple) else res.get('NOMBRE_HABITANTE')
-                telefono = res[1] if isinstance(res, tuple) else res.get('TELEFONO_HABITANTE')
+                nombre = (
+                    res[0] if isinstance(res, tuple) else res.get("NOMBRE_HABITANTE")
+                )
+                telefono = (
+                    res[1] if isinstance(res, tuple) else res.get("TELEFONO_HABITANTE")
+                )
                 if nombre:
                     return (nombre, telefono or "")
         return None
 
-    # M�todos legacy para compatibilidad
+    # M�todos legacy para compatibilidad
     def obtener_nombre_propietario_incidente(
-            self, id_contrato_m: Optional[int], id_propiedad: int
-        ) -> Optional[str]:
+        self, id_contrato_m: Optional[int], id_propiedad: int
+    ) -> Optional[str]:
         datos = self.obtener_datos_propietario_incidente(id_contrato_m, id_propiedad)
         return datos[0] if datos else None
 
@@ -212,6 +243,7 @@ class ServicioIncidentes:
     def obtener_nombre_habitante_incidente(self, id_propiedad: int) -> Optional[str]:
         datos = self.obtener_datos_habitante_incidente(id_propiedad)
         return datos[0] if datos else None
+
     def cambiar_estado(
         self,
         id_incidente: int,
@@ -267,7 +299,9 @@ class ServicioIncidentes:
                 created_by=usuario_sistema,
             )
 
-            cotizacion = cotizacion.con_total_calculado()  # Suma materiales + mano de obra
+            cotizacion = (
+                cotizacion.con_total_calculado()
+            )  # Suma materiales + mano de obra
 
             new_id = self.repo_incidentes.guardar_cotizacion(cotizacion)
             cotizacion = replace(cotizacion, id_cotizacion=new_id)
@@ -282,7 +316,7 @@ class ServicioIncidentes:
                     estado_anterior=estado_anterior,
                     estado_nuevo="En Revision",
                     usuario=usuario_sistema,
-                    tipo_accion="CAMBIO_ESTADO"
+                    tipo_accion="CAMBIO_ESTADO",
                 )
 
             return cotizacion
@@ -308,17 +342,21 @@ class ServicioIncidentes:
             estado_anterior = incidente.estado
             incidente = incidente.avanzar_estado("En Reparacion", usuario_sistema)
             self.repo_incidentes.actualizar(incidente)
-            
+
             self._registrar_historial(
                 id_incidente=id_incidente,
                 estado_anterior=estado_anterior,
                 estado_nuevo="En Reparacion",
                 usuario=usuario_sistema,
-                tipo_accion="INICIAR_REPARACION"
+                tipo_accion="INICIAR_REPARACION",
             )
 
     def aprobar_cotizacion(
-        self, id_incidente: int, id_cotizacion: int, usuario_sistema: str, responsable_pago: str
+        self,
+        id_incidente: int,
+        id_cotizacion: int,
+        usuario_sistema: str,
+        responsable_pago: str,
     ) -> None:
         """
         Aprueba una cotización, asigna el proveedor y costo, y pasa a 'Aprobado'.
@@ -335,28 +373,35 @@ class ServicioIncidentes:
 
             # Actualizar todas las cotizaciones
             for c in cotizaciones:
-                nuevo_est = "Aprobada" if c.id_cotizacion == id_cotizacion else "Rechazada"
+                nuevo_est = (
+                    "Aprobada" if c.id_cotizacion == id_cotizacion else "Rechazada"
+                )
                 c_update = replace(c, estado_cotizacion=nuevo_est)
                 self.repo_incidentes.actualizar_cotizacion(c_update)
 
             # Actualizar Incidente
-            incidente = replace(incidente,
-                                id_cotizacion_aprobada=id_cotizacion,
-                                id_proveedor_asignado=cotizacion_aprobada.id_proveedor,
-                                costo_incidente=cotizacion_aprobada.valor_total,
-                                responsable_pago=responsable_pago)
+            incidente = replace(
+                incidente,
+                id_cotizacion_aprobada=id_cotizacion,
+                id_proveedor_asignado=cotizacion_aprobada.id_proveedor,
+                costo_incidente=cotizacion_aprobada.valor_total,
+                responsable_pago=responsable_pago,
+            )
             estado_anterior = incidente.estado
             incidente = incidente.avanzar_estado("Aprobado", usuario_sistema)
 
             self.repo_incidentes.actualizar(incidente)
-            
+
             self._registrar_historial(
                 id_incidente=id_incidente,
                 estado_anterior=estado_anterior,
                 estado_nuevo="Aprobado",
                 usuario=usuario_sistema,
                 tipo_accion="APROBAR_COTIZACION",
-                datos_extra={"id_cotizacion_aprobada": id_cotizacion, "costo": cotizacion_aprobada.valor_total}
+                datos_extra={
+                    "id_cotizacion_aprobada": id_cotizacion,
+                    "costo": cotizacion_aprobada.valor_total,
+                },
             )
 
         # Crear Orden de Trabajo automáticamente (DISABLED PER USER REQUEST)
@@ -371,7 +416,9 @@ class ServicioIncidentes:
         # )
         # self.repo_ordenes.guardar(orden)
 
-    def obtener_costos_reparaciones_periodo(self, id_contrato_m: int, mes_anio: str) -> int:
+    def obtener_costos_reparaciones_periodo(
+        self, id_contrato_m: int, mes_anio: str
+    ) -> int:
         """
         Retorna la suma de costos de incidentes Aprobados/Finalizados en un mes dado,
         cuyo responsable de pago sea el Propietario.
@@ -385,7 +432,10 @@ class ServicioIncidentes:
 
         total = 0
         for inc in incidentes:
-            if inc.id_contrato_m == id_contrato_m and inc.responsable_pago == "Propietario":
+            if (
+                inc.id_contrato_m == id_contrato_m
+                and inc.responsable_pago == "Propietario"
+            ):
                 # Verificar fecha. Usamos fecha_arreglo o fecha_incidente?
                 # Usualmente fecha_arreglo o fecha de aprobación determina cuando se cobra.
                 # Usaremos updated_at como proxy de aprobación/finalización si fecha_arreglo es nula.
@@ -422,7 +472,7 @@ class ServicioIncidentes:
             datos_adicionales=json.dumps(datos_extra) if datos_extra else None,
         )
         self.repo_incidentes.guardar_historial(historial)
-        
+
         # Inyección a tabla Global de Auditoría (FASE 3)
         query_audit = """
             INSERT INTO AUDITORIA_CAMBIOS 
@@ -436,14 +486,18 @@ class ServicioIncidentes:
             estado_anterior,
             estado_nuevo,
             usuario,
-            f"Acción: {tipo_accion} | Comentario: {comentario or 'N/A'}"
+            f"Acción: {tipo_accion} | Comentario: {comentario or 'N/A'}",
         )
         with self.db_manager.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query_audit, params_audit)
 
     def rechazar_cotizacion(
-        self, id_incidente: int, id_cotizacion: int, usuario_sistema: str, motivo: str = None
+        self,
+        id_incidente: int,
+        id_cotizacion: int,
+        usuario_sistema: str,
+        motivo: str = None,
     ) -> None:
         """
         Rechaza una cotización específica sin afectar el estado del incidente.
@@ -456,7 +510,9 @@ class ServicioIncidentes:
                 raise ValueError(f"Incidente {id_incidente} no encontrado")
 
             cotizaciones = self.repo_incidentes.obtener_cotizaciones(id_incidente)
-            cotizacion = next((c for c in cotizaciones if c.id_cotizacion == id_cotizacion), None)
+            cotizacion = next(
+                (c for c in cotizaciones if c.id_cotizacion == id_cotizacion), None
+            )
 
             if not cotizacion:
                 raise ValueError("Cotización no encontrada")
@@ -492,19 +548,41 @@ class ServicioIncidentes:
         costo_final: int = None,
         comentario: str = None,
         fecha_arreglo: datetime = None,
+        es_finalizacion_directa: bool = False,
+        id_proveedor: int = None,
     ) -> Incidente:
         """
-        Finaliza un incidente que está En Reparación.
-        Permite registrar el costo final real si difiere del presupuestado.
+        Finaliza un incidente desde cualquier estado editable.
+
+        Args:
+            id_incidente: ID del incidente
+            usuario_sistema: Usuario que realiza la acción
+            costo_final: Costo real de la reparación (opcional)
+            comentario: Observaciones de cierre
+            fecha_arreglo: Fecha de reparación
+            es_finalizacion_directa: Si True, indica finalización fuera del flujo normal
+            id_proveedor: ID del proveedor asignado (opcional)
+
+        Estados desde los que se puede finalizar:
+            Reportado, En Revision, Cotizado, Aprobado, En Reparacion
         """
+        estados_finalizables = [
+            "Reportado",
+            "En Revision",
+            "Cotizado",
+            "Aprobado",
+            "En Reparacion",
+        ]
+
         with self.db_manager.transaccion() as conn:
             incidente = self.repo_incidentes.obtener_por_id(id_incidente)
             if not incidente:
                 raise ValueError(f"Incidente {id_incidente} no encontrado")
 
-            if incidente.estado != "En Reparacion":
+            if incidente.estado not in estados_finalizables:
                 raise ValueError(
-                    f"Solo se pueden finalizar incidentes En Reparación. Estado actual: {incidente.estado}"
+                    f"No se puede finalizar un incidente en estado {incidente.estado}. "
+                    f"Estados permitidos: {', '.join(estados_finalizables)}"
                 )
 
             estado_anterior = incidente.estado
@@ -513,6 +591,10 @@ class ServicioIncidentes:
             # Actualizar costo si se proporciona uno diferente
             if costo_final is not None and costo_final != incidente.costo_incidente:
                 incidente = replace(incidente, costo_incidente=costo_final)
+
+            # Asignar proveedor si se proporciona (antes de cambiar estado)
+            if id_proveedor:
+                incidente = replace(incidente, id_proveedor_asignado=id_proveedor)
 
             # Cambiar estado
             incidente = incidente.avanzar_estado("Finalizado", usuario_sistema)
@@ -523,23 +605,31 @@ class ServicioIncidentes:
 
             self.repo_incidentes.actualizar(incidente)
 
+            # Determinar tipo de acción
+            tipo_accion = (
+                "FINALIZACION_DIRECTA" if es_finalizacion_directa else "CAMBIO_ESTADO"
+            )
+
             # Registrar en historial
             self._registrar_historial(
                 id_incidente=id_incidente,
                 estado_anterior=estado_anterior,
                 estado_nuevo="Finalizado",
                 usuario=usuario_sistema,
-                tipo_accion="CAMBIO_ESTADO",
+                tipo_accion=tipo_accion,
                 comentario=comentario,
                 datos_extra={
                     "costo_presupuestado": costo_anterior,
                     "costo_final": incidente.costo_incidente,
+                    "es_finalizacion_directa": es_finalizacion_directa,
                 },
             )
 
             return incidente
 
-    def cancelar_incidente(self, id_incidente: int, usuario_sistema: str, motivo: str) -> Incidente:
+    def cancelar_incidente(
+        self, id_incidente: int, usuario_sistema: str, motivo: str
+    ) -> Incidente:
         """
         Cancela un incidente. Requiere un motivo obligatorio.
         Solo se puede cancelar si no está Finalizado o ya Cancelado.
@@ -553,7 +643,9 @@ class ServicioIncidentes:
                 raise ValueError(f"Incidente {id_incidente} no encontrado")
 
             if incidente.estado in ["Finalizado", "Cancelado"]:
-                raise ValueError(f"No se puede cancelar un incidente {incidente.estado}")
+                raise ValueError(
+                    f"No se puede cancelar un incidente {incidente.estado}"
+                )
 
             estado_anterior = incidente.estado
 
@@ -563,7 +655,7 @@ class ServicioIncidentes:
                 estado="Cancelado",
                 motivo_cancelacion=motivo,
                 updated_by=usuario_sistema,
-                updated_at=datetime.now()
+                updated_at=datetime.now(),
             )
 
             self.repo_incidentes.actualizar(incidente)
@@ -592,3 +684,114 @@ class ServicioIncidentes:
         """
         cotizaciones = self.repo_incidentes.obtener_cotizaciones(id_incidente)
         return [c for c in cotizaciones if c.estado_cotizacion == "Rechazada"]
+
+    def editar_incidente(
+        self,
+        id_incidente: int,
+        datos_actualizacion: Dict[str, Any],
+        usuario_sistema: str,
+    ) -> Incidente:
+        """
+        Edita los atributos de un incidente sin cambiar de estado.
+
+        Campos editables por estado:
+        - Reportado: cualquier campo
+        - En Revision: cualquier campo
+        - Cotizado: descripcion, prioridad, responsable_pago, costo
+        - Aprobado: costo, responsable_pago, comentarios
+        - En Reparacion: costo_final, comentarios
+        - Finalizado: solo lectura (no editable)
+
+        Args:
+            id_incidente: ID del incidente a editar
+            datos_actualizacion: Dict con campos a actualizar
+            usuario_sistema: Usuario que realiza la edición
+
+        Returns:
+            Incidente actualizado
+
+        Raises:
+            ValueError: Si el incidente no existe o no es editable en el estado actual
+        """
+        campos_bloqueados_por_estado = {
+            "Reportado": [],
+            "En Revision": [],
+            "Cotizado": ["id_propiedad", "id_contrato_m", "origen_reporte"],
+            "Aprobado": [
+                "id_propiedad",
+                "id_contrato_m",
+                "origen_reporte",
+                "prioridad",
+            ],
+            "En Reparacion": [
+                "id_propiedad",
+                "id_contrato_m",
+                "origen_reporte",
+                "prioridad",
+                "descripcion_incidente",
+            ],
+            "Finalizado": ["*"],  # Todos bloqueados
+            "Cancelado": ["*"],  # Todos bloqueados
+        }
+
+        with self.db_manager.transaccion() as conn:
+            incidente = self.repo_incidentes.obtener_por_id(id_incidente)
+            if not incidente:
+                raise ValueError(f"Incidente {id_incidente} no encontrado")
+
+            estado_actual = incidente.estado
+
+            if estado_actual in ["Finalizado", "Cancelado"]:
+                raise ValueError(
+                    f"No se puede editar un incidente en estado {estado_actual}"
+                )
+
+            campos_bloqueados = campos_bloqueados_por_estado.get(estado_actual, [])
+
+            cambios_validos = {}
+            cambios_rechazados = []
+
+            for campo, valor in datos_actualizacion.items():
+                if campo in [
+                    "updated_by",
+                    "updated_at",
+                    "created_by",
+                    "created_at",
+                    "id_incidente",
+                    "estado",
+                ]:
+                    continue
+                if campo == "*" in campos_bloqueados:
+                    cambios_rechazados.append(campo)
+                    continue
+                if campo in campos_bloqueados:
+                    cambios_rechazados.append(campo)
+                    continue
+
+                cambios_validos[campo] = valor
+
+            if cambios_rechazados:
+                raise ValueError(
+                    f"Campos no editables en estado {estado_actual}: {', '.join(cambios_rechazados)}"
+                )
+
+            if not cambios_validos:
+                raise ValueError("No hay campos válidos para actualizar")
+
+            cambios_validos["updated_by"] = usuario_sistema
+            cambios_validos["updated_at"] = datetime.now()
+
+            incidente_actualizado = replace(incidente, **cambios_validos)
+            self.repo_incidentes.actualizar(incidente_actualizado)
+
+            self._registrar_historial(
+                id_incidente=id_incidente,
+                estado_anterior=estado_actual,
+                estado_nuevo=estado_actual,
+                usuario=usuario_sistema,
+                tipo_accion="EDICION",
+                comentario=f"Campos editados: {', '.join(cambios_validos.keys())}",
+                datos_extra=cambios_validos,
+            )
+
+            return incidente_actualizado
