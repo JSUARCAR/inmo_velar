@@ -6,13 +6,17 @@ import reflex as rx
 from src.aplicacion.servicios.servicio_incidentes import ServicioIncidentes
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
-from src.infraestructura.servicios.pdf_elite.templates.incidente_template_elite import IncidenteTemplateElite
+from src.infraestructura.servicios.pdf_elite.templates.incidente_template_elite import (
+    IncidenteTemplateElite,
+)
 from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
+from src.core.auth import obtener_usuario_actual
 from pathlib import Path
 
 
 class IncidenteDict(TypedDict):
     """Estructura tipada para serialización de Incidente en Reflex."""
+
     id: int
     descripcion: str
     estado: str
@@ -22,6 +26,12 @@ class IncidenteDict(TypedDict):
     direccion_propiedad: str
     id_proveedor: Optional[int]
     origen: str
+    nombre_propietario: str
+    nombre_inquilino: str
+    nombre_habitante: str
+    telefono_propietario: str
+    telefono_inquilino: str
+    telefono_habitante: str
 
 
 class IncidentesState(DocumentosStateMixin):
@@ -134,7 +144,9 @@ class IncidentesState(DocumentosStateMixin):
     # --- DETAILS MODAL & QUOTING ---
     details_modal_open: bool = False
     selected_incidente: Dict[str, Any] = {}
-    cotizaciones: List[Dict[str, Any]] = []  # Lista de cotizaciones del incidente seleccionado
+    cotizaciones: List[
+        Dict[str, Any]
+    ] = []  # Lista de cotizaciones del incidente seleccionado
 
     show_quote_form: bool = False
 
@@ -154,12 +166,25 @@ class IncidentesState(DocumentosStateMixin):
         "dias": 1,
     }
 
-    # Kanban Columns (Variables de estado directas para mayor estabilidad)
-    incidentes_reportado: List[IncidenteDict] = []
-    incidentes_cotizado: List[IncidenteDict] = []
-    incidentes_aprobado: List[IncidenteDict] = []
-    incidentes_en_reparacion: List[IncidenteDict] = []
-    incidentes_finalizado: List[IncidenteDict] = []
+    @rx.var
+    def incidentes_reportado(self) -> List[IncidenteDict]:
+        return self.incidentes_kanban.get("Reportado", [])
+
+    @rx.var
+    def incidentes_cotizado(self) -> List[IncidenteDict]:
+        return self.incidentes_kanban.get("Cotizado", [])
+
+    @rx.var
+    def incidentes_aprobado(self) -> List[IncidenteDict]:
+        return self.incidentes_kanban.get("Aprobado", [])
+
+    @rx.var
+    def incidentes_en_reparacion(self) -> List[IncidenteDict]:
+        return self.incidentes_kanban.get("En Reparacion", [])
+
+    @rx.var
+    def incidentes_finalizado(self) -> List[IncidenteDict]:
+        return self.incidentes_kanban.get("Finalizado", [])
 
     @rx.event(background=True)
     async def on_load(self):
@@ -181,14 +206,18 @@ class IncidentesState(DocumentosStateMixin):
         try:
             # TODO: Usar repositorio o servicio adecuado
             # Por simplicidad query directa o servicio propiedades si disponible
-            from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
+            from src.aplicacion.servicios.servicio_propiedades import (
+                ServicioPropiedades,
+            )
             from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
                 RepositorioPropiedadPostgres,
             )
 
             repo_prop = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioPropiedades(repo_prop)
-            props = servicio.listar_propiedades()  # Limit removed as not supported by service
+            props = (
+                servicio.listar_propiedades()
+            )  # Limit removed as not supported by service
 
             options = [
                 {"id": str(p.id_propiedad), "texto": p.direccion_propiedad}
@@ -210,7 +239,9 @@ class IncidentesState(DocumentosStateMixin):
             servicio = ServicioIncidentes(db_manager)
 
             # Filtros para el servicio
-            prioridad = self.filter_prioridad if self.filter_prioridad != "Todas" else None
+            prioridad = (
+                self.filter_prioridad if self.filter_prioridad != "Todas" else None
+            )
             estado = self.filter_estado if self.filter_estado != "Todos" else None
 
             # TODO: El servicio tiene `listar_con_filtros` pero no soporta todos en `listar_incidentes`.
@@ -236,7 +267,9 @@ class IncidentesState(DocumentosStateMixin):
                 resultado_objs = [i for i in resultado_objs if i.estado == estado]
 
             # Cargar propiedades para mapeo de direcciones
-            from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
+            from src.aplicacion.servicios.servicio_propiedades import (
+                ServicioPropiedades,
+            )
             from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
                 RepositorioPropiedadPostgres,
             )
@@ -250,12 +283,34 @@ class IncidentesState(DocumentosStateMixin):
             items = []
             kanban_grouped = {k: [] for k in self.kanban_columns.keys()}
 
+            # Obtener nombres de relaciones para cada propiedad
+            from src.aplicacion.servicios.servicio_incidentes import (
+                ServicioIncidentes as ServicioIncidentesModule,
+            )
+
+            servicio_inc = ServicioIncidentesModule(db_manager)
+
             for inc in resultado_objs:
-                # Obtener dirección o fallback a ID
+                # Obtener dirección completa sin truncar
                 direccion = props_map.get(inc.id_propiedad, f"#{inc.id_propiedad}")
-                # Truncar si es muy larga para la tarjeta
-                if len(direccion) > 20:
-                    direccion = direccion[:17] + "..."
+
+                # Obtener nombres de relaciones
+                datos_propietario = servicio_inc.obtener_datos_propietario_incidente(
+                    inc.id_contrato_m, inc.id_propiedad
+                ) or ("", "")
+                datos_inquilino = servicio_inc.obtener_datos_inquilino_incidente(
+                    inc.id_propiedad
+                ) or ("", "")
+                datos_habitante = servicio_inc.obtener_datos_habitante_incidente(
+                    inc.id_propiedad
+                ) or ("", "")
+
+                nombre_propietario = datos_propietario[0]
+                telefono_propietario = datos_propietario[1]
+                nombre_inquilino = datos_inquilino[0]
+                telefono_inquilino = datos_inquilino[1]
+                nombre_habitante = datos_habitante[0]
+                telefono_habitante = datos_habitante[1]
 
                 item = {
                     "id": inc.id_incidente,
@@ -271,6 +326,12 @@ class IncidentesState(DocumentosStateMixin):
                     "direccion_propiedad": direccion,
                     "id_proveedor": inc.id_proveedor_asignado,
                     "origen": inc.origen_reporte or "Inquilino",
+                    "nombre_propietario": nombre_propietario,
+                    "nombre_inquilino": nombre_inquilino,
+                    "nombre_habitante": nombre_habitante,
+                    "telefono_propietario": telefono_propietario,
+                    "telefono_inquilino": telefono_inquilino,
+                    "telefono_habitante": telefono_habitante,
                 }
                 items.append(item)
 
@@ -283,14 +344,7 @@ class IncidentesState(DocumentosStateMixin):
             async with self:
                 self.incidentes = items
                 self.incidentes_kanban = kanban_grouped
-                
-                # Actualizar columnas individuales para mayor estabilidad en el compilador
-                self.incidentes_reportado = kanban_grouped.get("Reportado", [])
-                self.incidentes_cotizado = kanban_grouped.get("Cotizado", [])
-                self.incidentes_aprobado = kanban_grouped.get("Aprobado", [])
-                self.incidentes_en_reparacion = kanban_grouped.get("En Reparacion", [])
-                self.incidentes_finalizado = kanban_grouped.get("Finalizado", [])
-                
+
                 import math
 
                 self.total_pages = math.ceil(total_items / self.items_per_page)
@@ -308,8 +362,10 @@ class IncidentesState(DocumentosStateMixin):
     async def load_proveedores(self):
         """Carga lista de proveedores."""
         try:
-            from src.aplicacion.servicios.servicio_proveedores import ServicioProveedores
-            
+            from src.aplicacion.servicios.servicio_proveedores import (
+                ServicioProveedores,
+            )
+
             servicio = ServicioProveedores(db_manager)
             proveedores = servicio.listar_proveedores()
 
@@ -318,7 +374,8 @@ class IncidentesState(DocumentosStateMixin):
                     "id": str(p.id_proveedor),
                     "texto": f"{p.nombre_completo or 'Proveedor'} ({p.especialidad})",
                 }
-                for p in proveedores if p.estado_registro
+                for p in proveedores
+                if p.estado_registro
             ]
 
             async with self:
@@ -400,7 +457,9 @@ class IncidentesState(DocumentosStateMixin):
         """Selecciona un incidente y carga sus detalles completos."""
         async with self:
             # Inicializar con ID mientras carga
-            incidente["direccion_propiedad"] = f"#{incidente.get('id_propiedad', '')}..."
+            incidente["direccion_propiedad"] = (
+                f"#{incidente.get('id_propiedad', '')}..."
+            )
             self.selected_incidente = incidente
             self.details_modal_open = True
             self.show_quote_form = False
@@ -483,31 +542,20 @@ class IncidentesState(DocumentosStateMixin):
                         prop, "direccion_propiedad", str(prop)
                     )
 
-                # Fetch owner name
-                current_inc["nombre_propietario"] = "N/D"
-                try:
-                    with db_manager.obtener_conexion() as conn:
-                        cursor = conn.cursor()
-                        cursor.execute("""
-                            SELECT per.NOMBRE_COMPLETO 
-                            FROM CONTRATOS_MANDATOS cm
-                            JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO
-                            JOIN PERSONAS per ON pr.ID_PERSONA = per.ID_PERSONA
-                            WHERE cm.ID_CONTRATO_M = %s OR cm.ID_PROPIEDAD = %s
-                            LIMIT 1
-                        """, (inc_obj.id_contrato_m, inc_obj.id_propiedad))
-                        res_prop = cursor.fetchone()
-                        if res_prop:
-                            current_inc["nombre_propietario"] = res_prop[0] if isinstance(res_prop, tuple) else res_prop.get("NOMBRE_COMPLETO", res_prop.get("nombre_completo"))
-                except Exception:
-                    pass
+                # Nombre del propietario (ya viene del servicio)
+                current_inc["nombre_propietario"] = detalle.get(
+                    "nombre_propietario", "N/D"
+                )
 
                 # Actualizar nombre proveedor si existe
                 current_inc["nombre_proveedor"] = "Proveedor No Asignado"
-                if pid := inc_obj.id_proveedor_asignado:  # Usar del objeto real, mas seguro
+                if (
+                    pid := inc_obj.id_proveedor_asignado
+                ):  # Usar del objeto real, mas seguro
                     # Buscar en opciones (formato id, texto)
                     prov_opt = next(
-                        (p for p in self.proveedores_options if p["id"] == str(pid)), None
+                        (p for p in self.proveedores_options if p["id"] == str(pid)),
+                        None,
                     )
                     if prov_opt:
                         current_inc["nombre_proveedor"] = prov_opt["texto"]
@@ -541,7 +589,7 @@ class IncidentesState(DocumentosStateMixin):
 
         try:
             servicio = ServicioIncidentes(db_manager)
-            usuario = "admin"
+            usuario = obtener_usuario_actual()
 
             # Prepare data
             datos = {
@@ -582,30 +630,17 @@ class IncidentesState(DocumentosStateMixin):
 
         try:
             servicio = ServicioIncidentes(db_manager)
-            usuario = "admin"  # TODO Auth
+            usuario = (
+                "sistema"  # TODO: Implementar obtener_usuario_desde_state  # TODO Auth
+            )
 
             # Validación básica
             if not self.form_data["id_propiedad"] or not self.form_data["descripcion"]:
                 raise ValueError("Propiedad y Descripción son obligatorias")
 
-            # Obtener ID_CONTRATO_M activo para la propiedad seleccionada
-            id_contrato_m = None
-            try:
-                with db_manager.obtener_conexion() as conn:
-                    cursor = conn.cursor()
-                    cursor.execute(
-                        "SELECT ID_CONTRATO_M FROM CONTRATOS_MANDATOS WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO = 'Activo' LIMIT 1",
-                        (int(self.form_data["id_propiedad"]),)
-                    )
-                    res = cursor.fetchone()
-                    if res:
-                        id_contrato_m = res[0] if isinstance(res, tuple) else res.get("ID_CONTRATO_M", res.get("id_contrato_m"))
-            except Exception as e:
-                pass  # Fallback a None
-
             datos = {
                 "id_propiedad": int(self.form_data["id_propiedad"]),
-                "id_contrato_m": id_contrato_m,
+                "id_contrato_m": None,
                 "descripcion": self.form_data["descripcion"],
                 "prioridad": self.form_data["prioridad"],
                 "origen_reporte": self.form_data["origen_reporte"],
@@ -632,20 +667,28 @@ class IncidentesState(DocumentosStateMixin):
 
         try:
             servicio = ServicioIncidentes(db_manager)
-            usuario = "admin"  # TODO Auth
+            usuario = (
+                "sistema"  # TODO: Implementar obtener_usuario_desde_state  # TODO Auth
+            )
             # Asumimos 'Propietario' por defecto o requerir input extra
             servicio.aprobar_cotizacion(
                 id_incidente, id_cotizacion, usuario, responsable_pago="Propietario"
             )
 
             yield rx.toast.success("Cotización aprobada y Orden de Trabajo creada.")
-            
+
             async with self:
-                if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+                if (
+                    self.selected_incidente
+                    and self.selected_incidente.get("id") == id_incidente
+                ):
                     self.selected_incidente["estado"] = "Aprobado"
-                    
+
             yield IncidentesState.load_incidentes()
-            if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+            if (
+                self.selected_incidente
+                and self.selected_incidente.get("id") == id_incidente
+            ):
                 yield IncidentesState.select_incidente(self.selected_incidente)
 
         except Exception as e:
@@ -662,17 +705,23 @@ class IncidentesState(DocumentosStateMixin):
 
         try:
             servicio = ServicioIncidentes(db_manager)
-            usuario = "admin"
+            usuario = obtener_usuario_actual()
             servicio.iniciar_reparacion(id_incidente, usuario)
 
             yield rx.toast.success("Reparación iniciada.")
-            
+
             async with self:
-                if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+                if (
+                    self.selected_incidente
+                    and self.selected_incidente.get("id") == id_incidente
+                ):
                     self.selected_incidente["estado"] = "En Reparacion"
-                    
+
             yield IncidentesState.load_incidentes()
-            if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+            if (
+                self.selected_incidente
+                and self.selected_incidente.get("id") == id_incidente
+            ):
                 yield IncidentesState.select_incidente(self.selected_incidente)
 
         except Exception as e:
@@ -689,17 +738,23 @@ class IncidentesState(DocumentosStateMixin):
 
         try:
             servicio = ServicioIncidentes(db_manager)
-            usuario = "admin"
+            usuario = obtener_usuario_actual()
             servicio.finalizar_incidente(id_incidente, usuario)
 
             yield rx.toast.success("Incidente finalizado exitosamente.")
-            
+
             async with self:
-                if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+                if (
+                    self.selected_incidente
+                    and self.selected_incidente.get("id") == id_incidente
+                ):
                     self.selected_incidente["estado"] = "Finalizado"
 
             yield IncidentesState.load_incidentes()
-            if self.selected_incidente and self.selected_incidente.get("id") == id_incidente:
+            if (
+                self.selected_incidente
+                and self.selected_incidente.get("id") == id_incidente
+            ):
                 yield IncidentesState.select_incidente(self.selected_incidente)
 
         except Exception as e:
@@ -716,7 +771,7 @@ class IncidentesState(DocumentosStateMixin):
 
         try:
             servicio = ServicioIncidentes(db_manager)
-            usuario = "admin"
+            usuario = obtener_usuario_actual()
             servicio.cambiar_estado(id_incidente, "Cotizado", usuario)
 
             yield rx.toast.success(
@@ -726,11 +781,17 @@ class IncidentesState(DocumentosStateMixin):
 
             # Actualizar estado seleccionado localmente para reflejar cambio inmediato en UI
             async with self:
-                if self.selected_incidente and self.selected_incidente["id"] == id_incidente:
+                if (
+                    self.selected_incidente
+                    and self.selected_incidente["id"] == id_incidente
+                ):
                     self.selected_incidente["estado"] = "Cotizado"
                     self.details_modal_open = True
-            
-            if self.selected_incidente and self.selected_incidente["id"] == id_incidente:
+
+            if (
+                self.selected_incidente
+                and self.selected_incidente["id"] == id_incidente
+            ):
                 yield IncidentesState.select_incidente(self.selected_incidente)
 
         except Exception as e:
@@ -768,7 +829,7 @@ class IncidentesState(DocumentosStateMixin):
 
         try:
             servicio = ServicioIncidentes(db_manager)
-            usuario = "admin"
+            usuario = obtener_usuario_actual()
 
             # Parsear fecha string a datetime
             fecha_fin = datetime.strptime(self.finalize_date, "%Y-%m-%d")
@@ -811,8 +872,8 @@ class IncidentesState(DocumentosStateMixin):
         """Genera el PDF del incidente seleccionado."""
         async with self:
             if not self.selected_incidente:
-                 yield rx.toast.error("No hay incidente seleccionado.")
-                 return
+                yield rx.toast.error("No hay incidente seleccionado.")
+                return
             self.is_loading = True
 
         try:
@@ -830,8 +891,8 @@ class IncidentesState(DocumentosStateMixin):
             config_empresa = servicio_config.obtener_configuracion_empresa()
             if config_empresa:
                 datos["empresa"] = {
-                     "logo_base64": config_empresa.logo_base64,
-                     "nombre": config_empresa.nombre_empresa
+                    "logo_base64": config_empresa.logo_base64,
+                    "nombre": config_empresa.nombre_empresa,
                 }
 
             # 3. Generar PDF
@@ -865,5 +926,5 @@ class IncidentesState(DocumentosStateMixin):
         except Exception as e:
             yield rx.toast.error(f"Error generando PDF: {str(e)}")
         finally:
-             async with self:
+            async with self:
                 self.is_loading = False

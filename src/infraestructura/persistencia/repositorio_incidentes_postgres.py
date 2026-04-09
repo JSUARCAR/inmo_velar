@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.cotizacion import Cotizacion
 from src.dominio.entidades.historial_incidente import HistorialIncidente
@@ -16,8 +16,8 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
     def _mapear_incidente(self, row: dict) -> Optional[Incidente]:
         if not row:
             return None
-            
-        # Transform datetime objects back to datetime if necessary 
+
+        # Transform datetime objects back to datetime if necessary
         # (psycopg2 returns datetime natively, but just to be sure)
         return Incidente(
             id_incidente=row.get("ID_INCIDENTE"),
@@ -132,6 +132,73 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         cursor.execute(query, (id_incidente,))
         row = cursor.fetchone()
         return self._mapear_incidente(row) if row else None
+
+    def listar_con_filtros(
+        self,
+        busqueda: Optional[str] = None,
+        id_propiedad: Optional[int] = None,
+        prioridad: Optional[str] = None,
+        fecha_desde: Optional[str] = None,
+        fecha_hasta: Optional[str] = None,
+        id_proveedor: Optional[int] = None,
+        dias_min: Optional[int] = None,
+        estado: Optional[str] = None,
+        page: Optional[int] = None,
+        page_size: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        query = "SELECT * FROM INCIDENTES WHERE 1=1"
+        params = []
+
+        if busqueda:
+            query += " AND (DESCRIPCION_INCIDENTE ILIKE %s OR CAST(ID_INCIDENTE AS TEXT) = %s)"
+            params.extend([f"%{busqueda}%", busqueda])
+
+        if id_propiedad:
+            query += " AND ID_PROPIEDAD = %s"
+            params.append(id_propiedad)
+
+        if prioridad:
+            query += " AND PRIORIDAD = %s"
+            params.append(prioridad)
+
+        if estado:
+            query += " AND ESTADO = %s"
+            params.append(estado)
+
+        if id_proveedor:
+            query += " AND ID_PROVEEDOR_ASIGNADO = %s"
+            params.append(id_proveedor)
+
+        if dias_min is not None:
+            query += " AND DIAS_SIN_RESOLVER >= %s"
+            params.append(dias_min)
+
+        if fecha_desde:
+            query += " AND FECHA_INCIDENTE >= %s"
+            params.append(fecha_desde)
+
+        if fecha_hasta:
+            query += " AND FECHA_INCIDENTE <= %s"
+            params.append(fecha_hasta)
+
+        count_query = query.replace("SELECT *", "SELECT COUNT(*) as total")
+
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        cursor.execute(count_query, tuple(params))
+        total_row = cursor.fetchone()
+        total = total_row.get("total", 0) if total_row else 0
+
+        query += " ORDER BY FECHA_INCIDENTE DESC"
+
+        if page is not None and page_size is not None:
+            query += " LIMIT %s OFFSET %s"
+            params.extend([page_size, (page - 1) * page_size])
+
+        cursor.execute(query, tuple(params))
+        incidentes = [self._mapear_incidente(row) for row in cursor.fetchall()]
+
+        return {"items": incidentes, "total": total}
 
     def listar(
         self, id_propiedad: Optional[int] = None, estado: Optional[str] = None

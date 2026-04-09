@@ -133,6 +133,85 @@ class ServicioIncidentes:
             "propiedad": propiedad,
         }
 
+    def obtener_datos_propietario_incidente(
+            self, id_contrato_m: Optional[int], id_propiedad: int
+        ) -> Optional[tuple[str, str]]:
+        """Obtiene (nombre, telefono) del propietario."""
+        query = """
+            SELECT per.NOMBRE_COMPLETO, per.TELEFONO_PRINCIPAL
+            FROM contratos_mandatos cm
+            JOIN propietarios p ON cm.id_propietario = p.id_propietario
+            JOIN personas per ON p.id_persona = per.id_persona
+            WHERE cm.id_contrato_m = %s OR cm.id_propiedad = %s
+            LIMIT 1
+        """
+        with self.db_manager.obtener_conexion() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (id_contrato_m, id_propiedad))
+            res = cursor.fetchone()
+            if res:
+                nombre = res[0] if isinstance(res, tuple) else res.get('NOMBRE_COMPLETO')
+                telefono = res[1] if isinstance(res, tuple) else res.get('TELEFONO_PRINCIPAL')
+                if nombre:
+                    return (nombre, telefono or "")
+        return None
+
+    def obtener_datos_inquilino_incidente(self, id_propiedad: int) -> Optional[tuple[str, str]]:
+        """Obtiene (nombre, telefono) del inquilino."""
+        query = """
+            SELECT per.NOMBRE_COMPLETO, per.TELEFONO_PRINCIPAL
+            FROM contratos_arrendamientos ca
+            JOIN arrendatarios arr ON ca.id_arrendatario = arr.id_arrendatario
+            JOIN personas per ON arr.id_persona = per.id_persona
+            WHERE ca.id_propiedad = %s AND ca.estado_contrato_a = 'Activo'
+            LIMIT 1
+        """
+        with self.db_manager.obtener_conexion() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (id_propiedad,))
+            res = cursor.fetchone()
+            if res:
+                nombre = res[0] if isinstance(res, tuple) else res.get('NOMBRE_COMPLETO')
+                telefono = res[1] if isinstance(res, tuple) else res.get('TELEFONO_PRINCIPAL')
+                if nombre:
+                    return (nombre, telefono or "")
+        return None
+
+    def obtener_datos_habitante_incidente(self, id_propiedad: int) -> Optional[tuple[str, str]]:
+        """Obtiene (nombre, telefono) del habitante."""
+        query = """
+            SELECT arr.NOMBRE_HABITANTE, arr.TELEFONO_HABITANTE
+            FROM contratos_arrendamientos ca
+            JOIN arrendatarios arr ON ca.id_arrendatario = arr.id_arrendatario
+            WHERE ca.id_propiedad = %s AND ca.estado_contrato_a = 'Activo'
+              AND arr.NOMBRE_HABITANTE IS NOT NULL AND arr.NOMBRE_HABITANTE != ''
+            LIMIT 1
+        """
+        with self.db_manager.obtener_conexion() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (id_propiedad,))
+            res = cursor.fetchone()
+            if res:
+                nombre = res[0] if isinstance(res, tuple) else res.get('NOMBRE_HABITANTE')
+                telefono = res[1] if isinstance(res, tuple) else res.get('TELEFONO_HABITANTE')
+                if nombre:
+                    return (nombre, telefono or "")
+        return None
+
+    # Métodos legacy para compatibilidad
+    def obtener_nombre_propietario_incidente(
+            self, id_contrato_m: Optional[int], id_propiedad: int
+        ) -> Optional[str]:
+        datos = self.obtener_datos_propietario_incidente(id_contrato_m, id_propiedad)
+        return datos[0] if datos else None
+
+    def obtener_nombre_inquilino_incidente(self, id_propiedad: int) -> Optional[str]:
+        datos = self.obtener_datos_inquilino_incidente(id_propiedad)
+        return datos[0] if datos else None
+
+    def obtener_nombre_habitante_incidente(self, id_propiedad: int) -> Optional[str]:
+        datos = self.obtener_datos_habitante_incidente(id_propiedad)
+        return datos[0] if datos else None
     def cambiar_estado(
         self,
         id_incidente: int,
