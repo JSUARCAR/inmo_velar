@@ -37,14 +37,23 @@ class Incidente:
         Flujo: Reportado -> En Revision -> Cotizado -> Aprobado -> En Reparacion -> Finalizado
         """
         transiciones_validas = {
-            "Reportado": ["En Revision", "Cancelado"],
+            "Reportado": [
+                "En Revision",
+                "Cancelado",
+                "Finalizado",
+            ],  # Finalizado directo
             "En Revision": [
                 "Cotizado",
                 "En Reparacion",
                 "Cancelado",
-            ],  # En Reparacion si es emergencia sin cotizacion
-            "Cotizado": ["Aprobado", "Cancelado"],
-            "Aprobado": ["En Reparacion", "Cancelado"],
+                "Finalizado",  # Finalizado directo
+            ],
+            "Cotizado": ["Aprobado", "Cancelado", "Finalizado"],  # Finalizado directo
+            "Aprobado": [
+                "En Reparacion",
+                "Cancelado",
+                "Finalizado",
+            ],  # Finalizado directo
             "En Reparacion": ["Finalizado", "Cancelado"],
             "Finalizado": [],  # Estado final
             "Cancelado": [],  # Estado final
