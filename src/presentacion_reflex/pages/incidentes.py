@@ -119,6 +119,7 @@ def incidentes() -> rx.Component:
                 ),
                 flex="1",
                 width="100%",
+                height="100%",
                 min_height="0",
             ),
             # Pagination Controls
