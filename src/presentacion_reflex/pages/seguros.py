@@ -144,31 +144,31 @@ def seguros_page() -> rx.Component:
                                     lambda seguro: rx.table.row(
                                         rx.table.cell(
                                             rx.text(
-                                                seguro["nombre_seguro"],
+                                                seguro.nombre_seguro,
                                                 weight="bold",
                                             )
                                         ),
                                         rx.table.cell(
                                             rx.badge(
-                                                seguro["porcentaje_seguro"].to(str),
+                                                seguro.porcentaje_seguro.to_string(),
                                                 "%",
                                                 color_scheme="blue",
                                             )
                                         ),
                                         rx.table.cell(
                                             rx.cond(
-                                                seguro["fecha_inicio_seguro"] != "",
-                                                seguro["fecha_inicio_seguro"],
+                                                seguro.fecha_inicio_seguro != "",
+                                                seguro.fecha_inicio_seguro,
                                                 "N/A",
                                             )
                                         ),
                                         rx.table.cell(
                                             rx.badge(
                                                 rx.cond(
-                                                    seguro["estado_seguro"], "Activo", "Inactivo"
+                                                    seguro.estado_seguro == 1, "Activo", "Inactivo"
                                                 ),
                                                 color_scheme=rx.cond(
-                                                    seguro["estado_seguro"], "green", "gray"
+                                                    seguro.estado_seguro == 1, "green", "gray"
                                                 ),
                                             )
                                         ),
@@ -182,7 +182,7 @@ def seguros_page() -> rx.Component:
                                                         variant="soft",
                                                         color_scheme="blue",
                                                         on_click=lambda: SegurosState.open_detail_modal(
-                                                            seguro["id_seguro"]
+                                                            seguro.id_seguro
                                                         ),
                                                     ),
                                                     content="Ver detalle",
@@ -196,7 +196,7 @@ def seguros_page() -> rx.Component:
                                                             size="2",
                                                             variant="soft",
                                                             on_click=lambda: SegurosState.open_edit_seguro_modal(
-                                                                seguro["id_seguro"]
+                                                                seguro.id_seguro
                                                             ),
                                                         ),
                                                         content="Editar seguro",
@@ -208,24 +208,24 @@ def seguros_page() -> rx.Component:
                                                     rx.tooltip(
                                                         rx.icon_button(
                                                             rx.cond(
-                                                                seguro["estado_seguro"],
+                                                                seguro.estado_seguro == 1,
                                                                 rx.icon("shield-off", size=22),
                                                                 rx.icon("shield-check", size=22),
                                                             ),
                                                             size="2",
                                                             variant="soft",
                                                             color_scheme=rx.cond(
-                                                                seguro["estado_seguro"],
+                                                                seguro.estado_seguro == 1,
                                                                 "red",
                                                                 "green",
                                                             ),
                                                             on_click=lambda: SegurosState.toggle_estado_seguro(
-                                                                seguro["id_seguro"],
-                                                                seguro["estado_seguro"],
+                                                                seguro.id_seguro,
+                                                                seguro.estado_seguro,
                                                             ),
                                                         ),
                                                         content=rx.cond(
-                                                            seguro["estado_seguro"],
+                                                            seguro.estado_seguro == 1,
                                                             "Desactivar seguro",
                                                             "Activar seguro",
                                                         ),

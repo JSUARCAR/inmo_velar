@@ -1,5 +1,6 @@
+import pydantic
 from datetime import datetime
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional
 
 import reflex as rx
 
@@ -14,7 +15,7 @@ from src.core.auth import obtener_usuario_actual
 from pathlib import Path
 
 
-class IncidenteDict(TypedDict):
+class IncidenteDict(pydantic.BaseModel):
     """Estructura tipada para serialización de Incidente en Reflex."""
 
     id: int
@@ -970,6 +971,10 @@ class IncidentesState(DocumentosStateMixin):
             "id_proveedor_asignado": incidente.get("id_proveedor"),
         }
         self.edit_error = ""
+
+    @rx.event
+    def set_edit_modal_open(self, value: bool):
+        self.edit_modal_open = value
 
     @rx.event
     def close_edit_modal(self):

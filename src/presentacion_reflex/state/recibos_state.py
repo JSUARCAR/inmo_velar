@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import reflex as rx
 
@@ -11,13 +11,34 @@ from src.infraestructura.repositorios.repositorio_recibo_publico import (
     RepositorioReciboPublico,
 )
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+import pydantic
+
+
+class ReciboDict(pydantic.BaseModel):
+    """Estructura tipada para Recibo Público."""
+    id_recibo_publico: int
+    id_propiedad: int
+    propiedad_nombre: str
+    periodo_recibo: str
+    tipo_servicio: str
+    valor_recibo: int
+    valor_formato: str
+    fecha_vencimiento: str
+    fecha_pago: Optional[str] = None
+    comprobante: Optional[str] = None
+    estado: str
+    esta_vencido: bool
+    fecha_desde: str
+    fecha_hasta: str
+    dias_facturados: int
+    clase_estado: str
 
 
 class RecibosState(DocumentosStateMixin):
     """Estado para la gestión de Recibos Públicos."""
 
     # Datos Principales
-    recibos: List[Dict] = []
+    recibos: List[ReciboDict] = []
     total_items: int = 0
     is_loading: bool = False
     error_message: str = ""
@@ -134,28 +155,28 @@ class RecibosState(DocumentosStateMixin):
                     prop_nombre = prop_item["label"]
 
                 recibos_ui.append(
-                    {
-                        "id_recibo_publico": r.id_recibo_publico,
-                        "id_propiedad": r.id_propiedad,
-                        "propiedad_nombre": prop_nombre,
-                        "periodo_recibo": r.periodo_recibo,
-                        "tipo_servicio": r.tipo_servicio,
-                        "valor_recibo": r.valor_recibo,
-                        "valor_formato": f"${r.valor_recibo:,.0f}",
-                        "fecha_vencimiento": r.fecha_vencimiento,
-                        "fecha_pago": r.fecha_pago,
-                        "comprobante": r.comprobante,
-                        "estado": r.estado,
-                        "esta_vencido": r.esta_vencido,
-                        "fecha_desde": r.fecha_desde,
-                        "fecha_hasta": r.fecha_hasta,
-                        "dias_facturados": r.dias_facturados,
-                        "clase_estado": (
+                    ReciboDict(
+                        id_recibo_publico=r.id_recibo_publico,
+                        id_propiedad=r.id_propiedad,
+                        propiedad_nombre=prop_nombre,
+                        periodo_recibo=r.periodo_recibo,
+                        tipo_servicio=r.tipo_servicio,
+                        valor_recibo=r.valor_recibo,
+                        valor_formato=f"${r.valor_recibo:,.0f}",
+                        fecha_vencimiento=r.fecha_vencimiento,
+                        fecha_pago=r.fecha_pago or "",
+                        comprobante=r.comprobante or "",
+                        estado=r.estado,
+                        esta_vencido=r.esta_vencido,
+                        fecha_desde=r.fecha_desde or "",
+                        fecha_hasta=r.fecha_hasta or "",
+                        dias_facturados=r.dias_facturados,
+                        clase_estado=(
                             "red"
                             if r.esta_vencido and r.estado != "Pagado"
                             else ("green" if r.estado == "Pagado" else "yellow")
                         ),
-                    }
+                    )
                 )
 
             # Filtrado texto en memoria (si aplica)
@@ -164,7 +185,7 @@ class RecibosState(DocumentosStateMixin):
                 recibos_ui = [
                     r
                     for r in recibos_ui
-                    if st in db_manager.normalize_search_term(r["propiedad_nombre"]) or st in db_manager.normalize_search_term(r.get("comprobante", "") or "")
+                    if st in db_manager.normalize_search_term(r.propiedad_nombre) or st in db_manager.normalize_search_term(r.comprobante or "")
                 ]
 
             async with self:

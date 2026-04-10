@@ -82,19 +82,19 @@ def recibos_table() -> rx.Component:
             rx.foreach(
                 RecibosState.recibos,
                 lambda recibo: rx.table.row(
-                    rx.table.cell(recibo["periodo_recibo"]),
-                    rx.table.cell(recibo["propiedad_nombre"]),
-                    rx.table.cell(rx.badge(recibo["tipo_servicio"], variant="soft")),
-                    rx.table.cell(recibo["fecha_desde"]),
-                    rx.table.cell(recibo["fecha_hasta"]),
-                    rx.table.cell(recibo["dias_facturados"]),
-                    rx.table.cell(recibo["valor_formato"]),
-                    rx.table.cell(recibo["fecha_vencimiento"]),
-                    rx.table.cell(rx.badge(recibo["estado"], color_scheme=recibo["clase_estado"])),
+                    rx.table.cell(recibo.periodo_recibo),
+                    rx.table.cell(recibo.propiedad_nombre),
+                    rx.table.cell(rx.badge(recibo.tipo_servicio, variant="soft")),
+                    rx.table.cell(recibo.fecha_desde),
+                    rx.table.cell(recibo.fecha_hasta),
+                    rx.table.cell(recibo.dias_facturados),
+                    rx.table.cell(recibo.valor_formato),
+                    rx.table.cell(recibo.fecha_vencimiento),
+                    rx.table.cell(rx.badge(recibo.estado, color_scheme=recibo.clase_estado)),
                     rx.table.cell(
                         rx.hstack(
                             rx.cond(
-                                (recibo["estado"] == "Pendiente")
+                                (recibo.estado == "Pendiente")
                                 & AuthState.check_action("Recibos Publicos", "EDITAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -108,7 +108,7 @@ def recibos_table() -> rx.Component:
                                 ),
                             ),
                             rx.cond(
-                                (recibo["estado"] != "Pagado")
+                                (recibo.estado != "Pagado")
                                 & AuthState.check_action("Recibos Publicos", "EDITAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -131,7 +131,7 @@ def recibos_table() -> rx.Component:
                                 content="Ver detalle",
                             ),
                             rx.cond(
-                                (recibo["estado"] != "Pagado")
+                                (recibo.estado != "Pagado")
                                 & AuthState.check_action("Recibos Publicos", "ELIMINAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -140,7 +140,7 @@ def recibos_table() -> rx.Component:
                                         variant="ghost",
                                         color_scheme="red",
                                         on_click=lambda: RecibosState.delete_recibo(
-                                            recibo["id_recibo_publico"]
+                                            recibo.id_recibo_publico
                                         ),
                                     ),
                                     content="Eliminar recibo",

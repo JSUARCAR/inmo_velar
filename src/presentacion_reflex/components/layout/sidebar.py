@@ -189,6 +189,14 @@ def sidebar_items() -> rx.Component:
                 icon_color="#10b981",  # Green
             ),
             sidebar_item(
+                "Prop. Horizontal",
+                "building",
+                "/propiedad-horizontal",
+                "Gestión de asambleas y pagos de administración de PH.",
+                module_name="Propiedad Horizontal",
+                icon_color="#10b981",  # Green
+            ),
+            sidebar_item(
                 "Proveedores",
                 "wrench",
                 "/proveedores",
@@ -375,14 +383,14 @@ def sidebar_footer() -> rx.Component:
                 ),
                 content="Cerrar Sesión",
             ),
-            spacing="3", # Ajuste a 3 para respiración eq. a 12px
+            spacing="3",  # Ajuste a 3 para respiración eq. a 12px
             align_items="center",
         ),
-        spacing="2", # Reducido padding del flex base
+        spacing="2",  # Reducido padding del flex base
         width="100%",
         align_items="center",
         padding_top="2",
-        padding_x="2"
+        padding_x="2",
     )
 
 
@@ -414,7 +422,10 @@ def sidebar() -> rx.Component:
                                 cursor="pointer",
                             ),
                         ),
-                        _hover={"transform": "scale(1.05)", "transition": "transform 0.2s"},
+                        _hover={
+                            "transform": "scale(1.05)",
+                            "transition": "transform 0.2s",
+                        },
                     )
                 ),
                 rx.hover_card.content(
@@ -479,7 +490,11 @@ def sidebar() -> rx.Component:
                         # Contacto
                         rx.vstack(
                             rx.text(
-                                "Contacto", size="1", weight="bold", color="#64748b", margin_top="1"
+                                "Contacto",
+                                size="1",
+                                weight="bold",
+                                color="#64748b",
+                                margin_top="1",
                             ),
                             rx.vstack(
                                 rx.hstack(

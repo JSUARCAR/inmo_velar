@@ -373,7 +373,7 @@ def modal_details() -> rx.Component:
                                                 neuro_button(
                                                     rx.hstack(
                                                         rx.icon(
-                                                            "check_circle", size=16
+                                                            "circle_check", size=16
                                                         ),
                                                         rx.text("Finalizar"),
                                                     ),
@@ -402,7 +402,7 @@ def modal_details() -> rx.Component:
                                             ),
                                             rx.callout(
                                                 "El incidente se cerrara directamente sin seguir el flujo normal.",
-                                                icon="alert_circle",
+                                                icon="circle_alert",
                                                 color_scheme="yellow",
                                                 width="100%",
                                             ),
@@ -497,7 +497,7 @@ def modal_details() -> rx.Component:
                                                 != "",
                                                 rx.callout(
                                                     IncidentesState.direct_finish_error,
-                                                    icon="alert_circle",
+                                                    icon="circle_alert",
                                                     color_scheme="red",
                                                     width="100%",
                                                     margin_top="0.5em",
@@ -536,7 +536,7 @@ def modal_details() -> rx.Component:
                                     rx.vstack(
                                         rx.callout(
                                             "Incidente aprobado. Puede iniciar la reparación.",
-                                            icon="check_circle",
+                                            icon="circle_check",
                                             color_scheme="green",
                                             width="100%",
                                         ),

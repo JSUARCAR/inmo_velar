@@ -4,6 +4,29 @@ import reflex as rx
 
 from src.aplicacion.servicios.servicio_seguros import ServicioSeguros
 from src.infraestructura.persistencia.database import db_manager
+import pydantic
+
+
+class SeguroDict(pydantic.BaseModel):
+    """Estructura tipada para Seguro."""
+    id_seguro: int
+    nombre_seguro: str
+    porcentaje_seguro: int
+    fecha_inicio_seguro: str
+    estado_seguro: int
+    fecha_ingreso_seguro: str
+    motivo_inactivacion: str
+
+
+class PolizaDict(pydantic.BaseModel):
+    """Estructura tipada para Póliza."""
+    id_poliza: int
+    id_contrato: int
+    id_seguro: int
+    numero_poliza: str
+    fecha_inicio: str
+    fecha_fin: str
+    estado: str
 
 
 class SegurosState(rx.State):
@@ -26,8 +49,8 @@ class SegurosState(rx.State):
     error_message: str = ""
 
     # Datos
-    seguros: List[Dict[str, Any]] = []
-    polizas: List[Dict[str, Any]] = []
+    seguros: List[SeguroDict] = []
+    polizas: List[PolizaDict] = []
     contratos_candidatos: List[Dict[str, Any]] = []
 
     # Modal state - Seguros
@@ -77,17 +100,17 @@ class SegurosState(rx.State):
                 search_lower = search.lower()
                 seguros_list = [s for s in seguros_list if search_lower in s.nombre_seguro.lower()]
 
-            # Convertir a dict
+            # Convertir a modelos Pydantic
             seguros_data = [
-                {
-                    "id_seguro": s.id_seguro,
-                    "nombre_seguro": s.nombre_seguro,
-                    "porcentaje_seguro": s.porcentaje_seguro,
-                    "fecha_inicio_seguro": s.fecha_inicio_seguro or "",
-                    "estado_seguro": s.estado_seguro,
-                    "fecha_ingreso_seguro": s.fecha_ingreso_seguro or "",
-                    "motivo_inactivacion": s.motivo_inactivacion or "",
-                }
+                SeguroDict(
+                    id_seguro=s.id_seguro,
+                    nombre_seguro=s.nombre_seguro,
+                    porcentaje_seguro=s.porcentaje_seguro,
+                    fecha_inicio_seguro=s.fecha_inicio_seguro or "",
+                    estado_seguro=s.estado_seguro,
+                    fecha_ingreso_seguro=s.fecha_ingreso_seguro or "",
+                    motivo_inactivacion=s.motivo_inactivacion or "",
+                )
                 for s in seguros_list
             ]
 
@@ -112,17 +135,17 @@ class SegurosState(rx.State):
             servicio = ServicioSeguros(db_manager)
             polizas_list = servicio.listar_polizas()
 
-            # Convertir a dict
+            # Convertir a modelos Pydantic
             polizas_data = [
-                {
-                    "id_poliza": p.id_poliza,
-                    "id_contrato": p.id_contrato,
-                    "id_seguro": p.id_seguro,
-                    "numero_poliza": p.numero_poliza,
-                    "fecha_inicio": p.fecha_inicio,
-                    "fecha_fin": p.fecha_fin,
-                    "estado": p.estado,
-                }
+                PolizaDict(
+                    id_poliza=p.id_poliza,
+                    id_contrato=p.id_contrato,
+                    id_seguro=p.id_seguro,
+                    numero_poliza=p.numero_poliza,
+                    fecha_inicio=p.fecha_inicio or "",
+                    fecha_fin=p.fecha_fin or "",
+                    estado=p.estado or "",
+                )
                 for p in polizas_list
             ]
 
@@ -354,14 +377,15 @@ class SegurosState(rx.State):
                 # Cargar pólizas del seguro
                 todas_polizas = servicio.listar_polizas()
                 polizas_seguro = [
-                    {
-                        "id_poliza": p.id_poliza,
-                        "numero_poliza": p.numero_poliza,
-                        "fecha_inicio": p.fecha_inicio,
-                        "fecha_fin": p.fecha_fin,
-                        "estado": p.estado,
-                        "id_contrato": p.id_contrato,
-                    }
+                    PolizaDict(
+                        id_poliza=p.id_poliza,
+                        numero_poliza=p.numero_poliza,
+                        fecha_inicio=p.fecha_inicio or "",
+                        fecha_fin=p.fecha_fin or "",
+                        estado=p.estado or "",
+                        id_contrato=p.id_contrato,
+                        id_seguro=p.id_seguro
+                    )
                     for p in todas_polizas
                     if p.id_seguro == id_seguro
                 ]
