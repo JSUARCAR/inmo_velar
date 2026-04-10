@@ -182,8 +182,12 @@ def reports_content():
         # Paginación (Preview)
         rx.hstack(
             rx.text(
-                f"Mostrando {ReportesState.preview_data.length()} registros (Total: {ReportesState.total_records}) - Previsualización limitada",
-                size="1", 
+                "Mostrando ",
+                ReportesState.preview_data.length(),
+                " registros (Total: ",
+                ReportesState.total_records,
+                ") - Previsualización limitada",
+                size="1",
                 color="#64748b"
             ),
             rx.spacer(),
@@ -194,7 +198,7 @@ def reports_content():
                 size="1",
                 variant="soft"
             ),
-            rx.text(f"Página {ReportesState.current_page}", size="1"),
+            rx.text("Página ", ReportesState.current_page, size="1"),
             rx.button(
                 "Siguiente", 
                 on_click=ReportesState.next_page,

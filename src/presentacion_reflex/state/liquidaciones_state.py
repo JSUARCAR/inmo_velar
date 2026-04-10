@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Optional, TypedDict
+import pydantic
+from typing import Any, Dict, List, Optional
 
 import reflex as rx
 
@@ -8,7 +9,7 @@ from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 from src.presentacion_reflex.utils.formatters import format_currency, format_number
 
 
-class LiquidacionDict(TypedDict):
+class LiquidacionDict(pydantic.BaseModel):
     """Estructura tipada para serialización de Liquidación en Reflex."""
     id: int
     periodo: str

@@ -363,6 +363,51 @@ class RepositorioPropiedadPostgres:
 
             return propiedad
 
+    def obtener_info_completa_contrato(self, id_propiedad: int) -> Optional[dict]:
+        """
+        Obtiene información detallada de la propiedad y su contrato de mandato activo,
+        incluyendo datos del propietario y asesor. Útil para el módulo de PH.
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        p = self.db.get_placeholder()
+
+        query = f"""
+            SELECT p.*, 
+                   cm.ID_PROPIETARIO, cm.ID_ASESOR,
+                   persona_prop.NOMBRE_COMPLETO as NOMBRE_PROPIETARIO,
+                   CASE WHEN persona_asesor.NOMBRE_COMPLETO IS NOT NULL 
+                        THEN persona_asesor.NOMBRE_COMPLETO 
+                        ELSE 'No asignado' END as NOMBRE_ASESOR
+            FROM PROPIEDADES p
+            JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD
+            JOIN PROPIETARIOS prop_jun ON cm.ID_PROPIETARIO = prop_jun.ID_PROPIETARIO
+            JOIN PERSONAS persona_prop ON prop_jun.ID_PERSONA = persona_prop.ID_PERSONA
+            LEFT JOIN PROPIETARIOS apo_jun ON cm.ID_ASESOR = apo_jun.ID_PROPIETARIO
+            LEFT JOIN PERSONAS persona_asesor ON apo_jun.ID_PERSONA = persona_asesor.ID_PERSONA
+            WHERE p.ID_PROPIEDAD = {p} AND cm.ESTADO_CONTRATO_M = 'Activo'
+        """
+
+        cursor.execute(query, (id_propiedad,))
+        row = cursor.fetchone()
+        cursor.close()
+        
+        if not row:
+            return None
+            
+        # Normalizar claves para acceso uniforme en la aplicación
+        return {
+            "id_propiedad": row.get("ID_PROPIEDAD") or row.get("id_propiedad"),
+            "direccion_propiedad": row.get("DIRECCION_PROPIEDAD") or row.get("direccion_propiedad"),
+            "valor_administracion": row.get("VALOR_ADMINISTRACION") or row.get("valor_administracion"),
+            "id_propietario": row.get("ID_PROPIETARIO") or row.get("id_propietario"),
+            "id_asesor": row.get("ID_ASESOR") or row.get("id_asesor"),
+            "nombre_propietario": row.get("NOMBRE_PROPIETARIO") or row.get("nombre_propietario"),
+            "nombre_asesor": row.get("NOMBRE_ASESOR") or row.get("nombre_asesor"),
+            "link_pago_administracion": row.get("LINK_PAGO_ADMINISTRACION") or row.get("link_pago_administracion"),
+            "fecha_pago_administracion": row.get("FECHA_PAGO_ADMINISTRACION") or row.get("fecha_pago_administracion")
+        }
+
     def actualizar(self, propiedad: Propiedad, usuario_sistema: str) -> bool:
         """
         Actualiza una propiedad existente.

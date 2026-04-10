@@ -1,10 +1,11 @@
+import pydantic
 from datetime import datetime
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional
 
 import reflex as rx
 
 
-class IncidenteDict(TypedDict):
+class IncidenteDict(pydantic.BaseModel):
     """Estructura tipada para serializacion de Incidente en Reflex."""
 
     id: int

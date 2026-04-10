@@ -1,5 +1,6 @@
+import pydantic
 from datetime import datetime
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional
 
 import reflex as rx
 import unicodedata
@@ -9,7 +10,7 @@ from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 
 
-class ContratoDict(TypedDict):
+class ContratoDict(pydantic.BaseModel):
     """Estructura tipada para serialización de Contrato en Reflex."""
     id_contrato: int
     tipo_contrato: str
