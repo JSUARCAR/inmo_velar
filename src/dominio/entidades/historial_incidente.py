@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional, Union
 
 
 @dataclass(frozen=True)
@@ -19,6 +19,7 @@ class HistorialIncidente:
     comentario: Optional[str] = None
     tipo_accion: str = "CAMBIO_ESTADO"  # CREACION, CAMBIO_ESTADO, COTIZACION_*, etc.
     datos_adicionales: Optional[str] = None  # JSON string para datos extra
+    datos_model: Optional[Any] = None  # Modelo Pydantic tipado (opcional)
     created_at: datetime = field(default_factory=datetime.now)
 
     # Tipos de acción válidos

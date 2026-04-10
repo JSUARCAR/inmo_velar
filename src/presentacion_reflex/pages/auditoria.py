@@ -4,14 +4,22 @@ from src.presentacion_reflex.components.layout.dashboard_layout import dashboard
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.auditoria_state import AuditoriaState
 
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_button,
+    neuro_select_root,
+)
 from src.presentacion_reflex import styles
+
 
 def filters_bar() -> rx.Component:
     return rx.flex(
         neuro_input(
             placeholder="Buscar por usuario o detalle...",
-            on_change=lambda val: [AuditoriaState.set_search(val), AuditoriaState.load_logs()],
+            on_change=lambda val: [
+                AuditoriaState.set_search(val),
+                AuditoriaState.load_logs(),
+            ],
             width=["100%", "350px"],
         ),
         neuro_select_root(
@@ -51,41 +59,46 @@ def filters_bar() -> rx.Component:
 
 
 def auditoria_table() -> rx.Component:
-    return rx.table.root(
-        rx.table.header(
-            rx.table.row(
-                rx.table.column_header_cell("Fecha"),
-                rx.table.column_header_cell("Usuario"),
-                rx.table.column_header_cell("Tabla/Módulo"),
-                rx.table.column_header_cell("Acción"),
-                rx.table.column_header_cell("Detalles"),
-            )
-        ),
-        rx.table.body(
-            rx.foreach(
-                AuditoriaState.logs,
-                lambda log: rx.table.row(
-                    rx.table.cell(log.fecha_cambio),
-                    rx.table.cell(log.usuario),
-                    rx.table.cell(rx.badge(log.tabla, variant="soft")),
-                    rx.table.cell(
-                        rx.badge(
-                            log.accion,
-                            color_scheme=rx.match(
+    return rx.box(
+        rx.table.root(
+            rx.table.header(
+                rx.table.row(
+                    rx.table.column_header_cell("Fecha"),
+                    rx.table.column_header_cell("Usuario"),
+                    rx.table.column_header_cell("Tabla/Módulo"),
+                    rx.table.column_header_cell("Acción"),
+                    rx.table.column_header_cell("Detalles"),
+                )
+            ),
+            rx.table.body(
+                rx.foreach(
+                    AuditoriaState.logs,
+                    lambda log: rx.table.row(
+                        rx.table.cell(log.fecha_cambio),
+                        rx.table.cell(log.usuario),
+                        rx.table.cell(rx.badge(log.tabla, variant="soft")),
+                        rx.table.cell(
+                            rx.badge(
                                 log.accion,
-                                ("INSERT", "green"),
-                                ("UPDATE", "blue"),
-                                ("DELETE", "red"),
-                                "gray",
-                            ),
-                        )
+                                color_scheme=rx.match(
+                                    log.accion,
+                                    ("INSERT", "green"),
+                                    ("UPDATE", "blue"),
+                                    ("DELETE", "red"),
+                                    "gray",
+                                ),
+                            )
+                        ),
+                        rx.table.cell(log.detalle),
                     ),
-                    rx.table.cell(log.detalle),
-                ),
-            )
+                )
+            ),
+            width="100%",
+            variant="surface",
+            size="3",
         ),
         width="100%",
-        variant="surface",
+        overflow_x="auto",
     )
 
 

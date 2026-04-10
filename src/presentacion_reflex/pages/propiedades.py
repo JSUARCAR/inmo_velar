@@ -27,8 +27,8 @@ def render_property_actions(prop: rx.Var) -> rx.Component:
                         rx.icon("refresh-ccw", size=14),
                         size="1",
                         on_click=lambda: PropiedadesState.toggle_disponibilidad(
-                            prop["id_propiedad"],
-                            rx.cond(prop["disponibilidad"] == 1, 0, 1),
+                            prop.id_propiedad,
+                            rx.cond(prop.disponibilidad == 1, 0, 1),
                         ),
                         style={"min_width": "32px", "height": "32px", "padding": "0"},
                     ),
@@ -38,18 +38,18 @@ def render_property_actions(prop: rx.Var) -> rx.Component:
                     neuro_button(
                         rx.icon("pencil", size=14),
                         size="1",
-                        on_click=lambda: PropiedadesState.open_edit_modal(prop["id_propiedad"]),
+                        on_click=lambda: PropiedadesState.open_edit_modal(prop.id_propiedad),
                         style={"min_width": "32px", "height": "32px", "padding": "0"},
                     ),
                     content="Editar",
                 ),
                 rx.tooltip(
                     rx.cond(
-                        prop["estado_registro"],
+                        prop.estado_registro,
                         neuro_button(
                             rx.icon("power-off", size=14),
                             size="1",
-                            on_click=lambda: PropiedadesState.toggle_activa(prop["id_propiedad"], 1),
+                            on_click=lambda: PropiedadesState.toggle_activa(prop.id_propiedad, 1),
                             style={
                                 "min_width": "32px", "height": "32px", "padding": "0",
                                 "color": "var(--red-9)",
@@ -58,14 +58,14 @@ def render_property_actions(prop: rx.Var) -> rx.Component:
                         neuro_button(
                             rx.icon("power", size=14),
                             size="1",
-                            on_click=lambda: PropiedadesState.toggle_activa(prop["id_propiedad"], 0),
+                            on_click=lambda: PropiedadesState.toggle_activa(prop.id_propiedad, 0),
                             style={
                                 "min_width": "32px", "height": "32px", "padding": "0",
                                 "color": "var(--green-9)",
                             },
                         ),
                     ),
-                    content=rx.cond(prop["estado_registro"], "Desactivar", "Activar"),
+                    content=rx.cond(prop.estado_registro, "Desactivar", "Activar"),
                 ),
                 spacing="3",
             ),
@@ -371,28 +371,28 @@ def propiedades_page() -> rx.Component:
                                         rx.foreach(
                                             PropiedadesState.propiedades,
                                             lambda prop: property_card(
-                                                id_propiedad=prop["id_propiedad"],
-                                                matricula=prop["matricula_inmobiliaria"],
-                                                direccion=prop["direccion_propiedad"],
-                                                tipo=prop["tipo_propiedad"],
-                                                municipio=prop["municipio_nombre"],
-                                                disponibilidad=prop["disponibilidad"],
-                                                valor_canon=prop["valor_canon"],
-                                                valor_canon_view=prop["valor_canon_view"],
-                                                area_metros=prop["area_metros"],
-                                                area_metros_view=prop["area_metros_view"],
-                                                habitaciones=prop["habitaciones"],
-                                                banos=prop["banos"],
-                                                parqueadero=prop["parqueadero"],
-                                                valor_venta=prop["valor_venta"],
-                                                valor_venta_view=prop["valor_venta_view"],
-                                                comision_venta=prop["comision_venta"],
-                                                comision_venta_valor_view=prop["comision_venta_valor_view"],
-                                                codigo_energia=prop["codigo_energia"],
-                                                codigo_agua=prop["codigo_agua"],
-                                                codigo_gas=prop["codigo_gas"],
-                                                imagen_id=prop["imagen_id"],
-                                                estado_registro=prop["estado_registro"],
+                                                id_propiedad=prop.id_propiedad,
+                                                matricula=prop.matricula_inmobiliaria,
+                                                direccion=prop.direccion_propiedad,
+                                                tipo=prop.tipo_propiedad,
+                                                municipio=prop.municipio_nombre,
+                                                disponibilidad=prop.disponibilidad,
+                                                valor_canon=prop.valor_canon,
+                                                valor_canon_view=prop.valor_canon_view,
+                                                area_metros=prop.area_metros,
+                                                area_metros_view=prop.area_metros_view,
+                                                habitaciones=prop.habitaciones,
+                                                banos=prop.banos,
+                                                parqueadero=prop.parqueadero,
+                                                valor_venta=prop.valor_venta,
+                                                valor_venta_view=prop.valor_venta_view,
+                                                comision_venta=prop.comision_venta,
+                                                comision_venta_valor_view=prop.comision_venta_valor_view,
+                                                codigo_energia=prop.codigo_energia,
+                                                codigo_agua=prop.codigo_agua,
+                                                codigo_gas=prop.codigo_gas,
+                                                imagen_id=prop.imagen_id,
+                                                estado_registro=prop.estado_registro,
                                                 on_edit=PropiedadesState.open_edit_modal,
                                                 on_toggle_disponibilidad=PropiedadesState.toggle_disponibilidad,
                                                 on_toggle_activa=PropiedadesState.toggle_activa,
@@ -435,14 +435,12 @@ def propiedades_page() -> rx.Component:
                                                                 ),
                                                                 rx.vstack(
                                                                     rx.text(
-                                                                        prop["direccion_propiedad"],
+                                                                        prop.direccion_propiedad,
                                                                         weight="bold",
                                                                         size="2",
                                                                     ),
                                                                     rx.text(
-                                                                        prop[
-                                                                            "matricula_inmobiliaria"
-                                                                        ],
+                                                                        prop.matricula_inmobiliaria,
                                                                         size="1",
                                                                         color=styles.TEXT_TERTIARY,
                                                                     ),
@@ -454,21 +452,21 @@ def propiedades_page() -> rx.Component:
                                                         ),
                                                          rx.table.cell(
                                                             neuro_badge( # Converted to neuro_badge
-                                                                prop["tipo_propiedad"],
+                                                                prop.tipo_propiedad,
                                                                 color_scheme="blue",
                                                             )
                                                         ),
-                                                         rx.table.cell(prop["municipio_nombre"]),
+                                                         rx.table.cell(prop.municipio_nombre),
                                                          rx.table.cell(
                                                             rx.cond(
-                                                                prop["disponibilidad"],
+                                                                prop.disponibilidad,
                                                                 neuro_badge("Disponible", color_scheme="green"), # Converted to neuro_badge
                                                                 neuro_badge("Ocupada", color_scheme="gray"), # Converted to neuro_badge
                                                             )
                                                         ),
                                                         rx.table.cell(
                                                             rx.text(
-                                                                prop["valor_canon_view"],
+                                                                prop.valor_canon_view,
                                                                 weight="bold",
                                                                 style={
                                                                     "font_variant_numeric": "tabular-nums"
@@ -478,7 +476,7 @@ def propiedades_page() -> rx.Component:
                                                         rx.table.cell(
                                                             rx.vstack(
                                                                 rx.text(
-                                                                    prop["valor_venta_view"],
+                                                                    prop.valor_venta_view,
                                                                     weight="bold",
                                                                     size="2",
                                                                     style={
@@ -487,9 +485,7 @@ def propiedades_page() -> rx.Component:
                                                                 ),
                                                                 rx.text(
                                                                     "(",
-                                                                    prop[
-                                                                        "comision_venta_valor_view"
-                                                                    ],
+                                                                    prop.comision_venta_valor_view,
                                                                     ")",
                                                                     size="1",
                                                                     color=styles.TEXT_TERTIARY,
@@ -504,36 +500,36 @@ def propiedades_page() -> rx.Component:
                                                         rx.table.cell(
                                                             rx.hstack(
                                                                 rx.cond(
-                                                                    prop["codigo_energia"] != "",
+                                                                    prop.codigo_energia != "",
                                                                     rx.tooltip(
                                                                         rx.icon(
                                                                             "zap",
                                                                             size=14,
                                                                             color="var(--yellow-9)",
                                                                         ),
-                                                                        content=prop["energia_tooltip"],
+                                                                        content=prop.energia_tooltip,
                                                                     ),
                                                                 ),
                                                                 rx.cond(
-                                                                    prop["codigo_agua"] != "",
+                                                                    prop.codigo_agua != "",
                                                                     rx.tooltip(
                                                                         rx.icon(
                                                                             "droplet",
                                                                             size=14,
                                                                             color="var(--blue-9)",
                                                                         ),
-                                                                        content=prop["agua_tooltip"],
+                                                                        content=prop.agua_tooltip,
                                                                     ),
                                                                 ),
                                                                 rx.cond(
-                                                                    prop["codigo_gas"] != "",
+                                                                    prop.codigo_gas != "",
                                                                     rx.tooltip(
                                                                         rx.icon(
                                                                             "flame",
                                                                             size=14,
                                                                             color="var(--orange-9)",
                                                                         ),
-                                                                        content=prop["gas_tooltip"],
+                                                                        content=prop.gas_tooltip,
                                                                     ),
                                                                 ),
                                                                 spacing="2",

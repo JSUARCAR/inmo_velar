@@ -1,9 +1,15 @@
 import reflex as rx
 
-from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+from src.presentacion_reflex.components.document_manager_elite import (
+    document_manager_elite,
+)
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_button,
+    neuro_select_root,
+)
 from src.presentacion_reflex import styles
 
 
@@ -32,7 +38,9 @@ def _quote_form() -> rx.Component:
                         lambda x: rx.select.item(x["texto"], value=x["id"]),
                     ),
                     placeholder="Seleccione proveedor...",
-                    on_change=lambda val: IncidentesState.set_cotizacion_field("id_proveedor", val),
+                    on_change=lambda val: IncidentesState.set_cotizacion_field(
+                        "id_proveedor", val
+                    ),
                     value=IncidentesState.cotizacion_form["id_proveedor"],
                     width="100%",
                 ),
@@ -42,7 +50,9 @@ def _quote_form() -> rx.Component:
                 neuro_input(
                     type="number",
                     placeholder="1",
-                    on_change=lambda val: IncidentesState.set_cotizacion_field("dias", val),
+                    on_change=lambda val: IncidentesState.set_cotizacion_field(
+                        "dias", val
+                    ),
                     width="100%",
                 ),
             ),
@@ -56,7 +66,9 @@ def _quote_form() -> rx.Component:
                 neuro_input(
                     type="number",
                     placeholder="0",
-                    on_change=lambda val: IncidentesState.set_cotizacion_field("materiales", val),
+                    on_change=lambda val: IncidentesState.set_cotizacion_field(
+                        "materiales", val
+                    ),
                     width="100%",
                 ),
             ),
@@ -65,7 +77,9 @@ def _quote_form() -> rx.Component:
                 neuro_input(
                     type="number",
                     placeholder="0",
-                    on_change=lambda val: IncidentesState.set_cotizacion_field("mano_obra", val),
+                    on_change=lambda val: IncidentesState.set_cotizacion_field(
+                        "mano_obra", val
+                    ),
                     width="100%",
                 ),
             ),
@@ -77,7 +91,9 @@ def _quote_form() -> rx.Component:
             rx.text("Descripción del Trabajo", weight="bold", size="2"),
             rx.text_area(
                 placeholder="Detalle técnico de la reparación...",
-                on_change=lambda val: IncidentesState.set_cotizacion_field("descripcion", val),
+                on_change=lambda val: IncidentesState.set_cotizacion_field(
+                    "descripcion", val
+                ),
                 width="100%",
                 style=styles.NEU_INPUT_STYLE,
             ),
@@ -156,16 +172,27 @@ def _cotizado_view() -> rx.Component:
                                 spacing="2",
                                 width="100%",
                             ),
-                            rx.text(cot["descripcion"], size="2", color="gray", margin_top="0.5em"),
+                            rx.text(
+                                cot["descripcion"],
+                                size="2",
+                                color="gray",
+                                margin_top="0.5em",
+                            ),
                             rx.cond(
                                 AuthState.check_action("Incidentes", "EDITAR")
-                                & (IncidentesState.selected_incidente["estado"] == "Cotizado"),
+                                & (
+                                    IncidentesState.selected_incidente["estado"]
+                                    == "Cotizado"
+                                ),
                                 neuro_button(
                                     "Aprobar Cotización",
                                     width="100%",
                                     margin_top="1em",
-                                    on_click=lambda: IncidentesState.aprobar_cotizacion_event(
-                                        IncidentesState.selected_incidente["id"], cot["id"]
+                                    on_click=lambda: (
+                                        IncidentesState.aprobar_cotizacion_event(
+                                            IncidentesState.selected_incidente["id"],
+                                            cot["id"],
+                                        )
                                     ),
                                     disabled=cot["estado"] != "Pendiente",
                                     color_scheme="green",
@@ -173,7 +200,10 @@ def _cotizado_view() -> rx.Component:
                             ),
                         ),
                         width="100%",
-                        style={"box_shadow": styles.NEU_SHADOW, "border_radius": "12px"},
+                        style={
+                            "box_shadow": styles.NEU_SHADOW,
+                            "border_radius": "12px",
+                        },
                     ),
                 ),
                 spacing="3",
@@ -199,7 +229,9 @@ def modal_details() -> rx.Component:
                     rx.heading("Incidente #", inc["id"], size="6"),
                     rx.spacer(),
                     neuro_button(
-                        rx.hstack(rx.icon("download", size=16), rx.text("Descargar PDF")),
+                        rx.hstack(
+                            rx.icon("download", size=16), rx.text("Descargar PDF")
+                        ),
                         variant="soft",
                         on_click=IncidentesState.generar_pdf_incidente,
                         loading=IncidentesState.is_loading,
@@ -238,7 +270,11 @@ def modal_details() -> rx.Component:
                                 rx.box(
                                     rx.vstack(
                                         rx.hstack(
-                                            rx.icon("align-left", size=20, color="var(--blue-9)"),
+                                            rx.icon(
+                                                "align-left",
+                                                size=20,
+                                                color="var(--blue-9)",
+                                            ),
                                             rx.text(
                                                 "Descripción Detallada",
                                                 weight="bold",
@@ -269,8 +305,12 @@ def modal_details() -> rx.Component:
                                 rx.divider(margin_y="0.5em"),
                                 # Details Section
                                 rx.vstack(
-                                    _detail_row("Propiedad", inc["direccion_propiedad"], "home"),
-                                    _detail_row("Prioridad", inc["prioridad"], "circle_alert"),
+                                    _detail_row(
+                                        "Propiedad", inc["direccion_propiedad"], "home"
+                                    ),
+                                    _detail_row(
+                                        "Prioridad", inc["prioridad"], "triangle_alert"
+                                    ),
                                     _detail_row("Fecha", inc["fecha"], "calendar"),
                                     _detail_row("Origen", inc["origen"], "user"),
                                     spacing="3",
@@ -278,7 +318,217 @@ def modal_details() -> rx.Component:
                                     padding="0.5em",
                                 ),
                                 rx.divider(margin_y="0.5em"),
-                                rx.heading("Acciones y Estado", size="3", margin_bottom="0.5em"),
+                                rx.heading(
+                                    "Acciones y Estado", size="3", margin_bottom="0.5em"
+                                ),
+                                # Botones de EDITAR y CANCELAR (siempre visibles si no está Finalizado o Cancelado)
+                                rx.cond(
+                                    (inc["estado"] != "Finalizado")
+                                    & (inc["estado"] != "Cancelado"),
+                                    rx.hstack(
+                                        rx.cond(
+                                            AuthState.check_action(
+                                                "Incidentes", "EDITAR"
+                                            ),
+                                            neuro_button(
+                                                rx.hstack(
+                                                    rx.icon("pencil", size=16),
+                                                    rx.text("Editar"),
+                                                ),
+                                                on_click=lambda: (
+                                                    IncidentesState.open_edit_modal(inc)
+                                                ),
+                                                variant="soft",
+                                                color_scheme="blue",
+                                            ),
+                                        ),
+                                        rx.cond(
+                                            AuthState.check_action(
+                                                "Incidentes", "EDITAR"
+                                            ),
+                                            neuro_button(
+                                                rx.hstack(
+                                                    rx.icon("x", size=16),
+                                                    rx.text("Cancelar"),
+                                                ),
+                                                on_click=lambda: (
+                                                    IncidentesState.open_cancel_modal(
+                                                        inc
+                                                    )
+                                                ),
+                                                variant="soft",
+                                                color_scheme="red",
+                                            ),
+                                        ),
+                                        # Botón Finalizar Directo (solo si estado permite)
+                                        rx.cond(
+                                            (inc["estado"] == "Reportado")
+                                            | (inc["estado"] == "En Revision")
+                                            | (inc["estado"] == "Cotizado")
+                                            | (inc["estado"] == "Aprobado"),
+                                            rx.cond(
+                                                AuthState.check_action(
+                                                    "Incidentes", "EDITAR"
+                                                ),
+                                                neuro_button(
+                                                    rx.hstack(
+                                                        rx.icon(
+                                                            "circle_check", size=16
+                                                        ),
+                                                        rx.text("Finalizar"),
+                                                    ),
+                                                    on_click=lambda: (
+                                                        IncidentesState.toggle_direct_finish_form()
+                                                    ),
+                                                    variant="soft",
+                                                    color_scheme="teal",
+                                                ),
+                                            ),
+                                        ),
+                                        spacing="2",
+                                        width="100%",
+                                        margin_bottom="0.5em",
+                                    ),
+                                ),
+                                # Formulario de Finalización Directa
+                                rx.cond(
+                                    IncidentesState.show_direct_finish_form,
+                                    rx.card(
+                                        rx.vstack(
+                                            rx.heading(
+                                                "Finalizacion Directa",
+                                                size="4",
+                                                color="var(--teal-9)",
+                                            ),
+                                            rx.callout(
+                                                "El incidente se cerrara directamente sin seguir el flujo normal.",
+                                                icon="circle_alert",
+                                                color_scheme="yellow",
+                                                width="100%",
+                                            ),
+                                            rx.grid(
+                                                rx.vstack(
+                                                    rx.text(
+                                                        "Fecha de Reparacion",
+                                                        weight="bold",
+                                                        size="2",
+                                                    ),
+                                                    neuro_input(
+                                                        type="date",
+                                                        on_change=lambda val: (
+                                                            IncidentesState.set_direct_finish_field(
+                                                                "fecha", val
+                                                            )
+                                                        ),
+                                                        value=IncidentesState.direct_finish_date,
+                                                        width="100%",
+                                                    ),
+                                                ),
+                                                rx.vstack(
+                                                    rx.text(
+                                                        "Costo Final",
+                                                        weight="bold",
+                                                        size="2",
+                                                    ),
+                                                    neuro_input(
+                                                        type="number",
+                                                        placeholder="0",
+                                                        on_change=lambda val: (
+                                                            IncidentesState.set_direct_finish_field(
+                                                                "costo", val
+                                                            )
+                                                        ),
+                                                        value=str(
+                                                            IncidentesState.direct_finish_costo
+                                                        ),
+                                                        width="100%",
+                                                    ),
+                                                ),
+                                                rx.vstack(
+                                                    rx.text(
+                                                        "Proveedor",
+                                                        weight="bold",
+                                                        size="2",
+                                                    ),
+                                                    neuro_select_root(
+                                                        rx.foreach(
+                                                            IncidentesState.proveedores_options,
+                                                            lambda x: rx.select.item(
+                                                                x["texto"],
+                                                                value=x["id"],
+                                                            ),
+                                                        ),
+                                                        placeholder="Seleccionar...",
+                                                        on_change=lambda val: (
+                                                            IncidentesState.set_direct_finish_field(
+                                                                "proveedor", val
+                                                            )
+                                                        ),
+                                                        width="100%",
+                                                    ),
+                                                ),
+                                                columns=rx.breakpoints(
+                                                    initial="1", sm="3"
+                                                ),
+                                                spacing="3",
+                                                width="100%",
+                                            ),
+                                            rx.vstack(
+                                                rx.text(
+                                                    "Observaciones",
+                                                    weight="bold",
+                                                    size="2",
+                                                ),
+                                                rx.text_area(
+                                                    placeholder="Observaciones de la reparacion...",
+                                                    on_change=lambda val: (
+                                                        IncidentesState.set_direct_finish_field(
+                                                            "observacion", val
+                                                        )
+                                                    ),
+                                                    value=IncidentesState.direct_finish_obs,
+                                                    width="100%",
+                                                    style=styles.NEU_INPUT_STYLE,
+                                                ),
+                                                width="100%",
+                                            ),
+                                            rx.cond(
+                                                IncidentesState.direct_finish_error
+                                                != "",
+                                                rx.callout(
+                                                    IncidentesState.direct_finish_error,
+                                                    icon="circle_alert",
+                                                    color_scheme="red",
+                                                    width="100%",
+                                                    margin_top="0.5em",
+                                                ),
+                                            ),
+                                            rx.hstack(
+                                                neuro_button(
+                                                    "Cancelar",
+                                                    on_click=IncidentesState.toggle_direct_finish_form,
+                                                    variant="soft",
+                                                    color_scheme="gray",
+                                                ),
+                                                rx.spacer(),
+                                                neuro_button(
+                                                    "Confirmar",
+                                                    on_click=IncidentesState.confirmar_finalizacion_directa,
+                                                    color_scheme="teal",
+                                                ),
+                                                width="100%",
+                                                margin_top="1em",
+                                            ),
+                                            spacing="3",
+                                            width="100%",
+                                            background_color=styles.BG_PANEL,
+                                            padding="1em",
+                                            border_radius="12px",
+                                            margin_top="1em",
+                                            style={"box_shadow": styles.NEU_SHADOW},
+                                        ),
+                                    ),
+                                ),
                                 # LOGICA DE ESTADOS Y ACCIONES PRINCIPALES
                                 # Estado: Aprobado -> Iniciar Reparación
                                 rx.cond(
@@ -291,13 +541,17 @@ def modal_details() -> rx.Component:
                                             width="100%",
                                         ),
                                         rx.cond(
-                                            AuthState.check_action("Incidentes", "EDITAR"),
+                                            AuthState.check_action(
+                                                "Incidentes", "EDITAR"
+                                            ),
                                             neuro_button(
                                                 "Iniciar Reparación",
                                                 width="100%",
                                                 color_scheme="blue",
-                                                on_click=lambda: IncidentesState.iniciar_reparacion_event(
-                                                    inc["id"]
+                                                on_click=lambda: (
+                                                    IncidentesState.iniciar_reparacion_event(
+                                                        inc["id"]
+                                                    )
                                                 ),
                                                 margin_top="1em",
                                             ),
@@ -317,11 +571,15 @@ def modal_details() -> rx.Component:
                                         rx.card(
                                             rx.hstack(
                                                 rx.icon(
-                                                    "hard_hat", size=20, color="var(--blue-9)"
+                                                    "hard_hat",
+                                                    size=20,
+                                                    color="var(--blue-9)",
                                                 ),
                                                 rx.vstack(
                                                     rx.text(
-                                                        "Proveedor Asignado", size="1", color="gray"
+                                                        "Proveedor Asignado",
+                                                        size="1",
+                                                        color="gray",
                                                     ),
                                                     rx.text(
                                                         inc["nombre_proveedor"],
@@ -340,7 +598,9 @@ def modal_details() -> rx.Component:
                                         rx.cond(
                                             ~IncidentesState.show_finalize_form,
                                             rx.cond(
-                                                AuthState.check_action("Incidentes", "EDITAR"),
+                                                AuthState.check_action(
+                                                    "Incidentes", "EDITAR"
+                                                ),
                                                 neuro_button(
                                                     "Finalizar Incidente",
                                                     width="100%",
@@ -360,7 +620,9 @@ def modal_details() -> rx.Component:
                                                     color="var(--blue-9)",
                                                 ),
                                                 rx.text(
-                                                    "Fecha de Terminación", weight="bold", size="2"
+                                                    "Fecha de Terminación",
+                                                    weight="bold",
+                                                    size="2",
                                                 ),
                                                 neuro_input(
                                                     type="date",
@@ -368,7 +630,11 @@ def modal_details() -> rx.Component:
                                                     value=IncidentesState.finalize_date,
                                                     width="100%",
                                                 ),
-                                                rx.text("Observaciones", weight="bold", size="2"),
+                                                rx.text(
+                                                    "Observaciones",
+                                                    weight="bold",
+                                                    size="2",
+                                                ),
                                                 rx.text_area(
                                                     placeholder="Descripción...",
                                                     on_change=IncidentesState.set_finalize_obs,
@@ -409,7 +675,7 @@ def modal_details() -> rx.Component:
                                     rx.vstack(
                                         rx.callout(
                                             "Incidente cerrado.",
-                                            icon="check_check",
+                                            icon="check",
                                             color_scheme="gray",
                                             width="100%",
                                         ),
@@ -417,7 +683,10 @@ def modal_details() -> rx.Component:
                                             rx.vstack(
                                                 rx.hstack(
                                                     rx.icon("hard_hat", size=20),
-                                                    rx.text(inc["nombre_proveedor"], weight="bold"),
+                                                    rx.text(
+                                                        inc["nombre_proveedor"],
+                                                        weight="bold",
+                                                    ),
                                                     align_items="center",
                                                     spacing="3",
                                                 ),
@@ -425,7 +694,9 @@ def modal_details() -> rx.Component:
                                                 rx.grid(
                                                     rx.vstack(
                                                         rx.text(
-                                                            "Fecha Fin:", size="1", color="gray"
+                                                            "Fecha Fin:",
+                                                            size="1",
+                                                            color="gray",
                                                         ),
                                                         rx.text(
                                                             inc["fecha_arreglo"],
@@ -434,7 +705,9 @@ def modal_details() -> rx.Component:
                                                     ),
                                                     rx.vstack(
                                                         rx.text(
-                                                            "Costo Final:", size="1", color="gray"
+                                                            "Costo Final:",
+                                                            size="1",
+                                                            color="gray",
                                                         ),
                                                         rx.text(
                                                             "$",
@@ -442,7 +715,9 @@ def modal_details() -> rx.Component:
                                                             weight="bold",
                                                         ),
                                                     ),
-                                                    columns=rx.breakpoints(initial="1", sm="2"),
+                                                    columns=rx.breakpoints(
+                                                        initial="1", sm="2"
+                                                    ),
                                                     width="100%",
                                                 ),
                                                 rx.text(
@@ -473,7 +748,9 @@ def modal_details() -> rx.Component:
                         rx.scroll_area(
                             rx.vstack(
                                 rx.heading(
-                                    "Gestión de Cotizaciones", size="4", margin_bottom="0.5em"
+                                    "Gestión de Cotizaciones",
+                                    size="4",
+                                    margin_bottom="0.5em",
                                 ),
                                 # Lista de Cotizaciones (unificada)
                                 rx.cond(
@@ -498,7 +775,8 @@ def modal_details() -> rx.Component:
                                                         rx.badge(
                                                             cot["estado"],
                                                             color_scheme=rx.cond(
-                                                                cot["estado"] == "Aprobada",
+                                                                cot["estado"]
+                                                                == "Aprobada",
                                                                 "green",
                                                                 "blue",
                                                             ),
@@ -510,7 +788,9 @@ def modal_details() -> rx.Component:
                                                     rx.separator(),
                                                     rx.grid(
                                                         rx.vstack(
-                                                            rx.text("Materiales:", size="1"),
+                                                            rx.text(
+                                                                "Materiales:", size="1"
+                                                            ),
                                                             rx.text(
                                                                 "$",
                                                                 cot["materiales"],
@@ -518,7 +798,10 @@ def modal_details() -> rx.Component:
                                                             ),
                                                         ),
                                                         rx.vstack(
-                                                            rx.text("Mano de Obra:", size="1"),
+                                                            rx.text(
+                                                                "Mano de Obra:",
+                                                                size="1",
+                                                            ),
                                                             rx.text(
                                                                 "$",
                                                                 cot["mano_obra"],
@@ -541,7 +824,9 @@ def modal_details() -> rx.Component:
                                                                 weight="medium",
                                                             ),
                                                         ),
-                                                        columns=rx.breakpoints(initial="2", sm="4"),
+                                                        columns=rx.breakpoints(
+                                                            initial="2", sm="4"
+                                                        ),
                                                         spacing="2",
                                                         width="100%",
                                                     ),
@@ -557,13 +842,20 @@ def modal_details() -> rx.Component:
                                                         & AuthState.check_action(
                                                             "Incidentes", "EDITAR"
                                                         )
-                                                        & (IncidentesState.selected_incidente["estado"] == "Cotizado"),
+                                                        & (
+                                                            IncidentesState.selected_incidente[
+                                                                "estado"
+                                                            ]
+                                                            == "Cotizado"
+                                                        ),
                                                         neuro_button(
                                                             "Aprobar Cotización",
                                                             width="100%",
                                                             margin_top="1em",
-                                                            on_click=lambda: IncidentesState.aprobar_cotizacion_event(
-                                                                inc["id"], cot["id"]
+                                                            on_click=lambda: (
+                                                                IncidentesState.aprobar_cotizacion_event(
+                                                                    inc["id"], cot["id"]
+                                                                )
                                                             ),
                                                             color_scheme="green",
                                                         ),
@@ -578,14 +870,18 @@ def modal_details() -> rx.Component:
                                             (inc["estado"] == "Reportado")
                                             | (inc["estado"] == "En Revision"),
                                             rx.cond(
-                                                AuthState.check_action("Incidentes", "EDITAR"),
+                                                AuthState.check_action(
+                                                    "Incidentes", "EDITAR"
+                                                ),
                                                 neuro_button(
                                                     "Finalizar Carga y Solicitar Aprobación",
                                                     width="100%",
                                                     color_scheme="green",
                                                     variant="solid",
-                                                    on_click=lambda: IncidentesState.finalizar_carga_cotizaciones(
-                                                        inc["id"]
+                                                    on_click=lambda: (
+                                                        IncidentesState.finalizar_carga_cotizaciones(
+                                                            inc["id"]
+                                                        )
                                                     ),
                                                     margin_top="1em",
                                                 ),
@@ -609,16 +905,24 @@ def modal_details() -> rx.Component:
                                         rx.cond(
                                             ~IncidentesState.show_quote_form,
                                             rx.cond(
-                                                AuthState.check_action("Incidentes", "EDITAR"),
+                                                AuthState.check_action(
+                                                    "Incidentes", "EDITAR"
+                                                ),
                                                 neuro_button(
-                                                    rx.hstack(rx.icon("plus"), rx.text("Nueva Cotización")),
+                                                    rx.hstack(
+                                                        rx.icon("plus"),
+                                                        rx.text("Nueva Cotización"),
+                                                    ),
                                                     on_click=IncidentesState.toggle_quote_form,
                                                     width="100%",
                                                     variant="soft",
                                                 ),
                                             ),
                                         ),
-                                        rx.cond(IncidentesState.show_quote_form, _quote_form()),
+                                        rx.cond(
+                                            IncidentesState.show_quote_form,
+                                            _quote_form(),
+                                        ),
                                         width="100%",
                                     ),
                                 ),
@@ -633,7 +937,9 @@ def modal_details() -> rx.Component:
                         rx.scroll_area(
                             rx.vstack(
                                 rx.heading(
-                                    "Evidencia y Documentos", size="4", margin_bottom="0.5em"
+                                    "Evidencia y Documentos",
+                                    size="4",
+                                    margin_bottom="0.5em",
                                 ),
                                 rx.text(
                                     "Gestione fotos del daño, cotizaciones y comprobantes.",

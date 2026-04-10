@@ -683,7 +683,7 @@
       ]
     },
     "CONTRATOS_ARRENDAMIENTOS": {
-      "create_sql": "CREATE TABLE CONTRATOS_ARRENDAMIENTOS (\n            ID_CONTRATO_A INTEGER PRIMARY KEY AUTOINCREMENT,\n            ID_PROPIEDAD INTEGER NOT NULL,\n            ID_ARRENDATARIO INTEGER NOT NULL,\n            ID_CODEUDOR INTEGER,\n            FECHA_INICIO_CONTRATO_A TEXT NOT NULL,\n            FECHA_FIN_CONTRATO_A TEXT NOT NULL,\n            DURACION_CONTRATO_A INTEGER NOT NULL CHECK(DURACION_CONTRATO_A > 0),\n            CANON_ARRENDAMIENTO INTEGER NOT NULL CHECK(CANON_ARRENDAMIENTO >= 500000 AND CANON_ARRENDAMIENTO <= 200000000),\n            DEPOSITO INTEGER DEFAULT 0 CHECK(DEPOSITO >= 0),\n            ESTADO_CONTRATO_A TEXT CHECK(ESTADO_CONTRATO_A IN ('Activo', 'Finalizado', 'Legal', 'Cancelado')) DEFAULT 'Activo',\n            MOTIVO_CANCELACION TEXT,\n            ALERTA_VENCIMIENTO_CONTRATO_A INTEGER DEFAULT 1 CHECK(ALERTA_VENCIMIENTO_CONTRATO_A IN (0, 1)),\n            ALERTA_IPC INTEGER DEFAULT 0 CHECK(ALERTA_IPC IN (0, 1)),\n            FECHA_RENOVACION_CONTRATO_A TEXT,\n            FECHA_INCREMENTO_IPC TEXT,\n            FECHA_ULTIMO_INCREMENTO_IPC TEXT,\n            CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n            CREATED_BY TEXT,\n            UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n            UPDATED_BY TEXT,\n            CHECK(date(FECHA_FIN_CONTRATO_A) > date(FECHA_INICIO_CONTRATO_A)),\n            FOREIGN KEY (ID_PROPIEDAD) REFERENCES PROPIEDADES(ID_PROPIEDAD),\n            FOREIGN KEY (ID_ARRENDATARIO) REFERENCES ARRENDATARIOS(ID_ARRENDATARIO),\n            FOREIGN KEY (ID_CODEUDOR) REFERENCES CODEUDORES(ID_CODEUDOR)\n        )",
+      "create_sql": "CREATE TABLE CONTRATOS_ARRENDAMIENTOS (\n            ID_CONTRATO_A INTEGER PRIMARY KEY AUTOINCREMENT,\n            ID_PROPIEDAD INTEGER NOT NULL,\n            ID_ARRENDATARIO INTEGER NOT NULL,\n            ID_CODEUDOR INTEGER,\n            FECHA_INICIO_CONTRATO_A TEXT NOT NULL,\n            FECHA_FIN_CONTRATO_A TEXT NOT NULL,\n            DURACION_CONTRATO_A INTEGER NOT NULL CHECK(DURACION_CONTRATO_A > 0),\n            CANON_ARRENDAMIENTO INTEGER NOT NULL CHECK(CANON_ARRENDAMIENTO >= 500000 AND CANON_ARRENDAMIENTO <= 200000000),\n            DEPOSITO INTEGER DEFAULT 0 CHECK(DEPOSITO >= 0),\n            ESTADO_CONTRATO_A TEXT CHECK(ESTADO_CONTRATO_A IN ('Activo', 'Finalizado', 'Legal', 'Cancelado')) DEFAULT 'Activo',\n            MOTIVO_CANCELACION TEXT,\n            ALERTA_VENCIMIENTO_CONTRATO_A INTEGER DEFAULT 1 CHECK(ALERTA_VENCIMIENTO_CONTRATO_A IN (0, 1)),\n            ALERTA_IPC INTEGER DEFAULT 0 CHECK(ALERTA_IPC IN (0, 1)),\n            FECHA_RENOVACION_CONTRATO_A TEXT,\n            FECHA_INCREMENTO_IPC TEXT,\n            FECHA_ULTIMO_INCREMENTO_IPC TEXT,\n            CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n            CREATED_BY TEXT,\n            UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n            UPDATED_BY TEXT, FECHA_PAGO TEXT,\n            CHECK(date(FECHA_FIN_CONTRATO_A) > date(FECHA_INICIO_CONTRATO_A)),\n            FOREIGN KEY (ID_PROPIEDAD) REFERENCES PROPIEDADES(ID_PROPIEDAD),\n            FOREIGN KEY (ID_ARRENDATARIO) REFERENCES ARRENDATARIOS(ID_ARRENDATARIO),\n            FOREIGN KEY (ID_CODEUDOR) REFERENCES CODEUDORES(ID_CODEUDOR)\n        )",
       "columns": [
         {
           "cid": 0,
@@ -840,6 +840,14 @@
         {
           "cid": 19,
           "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 20,
+          "name": "FECHA_PAGO",
           "type": "TEXT",
           "not_null": 0,
           "default_value": null,
@@ -3957,7 +3965,7 @@
       ]
     },
     "PROPIETARIOS": {
-      "create_sql": "CREATE TABLE PROPIETARIOS (\r\n    ID_PROPIETARIO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_PERSONA INTEGER NOT NULL UNIQUE,\r\n    BANCO_PROPIETARIO TEXT,\r\n    NUMERO_CUENTA_PROPIETARIO TEXT,\r\n    TIPO_CUENTA TEXT CHECK(TIPO_CUENTA IN ('Ahorros', 'Corriente')),\r\n    OBSERVACIONES_PROPIETARIO TEXT,\r\n    ESTADO_PROPIETARIO INTEGER DEFAULT 1 CHECK(ESTADO_PROPIETARIO IN (0, 1)),\r\n    FECHA_INGRESO_PROPIETARIO TEXT DEFAULT (date('now')),\r\n    MOTIVO_INACTIVACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    FOREIGN KEY (ID_PERSONA) REFERENCES PERSONAS(ID_PERSONA)\r\n)",
+      "create_sql": "CREATE TABLE PROPIETARIOS (\r\n    ID_PROPIETARIO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_PERSONA INTEGER NOT NULL UNIQUE,\r\n    BANCO_PROPIETARIO TEXT,\r\n    NUMERO_CUENTA_PROPIETARIO TEXT,\r\n    TIPO_CUENTA TEXT CHECK(TIPO_CUENTA IN ('Ahorros', 'Corriente')),\r\n    OBSERVACIONES_PROPIETARIO TEXT,\r\n    ESTADO_PROPIETARIO INTEGER DEFAULT 1 CHECK(ESTADO_PROPIETARIO IN (0, 1)),\r\n    FECHA_INGRESO_PROPIETARIO TEXT DEFAULT (date('now')),\r\n    MOTIVO_INACTIVACION TEXT,\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT, CONSIGNATARIO TEXT, DOCUMENTO_CONSIGNATARIO TEXT,\r\n    FOREIGN KEY (ID_PERSONA) REFERENCES PERSONAS(ID_PERSONA)\r\n)",
       "columns": [
         {
           "cid": 0,
@@ -4058,6 +4066,22 @@
         {
           "cid": 12,
           "name": "UPDATED_BY",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "CONSIGNATARIO",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "DOCUMENTO_CONSIGNATARIO",
           "type": "TEXT",
           "not_null": 0,
           "default_value": null,
@@ -4467,7 +4491,7 @@
       ]
     },
     "RECIBOS_PUBLICOS": {
-      "create_sql": "CREATE TABLE RECIBOS_PUBLICOS (\r\n    ID_RECIBO_PUBLICO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_PROPIEDAD INTEGER NOT NULL,\r\n    PERIODO_RECIBO TEXT NOT NULL,\r\n    TIPO_SERVICIO TEXT NOT NULL CHECK(TIPO_SERVICIO IN ('Agua', 'Luz', 'Gas', 'Internet', 'Teléfono', 'Aseo', 'Otros')),\r\n    VALOR_RECIBO INTEGER NOT NULL CHECK(VALOR_RECIBO >= 0),\r\n    FECHA_VENCIMIENTO TEXT,\r\n    FECHA_PAGO TEXT,\r\n    COMPROBANTE TEXT,\r\n    ESTADO TEXT DEFAULT 'Pendiente' CHECK(ESTADO IN ('Pendiente', 'Pagado', 'Vencido')),\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT,\r\n    FOREIGN KEY (ID_PROPIEDAD) REFERENCES PROPIEDADES(ID_PROPIEDAD),\r\n    UNIQUE(ID_PROPIEDAD, PERIODO_RECIBO, TIPO_SERVICIO)\r\n)",
+      "create_sql": "CREATE TABLE RECIBOS_PUBLICOS (\r\n    ID_RECIBO_PUBLICO INTEGER PRIMARY KEY AUTOINCREMENT,\r\n    ID_PROPIEDAD INTEGER NOT NULL,\r\n    PERIODO_RECIBO TEXT NOT NULL,\r\n    TIPO_SERVICIO TEXT NOT NULL CHECK(TIPO_SERVICIO IN ('Agua', 'Luz', 'Gas', 'Internet', 'Teléfono', 'Aseo', 'Otros')),\r\n    VALOR_RECIBO INTEGER NOT NULL CHECK(VALOR_RECIBO >= 0),\r\n    FECHA_VENCIMIENTO TEXT,\r\n    FECHA_PAGO TEXT,\r\n    COMPROBANTE TEXT,\r\n    ESTADO TEXT DEFAULT 'Pendiente' CHECK(ESTADO IN ('Pendiente', 'Pagado', 'Vencido')),\r\n    CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    CREATED_BY TEXT,\r\n    UPDATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\r\n    UPDATED_BY TEXT, FECHA_DESDE TEXT, FECHA_HASTA TEXT, DIAS_FACTURADOS INTEGER,\r\n    FOREIGN KEY (ID_PROPIEDAD) REFERENCES PROPIEDADES(ID_PROPIEDAD),\r\n    UNIQUE(ID_PROPIEDAD, PERIODO_RECIBO, TIPO_SERVICIO)\r\n)",
       "columns": [
         {
           "cid": 0,
@@ -4569,6 +4593,30 @@
           "cid": 12,
           "name": "UPDATED_BY",
           "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 13,
+          "name": "FECHA_DESDE",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 14,
+          "name": "FECHA_HASTA",
+          "type": "TEXT",
+          "not_null": 0,
+          "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 15,
+          "name": "DIAS_FACTURADOS",
+          "type": "INTEGER",
           "not_null": 0,
           "default_value": null,
           "pk": 0
