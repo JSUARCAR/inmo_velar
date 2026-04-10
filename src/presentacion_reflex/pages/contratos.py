@@ -24,7 +24,7 @@ from src.presentacion_reflex.state.pdf_state import PDFState
 def render_table_view() -> rx.Component:
     """Tabla de contratos con botones del ciclo flat-raised-inset."""
 
-    def _tabla_acciones(c: dict) -> rx.Component:
+    def _tabla_acciones(c: rx.Var) -> rx.Component:
         return rx.hstack(
             # Detalle
             neuro_icon_action_button(
@@ -33,7 +33,7 @@ def render_table_view() -> rx.Component:
                 size="1",
                 tooltip_content="Ver Detalle",
                 on_click=lambda: ContratosState.open_detail_modal(
-                    c["id_contrato"], c["tipo_contrato"]
+                    c.id_contrato, c.tipo_contrato
                 ),
             ),
             # Editar
@@ -45,7 +45,7 @@ def render_table_view() -> rx.Component:
                     size="1",
                     tooltip_content="Editar",
                     on_click=lambda: ContratosState.open_edit_modal(
-                        c["id_contrato"], c["tipo_contrato"]
+                        c.id_contrato, c.tipo_contrato
                     ),
                 ),
             ),
@@ -57,23 +57,23 @@ def render_table_view() -> rx.Component:
                     color_scheme="green",
                     size="1",
                     tooltip_content="Renovar Contrato",
-                    disabled=c["estado_contrato"] != "Activo",
+                    disabled=c.estado_contrato != "Activo",
                     on_click=lambda: ContratosState.confirm_renewal(
-                        c["id_contrato"], c["tipo_contrato"]
+                        c.id_contrato, c.tipo_contrato
                     ),
                 ),
             ),
             # IPC — solo Arrendamiento
             rx.cond(
-                (c["tipo_contrato"] == "Arrendamiento") &
+                (c.tipo_contrato == "Arrendamiento") &
                 AuthState.check_action("Contratos", "IPC"),
                 neuro_icon_action_button(
                     "trending-up",
                     color_scheme="cyan",
                     size="1",
                     tooltip_content="Aplicar IPC",
-                    disabled=c["estado_contrato"] != "Activo",
-                    on_click=lambda: ContratosState.open_ipc_modal(c["id_contrato"]),
+                    disabled=c.estado_contrato != "Activo",
+                    on_click=lambda: ContratosState.open_ipc_modal(c.id_contrato),
                 ),
             ),
             # PDF Contrato Oficial
@@ -82,7 +82,7 @@ def render_table_view() -> rx.Component:
                 color_scheme="purple",
                 size="1",
                 tooltip_content="Generar Contrato Oficial",
-                on_click=lambda: PDFState.generar_contrato_oficial_elite(c["id_contrato"], c["tipo_contrato"], False),
+                on_click=lambda: PDFState.generar_contrato_oficial_elite(c.id_contrato, c.tipo_contrato, False),
             ),
             # Terminar
             rx.cond(
@@ -92,9 +92,9 @@ def render_table_view() -> rx.Component:
                     color_scheme="red",
                     size="1",
                     tooltip_content="Terminar Contrato",
-                    disabled=c["estado_contrato"] != "Activo",
+                    disabled=c.estado_contrato != "Activo",
                     on_click=lambda: ContratosState.toggle_estado(
-                        c["id_contrato"], c["tipo_contrato"], c["estado_contrato"]
+                        c.id_contrato, c.tipo_contrato, c.estado_contrato
                     ),
                 ),
             ),
@@ -121,59 +121,59 @@ def render_table_view() -> rx.Component:
                         rx.vstack(
                             rx.hstack(
                                 rx.icon("hash", size=14, color="var(--gray-9)"),
-                                rx.text(f"ID: {c['id_contrato']}", weight="bold", size="1", color="var(--gray-11)"),
+                                rx.text("ID: ", c.id_contrato.to_string(), weight="bold", size="1", color="var(--gray-11)"),
                                 align="center",
                                 spacing="1"
                             ),
-                            rx.text(c["propiedad_direccion"], weight="bold", size="2"),
-                            rx.text(c["propiedad_matricula"], size="1", color=styles.TEXT_SECONDARY),
+                            rx.text(c.propiedad_direccion, weight="bold", size="2"),
+                            rx.text(c.propiedad_matricula, size="1", color=styles.TEXT_SECONDARY),
                             spacing="1",
                         )
                     ),
                     rx.table.cell(
                         neuro_badge(
-                            c["tipo_contrato"],
-                            color_scheme=rx.cond(c["tipo_contrato"] == "Mandato", "blue", "green"),
+                            c.tipo_contrato,
+                            color_scheme=rx.cond(c.tipo_contrato == "Mandato", "blue", "green"),
                         )
                     ),
                     rx.table.cell(
                         neuro_badge(
-                            c["estado_contrato"],
-                            color_scheme=rx.cond(c["estado_contrato"] == "Activo", "green", "red"),
+                            c.estado_contrato,
+                            color_scheme=rx.cond(c.estado_contrato == "Activo", "green", "red"),
                         )
                     ),
                     rx.table.cell(
                         rx.vstack(
                             rx.text(
                                 rx.cond(
-                                    c["tipo_contrato"] == "Mandato",
-                                    c["propietario_nombre"],
-                                    c["arrendatario_nombre"]
+                                    c.tipo_contrato == "Mandato",
+                                    c.propietario_nombre,
+                                    c.arrendatario_nombre
                                 ),
                                 size="2",
                             ),
                             rx.text(
                                 rx.cond(
-                                    c["tipo_contrato"] == "Mandato",
-                                    c["propietario_documento"],
-                                    c["arrendatario_documento"]
+                                    c.tipo_contrato == "Mandato",
+                                    c.propietario_documento,
+                                    c.arrendatario_documento
                                 ),
                                 size="1", color=styles.TEXT_SECONDARY
                             ),
                             rx.cond(
-                                c["habitante_nombre"] != "",
+                                c.habitante_nombre != "",
                                 rx.hstack(
                                     rx.icon("home", size=12, color=styles.TEXT_SECONDARY),
-                                    rx.text(c["habitante_nombre"], size="1", color=styles.TEXT_SECONDARY),
+                                    rx.text(c.habitante_nombre, size="1", color=styles.TEXT_SECONDARY),
                                     spacing="1",
                                     align="center"
                                 )
                             ),
                             rx.cond(
-                                c["asesor_nombre"] != "",
+                                c.asesor_nombre != "",
                                 rx.hstack(
                                     rx.icon("headset", size=12, color=styles.TEXT_SECONDARY),
-                                    rx.text(c["asesor_nombre"], size="1", color=styles.TEXT_SECONDARY),
+                                    rx.text(c.asesor_nombre, size="1", color=styles.TEXT_SECONDARY),
                                     spacing="1",
                                     align="center"
                                 )
@@ -181,11 +181,11 @@ def render_table_view() -> rx.Component:
                             spacing="1",
                         )
                     ),
-                    rx.table.cell(rx.text(f"${c['valor_canon']}", weight="bold")),
+                    rx.table.cell(rx.text("$", c.valor_canon.to_string(), weight="bold")),
                     rx.table.cell(
                         rx.vstack(
-                            rx.text(f"Inicia: {c['fecha_inicio']}", size="1"),
-                            rx.text(f"Vence: {c['fecha_fin']}", size="1"),
+                            rx.text("Inicia: ", c.fecha_inicio, size="1"),
+                            rx.text("Vence: ", c.fecha_fin, size="1"),
                             spacing="1",
                         )
                     ),

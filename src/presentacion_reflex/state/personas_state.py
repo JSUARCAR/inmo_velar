@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Optional, TypedDict
+import pydantic
+from typing import Any, Dict, List, Optional
 
 import reflex as rx
 
@@ -10,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class PersonaDict(TypedDict):
+class PersonaDict(pydantic.BaseModel):
     """Estructura tipada para serialización de Persona en Reflex."""
 
     id: int

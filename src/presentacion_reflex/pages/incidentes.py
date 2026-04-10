@@ -5,8 +5,13 @@ from src.presentacion_reflex.components.layout.dashboard_layout import dashboard
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
 
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_button,
+    neuro_select_root,
+)
 from src.presentacion_reflex import styles
+
 
 def _filter_bar() -> rx.Component:
     return rx.flex(
@@ -67,7 +72,6 @@ def _filter_bar() -> rx.Component:
     )
 
 
-
 def _list_view() -> rx.Component:
     return rx.table.root(
         rx.table.header(
@@ -84,12 +88,12 @@ def _list_view() -> rx.Component:
             rx.foreach(
                 IncidentesState.incidentes,
                 lambda item: rx.table.row(
-                    rx.table.cell(item["id"]),
-                    rx.table.cell(item["descripcion"]),
-                    rx.table.cell(item["id_propiedad"]),
-                    rx.table.cell(item["prioridad"]),
-                    rx.table.cell(rx.badge(item["estado"], variant="soft")),
-                    rx.table.cell(item["fecha"]),
+                    rx.table.cell(item.id),
+                    rx.table.cell(item.descripcion),
+                    rx.table.cell(item.id_propiedad),
+                    rx.table.cell(item.prioridad),
+                    rx.table.cell(rx.badge(item.estado, variant="soft")),
+                    rx.table.cell(item.fecha),
                 ),
             )
         ),
@@ -99,15 +103,31 @@ def _list_view() -> rx.Component:
 
 from src.presentacion_reflex.components.incidentes.modal_details import modal_details
 from src.presentacion_reflex.components.incidentes.modal_form import modal_form
+from src.presentacion_reflex.components.incidentes.modal_edit_incidente import (
+    modal_edit_incidente,
+)
+from src.presentacion_reflex.components.incidentes.modal_cancel_incidente import (
+    modal_cancel_incidente,
+)
 
 
-@rx.page(route="/incidentes", on_load=[AuthState.require_login, IncidentesState.on_load])
+@rx.page(
+    route="/incidentes", on_load=[AuthState.require_login, IncidentesState.on_load]
+)
 def incidentes() -> rx.Component:
     return dashboard_layout(
         rx.vstack(
             rx.heading("Gestión de Incidentes", size="6", margin_bottom="1em"),
             _filter_bar(),
-            rx.cond(IncidentesState.view_mode == "kanban", kanban_board(), _list_view()),
+            rx.box(
+                rx.cond(
+                    IncidentesState.view_mode == "kanban", kanban_board(), _list_view()
+                ),
+                flex="1",
+                width="100%",
+                height="100%",
+                min_height="0",
+            ),
             # Pagination Controls
             rx.flex(
                 rx.button(
@@ -119,7 +139,12 @@ def incidentes() -> rx.Component:
                     color_scheme="gray",
                 ),
                 rx.text(
-                    rx.text("Página ", IncidentesState.page, " de ", IncidentesState.total_pages),
+                    rx.text(
+                        "Página ",
+                        IncidentesState.page,
+                        " de ",
+                        IncidentesState.total_pages,
+                    ),
                     weight="medium",
                     color="gray",
                 ),
@@ -140,8 +165,12 @@ def incidentes() -> rx.Component:
             ),
             modal_form(),
             modal_details(),
+            modal_edit_incidente(),
+            modal_cancel_incidente(),
             width="100%",
-            height="calc(100vh - 100px)",
+            flex="1",
+            height="100%",
+            overflow="hidden",
             spacing="4",
         )
     )

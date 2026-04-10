@@ -117,9 +117,9 @@ def modal_form() -> rx.Component:
                 ),
                 rx.cond(
                     IncidentesState.error_message != "",
-                    rx.callout.root(
-                        rx.callout.icon(),
-                        rx.callout.text(IncidentesState.error_message),
+                    rx.callout(
+                        IncidentesState.error_message,
+                        icon="triangle_alert",
                         color_scheme="red",
                         role="alert",
                         variant="soft",

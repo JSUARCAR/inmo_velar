@@ -1,4 +1,5 @@
-from typing import Any, Dict, List, Optional, TypedDict
+import pydantic
+from typing import Any, Dict, List, Optional
 
 import reflex as rx
 
@@ -7,7 +8,7 @@ from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 
 
-class PropiedadDict(TypedDict):
+class PropiedadDict(pydantic.BaseModel):
     """Estructura tipada para serialización de Propiedad en Reflex."""
     id_propiedad: int
     matricula_inmobiliaria: str
