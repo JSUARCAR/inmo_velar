@@ -16,11 +16,11 @@ def _get_priority_color(priority: str) -> str:
     )
 
 
-def incident_card(incident: Dict[str, Any]) -> rx.Component:
-    priority_color = _get_priority_color(incident["prioridad"])
+def incident_card(incident: rx.Var) -> rx.Component:
+    priority_color = _get_priority_color(incident.prioridad)
 
     status_bg = rx.match(
-        incident["estado"],
+        incident.estado,
         ("Reportado", "var(--red-9)"),
         ("Cotizado", "var(--orange-9)"),
         ("Aprobado", "var(--green-9)"),
@@ -31,7 +31,7 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
     )
 
     status_bg_hover = rx.match(
-        incident["estado"],
+        incident.estado,
         ("Reportado", "var(--red-11)"),
         ("Cotizado", "var(--orange-11)"),
         ("Aprobado", "var(--green-11)"),
@@ -55,7 +55,7 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                     rx.hstack(
                         rx.text(
                             "INC-",
-                            incident["id"],
+                            incident.id,
                             size="1",
                             color="var(--gray-10)",
                             weight="bold",
@@ -65,12 +65,12 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                         rx.spacer(),
                         rx.hstack(
                             rx.icon("calendar", size=11, color="var(--gray-9)"),
-                            rx.text(incident["fecha"], size="1", color="gray"),
+                            rx.text(incident.fecha, size="1", color="gray"),
                             spacing="1",
                             align_items="center",
                         ),
                         rx.badge(
-                            incident["prioridad"],
+                            incident.prioridad,
                             color_scheme=priority_color,
                             variant="soft",
                             radius="full",
@@ -84,9 +84,9 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                         rx.icon("home", size=15, color="var(--primary-9)"),
                         rx.text(
                             rx.cond(
-                                incident["direccion_propiedad"] != "",
-                                incident["direccion_propiedad"],
-                                rx.text("#", incident["id_propiedad"]),
+                                incident.direccion_propiedad != "",
+                                incident.direccion_propiedad,
+                                rx.text("#", incident.id_propiedad.to_string()),
                             ),
                             size="2",
                             weight="bold",
@@ -107,8 +107,8 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                             rx.icon("user", size=12, color="var(--green-9)"),
                             rx.text(
                                 rx.cond(
-                                    incident["nombre_propietario"] != "",
-                                    incident["nombre_propietario"],
+                                    incident.nombre_propietario != "",
+                                    incident.nombre_propietario,
                                     "Sin propietario",
                                 ),
                                 size="1",
@@ -116,12 +116,12 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                                 weight="medium",
                             ),
                             rx.cond(
-                                incident["telefono_propietario"] != "",
+                                incident.telefono_propietario != "",
                                 rx.hstack(
                                     rx.text(" / ", size="1", color="var(--gray-7)"),
                                     rx.icon("phone", size=10, color="var(--green-9)"),
                                     rx.text(
-                                        incident["telefono_propietario"],
+                                        incident.telefono_propietario,
                                         size="1",
                                         color="gray",
                                     ),
@@ -138,8 +138,8 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                             rx.icon("user_check", size=12, color="var(--blue-9)"),
                             rx.text(
                                 rx.cond(
-                                    incident["nombre_inquilino"] != "",
-                                    incident["nombre_inquilino"],
+                                    incident.nombre_inquilino != "",
+                                    incident.nombre_inquilino,
                                     "Sin inquilino",
                                 ),
                                 size="1",
@@ -147,12 +147,12 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                                 weight="medium",
                             ),
                             rx.cond(
-                                incident["telefono_inquilino"] != "",
+                                incident.telefono_inquilino != "",
                                 rx.hstack(
                                     rx.text(" / ", size="1", color="var(--gray-7)"),
                                     rx.icon("phone", size=10, color="var(--blue-9)"),
                                     rx.text(
-                                        incident["telefono_inquilino"],
+                                        incident.telefono_inquilino,
                                         size="1",
                                         color="gray",
                                     ),
@@ -166,24 +166,24 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                             width="100%",
                         ),
                         rx.cond(
-                            incident["nombre_habitante"] != "",
+                            incident.nombre_habitante != "",
                             rx.hstack(
                                 rx.icon("users", size=12, color="var(--orange-9)"),
                                 rx.text(
-                                    incident["nombre_habitante"],
+                                    incident.nombre_habitante,
                                     size="1",
                                     color="gray",
                                     weight="medium",
                                 ),
                                 rx.cond(
-                                    incident["telefono_habitante"] != "",
+                                    incident.telefono_habitante != "",
                                     rx.hstack(
                                         rx.text(" / ", size="1", color="var(--gray-7)"),
                                         rx.icon(
                                             "phone", size=10, color="var(--orange-9)"
                                         ),
                                         rx.text(
-                                            incident["telefono_habitante"],
+                                            incident.telefono_habitante,
                                             size="1",
                                             color="gray",
                                         ),
@@ -206,7 +206,7 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                         rx.badge(
                             rx.hstack(
                                 rx.icon("megaphone", size=10),
-                                rx.text(incident["origen"], size="1"),
+                                rx.text(incident.origen, size="1"),
                                 spacing="1",
                                 align_items="center",
                             ),
@@ -256,12 +256,12 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
     ),
     rx.hover_card.content(
             rx.vstack(
-                rx.heading("INC-", incident["id"].to(str), size="4", color="var(--primary-9)"),
+                rx.heading("INC-", incident.id.to_string(), size="4", color="var(--primary-9)"),
             rx.separator(margin_y="2"),
             rx.text(
                 rx.cond(
-                    incident["descripcion"],
-                    incident["descripcion"],
+                    incident.descripcion,
+                    incident.descripcion,
                     "Sin descripción",
                 ),
                 weight="medium",
@@ -280,9 +280,9 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                     rx.text("Propiedad", weight="bold", size="1", color="gray"),
                     rx.text(
                         rx.cond(
-                            incident["direccion_propiedad"],
-                            incident["direccion_propiedad"],
-                            "#" + incident["id_propiedad"].to(str),
+                            incident.direccion_propiedad,
+                            incident.direccion_propiedad,
+                            "#" + incident.id_propiedad.to_string(),
                         ),
                         size="1",
                     ),
@@ -291,14 +291,14 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                     rx.text("Prioridad", weight="bold", size="1", color="gray"),
                     rx.badge(
                         rx.cond(
-                            incident["prioridad"],
-                            incident["prioridad"],
+                            incident.prioridad,
+                            incident.prioridad,
                             "Media",
                         ),
                         color_scheme=_get_priority_color(
                             rx.cond(
-                                incident["prioridad"],
-                                incident["prioridad"],
+                                incident.prioridad,
+                                incident.prioridad,
                                 "Media",
                             )
                         ),
@@ -309,8 +309,8 @@ def incident_card(incident: Dict[str, Any]) -> rx.Component:
                     rx.text("Fecha", weight="bold", size="1", color="gray"),
                     rx.text(
                         rx.cond(
-                            incident["fecha"],
-                            incident["fecha"],
+                            incident.fecha,
+                            incident.fecha,
                             "N/A",
                         ),
                         size="1",
