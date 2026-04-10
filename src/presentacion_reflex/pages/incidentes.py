@@ -88,12 +88,12 @@ def _list_view() -> rx.Component:
             rx.foreach(
                 IncidentesState.incidentes,
                 lambda item: rx.table.row(
-                    rx.table.cell(item["id"]),
-                    rx.table.cell(item["descripcion"]),
-                    rx.table.cell(item["id_propiedad"]),
-                    rx.table.cell(item["prioridad"]),
-                    rx.table.cell(rx.badge(item["estado"], variant="soft")),
-                    rx.table.cell(item["fecha"]),
+                    rx.table.cell(item.id),
+                    rx.table.cell(item.descripcion),
+                    rx.table.cell(item.id_propiedad),
+                    rx.table.cell(item.prioridad),
+                    rx.table.cell(rx.badge(item.estado, variant="soft")),
+                    rx.table.cell(item.fecha),
                 ),
             )
         ),

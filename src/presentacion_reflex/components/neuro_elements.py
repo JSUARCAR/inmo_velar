@@ -1,27 +1,25 @@
 import reflex as rx
 from .. import styles
 
+
 def neuro_input(*args, **kwargs) -> rx.Component:
     """Input estándar con estilo Neumorphic Executive."""
     custom_style = kwargs.pop("style", {})
     # Fusionar estilos preservando el contrato del tema
     final_style = {**styles.NEU_INPUT_STYLE, **custom_style}
-    
+
     # Forzar variante 'soft' - 'ghost' no es válido para TextField en Reflex 0.8.x
     kwargs["variant"] = "soft"
     kwargs.setdefault("size", "3")
-    
-    return rx.input(
-        *args,
-        style=final_style,
-        **kwargs
-    )
+
+    return rx.input(*args, style=final_style, **kwargs)
+
 
 def neuro_select_root(*args, **kwargs) -> rx.Component:
     """Select.root configurado con el disparador neumórfico."""
     trigger_placeholder = kwargs.pop("placeholder", "Seleccionar...")
     trigger_width = kwargs.pop("width", "100%")
-    
+
     # La jerarquía correcta es Root -> (Trigger, Content -> Items)
     return rx.select.root(
         rx.select.trigger(
@@ -36,58 +34,82 @@ def neuro_select_root(*args, **kwargs) -> rx.Component:
                 "background": styles.BG_PANEL,
                 "box_shadow": styles.NEU_MODAL_SHADOW,
                 "border_radius": "12px",
-            }
+            },
         ),
         size=kwargs.pop("size", "3"),
-        **kwargs
+        **kwargs,
     )
+
 
 def neuro_button(*args, **kwargs) -> rx.Component:
     """Botón con elevación neumórfica y feedback táctil."""
     custom_style = kwargs.pop("style", {})
     final_style = {**styles.NEU_BUTTON_STYLE, **custom_style}
-    
+
     # Los botones sí soportan la variante 'ghost'
     kwargs.setdefault("variant", "ghost")
     kwargs.setdefault("size", "3")
-    
-    return rx.button(
-        *args,
-        style=final_style,
-        **kwargs
-    )
+
+    return rx.button(*args, style=final_style, **kwargs)
+
 
 def neuro_text_area(*args, **kwargs) -> rx.Component:
     """TextArea estándar con estilo Neumorphic Executive."""
     custom_style = kwargs.pop("style", {})
     final_style = {**styles.NEU_INPUT_STYLE, **custom_style}
-    
+
     kwargs.setdefault("min_height", "120px")
     kwargs.setdefault("size", "3")
-    kwargs["variant"] = "soft" # Forzar variante compatible
-    
-    return rx.text_area(
-        *args,
-        style=final_style,
-        **kwargs
-    )
+    kwargs["variant"] = "soft"  # Forzar variante compatible
+
+    return rx.text_area(*args, style=final_style, **kwargs)
+
 
 def neuro_panel(*args, **kwargs) -> rx.Component:
     """Contenedor universal con elevación neumática y bordes suaves."""
     custom_style = kwargs.pop("style", {})
     final_style = {**styles.NEU_PANEL_STYLE, **custom_style}
-    
-    return rx.box(
-        *args,
-        style=final_style,
-        **kwargs
-    )
+
+    return rx.box(*args, style=final_style, **kwargs)
+
 
 def neuro_divider(**kwargs) -> rx.Component:
     """Divisor neumático con efecto de surco tallado."""
     custom_style = kwargs.pop("style", {})
-    final_style = {**styles.NEU_DIVIDER_STYLE, **custom_style}
+    final_style = {**styles.NEU_DIVIDER_STYLE, **kwargs.pop("style", {})}
     return rx.box(style=final_style, **kwargs)
+
+
+def neuro_form_label(text: str, required: bool = False, **kwargs) -> rx.Component:
+    """Etiqueta de formulario con estilo Neumorphic Executive.
+
+    Args:
+        text: Texto de la etiqueta.
+        required: Si True, muestra indicador de campo obligatorio (*).
+        **kwargs: Props adicionales pasados al rx.text.
+
+    Returns:
+        rx.Component: Etiqueta con estilos neumórficos.
+    """
+    custom_style = kwargs.pop("style", {})
+    final_style = {
+        "color": styles.TEXT_PRIMARY,
+        "font_size": "0.875rem",
+        "font_weight": "500",
+        "margin_bottom": "0.375rem",
+        **custom_style,
+    }
+
+    label_text = f"*{text}" if required else text
+    label_color = "var(--danger-9)" if required else styles.TEXT_PRIMARY
+
+    return rx.text(
+        label_text,
+        style=final_style,
+        color=label_color,
+        **kwargs,
+    )
+
 
 def neuro_badge(text, *args, **kwargs) -> rx.Component:
     """Badge neumórfico con color semántico basado en la escala Radix CSS.
@@ -108,49 +130,46 @@ def neuro_badge(text, *args, **kwargs) -> rx.Component:
     # ── Usar siempre la escala Radix pura ──────────────────────────────────
     # var(--gray-3), var(--gray-6), var(--gray-11) son tokens válidos en Radix,
     # igual que var(--blue-3), var(--green-3), etc.  No se necesita bifurcación.
-    bg_color   = f"var(--{color_scheme}-3)"
+    bg_color = f"var(--{color_scheme}-3)"
     text_color = f"var(--{color_scheme}-11)"
     border_val = f"1px solid var(--{color_scheme}-6)"
 
     kwargs.setdefault("variant", "outline")
 
     final_style = {
-        "background":    bg_color,
-        "box_shadow":    styles.NEU_INSET_LIGHT,
-        "border":        border_val,
+        "background": bg_color,
+        "box_shadow": styles.NEU_INSET_LIGHT,
+        "border": border_val,
         "border_radius": "12px",
-        "padding":       "0.25rem 0.75rem",
-        "color":         text_color,
-        "font_weight":   "bold",
+        "padding": "0.25rem 0.75rem",
+        "color": text_color,
+        "font_weight": "bold",
         **custom_style,
     }
 
     return rx.badge(text, *args, style=final_style, **kwargs)
 
+
 def neuro_progress(*args, **kwargs) -> rx.Component:
     """Barra de progreso con estilo neumático (canal tallado)."""
     custom_style = kwargs.pop("style", {})
     color_scheme = kwargs.pop("color_scheme", "blue")
-    
+
     final_style = {
         "background": styles.BG_PANEL,
         "box_shadow": styles.NEU_INSET,
         "border_radius": "999px",
         "overflow": "hidden",
-        "height": kwargs.get("height", "12px"), # Más grueso para look executive
+        "height": kwargs.get("height", "12px"),  # Más grueso para look executive
         "& > div": {
             "background": f"var(--{color_scheme}-9)",
             "box_shadow": "inset 0 1px 3px rgba(255,255,255,0.4), inset 0 -1px 3px rgba(0,0,0,0.1)",
         },
-        **custom_style
+        **custom_style,
     }
-    
-    return rx.progress(
-        *args,
-        color_scheme=color_scheme,
-        style=final_style,
-        **kwargs
-    )
+
+    return rx.progress(*args, color_scheme=color_scheme, style=final_style, **kwargs)
+
 
 def neuro_table_container(*args, **kwargs) -> rx.Component:
     """Contenedor para tablas que asegura scroll horizontal y estilo neumático."""
@@ -159,21 +178,18 @@ def neuro_table_container(*args, **kwargs) -> rx.Component:
         "width": "100%",
         "overflow_x": "auto",
         "padding": "1px",  # Espacio para que no se corten las sombras
-        **custom_style
+        **custom_style,
     }
-    
-    return rx.box(
-        *args,
-        style=final_style,
-        **kwargs
-    )
+
+    return rx.box(*args, style=final_style, **kwargs)
+
 
 def neuro_tooltip(children=None, **kwargs) -> rx.Component:
     """Tooltip con estilo neumático. Soporta contenido complejo mediante rx.hover_card."""
     content = kwargs.pop("content", "")
     # El trigger puede venir como children o pasarse explícitamente
     trigger = children if children is not None else kwargs.pop("children", rx.box())
-    
+
     # En Reflex 0.8.x, rx.tooltip solo acepta string en 'content'.
     # Para contenido complejo (como en kpi_card.py), usamos rx.hover_card.
     return rx.hover_card.root(
@@ -182,22 +198,23 @@ def neuro_tooltip(children=None, **kwargs) -> rx.Component:
             rx.cond(
                 isinstance(content, str),
                 rx.text(content, size="2"),
-                content # Si es un componente (VStack, etc.)
+                content,  # Si es un componente (VStack, etc.)
             ),
             style=styles.NEU_TOOLTIP_STYLE,
-            **kwargs
-        )
+            **kwargs,
+        ),
     )
+
 
 def neuro_switch(*args, **kwargs) -> rx.Component:
     """Switch (Toggle) con apariencia Neumorphic Executive."""
     custom_style = kwargs.pop("style", {})
     color_scheme = kwargs.pop("color_scheme", "green")
-    
+
     # Reflex usa Radix bajo el capó para el switch.
     # Forzamos variant soft/surface para minimizar estilos nativos que interfieran
     kwargs.setdefault("variant", "surface")
-    
+
     final_style = {
         "box_shadow": styles.NEU_INSET + " !important",
         "background": styles.BG_PANEL + " !important",
@@ -208,34 +225,32 @@ def neuro_switch(*args, **kwargs) -> rx.Component:
         "padding": "2px",
         "width": "44px",
         "height": "24px",
-        
         # Estado activo/encendido
         "&[data-state='checked']": {
-             "background": f"var(--{color_scheme}-9) !important",
-             "box_shadow": f"inset 0 2px 4px rgba(0,0,0,0.3), 0 0 8px var(--{color_scheme}-6) !important",
+            "background": f"var(--{color_scheme}-9) !important",
+            "box_shadow": f"inset 0 2px 4px rgba(0,0,0,0.3), 0 0 8px var(--{color_scheme}-6) !important",
         },
-        
         # El "thumb" del switch en Radix - Target exacto por clase y atributo
-        "& .rt-SwitchThumb": { 
+        "& .rt-SwitchThumb": {
             "background": "white !important",
             "box_shadow": "2px 2px 5px rgba(0,0,0,0.2) !important",
             "transform": "translateX(2px)",
             "transition": "transform 250ms cubic-bezier(0.4, 0, 0.2, 1)",
         },
-        
         "&[data-state='checked'] .rt-SwitchThumb": {
-             "transform": "translateX(20px)",
-             "background": "white !important",
+            "transform": "translateX(20px)",
+            "background": "white !important",
         },
-        **custom_style
+        **custom_style,
     }
-    
+
     return rx.switch(*args, color_scheme=color_scheme, style=final_style, **kwargs)
 
 
 # ---------------------------------------------------------------------------
 # TAREA 1.1 — neuro_spinner
 # ---------------------------------------------------------------------------
+
 
 def neuro_spinner(size: str = "3", **kwargs) -> rx.Component:
     """Spinner neumórfico con color de acento dinámico y rotación suave.
@@ -269,11 +284,31 @@ def neuro_spinner(size: str = "3", **kwargs) -> rx.Component:
 
 # Mapa semántico: color_scheme → var CSS de Radix para fondo y texto
 _CALLOUT_COLOR_MAP: dict[str, dict[str, str]] = {
-    "blue":   {"bg": "var(--blue-3)",   "border": "var(--blue-6)",   "icon_color": "var(--blue-9)"},
-    "green":  {"bg": "var(--green-3)",  "border": "var(--green-6)",  "icon_color": "var(--green-9)"},
-    "red":    {"bg": "var(--red-3)",    "border": "var(--red-6)",    "icon_color": "var(--red-9)"},
-    "yellow": {"bg": "var(--yellow-3)", "border": "var(--yellow-6)", "icon_color": "var(--yellow-9)"},
-    "gray":   {"bg": styles.BG_PANEL,   "border": styles.BORDER_DEFAULT, "icon_color": styles.TEXT_SECONDARY},
+    "blue": {
+        "bg": "var(--blue-3)",
+        "border": "var(--blue-6)",
+        "icon_color": "var(--blue-9)",
+    },
+    "green": {
+        "bg": "var(--green-3)",
+        "border": "var(--green-6)",
+        "icon_color": "var(--green-9)",
+    },
+    "red": {
+        "bg": "var(--red-3)",
+        "border": "var(--red-6)",
+        "icon_color": "var(--red-9)",
+    },
+    "yellow": {
+        "bg": "var(--yellow-3)",
+        "border": "var(--yellow-6)",
+        "icon_color": "var(--yellow-9)",
+    },
+    "gray": {
+        "bg": styles.BG_PANEL,
+        "border": styles.BORDER_DEFAULT,
+        "icon_color": styles.TEXT_SECONDARY,
+    },
 }
 
 
@@ -337,6 +372,7 @@ def neuro_callout(
 # ---------------------------------------------------------------------------
 # TAREA 1.3 — neuro_card_footer
 # ---------------------------------------------------------------------------
+
 
 def neuro_card_footer(*children, **kwargs) -> rx.Component:
     """Footer estandarizado para tarjetas neumórficas.
@@ -404,6 +440,7 @@ def neuro_card_footer(*children, **kwargs) -> rx.Component:
 # TAREA 2.2 — neuro_icon_action_button
 # ---------------------------------------------------------------------------
 
+
 def neuro_icon_action_button(
     icon_tag: str,
     *,
@@ -446,26 +483,26 @@ def neuro_icon_action_button(
         )
     """
     btn_style: dict = {
-        "background":  styles.BG_PANEL,
-        "box_shadow":  styles.SHADOW_FLAT_ELITE,
-        "border":      f"1px solid {styles.BORDER_DEFAULT}",
+        "background": styles.BG_PANEL,
+        "box_shadow": styles.SHADOW_FLAT_ELITE,
+        "border": f"1px solid {styles.BORDER_DEFAULT}",
         "border_radius": "10px",
-        "color":       f"var(--{color_scheme}-9)",
-        "transition":  styles.GLOBAL_TRANSITION,
-        "cursor":      "pointer",
+        "color": f"var(--{color_scheme}-9)",
+        "transition": styles.GLOBAL_TRANSITION,
+        "cursor": "pointer",
         "_hover": {
-            "box_shadow":  styles.SHADOW_RAISED_ELITE,
-            "background":  styles.BG_HOVER,
-            "transform":   "translateY(-1px)",
+            "box_shadow": styles.SHADOW_RAISED_ELITE,
+            "background": styles.BG_HOVER,
+            "transform": "translateY(-1px)",
         },
         "_active": {
-            "box_shadow":  styles.SHADOW_INSET_ELITE,
-            "transform":   "scale(0.96)",
+            "box_shadow": styles.SHADOW_INSET_ELITE,
+            "transform": "scale(0.96)",
         },
         "_disabled": {
-            "opacity":     "0.4",
-            "cursor":      "not-allowed",
-            "box_shadow":  "none",
+            "opacity": "0.4",
+            "cursor": "not-allowed",
+            "box_shadow": "none",
         },
         **kwargs.pop("style", {}),
     }
