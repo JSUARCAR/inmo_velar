@@ -63,3 +63,48 @@ class PagosAdministracion:
     @property
     def periodo_formateado(self) -> str:
         return self.periodo_pago
+
+    @property
+    def fecha_limite_pago(self) -> Optional[datetime]:
+        """
+        Construye la fecha límite combinando periodo_pago (YYYY-MM) y fecha_pago (día).
+
+        Returns:
+            datetime con la fecha límite, o None si los datos son inválidos.
+        """
+        try:
+            if not self.periodo_pago or not self.fecha_pago:
+                return None
+            año, mes = self.periodo_pago.split("-")
+            dia = min(int(self.fecha_pago), 28)  # Protección contra días inválidos
+            return datetime(int(año), int(mes), dia)
+        except (ValueError, TypeError, AttributeError):
+            return None
+
+    @property
+    def dias_vencimiento(self) -> int:
+        """
+        Días restantes hasta la fecha de pago.
+        Positivo = faltan días, Negativo = días vencido, 0 = vence hoy.
+
+        Returns:
+            Entero con la diferencia en días.
+        """
+        fecha_limite = self.fecha_limite_pago
+        if fecha_limite is None:
+            return 0
+        return (fecha_limite - datetime.now()).days
+
+    @property
+    def es_vencido_calculado(self) -> bool:
+        """
+        True si la fecha límite ya pasó y el estado sigue siendo Pendiente.
+
+        Returns:
+            Booleano indicando vencimiento efectivo.
+        """
+        if self.estado_pago == "Vencido":
+            return True
+        if self.estado_pago != "Pendiente":
+            return False
+        return self.dias_vencimiento < 0

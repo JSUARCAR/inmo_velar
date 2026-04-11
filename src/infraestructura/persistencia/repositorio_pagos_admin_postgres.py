@@ -301,3 +301,65 @@ class RepositorioPagosAdminPostgres:
             )
 
         return resultados
+
+    # --- Métodos para Alertas ---
+
+    def listar_pagos_vencidos(self) -> List[PagosAdministracion]:
+        """
+        Retorna pagos con ESTADO_PAGO = 'Vencido' o pagos Pendientes
+        cuya fecha límite (construida desde PERIODO_PAGO + FECHA_PAGO) ya pasó.
+
+        Returns:
+            Lista de entidades PagosAdministracion vencidas.
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+
+        query = """
+            SELECT * FROM PAGOS_ADMINISTRACION
+            WHERE ESTADO_PAGO = 'Vencido'
+               OR (
+                   ESTADO_PAGO = 'Pendiente'
+                   AND make_date(
+                       SPLIT_PART(PERIODO_PAGO, '-', 1)::integer,
+                       SPLIT_PART(PERIODO_PAGO, '-', 2)::integer,
+                       LEAST(FECHA_PAGO, 28)
+                   ) < CURRENT_DATE
+               )
+            ORDER BY PERIODO_PAGO DESC, DIRECCION_PROPIEDAD
+        """
+
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        cursor.close()
+        return [self._row_to_entity(row) for row in rows if row]
+
+    def listar_pagos_proximos_vencer(self, dias: int) -> List[PagosAdministracion]:
+        """
+        Retorna pagos Pendientes cuya fecha límite cae en los próximos N días.
+
+        Args:
+            dias: Número de días hacia adelante a consultar.
+
+        Returns:
+            Lista de entidades PagosAdministracion próximas a vencer.
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        p = self.db.get_placeholder()
+
+        query = f"""
+            SELECT * FROM PAGOS_ADMINISTRACION
+            WHERE ESTADO_PAGO = 'Pendiente'
+              AND make_date(
+                  SPLIT_PART(PERIODO_PAGO, '-', 1)::integer,
+                  SPLIT_PART(PERIODO_PAGO, '-', 2)::integer,
+                  LEAST(FECHA_PAGO, 28)
+              ) BETWEEN CURRENT_DATE AND CURRENT_DATE + {p}::integer
+            ORDER BY PERIODO_PAGO ASC, DIRECCION_PROPIEDAD
+        """
+
+        cursor.execute(query, (dias,))
+        rows = cursor.fetchall()
+        cursor.close()
+        return [self._row_to_entity(row) for row in rows if row]

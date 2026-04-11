@@ -33,6 +33,10 @@ class IncidenteDict(pydantic.BaseModel):
     telefono_propietario: str
     telefono_inquilino: str
     telefono_habitante: str
+    costo_incidente: Optional[int] = None
+    fecha_arreglo: Optional[str] = None
+    nombre_proveedor: Optional[str] = None
+    cotizaciones_resumen: List[Dict[str, Any]] = []
 
 
 class IncidentesState(DocumentosStateMixin):
@@ -340,6 +344,15 @@ class IncidentesState(DocumentosStateMixin):
                 nombre_habitante = datos_habitante[0]
                 telefono_habitante = datos_habitante[1]
 
+                fecha_arreglo_str = None
+                if inc.fecha_arreglo:
+                    if hasattr(inc.fecha_arreglo, "strftime"):
+                        fecha_arreglo_str = inc.fecha_arreglo.strftime("%Y-%m-%d")
+                    elif isinstance(inc.fecha_arreglo, str):
+                        fecha_arreglo_str = inc.fecha_arreglo.split(" ")[0]
+
+                cotizaciones_list = inc.cotizaciones_resumen or []
+
                 item = {
                     "id": inc.id_incidente,
                     "descripcion": inc.descripcion_incidente,
@@ -360,6 +373,10 @@ class IncidentesState(DocumentosStateMixin):
                     "telefono_propietario": telefono_propietario,
                     "telefono_inquilino": telefono_inquilino,
                     "telefono_habitante": telefono_habitante,
+                    "costo_incidente": inc.costo_incidente,
+                    "fecha_arreglo": fecha_arreglo_str,
+                    "nombre_proveedor": inc.nombre_proveedor,
+                    "cotizaciones_resumen": cotizaciones_list,
                 }
                 items.append(item)
 

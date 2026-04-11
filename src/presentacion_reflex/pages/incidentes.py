@@ -3,7 +3,7 @@ import reflex as rx
 from src.presentacion_reflex.components.incidentes.kanban_board import kanban_board
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
-from src.presentacion_reflex.state.incidentes_state import IncidentesState
+from src.presentacion_reflex.state.incidentes_state import IncidentesState, IncidenteDict
 
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_input,
@@ -86,7 +86,7 @@ def _list_view() -> rx.Component:
         ),
         rx.table.body(
             rx.foreach(
-                IncidentesState.incidentes,
+                IncidentesState.incidentes.to(list[IncidenteDict]),
                 lambda item: rx.table.row(
                     rx.table.cell(item.id),
                     rx.table.cell(item.descripcion),

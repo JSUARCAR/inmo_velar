@@ -331,7 +331,15 @@ class ReportesState(rx.State):
 
             # Cargar asesores si no están cargados
             if len(self.asesor_options) <= 1:
-                await self._load_asesores()
+                # Obtenemos las opciones sin bloquear el estado todavía en el helper
+                pass
+        
+        # Cargamos los asesores fuera del bloque inicial si es necesario
+        if len(self.asesor_options) <= 1:
+            options = await self._fetch_asesores_options()
+            if options:
+                async with self:
+                    self.asesor_options = options
 
         try:
             # Seleccionar estrategia de carga según ID
@@ -355,15 +363,14 @@ class ReportesState(rx.State):
             async with self:
                 self.is_loading = False
 
-    async def _load_asesores(self):
-        """Carga la lista de asesores para los filtros delegando al servicio."""
+    async def _fetch_asesores_options(self) -> List[str]:
+        """Obtiene la lista de asesores para los filtros delegando al servicio sin mutar el estado."""
         try:
             servicio = ServicioReportes()
-            options = servicio.obtener_asesores_filtro()
-            async with self:
-                self.asesor_options = options
+            return servicio.obtener_asesores_filtro()
         except Exception as e:
             print(f"Error cargando asesores en reportes: {e}")
+            return []
 
     async def download_csv(self):
         """Genera y descarga todo el dataset en CSV UTF-8 con BOM."""
