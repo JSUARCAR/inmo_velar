@@ -163,44 +163,42 @@ def login_page() -> rx.Component:
     Página de Login Premium.
     Diseño moderno con tarjeta flotante y fondo de gradiente.
     """
-    return rx.fragment(
+    return rx.box(
+        # Dual Visual Effects (Aurora base + Matrix rain)
+        aurora_background(),
+        matrix_background(),
+        # Header (Title and subtitle)
         rx.box(
-            # Dual Visual Effects (Aurora base + Matrix rain)
-            aurora_background(),
-            matrix_background(),
-            # Header (Title and subtitle)
-            rx.box(
-                rx.vstack(
-                    rx.heading(
-                        "VELAR CORE",
-                        color=rx.cond(rx.color_mode == "light", "rgba(0,0,0,0.85)", "white"),
-                        size="8",
-                        weight="bold",
-                        letter_spacing="-0.02em",
-                    ),
-                    rx.text(
-                        "Sistema de Gestión Inmobiliaria Elite",
-                        color=rx.cond(
-                            rx.color_mode == "light",
-                            "rgba(0,0,0,0.6)",
-                            "rgba(255,255,255,0.7)",
-                        ),
-                        size="3",
-                        weight="medium",
-                    ),
-                    align="center",
-                    spacing="1",
+            rx.vstack(
+                rx.heading(
+                    "VELAR CORE",
+                    color=rx.cond(rx.color_mode == "light", "rgba(0,0,0,0.85)", "white"),
+                    size="8",
+                    weight="bold",
+                    letter_spacing="-0.02em",
                 ),
-                class_name="login-header-elite",
-                width="100%",
+                rx.text(
+                    "Sistema de Gestión Inmobiliaria Elite",
+                    color=rx.cond(
+                        rx.color_mode == "light",
+                        "rgba(0,0,0,0.6)",
+                        "rgba(255,255,255,0.7)",
+                    ),
+                    size="3",
+                    weight="medium",
+                ),
+                align="center",
+                spacing="1",
             ),
-            # Content
-            rx.box(
-                login_card(),
-                class_name="login-container-elite",
-            ),
+            class_name="login-header-elite",
             width="100%",
-            min_height="100vh",
-            class_name="login-page-root",
         ),
+        # Content
+        rx.box(
+            login_card(),
+            class_name="login-container-elite",
+        ),
+        width="100%",
+        min_height="100vh",
+        class_name="login-page-root",
     )

@@ -112,8 +112,7 @@ def persona_row(persona: dict) -> rx.Component:
 def personas_page() -> rx.Component:
     pass  # print("\n🌐 === PERSONAS PAGE RENDERING ===") [OpSec Removed]
     pass  # print("✅ Toast provider will be included in this page") [OpSec Removed]
-    return rx.fragment(
-        rx.toast.provider(),
+    return rx.box(
         dashboard_layout(
             rx.vstack(
                 # Modal Component

@@ -84,10 +84,9 @@ class RecaudosState(DocumentosStateMixin):
     # ==================== HELPERS PRIVADOS ====================
 
     async def _get_usuario_actual(self) -> str:
-        """Obtiene el usuario actual del contexto de autenticación."""
-        from src.presentacion_reflex.state.auth_state import AuthState
-        auth = await self.get_state(AuthState)
-        return auth.user_nombre if auth.is_authenticated else "sistema"
+        """Obtiene el usuario actual (Mock para estabilidad de StateProxy)."""
+        # TODO: Integrar con AuthState cuando Reflex garantice get_state seguro en BG tasks
+        return "admin"
 
     def _parse_estado(self, estado: str) -> Optional[EstadoRecaudo]:
         """Convierte string de filtro a Enum, None si es 'Todos'."""
@@ -127,17 +126,25 @@ class RecaudosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
+            
+            # Leer estado dentro del contexto para seguridad de StateProxy
+            estado_val = self.filter_estado
+            fecha_desde = self.filter_fecha_desde or None
+            fecha_hasta = self.filter_fecha_hasta or None
+            busqueda = self.search_text or None
+            page = self.current_page
+            page_size = self.page_size
 
         try:
             servicio = _crear_servicio()
 
             filtros = FiltrosRecaudo(
-                estado=self._parse_estado(self.filter_estado),
-                fecha_desde=self.filter_fecha_desde or None,
-                fecha_hasta=self.filter_fecha_hasta or None,
-                busqueda=self.search_text or None,
-                page=self.current_page,
-                page_size=self.page_size,
+                estado=self._parse_estado(estado_val),
+                fecha_desde=fecha_desde,
+                fecha_hasta=fecha_hasta,
+                busqueda=busqueda,
+                page=page,
+                page_size=page_size,
             )
 
             resultado = servicio.listar_paginado(filtros)
@@ -282,6 +289,9 @@ class RecaudosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
+            
+            # Copiar opciones para procesar fuera del contexto
+            opts = self.contratos_options.copy()
 
         try:
             servicio = _crear_servicio()
@@ -304,7 +314,7 @@ class RecaudosState(DocumentosStateMixin):
 
             # Buscar el label del contrato para el combobox
             selected_label = ""
-            for option in self.contratos_options:
+            for option in opts:
                 if str(option["id"]) == str(recaudo.id_contrato_a):
                     selected_label = option["texto"]
                     break
@@ -315,10 +325,10 @@ class RecaudosState(DocumentosStateMixin):
                 self.contrato_menu_open = False
 
                 self.form_data = {
-                    "id_recaudo": id_recaudo,
+                    "id_recaudo": str(id_recaudo),
                     "id_contrato_a": str(recaudo.id_contrato_a),
                     "fecha_pago": recaudo.fecha_pago,
-                    "valor_total": recaudo.valor_total,
+                    "valor_total": str(recaudo.valor_total),
                     "metodo_pago": recaudo.metodo_pago.value,
                     "referencia_bancaria": recaudo.referencia_bancaria or "",
                     "observaciones": recaudo.observaciones or "",
@@ -378,7 +388,7 @@ class RecaudosState(DocumentosStateMixin):
                     "metodo_pago": recaudo.metodo_pago.value,
                     "referencia": recaudo.referencia_bancaria or "",
                     "estado": recaudo.estado_recaudo.value,
-                    "observaciones": recaudo.observaciones or "",
+                    "observaciones": recaudo.observaciones or "Sin observaciones",
                     "created_at": recaudo.created_at or "",
                     "created_by": recaudo.created_by or "",
                     "conceptos": [
@@ -407,15 +417,17 @@ class RecaudosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
+            
+            # Leer datos necesarios del estado dentro del contexto para seguridad de StateProxy
+            st_form_data = self.form_data.copy()
+            st_contratos_options = self.contratos_options.copy()
 
         try:
             servicio = _crear_servicio()
             usuario = await self._get_usuario_actual()
 
             # Validaciones y parsing de ID Contrato
-            id_contrato = form_data.get("id_contrato_a") or self.form_data.get(
-                "id_contrato_a"
-            )
+            id_contrato = form_data.get("id_contrato_a") or st_form_data.get("id_contrato_a")
 
             if not id_contrato:
                 async with self:
@@ -423,26 +435,21 @@ class RecaudosState(DocumentosStateMixin):
                     self.is_loading = False
                 return
 
+            # Si viene el texto descriptivo, extraer el ID
             if isinstance(id_contrato, str) and not id_contrato.isdigit():
                 contrato_opt = next(
-                    (
-                        c
-                        for c in self.contratos_options
-                        if c["texto"] == id_contrato
-                    ),
-                    None,
+                    (c for c in st_contratos_options if c["texto"] == id_contrato),
+                    None
                 )
                 if contrato_opt:
                     id_contrato = contrato_opt["id"]
                 elif id_contrato.startswith("ID:"):
                     try:
-                        id_contrato = (
-                            id_contrato.split(":")[1].split(" -")[0].strip()
-                        )
+                        id_contrato = id_contrato.split(":")[1].split(" -")[0].strip()
                     except (IndexError, ValueError):
                         pass
 
-            valor_total = int(form_data.get("valor_total", 0))
+            valor_total = int(float(form_data.get("valor_total") or 0))
             if valor_total <= 0:
                 async with self:
                     self.error_message = "El valor total debe ser mayor a cero"
@@ -450,13 +457,9 @@ class RecaudosState(DocumentosStateMixin):
                 return
 
             metodo_pago = form_data.get("metodo_pago", "")
-            if metodo_pago != MetodoPago.EFECTIVO.value and not form_data.get(
-                "referencia_bancaria", ""
-            ).strip():
+            if metodo_pago != MetodoPago.EFECTIVO.value and not form_data.get("referencia_bancaria", "").strip():
                 async with self:
-                    self.error_message = (
-                        "La referencia bancaria es obligatoria para pagos electrónicos"
-                    )
+                    self.error_message = "La referencia bancaria es obligatoria para pagos electrónicos"
                     self.is_loading = False
                 return
 
@@ -465,18 +468,14 @@ class RecaudosState(DocumentosStateMixin):
                 from src.dominio.entidades.recaudo import Recaudo
 
                 recaudo = Recaudo(
-                    id_recaudo=form_data.get("id_recaudo"),
+                    id_recaudo=int(form_data.get("id_recaudo")),
                     id_contrato_a=int(id_contrato),
                     fecha_pago=form_data["fecha_pago"],
                     valor_total=valor_total,
                     metodo_pago=MetodoPago(metodo_pago),
-                    referencia_bancaria=form_data.get(
-                        "referencia_bancaria", ""
-                    ).strip()
-                    or None,
+                    referencia_bancaria=form_data.get("referencia_bancaria", "").strip() or None,
                     estado_recaudo=EstadoRecaudo.PENDIENTE,
-                    observaciones=form_data.get("observaciones", "").strip()
-                    or None,
+                    observaciones=form_data.get("observaciones", "").strip() or None,
                     created_by=usuario,
                 )
                 repo = RepositorioRecaudo(db_manager)
@@ -491,16 +490,10 @@ class RecaudosState(DocumentosStateMixin):
                     fecha_pago=date.fromisoformat(form_data["fecha_pago"]),
                     valor_total=valor_total,
                     metodo_pago=MetodoPago(metodo_pago),
-                    referencia_bancaria=form_data.get(
-                        "referencia_bancaria", ""
-                    ).strip()
-                    or None,
+                    referencia_bancaria=form_data.get("referencia_bancaria", "").strip() or None,
                     tipo_concepto=form_data.get("tipo_concepto", "Canon"),
-                    periodo=form_data.get(
-                        "periodo", datetime.now().strftime("%Y-%m")
-                    ),
-                    observaciones=form_data.get("observaciones", "").strip()
-                    or None,
+                    periodo=form_data.get("periodo", datetime.now().strftime("%Y-%m")),
+                    observaciones=form_data.get("observaciones", "").strip() or None,
                 )
                 servicio.registrar_pago(comando, usuario)
 
@@ -512,7 +505,7 @@ class RecaudosState(DocumentosStateMixin):
 
         except ValueError as e:
             async with self:
-                self.error_message = str(e)
+                self.error_message = f"Error de validación: {str(e)}"
         except Exception as e:
             async with self:
                 self.error_message = f"Error al guardar: {str(e)}"
