@@ -187,6 +187,9 @@ class ServicioReportes:
             )
             # Headers predefinidos para consistencia
             headers = [
+                "ID_LIQUIDACION",
+                "ID_CONTRATO_M",
+                "ID_PROPIEDAD",
                 "TIPO_DOCUMENTO_PROPIETARIO",
                 "NUMERO_DOCUMENTO_PROPIETARIO",
                 "NOMBRE_COMPLETO_PROPIETARIO",
