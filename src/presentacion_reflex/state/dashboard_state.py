@@ -7,8 +7,8 @@ import reflex as rx
 
 from src.aplicacion.servicios.servicio_dashboard import ServicioDashboard
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
-from src.infraestructura.persistencia.repositorio_dashboard_sqlite import RepositorioDashboardSQLite
+from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
+from src.infraestructura.persistencia.repositorio_dashboard import RepositorioDashboard
 from src.presentacion_reflex.utils.formatters import format_currency, format_number
 
 
@@ -98,7 +98,7 @@ class DashboardState(rx.State):
         """Carga la lista de asesores para el dropdown."""
         print("[DASH_DEBUG] load_advisor_options START", file=sys.stderr, flush=True)
         try:
-            repo_asesores = RepositorioAsesorSQLite(db_manager)
+            repo_asesores = RepositorioAsesorPostgres(db_manager)
             asesores = repo_asesores.listar_todos()
             self.advisor_options = [
                 {
@@ -134,7 +134,7 @@ class DashboardState(rx.State):
             id_asesor = self.selected_advisor_id
             print(f"[DASH_DEBUG] filtros | mes={mes} anio={anio} asesor={id_asesor}", file=sys.stderr, flush=True)
 
-            repo_dashboard = RepositorioDashboardSQLite(db_manager)
+            repo_dashboard = RepositorioDashboard(db_manager)
             servicio = ServicioDashboard(repo_dashboard=repo_dashboard)
             print("[DASH_DEBUG] servicio instanciado OK", file=sys.stderr, flush=True)
 

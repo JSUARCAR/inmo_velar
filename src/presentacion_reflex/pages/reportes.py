@@ -4,6 +4,7 @@ from src.presentacion_reflex.components.layout.dashboard_layout import dashboard
 from src.presentacion_reflex.state.reportes_state import ReportesState, ReportItem
 from src.presentacion_reflex import styles
 
+
 def report_item_sidebar(report: ReportItem, is_selected: bool):
     """Item individual del sidebar de reportes."""
     return rx.hstack(
@@ -26,6 +27,7 @@ def report_item_sidebar(report: ReportItem, is_selected: bool):
         align_items="center",
     )
 
+
 def reports_sidebar():
     """Sidebar de navegación interna de reportes."""
     return rx.vstack(
@@ -43,30 +45,31 @@ def reports_sidebar():
                 lambda category: rx.accordion.item(
                     header=rx.hstack(
                         rx.icon(category.icon, size=16, color=category.color),
-                        rx.text(category.name, size="2", weight="bold", color=category.color),
+                        rx.text(
+                            category.name, size="2", weight="bold", color=category.color
+                        ),
                         spacing="2",
                         align_items="center",
-                        width="100%"
+                        width="100%",
                     ),
                     content=rx.vstack(
                         rx.foreach(
                             category.reports,
                             lambda report: report_item_sidebar(
-                                report,
-                                report.id == ReportesState.selected_report_id
-                            )
+                                report, report.id == ReportesState.selected_report_id
+                            ),
                         ),
                         spacing="1",
                         padding_left="2",
                         width="100%",
-                        padding_top="2"
+                        padding_top="2",
                     ),
-                )
+                ),
             ),
             type="multiple",
             collapsible=True,
             width="100%",
-            variant="ghost"
+            variant="ghost",
         ),
         width="100%",
         height="100%",
@@ -75,40 +78,97 @@ def reports_sidebar():
         background_color=styles.BG_PANEL,
     )
 
+
 def reports_content():
     """Área principal con filtros y tabla."""
     return rx.vstack(
         # Header + Filtros
         rx.vstack(
             rx.heading(
-                ReportesState.active_report["name"], 
-                size="6", 
+                ReportesState.active_report["name"],
+                size="6",
                 color=styles.TEXT_PRIMARY,
             ),
             rx.text(
-                ReportesState.active_report["description"], 
-                size="2", 
-                color="#64748b"
+                ReportesState.active_report["description"], size="2", color="#64748b"
             ),
             rx.hstack(
-                # Filtros Rápidos
-                rx.select(
-                    ReportesState.estado_options,
-                    placeholder="Estado",
-                    on_change=ReportesState.set_filter_activo,
-                    value=ReportesState.filter_estado,
-                    size="2",
-                    width="150px",
-                ),
+                # Filtros Rápidos (Reporte General)
                 rx.cond(
-                    ReportesState.selected_report_id == "liquidaciones",
-                    rx.select(
-                        ReportesState.asesor_options,
-                        placeholder="Asesor",
-                        on_change=ReportesState.set_filter_asesor,
-                        value=ReportesState.filter_asesor_id,
-                        size="2",
-                        width="200px",
+                    ReportesState.selected_report_id == "reporte_consolidado",
+                    rx.hstack(
+                        rx.input(
+                            placeholder="Fecha pago inicio (YYYY-MM-DD)",
+                            on_change=lambda v: ReportesState.set_filter_fecha_pago(
+                                v, ReportesState.filter_fecha_pago_fin
+                            ),
+                            value=ReportesState.filter_fecha_pago_inicio,
+                            size="2",
+                            width="180px",
+                        ),
+                        rx.input(
+                            placeholder="Fecha pago fin (YYYY-MM-DD)",
+                            on_change=lambda v: ReportesState.set_filter_fecha_pago(
+                                ReportesState.filter_fecha_pago_inicio, v
+                            ),
+                            value=ReportesState.filter_fecha_pago_fin,
+                            size="2",
+                            width="180px",
+                        ),
+                        rx.select(
+                            ReportesState.estado_contrato_options,
+                            placeholder="Estado contrato",
+                            on_change=ReportesState.set_filter_estado_contrato,
+                            value=ReportesState.filter_estado_contrato,
+                            size="2",
+                            width="140px",
+                        ),
+                        rx.select(
+                            ReportesState.estado_liquidacion_options,
+                            placeholder="Estado liquidación",
+                            on_change=ReportesState.set_filter_estado_liquidacion,
+                            value=ReportesState.filter_estado_liquidacion,
+                            size="2",
+                            width="140px",
+                        ),
+                        rx.select(
+                            ReportesState.asesor_options,
+                            placeholder="Asesor",
+                            on_change=ReportesState.set_filter_asesor,
+                            value=ReportesState.filter_asesor_id,
+                            size="2",
+                            width="180px",
+                        ),
+                        rx.input(
+                            placeholder="Propietario...",
+                            on_change=ReportesState.set_filter_propietario,
+                            value=ReportesState.filter_propietario_buscar,
+                            size="2",
+                            width="180px",
+                        ),
+                        spacing="2",
+                    ),
+                    rx.hstack(
+                        rx.select(
+                            ReportesState.estado_options,
+                            placeholder="Estado",
+                            on_change=ReportesState.set_filter_activo,
+                            value=ReportesState.filter_estado,
+                            size="2",
+                            width="150px",
+                        ),
+                        rx.cond(
+                            ReportesState.selected_report_id == "liquidaciones",
+                            rx.select(
+                                ReportesState.asesor_options,
+                                placeholder="Asesor",
+                                on_change=ReportesState.set_filter_asesor,
+                                value=ReportesState.filter_asesor_id,
+                                size="2",
+                                width="200px",
+                            ),
+                        ),
+                        spacing="2",
                     ),
                 ),
                 rx.input(
@@ -136,7 +196,6 @@ def reports_content():
             padding_bottom="4",
             border_bottom="1px solid #e5e7eb",
         ),
-        
         # Mensaje de Error
         rx.cond(
             ReportesState.error_message != "",
@@ -148,7 +207,6 @@ def reports_content():
                 margin_y="2",
             ),
         ),
-
         # Tabla de Previsualización
         rx.cond(
             ReportesState.is_loading,
@@ -158,27 +216,26 @@ def reports_content():
                     rx.table.row(
                         rx.foreach(
                             ReportesState.preview_headers,
-                            lambda h: rx.table.column_header_cell(h)
+                            lambda h: rx.table.column_header_cell(h),
                         )
                     )
                 ),
                 rx.table.body(
-                   rx.foreach(
-                       ReportesState.preview_data,
-                       lambda row: rx.table.row(
-                           rx.foreach(
-                               ReportesState.preview_headers,
-                               lambda h: rx.table.cell(row[h])
-                           )
-                       )
-                   ) 
+                    rx.foreach(
+                        ReportesState.preview_data,
+                        lambda row: rx.table.row(
+                            rx.foreach(
+                                ReportesState.preview_headers,
+                                lambda h: rx.table.cell(row[h]),
+                            )
+                        ),
+                    )
                 ),
                 variant="surface",
                 size="1",
                 width="100%",
-            )
+            ),
         ),
-
         # Paginación (Preview)
         rx.hstack(
             rx.text(
@@ -188,29 +245,29 @@ def reports_content():
                 ReportesState.total_records,
                 ") - Previsualización limitada",
                 size="1",
-                color="#64748b"
+                color="#64748b",
             ),
             rx.spacer(),
             rx.button(
-                "Anterior", 
-                on_click=ReportesState.prev_page, 
+                "Anterior",
+                on_click=ReportesState.prev_page,
                 disabled=ReportesState.current_page <= 1,
                 size="1",
-                variant="soft"
+                variant="soft",
             ),
             rx.text("Página ", ReportesState.current_page, size="1"),
             rx.button(
-                "Siguiente", 
+                "Siguiente",
                 on_click=ReportesState.next_page,
-                disabled=(ReportesState.current_page * ReportesState.page_size) >= ReportesState.total_records,
+                disabled=(ReportesState.current_page * ReportesState.page_size)
+                >= ReportesState.total_records,
                 size="1",
-                variant="soft"
+                variant="soft",
             ),
             width="100%",
-            padding_top="4", 
+            padding_top="4",
             align_items="center",
         ),
-        
         padding="6",
         flex="1",
         width="100%",
@@ -218,7 +275,12 @@ def reports_content():
         overflow="auto",
     )
 
-@rx.page(route="/reportes", title="Reportes - Inmobiliaria Velar", on_load=ReportesState.load_preview_data)
+
+@rx.page(
+    route="/reportes",
+    title="Reportes - Inmobiliaria Velar",
+    on_load=ReportesState.load_preview_data,
+)
 def reportes_page() -> rx.Component:
     """Página principal del módulo de Reportes."""
     return dashboard_layout(
@@ -257,12 +319,17 @@ def reportes_page() -> rx.Component:
                     ),
                     direction="left",
                 ),
-                display=["block", "block", "none", "none", "none"], # Show only on mobile/tablet
+                display=[
+                    "block",
+                    "block",
+                    "none",
+                    "none",
+                    "none",
+                ],  # Show only on mobile/tablet
                 width="100%",
                 padding_x="4",
                 padding_top="4",
             ),
-            
             rx.hstack(
                 # Desktop Sidebar (Original - Visible only on desktop)
                 rx.box(
@@ -274,7 +341,7 @@ def reportes_page() -> rx.Component:
                 ),
                 # Main Content Area
                 reports_content(),
-                height="calc(100vh - 80px)", 
+                height="calc(100vh - 80px)",
                 width="100%",
                 spacing="0",
                 align_items="start",

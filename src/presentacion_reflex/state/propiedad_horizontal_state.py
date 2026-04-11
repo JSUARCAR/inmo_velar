@@ -281,6 +281,22 @@ class PropiedadHorizontalState(rx.State):
             return PropiedadHorizontalState.cargar_asambleas()
         return PropiedadHorizontalState.cargar_pagos()
 
+    def set_busqueda_pago_propietario(self, valor: str):
+        self.busqueda_pago_propietario = valor
+        return PropiedadHorizontalState.cargar_pagos()
+
+    def set_filtro_estado_asistencia(self, valor: str):
+        self.filtro_estado_asistencia = valor
+        return PropiedadHorizontalState.cargar_asambleas()
+
+    def set_filtro_periodo(self, valor: str):
+        self.filtro_periodo = valor
+        return PropiedadHorizontalState.cargar_pagos()
+
+    def set_filtro_estado_pago(self, valor: str):
+        self.filtro_estado_pago = valor
+        return PropiedadHorizontalState.cargar_pagos()
+
     @rx.event(background=True)
     async def load_initial_data(self):
         async with self:

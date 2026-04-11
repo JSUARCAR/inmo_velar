@@ -19,7 +19,7 @@ def contrato_card(contrato: dict) -> rx.Component:
     """
     return neuro_panel(
         rx.vstack(
-            # Header: Tipo y Estado
+            # Header: Tipo, Estado y Cumplimiento
             rx.hstack(
                 neuro_badge(
                     contrato["tipo_contrato"],
@@ -29,6 +29,28 @@ def contrato_card(contrato: dict) -> rx.Component:
                         "green",
                     ),
                     radius="full",
+                ),
+                neuro_badge(
+                    contrato.get("estado_cumplimiento", "PENDIENTE"),
+                    color_scheme=rx.cond(
+                        contrato.get("estado_cumplimiento") == "AL_DIA",
+                        "green",
+                        rx.cond(
+                            contrato.get("estado_cumplimiento") == "VENCIDO",
+                            "red",
+                            "yellow",
+                        ),
+                    ),
+                    radius="full",
+                    tooltip=rx.cond(
+                        contrato.get("estado_cumplimiento") == "AL_DIA",
+                        "Pago al día",
+                        rx.cond(
+                            contrato.get("estado_cumplimiento") == "VENCIDO",
+                            "Pago vencido",
+                            "Pago pendiente",
+                        ),
+                    ),
                 ),
                 rx.spacer(),
                 neuro_badge(
@@ -59,13 +81,14 @@ def contrato_card(contrato: dict) -> rx.Component:
                 rx.hstack(
                     rx.icon("hash", size=14, color="var(--gray-9)"),
                     rx.text(
-                        "ID: ", contrato["id_contrato"],
+                        "ID: ",
+                        contrato["id_contrato"],
                         size="1",
                         weight="bold",
                         color="var(--gray-11)",
                     ),
                     align="center",
-                    spacing="1"
+                    spacing="1",
                 ),
                 spacing="1",
                 align="start",
@@ -79,7 +102,7 @@ def contrato_card(contrato: dict) -> rx.Component:
                         rx.cond(
                             contrato["tipo_contrato"] == "Mandato",
                             contrato["propietario_nombre"],
-                            contrato["arrendatario_nombre"]
+                            contrato["arrendatario_nombre"],
                         ),
                         size="2",
                         weight="medium",
@@ -89,7 +112,7 @@ def contrato_card(contrato: dict) -> rx.Component:
                         rx.cond(
                             contrato["tipo_contrato"] == "Mandato",
                             contrato["propietario_documento"],
-                            contrato["arrendatario_documento"]
+                            contrato["arrendatario_documento"],
                         ),
                         size="1",
                         color="var(--gray-9)",
@@ -99,7 +122,8 @@ def contrato_card(contrato: dict) -> rx.Component:
                         rx.hstack(
                             rx.icon("home", size=12, color="var(--gray-9)"),
                             rx.text(
-                                "Habitante: ", contrato["habitante_nombre"],
+                                "Habitante: ",
+                                contrato["habitante_nombre"],
                                 size="1",
                                 color="var(--gray-10)",
                             ),
@@ -139,7 +163,11 @@ def contrato_card(contrato: dict) -> rx.Component:
                 rx.vstack(
                     rx.text("Valor", size="1", color="var(--gray-9)"),
                     rx.text(
-                        "$", contrato["valor_canon"], size="2", weight="bold", color="var(--blue-9)"
+                        "$",
+                        contrato["valor_canon"],
+                        size="2",
+                        weight="bold",
+                        color="var(--blue-9)",
                     ),
                     spacing="0",
                 ),
@@ -166,24 +194,26 @@ def contrato_card(contrato: dict) -> rx.Component:
                         rx.hstack(
                             neuro_icon_action_button(
                                 "file-check",
-                                on_click=lambda: PDFState.generar_contrato_arrendamiento_elite(
-                                    contrato["id_contrato"], False
+                                on_click=lambda: (
+                                    PDFState.generar_contrato_arrendamiento_elite(
+                                        contrato["id_contrato"], False
+                                    )
                                 ),
                                 color_scheme="purple",
                                 tooltip_content="Contrato Oficial",
                             ),
-                                rx.cond(
-                                    AuthState.check_action("Contratos", "IPC"),
-                                    neuro_icon_action_button(
-                                        "trending-up",
-                                        on_click=lambda: ContratosState.open_ipc_modal(
-                                            contrato["id_contrato"]
-                                        ),
-                                        color_scheme="cyan",
-                                        disabled=contrato["estado_contrato"] != "Activo",
-                                        tooltip_content="Incremento IPC",
+                            rx.cond(
+                                AuthState.check_action("Contratos", "IPC"),
+                                neuro_icon_action_button(
+                                    "trending-up",
+                                    on_click=lambda: ContratosState.open_ipc_modal(
+                                        contrato["id_contrato"]
                                     ),
+                                    color_scheme="cyan",
+                                    disabled=contrato["estado_contrato"] != "Activo",
+                                    tooltip_content="Incremento IPC",
                                 ),
+                            ),
                             spacing="1",
                         ),
                     ),
@@ -200,43 +230,45 @@ def contrato_card(contrato: dict) -> rx.Component:
                         ),
                     ),
                     # Editar
-                        rx.cond(
-                            AuthState.check_action("Contratos", "EDITAR"),
-                            neuro_icon_action_button(
-                                "pencil",
-                                on_click=lambda: ContratosState.open_edit_modal(
-                                    contrato["id_contrato"], contrato["tipo_contrato"]
-                                ),
-                                color_scheme="gray",
-                                tooltip_content="Editar",
+                    rx.cond(
+                        AuthState.check_action("Contratos", "EDITAR"),
+                        neuro_icon_action_button(
+                            "pencil",
+                            on_click=lambda: ContratosState.open_edit_modal(
+                                contrato["id_contrato"], contrato["tipo_contrato"]
                             ),
+                            color_scheme="gray",
+                            tooltip_content="Editar",
                         ),
+                    ),
                     # Renovación
-                        rx.cond(
-                            AuthState.check_action("Contratos", "RENOVAR"),
-                            neuro_icon_action_button(
-                                "refresh-cw",
-                                on_click=lambda: ContratosState.confirm_renewal(
-                                    contrato["id_contrato"], contrato["tipo_contrato"]
-                                ),
-                                color_scheme="green",
-                                disabled=contrato["estado_contrato"] != "Activo",
-                                tooltip_content="Renovar",
+                    rx.cond(
+                        AuthState.check_action("Contratos", "RENOVAR"),
+                        neuro_icon_action_button(
+                            "refresh-cw",
+                            on_click=lambda: ContratosState.confirm_renewal(
+                                contrato["id_contrato"], contrato["tipo_contrato"]
                             ),
+                            color_scheme="green",
+                            disabled=contrato["estado_contrato"] != "Activo",
+                            tooltip_content="Renovar",
                         ),
+                    ),
                     # Terminar
-                        rx.cond(
-                            AuthState.check_action("Contratos", "TERMINAR"),
-                            neuro_icon_action_button(
-                                "ban",
-                                on_click=lambda: ContratosState.toggle_estado(
-                                    contrato["id_contrato"], contrato["tipo_contrato"], contrato["estado_contrato"]
-                                ),
-                                color_scheme="red",
-                                disabled=contrato["estado_contrato"] != "Activo",
-                                tooltip_content="Terminar",
+                    rx.cond(
+                        AuthState.check_action("Contratos", "TERMINAR"),
+                        neuro_icon_action_button(
+                            "ban",
+                            on_click=lambda: ContratosState.toggle_estado(
+                                contrato["id_contrato"],
+                                contrato["tipo_contrato"],
+                                contrato["estado_contrato"],
                             ),
+                            color_scheme="red",
+                            disabled=contrato["estado_contrato"] != "Activo",
+                            tooltip_content="Terminar",
                         ),
+                    ),
                     spacing="2",
                     padding_y="1",
                 ),

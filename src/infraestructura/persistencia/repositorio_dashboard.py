@@ -1,5 +1,5 @@
 """
-Repositorio SQLite para Dashboard.
+Repositorio PostgreSQL para Dashboard.
 Implementa consultas agregadas para métricas.
 """
 from datetime import datetime
@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.dominio.interfaces.repositorio_dashboard import IRepositorioDashboard
 
-class RepositorioDashboardSQLite(IRepositorioDashboard):
+class RepositorioDashboard(IRepositorioDashboard):
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
 

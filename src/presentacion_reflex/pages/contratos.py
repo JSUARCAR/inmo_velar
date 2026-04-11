@@ -1,4 +1,5 @@
 """Página de Contratos - Reflex Elite"""
+
 import reflex as rx
 from src.presentacion_reflex import styles
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
@@ -13,13 +14,26 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_panel,
 )
 from src.presentacion_reflex.components.contratos.contrato_card import contrato_card
-from src.presentacion_reflex.components.contratos.contrato_mandato_form import contrato_mandato_form
-from src.presentacion_reflex.components.contratos.contrato_arrendamiento_form import contrato_arrendamiento_form
-from src.presentacion_reflex.components.contratos.contrato_detail_modal import contrato_detail_modal
-from src.presentacion_reflex.components.contratos.ipc_increment_modal import ipc_increment_modal
-from src.presentacion_reflex.components.contratos.contrato_renewal_modal import contrato_renewal_modal
-from src.presentacion_reflex.components.shared.elite_gradient_icon import elite_gradient_icon_labeled
+from src.presentacion_reflex.components.contratos.contrato_mandato_form import (
+    contrato_mandato_form,
+)
+from src.presentacion_reflex.components.contratos.contrato_arrendamiento_form import (
+    contrato_arrendamiento_form,
+)
+from src.presentacion_reflex.components.contratos.contrato_detail_modal import (
+    contrato_detail_modal,
+)
+from src.presentacion_reflex.components.contratos.ipc_increment_modal import (
+    ipc_increment_modal,
+)
+from src.presentacion_reflex.components.contratos.contrato_renewal_modal import (
+    contrato_renewal_modal,
+)
+from src.presentacion_reflex.components.shared.elite_gradient_icon import (
+    elite_gradient_icon_labeled,
+)
 from src.presentacion_reflex.state.pdf_state import PDFState
+
 
 def render_table_view() -> rx.Component:
     """Tabla de contratos con botones del ciclo flat-raised-inset."""
@@ -65,8 +79,8 @@ def render_table_view() -> rx.Component:
             ),
             # IPC — solo Arrendamiento
             rx.cond(
-                (c.tipo_contrato == "Arrendamiento") &
-                AuthState.check_action("Contratos", "IPC"),
+                (c.tipo_contrato == "Arrendamiento")
+                & AuthState.check_action("Contratos", "IPC"),
                 neuro_icon_action_button(
                     "trending-up",
                     color_scheme="cyan",
@@ -82,7 +96,9 @@ def render_table_view() -> rx.Component:
                 color_scheme="purple",
                 size="1",
                 tooltip_content="Generar Contrato Oficial",
-                on_click=lambda: PDFState.generar_contrato_oficial_elite(c.id_contrato, c.tipo_contrato, False),
+                on_click=lambda: PDFState.generar_contrato_oficial_elite(
+                    c.id_contrato, c.tipo_contrato, False
+                ),
             ),
             # Terminar
             rx.cond(
@@ -107,6 +123,7 @@ def render_table_view() -> rx.Component:
                 rx.table.column_header_cell("Propiedad"),
                 rx.table.column_header_cell("Tipo"),
                 rx.table.column_header_cell("Estado"),
+                rx.table.column_header_cell("Cumplimiento"),
                 rx.table.column_header_cell("Propietario/Arrendatario"),
                 rx.table.column_header_cell("Valor"),
                 rx.table.column_header_cell("Fechas"),
@@ -121,25 +138,70 @@ def render_table_view() -> rx.Component:
                         rx.vstack(
                             rx.hstack(
                                 rx.icon("hash", size=14, color="var(--gray-9)"),
-                                rx.text("ID: ", c.id_contrato.to_string(), weight="bold", size="1", color="var(--gray-11)"),
+                                rx.text(
+                                    "ID: ",
+                                    c.id_contrato.to_string(),
+                                    weight="bold",
+                                    size="1",
+                                    color="var(--gray-11)",
+                                ),
                                 align="center",
-                                spacing="1"
+                                spacing="1",
                             ),
                             rx.text(c.propiedad_direccion, weight="bold", size="2"),
-                            rx.text(c.propiedad_matricula, size="1", color=styles.TEXT_SECONDARY),
+                            rx.text(
+                                c.propiedad_matricula,
+                                size="1",
+                                color=styles.TEXT_SECONDARY,
+                            ),
                             spacing="1",
                         )
                     ),
                     rx.table.cell(
                         neuro_badge(
                             c.tipo_contrato,
-                            color_scheme=rx.cond(c.tipo_contrato == "Mandato", "blue", "green"),
+                            color_scheme=rx.cond(
+                                c.tipo_contrato == "Mandato", "blue", "green"
+                            ),
                         )
                     ),
                     rx.table.cell(
                         neuro_badge(
                             c.estado_contrato,
-                            color_scheme=rx.cond(c.estado_contrato == "Activo", "green", "red"),
+                            color_scheme=rx.cond(
+                                c.estado_contrato == "Activo", "green", "red"
+                            ),
+                        )
+                    ),
+                    rx.table.cell(
+                        neuro_badge(
+                            rx.cond(
+                                c.estado_cumplimiento == "AL_DIA",
+                                "Al día",
+                                rx.cond(
+                                    c.estado_cumplimiento == "VENCIDO",
+                                    "Vencido",
+                                    "Pendiente",
+                                ),
+                            ),
+                            color_scheme=rx.cond(
+                                c.estado_cumplimiento == "AL_DIA",
+                                "green",
+                                rx.cond(
+                                    c.estado_cumplimiento == "VENCIDO",
+                                    "red",
+                                    "yellow",
+                                ),
+                            ),
+                            tooltip=rx.cond(
+                                c.estado_cumplimiento == "AL_DIA",
+                                "Pago al día",
+                                rx.cond(
+                                    c.estado_cumplimiento == "VENCIDO",
+                                    "Pago vencido",
+                                    "Pago pendiente",
+                                ),
+                            ),
                         )
                     ),
                     rx.table.cell(
@@ -148,7 +210,7 @@ def render_table_view() -> rx.Component:
                                 rx.cond(
                                     c.tipo_contrato == "Mandato",
                                     c.propietario_nombre,
-                                    c.arrendatario_nombre
+                                    c.arrendatario_nombre,
                                 ),
                                 size="2",
                             ),
@@ -156,32 +218,47 @@ def render_table_view() -> rx.Component:
                                 rx.cond(
                                     c.tipo_contrato == "Mandato",
                                     c.propietario_documento,
-                                    c.arrendatario_documento
+                                    c.arrendatario_documento,
                                 ),
-                                size="1", color=styles.TEXT_SECONDARY
+                                size="1",
+                                color=styles.TEXT_SECONDARY,
                             ),
                             rx.cond(
                                 c.habitante_nombre != "",
                                 rx.hstack(
-                                    rx.icon("home", size=12, color=styles.TEXT_SECONDARY),
-                                    rx.text(c.habitante_nombre, size="1", color=styles.TEXT_SECONDARY),
+                                    rx.icon(
+                                        "home", size=12, color=styles.TEXT_SECONDARY
+                                    ),
+                                    rx.text(
+                                        c.habitante_nombre,
+                                        size="1",
+                                        color=styles.TEXT_SECONDARY,
+                                    ),
                                     spacing="1",
-                                    align="center"
-                                )
+                                    align="center",
+                                ),
                             ),
                             rx.cond(
                                 c.asesor_nombre != "",
                                 rx.hstack(
-                                    rx.icon("headset", size=12, color=styles.TEXT_SECONDARY),
-                                    rx.text(c.asesor_nombre, size="1", color=styles.TEXT_SECONDARY),
+                                    rx.icon(
+                                        "headset", size=12, color=styles.TEXT_SECONDARY
+                                    ),
+                                    rx.text(
+                                        c.asesor_nombre,
+                                        size="1",
+                                        color=styles.TEXT_SECONDARY,
+                                    ),
                                     spacing="1",
-                                    align="center"
-                                )
+                                    align="center",
+                                ),
                             ),
                             spacing="1",
                         )
                     ),
-                    rx.table.cell(rx.text("$", c.valor_canon.to_string(), weight="bold")),
+                    rx.table.cell(
+                        rx.text("$", c.valor_canon.to_string(), weight="bold")
+                    ),
                     rx.table.cell(
                         rx.vstack(
                             rx.text("Inicia: ", c.fecha_inicio, size="1"),
@@ -190,14 +267,17 @@ def render_table_view() -> rx.Component:
                         )
                     ),
                     rx.table.cell(_tabla_acciones(c)),
-                )
+                ),
             )
         ),
         width="100%",
         class_name="neu-table-elite",
     )
 
-def _render_kpi_card(title: str, icon: str, total: int, activos: int, inactivos: int, color_scheme: str) -> rx.Component:
+
+def _render_kpi_card(
+    title: str, icon: str, total: int, activos: int, inactivos: int, color_scheme: str
+) -> rx.Component:
     """Componente para renderizar un KPI de Elite."""
     return neuro_panel(
         rx.hstack(
@@ -210,18 +290,31 @@ def _render_kpi_card(title: str, icon: str, total: int, activos: int, inactivos:
             rx.vstack(
                 rx.text(title, size="2", color=styles.TEXT_SECONDARY, weight="medium"),
                 rx.hstack(
-                    rx.text(total.to_string(), size="6", weight="bold", color="var(--gray-12)"),
+                    rx.text(
+                        total.to_string(),
+                        size="6",
+                        weight="bold",
+                        color="var(--gray-12)",
+                    ),
                     rx.spacer(),
                     rx.hstack(
-                        neuro_badge(f"{activos.to_string()} Activos", color_scheme="green", size="1"),
-                        neuro_badge(f"{inactivos.to_string()} Inactivos", color_scheme="gray", size="1"),
+                        neuro_badge(
+                            f"{activos.to_string()} Activos",
+                            color_scheme="green",
+                            size="1",
+                        ),
+                        neuro_badge(
+                            f"{inactivos.to_string()} Inactivos",
+                            color_scheme="gray",
+                            size="1",
+                        ),
                         spacing="2",
                     ),
                     align="center",
-                    width="100%"
+                    width="100%",
                 ),
                 width="100%",
-                spacing="1"
+                spacing="1",
             ),
             spacing="4",
             align="center",
@@ -230,6 +323,7 @@ def _render_kpi_card(title: str, icon: str, total: int, activos: int, inactivos:
         width="100%",
         min_width="320px",
     )
+
 
 def contratos_page() -> rx.Component:
     """Componente principal de la página de contratos."""
@@ -282,30 +376,28 @@ def contratos_page() -> rx.Component:
                     ),
                     width="100%",
                 ),
-
                 # Contenedor KPIs
                 rx.grid(
                     _render_kpi_card(
-                        "Mandatos", 
-                        "briefcase", 
+                        "Mandatos",
+                        "briefcase",
                         ContratosState.kpi_mandatos_total,
                         ContratosState.kpi_mandatos_activos,
                         ContratosState.kpi_mandatos_inactivos,
-                        "blue"
+                        "blue",
                     ),
                     _render_kpi_card(
-                        "Arrendamientos", 
-                        "key", 
+                        "Arrendamientos",
+                        "key",
                         ContratosState.kpi_arriendos_total,
                         ContratosState.kpi_arriendos_activos,
                         ContratosState.kpi_arriendos_inactivos,
-                        "indigo"
+                        "indigo",
                     ),
                     columns=rx.breakpoints(initial="1", md="2"),
                     spacing="4",
                     width="100%",
                 ),
-
                 # Barra de Herramientas (Filtros y Búsqueda)
                 neuro_panel(
                     rx.flex(
@@ -321,28 +413,50 @@ def contratos_page() -> rx.Component:
                         # Filtros y acciones agrupados (sin rx.spacer)
                         rx.flex(
                             neuro_select_root(
-                                rx.foreach(ContratosState.asesores_filter_options, lambda opt: rx.select.item(opt[0], value=opt[1])),
+                                rx.foreach(
+                                    ContratosState.asesores_filter_options,
+                                    lambda opt: rx.select.item(opt[0], value=opt[1]),
+                                ),
                                 value=ContratosState.filter_asesor_id,
                                 on_change=ContratosState.set_filter_asesor_id,
                                 width=["100%", "100%", "200px"],
-                                style={"box_shadow": styles.SHADOW_INSET_ELITE, "border_radius": "8px"},
+                                style={
+                                    "box_shadow": styles.SHADOW_INSET_ELITE,
+                                    "border_radius": "8px",
+                                },
                             ),
                             neuro_select_root(
-                                rx.foreach(ContratosState.tipo_options, lambda opt: rx.select.item(opt, value=opt)),
+                                rx.foreach(
+                                    ContratosState.tipo_options,
+                                    lambda opt: rx.select.item(opt, value=opt),
+                                ),
                                 value=ContratosState.filter_tipo,
                                 on_change=ContratosState.set_filter_tipo,
                                 width=["100%", "100%", "160px"],
-                                style={"box_shadow": styles.SHADOW_INSET_ELITE, "border_radius": "8px"},
+                                style={
+                                    "box_shadow": styles.SHADOW_INSET_ELITE,
+                                    "border_radius": "8px",
+                                },
                             ),
                             neuro_select_root(
-                                rx.foreach(ContratosState.estado_options, lambda opt: rx.select.item(opt, value=opt)),
+                                rx.foreach(
+                                    ContratosState.estado_options,
+                                    lambda opt: rx.select.item(opt, value=opt),
+                                ),
                                 value=ContratosState.filter_estado,
                                 on_change=ContratosState.set_filter_estado,
                                 width=["100%", "100%", "140px"],
-                                style={"box_shadow": styles.SHADOW_INSET_ELITE, "border_radius": "8px"},
+                                style={
+                                    "box_shadow": styles.SHADOW_INSET_ELITE,
+                                    "border_radius": "8px",
+                                },
                             ),
                             neuro_button(
-                                rx.cond(ContratosState.is_grid_view, rx.icon("table"), rx.icon("layout-grid")),
+                                rx.cond(
+                                    ContratosState.is_grid_view,
+                                    rx.icon("table"),
+                                    rx.icon("layout-grid"),
+                                ),
                                 on_click=ContratosState.toggle_view,
                             ),
                             rx.tooltip(
@@ -350,7 +464,7 @@ def contratos_page() -> rx.Component:
                                     rx.icon("file-spreadsheet", size=16),
                                     on_click=ContratosState.exportar_csv,
                                     size="3",
-                                    style={"min_width": "44px"}
+                                    style={"min_width": "44px"},
                                 ),
                                 content="Exportar a Excel",
                             ),
@@ -367,7 +481,6 @@ def contratos_page() -> rx.Component:
                     ),
                     width="100%",
                 ),
-
                 # Contenido de Datos
                 rx.cond(
                     ContratosState.is_loading,
@@ -378,8 +491,16 @@ def contratos_page() -> rx.Component:
                             rx.center(
                                 rx.vstack(
                                     rx.icon("search-x", size=64, color="var(--gray-6)"),
-                                    rx.text("No se encontraron contratos", size="5", weight="bold"),
-                                    rx.text("Ajusta los filtros o registra uno nuevo", size="2", color=styles.TEXT_SECONDARY),
+                                    rx.text(
+                                        "No se encontraron contratos",
+                                        size="5",
+                                        weight="bold",
+                                    ),
+                                    rx.text(
+                                        "Ajusta los filtros o registra uno nuevo",
+                                        size="2",
+                                        color=styles.TEXT_SECONDARY,
+                                    ),
                                     spacing="3",
                                     align="center",
                                 ),
@@ -390,8 +511,12 @@ def contratos_page() -> rx.Component:
                                 rx.cond(
                                     ContratosState.is_grid_view,
                                     rx.grid(
-                                        rx.foreach(ContratosState.contratos, contrato_card),
-                                        columns=rx.breakpoints(initial="1", sm="2", lg="3"),
+                                        rx.foreach(
+                                            ContratosState.contratos, contrato_card
+                                        ),
+                                        columns=rx.breakpoints(
+                                            initial="1", sm="2", lg="3"
+                                        ),
                                         gap="8",
                                         width="100%",
                                         padding="4",
@@ -404,26 +529,34 @@ def contratos_page() -> rx.Component:
                         width="100%",
                     ),
                 ),
-
                 # Paginación
                 neuro_panel(
                     rx.hstack(
                         neuro_button(
                             rx.icon("chevron-left", size=16),
-                            rx.text("Anterior", display=rx.breakpoints(initial="none", md="block")),
+                            rx.text(
+                                "Anterior",
+                                display=rx.breakpoints(initial="none", md="block"),
+                            ),
                             on_click=ContratosState.prev_page,
                             disabled=ContratosState.current_page == 1,
                         ),
                         rx.text(
-                            "Pág. ", ContratosState.current_page,
+                            "Pág. ",
+                            ContratosState.current_page,
                             weight="medium",
                             size=rx.breakpoints(initial="2", md="3"),
                         ),
                         neuro_button(
-                            rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
+                            rx.text(
+                                "Siguiente",
+                                display=rx.breakpoints(initial="none", md="block"),
+                            ),
                             rx.icon("chevron-right", size=16),
                             on_click=ContratosState.next_page,
-                            disabled=ContratosState.current_page * ContratosState.page_size >= ContratosState.total_items,
+                            disabled=ContratosState.current_page
+                            * ContratosState.page_size
+                            >= ContratosState.total_items,
                         ),
                         justify="center",
                         width="100%",
@@ -445,6 +578,7 @@ def contratos_page() -> rx.Component:
         ipc_increment_modal(),
         contrato_renewal_modal(),
     )
+
 
 # Ruta protegida
 @rx.page(route="/contratos", on_load=[AuthState.require_login, ContratosState.on_load])

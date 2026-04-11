@@ -160,6 +160,71 @@ class ServicioReportes:
             headers = list(data[0].keys()) if data else []
             return data, headers, total
 
+        # 6. Reporte Consolidado (Información financiera y contractual unificada)
+        if report_id == "reporte_consolidado":
+            # Parsear asesor_id si viene formateado
+            asesor_id = None
+            if filtros.get("asesor_id") and filtros.get("asesor_id") != "Todos":
+                try:
+                    asesor_id = int(
+                        filtros.get("asesor_id").split("(")[-1].replace(")", "")
+                    )
+                except:
+                    pass
+
+            data, total = self.repo_reportes.obtener_reporte_consolidado(
+                fecha_pago_inicio=filtros.get("fecha_pago_inicio"),
+                fecha_pago_fin=filtros.get("fecha_pago_fin"),
+                periodo_inicio=filtros.get("periodo_inicio"),
+                periodo_fin=filtros.get("periodo_fin"),
+                estado_contrato=filtros.get("estado_contrato"),
+                estado_liquidacion=filtros.get("estado_liquidacion"),
+                asesor_id=asesor_id,
+                propietario_buscar=filtros.get("propietario_buscar"),
+                busqueda=busqueda,
+                page=pagina,
+                limit=limite,
+            )
+            # Headers predefinidos para consistencia
+            headers = [
+                "TIPO_DOCUMENTO_PROPIETARIO",
+                "NUMERO_DOCUMENTO_PROPIETARIO",
+                "NOMBRE_COMPLETO_PROPIETARIO",
+                "BANCO_PROPIETARIO",
+                "NUMERO_CUENTA_PROPIETARIO",
+                "TIPO_CUENTA_PROPIETARIO",
+                "CONSIGNATARIO_PROPIETARIO",
+                "DOCUMENTO_CONSIGNATARIO_PROPIETARIO",
+                "TIPO_DOCUMENTO_ARRENDATARIO",
+                "NUMERO_DOCUMENTO_ARRENDATARIO",
+                "NOMBRE_COMPLETO_ARRENDATARIO",
+                "FECHA_INICIO_CONTRATO",
+                "ESTADO_CONTRATO",
+                "DIRECCION_PROPIEDAD",
+                "METODO_PAGO_RECAUDOS",
+                "ESTADO_RECAUDO",
+                "PERIODO_FACTURADO",
+                "NOMBRE_ASESOR",
+                "CANON_ARRENDAMIENTO",
+                "OTROS_INGRESOS",
+                "TOTAL_INGRESOS",
+                "COMISION_PORCENTAJE_ASESOR",
+                "COMISION_MONTO_ASESOR",
+                "IVA_COMISION",
+                "IMPUESTO_4X1000",
+                "VALOR_ADMINISTRACION_PROPIEDAD",
+                "ESTADO_PAGO_ADMINISTRACION",
+                "GASTOS_SERVICIOS",
+                "GASTOS_REPARACIONES",
+                "PAGO_PREDIAL",
+                "OTROS_EGRESOS",
+                "TOTAL_EGRESOS",
+                "NETO_A_PAGAR",
+                "ESTADO_LIQUIDACION",
+                "FECHA_PAGO",
+            ]
+            return data, headers, total
+
         # 6. Reportes Genéricos (Paginación Real en DB)
         table_map = {
             "contratos_mandato": "CONTRATOS_MANDATOS",

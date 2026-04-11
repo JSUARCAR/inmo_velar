@@ -141,7 +141,7 @@ class RepositorioRecaudo:
             ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
             RETURNING ID_RECAUDO
         """
-        
+
         # En PostgreSQL RealDictCursor/UpperCaseWrapper retornan dict, en SQLite fetchone retorna Row
         cursor.execute(
             sql_recaudo,
@@ -157,12 +157,12 @@ class RepositorioRecaudo:
                 usuario_sistema,
             ),
         )
-        
+
         res = cursor.fetchone()
         if res:
-            if hasattr(res, "keys"): # Wrapper dict
+            if hasattr(res, "keys"):  # Wrapper dict
                 recaudo.id_recaudo = res.get("ID_RECAUDO") or res.get("id_recaudo")
-            else: # Row or Tuple
+            else:  # Row or Tuple
                 recaudo.id_recaudo = res[0]
 
         # Insertar conceptos
@@ -192,7 +192,9 @@ class RepositorioRecaudo:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(f"SELECT * FROM RECAUDOS WHERE ID_RECAUDO = {placeholder}", (id_recaudo,))
+        cursor.execute(
+            f"SELECT * FROM RECAUDOS WHERE ID_RECAUDO = {placeholder}", (id_recaudo,)
+        )
         row = cursor.fetchone()
 
         return self._row_to_entity(row) if row else None
@@ -223,7 +225,46 @@ class RepositorioRecaudo:
 
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
-    def cambiar_estado(self, id_recaudo: int, nuevo_estado: str, usuario_sistema: str) -> None:
+    def obtener_estado_pago_actual(
+        self, id_contrato_a: int, periodo: Optional[str] = None
+    ) -> str:
+        """
+        Obtiene el estado de pago para un contrato en el período actual.
+        Consulta el período en RECAUDO_CONCEPTOS.
+
+        Returns:
+            'AL_DIA' si existe recaudo aplicado en período, 'PENDIENTE' otherwise
+        """
+        from src.dominio.value_objects.estado_cumplimiento import obtener_periodo_actual
+
+        periodo = periodo or obtener_periodo_actual()
+
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        # Query directo a RECAUDO_CONCEPTOS para buscar el período
+        query = f"""
+            SELECT rc.PERIODO, r.ESTADO_RECAUDO
+            FROM RECAUDO_CONCEPTOS rc
+            JOIN RECAUDOS r ON rc.ID_RECAUDO = r.ID_RECAUDO
+            WHERE r.ID_CONTRATO_A = {placeholder}
+              AND rc.PERIODO = {placeholder}
+              AND r.ESTADO_RECAUDO = 'Aplicado'
+            LIMIT 1
+        """
+
+        cursor.execute(query, (id_contrato_a, periodo))
+        row = cursor.fetchone()
+
+        if row:
+            return "AL_DIA"
+
+        return "PENDIENTE"
+
+    def cambiar_estado(
+        self, id_recaudo: int, nuevo_estado: str, usuario_sistema: str
+    ) -> None:
         """Cambia el estado de un recaudo (Pendiente → Aplicado o Reversado)"""
         if nuevo_estado not in ["Pendiente", "Aplicado", "Reversado"]:
             raise ValueError(f"Estado inválido: {nuevo_estado}")
@@ -300,7 +341,7 @@ class RepositorioRecaudo:
         estado: Optional[str] = None,
         fecha_desde: Optional[str] = None,
         fecha_hasta: Optional[str] = None,
-        busqueda: Optional[str] = None
+        busqueda: Optional[str] = None,
     ) -> int:
         """Cuenta total de recaudos filtrados."""
         conn = self.db.obtener_conexion()
@@ -329,10 +370,14 @@ class RepositorioRecaudo:
             query_params.append(fecha_hasta)
 
         if busqueda:
-            cols = ["r.REFERENCIA_BANCARIA", "p.DIRECCION_PROPIEDAD", "CAST(r.ID_RECAUDO AS TEXT)"]
+            cols = [
+                "r.REFERENCIA_BANCARIA",
+                "p.DIRECCION_PROPIEDAD",
+                "CAST(r.ID_RECAUDO AS TEXT)",
+            ]
             cond = self.db.get_search_condition(cols)
             conditions.append(f"({cond})")
-            
+
             term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
             query_params.extend([term_norm] * len(cols))
 
@@ -360,9 +405,15 @@ class RepositorioRecaudo:
             WHERE rc.PERIODO = {placeholder}
         """
         cursor.execute(query, (periodo,))
-        return [row["ID_CONTRATO_A"] or row["id_contrato_a"] for row in cursor.fetchall()]
+        return [
+            row["ID_CONTRATO_A"] or row["id_contrato_a"] for row in cursor.fetchall()
+        ]
 
-    def crear_masivo(self, recaudos_y_conceptos: List[tuple[Recaudo, List[RecaudoConcepto]]], usuario_sistema: str) -> int:
+    def crear_masivo(
+        self,
+        recaudos_y_conceptos: List[tuple[Recaudo, List[RecaudoConcepto]]],
+        usuario_sistema: str,
+    ) -> int:
         """Crea múltiples recaudos y sus conceptos en una sola transacción."""
         if not recaudos_y_conceptos:
             return 0
@@ -387,7 +438,7 @@ class RepositorioRecaudo:
                     ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
                     RETURNING ID_RECAUDO
                 """
-                
+
                 cursor.execute(
                     sql_recaudo,
                     (
@@ -402,16 +453,18 @@ class RepositorioRecaudo:
                         usuario_sistema,
                     ),
                 )
-                
+
                 res = cursor.fetchone()
                 if res:
-                    if hasattr(res, "keys"): # Wrapper dict
+                    if hasattr(res, "keys"):  # Wrapper dict
                         id_recaudo = res.get("ID_RECAUDO") or res.get("id_recaudo")
-                    else: # Row or Tuple
+                    else:  # Row or Tuple
                         id_recaudo = res[0]
                 else:
                     # Fallback for old SQLite without RETURNING if needed, but we assume modern or DB Manager handling
-                    id_recaudo = self.db.get_last_insert_id(cursor, "RECAUDOS", "ID_RECAUDO")
+                    id_recaudo = self.db.get_last_insert_id(
+                        cursor, "RECAUDOS", "ID_RECAUDO"
+                    )
 
                 # Insertar conceptos
                 for concepto in conceptos:
