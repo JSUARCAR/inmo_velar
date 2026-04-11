@@ -405,12 +405,12 @@ class LiquidacionesState(DocumentosStateMixin):
             "nombre_propietario": "",
             "direccion_propiedad": "",
             "periodo": "",
-            "otros_ingresos": 0,
-            "gastos_administracion": 0,
-            "gastos_servicios": 0,
-            "gastos_reparaciones": 0,
-            "pago_predial": 0,
-            "otros_egresos": 0,
+            "otros_ingresos": "0",
+            "gastos_administracion": "0",
+            "gastos_servicios": "0",
+            "gastos_reparaciones": "0",
+            "pago_predial": "0",
+            "otros_egresos": "0",
             "observaciones": "",
         }
         self.error_message = ""
@@ -483,7 +483,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             # Reset values
             self.form_data["id_contrato_m"] = ""
-            self.form_data["gastos_administracion"] = 0
+            self.form_data["gastos_administracion"] = "0"
 
         try:
             with db_manager.obtener_conexion() as conn:
@@ -530,15 +530,15 @@ class LiquidacionesState(DocumentosStateMixin):
                 # Cargar Gastos Administración si tiene valor
                 if propiedad and propiedad["VALOR_ADMINISTRACION"] is not None:
                     valor_admin = propiedad["VALOR_ADMINISTRACION"]
-                    # Convertir a int si es posible para mostrar sin decimales
+                    # Convertir a string para el formulario
                     try:
-                        self.form_data["gastos_administracion"] = int(
-                            float(valor_admin)
+                        self.form_data["gastos_administracion"] = str(
+                            int(float(valor_admin))
                         )
                     except (ValueError, TypeError):
-                        self.form_data["gastos_administracion"] = valor_admin
+                        self.form_data["gastos_administracion"] = str(valor_admin)
                 else:
-                    self.form_data["gastos_administracion"] = 0
+                    self.form_data["gastos_administracion"] = "0"
 
                 # Forzar actualización de la UI reutilizando el diccionario
                 self.form_data = self.form_data.copy()
@@ -602,26 +602,25 @@ class LiquidacionesState(DocumentosStateMixin):
 
                 async with self:
                     self.form_data = {
-                        "id_liquidacion": id_liquidacion,
-                        # Contexto visual (inmutable)
-                        "nombre_propietario": liquidacion.get("propietario", ""),
-                        "direccion_propiedad": liquidacion.get("propiedad", ""),
-                        "canon_mandato": liquidacion.get("canon", 0),
-                        "id_contrato_m": liquidacion["id_contrato"],
-                        "periodo": liquidacion["periodo"],
-                        "otros_ingresos": liquidacion["otros_ingresos"],
-                        "gastos_administracion": (
+                        "id_liquidacion": str(id_liquidacion),
+                        "nombre_propietario": str(liquidacion.get("propietario", "")),
+                        "direccion_propiedad": str(liquidacion.get("propiedad", "")),
+                        "canon_mandato": str(liquidacion.get("canon", 0)),
+                        "id_contrato_m": str(liquidacion["id_contrato"]),
+                        "periodo": str(liquidacion["periodo"]),
+                        "otros_ingresos": str(liquidacion.get("otros_ingresos", 0)),
+                        "gastos_administracion": str(
                             liquidacion["gastos_admin"]
                             if liquidacion.get("gastos_admin", 0) > 0
                             else int(
                                 float(liquidacion.get("valor_administracion") or 0)
                             )
                         ),
-                        "gastos_servicios": liquidacion["gastos_serv"],
-                        "gastos_reparaciones": liquidacion["gastos_rep"],
-                        "pago_predial": liquidacion.get("pago_predial", 0),
-                        "otros_egresos": liquidacion.get("otros_egr", 0),
-                        "observaciones": liquidacion["observaciones"],
+                        "gastos_servicios": str(liquidacion.get("gastos_serv", 0)),
+                        "gastos_reparaciones": str(liquidacion.get("gastos_rep", 0)),
+                        "pago_predial": str(liquidacion.get("pago_predial", 0)),
+                        "otros_egresos": str(liquidacion.get("otros_egr", 0)),
+                        "observaciones": str(liquidacion.get("observaciones", "")),
                     }
                     self.show_edit_modal = True
                     self.show_create_modal = False
@@ -1355,13 +1354,14 @@ class LiquidacionesState(DocumentosStateMixin):
         finally:
             async with self:
                 self.is_loading = False
+                error_msg = self.error_message
 
-            if not self.error_message:
+            if not error_msg:
                 yield rx.toast.success(
                     "Liquidación guardada correctamente", position="bottom-right"
                 )
             else:
-                yield rx.toast.error(self.error_message, position="bottom-right")
+                yield rx.toast.error(error_msg, position="bottom-right")
 
     @rx.event(background=True)
     async def aprobar_liquidacion(self, id_liquidacion: int):
