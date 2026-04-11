@@ -77,3 +77,39 @@ class AsistenciaAsambleas:
     @property
     def es_inmobiliaria(self) -> bool:
         return self.tipo_asistente == "Inmobiliaria"
+
+    @property
+    def dias_hasta_asamblea(self) -> int:
+        """
+        Días hasta la fecha de asistencia.
+        Positivo = faltan días, Negativo = ya pasó, 0 = es hoy.
+
+        Returns:
+            Entero con la diferencia en días.
+        """
+        try:
+            if hasattr(self.fecha_asistencia, "date"):
+                # Es un objeto datetime
+                fecha = self.fecha_asistencia.date()
+            elif hasattr(self.fecha_asistencia, "year"):
+                # Es un objeto date
+                from datetime import date as date_type
+                fecha = self.fecha_asistencia
+            elif isinstance(self.fecha_asistencia, str):
+                fecha = datetime.fromisoformat(self.fecha_asistencia).date()
+            else:
+                return 0
+            hoy = datetime.now().date()
+            return (fecha - hoy).days
+        except (ValueError, TypeError, AttributeError):
+            return 0
+
+    @property
+    def es_hoy(self) -> bool:
+        """
+        True si la asamblea es hoy.
+
+        Returns:
+            Booleano indicando si la fecha coincide con hoy.
+        """
+        return self.dias_hasta_asamblea == 0

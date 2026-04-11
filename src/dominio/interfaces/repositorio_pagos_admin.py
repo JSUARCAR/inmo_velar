@@ -36,3 +36,11 @@ class IRepositorioPagosAdmin(Protocol):
     def obtener_elegibles(self) -> List[Dict[str, Any]]:
         """Retorna propiedades con contrato mandato activo y valor_admin."""
         ...
+
+    def listar_pagos_vencidos(self) -> List[PagosAdministracion]:
+        """Retorna pagos con estado Vencido o Pendientes con fecha superada."""
+        ...
+
+    def listar_pagos_proximos_vencer(self, dias: int) -> List[PagosAdministracion]:
+        """Retorna pagos Pendientes cuya fecha límite cae en N días."""
+        ...

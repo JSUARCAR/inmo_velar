@@ -17,8 +17,13 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         if not row:
             return None
 
-        # Transform datetime objects back to datetime if necessary
-        # (psycopg2 returns datetime natively, but just to be sure)
+        cotizaciones_list = []
+        if row.get("COTIZACIONES_JSON"):
+            try:
+                cotizaciones_list = row["COTIZACIONES_JSON"]
+            except Exception:
+                pass
+
         return Incidente(
             id_incidente=row.get("ID_INCIDENTE"),
             id_propiedad=row.get("ID_PROPIEDAD", 0),
@@ -41,6 +46,8 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             created_by=row.get("CREATED_BY"),
             updated_at=row.get("UPDATED_AT", datetime.now()),
             updated_by=row.get("UPDATED_BY"),
+            nombre_proveedor=row.get("NOMBRE_PROVEEDOR"),
+            cotizaciones_resumen=cotizaciones_list,
         )
 
     def _mapear_cotizacion(self, row: dict) -> Optional[Cotizacion]:
@@ -146,7 +153,22 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         page: Optional[int] = None,
         page_size: Optional[int] = None,
     ) -> Dict[str, Any]:
-        query = "SELECT * FROM INCIDENTES WHERE 1=1"
+        query = """
+        SELECT I.*, PR.NOMBRE_PROVEEDOR,
+            COALESCE(
+                (SELECT JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                        'id_cotizacion', C.ID_COTIZACION,
+                        'id_proveedor', C.ID_PROVEEDOR,
+                        'valor_total', C.VALOR_TOTAL,
+                        'estado', C.ESTADO_COTIZACION
+                    ) ORDER BY C.FECHA_COTIZACION DESC
+                ) FROM COTIZACIONES C WHERE C.ID_INCIDENTE = I.ID_INCIDENTE
+                ), '[]'::json
+            ) AS COTIZACIONES_JSON
+        FROM INCIDENTES I
+        LEFT JOIN PROVEEDORES PR ON I.ID_PROVEEDOR_ASIGNADO = PR.ID_PROVEEDOR
+        WHERE 1=1"""
         params = []
 
         if busqueda:

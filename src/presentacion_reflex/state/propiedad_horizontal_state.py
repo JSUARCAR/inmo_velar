@@ -66,6 +66,8 @@ class PropiedadHorizontalState(rx.State):
     asambleas_totales: int = 0
     pagos: list[PagoAdminModel] = []
     pagos_totales: int = 0
+    contador_asambleas_proximas: int = 0
+    contador_pagos_vencidos: int = 0
     propiedades_elegibles: list[dict] = []
     propiedades_options: list[dict[str, str]] = []
     asesores_activos: list[AsesorModel] = []
@@ -246,6 +248,28 @@ class PropiedadHorizontalState(rx.State):
             logger.warning(f"Formato de monto inválido: {monto} - {e}")
             return "$0"
 
+    # --- Contadores de Alertas PH ---
+
+    @rx.event(background=True)
+    async def cargar_contadores_alertas(self):
+        """
+        Carga contadores de alertas para badges en tabs PH.
+        Consulta directamente los repositorios para eficiencia.
+        """
+        try:
+            repo_asistencia = RepositorioAsistenciaPostgres(db_manager)
+            repo_pagos = RepositorioPagosAdminPostgres(db_manager)
+
+            asambleas_hoy = repo_asistencia.listar_asambleas_hoy()
+            asambleas_proximas = repo_asistencia.listar_asambleas_proximas(dias_antelacion=3)
+            pagos_vencidos = repo_pagos.listar_pagos_vencidos()
+
+            async with self:
+                self.contador_asambleas_proximas = len(asambleas_hoy) + len(asambleas_proximas)
+                self.contador_pagos_vencidos = len(pagos_vencidos)
+        except Exception as e:
+            logger.warning(f"Error cargando contadores alertas PH: {e}")
+
     # --- Eventos de UI ---
 
     def set_tab(self, tab: str):
@@ -300,6 +324,7 @@ class PropiedadHorizontalState(rx.State):
                 self.is_loading = False
         yield PropiedadHorizontalState.cargar_asambleas()
         yield PropiedadHorizontalState.cargar_eventos_calendario()
+        yield PropiedadHorizontalState.cargar_contadores_alertas()
 
     @rx.event(background=True)
     async def marcar_realizada(self, id_asistencia: int):

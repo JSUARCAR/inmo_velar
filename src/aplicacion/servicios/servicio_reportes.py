@@ -119,29 +119,26 @@ class ServicioReportes:
             headers = [
                 "ID_RECAUDO",
                 "ID_CONTRATO_A",
-                "Direccion_Inmueble",
-                "Matricula",
-                "Nombre_Arrendatario",
-                "Telefono_Arrendatario",
-                "Email_Arrendatario",
-                "Fecha_Pago",
-                "Valor_Total",
-                "Metodo_Pago",
-                "Referencia_Bancaria",
-                "Estado_Recaudo",
-                "Periodo_Facturado",
-                "Observaciones",
-                "Created_At",
+                "DIRECCION_INMUEBLE",
+                "MATRICULA",
+                "NOMBRE_ARRENDATARIO",
+                "TELEFONO_ARRENDATARIO",
+                "EMAIL_ARRENDATARIO",
+                "FECHA_PAGO",
+                "VALOR_TOTAL",
+                "METODO_PAGO",
+                "REFERENCIA_BANCARIA",
+                "ESTADO_RECAUDO",
+                "PERIODO_FACTURADO",
+                "OBSERVACIONES",
+                "CREATED_AT",
             ]
             return data, headers, total
 
         # 4. Reporte Incidentes (Enriquecido)
         if report_id == "incidentes":
             data, total = self.repo_reportes.obtener_reporte_incidentes_enriquecido(
-                estado=estado,
-                busqueda=busqueda,
-                page=pagina,
-                limit=limite
+                estado=estado, busqueda=busqueda, page=pagina, limit=limite
             )
             headers = list(data[0].keys()) if data else []
             return data, headers, total

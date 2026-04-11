@@ -176,19 +176,19 @@ class RepositorioReportes:
                 SELECT DISTINCT
                     r.ID_RECAUDO,
                     r.ID_CONTRATO_A,
-                    COALESCE(p.DIRECCION_PROPIEDAD, 'N/A') AS "Direccion_Inmueble",
-                    COALESCE(p.MATRICULA_INMOBILIARIA, 'N/A') AS "Matricula",
-                    COALESCE(per.NOMBRE_COMPLETO, 'N/A') AS "Nombre_Arrendatario",
-                    COALESCE(per.TELEFONO_PRINCIPAL, 'N/A') AS "Telefono_Arrendatario",
-                    COALESCE(per.CORREO_ELECTRONICO, 'N/A') AS "Email_Arrendatario",
-                    r.FECHA_PAGO,
-                    r.VALOR_TOTAL,
-                    r.METODO_PAGO,
-                    COALESCE(r.REFERENCIA_BANCARIA, 'N/A') AS "Referencia_Bancaria",
-                    r.ESTADO_RECAUDO,
-                    MIN(rc.PERIODO) AS "Periodo_Facturado",
-                    COALESCE(r.OBSERVACIONES, '') AS "Observaciones",
-                    r.CREATED_AT
+                    COALESCE(p.DIRECCION_PROPIEDAD, 'N/A') AS "DIRECCION_INMUEBLE",
+                    COALESCE(p.MATRICULA_INMOBILIARIA, 'N/A') AS "MATRICULA",
+                    COALESCE(per.NOMBRE_COMPLETO, 'N/A') AS "NOMBRE_ARRENDATARIO",
+                    COALESCE(per.TELEFONO_PRINCIPAL, 'N/A') AS "TELEFONO_ARRENDATARIO",
+                    COALESCE(per.CORREO_ELECTRONICO, 'N/A') AS "EMAIL_ARRENDATARIO",
+                    r.FECHA_PAGO AS "FECHA_PAGO",
+                    r.VALOR_TOTAL AS "VALOR_TOTAL",
+                    r.METODO_PAGO AS "METODO_PAGO",
+                    COALESCE(r.REFERENCIA_BANCARIA, 'N/A') AS "REFERENCIA_BANCARIA",
+                    r.ESTADO_RECAUDO AS "ESTADO_RECAUDO",
+                    MIN(rc.PERIODO) AS "PERIODO_FACTURADO",
+                    COALESCE(r.OBSERVACIONES, '') AS "OBSERVACIONES",
+                    r.CREATED_AT AS "CREATED_AT"
                 FROM RECAUDOS r
                 LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
                 LEFT JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
@@ -205,19 +205,19 @@ class RepositorioReportes:
                 SELECT 
                     r.ID_RECAUDO,
                     r.ID_CONTRATO_A,
-                    COALESCE(p.DIRECCION_PROPIEDAD, 'N/A') AS "Direccion_Inmueble",
-                    COALESCE(p.MATRICULA_INMOBILIARIA, 'N/A') AS "Matricula",
-                    COALESCE(per.NOMBRE_COMPLETO, 'N/A') AS "Nombre_Arrendatario",
-                    COALESCE(per.TELEFONO_PRINCIPAL, 'N/A') AS "Telefono_Arrendatario",
-                    COALESCE(per.CORREO_ELECTRONICO, 'N/A') AS "Email_Arrendatario",
-                    r.FECHA_PAGO,
-                    r.VALOR_TOTAL,
-                    r.METODO_PAGO,
-                    COALESCE(r.REFERENCIA_BANCARIA, 'N/A') AS "Referencia_Bancaria",
-                    r.ESTADO_RECAUDO,
-                    (SELECT MIN(rc2.PERIODO) FROM RECAUDO_CONCEPTOS rc2 WHERE rc2.ID_RECAUDO = r.ID_RECAUDO) AS "Periodo_Facturado",
-                    COALESCE(r.OBSERVACIONES, '') AS "Observaciones",
-                    r.CREATED_AT
+                    COALESCE(p.DIRECCION_PROPIEDAD, 'N/A') AS "DIRECCION_INMUEBLE",
+                    COALESCE(p.MATRICULA_INMOBILIARIA, 'N/A') AS "MATRICULA",
+                    COALESCE(per.NOMBRE_COMPLETO, 'N/A') AS "NOMBRE_ARRENDATARIO",
+                    COALESCE(per.TELEFONO_PRINCIPAL, 'N/A') AS "TELEFONO_ARRENDATARIO",
+                    COALESCE(per.CORREO_ELECTRONICO, 'N/A') AS "EMAIL_ARRENDATARIO",
+                    r.FECHA_PAGO AS "FECHA_PAGO",
+                    r.VALOR_TOTAL AS "VALOR_TOTAL",
+                    r.METODO_PAGO AS "METODO_PAGO",
+                    COALESCE(r.REFERENCIA_BANCARIA, 'N/A') AS "REFERENCIA_BANCARIA",
+                    r.ESTADO_RECAUDO AS "ESTADO_RECAUDO",
+                    (SELECT MIN(rc2.PERIODO) FROM RECAUDO_CONCEPTOS rc2 WHERE rc2.ID_RECAUDO = r.ID_RECAUDO) AS "PERIODO_FACTURADO",
+                    COALESCE(r.OBSERVACIONES, '') AS "OBSERVACIONES",
+                    r.CREATED_AT AS "CREATED_AT"
                 FROM RECAUDOS r
                 LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
                 LEFT JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
@@ -289,7 +289,7 @@ class RepositorioReportes:
             LEFT JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO
             LEFT JOIN PERSONAS per ON pr.ID_PERSONA = per.ID_PERSONA
         """
-        
+
         conditions = []
         params = []
 
@@ -312,4 +312,3 @@ class RepositorioReportes:
         query += " ORDER BY i.FECHA_INCIDENTE DESC, i.ID_INCIDENTE DESC"
 
         return self._ejecutar_query_paginada(query, params, page, limit)
-

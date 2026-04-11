@@ -357,3 +357,55 @@ class RepositorioAsistenciaPostgres:
         cursor.close()
 
         return [self._row_to_enriched(row) for row in rows if row]
+
+    # --- Métodos para Alertas ---
+
+    def listar_asambleas_proximas(self, dias_antelacion: int) -> List[dict]:
+        """
+        Retorna asambleas programadas en los próximos N días (excluyendo hoy).
+        Datos enriquecidos con propietario, dirección y asesor vía JOIN.
+
+        Args:
+            dias_antelacion: Número de días hacia adelante a consultar.
+
+        Returns:
+            Lista de dicts con entidad + datos de propiedad.
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        p = self.db.get_placeholder()
+
+        query = self._QUERY_JOIN_BASE + f"""
+            WHERE a.ESTADO_ASISTENCIA = 'Programada'
+              AND a.FECHA_ASISTENCIA > CURRENT_DATE
+              AND a.FECHA_ASISTENCIA <= CURRENT_DATE + {p}::integer
+            ORDER BY a.FECHA_ASISTENCIA ASC, a.HORA_ASISTENCIA ASC
+        """
+
+        cursor.execute(query, (dias_antelacion,))
+        rows = cursor.fetchall()
+        cursor.close()
+
+        return [self._row_to_enriched(row) for row in rows if row]
+
+    def listar_asambleas_hoy(self) -> List[dict]:
+        """
+        Retorna asambleas programadas para hoy con datos enriquecidos.
+
+        Returns:
+            Lista de dicts con entidad + datos de propiedad.
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+
+        query = self._QUERY_JOIN_BASE + """
+            WHERE a.ESTADO_ASISTENCIA = 'Programada'
+              AND a.FECHA_ASISTENCIA = CURRENT_DATE
+            ORDER BY a.HORA_ASISTENCIA ASC
+        """
+
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        cursor.close()
+
+        return [self._row_to_enriched(row) for row in rows if row]

@@ -30,6 +30,7 @@ class Incidente:
     # Relaciones - se llenan en consulta
     direccion_propiedad: Optional[str] = None
     nombre_proveedor: Optional[str] = None
+    cotizaciones_resumen: Optional[list] = field(default_factory=list)
 
     def avanzar_estado(self, nuevo_estado: str, usuario: str) -> "Incidente":
         """

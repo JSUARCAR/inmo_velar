@@ -965,8 +965,42 @@ def propiedad_horizontal_page() -> rx.Component:
                     ),
                     rx.tabs.root(
                         rx.tabs.list(
-                            rx.tabs.trigger("Asambleas", value="asambleas"),
-                            rx.tabs.trigger("Pagos de Administración", value="pagos"),
+                            rx.tabs.trigger(
+                                rx.hstack(
+                                    rx.text("Asambleas"),
+                                    rx.cond(
+                                        PropiedadHorizontalState.contador_asambleas_proximas > 0,
+                                        rx.badge(
+                                            PropiedadHorizontalState.contador_asambleas_proximas.to_string(),
+                                            color_scheme="red",
+                                            variant="solid",
+                                            size="1",
+                                            border_radius="999px",
+                                        ),
+                                    ),
+                                    spacing="2",
+                                    align="center",
+                                ),
+                                value="asambleas",
+                            ),
+                            rx.tabs.trigger(
+                                rx.hstack(
+                                    rx.text("Pagos de Administración"),
+                                    rx.cond(
+                                        PropiedadHorizontalState.contador_pagos_vencidos > 0,
+                                        rx.badge(
+                                            PropiedadHorizontalState.contador_pagos_vencidos.to_string(),
+                                            color_scheme="red",
+                                            variant="solid",
+                                            size="1",
+                                            border_radius="999px",
+                                        ),
+                                    ),
+                                    spacing="2",
+                                    align="center",
+                                ),
+                                value="pagos",
+                            ),
                         ),
                         rx.tabs.content(
                             render_asambleas_tab(),
