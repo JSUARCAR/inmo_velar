@@ -282,7 +282,7 @@ def incident_card(incident: rx.Var) -> rx.Component:
                             incident.estado == "Finalizado",
                             rx.hstack(
                                 rx.icon(
-                                    "check_circle", size=12, color="var(--slate-9)"
+                                    "circle_check", size=12, color="var(--slate-9)"
                                 ),
                                 rx.text(
                                     rx.cond(

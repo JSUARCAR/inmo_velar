@@ -12,6 +12,7 @@ from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 
 class ContratoDict(pydantic.BaseModel):
     """Estructura tipada para serialización de Contrato en Reflex."""
+
     id_contrato: int
     tipo_contrato: str
     estado_contrato: str
@@ -28,6 +29,7 @@ class ContratoDict(pydantic.BaseModel):
     fecha_fin: str
     valor_canon: float
     valor_administracion: float
+    estado_cumplimiento: str = "PENDIENTE"  # AL_DIA, PENDIENTE, VENCIDO
 
 
 class ContratosState(DocumentosStateMixin):
@@ -50,7 +52,7 @@ class ContratosState(DocumentosStateMixin):
     kpi_mandatos_total: int = 0
     kpi_mandatos_activos: int = 0
     kpi_mandatos_inactivos: int = 0
-    
+
     kpi_arriendos_total: int = 0
     kpi_arriendos_activos: int = 0
     kpi_arriendos_inactivos: int = 0
@@ -89,8 +91,6 @@ class ContratosState(DocumentosStateMixin):
     modal_mode: str = "crear_mandato"  # crear_mandato, crear_arrendamiento, editar
     editing_id: Optional[int] = None
     form_data: Dict[str, Any] = {}
-
-
 
     # Modal Detalle
     show_detail_modal: bool = False
@@ -212,16 +212,16 @@ class ContratosState(DocumentosStateMixin):
     @rx.event(background=True)
     async def load_kpis(self):
         """Carga los contadores KPI directos desde la BD."""
-        
+
         asesor_where_mandatos = ""
         asesor_where_arriendos = ""
         params = ()
-        
+
         if self.filter_asesor_id and self.filter_asesor_id != "todos":
             asesor_where_mandatos = "WHERE ID_ASESOR = %s"
             asesor_where_arriendos = "WHERE EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm WHERE cm.ID_PROPIEDAD = CONTRATOS_ARRENDAMIENTOS.ID_PROPIEDAD AND cm.ID_ASESOR = %s)"
             params = (self.filter_asesor_id,)
-            
+
         query_mandatos = f"""
         SELECT 
             COUNT(*) as total,
@@ -230,7 +230,7 @@ class ContratosState(DocumentosStateMixin):
         FROM CONTRATOS_MANDATOS
         {asesor_where_mandatos}
         """
-        
+
         query_arriendos = f"""
         SELECT 
             COUNT(*) as total,
@@ -239,36 +239,54 @@ class ContratosState(DocumentosStateMixin):
         FROM CONTRATOS_ARRENDAMIENTOS
         {asesor_where_arriendos}
         """
-        
+
         with db_manager.obtener_conexion() as conn:
             cursor = db_manager.get_dict_cursor(conn)
-            
+
             cursor.execute(query_mandatos, params)
             r_mandato = cursor.fetchone()
-            
+
             cursor.execute(query_arriendos, params)
             r_arriendo = cursor.fetchone()
-            
+
             async with self:
                 if r_mandato:
-                    self.kpi_mandatos_total = r_mandato.get("TOTAL", r_mandato.get("total", 0)) or 0
-                    self.kpi_mandatos_activos = r_mandato.get("ACTIVOS", r_mandato.get("activos", 0)) or 0
-                    self.kpi_mandatos_inactivos = r_mandato.get("INACTIVOS", r_mandato.get("inactivos", 0)) or 0
+                    self.kpi_mandatos_total = (
+                        r_mandato.get("TOTAL", r_mandato.get("total", 0)) or 0
+                    )
+                    self.kpi_mandatos_activos = (
+                        r_mandato.get("ACTIVOS", r_mandato.get("activos", 0)) or 0
+                    )
+                    self.kpi_mandatos_inactivos = (
+                        r_mandato.get("INACTIVOS", r_mandato.get("inactivos", 0)) or 0
+                    )
                 else:
-                    self.kpi_mandatos_total = self.kpi_mandatos_activos = self.kpi_mandatos_inactivos = 0
-                    
+                    self.kpi_mandatos_total = self.kpi_mandatos_activos = (
+                        self.kpi_mandatos_inactivos
+                    ) = 0
+
                 if r_arriendo:
-                    self.kpi_arriendos_total = r_arriendo.get("TOTAL", r_arriendo.get("total", 0)) or 0
-                    self.kpi_arriendos_activos = r_arriendo.get("ACTIVOS", r_arriendo.get("activos", 0)) or 0
-                    self.kpi_arriendos_inactivos = r_arriendo.get("INACTIVOS", r_arriendo.get("inactivos", 0)) or 0
+                    self.kpi_arriendos_total = (
+                        r_arriendo.get("TOTAL", r_arriendo.get("total", 0)) or 0
+                    )
+                    self.kpi_arriendos_activos = (
+                        r_arriendo.get("ACTIVOS", r_arriendo.get("activos", 0)) or 0
+                    )
+                    self.kpi_arriendos_inactivos = (
+                        r_arriendo.get("INACTIVOS", r_arriendo.get("inactivos", 0)) or 0
+                    )
                 else:
-                    self.kpi_arriendos_total = self.kpi_arriendos_activos = self.kpi_arriendos_inactivos = 0
+                    self.kpi_arriendos_total = self.kpi_arriendos_activos = (
+                        self.kpi_arriendos_inactivos
+                    ) = 0
 
     @rx.event(background=True)
     async def load_filter_options(self):
         """Carga opciones para dropdowns de filtros."""
         # Instanciar repositorios y servicio
-        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+            RepositorioPropiedadSQLite,
+        )
         from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
             RepositorioContratoMandatoSQLite,
         )
@@ -278,7 +296,9 @@ class ContratosState(DocumentosStateMixin):
         from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
             RepositorioRenovacionSQLite,
         )
-        from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+        from src.infraestructura.persistencia.repositorio_ipc_sqlite import (
+            RepositorioIPCSQLite,
+        )
         from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
             RepositorioArrendatarioSQLite,
         )
@@ -294,7 +314,7 @@ class ContratosState(DocumentosStateMixin):
         repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
         repo_codeudor = RepositorioCodeudorSQLite(db_manager)
 
-        # Como solo cargamos opciones SQL directas aqui, no necesitamos el servicio completo, 
+        # Como solo cargamos opciones SQL directas aqui, no necesitamos el servicio completo,
         # pero mantenemos la estructura por si acaso se usa logica de negocio luego.
         # De hecho, el código original INSTANCIABA el servicio pero NO LO USABA en load_filter_options
         # porque hacía queries directos con db_manager.
@@ -527,11 +547,15 @@ class ContratosState(DocumentosStateMixin):
     arrendatario_menu_open: bool = False
     codeudor_menu_open: bool = False
 
-
     def _strip_accents(self, s: str) -> str:
         """Helper to remove accents for search."""
-        if not s: return ""
-        return "".join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+        if not s:
+            return ""
+        return "".join(
+            c
+            for c in unicodedata.normalize("NFD", s)
+            if unicodedata.category(c) != "Mn"
+        )
 
     @rx.var
     def filtered_propiedades_options(self) -> List[List[str]]:
@@ -542,12 +566,14 @@ class ContratosState(DocumentosStateMixin):
             options = self.propiedades_arriendo_select_options
         else:
             options = self.propiedades_select_options
-            
+
         if not self.propiedad_search:
             return options
         return [
-            opt for opt in options 
-            if self._strip_accents(self.propiedad_search).lower() in self._strip_accents(opt[0]).lower()
+            opt
+            for opt in options
+            if self._strip_accents(self.propiedad_search).lower()
+            in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -556,8 +582,10 @@ class ContratosState(DocumentosStateMixin):
         if not self.propietario_search:
             return self.propietarios_select_options
         return [
-            opt for opt in self.propietarios_select_options 
-            if self._strip_accents(self.propietario_search).lower() in self._strip_accents(opt[0]).lower()
+            opt
+            for opt in self.propietarios_select_options
+            if self._strip_accents(self.propietario_search).lower()
+            in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -566,8 +594,10 @@ class ContratosState(DocumentosStateMixin):
         if not self.asesor_search:
             return self.asesores_select_options
         return [
-            opt for opt in self.asesores_select_options 
-            if self._strip_accents(self.asesor_search).lower() in self._strip_accents(opt[0]).lower()
+            opt
+            for opt in self.asesores_select_options
+            if self._strip_accents(self.asesor_search).lower()
+            in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -576,8 +606,10 @@ class ContratosState(DocumentosStateMixin):
         if not self.arrendatario_search:
             return self.arrendatarios_select_options
         return [
-            opt for opt in self.arrendatarios_select_options 
-            if self._strip_accents(self.arrendatario_search).lower() in self._strip_accents(opt[0]).lower()
+            opt
+            for opt in self.arrendatarios_select_options
+            if self._strip_accents(self.arrendatario_search).lower()
+            in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
@@ -586,20 +618,23 @@ class ContratosState(DocumentosStateMixin):
         if not self.codeudor_search:
             return self.codeudores_select_options
         return [
-            opt for opt in self.codeudores_select_options 
-            if self._strip_accents(self.codeudor_search).lower() in self._strip_accents(opt[0]).lower()
+            opt
+            for opt in self.codeudores_select_options
+            if self._strip_accents(self.codeudor_search).lower()
+            in self._strip_accents(opt[0]).lower()
         ]
 
     @rx.var
     def propiedad_selected_label(self) -> str:
         """Obtiene el label de la propiedad seleccionada."""
         id_p = self.form_data.get("id_propiedad")
-        if not id_p: return ""
+        if not id_p:
+            return ""
         # Buscamos en todas las listas para asegurar que se muestre
         all_options = (
-            self.propiedades_select_options + 
-            self.propiedades_mandato_libre_select_options +
-            self.propiedades_arriendo_select_options
+            self.propiedades_select_options
+            + self.propiedades_mandato_libre_select_options
+            + self.propiedades_arriendo_select_options
         )
         for opt in all_options:
             if str(opt[1]) == str(id_p):
@@ -610,7 +645,8 @@ class ContratosState(DocumentosStateMixin):
     def propietario_selected_label(self) -> str:
         """Obtiene el label del propietario seleccionado."""
         id_p = self.form_data.get("id_propietario")
-        if not id_p: return ""
+        if not id_p:
+            return ""
         for opt in self.propietarios_select_options:
             if str(opt[1]) == str(id_p):
                 return opt[0]
@@ -620,7 +656,8 @@ class ContratosState(DocumentosStateMixin):
     def asesor_selected_label(self) -> str:
         """Obtiene el label del asesor seleccionado."""
         id_a = self.form_data.get("id_asesor")
-        if not id_a: return ""
+        if not id_a:
+            return ""
         for opt in self.asesores_select_options:
             if str(opt[1]) == str(id_a):
                 return opt[0]
@@ -630,7 +667,8 @@ class ContratosState(DocumentosStateMixin):
     def arrendatario_selected_label(self) -> str:
         """Obtiene el label del arrendatario seleccionado."""
         id_arr = self.form_data.get("id_arrendatario")
-        if not id_arr: return ""
+        if not id_arr:
+            return ""
         for opt in self.arrendatarios_select_options:
             if str(opt[1]) == str(id_arr):
                 return opt[0]
@@ -640,7 +678,8 @@ class ContratosState(DocumentosStateMixin):
     def codeudor_selected_label(self) -> str:
         """Obtiene el label del codeudor seleccionado."""
         id_cod = self.form_data.get("id_codeudor")
-        if not id_cod: return ""
+        if not id_cod:
+            return ""
         for opt in self.codeudores_select_options:
             if str(opt[1]) == str(id_cod):
                 return opt[0]
@@ -729,8 +768,10 @@ class ContratosState(DocumentosStateMixin):
 
         try:
             # ... imports ...
-            print(f"[CONTRATOS_DEBUG] Filtros: Tipo={self.filter_tipo}, Estado={self.filter_estado}, Busqueda='{self.search_text}'")
-            
+            print(
+                f"[CONTRATOS_DEBUG] Filtros: Tipo={self.filter_tipo}, Estado={self.filter_estado}, Busqueda='{self.search_text}'"
+            )
+
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
@@ -745,7 +786,9 @@ class ContratosState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
                 RepositorioRenovacionSQLite,
             )
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import (
+                RepositorioIPCSQLite,
+            )
             from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
                 RepositorioArrendatarioSQLite,
             )
@@ -780,7 +823,11 @@ class ContratosState(DocumentosStateMixin):
             )
 
             # Determinar estado de filtrado (si solo_activos, forzar Activo)
-            estado_filtro = "Activo" if self.solo_activos else (self.filter_estado if self.filter_estado != "Todos" else None)
+            estado_filtro = (
+                "Activo"
+                if self.solo_activos
+                else (self.filter_estado if self.filter_estado != "Todos" else None)
+            )
 
             # Determinar qué tipo de contratos cargar
             if self.filter_tipo == "Mandato":
@@ -793,7 +840,9 @@ class ContratosState(DocumentosStateMixin):
                     id_asesor=asesor_filter,
                 )
                 # Agregar campo 'tipo_contrato' para la UI
-                items = [{"tipo_contrato": "Mandato", **item} for item in resultado.items]
+                items = [
+                    {"tipo_contrato": "Mandato", **item} for item in resultado.items
+                ]
 
             elif self.filter_tipo == "Arrendamiento":
                 # Solo arrendamientos
@@ -804,7 +853,10 @@ class ContratosState(DocumentosStateMixin):
                     busqueda=self.search_text if self.search_text else None,
                     id_asesor=asesor_filter,
                 )
-                items = [{"tipo_contrato": "Arrendamiento", **item} for item in resultado.items]
+                items = [
+                    {"tipo_contrato": "Arrendamiento", **item}
+                    for item in resultado.items
+                ]
 
             else:
                 # Todos: combinar mandatos y arrendamientos
@@ -825,23 +877,73 @@ class ContratosState(DocumentosStateMixin):
                 )
 
                 # Normalizar usando el mismo patrón que en if/elif
-                mandatos = [{"tipo_contrato": "Mandato", **item} for item in resultado_mandatos.items]
-                arrendamientos = [{"tipo_contrato": "Arrendamiento", **item} for item in resultado_arrendamientos.items]
+                mandatos = [
+                    {"tipo_contrato": "Mandato", **item}
+                    for item in resultado_mandatos.items
+                ]
+                arrendamientos = [
+                    {"tipo_contrato": "Arrendamiento", **item}
+                    for item in resultado_arrendamientos.items
+                ]
 
                 items = mandatos + arrendamientos
-                print(f"[CONTRATOS_DEBUG] Combinados: {len(items)} items. Total calculado: {resultado_mandatos.total + resultado_arrendamientos.total}")
+                print(
+                    f"[CONTRATOS_DEBUG] Combinados: {len(items)} items. Total calculado: {resultado_mandatos.total + resultado_arrendamientos.total}"
+                )
 
                 # Total combinado y estructura de resultado robusta
                 from src.dominio.modelos.pagination import PaginatedResult
+
                 resultado = PaginatedResult(
                     items=items,
                     total=resultado_mandatos.total + resultado_arrendamientos.total,
                     page=self.current_page,
-                    page_size=self.page_size
+                    page_size=self.page_size,
                 )
 
             # Actualización del estado (FUERA del if/elif/else para que funcione siempre)
-            print(f"[CONTRATOS_DEBUG] Actualizando estado con {len(items)} contratos...")
+            print(
+                f"[CONTRATOS_DEBUG] Actualizando estado con {len(items)} contratos..."
+            )
+
+            # Calcular estado de cumplimiento para cada contrato
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
+            )
+            from src.dominio.value_objects.estado_cumplimiento import (
+                obtener_periodo_actual,
+            )
+
+            repo_liq = RepositorioLiquidacionSQLite(db_manager)
+            repo_recaudo = RepositorioRecaudo(db_manager)
+            periodo_actual = obtener_periodo_actual()
+
+            for item in items:
+                id_contrato = item.get("id_contrato")
+                tipo = item.get("tipo_contrato")
+
+                if not id_contrato or not tipo:
+                    continue
+
+                try:
+                    if tipo == "Mandato":
+                        item["estado_cumplimiento"] = (
+                            repo_liq.obtener_estado_pago_actual(
+                                id_contrato, periodo_actual
+                            )
+                        )
+                    else:  # Arrendamiento
+                        item["estado_cumplimiento"] = (
+                            repo_recaudo.obtener_estado_pago_actual(
+                                id_contrato, periodo_actual
+                            )
+                        )
+                except Exception:
+                    item["estado_cumplimiento"] = "PENDIENTE"
+
             async with self:
                 self.contratos = items
                 self.total_items = resultado.total
@@ -851,14 +953,8 @@ class ContratosState(DocumentosStateMixin):
         except Exception as e:
             print(f"[CONTRATOS_DEBUG] ERROR CRÍTICO en load_contratos: {str(e)}")
             import traceback
-            traceback.print_exc()
-            async with self:
-                self.error_message = f"Error al cargar contratos: {str(e)}"
-                self.contratos = []
-                self.total_items = 0
-                self.is_loading = False
 
-        except Exception as e:
+            traceback.print_exc()
             async with self:
                 self.error_message = f"Error al cargar contratos: {str(e)}"
                 self.contratos = []
@@ -1001,7 +1097,9 @@ class ContratosState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
                 RepositorioRenovacionSQLite,
             )
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import (
+                RepositorioIPCSQLite,
+            )
             from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
                 RepositorioArrendatarioSQLite,
             )
@@ -1063,7 +1161,9 @@ class ContratosState(DocumentosStateMixin):
                             "id_propiedad": str(contrato.id_propiedad),
                             "id_arrendatario": str(contrato.id_arrendatario),
                             "id_codeudor": (
-                                str(contrato.id_codeudor) if contrato.id_codeudor else ""
+                                str(contrato.id_codeudor)
+                                if contrato.id_codeudor
+                                else ""
                             ),
                             "fecha_inicio": contrato.fecha_inicio_contrato_a,
                             "fecha_fin": contrato.fecha_fin_contrato_a,
@@ -1116,7 +1216,9 @@ class ContratosState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
                 RepositorioRenovacionSQLite,
             )
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import (
+                RepositorioIPCSQLite,
+            )
             from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
                 RepositorioArrendatarioSQLite,
             )
@@ -1184,7 +1286,9 @@ class ContratosState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
                 RepositorioRenovacionSQLite,
             )
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+            from src.infraestructura.persistencia.repositorio_ipc_sqlite import (
+                RepositorioIPCSQLite,
+            )
             from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
                 RepositorioArrendatarioSQLite,
             )
@@ -1211,14 +1315,17 @@ class ContratosState(DocumentosStateMixin):
                 repo_codeudor=repo_codeudor,
             )
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
-            
+
             # Combinar datos del formulario con los del estado
             # PRIORIDAD: self.form_data contiene los IDs de los searchable_select que el usuario ha modificado.
             # form_data original que llega del browser puede traer strings vacíos para keys no presentes en el HTML form.
             full_data = {**form_data, **self.form_data}
 
             # Procesar datos del formulario según el tipo
-            if self.modal_mode == "crear_mandato" or self.modal_mode == "editar_mandato":
+            if (
+                self.modal_mode == "crear_mandato"
+                or self.modal_mode == "editar_mandato"
+            ):
                 # Convertir tipos para mandato
                 datos_procesados = {
                     "id_propiedad": int(full_data["id_propiedad"]),
@@ -1240,7 +1347,9 @@ class ContratosState(DocumentosStateMixin):
                 if self.modal_mode == "crear_mandato":
                     servicio.crear_mandato(datos_procesados, usuario_sistema)
                 else:
-                    servicio.actualizar_mandato(self.editing_id, datos_procesados, usuario_sistema)
+                    servicio.actualizar_mandato(
+                        self.editing_id, datos_procesados, usuario_sistema
+                    )
 
             elif (
                 self.modal_mode == "crear_arrendamiento"
@@ -1251,7 +1360,9 @@ class ContratosState(DocumentosStateMixin):
                     "id_propiedad": int(full_data["id_propiedad"]),
                     "id_arrendatario": int(full_data["id_arrendatario"]),
                     "id_codeudor": (
-                        int(full_data["id_codeudor"]) if full_data.get("id_codeudor") else None
+                        int(full_data["id_codeudor"])
+                        if full_data.get("id_codeudor")
+                        else None
                     ),
                     "fecha_inicio": full_data["fecha_inicio"],
                     "fecha_fin": full_data["fecha_fin"],
@@ -1284,7 +1395,9 @@ class ContratosState(DocumentosStateMixin):
         except ValueError as e:
             async with self:
                 self.error_message = str(e)
-            yield rx.toast.error(f"Error de validación: {str(e)}", position="bottom-right")
+            yield rx.toast.error(
+                f"Error de validación: {str(e)}", position="bottom-right"
+            )
         except Exception as e:
             async with self:
                 self.error_message = f"Error al guardar: {str(e)}"
@@ -1314,13 +1427,27 @@ class ContratosState(DocumentosStateMixin):
             self.show_renewal_confirm = True
 
         try:
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import RepositorioContratoMandatoPostgres
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import RepositorioContratoArrendamientoPostgres
-            from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
-            from src.infraestructura.persistencia.repositorio_renovacion_postgres import RepositorioRenovacionPostgres
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+                RepositorioContratoMandatoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
+                RepositorioRenovacionPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+                RepositorioIPCPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
+            )
 
             repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
             repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
@@ -1374,13 +1501,27 @@ class ContratosState(DocumentosStateMixin):
             self.is_loading = True
 
         try:
-            from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import RepositorioContratoMandatoPostgres
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import RepositorioContratoArrendamientoPostgres
-            from src.infraestructura.persistencia.repositorio_renovacion_postgres import RepositorioRenovacionPostgres
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+                RepositorioContratoMandatoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
+                RepositorioRenovacionPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+                RepositorioIPCPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
+            )
 
             repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
@@ -1398,7 +1539,7 @@ class ContratosState(DocumentosStateMixin):
                 repo_renovacion=repo_renovacion,
                 repo_ipc=repo_ipc,
                 repo_arrendatario=repo_arrendatario,
-                repo_codeudor=repo_codeudor
+                repo_codeudor=repo_codeudor,
             )
             usuario_sistema = "admin"  # TODO: Auth
 
@@ -1410,11 +1551,17 @@ class ContratosState(DocumentosStateMixin):
             resultado_msg = ""
 
             if tipo == "Arrendamiento":
-                contrato_renovado = servicio.renovar_arrendamiento(id_contrato, usuario_sistema, fecha_fin_personalizada)
+                contrato_renovado = servicio.renovar_arrendamiento(
+                    id_contrato, usuario_sistema, fecha_fin_personalizada
+                )
                 resultado_msg = f"Arrendamiento renovado. Nuevo Canon: ${contrato_renovado.canon_arrendamiento:,}, Fin: {contrato_renovado.fecha_fin_contrato_a}"
             elif tipo == "Mandato":
-                contrato_renovado = servicio.renovar_mandato(id_contrato, usuario_sistema, fecha_fin_personalizada)
-                resultado_msg = f"Mandato renovado. Fin: {contrato_renovado.fecha_fin_contrato_m}"
+                contrato_renovado = servicio.renovar_mandato(
+                    id_contrato, usuario_sistema, fecha_fin_personalizada
+                )
+                resultado_msg = (
+                    f"Mandato renovado. Fin: {contrato_renovado.fecha_fin_contrato_m}"
+                )
 
             # Recargar lista
             yield ContratosState.load_contratos()
@@ -1447,7 +1594,9 @@ class ContratosState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
                 RepositorioRenovacionPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+                RepositorioIPCPostgres,
+            )
             from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
                 RepositorioArrendatarioPostgres,
             )
@@ -1498,7 +1647,9 @@ class ContratosState(DocumentosStateMixin):
 
         except Exception as e:
             pass  # print(f"Error exportando CSV: {e}") [OpSec Removed]
-            yield rx.toast.error(f"Error al exportar: {str(e)}", position="bottom-right")
+            yield rx.toast.error(
+                f"Error al exportar: {str(e)}", position="bottom-right"
+            )
 
     @rx.event(background=True)
     async def toggle_estado(self, id_contrato: int, tipo: str, estado_actual: str):
@@ -1521,7 +1672,9 @@ class ContratosState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
                 RepositorioRenovacionPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+                RepositorioIPCPostgres,
+            )
             from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
                 RepositorioArrendatarioPostgres,
             )
@@ -1565,10 +1718,14 @@ class ContratosState(DocumentosStateMixin):
                 if tipo == "Mandato":
                     servicio.terminar_mandato(id_contrato, motivo, usuario_sistema)
                 else:
-                    servicio.terminar_arrendamiento(id_contrato, motivo, usuario_sistema)
-                
+                    servicio.terminar_arrendamiento(
+                        id_contrato, motivo, usuario_sistema
+                    )
+
                 # Generar Acta de Terminación / Paz y Salvo
-                yield PDFState.generar_certificado_paz_y_salvo(id_contrato, beneficiario)
+                yield PDFState.generar_certificado_paz_y_salvo(
+                    id_contrato, beneficiario
+                )
             else:
                 # No implementado: reactivar contrato cancelado
                 # Por ahora solo permitimos desactivar
@@ -1580,13 +1737,16 @@ class ContratosState(DocumentosStateMixin):
             # Recargar lista
             yield ContratosState.load_contratos()
             yield rx.toast.info(
-                f"Contrato {estado_actual.lower()} desactivado/cancelado.", position="bottom-right"
+                f"Contrato {estado_actual.lower()} desactivado/cancelado.",
+                position="bottom-right",
             )
 
         except Exception as e:
             async with self:
                 self.error_message = f"Error al cambiar estado: {str(e)}"
-            yield rx.toast.error(f"Error al cambiar estado: {str(e)}", position="bottom-right")
+            yield rx.toast.error(
+                f"Error al cambiar estado: {str(e)}", position="bottom-right"
+            )
         finally:
             async with self:
                 self.is_loading = False

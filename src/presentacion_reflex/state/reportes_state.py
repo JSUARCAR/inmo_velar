@@ -143,6 +143,12 @@ class ReportesState(rx.State):
                     "description": "Control de saldos acreedores.",
                     "module": "Saldos a Favor",
                 },
+                {
+                    "id": "reporte_consolidado",
+                    "name": "Reporte Financiero Consolidado",
+                    "description": "Información unificada: propietarios, contratos, liquidaciones y estados financieros.",
+                    "module": "Liquidaciones",
+                },
             ],
         },
     }
@@ -165,6 +171,13 @@ class ReportesState(rx.State):
     filter_metodo_pago: str = "Todos"
     filter_periodo_inicio: str = ""
     filter_periodo_fin: str = ""
+
+    # Filtros específicos Reporte Consolidado
+    filter_fecha_pago_inicio: str = ""
+    filter_fecha_pago_fin: str = ""
+    filter_estado_contrato: str = "Todos"
+    filter_estado_liquidacion: str = "Todos"
+    filter_propietario_buscar: str = ""
 
     # Paginación y Datos
     preview_data: List[Dict[str, Any]] = []
@@ -193,6 +206,14 @@ class ReportesState(rx.State):
         "Transferencia",
         "PSE",
         "Consignación",
+    ]
+    estado_contrato_options: List[str] = ["Todos", "Activo", "Finalizado", "Cancelado"]
+    estado_liquidacion_options: List[str] = [
+        "Todos",
+        "En Proceso",
+        "Aprobada",
+        "Pagada",
+        "Cancelada",
     ]
 
     @rx.var
@@ -269,6 +290,11 @@ class ReportesState(rx.State):
         self.filter_metodo_pago = "Todos"
         self.filter_periodo_inicio = ""
         self.filter_periodo_fin = ""
+        self.filter_fecha_pago_inicio = ""
+        self.filter_fecha_pago_fin = ""
+        self.filter_estado_contrato = "Todos"
+        self.filter_estado_liquidacion = "Todos"
+        self.filter_propietario_buscar = ""
         self.preview_data = []
         self.preview_headers = []
         return ReportesState.load_preview_data()
@@ -310,6 +336,27 @@ class ReportesState(rx.State):
         self.current_page = 1
         return ReportesState.load_preview_data()
 
+    def set_filter_fecha_pago(self, fecha_inicio: str, fecha_fin: str):
+        self.filter_fecha_pago_inicio = fecha_inicio
+        self.filter_fecha_pago_fin = fecha_fin
+        self.current_page = 1
+        return ReportesState.load_preview_data()
+
+    def set_filter_estado_contrato(self, estado: str):
+        self.filter_estado_contrato = estado
+        self.current_page = 1
+        return ReportesState.load_preview_data()
+
+    def set_filter_estado_liquidacion(self, estado: str):
+        self.filter_estado_liquidacion = estado
+        self.current_page = 1
+        return ReportesState.load_preview_data()
+
+    def set_filter_propietario(self, texto: str):
+        self.filter_propietario_buscar = texto
+        self.current_page = 1
+        return ReportesState.load_preview_data()
+
     def next_page(self):
         if self.current_page * self.page_size < self.total_records:
             self.current_page += 1
@@ -333,7 +380,7 @@ class ReportesState(rx.State):
             if len(self.asesor_options) <= 1:
                 # Obtenemos las opciones sin bloquear el estado todavía en el helper
                 pass
-        
+
         # Cargamos los asesores fuera del bloque inicial si es necesario
         if len(self.asesor_options) <= 1:
             options = await self._fetch_asesores_options()
@@ -426,6 +473,11 @@ class ReportesState(rx.State):
             "metodo_pago": self.filter_metodo_pago,
             "periodo_inicio": self.filter_periodo_inicio,
             "periodo_fin": self.filter_periodo_fin,
+            "fecha_pago_inicio": self.filter_fecha_pago_inicio,
+            "fecha_pago_fin": self.filter_fecha_pago_fin,
+            "estado_contrato": self.filter_estado_contrato,
+            "estado_liquidacion": self.filter_estado_liquidacion,
+            "propietario_buscar": self.filter_propietario_buscar,
         }
 
         try:

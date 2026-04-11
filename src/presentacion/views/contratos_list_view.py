@@ -78,6 +78,7 @@ class ContratosListView(ft.Container):
                 ft.DataColumn(ft.Text("Canon")),
                 ft.DataColumn(ft.Text("Vigencia")),
                 ft.DataColumn(ft.Text("Estado")),
+                ft.DataColumn(ft.Text("Cumplimiento")),
                 ft.DataColumn(ft.Text("Acciones")),
             ],
             rows=[],
@@ -96,6 +97,7 @@ class ContratosListView(ft.Container):
                 ft.DataColumn(ft.Text("Canon")),
                 ft.DataColumn(ft.Text("Vigencia")),
                 ft.DataColumn(ft.Text("Estado")),
+                ft.DataColumn(ft.Text("Cumplimiento")),
                 ft.DataColumn(ft.Text("Acciones")),
             ],
             rows=[],
@@ -207,7 +209,9 @@ class ContratosListView(ft.Container):
                 ft.Container(
                     content=ft.Column(
                         [
-                            ft.Text("Inicio > Contratos", style=styles.breadcrumb_text()),
+                            ft.Text(
+                                "Inicio > Contratos", style=styles.breadcrumb_text()
+                            ),
                             ft.Text("Gestión de Contratos", style=styles.heading_1()),
                         ]
                     ),
@@ -266,13 +270,19 @@ class ContratosListView(ft.Container):
 
         # Filtros
         filtro_texto = (
-            self.search_field.current.value.strip() if self.search_field.current else None
+            self.search_field.current.value.strip()
+            if self.search_field.current
+            else None
         )
-        filtro_estado = self.status_dropdown.current.value if self.status_dropdown.current else None
+        filtro_estado = (
+            self.status_dropdown.current.value if self.status_dropdown.current else None
+        )
 
         filtros = {"estado": filtro_estado, "busqueda": filtro_texto}
 
-        threading.Thread(target=self._fetch_data_thread, args=(filtros,), daemon=True).start()
+        threading.Thread(
+            target=self._fetch_data_thread, args=(filtros,), daemon=True
+        ).start()
 
     def _fetch_data_thread(self, filtros):
         try:
@@ -344,12 +354,24 @@ class ContratosListView(ft.Container):
         self.cargar_datos()
 
     def construir_fila_mandato(self, m):
+        # Color según estado de cumplimiento
+        cumplimiento = m.get("estado_cumplimiento", "PENDIENTE")
+        cumplimiento_color = (
+            colors.SUCCESS_LIGHT
+            if cumplimiento == "AL_DIA"
+            else colors.ERROR_LIGHT
+            if cumplimiento == "VENCIDO"
+            else colors.WARNING_LIGHT
+        )
+
         return ft.DataRow(
             cells=[
                 ft.DataCell(ft.Text(str(m["id"]))),
                 ft.DataCell(
                     ft.Text(
-                        m["propiedad"][:30] + "..." if len(m["propiedad"]) > 30 else m["propiedad"]
+                        m["propiedad"][:30] + "..."
+                        if len(m["propiedad"]) > 30
+                        else m["propiedad"]
                     )
                 ),
                 ft.DataCell(ft.Text(m["propietario"])),
@@ -357,10 +379,24 @@ class ContratosListView(ft.Container):
                 ft.DataCell(ft.Text(f"{m['fecha_inicio']} / {m['fecha_fin']}")),
                 ft.DataCell(
                     ft.Container(
-                        content=ft.Text(m["estado"], color=colors.TEXT_PRIMARY, size=12),
-                        bgcolor=(
-                            colors.SUCCESS_LIGHT if m["estado"] == "Activo" else colors.ERROR_LIGHT
+                        content=ft.Text(
+                            m["estado"], color=colors.TEXT_PRIMARY, size=12
                         ),
+                        bgcolor=(
+                            colors.SUCCESS_LIGHT
+                            if m["estado"] == "Activo"
+                            else colors.ERROR_LIGHT
+                        ),
+                        padding=5,
+                        border_radius=5,
+                    )
+                ),
+                ft.DataCell(
+                    ft.Container(
+                        content=ft.Text(
+                            cumplimiento, color=colors.TEXT_PRIMARY, size=12
+                        ),
+                        bgcolor=cumplimiento_color,
                         padding=5,
                         border_radius=5,
                     )
@@ -372,27 +408,35 @@ class ContratosListView(ft.Container):
                                 icon=ft.Icons.EDIT,
                                 icon_color=colors.PRIMARY,
                                 tooltip="Editar Mandato",
-                                on_click=lambda e, id=m["id"]: self.on_editar_mandato(id),
+                                on_click=lambda e, id=m["id"]: self.on_editar_mandato(
+                                    id
+                                ),
                             ),
                             ft.IconButton(
                                 icon=ft.Icons.AUTORENEW,
                                 icon_color=colors.SECONDARY,
                                 tooltip="Renovar Mandato",
                                 disabled=m["estado"] != "Activo",
-                                on_click=lambda e, id=m["id"]: self.on_renovar_mandato(id),
+                                on_click=lambda e, id=m["id"]: self.on_renovar_mandato(
+                                    id
+                                ),
                             ),
                             ft.IconButton(
                                 icon=ft.Icons.BLOCK,
                                 icon_color=colors.ERROR,
                                 tooltip="Terminar Mandato",
                                 disabled=m["estado"] != "Activo",
-                                on_click=lambda e, id=m["id"]: self.on_terminar_mandato(id),
+                                on_click=lambda e, id=m["id"]: self.on_terminar_mandato(
+                                    id
+                                ),
                             ),
                             ft.IconButton(
                                 icon=ft.Icons.VISIBILITY,
                                 icon_color=colors.TEXT_SECONDARY,
                                 tooltip="Ver Detalle",
-                                on_click=lambda e, id=m["id"]: self.on_ver_detalle("MANDATO", id),
+                                on_click=lambda e, id=m["id"]: self.on_ver_detalle(
+                                    "MANDATO", id
+                                ),
                             ),
                         ]
                     )
@@ -401,12 +445,24 @@ class ContratosListView(ft.Container):
         )
 
     def construir_fila_arriendo(self, a):
+        # Color según estado de cumplimiento
+        cumplimiento = a.get("estado_cumplimiento", "PENDIENTE")
+        cumplimiento_color = (
+            colors.SUCCESS_LIGHT
+            if cumplimiento == "AL_DIA"
+            else colors.ERROR_LIGHT
+            if cumplimiento == "VENCIDO"
+            else colors.WARNING_LIGHT
+        )
+
         return ft.DataRow(
             cells=[
                 ft.DataCell(ft.Text(str(a["id"]))),
                 ft.DataCell(
                     ft.Text(
-                        a["propiedad"][:30] + "..." if len(a["propiedad"]) > 30 else a["propiedad"]
+                        a["propiedad"][:30] + "..."
+                        if len(a["propiedad"]) > 30
+                        else a["propiedad"]
                     )
                 ),
                 ft.DataCell(ft.Text(a["arrendatario"])),
@@ -414,10 +470,24 @@ class ContratosListView(ft.Container):
                 ft.DataCell(ft.Text(f"{a['fecha_inicio']} / {a['fecha_fin']}")),
                 ft.DataCell(
                     ft.Container(
-                        content=ft.Text(a["estado"], color=colors.TEXT_PRIMARY, size=12),
-                        bgcolor=(
-                            colors.SUCCESS_LIGHT if a["estado"] == "Activo" else colors.ERROR_LIGHT
+                        content=ft.Text(
+                            a["estado"], color=colors.TEXT_PRIMARY, size=12
                         ),
+                        bgcolor=(
+                            colors.SUCCESS_LIGHT
+                            if a["estado"] == "Activo"
+                            else colors.ERROR_LIGHT
+                        ),
+                        padding=5,
+                        border_radius=5,
+                    )
+                ),
+                ft.DataCell(
+                    ft.Container(
+                        content=ft.Text(
+                            cumplimiento, color=colors.TEXT_PRIMARY, size=12
+                        ),
+                        bgcolor=cumplimiento_color,
                         padding=5,
                         border_radius=5,
                     )
@@ -429,27 +499,35 @@ class ContratosListView(ft.Container):
                                 icon=ft.Icons.EDIT,
                                 icon_color=colors.PRIMARY,
                                 tooltip="Editar Arriendo",
-                                on_click=lambda e, id=a["id"]: self.on_editar_arriendo(id),
+                                on_click=lambda e, id=a["id"]: self.on_editar_arriendo(
+                                    id
+                                ),
                             ),
                             ft.IconButton(
                                 icon=ft.Icons.AUTORENEW,
                                 icon_color=colors.SECONDARY,
                                 tooltip="Renovar Contrato",
                                 disabled=a["estado"] != "Activo",
-                                on_click=lambda e, id=a["id"]: self.on_renovar_arriendo(id),
+                                on_click=lambda e, id=a["id"]: self.on_renovar_arriendo(
+                                    id
+                                ),
                             ),
                             ft.IconButton(
                                 icon=ft.Icons.BLOCK,
                                 icon_color=colors.ERROR,
                                 tooltip="Terminar Arriendo",
                                 disabled=a["estado"] != "Activo",
-                                on_click=lambda e, id=a["id"]: self.on_terminar_arriendo(id),
+                                on_click=lambda e, id=a["id"]: (
+                                    self.on_terminar_arriendo(id)
+                                ),
                             ),
                             ft.IconButton(
                                 icon=ft.Icons.VISIBILITY,
                                 icon_color=colors.TEXT_SECONDARY,
                                 tooltip="Ver Detalle",
-                                on_click=lambda e, id=a["id"]: self.on_ver_detalle("ARRIENDO", id),
+                                on_click=lambda e, id=a["id"]: self.on_ver_detalle(
+                                    "ARRIENDO", id
+                                ),
                             ),
                         ]
                     )

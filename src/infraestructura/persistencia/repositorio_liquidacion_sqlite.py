@@ -98,38 +98,69 @@ class RepositorioLiquidacionSQLite:
             return None
 
         return Liquidacion(
-            id_liquidacion=(row_dict.get("id_liquidacion") or row_dict.get("ID_LIQUIDACION")),
-            id_contrato_m=(row_dict.get("id_contrato_m") or row_dict.get("ID_CONTRATO_M")),
+            id_liquidacion=(
+                row_dict.get("id_liquidacion") or row_dict.get("ID_LIQUIDACION")
+            ),
+            id_contrato_m=(
+                row_dict.get("id_contrato_m") or row_dict.get("ID_CONTRATO_M")
+            ),
             periodo=(row_dict.get("periodo") or row_dict.get("PERIODO")),
-            fecha_generacion=(row_dict.get("fecha_generacion") or row_dict.get("FECHA_GENERACION")),
+            fecha_generacion=(
+                row_dict.get("fecha_generacion") or row_dict.get("FECHA_GENERACION")
+            ),
             canon_bruto=(row_dict.get("canon_bruto") or row_dict.get("CANON_BRUTO")),
-            otros_ingresos=(row_dict.get("otros_ingresos") or row_dict.get("OTROS_INGRESOS")),
-            total_ingresos=(row_dict.get("total_ingresos") or row_dict.get("TOTAL_INGRESOS")),
+            otros_ingresos=(
+                row_dict.get("otros_ingresos") or row_dict.get("OTROS_INGRESOS")
+            ),
+            total_ingresos=(
+                row_dict.get("total_ingresos") or row_dict.get("TOTAL_INGRESOS")
+            ),
             comision_porcentaje=(
-                row_dict.get("comision_porcentaje") or row_dict.get("COMISION_PORCENTAJE")
+                row_dict.get("comision_porcentaje")
+                or row_dict.get("COMISION_PORCENTAJE")
             ),
-            comision_monto=(row_dict.get("comision_monto") or row_dict.get("COMISION_MONTO")),
+            comision_monto=(
+                row_dict.get("comision_monto") or row_dict.get("COMISION_MONTO")
+            ),
             iva_comision=(row_dict.get("iva_comision") or row_dict.get("IVA_COMISION")),
-            impuesto_4x1000=(row_dict.get("impuesto_4x1000") or row_dict.get("IMPUESTO_4X1000")),
+            impuesto_4x1000=(
+                row_dict.get("impuesto_4x1000") or row_dict.get("IMPUESTO_4X1000")
+            ),
             gastos_administracion=(
-                row_dict.get("gastos_administracion") or row_dict.get("GASTOS_ADMINISTRACION")
+                row_dict.get("gastos_administracion")
+                or row_dict.get("GASTOS_ADMINISTRACION")
             ),
-            gastos_servicios=(row_dict.get("gastos_servicios") or row_dict.get("GASTOS_SERVICIOS")),
+            gastos_servicios=(
+                row_dict.get("gastos_servicios") or row_dict.get("GASTOS_SERVICIOS")
+            ),
             gastos_reparaciones=(
-                row_dict.get("gastos_reparaciones") or row_dict.get("GASTOS_REPARACIONES")
+                row_dict.get("gastos_reparaciones")
+                or row_dict.get("GASTOS_REPARACIONES")
             ),
-            pago_predial=(row_dict.get("pago_predial") or row_dict.get("PAGO_PREDIAL") or 0),
-            seguro_monto=(row_dict.get("seguro_monto") or row_dict.get("SEGURO_MONTO") or 0),
-            otros_egresos=(row_dict.get("otros_egresos") or row_dict.get("OTROS_EGRESOS") or 0),
-            total_egresos=(row_dict.get("total_egresos") or row_dict.get("TOTAL_EGRESOS")),
+            pago_predial=(
+                row_dict.get("pago_predial") or row_dict.get("PAGO_PREDIAL") or 0
+            ),
+            seguro_monto=(
+                row_dict.get("seguro_monto") or row_dict.get("SEGURO_MONTO") or 0
+            ),
+            otros_egresos=(
+                row_dict.get("otros_egresos") or row_dict.get("OTROS_EGRESOS") or 0
+            ),
+            total_egresos=(
+                row_dict.get("total_egresos") or row_dict.get("TOTAL_EGRESOS")
+            ),
             neto_a_pagar=(row_dict.get("neto_a_pagar") or row_dict.get("NETO_A_PAGAR")),
             estado_liquidacion=(
                 row_dict.get("estado_liquidacion") or row_dict.get("ESTADO_LIQUIDACION")
             ),
             fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
             metodo_pago=(row_dict.get("metodo_pago") or row_dict.get("METODO_PAGO")),
-            referencia_pago=(row_dict.get("referencia_pago") or row_dict.get("REFERENCIA_PAGO")),
-            observaciones=(row_dict.get("observaciones") or row_dict.get("OBSERVACIONES")),
+            referencia_pago=(
+                row_dict.get("referencia_pago") or row_dict.get("REFERENCIA_PAGO")
+            ),
+            observaciones=(
+                row_dict.get("observaciones") or row_dict.get("OBSERVACIONES")
+            ),
             motivo_cancelacion=(
                 row_dict.get("motivo_cancelacion") or row_dict.get("MOTIVO_CANCELACION")
             ),
@@ -204,7 +235,8 @@ class RepositorioLiquidacionSQLite:
         placeholder = self.db.get_placeholder()
 
         cursor.execute(
-            f"SELECT * FROM LIQUIDACIONES WHERE ID_LIQUIDACION = {placeholder}", (id_liquidacion,)
+            f"SELECT * FROM LIQUIDACIONES WHERE ID_LIQUIDACION = {placeholder}",
+            (id_liquidacion,),
         )
         row = cursor.fetchone()
 
@@ -225,6 +257,31 @@ class RepositorioLiquidacionSQLite:
         row = cursor.fetchone()
 
         return self._row_to_entity(row) if row else None
+
+    def obtener_estado_pago_actual(
+        self, id_contrato_m: int, periodo: Optional[str] = None
+    ) -> str:
+        """
+        Obtiene el estado de pago para un contrato en el período actual.
+
+        Returns:
+            'AL_DIA' si liquidacionPagada, 'PENDIENTE' otherwise
+        """
+        from src.dominio.value_objects.estado_cumplimiento import obtener_periodo_actual
+
+        periodo = periodo or obtener_periodo_actual()
+
+        liquidacion = self.obtener_por_contrato_y_periodo(id_contrato_m, periodo)
+
+        if liquidacion and liquidacion.estado_liquidacion == "Pagada":
+            return "AL_DIA"
+        elif liquidacion and liquidacion.estado_liquidacion in (
+            "En Proceso",
+            "Aprobada",
+        ):
+            return "PENDIENTE"
+
+        return "PENDIENTE"
 
     def listar_por_contrato(self, id_contrato_m: int) -> List[Liquidacion]:
         """Lista todas las liquidaciones de un contrato"""
@@ -291,68 +348,95 @@ class RepositorioLiquidacionSQLite:
             row_dict = self._get_row_dict(row)
             results.append(
                 {
-                    "id": (row_dict.get("id_liquidacion") or row_dict.get("ID_LIQUIDACION")),
+                    "id": (
+                        row_dict.get("id_liquidacion") or row_dict.get("ID_LIQUIDACION")
+                    ),
                     "periodo": (row_dict.get("periodo") or row_dict.get("PERIODO")),
                     "fecha_generacion": (
-                        row_dict.get("fecha_generacion") or row_dict.get("FECHA_GENERACION")
+                        row_dict.get("fecha_generacion")
+                        or row_dict.get("FECHA_GENERACION")
                     ),
                     "contrato": f"{(row_dict.get('direccion_propiedad') or row_dict.get('DIRECCION_PROPIEDAD'))} - {(row_dict.get('nombre_propietario') or row_dict.get('NOMBRE_PROPIETARIO'))}",
                     "id_contrato_m": (
                         row_dict.get("id_contrato_m") or row_dict.get("ID_CONTRATO_M")
                     ),
                     "direccion": (
-                        row_dict.get("direccion_propiedad") or row_dict.get("DIRECCION_PROPIEDAD")
+                        row_dict.get("direccion_propiedad")
+                        or row_dict.get("DIRECCION_PROPIEDAD")
                     ),
                     "matricula": (
                         row_dict.get("matricula_inmobiliaria")
                         or row_dict.get("MATRICULA_INMOBILIARIA")
                     ),
                     "propietario": (
-                        row_dict.get("nombre_propietario") or row_dict.get("NOMBRE_PROPIETARIO")
+                        row_dict.get("nombre_propietario")
+                        or row_dict.get("NOMBRE_PROPIETARIO")
                     ),
-                    "canon": (row_dict.get("canon_bruto") or row_dict.get("CANON_BRUTO")),
+                    "canon": (
+                        row_dict.get("canon_bruto") or row_dict.get("CANON_BRUTO")
+                    ),
                     "otros_ingresos": (
                         row_dict.get("otros_ingresos") or row_dict.get("OTROS_INGRESOS")
                     ),
                     "total_ingresos": (
                         row_dict.get("total_ingresos") or row_dict.get("TOTAL_INGRESOS")
                     ),
-                    "comision": (row_dict.get("comision_monto") or row_dict.get("COMISION_MONTO")),
-                    "iva": (row_dict.get("iva_comision") or row_dict.get("IVA_COMISION")),
+                    "comision": (
+                        row_dict.get("comision_monto") or row_dict.get("COMISION_MONTO")
+                    ),
+                    "iva": (
+                        row_dict.get("iva_comision") or row_dict.get("IVA_COMISION")
+                    ),
                     "impuesto": (
-                        row_dict.get("impuesto_4x1000") or row_dict.get("IMPUESTO_4X1000")
+                        row_dict.get("impuesto_4x1000")
+                        or row_dict.get("IMPUESTO_4X1000")
                     ),
                     "gastos_admin": (
                         row_dict.get("gastos_administracion")
                         or row_dict.get("GASTOS_ADMINISTRACION")
                     ),
                     "gastos_servicios": (
-                        row_dict.get("gastos_servicios") or row_dict.get("GASTOS_SERVICIOS")
+                        row_dict.get("gastos_servicios")
+                        or row_dict.get("GASTOS_SERVICIOS")
                     ),
                     "gastos_reparaciones": (
-                        row_dict.get("gastos_reparaciones") or row_dict.get("GASTOS_REPARACIONES")
+                        row_dict.get("gastos_reparaciones")
+                        or row_dict.get("GASTOS_REPARACIONES")
                     ),
                     "pago_predial": (
-                        row_dict.get("pago_predial") or row_dict.get("PAGO_PREDIAL") or 0
+                        row_dict.get("pago_predial")
+                        or row_dict.get("PAGO_PREDIAL")
+                        or 0
                     ),
                     "seguro_monto": (
-                        row_dict.get("seguro_monto") or row_dict.get("SEGURO_MONTO") or 0
+                        row_dict.get("seguro_monto")
+                        or row_dict.get("SEGURO_MONTO")
+                        or 0
                     ),
                     "otros_egresos": (
-                        row_dict.get("otros_egresos") or row_dict.get("OTROS_EGRESOS") or 0
+                        row_dict.get("otros_egresos")
+                        or row_dict.get("OTROS_EGRESOS")
+                        or 0
                     ),
                     "total_egresos": (
                         row_dict.get("total_egresos") or row_dict.get("TOTAL_EGRESOS")
                     ),
-                    "neto": (row_dict.get("neto_a_pagar") or row_dict.get("NETO_A_PAGAR")),
-                    "estado": (
-                        row_dict.get("estado_liquidacion") or row_dict.get("ESTADO_LIQUIDACION")
+                    "neto": (
+                        row_dict.get("neto_a_pagar") or row_dict.get("NETO_A_PAGAR")
                     ),
-                    "fecha_pago": (row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
+                    "estado": (
+                        row_dict.get("estado_liquidacion")
+                        or row_dict.get("ESTADO_LIQUIDACION")
+                    ),
+                    "fecha_pago": (
+                        row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")
+                    ),
                     "observaciones": (
                         row_dict.get("observaciones") or row_dict.get("OBSERVACIONES")
                     ),
-                    "created_at": (row_dict.get("created_at") or row_dict.get("CREATED_AT")),
+                    "created_at": (
+                        row_dict.get("created_at") or row_dict.get("CREATED_AT")
+                    ),
                 }
             )
 
@@ -432,7 +516,9 @@ class RepositorioLiquidacionSQLite:
         )
 
         if cursor.rowcount == 0:
-            raise ValueError("La liquidación no existe o no está en estado 'En Proceso'")
+            raise ValueError(
+                "La liquidación no existe o no está en estado 'En Proceso'"
+            )
 
         conn.commit()
 
@@ -544,7 +630,9 @@ class RepositorioLiquidacionSQLite:
 
         return {"exitosas": exitosas, "fallidas": fallidas}
 
-    def reversar_masivamente(self, ids_liquidaciones: List[int], usuario_sistema: str) -> dict:
+    def reversar_masivamente(
+        self, ids_liquidaciones: List[int], usuario_sistema: str
+    ) -> dict:
         """
         Reversa múltiples liquidaciones.
 
@@ -592,7 +680,13 @@ class RepositorioLiquidacionSQLite:
             AND PERIODO = {placeholder}
             AND ESTADO_LIQUIDACION IN ('En Proceso', 'Aprobada')
         """,
-            (motivo, datetime.now().isoformat(), usuario_sistema, id_propietario, periodo),
+            (
+                motivo,
+                datetime.now().isoformat(),
+                usuario_sistema,
+                id_propietario,
+                periodo,
+            ),
         )
 
         affected = cursor.rowcount
@@ -725,7 +819,7 @@ class RepositorioLiquidacionSQLite:
                 cols = ["per.NOMBRE_COMPLETO", "per.NUMERO_DOCUMENTO"]
                 cond = self.db.get_search_condition(cols)
                 conditions.append(f"({cond})")
-                
+
                 term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
                 query_params.extend([term_norm] * len(cols))
 
@@ -734,9 +828,7 @@ class RepositorioLiquidacionSQLite:
                 query_params.append(id_asesor)
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
-            group_by = (
-                " GROUP BY cm.ID_PROPIETARIO, l.PERIODO, per.NOMBRE_COMPLETO, per.NUMERO_DOCUMENTO"
-            )
+            group_by = " GROUP BY cm.ID_PROPIETARIO, l.PERIODO, per.NOMBRE_COMPLETO, per.NUMERO_DOCUMENTO"
 
             # Count de grupos (propietarios únicos con liquidaciones)
             count_query = f"""
@@ -777,7 +869,9 @@ class RepositorioLiquidacionSQLite:
                     (row["ID_PROPIETARIO"], row["PERIODO"]),
                 )
 
-                estados_map = {e["ESTADO_LIQUIDACION"]: e["CNT"] for e in cursor.fetchall()}
+                estados_map = {
+                    e["ESTADO_LIQUIDACION"]: e["CNT"] for e in cursor.fetchall()
+                }
                 total_liq = sum(estados_map.values())
 
                 # Lógica de estado consolidado
@@ -823,8 +917,9 @@ class RepositorioLiquidacionSQLite:
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
-        
-        cursor.execute(f"""
+
+        cursor.execute(
+            f"""
             UPDATE LIQUIDACIONES 
             SET 
                 ESTADO_LIQUIDACION = 'Aprobada',
@@ -839,8 +934,17 @@ class RepositorioLiquidacionSQLite:
             )
             AND PERIODO = {placeholder}
             AND ESTADO_LIQUIDACION = 'En Proceso'
-        """, (usuario_sistema, datetime.now().isoformat(), datetime.now().isoformat(), usuario_sistema, id_propietario, periodo))
-        
+        """,
+            (
+                usuario_sistema,
+                datetime.now().isoformat(),
+                datetime.now().isoformat(),
+                usuario_sistema,
+                id_propietario,
+                periodo,
+            ),
+        )
+
         affected = cursor.rowcount
         conn.commit()
         return affected
@@ -853,7 +957,7 @@ class RepositorioLiquidacionSQLite:
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
-        
+
         query = f"""
         SELECT 
             l.*,
@@ -898,15 +1002,15 @@ class RepositorioLiquidacionSQLite:
         
         WHERE l.ID_LIQUIDACION = {placeholder}
         """
-        
+
         cursor.execute(query, (id_liquidacion,))
         row = cursor.fetchone()
-        
+
         if not row:
             return None
-            
+
         row = dict(row)
-        
+
         # Mapeo a estructura plana para PDF (Legacy Service compatible)
         return {
             "id": row.get("ID_LIQUIDACION"),
@@ -914,7 +1018,6 @@ class RepositorioLiquidacionSQLite:
             "periodo": row.get("PERIODO"),
             "fecha_generacion": row.get("FECHA_GENERACION"),
             "estado": row.get("ESTADO_LIQUIDACION"),
-            
             # Propietario (Flat)
             "propietario": row.get("NOMBRE_PROPIETARIO"),
             "documento": row.get("DOCUMENTO_PROPIETARIO"),
@@ -924,62 +1027,54 @@ class RepositorioLiquidacionSQLite:
             "banco": row.get("BANCO_PROPIETARIO"),
             "numero_cuenta": row.get("NUMERO_CUENTA_PROPIETARIO"),
             "tipo_cuenta": row.get("TIPO_CUENTA"),
-            
             # Inmueble (Flat)
             "propiedad": row.get("DIRECCION_PROPIEDAD"),
             "matricula": row.get("MATRICULA_INMOBILIARIA"),
             "tipo_propiedad": row.get("TIPO_PROPIEDAD"),
             "area": row.get("AREA_M2"),
             "valor_administracion": row.get("VALOR_ADMINISTRACION"),
-            
             # Inquilino
             "nombre_arrendatario": row.get("NOMBRE_ARRENDATARIO"),
             "documento_arrendatario": row.get("DOCUMENTO_ARRENDATARIO"),
-            
             # Datos adicionales para cálculo/display
             "comision_pct_contrato": row.get("COMISION_PORCENTAJE_CONTRATO_M"),
             "comision_pct_asesor": row.get("COMISION_ASESOR"),
             "seguro_pct": row.get("PORCENTAJE_SEGURO"),
             "nombre_seguro": row.get("NOMBRE_SEGURO"),
-
             # Detalle Financiero
             "canon": row.get("CANON_BRUTO"),
             "otros_ingresos": row.get("OTROS_INGRESOS"),
             "total_ingresos": row.get("TOTAL_INGRESOS"),
-            
             "comision_pct": row.get("COMISION_PORCENTAJE"),
             "comision_monto": row.get("COMISION_MONTO"),
             "iva_comision": row.get("IVA_COMISION"),
-            
             "impuesto_4x1000": row.get("IMPUESTO_4X1000"),
             "gastos_admin": row.get("GASTOS_ADMINISTRACION"),
-            
             # Claves renombradas para coincidir con servicio PDF legacy
             "gastos_serv": row.get("GASTOS_SERVICIOS"),
             "gastos_rep": row.get("GASTOS_REPARACIONES"),
             "pago_predial": row.get("PAGO_PREDIAL"),
             "seguro_monto": row.get("SEGURO_MONTO") or 0,
             "otros_egr": row.get("OTROS_EGRESOS") or 0,
-            
             "total_egresos": row.get("TOTAL_EGRESOS"),
             "neto_pagar": row.get("NETO_A_PAGAR"),
-            
             "observaciones": row.get("OBSERVACIONES"),
-            
             # Datos de pago (si existen en la tabla)
             "fecha_pago": row.get("FECHA_PAGO"),
             "metodo_pago": row.get("METODO_PAGO"),
             "referencia_pago": row.get("REFERENCIA_PAGO"),
         }
 
-    def obtener_consolidado_propietario(self, id_propietario: int, periodo: str) -> Optional[Dict[str, Any]]:
+    def obtener_consolidado_propietario(
+        self, id_propietario: int, periodo: str
+    ) -> Optional[Dict[str, Any]]:
         """
         Obtiene datos consolidados de todas las propiedades de un propietario para un periodo.
         """
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
-        
+
         # 1. Obtener datos del propietario
         query_prop = f"""
         SELECT 
@@ -992,12 +1087,12 @@ class RepositorioLiquidacionSQLite:
         """
         cursor.execute(query_prop, (id_propietario,))
         propietario = cursor.fetchone()
-        
+
         if not propietario:
             return None
-            
+
         propietario = dict(propietario)
-        
+
         # 2. Obtener liquidaciones
         query_liqs = f"""
         SELECT 
@@ -1024,45 +1119,47 @@ class RepositorioLiquidacionSQLite:
         """
         cursor.execute(query_liqs, (id_propietario, periodo))
         liquidaciones = [dict(r) for r in cursor.fetchall()]
-        
+
         if not liquidaciones:
             return None
-            
+
         # 3. Calcular totales consolidados
         total_ingresos = sum(l.get("TOTAL_INGRESOS", 0) for l in liquidaciones)
         total_egresos = sum(l.get("TOTAL_EGRESOS", 0) for l in liquidaciones)
         neto_pagar = sum(l.get("NETO_A_PAGAR", 0) for l in liquidaciones)
-        
+
         comision_total = sum(l.get("COMISION_MONTO", 0) for l in liquidaciones)
         iva_total = sum(l.get("IVA_COMISION", 0) for l in liquidaciones)
         impuesto_total = sum(l.get("IMPUESTO_4X1000", 0) for l in liquidaciones)
-        
+
         gastos_admin = sum(l.get("GASTOS_ADMINISTRACION", 0) for l in liquidaciones)
         gastos_serv = sum(l.get("GASTOS_SERVICIOS", 0) for l in liquidaciones)
         gastos_rep = sum(l.get("GASTOS_REPARACIONES", 0) for l in liquidaciones)
         pago_predial = sum(l.get("PAGO_PREDIAL", 0) for l in liquidaciones)
         otros_egr = sum(l.get("OTROS_EGRESOS", 0) for l in liquidaciones)
-        
+
         # 4. Formatear lista de propiedades
         propiedades_formateadas = []
         for l in liquidaciones:
-            propiedades_formateadas.append({
-                "id": l.get("ID_PROPIEDAD"),
-                "direccion": l.get("DIRECCION_PROPIEDAD"),
-                "canon": l.get("CANON_BRUTO"),
-                "otros_ingresos": l.get("OTROS_INGRESOS"),
-                "comision_monto": l.get("COMISION_MONTO"),
-                "iva_comision": l.get("IVA_COMISION"),
-                "impuesto_4x1000": l.get("IMPUESTO_4X1000"),
-                "gastos_admin": l.get("GASTOS_ADMINISTRACION"),
-                "gastos_serv": l.get("GASTOS_SERVICIOS"),
-                "gastos_rep": l.get("GASTOS_REPARACIONES"),
-                "pago_predial": l.get("PAGO_PREDIAL"),
-                "otros_egr": l.get("OTROS_EGRESOS"),
-                "neto": l.get("NETO_A_PAGAR"),
-                "porcentaje_seguro": l.get("PORCENTAJE_SEGURO", 0)
-            })
-            
+            propiedades_formateadas.append(
+                {
+                    "id": l.get("ID_PROPIEDAD"),
+                    "direccion": l.get("DIRECCION_PROPIEDAD"),
+                    "canon": l.get("CANON_BRUTO"),
+                    "otros_ingresos": l.get("OTROS_INGRESOS"),
+                    "comision_monto": l.get("COMISION_MONTO"),
+                    "iva_comision": l.get("IVA_COMISION"),
+                    "impuesto_4x1000": l.get("IMPUESTO_4X1000"),
+                    "gastos_admin": l.get("GASTOS_ADMINISTRACION"),
+                    "gastos_serv": l.get("GASTOS_SERVICIOS"),
+                    "gastos_rep": l.get("GASTOS_REPARACIONES"),
+                    "pago_predial": l.get("PAGO_PREDIAL"),
+                    "otros_egr": l.get("OTROS_EGRESOS"),
+                    "neto": l.get("NETO_A_PAGAR"),
+                    "porcentaje_seguro": l.get("PORCENTAJE_SEGURO", 0),
+                }
+            )
+
         return {
             "propietario": propietario["NOMBRE_COMPLETO"],
             "documento": propietario["NUMERO_DOCUMENTO"],
@@ -1071,17 +1168,15 @@ class RepositorioLiquidacionSQLite:
             "banco": propietario.get("BANCO_PROPIETARIO", "N/A"),
             "tipo_cuenta": propietario.get("TIPO_CUENTA", "N/A"),
             "cuenta_bancaria": propietario.get("NUMERO_CUENTA_PROPIETARIO", "N/A"),
-            
             "periodo": periodo,
             "cantidad_propiedades": len(liquidaciones),
-            "fecha_generacion": liquidaciones[0].get("FECHA_GENERACION"), # Usamos la primera
-            
+            "fecha_generacion": liquidaciones[0].get(
+                "FECHA_GENERACION"
+            ),  # Usamos la primera
             "propiedades": propiedades_formateadas,
-            
             "total_ingresos": total_ingresos,
             "total_egresos": total_egresos,
             "neto_pagar": neto_pagar,
-            
             "comision_monto": comision_total,
             "iva_comision": iva_total,
             "impuesto_4x1000": impuesto_total,
@@ -1090,8 +1185,7 @@ class RepositorioLiquidacionSQLite:
             "gastos_rep": gastos_rep,
             "pago_predial": pago_predial,
             "otros_egr": otros_egr,
-            
-            "observaciones": f"Estado de cuenta consolidado para {len(liquidaciones)} inmuebles."
+            "observaciones": f"Estado de cuenta consolidado para {len(liquidaciones)} inmuebles.",
         }
 
     def marcar_como_pagadas_por_propietario(
@@ -1184,10 +1278,15 @@ class RepositorioLiquidacionSQLite:
             query_params.append(f"%{periodo}%")
 
         if busqueda:
-            cols = ["p.DIRECCION_PROPIEDAD", "per.NOMBRE_COMPLETO", "per.NUMERO_DOCUMENTO", "CAST(l.ID_CONTRATO_M AS TEXT)"]
+            cols = [
+                "p.DIRECCION_PROPIEDAD",
+                "per.NOMBRE_COMPLETO",
+                "per.NUMERO_DOCUMENTO",
+                "CAST(l.ID_CONTRATO_M AS TEXT)",
+            ]
             cond = self.db.get_search_condition(cols)
             conditions.append(f"({cond})")
-            
+
             term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
             query_params.extend([term_norm] * len(cols))
 
@@ -1257,10 +1356,15 @@ class RepositorioLiquidacionSQLite:
             query_params.append(f"%{periodo}%")
 
         if busqueda:
-            cols = ["p.DIRECCION_PROPIEDAD", "per.NOMBRE_COMPLETO", "per.NUMERO_DOCUMENTO", "CAST(l.ID_CONTRATO_M AS TEXT)"]
+            cols = [
+                "p.DIRECCION_PROPIEDAD",
+                "per.NOMBRE_COMPLETO",
+                "per.NUMERO_DOCUMENTO",
+                "CAST(l.ID_CONTRATO_M AS TEXT)",
+            ]
             cond = self.db.get_search_condition(cols)
             conditions.append(f"({cond})")
-            
+
             term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
             query_params.extend([term_norm] * len(cols))
 
