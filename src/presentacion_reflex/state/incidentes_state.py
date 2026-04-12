@@ -378,12 +378,13 @@ class IncidentesState(DocumentosStateMixin):
                     "nombre_proveedor": inc.nombre_proveedor,
                     "cotizaciones_resumen": cotizaciones_list,
                 }
-                items.append(item)
+                incidente_dict_obj = IncidenteDict(**item)
+                items.append(incidente_dict_obj)
 
                 # Agrupar para Kanban
                 for col_name, status_list in self.kanban_columns.items():
                     if inc.estado in status_list:
-                        kanban_grouped[col_name].append(item)
+                        kanban_grouped[col_name].append(incidente_dict_obj)
                         break
 
             async with self:

@@ -65,6 +65,7 @@ def login_card() -> rx.Component:
                             width="100%",
                             variant="surface",
                             class_name="claude-input-elite",
+                            aria_label="Usuario",
                         ),
                         align_items="start",
                         width="100%",
@@ -89,6 +90,7 @@ def login_card() -> rx.Component:
                                 variant="surface",
                                 class_name="claude-input-elite",
                                 padding_right="40px",
+                                aria_label="Contraseña",
                             ),
                             rx.box(
                                 rx.cond(
@@ -125,14 +127,13 @@ def login_card() -> rx.Component:
                         "Iniciar Sesión",
                         type="submit",
                         size="3",
-                        color_scheme="blue",
                         class_name="login-button-elite",
                         style={
                             "border_radius": "12px",
                             "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.4)",
                             "margin_top": "1rem",
                             "font_weight": "bold",
-                            "background": "rgba(59, 130, 246, 0.9)",
+                            "background": "var(--brand-primary)",
                             "backdrop_filter": "blur(4px)",
                             "cursor": "pointer",
                         },
@@ -199,6 +200,7 @@ def login_page() -> rx.Component:
                     font_size=["1.5em", "1.75em", "2em", "2.5em"],
                     weight="bold",
                     letter_spacing="-0.02em",
+                    font_family="Playfair Display, serif",
                 ),
                 rx.text(
                     "Sistema de Gestión Inmobiliaria Elite",
