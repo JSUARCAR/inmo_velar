@@ -327,8 +327,7 @@ def _render_kpi_card(
 
 def contratos_page() -> rx.Component:
     """Componente principal de la página de contratos."""
-    return rx.fragment(
-        rx.toast.provider(),
+    return rx.box(
         dashboard_layout(
             rx.vstack(
                 # Encabezado

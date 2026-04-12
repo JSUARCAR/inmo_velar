@@ -75,6 +75,22 @@ class RepositorioAsesorPostgres:
         cursor.close()
         return [self._row_to_entity(row) for row in rows]
 
+    def listar_todos(self) -> List[Asesor]:
+        """Lista todos los asesores (activos e inactivos) con sus datos personales."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+
+        query = """
+            SELECT a.*, p.NOMBRE_COMPLETO
+            FROM ASESORES a
+            JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA
+            ORDER BY p.NOMBRE_COMPLETO
+        """
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        cursor.close()
+        return [self._row_to_entity(row) for row in rows]
+
     def crear(self, asesor: Asesor, usuario_sistema: str) -> Asesor:
         """Crea un nuevo asesor en PostgreSQL."""
         conn = self.db.obtener_conexion()
