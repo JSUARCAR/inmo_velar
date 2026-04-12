@@ -14,7 +14,6 @@ import reflex as rx
 
 from src.dominio.constantes.recaudo import MetodoPago, EstadoRecaudo
 from src.dominio.interfaces.repositorio_recaudo import FiltrosRecaudo
-from src.aplicacion.esquemas.recaudo import ResultadoOperacion
 from src.aplicacion.servicios.servicio_recaudo import ServicioRecaudo
 from src.infraestructura.persistencia.database import db_manager
 from src.infraestructura.persistencia.repositorio_recaudo import RepositorioRecaudo
