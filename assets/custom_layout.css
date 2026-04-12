@@ -25,53 +25,94 @@
 }
 
 
-@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap');
 
 :root {
-    --default-font-family: 'Comfortaa', sans-serif;
-
     /* ============================================================
-     * NEUMORPHISM EXECUTIVE — PALETA OFICIAL
-     * Superficie: #e0e5ec | Sombra Oscura: #a3b1c6 | Luz: #ffffff
+     * CLAUDE (ANTHROPIC) DESIGN SYSTEM - Parchment Theme
+     * Warm, literary, editorial aesthetic
      * ============================================================ */
 
+    /* === COLORS === */
+    
     /* Backgrounds (Light Theme) */
-    --bg-app: #e0e5ec;
-    --bg-panel: #e0e5ec;
-    --bg-hover: #d1d9e6;
+    --bg-app: #f5f4ed;           /* Parchment - Primary canvas */
+    --bg-panel: #faf9f5;         /* Ivory - Elevated surfaces */
+    --bg-hover: #e8e6dc;         /* Warm Sand - Interactive hover */
     --bg-subtle: var(--gray-3);
 
-    /* --- ELITE Named Shadows (fuente de verdad, 10px/20px auditados) --- */
-    --shadow-raised-elite: 10px 10px 20px #a3b1c6, -10px -10px 20px #ffffff;
-    --shadow-flat-elite: 5px 5px 10px #a3b1c6, -5px -5px 10px #ffffff;
-    --shadow-inset-elite: inset 6px 6px 12px #a3b1c6, inset -6px -6px 12px #ffffff;
-    --shadow-inset-light-elite: inset 4px 4px 8px rgba(163, 177, 198, 0.5), inset -4px -4px 8px rgba(255, 255, 255, 0.9);
-    --shadow-modal-elite: 15px 15px 30px #a3b1c6, -5px -5px 15px rgba(255, 255, 255, 0.6);
+    /* === TYPOGRAPHY === */
+    --font-serif: 'Playfair Display', 'Georgia', serif;   /* Anthropic Serif fallback */
+    --font-sans: 'Inter', 'Arial', sans-serif;            /* Anthropic Sans fallback */
+    --font-mono: 'Consolas', 'Monaco', monospace;         /* Anthropic Mono fallback */
 
-    /* --- Aliases retrocompatibles (apuntan a las ELITE) --- */
+    /* === SHADOWS - Ring System (NOT drop shadows) === */
+    --shadow-raised-elite: 0px 0px 0px 1px #d1cfc5;
+    --shadow-flat-elite: 0px 0px 0px 1px #dedc01;
+    --shadow-inset-elite: inset 0px 0px 0px 1px rgba(0,0,0,0.1);
+    --shadow-inset-light-elite: inset 0px 0px 0px 1px rgba(0,0,0,0.05);
+    --shadow-modal-elite: 0px 4px 24px rgba(0,0,0,0.05);
+    --shadow-whisper: 0px 4px 24px rgba(0,0,0,0.05);
+
+    /* --- Aliases retrocompatibles (apuntan a las nuevas) --- */
     --neu-shadow: var(--shadow-raised-elite);
     --neu-modal-shadow: var(--shadow-modal-elite);
     --neu-inset: var(--shadow-inset-elite);
     --neu-inset-light: var(--shadow-inset-light-elite);
+
+    /* === TEXT COLORS === */
+    --text-primary: #141413;       /* Anthropic Near Black */
+    --text-secondary: #5e5d59;     /* Olive Gray */
+    --text-tertiary: #87867f;      /* Stone Gray */
+    
+    /* === BORDERS === */
+    --border-default: #f0eee6;     /* Border Cream */
+    --border-emphasis: #e8e6dc;   /* Border Warm */
+
+    /* === BRAND COLORS === */
+    --brand-primary: #c96442;      /* Terracotta Brand */
+    --brand-accent: #d97757;       /* Coral Accent */
+    
+    /* === FOCUS COLOR (Only cool color) === */
+    --focus-blue: #3898ec;
+
+    /* === FONT SIZE SCALE (10% reduction from 16px base) === */
+    --font-size-xs: 0.75rem;     /* 12px → 10.8px (mínimo legible) */
+    --font-size-sm: 0.875rem;    /* 14px → 12.6px */
+    --font-size-base: 0.9375rem; /* 15px → 13.5px */
+    --font-size-md: 1rem;        /* 16px → 14.4px */
+    --font-size-lg: 1.125rem;    /* 18px → 16.2px */
+    --font-size-xl: 1.25rem;     /* 20px → 18px */
 }
 
 .dark,
 .dark-theme,
 [data-theme="dark"] {
-    /* Backgrounds (Dark Theme) */
-    --bg-app: #18191c;
-    --bg-panel: #18191c;
-    --bg-hover: #1e1f23;
+    /* === COLORS (Dark Theme) === */
+    --bg-app: #141413;           /* Anthropic Near Black */
+    --bg-panel: #30302e;         /* Dark Surface */
+    --bg-hover: #3d3d3a;         /* Dark Warm */
     --bg-subtle: var(--gray-3);
 
-    /* --- ELITE Named Shadows (Dark) --- */
-    --shadow-raised-elite: 10px 10px 20px rgba(0, 0, 0, 0.8), -10px -10px 20px rgba(45, 47, 53, 0.4);
-    --shadow-flat-elite: 5px 5px 10px rgba(0, 0, 0, 0.7), -5px -5px 10px rgba(45, 47, 53, 0.35);
-    --shadow-inset-elite: inset 6px 6px 12px rgba(0, 0, 0, 0.8), inset -6px -6px 12px rgba(45, 47, 53, 0.6);
-    --shadow-inset-light-elite: inset 4px 4px 8px rgba(0, 0, 0, 0.5), inset -4px -4px 8px rgba(45, 47, 53, 0.4);
-    --shadow-modal-elite: 15px 15px 40px rgba(0, 0, 0, 0.9), -5px -5px 15px rgba(45, 47, 53, 0.2);
+    /* === TEXT COLORS (Dark) === */
+    --text-primary: #faf9f5;      /* Ivory */
+    --text-secondary: #b0aea5;    /* Warm Silver */
+    --text-tertiary: #87867f;     /* Stone Gray */
+    
+    /* === BORDERS (Dark) === */
+    --border-default: #30302e;    /* Border Dark */
+    --border-emphasis: #4d4c48;   /* Charcoal Warm */
 
-    /* --- Aliases retrocompatibles (Dark) --- */
+    /* === SHADOWS (Dark) === */
+    --shadow-raised-elite: 0px 0px 0px 1px #30302e;
+    --shadow-flat-elite: 0px 0px 0px 1px #4d4c48;
+    --shadow-inset-elite: inset 0px 0px 0px 1px rgba(0,0,0,0.4);
+    --shadow-inset-light-elite: inset 0px 0px 0px 1px rgba(0,0,0,0.2);
+    --shadow-modal-elite: 0px 4px 24px rgba(0,0,0,0.3);
+    --shadow-whisper: 0px 4px 24px rgba(0,0,0,0.2);
+
+    /* === Aliases retrocompatibles (Dark) === */
     --neu-shadow: var(--shadow-raised-elite);
     --neu-modal-shadow: var(--shadow-modal-elite);
     --neu-inset: var(--shadow-inset-elite);
@@ -80,7 +121,7 @@
 
 body,
 * {
-    font-family: 'Comfortaa', sans-serif !important;
+    font-family: var(--font-sans) !important;
 }
 
 /* Ocultar en escritorio (768px y mayor) */
@@ -153,115 +194,59 @@ body,
 }
 
 /* 
- * Glassmorphism Override para Reflex/Radix UI.
- * Radix inyecta un seudo-elemento ::before y ::after para el color y el outline.
- * Esta clase fuerza la anulación para tarjetas de cristal puro (ej. Login). 
+ * CLAUDE (ANTHROPIC) - Card Style.
+ * Parchment surface with warm border and whisper shadow
  */
-.transparent-card::before,
-.transparent-card::after,
-.rt-Card.transparent-card::before,
-.rt-Card.transparent-card::after {
-    display: none !important;
-    background: transparent !important;
-    background-color: transparent !important;
-}
-
-/* 
- * Login Elite Layout Fix.
- * Fuerza el centrado absoluto y la transparencia para permitir la visibilidad de los fondos Aurora/Matrix.
- */
-.login-container-elite {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 100% !important;
-    min-height: 100vh !important;
-    background: transparent !important;
-    position: relative !important;
-    z-index: 10 !important;
+.claude-card-elite {
+    background: var(--bg-panel) !important;
+    border: 1px solid var(--border-default) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--shadow-whisper) !important;
     overflow: hidden !important;
 }
 
-.login-header-elite {
-    position: absolute !important;
-    top: 10% !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 20 !important;
-    pointer-events: none !important;
-    text-align: center !important;
-}
-
-/* 
- * Radix Base Override.
- * Radix inyecta fondos sólidos en los contenedores raíz (rt-Box).
- * Esto asegura que el fondo sea siempre transparente en el login.
- */
-.login-page-root,
-.login-page-root>div {
-    background: transparent !important;
-    background-color: transparent !important;
-}
-
-/* 
- * Glassmorphism Elite Styles.
- * Efecto de cristal esmerilado unificado para login.
- */
-.glass-card-elite {
-    background: rgba(255, 255, 255, 0.08) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    border-radius: 24px !important;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
-    overflow: hidden !important;
-}
-
-.glass-input-elite input {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+.claude-input-elite input {
+    background: var(--bg-panel) !important;
+    border: 1px solid var(--border-emphasis) !important;
     border-radius: 12px !important;
-    color: #1e293b !important;
-    /* Negro/Slate para Light Mode */
-    backdrop-filter: blur(5px) !important;
+    color: var(--text-primary) !important;
 }
 
-.dark .glass-input-elite input,
-[data-theme="dark"] .glass-input-elite input {
-    color: white !important;
+.dark .claude-input-elite input,
+[data-theme="dark"] .claude-input-elite input {
+    color: var(--text-primary) !important;
 }
 
 
-.glass-input-elite input::placeholder {
-    color: rgba(255, 255, 255, 0.5) !important;
+.claude-input-elite input::placeholder {
+    color: var(--text-tertiary) !important;
 }
 
-.glass-text-elite {
-    color: rgba(255, 255, 255, 0.95) !important;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+.claude-text-elite {
+    color: var(--text-primary) !important;
 }
 
-.glass-subtext-elite {
-    color: rgba(255, 255, 255, 0.7) !important;
+.claude-subtext-elite {
+    color: var(--text-secondary) !important;
 }
 
-.glass-eye-icon {
-    color: rgba(30, 41, 59, 0.55) !important;
+.claude-eye-icon {
+    color: var(--text-tertiary) !important;
     transition: color 0.2s ease !important;
 }
 
-.glass-eye-icon:hover {
-    color: rgba(30, 41, 59, 0.9) !important;
+.claude-eye-icon:hover {
+    color: var(--text-primary) !important;
 }
 
-.dark .glass-eye-icon,
-[data-theme="dark"] .glass-eye-icon {
-    color: rgba(255, 255, 255, 0.55) !important;
+.dark .claude-eye-icon,
+[data-theme="dark"] .claude-eye-icon {
+    color: var(--text-secondary) !important;
 }
 
-.dark .glass-eye-icon:hover,
-[data-theme="dark"] .glass-eye-icon:hover {
-    color: rgba(255, 255, 255, 0.95) !important;
+.dark .claude-eye-icon:hover,
+[data-theme="dark"] .claude-eye-icon:hover {
+    color: var(--text-primary) !important;
 }
 
 .login-button-elite {
@@ -271,7 +256,7 @@ body,
     width: 220px !important;
 }
 
-/* Fuerza Neumorfismo en Dropdowns y Tooltips */
+/* Fuerza Claude Design System en Dropdowns y Tooltips */
 .rt-SelectContent,
 .rt-HoverCardContent {
     background-color: var(--bg-panel) !important;
@@ -297,82 +282,69 @@ body,
 }
 
 /* ==========================================================
- * NEUMORPHISM EXECUTIVE — TABLA CONTRATOS
- * Hover: inset (profundidad táctil) | Header: elevado
- * ========================================================== */
-
-/* Contenedor de la tabla con sombra elevada */
-.neu-table-elite {
-    background: var(--bg-panel) !important;
-    box-shadow: var(--shadow-raised-elite) !important;
-    border-radius: 16px !important;
-    overflow: hidden !important;
-    padding: 4px !important;
-}
-
-/* Header de tabla: panel hundido para separación visual */
-.neu-table-elite thead tr th,
-.rt-TableRootTable thead tr th {
-    background: var(--bg-hover) !important;
-    box-shadow: var(--shadow-inset-elite) !important;
-    color: var(--gray-11) !important;
-    font-weight: 700 !important;
-    font-size: 0.75rem !important;
-    letter-spacing: 0.05em !important;
-    text-transform: uppercase !important;
-    padding: 12px 16px !important;
-    border-bottom: none !important;
-}
-
-/* Filas de datos: transición hacia inset en hover (efecto táctil) */
-.neu-table-elite tbody tr,
-.rt-TableRootTable tbody tr {
-    background: var(--bg-panel) !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    border-bottom: 1px solid rgba(163, 177, 198, 0.15) !important;
-}
-
-.neu-table-elite tbody tr:hover,
-.rt-TableRootTable tbody tr:hover {
-    background: var(--bg-hover) !important;
-    box-shadow: inset 3px 3px 8px rgba(163, 177, 198, 0.3),
-        inset -3px -3px 8px rgba(255, 255, 255, 0.7) !important;
-    transform: scale(1.002) !important;
-}
-
-/* Celdas: sin bordes visibles, padding consistente */
-.neu-table-elite td,
-.rt-TableRootTable tbody td {
-    padding: 12px 16px !important;
-    vertical-align: middle !important;
-    border: none !important;
-}
-
-/* ==========================================================
- * BADGES REDONDEADOS ELITE (border-radius 14px)
- * Aplica a todos los badges del sistema
+ * CLAUDE (ANTHROPIC) — BADGES
+ * Border-based, warm palette, no glow
  * ========================================================== */
 .rt-BadgeRoot {
-    border-radius: 14px !important;
-    font-weight: 600 !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
     padding: 3px 10px !important;
     letter-spacing: 0.02em !important;
+    font-family: var(--font-sans) !important;
 }
 
-/* Badge "Activo" — verde con glow sutil */
+/* Badge "Activo" — verde con warm border */
 .rt-BadgeRoot.rt-variant-surface[data-accent-color="green"] {
     border: 1px solid var(--green-6) !important;
-    box-shadow: 0 0 6px rgba(81, 207, 102, 0.2) !important;
+    background: transparent !important;
 }
 
 /* Badge "Terminado/Vencido" — rojo */
 .rt-BadgeRoot.rt-variant-surface[data-accent-color="red"] {
     border: 1px solid var(--red-6) !important;
+    background: transparent !important;
 }
 
-/* Badge tipo contrato (soft) — bordes limpios */
+/* Badge tipo contrato (soft) — warm border */
 .rt-BadgeRoot.rt-variant-soft {
-    border: 1px solid rgba(163, 177, 198, 0.2) !important;
+    border: 1px solid var(--border-emphasis) !important;
+}
+
+/* Header de tabla: fondo subtle con border */
+.claude-table-elite thead tr th,
+.rt-TableRootTable thead tr th {
+    background: var(--bg-hover) !important;
+    color: var(--text-secondary) !important;
+    font-family: var(--font-sans) !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid var(--border-emphasis) !important;
+}
+
+/* Filas de datos: transición hacia ring en hover */
+.claude-table-elite tbody tr,
+.rt-TableRootTable tbody tr {
+    background: var(--bg-panel) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-bottom: 1px solid var(--border-default) !important;
+}
+
+.claude-table-elite tbody tr:hover,
+.rt-TableRootTable tbody tr:hover {
+    background: var(--bg-hover) !important;
+    box-shadow: var(--shadow-raised-elite) !important;
+    transform: scale(1.002) !important;
+}
+
+/* Celdas: sin bordes visibles, padding consistente */
+.claude-table-elite td,
+.rt-TableRootTable tbody td {
+    padding: 12px 16px !important;
+    vertical-align: middle !important;
+    border: none !important;
 }
 
 /* Utilidad de accesibilidad: oculta contenido visualmente pero lo mantiene para screen readers */
@@ -386,4 +358,16 @@ body,
     clip: rect(0, 0, 0, 0) !important;
     white-space: nowrap !important;
     border: 0 !important;
+}
+
+/* Global font size reduction - 10% (16px → 14.4px base) */
+html {
+    font-size: 14.4px;
+}
+
+/* Mobile breakpoints - ensure minimum readable size */
+@media (max-width: 768px) {
+    html {
+        font-size: 12px; /* Mínimo 12px en móvil */
+    }
 }
