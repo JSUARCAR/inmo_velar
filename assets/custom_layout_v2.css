@@ -86,6 +86,19 @@
     --font-size-xl: 1.25rem;     /* 20px → 18px */
 }
 
+/* Force Radix Themes to use rem-based scaling */
+.radix-themes {
+    --font-size-1: 0.75rem !important;
+    --font-size-2: 0.875rem !important;
+    --font-size-3: 1rem !important;
+    --font-size-4: 1.125rem !important;
+    --font-size-5: 1.25rem !important;
+    --font-size-6: 1.5rem !important;
+    --font-size-7: 1.75rem !important;
+    --font-size-8: 2rem !important;
+    --font-size-9: 2.5rem !important;
+}
+
 .dark,
 .dark-theme,
 [data-theme="dark"] {
@@ -117,6 +130,17 @@
     --neu-modal-shadow: var(--shadow-modal-elite);
     --neu-inset: var(--shadow-inset-elite);
     --neu-inset-light: var(--shadow-inset-light-elite);
+
+    /* === RADIX THEMES OVERRIDES (Dark Theme - ensure same scaling) === */
+    --font-size-1: 0.75rem;
+    --font-size-2: 0.875rem;
+    --font-size-3: 1rem;
+    --font-size-4: 1.125rem;
+    --font-size-5: 1.25rem;
+    --font-size-6: 1.5rem;
+    --font-size-7: 1.75rem;
+    --font-size-8: 2rem;
+    --font-size-9: 2.5rem;
 }
 
 body,
@@ -360,14 +384,14 @@ body,
     border: 0 !important;
 }
 
-/* Global font size reduction - 10% (16px → 14.4px base) */
+/* Global font size reduction - para permitir escalado descendente */
 html {
-    font-size: 14.4px;
+    font-size: 12px;
 }
 
 /* Mobile breakpoints - ensure minimum readable size */
 @media (max-width: 768px) {
     html {
-        font-size: 12px; /* Mínimo 12px en móvil */
+        font-size: 10px; /* Mínimo 10px en móvil */
     }
 }

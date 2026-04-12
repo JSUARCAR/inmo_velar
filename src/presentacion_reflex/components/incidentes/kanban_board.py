@@ -3,7 +3,10 @@ from typing import Any, Dict, List
 import reflex as rx
 
 from src.presentacion_reflex.components.incidentes.incident_card import incident_card
-from src.presentacion_reflex.state.incidentes_state import IncidentesState, IncidenteDict
+from src.presentacion_reflex.state.incidentes_state import (
+    IncidentesState,
+    IncidenteDict,
+)
 from src.presentacion_reflex import styles
 
 
@@ -31,9 +34,7 @@ def _empty_state(title: str) -> rx.Component:
     )
 
 
-def _kanban_column(
-    title: str, items: Any, color_scheme: str
-) -> rx.Component:
+def _kanban_column(title: str, items: Any, color_scheme: str) -> rx.Component:
     return rx.vstack(
         # --- Header ---
         rx.hstack(
@@ -77,7 +78,7 @@ def _kanban_column(
             style={
                 "padding_bottom": "100px",
                 "scrollbar_width": "thin",
-                "scrollbar_color": "#a3b1c6 transparent",
+                "scrollbar_color": "var(--border-default) transparent",
             },
         ),
         # --- Container Styles ---
