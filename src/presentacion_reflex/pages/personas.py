@@ -6,7 +6,7 @@ from src.presentacion_reflex.components.personas.modal_detalles import modal_det
 from src.presentacion_reflex.components.personas.person_card import person_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.personas_state import PersonasState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_spinner, neuro_badge, neuro_table_container
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_spinner, neuro_badge
 from src.presentacion_reflex import styles
 
 

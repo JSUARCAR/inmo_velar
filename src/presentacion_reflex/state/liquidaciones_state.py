@@ -6,7 +6,7 @@ import reflex as rx
 from src.aplicacion.servicios.servicio_financiero import ServicioFinanciero
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
-from src.presentacion_reflex.utils.formatters import format_currency, format_number
+from src.presentacion_reflex.utils.formatters import format_currency
 
 
 class LiquidacionDict(pydantic.BaseModel):
@@ -282,7 +282,7 @@ class LiquidacionesState(DocumentosStateMixin):
                     id_asesor_filt = int(
                         self.filter_asesor_id.split("(")[-1].replace(")", "")
                     )
-                except:
+                except Exception:
                     pass
 
             # Llamar al servicio según el modo de vista
