@@ -3,7 +3,7 @@ Repositorio PostgreSQL para Dashboard.
 Implementa consultas agregadas para métricas.
 """
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.dominio.interfaces.repositorio_dashboard import IRepositorioDashboard
 
@@ -89,25 +89,51 @@ class RepositorioDashboard(IRepositorioDashboard):
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
-            # SQL simplificado del servicio
-            query = f"""
-                WITH ProximosAniversarios AS (
-                    SELECT 
-                        ca.ID_CONTRATO_A, p.DIRECCION_PROPIEDAD, per.NOMBRE_COMPLETO AS INQUILINO,
-                        ca.FECHA_INICIO_CONTRATO_A, ca.CANON_ARRENDAMIENTO,
-                        CAST((julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A)) / 365.25 AS INTEGER) AS ANIOS_ACTIVOS,
-                        date(ca.FECHA_INICIO_CONTRATO_A, '+' || CAST((julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A)) / 365.25 AS INTEGER) + 1 || ' years') AS PROXIMO_ANIVERSARIO,
-                        CAST(julianday(date(ca.FECHA_INICIO_CONTRATO_A, '+' || CAST((julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A)) / 365.25 AS INTEGER) + 1 || ' years')) - julianday('now') AS INTEGER) AS DIAS_HASTA_ANIVERSARIO,
-                        ipc.VALOR_IPC, ipc.ANIO
-                    FROM CONTRATOS_ARRENDAMIENTOS ca
-                    JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-                    JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
-                    JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-                    LEFT JOIN IPC ipc ON ipc.ANIO = CAST(strftime('%Y', 'now') AS INTEGER) - 1
-                    WHERE ca.ESTADO_CONTRATO_A = 'Activo' AND julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A) >= 365 AND ipc.VALOR_IPC IS NOT NULL
-                )
-                SELECT * FROM ProximosAniversarios WHERE DIAS_HASTA_ANIVERSARIO BETWEEN 0 AND {placeholder} ORDER BY DIAS_HASTA_ANIVERSARIO ASC
-            """
+            
+            if self.db.use_postgresql:
+                # Versión PostgreSQL: usa AGE, EXTRACT e intervalos
+                query = f"""
+                    WITH ProximosAniversarios AS (
+                        SELECT 
+                            ca.ID_CONTRATO_A, p.DIRECCION_PROPIEDAD, per.NOMBRE_COMPLETO AS INQUILINO,
+                            ca.FECHA_INICIO_CONTRATO_A, ca.CANON_ARRENDAMIENTO,
+                            EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER AS ANIOS_ACTIVOS,
+                            (ca.FECHA_INICIO_CONTRATO_A::DATE + (EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER + 1 || ' years')::INTERVAL)::DATE AS PROXIMO_ANIVERSARIO,
+                            ((ca.FECHA_INICIO_CONTRATO_A::DATE + (EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER + 1 || ' years')::INTERVAL)::DATE - CURRENT_DATE) AS DIAS_HASTA_ANIVERSARIO,
+                            ipc.VALOR_IPC, ipc.ANIO
+                        FROM CONTRATOS_ARRENDAMIENTOS ca
+                        JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+                        JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+                        JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+                        LEFT JOIN IPC ipc ON ipc.ANIO = EXTRACT(YEAR FROM CURRENT_DATE)::INTEGER - 1
+                        WHERE ca.ESTADO_CONTRATO_A = 'Activo' 
+                        AND CURRENT_DATE - ca.FECHA_INICIO_CONTRATO_A::DATE >= 365 
+                        AND ipc.VALOR_IPC IS NOT NULL
+                    )
+                    SELECT * FROM ProximosAniversarios 
+                    WHERE DIAS_HASTA_ANIVERSARIO BETWEEN 0 AND {placeholder} 
+                    ORDER BY DIAS_HASTA_ANIVERSARIO ASC
+                """
+            else:
+                # Versión SQLite original
+                query = f"""
+                    WITH ProximosAniversarios AS (
+                        SELECT 
+                            ca.ID_CONTRATO_A, p.DIRECCION_PROPIEDAD, per.NOMBRE_COMPLETO AS INQUILINO,
+                            ca.FECHA_INICIO_CONTRATO_A, ca.CANON_ARRENDAMIENTO,
+                            CAST((julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A)) / 365.25 AS INTEGER) AS ANIOS_ACTIVOS,
+                            date(ca.FECHA_INICIO_CONTRATO_A, '+' || CAST((julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A)) / 365.25 AS INTEGER) + 1 || ' years') AS PROXIMO_ANIVERSARIO,
+                            CAST(julianday(date(ca.FECHA_INICIO_CONTRATO_A, '+' || CAST((julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A)) / 365.25 AS INTEGER) + 1 || ' years')) - julianday('now') AS INTEGER) AS DIAS_HASTA_ANIVERSARIO,
+                            ipc.VALOR_IPC, ipc.ANIO
+                        FROM CONTRATOS_ARRENDAMIENTOS ca
+                        JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+                        JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+                        JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+                        LEFT JOIN IPC ipc ON ipc.ANIO = CAST(strftime('%Y', 'now') AS INTEGER) - 1
+                        WHERE ca.ESTADO_CONTRATO_A = 'Activo' AND julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A) >= 365 AND ipc.VALOR_IPC IS NOT NULL
+                    )
+                    SELECT * FROM ProximosAniversarios WHERE DIAS_HASTA_ANIVERSARIO BETWEEN 0 AND {placeholder} ORDER BY DIAS_HASTA_ANIVERSARIO ASC
+                """
             cursor.execute(query, (dias,))
             return [{
                 "id_contrato": r["ID_CONTRATO_A"], "direccion": r["DIRECCION_PROPIEDAD"], "inquilino": r["INQUILINO"],

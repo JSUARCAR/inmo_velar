@@ -113,8 +113,7 @@ def propiedades_page() -> rx.Component:
     Página principal de Propiedades con filtros y CRUD.
     """
 
-    return rx.fragment(
-        rx.toast.provider(),
+    return rx.box(
         dashboard_layout(
             rx.vstack(
                 # --- Elite Header ---
