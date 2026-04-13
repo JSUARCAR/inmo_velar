@@ -10,7 +10,7 @@ def kpi_card(
     titulo: str,
     valor: str,
     icono: str,
-    color_icono: str = "blue",
+    color_icono: str = "var(--brand-primary)",
     subtitulo: str = "",
     es_critico: bool = False,
     variant: str = "standard",  # standard, elite, compact
@@ -22,57 +22,18 @@ def kpi_card(
 
     from src.presentacion_reflex import styles
 
-    # Manejo de colores según criticidad
-    bg_color = "red.9" if es_critico else styles.BG_PANEL  # Semantic background
-    if variant == "elite":
-        bg_color = styles.BG_PANEL
-
+    # Manejo de colores según criticidad usando paleta cálida Parchment
     text_color = "white" if es_critico else styles.TEXT_PRIMARY
     subtitle_color = "red.11" if es_critico else styles.TEXT_SECONDARY
 
-    # Ajuste de colores de icono (Soporte para Var/cond)
-    icon_bg = rx.cond(
-        es_critico,
-        "red.10",
-        rx.cond(
-            rx.Var.create(color_icono).to(str) == "green",
-            "var(--green-3)",
-            rx.cond(
-                rx.Var.create(color_icono).to(str) == "blue",
-                "var(--blue-3)",
-                rx.cond(
-                    rx.Var.create(color_icono).to(str) == "red",
-                    "var(--red-3)",
-                    rx.cond(
-                        rx.Var.create(color_icono).to(str) == "amber",
-                        "var(--amber-3)",
-                        "var(--indigo-3)"
-                    )
-                )
-            )
-        )
-    )
-    
+    # Icon colors - use warm palette (Terracotta for active/critical)
+    icon_bg = rx.cond(es_critico, styles.BRAND_PRIMARY, styles.BG_HOVER)
+
+    # If color_icono is a CSS variable, use it directly; otherwise use color value
     icon_color = rx.cond(
         es_critico,
         "white",
-        rx.cond(
-            rx.Var.create(color_icono).to(str) == "green",
-            "var(--green-9)",
-            rx.cond(
-                rx.Var.create(color_icono).to(str) == "blue",
-                "var(--blue-9)",
-                rx.cond(
-                    rx.Var.create(color_icono).to(str) == "red",
-                    "var(--red-9)",
-                    rx.cond(
-                        rx.Var.create(color_icono).to(str) == "amber",
-                        "var(--amber-9)",
-                        "var(--indigo-9)"
-                    )
-                )
-            )
-        )
+        color_icono,
     )
 
     card_component = None
@@ -102,7 +63,11 @@ def kpi_card(
                         spacing="1",
                     ),
                     rx.text(
-                        valor, size="3", font_size=["14px", "16px"], weight="bold", color=text_color
+                        valor,
+                        size="3",
+                        font_size=["14px", "16px"],
+                        weight="bold",
+                        color=text_color,
                     ),
                     spacing="0",
                     align="start",
@@ -110,7 +75,9 @@ def kpi_card(
                 rx.spacer(),
                 rx.cond(
                     subtitulo != "",
-                    rx.text(subtitulo, size="1", color=subtitle_color, white_space="nowrap"),
+                    rx.text(
+                        subtitulo, size="1", color=subtitle_color, white_space="nowrap"
+                    ),
                 ),
                 width="100%",
                 align="center",
@@ -179,7 +146,9 @@ def kpi_card(
                 rx.cond(
                     subtitulo != "",
                     rx.box(
-                        rx.text(subtitulo, size="1", weight="medium", color=subtitle_color),
+                        rx.text(
+                            subtitulo, size="1", weight="medium", color=subtitle_color
+                        ),
                         margin_top="8px",
                         padding_top="8px",
                         border_top=f"1px solid {styles.BORDER_DEFAULT}",
@@ -217,7 +186,12 @@ def kpi_card(
                         justify_content="center",
                     ),
                     rx.hstack(
-                        rx.text(titulo, size="2", weight="medium", color=styles.TEXT_TERTIARY),
+                        rx.text(
+                            titulo,
+                            size="2",
+                            weight="medium",
+                            color=styles.TEXT_TERTIARY,
+                        ),
                         align="center",
                         spacing="1",
                     ),
@@ -235,7 +209,9 @@ def kpi_card(
                 ),
                 rx.cond(
                     subtitulo != "",
-                    rx.text(subtitulo, size="1", color=subtitle_color, margin_top="2px"),
+                    rx.text(
+                        subtitulo, size="1", color=subtitle_color, margin_top="2px"
+                    ),
                 ),
                 spacing="3",
                 align="start",
@@ -253,6 +229,7 @@ def kpi_card(
 
     if hover_content is not None:
         from src.presentacion_reflex.components.neuro_elements import neuro_tooltip
+
         return neuro_tooltip(content=hover_content, children=card_component)
 
     return card_component
