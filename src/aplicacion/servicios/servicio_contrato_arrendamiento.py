@@ -47,7 +47,9 @@ class ServicioContratoArrendamiento:
         ]
 
     @cache_manager.invalidates("arriendos:list_paginated")
-    def crear_arrendamiento(self, datos: Dict, usuario_sistema: str) -> ContratoArrendamiento:
+    def crear_arrendamiento(
+        self, datos: Dict, usuario_sistema: str
+    ) -> ContratoArrendamiento:
         """Crea un nuevo contrato de arrendamiento con validaciones."""
         id_propiedad = datos["id_propiedad"]
 
@@ -83,16 +85,24 @@ class ServicioContratoArrendamiento:
 
         return contrato_creado
 
-    def obtener_arrendamiento(self, id_contrato: int) -> Optional[ContratoArrendamiento]:
+    def obtener_arrendamiento(
+        self, id_contrato: int
+    ) -> Optional[ContratoArrendamiento]:
         return self.repo_arriendo.obtener_por_id(id_contrato)
 
     @cache_manager.invalidates("arriendos:list_paginated")
-    def actualizar_arrendamiento(self, id_contrato: int, datos: Dict, usuario_sistema: str) -> None:
+    def actualizar_arrendamiento(
+        self, id_contrato: int, datos: Dict, usuario_sistema: str
+    ) -> None:
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
         if not arriendo:
-            raise ValueError(f"No existe el contrato de arrendamiento con ID {id_contrato}")
+            raise ValueError(
+                f"No existe el contrato de arrendamiento con ID {id_contrato}"
+            )
 
-        arriendo.fecha_fin_contrato_a = datos.get("fecha_fin", arriendo.fecha_fin_contrato_a)
+        arriendo.fecha_fin_contrato_a = datos.get(
+            "fecha_fin", arriendo.fecha_fin_contrato_a
+        )
         arriendo.canon_arrendamiento = datos.get("canon", arriendo.canon_arrendamiento)
         arriendo.fecha_pago = datos.get("fecha_pago", arriendo.fecha_pago)
         arriendo.updated_by = usuario_sistema
@@ -116,14 +126,21 @@ class ServicioContratoArrendamiento:
         meses_duracion = arriendo.duracion_contrato_a
 
         # Calcular nueva fecha fin
-        anio_nuevo = fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
+        anio_nuevo = (
+            fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
+        )
         mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
         try:
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo)
+            nueva_fecha_fin_dt = fecha_fin_actual.replace(
+                year=anio_nuevo, month=mes_nuevo
+            )
         except ValueError:
             import calendar
+
             last_day = calendar.monthrange(anio_nuevo, mes_nuevo)[1]
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo, day=last_day)
+            nueva_fecha_fin_dt = fecha_fin_actual.replace(
+                year=anio_nuevo, month=mes_nuevo, day=last_day
+            )
 
         nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
 
@@ -151,7 +168,9 @@ class ServicioContratoArrendamiento:
         }
 
     @cache_manager.invalidates("arriendos:list_paginated")
-    def renovar_arrendamiento(self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None) -> ContratoArrendamiento:
+    def renovar_arrendamiento(
+        self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
+    ) -> ContratoArrendamiento:
         """Lógica de renovación automática con incremento IPC. Acepta fecha fin personalizada."""
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
         if not arriendo or arriendo.estado_contrato_a != "Activo":
@@ -162,16 +181,23 @@ class ServicioContratoArrendamiento:
         meses_duracion = arriendo.duracion_contrato_a
 
         # Lógica de suma de meses (simplificada para SRP, reutilizando la existente)
-        anio_nuevo = fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
+        anio_nuevo = (
+            fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
+        )
         mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
-        
+
         try:
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo)
+            nueva_fecha_fin_dt = fecha_fin_actual.replace(
+                year=anio_nuevo, month=mes_nuevo
+            )
         except ValueError:
             # Caso 31 de mes, etc.
             import calendar
+
             last_day = calendar.monthrange(anio_nuevo, mes_nuevo)[1]
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(year=anio_nuevo, month=mes_nuevo, day=last_day)
+            nueva_fecha_fin_dt = fecha_fin_actual.replace(
+                year=anio_nuevo, month=mes_nuevo, day=last_day
+            )
 
         nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
 
@@ -185,7 +211,9 @@ class ServicioContratoArrendamiento:
         motivo_ren = "Prórroga Automática - Sin IPC (< 1 año)"
 
         if meses_duracion >= 12:
-            nuevo_canon, porcentaje_ipc = self._calcular_incremento_ipc(arriendo.canon_arrendamiento)
+            nuevo_canon, porcentaje_ipc = self._calcular_incremento_ipc(
+                arriendo.canon_arrendamiento
+            )
             motivo_ren = f"Prórroga Automática - Renovación IPC ({porcentaje_ipc}%)"
 
         # 3. Registrar Renovación
@@ -208,21 +236,30 @@ class ServicioContratoArrendamiento:
         arriendo.fecha_fin_contrato_a = nueva_fecha_fin_str
         arriendo.canon_arrendamiento = nuevo_canon
         arriendo.fecha_renovacion_contrato_a = datetime.now().date().isoformat()
-        
+
         self.repo_arriendo.actualizar(arriendo, usuario_sistema)
+
+        # 5. Actualizar canon estimado en propiedad
+        propiedad = self.repo_propiedad.obtener_por_id(arriendo.id_propiedad)
+        if propiedad:
+            propiedad.canon_arrendamiento_estimado = nuevo_canon
+            self.repo_propiedad.actualizar(propiedad, usuario_sistema)
+
         return arriendo
 
     def _calcular_incremento_ipc(self, canon_actual: int) -> tuple[int, float]:
         ipc = self.repo_ipc.obtener_ultimo()
         if not ipc:
             return canon_actual, 0.0
-        
+
         porcentaje = float(ipc.valor_ipc)
         incremento = canon_actual * (porcentaje / 100)
         return int(canon_actual + incremento), porcentaje
 
     @cache_manager.invalidates("arriendos:list_paginated")
-    def terminar_arrendamiento(self, id_contrato: int, motivo: str, usuario_sistema: str) -> None:
+    def terminar_arrendamiento(
+        self, id_contrato: int, motivo: str, usuario_sistema: str
+    ) -> None:
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
         if not arriendo:
             raise ValueError(f"Contrato {id_contrato} no existe")
@@ -230,10 +267,10 @@ class ServicioContratoArrendamiento:
         arriendo.estado_contrato_a = "Cancelado"
         arriendo.motivo_cancelacion = motivo
         arriendo.fecha_fin_contrato_a = datetime.now().strftime("%Y-%m-%d")
-        
+
         propiedad = self.repo_propiedad.obtener_por_id(arriendo.id_propiedad)
         if propiedad:
-            propiedad.disponibilidad_propiedad = 1 # Libre
+            propiedad.disponibilidad_propiedad = 1  # Libre
             self.repo_propiedad.actualizar(propiedad, usuario_sistema)
 
         self.repo_arriendo.actualizar(arriendo, usuario_sistema)
