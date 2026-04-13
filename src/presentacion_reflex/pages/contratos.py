@@ -338,7 +338,7 @@ def contratos_page() -> rx.Component:
                             "Gestión de Contratos",
                             description="Administración de mandatos y arrendamientos",
                             size=28,
-                            accent="purple",
+                            color_scheme="terracotta",
                         ),
                         rx.cond(
                             AuthState.check_action("Contratos", "CREAR"),

@@ -19,7 +19,12 @@ from src.presentacion_reflex.components.dashboard import (
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.dashboard_state import DashboardState
-from src.presentacion_reflex.components.neuro_elements import neuro_panel, neuro_progress, neuro_spinner, neuro_callout
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_panel,
+    neuro_progress,
+    neuro_spinner,
+    neuro_callout,
+)
 from src.presentacion_reflex import styles
 
 
@@ -54,7 +59,11 @@ def dashboard_page() -> rx.Component:
                 rx.center(
                     rx.vstack(
                         neuro_spinner(size="3"),
-                        rx.text("Procesando métricas en tiempo real...", color=styles.TEXT_SECONDARY, size="2"),
+                        rx.text(
+                            "Procesando métricas en tiempo real...",
+                            color=styles.TEXT_SECONDARY,
+                            size="2",
+                        ),
                         spacing="3",
                     ),
                     padding="100px",
@@ -87,13 +96,19 @@ def dashboard_page() -> rx.Component:
                         rx.box(
                             kpi_card(
                                 "Ocupación Financiera",
-                                rx.text(DashboardState.kpi_ocupacion_financiera_view, "%"),
+                                rx.text(
+                                    DashboardState.kpi_ocupacion_financiera_view, "%"
+                                ),
                                 "bar-chart-2",
-                                "blue",
+                                styles.BRAND_PRIMARY,
                                 "Ingresos vs Potencial",
                                 variant="elite",
                                 hover_content=rx.vstack(
-                                    rx.text("Eficiencia de Ingresos", weight="bold", size="3"),
+                                    rx.text(
+                                        "Eficiencia de Ingresos",
+                                        weight="bold",
+                                        size="3",
+                                    ),
                                     rx.separator(),
                                     rx.text(
                                         "Mide qué porcentaje del valor potencial total de la cartera se está recaudando efectivamente.",
@@ -101,17 +116,23 @@ def dashboard_page() -> rx.Component:
                                         color=styles.TEXT_SECONDARY,
                                     ),
                                     rx.hstack(
-                                        rx.text("Recaudo Real:", weight="medium", size="2"),
+                                        rx.text(
+                                            "Recaudo Real:", weight="medium", size="2"
+                                        ),
                                         rx.text(
                                             DashboardState.kpi_recaudo_real_view,
                                             weight="bold",
-                                            color="blue.9",
+                                            color=styles.ACCENT_COLOR,
                                         ),
                                         justify="between",
                                         width="100%",
                                     ),
                                     rx.hstack(
-                                        rx.text("Potencial Total:", weight="medium", size="2"),
+                                        rx.text(
+                                            "Potencial Total:",
+                                            weight="medium",
+                                            size="2",
+                                        ),
                                         rx.text(
                                             DashboardState.kpi_potencial_total_view,
                                             weight="bold",
@@ -124,22 +145,26 @@ def dashboard_page() -> rx.Component:
                                     width="100%",
                                 ),
                             ),
-                             kpi_card(
+                            kpi_card(
                                 "Eficiencia Recaudo",
-                                rx.text(DashboardState.kpi_eficiencia_recaudo_view, "%"),
+                                rx.text(
+                                    DashboardState.kpi_eficiencia_recaudo_view, "%"
+                                ),
                                 "wallet",
-                                "green",
+                                styles.TEXT_SECONDARY,
                                 "Recaudado este mes",
                                 variant="elite",
                                 hover_content=rx.vstack(
                                     rx.text("Recaudo Mensual", weight="bold", size="2"),
                                     rx.separator(),
                                     rx.text(
-                                        "Total recaudado en el mes actual: ", DashboardState.recaudo_mes_view,
+                                        "Total recaudado en el mes actual: ",
+                                        DashboardState.recaudo_mes_view,
                                         size="1",
                                     ),
                                     rx.text(
-                                        "Meta de recaudo: ", DashboardState.kpi_potencial_total_view,
+                                        "Meta de recaudo: ",
+                                        DashboardState.kpi_potencial_total_view,
                                         size="1",
                                     ),
                                     spacing="1",
@@ -149,11 +174,13 @@ def dashboard_page() -> rx.Component:
                                 "Potencial Total",
                                 DashboardState.kpi_potencial_total_view,
                                 "banknote",
-                                "indigo",
+                                styles.TEXT_TERTIARY,
                                 "Cartera Total Estimada",
                                 variant="elite",
                                 hover_content=rx.vstack(
-                                    rx.text("Proyección de Cartera", weight="bold", size="2"),
+                                    rx.text(
+                                        "Proyección de Cartera", weight="bold", size="2"
+                                    ),
                                     rx.text(
                                         "Es la suma total del canon esperado de todos los contratos activos.",
                                         size="1",
@@ -212,14 +239,16 @@ def dashboard_page() -> rx.Component:
                                     "Cartera Mora",
                                     DashboardState.mora_monto_total_view,
                                     "circle_alert",
-                                    "red",
+                                    styles.BRAND_PRIMARY,
                                     rx.text(
                                         DashboardState.mora_cantidad_contratos_view,
                                         " ctros",
                                     ),
                                     variant="compact",
                                     hover_content=rx.vstack(
-                                        rx.text("Cartera Vencida", weight="bold", size="2"),
+                                        rx.text(
+                                            "Cartera Vencida", weight="bold", size="2"
+                                        ),
                                         rx.text(
                                             "Total pendiente de cobro fuera de fecha límite.",
                                             size="1",
@@ -242,11 +271,15 @@ def dashboard_page() -> rx.Component:
                                     "Recaudo Mes",
                                     DashboardState.recaudo_mes_view,
                                     "wallet",
-                                    "green",
-                                    rx.text(DashboardState.recaudo_porcentaje_view, "%"),
+                                    styles.TEXT_SECONDARY,
+                                    rx.text(
+                                        DashboardState.recaudo_porcentaje_view, "%"
+                                    ),
                                     variant="compact",
                                     hover_content=rx.vstack(
-                                        rx.text("Recaudo Mensual", weight="bold", size="2"),
+                                        rx.text(
+                                            "Recaudo Mensual", weight="bold", size="2"
+                                        ),
                                         rx.text(
                                             "Ingresos procesados en el mes corriente.",
                                             size="1",
@@ -254,7 +287,7 @@ def dashboard_page() -> rx.Component:
                                         ),
                                         neuro_progress(
                                             value=DashboardState.flujo_porcentaje_int_view,
-                                            color_scheme="green",
+                                            color_scheme="orange",
                                             height="6px",
                                             width="100%",
                                         ),
@@ -268,8 +301,8 @@ def dashboard_page() -> rx.Component:
                                         "%",
                                     ),
                                     "home",
-                                    "blue",
-                                     rx.text(
+                                    styles.BRAND_PRIMARY,
+                                    rx.text(
                                         DashboardState.ocupacion_ocupadas_view,
                                         "/",
                                         DashboardState.ocupacion_disponibles_view,
@@ -284,8 +317,8 @@ def dashboard_page() -> rx.Component:
                                     "Comisiones",
                                     DashboardState.comisiones_monto_total_view,
                                     "credit-card",
-                                    "amber",
-                                     rx.text(
+                                    styles.TEXT_TERTIARY,
+                                    rx.text(
                                         DashboardState.comisiones_cantidad_view,
                                         " pend",
                                     ),
@@ -297,21 +330,24 @@ def dashboard_page() -> rx.Component:
                                 ),
                                 kpi_card(
                                     "Contratos",
-                                     DashboardState.contratos_count_view,
+                                    DashboardState.contratos_count_view,
                                     "file-text",
-                                    "indigo",
+                                    styles.TEXT_SECONDARY,
                                     "Activos",
                                     variant="compact",
                                     hover_content=rx.text(
-                                        "Total de contratos de arrendamiento vigentes.", size="1"
+                                        "Total de contratos de arrendamiento vigentes.",
+                                        size="1",
                                     ),
                                 ),
                                 kpi_card(
                                     "Recibos Pend.",
                                     DashboardState.recibos_monto_total_view,
-                                    "receipt", # icono
-                                    rx.cond(DashboardState.recibos_monto_total_view == "$0", "green", "red"), # color_icono
-                                    rx.text(DashboardState.recibos_cantidad_view, " unds"), # subtitulo
+                                    "receipt",
+                                    styles.TEXT_SECONDARY,
+                                    rx.text(
+                                        DashboardState.recibos_cantidad_view, " unds"
+                                    ),
                                     variant="compact",
                                     hover_content=rx.text(
                                         "Recibos de servicios públicos o administración pendientes de pago.",
@@ -357,10 +393,17 @@ def dashboard_page() -> rx.Component:
     )
 
 
-
 from src.presentacion_reflex.state.alertas_state import AlertasState
 
+
 # Ruta protegida
-@rx.page(route="/dashboard", on_load=[AuthState.require_login, DashboardState.on_load, AlertasState.check_alerts])
+@rx.page(
+    route="/dashboard",
+    on_load=[
+        AuthState.require_login,
+        DashboardState.on_load,
+        AlertasState.check_alerts,
+    ],
+)
 def dashboard():
     return dashboard_page()

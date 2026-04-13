@@ -120,31 +120,95 @@ src/
 
 ---
 
-## 🎨 Sistema de Diseño: Neumorfismo Ejecutivo
+## 🎨 Sistema de Diseño: Claude (Anthropic) Design System
 
-### Paleta de Colores (Neumorfismo Puro)
+### Paleta de Colores (Tema Parchment)
 
 ```python
-# Superficie base
-"surface": "#e0e5ec"           # Gris azulado claro
+# Backgrounds (Light Theme)
+"parchment": "#f5f4ed"           # Canvas principal
+"ivory": "#faf9f5"               # Elevated surfaces (cards)
+"warm_sand": "#e8e6dc"           # Interactive hover
 
-# Variaciones de sombra para efecto neumórfico
-"shadow_light": "#ffffff"      # Sombra clara (arriba/izq)
-"shadow_dark": "#a3b1c6"       # Sombra oscura (abajo/der)
+# Primary Text
+"near_black": "#141413"          # Anthropic Near Black - Primary text
+"olive_gray": "#5e5d59"          # Secondary body text
+"stone_gray": "#87867f"          # Tertiary text, footnotes
 
-# Colores de acento
-"primary": "#6d5dfc"           # Púrpura eléctrico
-"primary_light": "#8abdff"     # Azul cielo
-"secondary": "#ff6b6b"         # Coral para alertas
-"success": "#51cf66"           # Verde éxito
-"warning": "#ffd43b"           # Amarillo advertencia
-"danger": "#ff6b6b"            # Rojo peligro
+# Brand Colors
+"terracotta": "#c96442"          # Primary CTA - The only chromatic color
+"coral": "#d97757"               # Text accents, secondary emphasis
 
-# Textos
-"text_primary": "#4d5f71"      # Texto principal
-"text_secondary": "#8a9bb8"     # Texto secundario
-"text_muted": "#a0aec0"        # Texto deshabilitado
+# Dark Theme
+"dark_surface": "#30302e"        # Dark containers, nav borders
+"deep_dark": "#141413"           # Dark theme background
+
+# Borders
+"border_cream": "#f0eee6"        # Standard light border
+"border_warm": "#e8e6dc"         # Prominent borders
+
+# Focus (Only cool color in system)
+"focus_blue": "#3898ec"          # Input focus rings - accessibility only
 ```
+
+### Sistema de Sombras (Ring-Based)
+
+```python
+# Ring shadows - border-like depth without visible borders
+# Level 2: Interactive elements, buttons, cards
+"shadow_raised": "0px 0px 0px 1px #d1cfc5"     # Resting state
+"shadow_flat": "0px 0px 0px 1px #dedc01"       # Hover state  
+"shadow_inset": "inset 0px 0px 0px 1px rgba(0,0,0,0.1)"  # Active/pressed
+
+# Level 3: Elevated content (cards, screenshots)
+"shadow_whisper": "0px 4px 24px rgba(0,0,0,0.05)"
+
+# Dark theme shadows
+"shadow_raised_dark": "0px 0px 0px 1px #30302e"
+"shadow_whisper_dark": "0px 4px 24px rgba(0,0,0,0.3)"
+```
+
+### Tipografía
+
+```python
+# Headlines - Serif (Anthropic Serif with Georgia fallback)
+font_family: "'Playfair Display', 'Georgia', serif"
+font_weight: 500
+line_height: 1.10-1.30 (tight for headlines)
+
+# Body/UI - Sans (Anthropic Sans with Inter fallback)
+font_family: "'Inter', 'Arial', sans-serif"
+font_weight: 400-500
+line_height: 1.60 (relaxed for reading)
+
+# Code - Mono (Anthropic Mono fallback)
+font_family: "'Consolas', 'Monaco', monospace"
+```
+
+### Transiciones Globales
+
+```python
+# Transición estándar para TODOS los elementos interactivos
+"transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+
+# Transición rápida para micro-interacciones
+"transition_fast": "all 0.15s ease-out"
+
+# Transición lenta para modales/drawers
+"transition_slow": "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)"
+```
+
+### Principios de Diseño Claude
+
+| Principio | Descripción |
+|-----------|-------------|
+| **Warm palette only** | Cada gris tiene tono amarillo-marrón - sin blue-grays |
+| **Serif for headlines** | Anthropic Serif (weight 500) para todos los títulos |
+| **Sans for UI** | Inter para botones, labels, navegación |
+| **Ring shadows** | `0px 0px 0px 1px` - profundidad sin borders visibles |
+| **Terracotta CTA** | Solo botón con color cromático - para llamadas a acción principales |
+| **Editorial pacing** | Espaciado generoso entre secciones - como una revista |
+| **Alternating sections** | Secciones claras/oscuras alternadas - ritmo como capítulos de libro |
 
 ### Sombras Neumórficas (Obligatorias)
 
@@ -1140,7 +1204,7 @@ def sanitize_output(text: str) -> str:
 
 6. **Testabilidad**: Todo código debe ser testeable sin I/O real. Inyectar dependencias.
 
-7. **Neumorfismo Consistente**: Cada componente UI sigue el sistema de diseño ejecutivo. Sin excepciones.
+7. **Claude Design System**: Cada componente UI sigue el sistema de diseño Claude (Anthropic). Sin referencias a Neumorphism. Fondos Parchment (#f5f4ed), sombras ring-based, botón Terracotta para CTAs.
 
 8. **PostgreSQL Nativo**: Sin referencias a SQLite. Placeholders `%s`, INSERT con `RETURNING`, tipos estrictos.
 

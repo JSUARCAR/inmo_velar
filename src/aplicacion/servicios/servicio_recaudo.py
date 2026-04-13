@@ -46,9 +46,7 @@ class ServicioRecaudo:
 
     # ==================== REGISTRO ====================
 
-    def registrar_pago(
-        self, comando: ComandoRegistrarPago, usuario: str
-    ) -> Recaudo:
+    def registrar_pago(self, comando: ComandoRegistrarPago, usuario: str) -> Recaudo:
         """
         Registra un nuevo pago.
 
@@ -85,9 +83,7 @@ class ServicioRecaudo:
 
     # ==================== CAMBIOS DE ESTADO ====================
 
-    def aplicar_pago(
-        self, id_recaudo: int, usuario: str
-    ) -> ResultadoOperacion:
+    def aplicar_pago(self, id_recaudo: int, usuario: str) -> ResultadoOperacion:
         """
         Aplica un pago pendiente.
 
@@ -115,9 +111,7 @@ class ServicioRecaudo:
                 ),
             )
 
-        self.repo.cambiar_estado(
-            id_recaudo, EstadoRecaudo.APLICADO.value, usuario
-        )
+        self.repo.cambiar_estado(id_recaudo, EstadoRecaudo.APLICADO.value, usuario)
 
         return ResultadoOperacion(
             exito=True,
@@ -125,9 +119,7 @@ class ServicioRecaudo:
             id_recaudo=id_recaudo,
         )
 
-    def reversar_pago(
-        self, id_recaudo: int, usuario: str
-    ) -> ResultadoOperacion:
+    def reversar_pago(self, id_recaudo: int, usuario: str) -> ResultadoOperacion:
         """
         Revierte un pago aplicado.
 
@@ -155,9 +147,7 @@ class ServicioRecaudo:
                 ),
             )
 
-        self.repo.cambiar_estado(
-            id_recaudo, EstadoRecaudo.REVERSADO.value, usuario
-        )
+        self.repo.cambiar_estado(id_recaudo, EstadoRecaudo.REVERSADO.value, usuario)
 
         return ResultadoOperacion(
             exito=True,
@@ -167,9 +157,7 @@ class ServicioRecaudo:
 
     # ==================== ELIMINACIÓN ====================
 
-    def eliminar_pago(
-        self, id_recaudo: int, usuario: str
-    ) -> ResultadoOperacion:
+    def eliminar_pago(self, id_recaudo: int, usuario: str) -> ResultadoOperacion:
         """
         Elimina un pago pendiente.
 
@@ -355,15 +343,24 @@ class ServicioRecaudo:
         fecha_hoy = ahora.date().isoformat()
 
         meses_espanol = [
-            "enero", "febrero", "marzo", "abril", "mayo", "junio",
-            "julio", "agosto", "septiembre", "octubre", "noviembre",
+            "enero",
+            "febrero",
+            "marzo",
+            "abril",
+            "mayo",
+            "junio",
+            "julio",
+            "agosto",
+            "septiembre",
+            "octubre",
+            "noviembre",
             "diciembre",
         ]
         periodo_display = f"{meses_espanol[ahora.month - 1]} de {ahora.year}"
 
-        # 1. Obtener contratos activos
+        # 1. Obtener contratos activos con fecha de inicio
         query_contratos = """
-            SELECT ID_CONTRATO_A, CANON_ARRENDAMIENTO
+            SELECT ID_CONTRATO_A, CANON_ARRENDAMIENTO, FECHA_INICIO_CONTRATO_A
             FROM CONTRATOS_ARRENDAMIENTOS
             WHERE ESTADO_CONTRATO_A = 'Activo'
         """
@@ -381,9 +378,7 @@ class ServicioRecaudo:
             )
 
         # 2. Obtener IDs de contratos que ya tienen recaudo este mes
-        ids_ya_facturados = set(
-            self.repo.obtener_ids_contratos_con_recaudo(periodo_bd)
-        )
+        ids_ya_facturados = set(self.repo.obtener_ids_contratos_con_recaudo(periodo_bd))
 
         recaudos_a_crear: List[tuple[Recaudo, List[RecaudoConcepto]]] = []
         omitidos = 0
@@ -400,14 +395,35 @@ class ServicioRecaudo:
             if not canon or canon <= 0:
                 continue
 
+            fecha_inicio_str = contrato.get("FECHA_INICIO_CONTRATO_A")
+            if not fecha_inicio_str:
+                continue
+
+            try:
+                fecha_inicio = datetime.strptime(fecha_inicio_str, "%Y-%m-%d").date()
+            except (ValueError, TypeError):
+                continue
+
+            dia_pago = fecha_inicio.day
+
+            try:
+                fecha_pago_calculada = date(ahora.year, ahora.month, dia_pago)
+            except ValueError:
+                fecha_pago_calculada = date(ahora.year, ahora.month, 1)
+
+            if fecha_pago_calculada < fecha_hoy:
+                estado_recaudo = EstadoRecaudo.VENCIDO
+            else:
+                estado_recaudo = EstadoRecaudo.PENDIENTE
+
             recaudo = Recaudo(
                 id_recaudo=None,
                 id_contrato_a=id_contrato,
-                fecha_pago=fecha_hoy,
+                fecha_pago=fecha_pago_calculada.isoformat(),
                 valor_total=canon,
                 metodo_pago=MetodoPago.EFECTIVO,
                 referencia_bancaria=None,
-                estado_recaudo=EstadoRecaudo.PENDIENTE,
+                estado_recaudo=estado_recaudo,
                 observaciones=f"Generación masiva - {periodo_display}",
                 created_by=usuario_sistema,
             )

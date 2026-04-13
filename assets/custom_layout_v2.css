@@ -1,0 +1,397 @@
+/* Custom responsive rules for Inmobiliaria Velar Layout */
+/* Bypasses Reflex and Radix UI SSR bugs */
+
+/* Animaciones globales reutilizables */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes neu-pulse {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 4px var(--blue-6));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 10px var(--blue-7));
+    }
+}
+
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap');
+
+:root {
+    /* ============================================================
+     * CLAUDE (ANTHROPIC) DESIGN SYSTEM - Parchment Theme
+     * Warm, literary, editorial aesthetic
+     * ============================================================ */
+
+    /* === COLORS === */
+    
+    /* Backgrounds (Light Theme) */
+    --bg-app: #f5f4ed;           /* Parchment - Primary canvas */
+    --bg-panel: #faf9f5;         /* Ivory - Elevated surfaces */
+    --bg-hover: #e8e6dc;         /* Warm Sand - Interactive hover */
+    --bg-subtle: var(--gray-3);
+
+    /* === TYPOGRAPHY === */
+    --font-serif: 'Playfair Display', 'Georgia', serif;   /* Anthropic Serif fallback */
+    --font-sans: 'Inter', 'Arial', sans-serif;            /* Anthropic Sans fallback */
+    --font-mono: 'Consolas', 'Monaco', monospace;         /* Anthropic Mono fallback */
+
+    /* === SHADOWS - Ring System (NOT drop shadows) === */
+    --shadow-raised-elite: 0px 0px 0px 1px #d1cfc5;
+    --shadow-flat-elite: 0px 0px 0px 1px #dedc01;
+    --shadow-inset-elite: inset 0px 0px 0px 1px rgba(0,0,0,0.1);
+    --shadow-inset-light-elite: inset 0px 0px 0px 1px rgba(0,0,0,0.05);
+    --shadow-modal-elite: 0px 4px 24px rgba(0,0,0,0.05);
+    --shadow-whisper: 0px 4px 24px rgba(0,0,0,0.05);
+
+    /* --- Aliases retrocompatibles (apuntan a las nuevas) --- */
+    --neu-shadow: var(--shadow-raised-elite);
+    --neu-modal-shadow: var(--shadow-modal-elite);
+    --neu-inset: var(--shadow-inset-elite);
+    --neu-inset-light: var(--shadow-inset-light-elite);
+
+    /* === TEXT COLORS === */
+    --text-primary: #141413;       /* Anthropic Near Black */
+    --text-secondary: #5e5d59;     /* Olive Gray */
+    --text-tertiary: #87867f;      /* Stone Gray */
+    
+    /* === BORDERS === */
+    --border-default: #f0eee6;     /* Border Cream */
+    --border-emphasis: #e8e6dc;   /* Border Warm */
+
+    /* === BRAND COLORS === */
+    --brand-primary: #c96442;      /* Terracotta Brand */
+    --brand-accent: #d97757;       /* Coral Accent */
+    
+    /* === FOCUS COLOR (Only cool color) === */
+    --focus-blue: #3898ec;
+
+    /* === FONT SIZE SCALE (10% reduction from 16px base) === */
+    --font-size-xs: 0.75rem;     /* 12px → 10.8px (mínimo legible) */
+    --font-size-sm: 0.875rem;    /* 14px → 12.6px */
+    --font-size-base: 0.9375rem; /* 15px → 13.5px */
+    --font-size-md: 1rem;        /* 16px → 14.4px */
+    --font-size-lg: 1.125rem;    /* 18px → 16.2px */
+    --font-size-xl: 1.25rem;     /* 20px → 18px */
+}
+
+/* Force Radix Themes to use rem-based scaling */
+.radix-themes {
+    --font-size-1: 0.75rem !important;
+    --font-size-2: 0.875rem !important;
+    --font-size-3: 1rem !important;
+    --font-size-4: 1.125rem !important;
+    --font-size-5: 1.25rem !important;
+    --font-size-6: 1.5rem !important;
+    --font-size-7: 1.75rem !important;
+    --font-size-8: 2rem !important;
+    --font-size-9: 2.5rem !important;
+}
+
+.dark,
+.dark-theme,
+[data-theme="dark"] {
+    /* === COLORS (Dark Theme) === */
+    --bg-app: #141413;           /* Anthropic Near Black */
+    --bg-panel: #30302e;         /* Dark Surface */
+    --bg-hover: #3d3d3a;         /* Dark Warm */
+    --bg-subtle: var(--gray-3);
+
+    /* === TEXT COLORS (Dark) === */
+    --text-primary: #faf9f5;      /* Ivory */
+    --text-secondary: #b0aea5;    /* Warm Silver */
+    --text-tertiary: #87867f;     /* Stone Gray */
+    
+    /* === BORDERS (Dark) === */
+    --border-default: #30302e;    /* Border Dark */
+    --border-emphasis: #4d4c48;   /* Charcoal Warm */
+
+    /* === SHADOWS (Dark) === */
+    --shadow-raised-elite: 0px 0px 0px 1px #30302e;
+    --shadow-flat-elite: 0px 0px 0px 1px #4d4c48;
+    --shadow-inset-elite: inset 0px 0px 0px 1px rgba(0,0,0,0.4);
+    --shadow-inset-light-elite: inset 0px 0px 0px 1px rgba(0,0,0,0.2);
+    --shadow-modal-elite: 0px 4px 24px rgba(0,0,0,0.3);
+    --shadow-whisper: 0px 4px 24px rgba(0,0,0,0.2);
+
+    /* === Aliases retrocompatibles (Dark) === */
+    --neu-shadow: var(--shadow-raised-elite);
+    --neu-modal-shadow: var(--shadow-modal-elite);
+    --neu-inset: var(--shadow-inset-elite);
+    --neu-inset-light: var(--shadow-inset-light-elite);
+
+    /* === RADIX THEMES OVERRIDES (Dark Theme - ensure same scaling) === */
+    --font-size-1: 0.75rem;
+    --font-size-2: 0.875rem;
+    --font-size-3: 1rem;
+    --font-size-4: 1.125rem;
+    --font-size-5: 1.25rem;
+    --font-size-6: 1.5rem;
+    --font-size-7: 1.75rem;
+    --font-size-8: 2rem;
+    --font-size-9: 2.5rem;
+}
+
+body,
+* {
+    font-family: var(--font-sans) !important;
+}
+
+/* Ocultar en escritorio (768px y mayor) */
+@media (min-width: 768px) {
+    .hide-on-desktop {
+        display: none !important;
+    }
+}
+
+/* Ocultar en móviles (hasta 767px) */
+@media (max-width: 767px) {
+    .hide-on-mobile {
+        display: none !important;
+    }
+}
+
+/* Custom Grids para Dashboard (Premium UI) */
+.grid-elite {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(1, 1fr);
+    width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .grid-elite {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.grid-compact {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(1, 1fr);
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .grid-compact {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.grid-main {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(1, 1fr);
+    width: 100%;
+    align-items: start;
+}
+
+@media (min-width: 1024px) {
+    .grid-main {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.grid-main-left {
+    grid-column: span 1;
+}
+
+@media (min-width: 1024px) {
+    .grid-main-left {
+        grid-column: span 2;
+    }
+}
+
+.grid-main-right {
+    grid-column: span 1;
+}
+
+/* 
+ * CLAUDE (ANTHROPIC) - Card Style.
+ * Parchment surface with warm border and whisper shadow
+ */
+.claude-card-elite {
+    background: var(--bg-panel) !important;
+    border: 1px solid var(--border-default) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--shadow-whisper) !important;
+    overflow: hidden !important;
+}
+
+.claude-input-elite input {
+    background: var(--bg-panel) !important;
+    border: 1px solid var(--border-emphasis) !important;
+    border-radius: 12px !important;
+    color: var(--text-primary) !important;
+}
+
+.dark .claude-input-elite input,
+[data-theme="dark"] .claude-input-elite input {
+    color: var(--text-primary) !important;
+}
+
+
+.claude-input-elite input::placeholder {
+    color: var(--text-tertiary) !important;
+}
+
+.claude-text-elite {
+    color: var(--text-primary) !important;
+}
+
+.claude-subtext-elite {
+    color: var(--text-secondary) !important;
+}
+
+.claude-eye-icon {
+    color: var(--text-tertiary) !important;
+    transition: color 0.2s ease !important;
+}
+
+.claude-eye-icon:hover {
+    color: var(--text-primary) !important;
+}
+
+.dark .claude-eye-icon,
+[data-theme="dark"] .claude-eye-icon {
+    color: var(--text-secondary) !important;
+}
+
+.dark .claude-eye-icon:hover,
+[data-theme="dark"] .claude-eye-icon:hover {
+    color: var(--text-primary) !important;
+}
+
+.login-button-elite {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 220px !important;
+}
+
+/* Fuerza Claude Design System en Dropdowns y Tooltips */
+.rt-SelectContent,
+.rt-HoverCardContent {
+    background-color: var(--bg-panel) !important;
+    box-shadow: var(--neu-modal-shadow) !important;
+    border: none !important;
+    border-radius: 12px !important;
+}
+
+/* Fuerza Inset en Triggers si el prop style falla */
+.rt-SelectTrigger.rt-variant-ghost {
+    background-color: var(--bg-panel) !important;
+    box-shadow: var(--neu-inset) !important;
+}
+
+/* Evitar que los triggers inline de Radix colapsen el layout de las tarjetas de bloque, pero no distorsionar SVG */
+.rt-HoverCardTrigger {
+    display: block !important;
+}
+
+.rt-HoverCardTrigger>.rt-Card {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* ==========================================================
+ * CLAUDE (ANTHROPIC) — BADGES
+ * Border-based, warm palette, no glow
+ * ========================================================== */
+.rt-BadgeRoot {
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    padding: 3px 10px !important;
+    letter-spacing: 0.02em !important;
+    font-family: var(--font-sans) !important;
+}
+
+/* Badge "Activo" — verde con warm border */
+.rt-BadgeRoot.rt-variant-surface[data-accent-color="green"] {
+    border: 1px solid var(--green-6) !important;
+    background: transparent !important;
+}
+
+/* Badge "Terminado/Vencido" — rojo */
+.rt-BadgeRoot.rt-variant-surface[data-accent-color="red"] {
+    border: 1px solid var(--red-6) !important;
+    background: transparent !important;
+}
+
+/* Badge tipo contrato (soft) — warm border */
+.rt-BadgeRoot.rt-variant-soft {
+    border: 1px solid var(--border-emphasis) !important;
+}
+
+/* Header de tabla: fondo subtle con border */
+.claude-table-elite thead tr th,
+.rt-TableRootTable thead tr th {
+    background: var(--bg-hover) !important;
+    color: var(--text-secondary) !important;
+    font-family: var(--font-sans) !important;
+    font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid var(--border-emphasis) !important;
+}
+
+/* Filas de datos: transición hacia ring en hover */
+.claude-table-elite tbody tr,
+.rt-TableRootTable tbody tr {
+    background: var(--bg-panel) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-bottom: 1px solid var(--border-default) !important;
+}
+
+.claude-table-elite tbody tr:hover,
+.rt-TableRootTable tbody tr:hover {
+    background: var(--bg-hover) !important;
+    box-shadow: var(--shadow-raised-elite) !important;
+    transform: scale(1.002) !important;
+}
+
+/* Celdas: sin bordes visibles, padding consistente */
+.claude-table-elite td,
+.rt-TableRootTable tbody td {
+    padding: 12px 16px !important;
+    vertical-align: middle !important;
+    border: none !important;
+}
+
+/* Utilidad de accesibilidad: oculta contenido visualmente pero lo mantiene para screen readers */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Global font size reduction - para permitir escalado descendente */
+html {
+    font-size: 12px;
+}
+
+/* Mobile breakpoints - ensure minimum readable size */
+@media (max-width: 768px) {
+    html {
+        font-size: 10px; /* Mínimo 10px en móvil */
+    }
+}
