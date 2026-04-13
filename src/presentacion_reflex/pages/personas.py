@@ -53,7 +53,7 @@ def persona_row(persona: dict) -> rx.Component:
                         background=styles.BG_PANEL,
                         border_radius="20px",
                         padding="2px 10px",
-                        box_shadow=styles.NEU_INSET_LIGHT,
+                        box_shadow=styles.NEU_INSET,
                         margin_right="1",
                         font_size="0.75rem",
                         font_weight="bold",

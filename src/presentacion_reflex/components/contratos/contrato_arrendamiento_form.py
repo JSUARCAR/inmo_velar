@@ -4,86 +4,16 @@ Formulario modal para Contratos de Arrendamiento - Reflex
 
 import reflex as rx
 
-from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+from src.presentacion_reflex.components.document_manager_elite import (
+    document_manager_elite,
+)
 from src.presentacion_reflex.components.image_gallery import image_gallery
 from src.presentacion_reflex.state.contratos_state import ContratosState
 from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button
 from src.presentacion_reflex import styles
-
-
-def searchable_select(
-    label: str,
-    placeholder: str,
-    value_label: rx.Var[str],
-    search_value: rx.Var[str],
-    menu_open: rx.Var[bool],
-    filtered_options: rx.Var[list],
-    on_change_search: callable,
-    on_toggle_menu: callable,
-    on_select: callable,
-) -> rx.Component:
-    return rx.vstack(
-        rx.text(label, size="2", weight="bold"),
-        rx.popover.root(
-            rx.popover.trigger(
-                rx.button(
-                    rx.cond(
-                        value_label == "",
-                        rx.text(placeholder, color="gray"),
-                        rx.text(value_label, color="black"),
-                    ),
-                    rx.icon("chevron-down", size=16),
-                    variant="surface",
-                    width="100%",
-                    justify="between",
-                ),
-            ),
-            rx.popover.content(
-                rx.vstack(
-                    rx.input(
-                        placeholder="Buscar...",
-                        value=search_value,
-                        on_change=on_change_search,
-                        autofocus=True,
-                        width="100%",
-                        variant="soft",
-                        size="1",
-                    ),
-                    rx.scroll_area(
-                         rx.vstack(
-                             rx.foreach(
-                                filtered_options,
-                                lambda opt: rx.cond(
-                                    opt[0] != "",
-                                    rx.box(
-                                        rx.text(opt[0], size="2"),
-                                        width="100%",
-                                        padding_x="3",
-                                        padding_y="2",
-                                        _hover={"bg": "var(--gray-4)", "cursor": "pointer"},
-                                        on_click=lambda: on_select(opt[1], opt[0]),
-                                    )
-                                )
-                             ),
-                             width="100%",
-                             spacing="0",
-                        ),
-                        type="auto",
-                        scrollbars="vertical",
-                        style={"max_height": "200px"},
-                        width="100%",
-                    ),
-                    padding="2",
-                    width="320px",
-                    spacing="2",
-                ),
-            ),
-            open=menu_open,
-            on_open_change=on_toggle_menu,
-        ),
-        spacing="1",
-        width="100%",
-    )
+from src.presentacion_reflex.components.shared.searchable_select import (
+    searchable_select,
+)
 
 
 def contrato_arrendamiento_form() -> rx.Component:
@@ -96,7 +26,7 @@ def contrato_arrendamiento_form() -> rx.Component:
             # --- ELITE HEADER ---
             rx.vstack(
                 rx.hstack(
-                    rx.icon("key", size=24, color="var(--blue-9)"),
+                    rx.icon("key", size=24, color="var(--brand-primary)"),
                     rx.dialog.title(
                         rx.cond(
                             ContratosState.modal_mode == "crear_arrendamiento",
@@ -195,7 +125,9 @@ def contrato_arrendamiento_form() -> rx.Component:
                                 rx.vstack(
                                     rx.text("Fecha Fin *", size="2", weight="bold"),
                                     neuro_input(
-                                        rx.input.slot(rx.icon("calendar-check", size=16)),
+                                        rx.input.slot(
+                                            rx.icon("calendar-check", size=16)
+                                        ),
                                         type="date",
                                         name="fecha_fin",
                                         required=True,
@@ -207,7 +139,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                                     spacing="1",
                                     width="100%",
                                 ),
-                                columns="2",
+                                columns=rx.breakpoints(initial="1", sm="2"),
                                 spacing="4",
                                 width="100%",
                             ),
@@ -233,7 +165,9 @@ def contrato_arrendamiento_form() -> rx.Component:
                             # Canon, Deposito y Fecha de Pago
                             rx.grid(
                                 rx.vstack(
-                                    rx.text("Canon Arrendamiento *", size="2", weight="bold"),
+                                    rx.text(
+                                        "Canon Arrendamiento *", size="2", weight="bold"
+                                    ),
                                     neuro_input(
                                         rx.input.slot(rx.icon("dollar-sign", size=16)),
                                         type="number",
@@ -257,8 +191,8 @@ def contrato_arrendamiento_form() -> rx.Component:
                                         name="deposito",
                                         placeholder="0",
                                         value=ContratosState.form_data["deposito"],
-                                        on_change=lambda v: ContratosState.set_form_field(
-                                            "deposito", v
+                                        on_change=lambda v: (
+                                            ContratosState.set_form_field("deposito", v)
                                         ),
                                         variant="surface",
                                         style={"box_shadow": styles.SHADOW_INSET_ELITE},
@@ -269,14 +203,18 @@ def contrato_arrendamiento_form() -> rx.Component:
                                 rx.vstack(
                                     rx.text("Fecha de Pago *", size="2", weight="bold"),
                                     neuro_input(
-                                        rx.input.slot(rx.icon("calendar-days", size=16)),
+                                        rx.input.slot(
+                                            rx.icon("calendar-days", size=16)
+                                        ),
                                         type="text",
                                         name="fecha_pago",
                                         placeholder="Ej: Día 5 de cada mes",
                                         required=True,
                                         value=ContratosState.form_data["fecha_pago"],
-                                        on_change=lambda v: ContratosState.set_form_field(
-                                            "fecha_pago", v
+                                        on_change=lambda v: (
+                                            ContratosState.set_form_field(
+                                                "fecha_pago", v
+                                            )
                                         ),
                                         variant="surface",
                                         style={"box_shadow": styles.SHADOW_INSET_ELITE},
@@ -299,7 +237,17 @@ def contrato_arrendamiento_form() -> rx.Component:
                                     variant="soft",
                                     color_scheme="gray",
                                     type="button",
-                                    style={"box_shadow": styles.SHADOW_FLAT_ELITE, "_hover": {"box_shadow": styles.SHADOW_RAISED_ELITE, "transform": "scale(1.02)"}, "_active": {"box_shadow": styles.SHADOW_INSET_ELITE, "transform": "scale(0.98)"}},
+                                    style={
+                                        "box_shadow": styles.SHADOW_FLAT_ELITE,
+                                        "_hover": {
+                                            "box_shadow": styles.SHADOW_RAISED_ELITE,
+                                            "transform": "scale(1.02)",
+                                        },
+                                        "_active": {
+                                            "box_shadow": styles.SHADOW_INSET_ELITE,
+                                            "transform": "scale(0.98)",
+                                        },
+                                    },
                                 ),
                             ),
                             neuro_button(
@@ -315,19 +263,19 @@ def contrato_arrendamiento_form() -> rx.Component:
                                 type="submit",
                                 disabled=ContratosState.is_loading,
                                 style={
-                                    "background": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                    "background": "var(--brand-primary)",
                                     "color": "white",
                                     "box_shadow": styles.SHADOW_RAISED_ELITE,
-                                    "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                    "transition": styles.GLOBAL_TRANSITION,
                                     "_hover": {
                                         "opacity": 0.9,
-                                        "transform": "translateY(-1px) scale(1.02)",
-                                        "box_shadow": "0 10px 15px -3px rgba(102, 126, 234, 0.4)",
+                                        "transform": "translateY(-2px)",
+                                        "box_shadow": styles.SHADOW_WHISPER,
                                     },
                                     "_active": {
                                         "box_shadow": styles.SHADOW_INSET_ELITE,
                                         "transform": "translateY(0) scale(0.98)",
-                                    }
+                                    },
                                 },
                             ),
                             spacing="3",
@@ -372,7 +320,7 @@ def contrato_arrendamiento_form() -> rx.Component:
                 default_value="datos",
                 width="100%",
             ),
-            max_width="750px",
+            max_width=["95%", "750px"],
             border_radius="16px",
             padding="2rem",
         ),

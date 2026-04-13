@@ -58,7 +58,20 @@ class RepositorioAsesorPostgres:
         cursor.close()
         return self._row_to_entity(row)
 
+    def obtener_por_persona(self, id_persona: int) -> Optional[Asesor]:
+        """Obtiene un asesor por ID de persona."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        p = self.db.get_placeholder()
+
+        query = f"SELECT * FROM ASESORES WHERE ID_PERSONA = {p}"
+        cursor.execute(query, (id_persona,))
+        row = cursor.fetchone()
+        cursor.close()
+        return self._row_to_entity(row)
+
     def listar_activos(self) -> List[Asesor]:
+
         """Lista todos los asesores activos con sus datos personales."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
@@ -124,3 +137,47 @@ class RepositorioAsesorPostgres:
         conn.commit()
         cursor.close()
         return asesor
+
+    def actualizar(self, asesor: Asesor, usuario_sistema: str) -> bool:
+        """Actualiza un asesor existente en PostgreSQL."""
+        conn = self.db.obtener_conexion()
+        cursor = conn.cursor()
+        p = self.db.get_placeholder()
+
+        query = f"""
+            UPDATE ASESORES SET
+                COMISION_PORCENTAJE_ARRIENDO = {p},
+                COMISION_PORCENTAJE_VENTA = {p},
+                ESTADO = {p},
+                UPDATED_AT = {p},
+                UPDATED_BY = {p}
+            WHERE ID_ASESOR = {p}
+        """
+        
+        cursor.execute(query, (
+            asesor.comision_porcentaje_arriendo,
+            asesor.comision_porcentaje_venta,
+            asesor.estado if asesor.estado is not None else True,
+            datetime.now().isoformat(),
+            usuario_sistema,
+            asesor.id_asesor
+        ))
+        
+        conn.commit()
+        count = cursor.rowcount
+        cursor.close()
+        return count > 0
+
+    def eliminar_por_persona(self, id_persona: int) -> bool:
+        """Elimina físicamente el registro de asesor asociado a una persona (Postgres)."""
+        conn = self.db.obtener_conexion()
+        cursor = conn.cursor()
+        p = self.db.get_placeholder()
+
+        query = f"DELETE FROM ASESORES WHERE ID_PERSONA = {p}"
+        cursor.execute(query, (id_persona,))
+        
+        conn.commit()
+        count = cursor.rowcount
+        cursor.close()
+        return count > 0

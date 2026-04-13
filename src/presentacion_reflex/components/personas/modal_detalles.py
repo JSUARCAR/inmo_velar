@@ -1,22 +1,22 @@
 """
 Componente: Modal de Detalles de Persona
-Visualiza información consolidada por roles con diseño Neumórfico.
+Visualiza información consolidada por roles con diseño Editorial (Claude).
 """
 
 import reflex as rx
 from src.presentacion_reflex.state.personas_state import PersonasState
 from src.presentacion_reflex import styles
 
-def detail_item(label: str, value: str, icon: str = None) -> rx.Component:
-    """Item de detalle individual con estilo neumórfico inset."""
+def item_detalle(etiqueta: str, valor: str, icono: str = None) -> rx.Component:
+    """Item de detalle individual con estilo Claude (profundidad inset sutil)."""
     return rx.vstack(
         rx.hstack(
-            rx.cond(icon, rx.icon(icon, size=16, color=styles.TEXT_SECONDARY)),
-            rx.text(label, size="1", color=styles.TEXT_SECONDARY, weight="medium"),
+            rx.cond(icono, rx.icon(icono, size=16, color=styles.TEXT_SECONDARY)),
+            rx.text(etiqueta, size="1", color=styles.TEXT_SECONDARY, weight="medium"),
             spacing="2",
         ),
         rx.text(
-            rx.cond(value, value, "N/A"),
+            rx.cond(valor, valor, "N/A"),
             size="2",
             color=styles.TEXT_PRIMARY,
             weight="bold",
@@ -26,55 +26,55 @@ def detail_item(label: str, value: str, icon: str = None) -> rx.Component:
         align_items="start",
         padding="0.75rem",
         border_radius="10px",
-        box_shadow=styles.SHADOW_INSET_ELITE,
+        box_shadow=styles.SHADOW_INSET,
         background=styles.BG_PANEL,
         width="100%",
     )
 
-def role_badge(role: str) -> rx.Component:
-    """Badge de rol con sombreado suave."""
+def badge_rol(rol: str) -> rx.Component:
+    """Badge de rol con estetica Claude (anillo de profundidad)."""
     return rx.badge(
-        role,
+        rol,
         variant="surface",
-        color_scheme="indigo",
         padding_x="0.75rem",
         padding_y="0.25rem",
         border_radius="8px",
-        box_shadow=styles.SHADOW_RAISED_ELITE,
+        box_shadow=styles.SHADOW_RING,
+        style={"background": styles.ACCENT_BG_SOFT, "color": styles.BRAND_PRIMARY},
     )
 
-def tab_content_container(*children) -> rx.Component:
-    """Contenedor estándar para el contenido de las pestañas."""
+def contenedor_contenido_pestana(*hijos) -> rx.Component:
+    """Contenedor estandar para el contenido de las pestañas."""
     return rx.vstack(
-        *children,
+        *hijos,
         width="100%",
         spacing="4",
         padding_top="1.5rem",
     )
 
-def section_title(title: str, icon: str) -> rx.Component:
-    """Título de sección dentro de una pestaña."""
+def titulo_seccion(titulo: str, icono: str) -> rx.Component:
+    """Título de sección con icono terracota."""
     return rx.hstack(
-        rx.icon(icon, size=20, color=styles.ACCENT_COLOR),
-        rx.text(title, size="4", weight="bold", color=styles.TEXT_PRIMARY),
+        rx.icon(icono, size=20, color=styles.BRAND_PRIMARY),
+        rx.text(titulo, size="4", weight="bold", color=styles.TEXT_PRIMARY),
         spacing="2",
         margin_bottom="0.5rem",
         width="100%",
     )
 
 def modal_detalles() -> rx.Component:
-    """Modal principal de detalles de persona."""
+    """Modal principal de detalles de persona con diseño editorial Claude."""
     
     # Pestaña General
-    tab_general = tab_content_container(
-        section_title("Información Básica", "user"),
+    pestana_general = contenedor_contenido_pestana(
+        titulo_seccion("Información Básica", "user"),
         rx.grid(
-            detail_item("Nombre Completo", PersonasState.detail_nombre, "user_round"),
-            detail_item("Documento", PersonasState.detail_documento, "fingerprint"),
-            detail_item("Teléfono", PersonasState.detail_telefono, "phone"),
-            detail_item("Correo Electrónico", PersonasState.detail_correo, "mail"),
-            detail_item("Dirección", PersonasState.detail_direccion, "map_pin"),
-            detail_item("Fecha Registro", PersonasState.detail_fecha_creacion, "calendar"),
+            item_detalle("Nombre Completo", PersonasState.detail_nombre, "user_round"),
+            item_detalle("Documento", PersonasState.detail_documento, "fingerprint"),
+            item_detalle("Teléfono", PersonasState.detail_telefono, "phone"),
+            item_detalle("Correo Electrónico", PersonasState.detail_correo, "mail"),
+            item_detalle("Dirección", PersonasState.detail_direccion, "map_pin"),
+            item_detalle("Fecha Registro", PersonasState.detail_fecha_creacion, "calendar"),
             columns="2",
             spacing="4",
             width="100%",
@@ -82,20 +82,20 @@ def modal_detalles() -> rx.Component:
     )
 
     # Pestaña Propietario
-    tab_propietario = rx.cond(
+    pestana_propietario = rx.cond(
         PersonasState.detail_propietario,
-        tab_content_container(
-            section_title("Información Financiera", "banknote"),
+        contenedor_contenido_pestana(
+            titulo_seccion("Información Financiera", "banknote"),
             rx.grid(
-                detail_item("Banco", PersonasState.detail_propietario["banco"].to(str), "building_2"),
-                detail_item("Número de Cuenta", PersonasState.detail_propietario["cuenta"].to(str), "credit_card"),
-                detail_item("Tipo de Cuenta", PersonasState.detail_propietario["tipo_cuenta"].to(str), "info"),
-                detail_item("Consignatario", PersonasState.detail_propietario["consignatario"].to(str), "user_check"),
+                item_detalle("Banco", PersonasState.detail_propietario["banco"].to(str), "building_2"),
+                item_detalle("Número de Cuenta", PersonasState.detail_propietario["cuenta"].to(str), "credit_card"),
+                item_detalle("Tipo de Cuenta", PersonasState.detail_propietario["tipo_cuenta"].to(str), "info"),
+                item_detalle("Consignatario", PersonasState.detail_propietario["consignatario"].to(str), "user_check"),
                 columns="2",
                 spacing="4",
                 width="100%",
             ),
-            section_title("Propiedades Asociadas", "home"),
+            titulo_seccion("Propiedades Asociadas", "home"),
             rx.table.root(
                 rx.table.header(
                     rx.table.row(
@@ -124,19 +124,19 @@ def modal_detalles() -> rx.Component:
     )
 
     # Pestaña Arrendatario
-    tab_arrendatario = rx.cond(
+    pestana_arrendatario = rx.cond(
         PersonasState.detail_arrendatario,
-        tab_content_container(
-            section_title("Gestión de Arrendamiento", "clipboard_list"),
+        contenedor_contenido_pestana(
+            titulo_seccion("Gestión de Arrendamiento", "clipboard_list"),
             rx.grid(
-                detail_item("Código Seguro", PersonasState.detail_arrendatario["codigo_seguro"].to(str), "shield_check"),
-                detail_item("Nombre Habitante", PersonasState.detail_arrendatario["habitante"].to(str), "user"),
-                detail_item("Teléfono Habitante", PersonasState.detail_arrendatario["telefono_habitante"].to(str), "phone"),
+                item_detalle("Código Seguro", PersonasState.detail_arrendatario["codigo_seguro"].to(str), "shield_check"),
+                item_detalle("Nombre Habitante", PersonasState.detail_arrendatario["habitante"].to(str), "user"),
+                item_detalle("Teléfono Habitante", PersonasState.detail_arrendatario["telefono_habitante"].to(str), "phone"),
                 columns="2",
                 spacing="4",
                 width="100%",
             ),
-            section_title("Contratos Vigentes", "file_key_2"),
+            titulo_seccion("Contratos Vigentes", "file_key_2"),
             rx.table.root(
                 rx.table.header(
                     rx.table.row(
@@ -165,10 +165,10 @@ def modal_detalles() -> rx.Component:
     )
 
     # Pestaña Codeudor
-    tab_codeudor = rx.cond(
+    pestana_codeudor = rx.cond(
         PersonasState.detail_codeudor,
-        tab_content_container(
-            section_title("Garantías Respaldadas", "shield"),
+        contenedor_contenido_pestana(
+            titulo_seccion("Garantías Respaldadas", "shield"),
             rx.table.root(
                 rx.table.header(
                     rx.table.row(
@@ -195,15 +195,15 @@ def modal_detalles() -> rx.Component:
     )
 
     # Pestaña Asesor/Proveedor
-    tab_otros = tab_content_container(
+    pestana_otros = contenedor_contenido_pestana(
         rx.cond(
             PersonasState.detail_asesor,
             rx.vstack(
-                section_title("Información Asesor", "briefcase"),
+                titulo_seccion("Información Asesor", "briefcase"),
                 rx.grid(
-                    detail_item("Comisión Arriendo", PersonasState.detail_asesor["comision_arriendo"].to(str), "percent"),
-                    detail_item("Comisión Venta", PersonasState.detail_asesor["comision_venta"].to(str), "percent"),
-                    detail_item("Fecha Ingreso", PersonasState.detail_asesor["fecha_ingreso"].to(str), "calendar_days"),
+                    item_detalle("Comisión Arriendo", PersonasState.detail_asesor["comision_arriendo"].to(str), "percent"),
+                    item_detalle("Comisión Venta", PersonasState.detail_asesor["comision_venta"].to(str), "percent"),
+                    item_detalle("Fecha Ingreso", PersonasState.detail_asesor["fecha_ingreso"].to(str), "calendar_days"),
                     columns="3",
                     spacing="4",
                     width="100%",
@@ -214,15 +214,15 @@ def modal_detalles() -> rx.Component:
         rx.cond(
             PersonasState.detail_proveedor,
             rx.vstack(
-                section_title("Información Proveedor", "wrench"),
+                titulo_seccion("Información Proveedor", "wrench"),
                 rx.grid(
-                    detail_item("Especialidad", PersonasState.detail_proveedor["especialidad"].to(str), "award"),
-                    detail_item("Calificación", PersonasState.detail_proveedor["calificacion"].to(str), "star"),
+                    item_detalle("Especialidad", PersonasState.detail_proveedor["especialidad"].to(str), "award"),
+                    item_detalle("Calificación", PersonasState.detail_proveedor["calificacion"].to(str), "star"),
                     columns="2",
                     spacing="4",
                     width="100%",
                 ),
-                detail_item("Observaciones", PersonasState.detail_proveedor["observaciones"].to(str), "message_square"),
+                item_detalle("Observaciones", PersonasState.detail_proveedor["observaciones"].to(str), "message_square"),
                 width="100%",
             )
         )
@@ -236,8 +236,8 @@ def modal_detalles() -> rx.Component:
                     fallback=PersonasState.detail_nombre[0:2],
                     size="7",
                     variant="soft",
-                    color_scheme="indigo",
-                    box_shadow=styles.SHADOW_RAISED_ELITE,
+                    style={"background": styles.ACCENT_BG_SOFT, "color": styles.BRAND_PRIMARY},
+                    box_shadow=styles.SHADOW_RING,
                 ),
                 rx.vstack(
                     rx.heading(
@@ -248,7 +248,7 @@ def modal_detalles() -> rx.Component:
                     rx.hstack(
                         rx.foreach(
                             PersonasState.detail_roles_list,
-                            role_badge
+                            badge_rol
                         ),
                         spacing="2",
                     ),
@@ -274,7 +274,7 @@ def modal_detalles() -> rx.Component:
                 PersonasState.is_loading_details,
                 rx.center(
                     rx.vstack(
-                        rx.spinner(size="3"),
+                        rx.spinner(size="3", color=styles.BRAND_PRIMARY),
                         rx.text("Cargando información detallada...", color=styles.TEXT_SECONDARY),
                         padding="4rem",
                     ),
@@ -292,16 +292,16 @@ def modal_detalles() -> rx.Component:
                             rx.tabs.trigger("Profesional", value="otros")
                         ),
                         justify_content="start",
-                        box_shadow=styles.SHADOW_INSET_ELITE,
+                        box_shadow=styles.SHADOW_INSET,
                         border_radius="10px",
                         padding="4px",
                         background=styles.BG_PANEL,
                     ),
-                    rx.tabs.content(tab_general, value="general"),
-                    rx.tabs.content(tab_propietario, value="propietario"),
-                    rx.tabs.content(tab_arrendatario, value="arrendatario"),
-                    rx.tabs.content(tab_codeudor, value="codeudor"),
-                    rx.tabs.content(tab_otros, value="otros"),
+                    rx.tabs.content(pestana_general, value="general"),
+                    rx.tabs.content(pestana_propietario, value="propietario"),
+                    rx.tabs.content(pestana_arrendatario, value="arrendatario"),
+                    rx.tabs.content(pestana_codeudor, value="codeudor"),
+                    rx.tabs.content(pestana_otros, value="otros"),
                     default_value="general",
                     width="100%",
                 ),
@@ -326,7 +326,7 @@ def modal_detalles() -> rx.Component:
             background=styles.BG_APP,
             max_width="800px",
             border_radius="20px",
-            box_shadow=styles.SHADOW_MODAL_ELITE,
+            box_shadow=styles.SHADOW_WHISPER,
             padding="2rem",
         ),
         open=PersonasState.show_details_modal,

@@ -3,23 +3,11 @@ import reflex as rx
 from src.presentacion_reflex.state.personas_state import PersonasState
 from src.presentacion_reflex import styles
 
+def tarjeta_selector_rol(rol: str) -> rx.Component:
+    """Tarjeta interactiva y estilizada para la selección de roles con estetica Claude."""
 
-def role_selector_card(rol: str) -> rx.Component:
-    """Card interactiva y estilizada para la selección de roles con soporte para múltiples roles."""
-    
-    # Match color scheme based on role
-    color_scheme = rx.match(
-        rol,
-        ("Propietario", "blue"),
-        ("Arrendatario", "green"),
-        ("Asesor", "purple"),
-        ("Codeudor", "orange"),
-        ("Proveedor", "cyan"),
-        "gray",
-    )
-
-    # Match description
-    description = rx.match(
+    # Mapeo de descripción
+    descripcion = rx.match(
         rol,
         ("Propietario", "Dueño de propiedades"),
         ("Arrendatario", "Inquilino de propiedades"),
@@ -29,10 +17,10 @@ def role_selector_card(rol: str) -> rx.Component:
         "",
     )
 
-    is_selected = PersonasState.selected_roles.contains(rol)
+    esta_seleccionado = PersonasState.selected_roles.contains(rol)
 
-    # Match icon
-    icon_name = rx.match(
+    # Mapeo de icono
+    nombre_icono = rx.match(
         rol,
         ("Propietario", "home"),
         ("Arrendatario", "user_check"),
@@ -45,36 +33,41 @@ def role_selector_card(rol: str) -> rx.Component:
     return rx.card(
         rx.vstack(
             rx.hstack(
-                # Icon con fondo dinámico basado en acento
+                # Icono con fondo dinámico basado en acento terracota
                 rx.box(
                     rx.icon(
-                        icon_name,
+                        nombre_icono,
                         size=24,
-                        color=rx.cond(is_selected, "white", styles.ACCENT_COLOR),
+                        color=rx.cond(esta_seleccionado, "white", styles.BRAND_PRIMARY),
                     ),
                     padding="12px",
                     border_radius="12px",
                     style={
                         "background": rx.cond(
-                            is_selected,
-                            styles.ACCENT_COLOR,
+                            esta_seleccionado,
+                            styles.BRAND_PRIMARY,
                             styles.ACCENT_BG_SOFT,
                         ),
                         "transition": styles.GLOBAL_TRANSITION,
                     },
                 ),
                 rx.spacer(),
-                # Check indicator (solo visible si está seleccionado)
+                # Indicador de verificación
                 rx.cond(
-                    is_selected,
+                    esta_seleccionado,
                     rx.box(
-                        rx.icon("check", size=20, color=styles.ACCENT_COLOR),
+                        rx.icon("check", size=20, color=styles.BRAND_PRIMARY),
                         padding="4px",
-                        background=styles.BG_PANEL,
+                        background="white",
                         border_radius="full",
-                        box_shadow=styles.NEU_SHADOW,
+                        box_shadow=styles.SHADOW_RING,
                     ),
-                    rx.box(width="28px", height="28px"), # Placeholder para mantener alineación
+                    rx.box(
+                        width="28px", 
+                        height="28px",
+                        border=f"1px solid {styles.BORDER_DEFAULT}",
+                        border_radius="full",
+                    ),
                 ),
                 width="100%",
                 align_items="center",
@@ -84,9 +77,9 @@ def role_selector_card(rol: str) -> rx.Component:
                     rol, 
                     weight="bold", 
                     size="4", 
-                    color=rx.cond(is_selected, styles.ACCENT_COLOR, styles.TEXT_PRIMARY),
+                    color=rx.cond(esta_seleccionado, styles.BRAND_PRIMARY, styles.TEXT_PRIMARY),
                 ),
-                rx.text(description, size="2", color=styles.TEXT_SECONDARY),
+                rx.text(descripcion, size="2", color=styles.TEXT_SECONDARY),
                 spacing="1",
                 align_items="start",
             ),
@@ -96,24 +89,25 @@ def role_selector_card(rol: str) -> rx.Component:
         # Acción de selección
         on_click=lambda: PersonasState.toggle_rol(rol),
         cursor="pointer",
-        variant="ghost",
+        variant="surface",
         margin="0",
-        padding="1.5rem",
-        # Pneumatic Selection Style: Inset when selected, Raised when not
+        padding="x-large",
+        # Estilo de seleccion Claude: Inset cuando esta seleccionado, Ring cuando no
         style={
-            "background": styles.BG_PANEL,
-            "box_shadow": rx.cond(is_selected, styles.NEU_INSET, styles.NEU_SHADOW),
-            "border": rx.cond(is_selected, f"1px solid {styles.ACCENT_COLOR}", "none"),
-            "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "background": rx.cond(esta_seleccionado, styles.BG_APP, styles.BG_PANEL),
+            "box_shadow": rx.cond(esta_seleccionado, styles.SHADOW_INSET, styles.SHADOW_RING),
+            "border": rx.cond(esta_seleccionado, f"1px solid {styles.BRAND_PRIMARY}", f"1px solid {styles.BORDER_DEFAULT}"),
+            "transition": styles.GLOBAL_TRANSITION,
             "border_radius": "16px",
-            "margin": "0",
+            "outline": "none",
         },
         _hover={
-            "transform": rx.cond(is_selected, "none", "scale(1.02)"),
+            "transform": rx.cond(esta_seleccionado, "none", "translateY(-4px)"),
             "box_shadow": rx.cond(
-                is_selected,
-                styles.NEU_INSET,
-                styles.NEU_MODAL_SHADOW,
+                esta_seleccionado,
+                styles.SHADOW_INSET,
+                styles.SHADOW_WHISPER,
             ),
+            "border_color": styles.BRAND_PRIMARY,
         },
     )

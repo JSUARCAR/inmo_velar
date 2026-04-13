@@ -7,7 +7,9 @@ import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.components.propiedades.modal_form import modal_propiedad
-from src.presentacion_reflex.components.propiedades.property_card import property_card
+from src.presentacion_reflex.components.propiedades.property_card import (
+    tarjeta_propiedad,
+)
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
 from src.presentacion_reflex.components.neuro_elements import (
@@ -413,7 +415,7 @@ def propiedades_page() -> rx.Component:
                                     rx.grid(
                                         rx.foreach(
                                             PropiedadesState.propiedades,
-                                            lambda prop: property_card(
+                                            lambda prop: tarjeta_propiedad(
                                                 id_propiedad=prop.id_propiedad,
                                                 matricula=prop.matricula_inmobiliaria,
                                                 direccion=prop.direccion_propiedad,

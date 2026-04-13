@@ -10,6 +10,7 @@ from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 
 class PropiedadDict(pydantic.BaseModel):
     """Estructura tipada para serialización de Propiedad en Reflex."""
+
     id_propiedad: int
     matricula_inmobiliaria: str
     direccion_propiedad: str
@@ -66,7 +67,7 @@ class PropiedadesState(DocumentosStateMixin):
     kpi_disponibles_total: int = 0
     kpi_disponibles_activas: int = 0
     kpi_disponibles_inactivas: int = 0
-    
+
     kpi_ocupadas_total: int = 0
     kpi_ocupadas_activas: int = 0
     kpi_ocupadas_inactivas: int = 0
@@ -150,9 +151,9 @@ class PropiedadesState(DocumentosStateMixin):
             municipios_data = [{"value": "0", "label": "Todos"}]
             for m in municipios:
                 val = str(m["id"]).strip()
-                if val: # Asegurar que no sea vacío
+                if val:  # Asegurar que no sea vacío
                     municipios_data.append({"value": val, "label": m["nombre"]})
-            
+
             # Cargar tipos y filtrar vacíos
             tipos = servicio.obtener_tipos_propiedad()
             tipos_data = ["Todos"] + [t for t in tipos if t and t.strip()]
@@ -160,7 +161,9 @@ class PropiedadesState(DocumentosStateMixin):
             async with self:
                 self.municipios_options = municipios_data
                 self.tipos_options = tipos_data
-                print(f"[PROPIEDADES_DEBUG] Opciones cargadas: {len(self.municipios_options)} municipios.")
+                print(
+                    f"[PROPIEDADES_DEBUG] Opciones cargadas: {len(self.municipios_options)} municipios."
+                )
 
         except Exception as e:
             print(f"[PROPIEDADES_DEBUG] Error en load_filter_options: {str(e)}")
@@ -174,7 +177,7 @@ class PropiedadesState(DocumentosStateMixin):
         print("[PROPIEDADES_DEBUG] on_load iniciado.")
         async with self:
             self.is_loading = True
-            
+
         try:
             # Cargar opciones de filtros
             yield PropiedadesState.load_filter_options()
@@ -189,26 +192,28 @@ class PropiedadesState(DocumentosStateMixin):
     @rx.event(background=True)
     async def load_kpis(self):
         """Carga los contadores KPI directos desde la BD."""
-        
+
         conditions = []
         params = []
-        
+
         if self.filter_tipo and self.filter_tipo != "Todos":
             conditions.append("TIPO_PROPIEDAD = %s")
             params.append(self.filter_tipo)
-            
+
         if self.filter_municipio and self.filter_municipio != "0":
             conditions.append("ID_MUNICIPIO = %s")
             params.append(self.filter_municipio)
-            
+
         if self.search_text:
-            search_where = "(DIRECCION_PROPIEDAD LIKE %s OR MATRICULA_INMOBILIARIA LIKE %s)"
+            search_where = (
+                "(DIRECCION_PROPIEDAD LIKE %s OR MATRICULA_INMOBILIARIA LIKE %s)"
+            )
             conditions.append(search_where)
             term_norm = f"%{self.search_text.strip().lower()}%"
             params.extend([term_norm, term_norm])
-            
+
         where_clause = "WHERE " + " AND ".join(conditions) if conditions else ""
-        
+
         query_general = f"""
         SELECT 
             DISPONIBILIDAD_PROPIEDAD as disponibilidad,
@@ -219,12 +224,12 @@ class PropiedadesState(DocumentosStateMixin):
         {where_clause}
         GROUP BY DISPONIBILIDAD_PROPIEDAD
         """
-        
+
         with db_manager.obtener_conexion() as conn:
             cursor = db_manager.get_dict_cursor(conn)
             cursor.execute(query_general, params)
             rows = cursor.fetchall()
-            
+
             async with self:
                 self.kpi_disponibles_total = 0
                 self.kpi_disponibles_activas = 0
@@ -232,17 +237,29 @@ class PropiedadesState(DocumentosStateMixin):
                 self.kpi_ocupadas_total = 0
                 self.kpi_ocupadas_activas = 0
                 self.kpi_ocupadas_inactivas = 0
-                
+
                 for row in rows:
                     disp = row.get("DISPONIBILIDAD") or row.get("disponibilidad")
                     if disp in (1, True, "1", "true", "True"):
-                        self.kpi_disponibles_total = row.get("TOTAL", row.get("total", 0)) or 0
-                        self.kpi_disponibles_activas = row.get("ACTIVAS", row.get("activas", 0)) or 0
-                        self.kpi_disponibles_inactivas = row.get("INACTIVAS", row.get("inactivas", 0)) or 0
+                        self.kpi_disponibles_total = (
+                            row.get("TOTAL", row.get("total", 0)) or 0
+                        )
+                        self.kpi_disponibles_activas = (
+                            row.get("ACTIVAS", row.get("activas", 0)) or 0
+                        )
+                        self.kpi_disponibles_inactivas = (
+                            row.get("INACTIVAS", row.get("inactivas", 0)) or 0
+                        )
                     else:
-                        self.kpi_ocupadas_total = row.get("TOTAL", row.get("total", 0)) or 0
-                        self.kpi_ocupadas_activas = row.get("ACTIVAS", row.get("activas", 0)) or 0
-                        self.kpi_ocupadas_inactivas = row.get("INACTIVAS", row.get("inactivas", 0)) or 0
+                        self.kpi_ocupadas_total = (
+                            row.get("TOTAL", row.get("total", 0)) or 0
+                        )
+                        self.kpi_ocupadas_activas = (
+                            row.get("ACTIVAS", row.get("activas", 0)) or 0
+                        )
+                        self.kpi_ocupadas_inactivas = (
+                            row.get("INACTIVAS", row.get("inactivas", 0)) or 0
+                        )
 
     @rx.event(background=True)
     async def load_propiedades(self):
@@ -254,8 +271,10 @@ class PropiedadesState(DocumentosStateMixin):
 
         try:
             # Obtener valores de filtros
-            print(f"[PROPIEDADES_DEBUG] Filtros actuales: Tipo={self.filter_tipo}, Disp={self.filter_disponibilidad}, Busqueda='{self.search_text}'")
-            
+            print(
+                f"[PROPIEDADES_DEBUG] Filtros actuales: Tipo={self.filter_tipo}, Disp={self.filter_disponibilidad}, Busqueda='{self.search_text}'"
+            )
+
             page = self.current_page
             page_size = self.page_size
             search = self.search_text
@@ -277,8 +296,10 @@ class PropiedadesState(DocumentosStateMixin):
 
             repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
-            
-            print("[PROPIEDADES_DEBUG] Llamando a servicio.listar_propiedades_paginado...")
+
+            print(
+                "[PROPIEDADES_DEBUG] Llamando a servicio.listar_propiedades_paginado..."
+            )
             result = servicio.listar_propiedades_paginado(
                 page=page,
                 page_size=page_size,
@@ -288,7 +309,9 @@ class PropiedadesState(DocumentosStateMixin):
                 solo_activas=solo_activas,
                 busqueda=busqueda,
             )
-            print(f"[PROPIEDADES_DEBUG] Resultado obtenido: {len(result.items)} items, Total: {result.total}")
+            print(
+                f"[PROPIEDADES_DEBUG] Resultado obtenido: {len(result.items)} items, Total: {result.total}"
+            )
             # print(f"Propiedades Loaded from Service: {len(result.items)} items") [OpSec Removed]
             if len(result.items) > 0:
                 pass  # print(f"First Item Availability: {result.items[0].disponibilidad_propiedad}") [OpSec Removed]
@@ -325,7 +348,9 @@ class PropiedadesState(DocumentosStateMixin):
                     "banos": getattr(p, "bano", 0),
                     "parqueadero": getattr(p, "parqueadero", 0),
                     "valor_venta": getattr(p, "valor_venta_propiedad", 0),
-                    "valor_venta_view": format_currency(getattr(p, "valor_venta_propiedad", 0)),
+                    "valor_venta_view": format_currency(
+                        getattr(p, "valor_venta_propiedad", 0)
+                    ),
                     "comision_venta": getattr(p, "comision_venta_propiedad", 0),
                     "comision_venta_valor_view": format_currency(
                         (getattr(p, "valor_venta_propiedad", 0) or 0)
@@ -451,9 +476,9 @@ class PropiedadesState(DocumentosStateMixin):
             "tipo_cuenta_administracion": "Ahorros",
             "numero_cuenta_administracion": "",
             # === NUEVOS CAMPOS ===
-            "fecha_pago_administracion": "1",        # Día por defecto
-            "link_pago_administracion": "",          # URL vacío
-            "cuota_extra_ordinaria": "0",           # Sin cuota extra por defecto
+            "fecha_pago_administracion": "1",  # Día por defecto
+            "link_pago_administracion": "",  # URL vacío
+            "cuota_extra_ordinaria": "0",  # Sin cuota extra por defecto
             "observaciones_admin_ph": "",
         }
         self.show_modal = True
@@ -483,7 +508,9 @@ class PropiedadesState(DocumentosStateMixin):
                     "matricula_inmobiliaria": propiedad.matricula_inmobiliaria or "",
                     "direccion_propiedad": propiedad.direccion_propiedad or "",
                     "tipo_propiedad": propiedad.tipo_propiedad or "Casa",
-                    "id_municipio": str(propiedad.id_municipio) if propiedad.id_municipio else "1",
+                    "id_municipio": str(propiedad.id_municipio)
+                    if propiedad.id_municipio
+                    else "1",
                     "area_metros": str(propiedad.area_m2) if propiedad.area_m2 else "0",
                     "valor_canon": (
                         str(propiedad.canon_arrendamiento_estimado)
@@ -496,13 +523,19 @@ class PropiedadesState(DocumentosStateMixin):
                     "observaciones": propiedad.observaciones_propiedad or "",
                     # Detalles Físicos
                     "habitaciones": (
-                        str(propiedad.habitaciones) if propiedad.habitaciones is not None else "0"
+                        str(propiedad.habitaciones)
+                        if propiedad.habitaciones is not None
+                        else "0"
                     ),
                     "bano": str(propiedad.bano) if propiedad.bano is not None else "0",
                     "parqueadero": (
-                        str(propiedad.parqueadero) if propiedad.parqueadero is not None else "0"
+                        str(propiedad.parqueadero)
+                        if propiedad.parqueadero is not None
+                        else "0"
                     ),
-                    "estrato": str(propiedad.estrato) if propiedad.estrato is not None else "1",
+                    "estrato": str(propiedad.estrato)
+                    if propiedad.estrato is not None
+                    else "1",
                     # Financiero / Venta
                     "valor_administracion": (
                         str(propiedad.valor_administracion)
@@ -525,22 +558,24 @@ class PropiedadesState(DocumentosStateMixin):
                     "codigo_gas": propiedad.codigo_gas or "",
                     # Administración
                     "telefono_administracion": propiedad.telefono_administracion or "",
-                    "tipo_cuenta_administracion": propiedad.tipo_cuenta_administracion or "Ahorros",
-                    "numero_cuenta_administracion": propiedad.numero_cuenta_administracion or "",
+                    "tipo_cuenta_administracion": propiedad.tipo_cuenta_administracion
+                    or "Ahorros",
+                    "numero_cuenta_administracion": propiedad.numero_cuenta_administracion
+                    or "",
                     "fecha_pago_administracion": (
-                        str(propiedad.fecha_pago_administracion) 
-                        if propiedad.fecha_pago_administracion else "1"
+                        str(propiedad.fecha_pago_administracion)
+                        if propiedad.fecha_pago_administracion
+                        else "1"
                     ),
                     "link_pago_administracion": (
                         propiedad.link_pago_administracion or ""
                     ),
                     "cuota_extra_ordinaria": (
-                        str(propiedad.cuota_extra_ordinaria) 
-                        if propiedad.cuota_extra_ordinaria else "0"
+                        str(propiedad.cuota_extra_ordinaria)
+                        if propiedad.cuota_extra_ordinaria
+                        else "0"
                     ),
-                    "observaciones_admin_ph": (
-                        propiedad.observaciones_admin_ph or ""
-                    ),
+                    "observaciones_admin_ph": (propiedad.observaciones_admin_ph or ""),
                 }
                 self.show_modal = True
                 self.error_message = ""
@@ -651,11 +686,17 @@ class PropiedadesState(DocumentosStateMixin):
                 "codigo_gas": form_data.get("codigo_gas", ""),
                 # Administración
                 "telefono_administracion": form_data.get("telefono_administracion", ""),
-                "tipo_cuenta_administracion": form_data.get("tipo_cuenta_administracion", ""),
-                "numero_cuenta_administracion": form_data.get("numero_cuenta_administracion", ""),
+                "tipo_cuenta_administracion": form_data.get(
+                    "tipo_cuenta_administracion", ""
+                ),
+                "numero_cuenta_administracion": form_data.get(
+                    "numero_cuenta_administracion", ""
+                ),
                 # === NUEVOS CAMPOS ===
                 "fecha_pago_administracion": safe_int("fecha_pago_administracion", 1),
-                "link_pago_administracion": form_data.get("link_pago_administracion", ""),
+                "link_pago_administracion": form_data.get(
+                    "link_pago_administracion", ""
+                ),
                 "cuota_extra_ordinaria": safe_int("cuota_extra_ordinaria", 0),
                 "observaciones_admin_ph": form_data.get("observaciones_admin_ph", ""),
             }
@@ -672,13 +713,21 @@ class PropiedadesState(DocumentosStateMixin):
                 # REGLA DE ÉLITE: Prevenir estado "Disponible" si tiene Arrendamiento Activo
                 if datos["disponibilidad_propiedad"] == 1:
                     query_check_arr = "SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'Activo'"
-                    if db_manager.execute_query_one(query_check_arr.replace("%s", db_manager.get_placeholder()), (int(id_prop),)):
+                    if db_manager.execute_query_one(
+                        query_check_arr.replace("%s", db_manager.get_placeholder()),
+                        (int(id_prop),),
+                    ):
                         self.is_loading = False
-                        yield rx.toast.error("No se puede cambiar a Disponible: existe un Arrendamiento Activo vinculado.", position="bottom-right")
+                        yield rx.toast.error(
+                            "No se puede cambiar a Disponible: existe un Arrendamiento Activo vinculado.",
+                            position="bottom-right",
+                        )
                         return
 
                 pass  # print(f"🔄 Actualizando propiedad ID: {id_prop}") [OpSec Removed]
-                servicio.actualizar_propiedad(int(id_prop), datos, usuario_sistema="admin")
+                servicio.actualizar_propiedad(
+                    int(id_prop), datos, usuario_sistema="admin"
+                )
                 msg = "Propiedad actualizada correctamente"
             else:
                 # Crear nueva
@@ -705,15 +754,21 @@ class PropiedadesState(DocumentosStateMixin):
     def toggle_disponibilidad(self, id_propiedad: int, nueva_disponibilidad: int):
         """Cambia disponibilidad de una propiedad."""
         try:
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
 
             # REGLA DE ÉLITE: Prevenir estado "Disponible" si tiene Arrendamiento Activo
             if nueva_disponibilidad == 1:
                 query_check_arr = "SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'Activo'"
-                if db_manager.execute_query_one(query_check_arr.replace("%s", db_manager.get_placeholder()), (int(id_propiedad),)):
-                    yield rx.toast.error("No se puede cambiar a Disponible: existe un Arrendamiento Activo vinculado.", position="bottom-right")
+                if db_manager.execute_query_one(
+                    query_check_arr.replace("%s", db_manager.get_placeholder()),
+                    (int(id_propiedad),),
+                ):
+                    yield rx.toast.error(
+                        "No se puede cambiar a Disponible: existe un Arrendamiento Activo vinculado.",
+                        position="bottom-right",
+                    )
                     return
 
             repo_propiedad = RepositorioPropiedadPostgres(db_manager)
@@ -722,7 +777,9 @@ class PropiedadesState(DocumentosStateMixin):
                 id_propiedad, nueva_disponibilidad, usuario_sistema="admin"
             )
             est_str = "Disponible" if nueva_disponibilidad == 1 else "Ocupada"
-            yield rx.toast.success(f"Estado actualizado a {est_str}", position="bottom-right")
+            yield rx.toast.success(
+                f"Estado actualizado a {est_str}", position="bottom-right"
+            )
             yield PropiedadesState.load_propiedades
         except Exception as e:
             pass  # print(f"Error cambiando disponibilidad: {e}") [OpSec Removed]
@@ -738,20 +795,21 @@ class PropiedadesState(DocumentosStateMixin):
 
             repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioPropiedades(repo_propiedad=repo_propiedad)
-            
+
             if estado_actual == 1:
                 servicio.desactivar_propiedad(id_propiedad, usuario_sistema="admin")
                 msg = "Propiedad desactivada correctamente"
             else:
                 servicio.activar_propiedad(id_propiedad, usuario_sistema="admin")
                 msg = "Propiedad reactivada correctamente"
-                
+
             yield rx.toast.success(msg, position="bottom-right")
             yield PropiedadesState.load_propiedades
         except Exception as e:
             pass  # print(f"Error cambiando estado registro: {e}") [OpSec Removed]
             self.error_message = f"Error al cambiar estado: {str(e)}"
             yield rx.toast.error(f"Error: {e}", position="bottom-right")
+
     def exportar_csv(self):
         """Exporta los datos filtrados a CSV y descarga el archivo."""
         try:
@@ -798,4 +856,6 @@ class PropiedadesState(DocumentosStateMixin):
 
         except Exception as e:
             pass  # print(f"Error al exportar: {e}") [OpSec Removed]
-            yield rx.toast.error(f"Error al exportar: {str(e)}", position="bottom-right")
+            yield rx.toast.error(
+                f"Error al exportar: {str(e)}", position="bottom-right"
+            )

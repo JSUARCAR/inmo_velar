@@ -19,11 +19,15 @@ TEXT_INVERTED = "white"
 # --- Brand Colors ---
 BRAND_PRIMARY = "var(--brand-primary)"  # #c96442 Terracotta
 BRAND_ACCENT = "var(--brand-accent)"  # #d97757 Coral
+ACCENT_COLOR = BRAND_PRIMARY
+ACCENT_BG_SOFT = "rgba(201, 100, 66, 0.1)"  # Soft Terracotta
+ACCENT_BG = "rgba(201, 100, 66, 0.2)"
 
 # --- Typography Aliases ---
 FONT_DISPLAY = "Playfair Display, serif"
+FONT_SANS = "Inter, sans-serif"
 
-# --- Font Size Tokens (mapped to CSS variables for centralized scaling) ---
+# --- Font Size Tokens ---
 FONT_SIZE_XS = "var(--font-size-xs)"
 FONT_SIZE_SM = "var(--font-size-sm)"
 FONT_SIZE_BASE = "var(--font-size-base)"
@@ -36,45 +40,39 @@ BORDER_DEFAULT = "var(--border-default)"  # #f0eee6 Border Cream
 BORDER_HOVER = "var(--border-emphasis)"  # #e8e6dc Border Warm
 BORDER_COLOR = BORDER_DEFAULT
 
-# --- Accents (Focus Blue - Only cool color) ---
-ACCENT_COLOR = "var(--focus-blue)"  # #3898ec
-ACCENT_BG_SOFT = "var(--blue-3)"
+# --- Shadows - Anthropic System (Elite) ---
+# Ring-based: 1px border simulation with precise coloring
+SHADOW_RING = f"0px 0px 0px 1px {BORDER_DEFAULT}"
+SHADOW_WHISPER = "0px 4px 24px rgba(0,0,0,0.05)"
+SHADOW_ELEVATED = "0px 12px 48px rgba(0,0,0,0.08)"
+SHADOW_INSET = "inset 0px 2px 4px rgba(0,0,0,0.05)"
 
-# --- Shadows - Ring System ---
-SHADOW_RAISED_ELITE = "var(--shadow-raised-elite)"  # ring 0 0 0 1px
-SHADOW_FLAT_ELITE = "var(--shadow-flat-elite)"  # ring variant
-SHADOW_INSET_ELITE = "var(--shadow-inset-elite)"  # inset ring
-SHADOW_MODAL_ELITE = "var(--shadow-modal-elite)"  # whisper shadow
 
-# --- Aliases retrocompatibles ---
-NEU_SHADOW = SHADOW_RAISED_ELITE
-NEU_MODAL_SHADOW = SHADOW_MODAL_ELITE
-NEU_INSET = SHADOW_INSET_ELITE
-NEU_INSET_LIGHT = "var(--shadow-inset-light-elite)"
 
 # --- Animaciones Globales ---
 GLOBAL_TRANSITION = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+TRANSITION_FAST = "0.15s ease-out"
+TRANSITION_SLOW = "0.4s cubic-bezier(0.4, 0, 0.2, 1)"
 
 # --- Component Styles ---
 NEU_DIVIDER_STYLE = {
-    "height": "2px",
+    "height": "1px",
     "width": "100%",
-    "background": f"linear-gradient(to bottom, {BORDER_DEFAULT} 0%, {BG_PANEL} 100%)",
+    "background": BORDER_DEFAULT,
     "margin_y": "1rem",
-    "border_radius": "2px",
 }
 
 NEU_INPUT_STYLE = {
     "background": BG_PANEL,
     "border": f"1px solid {BORDER_DEFAULT}",
-    "box_shadow": NEU_INSET,
+    "box_shadow": SHADOW_INSET,
     "transition": GLOBAL_TRANSITION,
     "border_radius": "12px",
     "padding": "0.75rem 1rem",
     "color": TEXT_PRIMARY,
     "height": "44px !important",
     "_focus": {
-        "box_shadow": f"{NEU_INSET}, 0 0 0 2px {BRAND_PRIMARY}4D",
+        "box_shadow": f"{SHADOW_INSET}, 0 0 0 2px {BRAND_PRIMARY}4D",
         "outline": "none",
         "border_color": BRAND_PRIMARY,
     },
@@ -86,7 +84,7 @@ NEU_INPUT_STYLE = {
 NEU_SELECT_STYLE = {
     "background": BG_PANEL,
     "border": f"1px solid {BORDER_DEFAULT}",
-    "box_shadow": NEU_INSET,
+    "box_shadow": SHADOW_INSET,
     "border_radius": "12px",
     "padding": "0 1rem",
     "color": TEXT_PRIMARY,
@@ -95,7 +93,7 @@ NEU_SELECT_STYLE = {
     "align_items": "center",
     "transition": GLOBAL_TRANSITION,
     "_focus": {
-        "box_shadow": f"{NEU_INSET}, 0 0 0 2px {BRAND_PRIMARY}4D",
+        "box_shadow": f"{SHADOW_INSET}, 0 0 0 2px {BRAND_PRIMARY}4D",
         "border_color": BRAND_PRIMARY,
     },
 }
@@ -103,7 +101,7 @@ NEU_SELECT_STYLE = {
 NEU_BUTTON_STYLE = {
     "background": BG_PANEL,
     "border": f"1px solid {BORDER_DEFAULT}",
-    "box_shadow": SHADOW_RAISED_ELITE,
+    "box_shadow": SHADOW_RING,
     "border_radius": "12px",
     "color": TEXT_PRIMARY,
     "height": "44px !important",
@@ -113,13 +111,25 @@ NEU_BUTTON_STYLE = {
     "cursor": "pointer",
     "_hover": {
         "transform": "translateY(-2px)",
-        "box_shadow": SHADOW_MODAL_ELITE,
+        "box_shadow": SHADOW_WHISPER,
         "background": BG_HOVER,
     },
     "_active": {
         "transform": "translateY(0)",
-        "box_shadow": SHADOW_INSET_ELITE,
+        "box_shadow": SHADOW_INSET,
     },
+}
+
+NEU_BUTTON_PRIMARY_STYLE = {
+    **NEU_BUTTON_STYLE,
+    "background": BRAND_PRIMARY,
+    "color": "white",
+    "border": "none",
+    "_hover": {
+        **NEU_BUTTON_STYLE.get("_hover", {}),
+        "background": BRAND_ACCENT,
+        "box_shadow": f"0 8px 16px {BRAND_PRIMARY}33",
+    }
 }
 
 NEU_PANEL_STYLE = {
@@ -127,13 +137,23 @@ NEU_PANEL_STYLE = {
     "border": f"1px solid {BORDER_DEFAULT}",
     "border_radius": "16px",
     "padding": "1.5rem",
-    "box_shadow": "var(--shadow-whisper)",
+    "box_shadow": SHADOW_WHISPER,
+}
+
+NEU_CARD_STYLE = {
+    **NEU_PANEL_STYLE,
+    "transition": GLOBAL_TRANSITION,
+    "_hover": {
+        "box_shadow": SHADOW_ELEVATED,
+        "transform": "translateY(-4px)",
+        "border_color": BRAND_PRIMARY,
+    }
 }
 
 NEU_TOOLTIP_STYLE = {
     "background": BG_PANEL,
     "border": f"1px solid {BORDER_DEFAULT}",
-    "box_shadow": SHADOW_MODAL_ELITE,
+    "box_shadow": SHADOW_WHISPER,
     "border_radius": "12px",
     "color": TEXT_PRIMARY,
     "padding": "0.75rem",
@@ -141,143 +161,48 @@ NEU_TOOLTIP_STYLE = {
     "z_index": "9999",
 }
 
-# Botones de icono: ring-based (no more dual shadows)
 NEU_ICON_BUTTON_STYLE = {
     "background": BG_PANEL,
     "border": f"1px solid {BORDER_DEFAULT}",
-    "box_shadow": SHADOW_RAISED_ELITE,
+    "box_shadow": SHADOW_RING,
     "border_radius": "10px",
     "color": TEXT_PRIMARY,
     "transition": GLOBAL_TRANSITION,
     "cursor": "pointer",
-    "_hover": {
-        "box_shadow": SHADOW_FLAT_ELITE,
-        "background": BG_HOVER,
-    },
-    "_active": {
-        "box_shadow": SHADOW_INSET_ELITE,
-        "transform": "scale(0.97)",
-    },
-}
-
-# Card de contrato con whisper shadow y hover ring
-NEU_CONTRACT_CARD_STYLE = {
-    "background": BG_PANEL,
-    "border": f"1px solid {BORDER_DEFAULT}",
-    "border_radius": "16px",
-    "box_shadow": "var(--shadow-whisper)",
-    "transition": GLOBAL_TRANSITION,
-    "_hover": {
-        "box_shadow": SHADOW_MODAL_ELITE,
-        "transform": "translateY(-4px)",
-    },
-}
-
-NEU_INPUT_STYLE = {
-    "background": BG_PANEL,
-    "box_shadow": NEU_INSET,
-    "border": f"1px solid {BORDER_DEFAULT}",
-    "transition": GLOBAL_TRANSITION,
-    "border_radius": "12px",
-    "padding": "0.75rem 1rem",
-    "color": TEXT_PRIMARY,
-    "height": "44px !important",
-    "_focus": {
-        "box_shadow": NEU_INSET + f", 0 0 0 2px {BRAND_PRIMARY}4D",
-        "outline": "none",
-        "border_color": BRAND_PRIMARY,
-    },
-    "_placeholder": {
-        "color": TEXT_TERTIARY,
-    },
-}
-
-NEU_SELECT_STYLE = {
-    "background": BG_PANEL,
-    "box_shadow": NEU_INSET,
-    "border": f"1px solid {BORDER_DEFAULT}",
-    "border_radius": "12px",
-    "padding": "0 1rem",
-    "color": TEXT_PRIMARY,
-    "height": "44px !important",
     "display": "flex",
     "align_items": "center",
-    "transition": GLOBAL_TRANSITION,
-    "_focus": {
-        "box_shadow": NEU_INSET + f", 0 0 0 2px {BRAND_PRIMARY}4D",
-        "border_color": BRAND_PRIMARY,
-    },
-}
-
-NEU_BUTTON_STYLE = {
-    "background": BG_PANEL,
-    "box_shadow": NEU_SHADOW,
-    "border": f"1px solid {BORDER_DEFAULT}",
-    "border_radius": "12px",
-    "color": TEXT_PRIMARY,
-    "height": "44px !important",  # Forzado
-    "padding": "0 1.5rem",
-    "font_weight": "600",
-    "transition": GLOBAL_TRANSITION,
-    "cursor": "pointer",
+    "justify_content": "center",
     "_hover": {
-        "transform": "translateY(-2px)",
-        "box_shadow": NEU_MODAL_SHADOW,
         "background": BG_HOVER,
+        "transform": "scale(1.05)",
     },
     "_active": {
-        "transform": "translateY(0)",
-        "box_shadow": NEU_INSET,
-    },
-}
-
-NEU_PANEL_STYLE = {
-    "background": BG_PANEL,
-    "box_shadow": NEU_SHADOW,
-    "border": "none",
-    "border_radius": "16px",
-    "padding": "1.5rem",
-}
-
-NEU_TOOLTIP_STYLE = {
-    "background": BG_PANEL,
-    "box_shadow": NEU_MODAL_SHADOW,
-    "border": f"1px solid {BORDER_DEFAULT}",
-    "border_radius": "12px",
-    "color": TEXT_PRIMARY,
-    "padding": "0.75rem",
-    "transition": GLOBAL_TRANSITION,
-    "z_index": "9999",
-}
-
-# Botones de icono: raised → flat → inset (sombras táctiles)
-NEU_ICON_BUTTON_STYLE = {
-    "background": BG_PANEL,
-    "box_shadow": SHADOW_RAISED_ELITE,
-    "border": f"1px solid {BORDER_DEFAULT}",
-    "border_radius": "10px",
-    "color": TEXT_PRIMARY,
-    "transition": GLOBAL_TRANSITION,
-    "cursor": "pointer",
-    "_hover": {
-        "box_shadow": SHADOW_FLAT_ELITE,
-        "background": BG_HOVER,
-    },
-    "_active": {
-        "box_shadow": SHADOW_INSET_ELITE,
+        "box_shadow": SHADOW_INSET,
         "transform": "scale(0.97)",
     },
 }
 
-# Card de contrato con sombra raised y hover elevado
-NEU_CONTRACT_CARD_STYLE = {
-    "background": BG_PANEL,
-    "box_shadow": SHADOW_RAISED_ELITE,
-    "border": "none",
-    "border_radius": "16px",
-    "transition": GLOBAL_TRANSITION,
-    "_hover": {
-        "box_shadow": SHADOW_MODAL_ELITE,
-        "transform": "translateY(-4px)",
-    },
+NEU_CONTRACT_CARD_STYLE = NEU_CARD_STYLE
+
+# --- Estilos de Badge/Tag ---
+NEU_BADGE_STYLE = {
+    "padding": "4px 12px",
+    "border_radius": "20px",
+    "font_size": FONT_SIZE_XS,
+    "font_weight": "bold",
+    "text_transform": "uppercase",
+    "letter_spacing": "0.05em",
 }
+
+# --- Aliases para compatibilidad ---
+SHADOW_RAISED_ELITE = SHADOW_RING
+SHADOW_FLAT_ELITE = SHADOW_RING
+SHADOW_MODAL_ELITE = SHADOW_WHISPER
+SHADOW_INSET_ELITE = SHADOW_INSET
+
+NEU_SHADOW = SHADOW_RING
+NEU_MODAL_SHADOW = SHADOW_WHISPER
+NEU_PANEL_SHADOW = SHADOW_WHISPER
+NEU_INSET = SHADOW_INSET_ELITE
+NEU_INSET_LIGHT = SHADOW_INSET_ELITE
+NEU_PANEL = NEU_PANEL_STYLE
