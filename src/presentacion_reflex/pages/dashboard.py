@@ -31,365 +31,150 @@ from src.presentacion_reflex import styles
 def dashboard_page() -> rx.Component:
     """
     Dashboard principal con KPIs y gráficos.
-    Diseño Expert Elite: Jerarquía visual optimizada y distribución eficiente.
+    Diseño Bento Grid: Alta densidad de datos y jerarquía visual optimizada.
     """
 
     return dashboard_layout(
         rx.vstack(
-            # Título y Header
-            rx.flex(
-                rx.heading(
-                    "Dashboard Ejecutivo",
-                    size="8",
-                    font_size=["1.75em", "2em", "2.5em", "3em"],
-                    weight="bold",
-                    color=styles.TEXT_PRIMARY,
+            # HEADER ESTRATÉGICO (Parchment Background, Whisper Shadow)
+            rx.box(
+                rx.flex(
+                    rx.vstack(
+                        rx.heading(
+                            "Dashboard Ejecutivo",
+                            size="8",
+                            font_family=styles.FONT_DISPLAY,
+                            weight="bold",
+                            color=styles.TEXT_PRIMARY,
+                        ),
+                        rx.text(
+                            "Análisis de rendimiento y control de activos",
+                            size="2",
+                            color=styles.TEXT_SECONDARY,
+                            font_family=styles.FONT_SANS,
+                        ),
+                        spacing="1",
+                        align="start",
+                    ),
+                    rx.spacer(),
+                    dashboard_filters(),
+                    align="center",
+                    width="100%",
                 ),
-                rx.spacer(),
-                dashboard_filters(),
-                align="center",
                 width="100%",
-                padding_bottom="4",
-                flex_direction=["column", "column", "row", "row"],
-                spacing="4",
+                padding_x=["4", "6", "8", "10"],
+                padding_y="6",
+                background=styles.BG_PANEL,
+                border_bottom=f"1px solid {styles.BORDER_DEFAULT}",
+                box_shadow=styles.SHADOW_WHISPER,
+                position="sticky",
+                top="0",
+                z_index="100",
             ),
-            # Loading Spinner
-            rx.cond(
-                DashboardState.is_loading,
-                rx.center(
-                    rx.vstack(
-                        neuro_spinner(size="3"),
-                        rx.text(
-                            "Procesando métricas en tiempo real...",
-                            color=styles.TEXT_SECONDARY,
-                            size="2",
+
+            # CONTENIDO BENTO GRID
+            rx.vstack(
+                # Loading / Error states
+                rx.cond(
+                    DashboardState.is_loading,
+                    rx.center(
+                        rx.vstack(
+                            neuro_spinner(size="3"),
+                            rx.text("Procesando métricas INMOBILIARIA...", color=styles.TEXT_SECONDARY, size="2", font_family=styles.FONT_SANS),
+                            spacing="3",
                         ),
-                        spacing="3",
+                        padding="100px",
+                        width="100%",
                     ),
-                    padding="100px",
-                    width="100%",
                 ),
-            ),
-            # Error Message
-            rx.cond(
-                DashboardState.error_message != "",
-                neuro_callout(
-                    DashboardState.error_message,
-                    icon="circle_alert",
-                    color_scheme="red",
-                    width="100%",
+                rx.cond(
+                    DashboardState.error_message != "",
+                    neuro_callout(DashboardState.error_message, icon="circle_alert", color_scheme="red", width="100%"),
                 ),
-            ),
-            # Contenido Principal
-            rx.cond(
-                ~DashboardState.is_loading & (DashboardState.error_message == ""),
-                rx.vstack(
-                    # 1. NIVEL ESTRATÉGICO (Elite KPIs)
-                    rx.vstack(
-                        rx.text(
-                            "VISIÓN ESTRATÉGICA",
-                            size="2",
-                            weight="medium",
-                            color=styles.TEXT_SECONDARY,
-                            letter_spacing="0.1em",
-                        ),
+
+                # Dashboard Grid
+                rx.cond(
+                    ~DashboardState.is_loading & (DashboardState.error_message == ""),
+                    rx.grid(
+                        # 1. KPIs ESTRATÉGICOS (Top Row - Full Width)
                         rx.box(
-                            kpi_card(
-                                "Ocupación Financiera",
-                                rx.text(
-                                    DashboardState.kpi_ocupacion_financiera_view, "%"
-                                ),
-                                "bar-chart-2",
-                                styles.BRAND_PRIMARY,
-                                "Ingresos vs Potencial",
-                                variant="elite",
-                                hover_content=rx.vstack(
-                                    rx.text(
-                                        "Eficiencia de Ingresos",
-                                        weight="bold",
-                                        size="3",
-                                    ),
-                                    rx.separator(),
-                                    rx.text(
-                                        "Mide qué porcentaje del valor potencial total de la cartera se está recaudando efectivamente.",
-                                        size="2",
-                                        color=styles.TEXT_SECONDARY,
-                                    ),
-                                    rx.hstack(
-                                        rx.text(
-                                            "Recaudo Real:", weight="medium", size="2"
-                                        ),
-                                        rx.text(
-                                            DashboardState.kpi_recaudo_real_view,
-                                            weight="bold",
-                                            color=styles.ACCENT_COLOR,
-                                        ),
-                                        justify="between",
-                                        width="100%",
-                                    ),
-                                    rx.hstack(
-                                        rx.text(
-                                            "Potencial Total:",
-                                            weight="medium",
-                                            size="2",
-                                        ),
-                                        rx.text(
-                                            DashboardState.kpi_potencial_total_view,
-                                            weight="bold",
-                                            color=styles.TEXT_TERTIARY,
-                                        ),
-                                        justify="between",
-                                        width="100%",
-                                    ),
-                                    spacing="2",
-                                    width="100%",
-                                ),
-                            ),
-                            kpi_card(
-                                "Eficiencia Recaudo",
-                                rx.text(
-                                    DashboardState.kpi_eficiencia_recaudo_view, "%"
-                                ),
-                                "wallet",
-                                styles.TEXT_SECONDARY,
-                                "Recaudado este mes",
-                                variant="elite",
-                                hover_content=rx.vstack(
-                                    rx.text("Recaudo Mensual", weight="bold", size="2"),
-                                    rx.separator(),
-                                    rx.text(
-                                        "Total recaudado en el mes actual: ",
-                                        DashboardState.recaudo_mes_view,
-                                        size="1",
-                                    ),
-                                    rx.text(
-                                        "Meta de recaudo: ",
-                                        DashboardState.kpi_potencial_total_view,
-                                        size="1",
-                                    ),
-                                    spacing="1",
-                                ),
-                            ),
-                            kpi_card(
-                                "Potencial Total",
-                                DashboardState.kpi_potencial_total_view,
-                                "banknote",
-                                styles.TEXT_TERTIARY,
-                                "Cartera Total Estimada",
-                                variant="elite",
-                                hover_content=rx.vstack(
-                                    rx.text(
-                                        "Proyección de Cartera", weight="bold", size="2"
-                                    ),
-                                    rx.text(
-                                        "Es la suma total del canon esperado de todos los contratos activos.",
-                                        size="1",
-                                        color=styles.TEXT_SECONDARY,
-                                    ),
-                                    spacing="1",
-                                    width="100%",
-                                ),
-                            ),
-                            class_name="grid-elite",
-                        ),
-                        spacing="5",
-                        width="100%",
-                        margin_bottom="8",
-                    ),
-                    tablas_vencimientos_detalle(),
-                    rx.divider(margin_y="4"),
-                    # 2. GRID PRINCIPAL (Análisis + Operativo)
-                    rx.box(
-                        # COLUMNA IZQUIERDA (Análisis Profundo - Span 2)
-                        rx.vstack(
-                            # A. Evolución (Tendencia Clave)
-                            neuro_panel(
-                                evolucion_chart(),
+                            rx.grid(
+                                kpi_card("Ocupación Financiera", rx.text(DashboardState.kpi_ocupacion_financiera_view, "%"), "bar-chart-2", styles.BRAND_PRIMARY, "Ingresos vs Potencial", variant="elite"),
+                                kpi_card("Eficiencia Recaudo", rx.text(DashboardState.kpi_eficiencia_recaudo_view, "%"), "wallet", styles.TEXT_SECONDARY, "Recaudado este mes", variant="elite"),
+                                kpi_card("Potencial Total", DashboardState.kpi_potencial_total_view, "banknote", styles.TEXT_TERTIARY, "Cartera Total Estimada", variant="elite"),
+                                grid_template_columns=rx.breakpoints(initial="1fr", md="repeat(3, 1fr)"),
+                                gap="6",
                                 width="100%",
-                                overflow="hidden",
                             ),
-                            rx.spacer(),
-                            # B. Gráficos de Detalle (2x2 Grid interno)
-                            rx.box(
-                                # Fila 1
-                                top_asesores_chart(),
+                            col_span=3,
+                        ),
+
+                        # 2. ANÁLISIS DE EVOLUCIÓN (Middle Row - Left)
+                        rx.box(
+                            rx.vstack(
+                                rx.text("EVOLUCIÓN DE RECAUDO", size="2", weight="bold", color=styles.TEXT_SECONDARY, letter_spacing="0.1em", font_family=styles.FONT_SANS),
+                                rx.box(evolucion_chart(), width="100%", height="300px"),
+                                style=styles.NEU_PANEL_STYLE,
+                                align="start",
+                                spacing="4",
+                            ),
+                            col_span=rx.breakpoints(initial=3, lg=2),
+                        ),
+
+                        # 3. TÚNEL DE VENCIMIENTOS (Middle Row - Right)
+                        rx.box(
+                            rx.vstack(
+                                rx.text("RIESGO DE VENCIMIENTO", size="2", weight="bold", color=styles.TEXT_SECONDARY, letter_spacing="0.1em", font_family=styles.FONT_SANS),
                                 tunel_vencimientos_chart(),
-                                # Fila 2
-                                propiedades_tipo_chart(),
-                                incidentes_pie_chart(),
-                                class_name="grid-compact",
-                                width="100%",
+                                style=styles.NEU_PANEL_STYLE,
+                                align="start",
+                                spacing="4",
                             ),
-                            spacing="5",
-                            width="100%",
-                            class_name="grid-main-left",
+                            col_span=rx.breakpoints(initial=3, lg=1),
                         ),
-                        # COLUMNA DERECHA (Pulso Operativo - Span 1)
-                        rx.vstack(
-                            rx.text(
-                                "PULSO OPERATIVO",
-                                size="2",
-                                weight="medium",
-                                color=styles.TEXT_SECONDARY,
-                                letter_spacing="0.1em",
-                            ),
-                            # KPIs Compactos
-                            rx.box(
-                                kpi_card(
-                                    "Cartera Mora",
-                                    DashboardState.mora_monto_total_view,
-                                    "circle_alert",
-                                    styles.BRAND_PRIMARY,
-                                    rx.text(
-                                        DashboardState.mora_cantidad_contratos_view,
-                                        " ctros",
-                                    ),
-                                    variant="compact",
-                                    hover_content=rx.vstack(
-                                        rx.text(
-                                            "Cartera Vencida", weight="bold", size="2"
-                                        ),
-                                        rx.text(
-                                            "Total pendiente de cobro fuera de fecha límite.",
-                                            size="1",
-                                            color=styles.TEXT_SECONDARY,
-                                        ),
-                                        rx.hstack(
-                                            rx.text("Contratos:", size="1"),
-                                            rx.text(
-                                                DashboardState.mora_cantidad_contratos_view,
-                                                weight="bold",
-                                                size="1",
-                                            ),
-                                            justify="between",
-                                            width="100%",
-                                        ),
-                                        width="100%",
-                                    ),
+
+                        # 4. PULSO OPERATIVO (Bottom Row - Full Width Actions)
+                        rx.box(
+                            rx.vstack(
+                                rx.text("PULSO OPERATIVO Y ACCIONES", size="2", weight="bold", color=styles.TEXT_SECONDARY, letter_spacing="0.1em", font_family=styles.FONT_SANS),
+                                rx.grid(
+                                    kpi_card("Cartera Mora", DashboardState.mora_monto_total_view, "circle_alert", styles.BRAND_PRIMARY, rx.text(DashboardState.mora_cantidad_contratos_view, " ctros"), variant="compact"),
+                                    kpi_card("Recaudo Mes", DashboardState.recaudo_mes_view, "wallet", styles.TEXT_SECONDARY, rx.text(DashboardState.recaudo_porcentaje_view, "%"), variant="compact"),
+                                    kpi_card("Ocupación", rx.text(DashboardState.ocupacion_porcentaje_view, "%"), "home", styles.BRAND_PRIMARY, rx.text(DashboardState.ocupacion_ocupadas_view, "/", DashboardState.ocupacion_disponibles_view), variant="compact"),
+                                    kpi_card("Comisiones", DashboardState.comisiones_monto_total_view, "credit-card", styles.TEXT_TERTIARY, rx.text(DashboardState.comisiones_cantidad_view, " pend"), variant="compact"),
+                                    kpi_card("Contratos", DashboardState.contratos_count_view, "file-text", styles.TEXT_SECONDARY, "Activos", variant="compact"),
+                                    kpi_card("Recibos Pend.", DashboardState.recibos_monto_total_view, "receipt", styles.TEXT_SECONDARY, rx.text(DashboardState.recibos_cantidad_view, " unds"), variant="compact"),
+                                    grid_template_columns=rx.breakpoints(initial="1fr", md="repeat(2, 1fr)", lg="repeat(3, 1fr)"),
+                                    gap="4",
+                                    width="100%",
                                 ),
-                                kpi_card(
-                                    "Recaudo Mes",
-                                    DashboardState.recaudo_mes_view,
-                                    "wallet",
-                                    styles.TEXT_SECONDARY,
-                                    rx.text(
-                                        DashboardState.recaudo_porcentaje_view, "%"
-                                    ),
-                                    variant="compact",
-                                    hover_content=rx.vstack(
-                                        rx.text(
-                                            "Recaudo Mensual", weight="bold", size="2"
-                                        ),
-                                        rx.text(
-                                            "Ingresos procesados en el mes corriente.",
-                                            size="1",
-                                            color=styles.TEXT_SECONDARY,
-                                        ),
-                                        neuro_progress(
-                                            value=DashboardState.flujo_porcentaje_int_view,
-                                            color_scheme="orange",
-                                            height="6px",
-                                            width="100%",
-                                        ),
-                                        width="100%",
-                                    ),
-                                ),
-                                kpi_card(
-                                    "Ocupación",
-                                    rx.text(
-                                        DashboardState.ocupacion_porcentaje_view,
-                                        "%",
-                                    ),
-                                    "home",
-                                    styles.BRAND_PRIMARY,
-                                    rx.text(
-                                        DashboardState.ocupacion_ocupadas_view,
-                                        "/",
-                                        DashboardState.ocupacion_disponibles_view,
-                                    ),
-                                    variant="compact",
-                                    hover_content=rx.text(
-                                        "Relación entre propiedades alquiladas y total disponible.",
-                                        size="1",
-                                    ),
-                                ),
-                                kpi_card(
-                                    "Comisiones",
-                                    DashboardState.comisiones_monto_total_view,
-                                    "credit-card",
-                                    styles.TEXT_TERTIARY,
-                                    rx.text(
-                                        DashboardState.comisiones_cantidad_view,
-                                        " pend",
-                                    ),
-                                    variant="compact",
-                                    hover_content=rx.text(
-                                        "Valor acumulado de comisiones pendientes de liquidar a asesores.",
-                                        size="1",
-                                    ),
-                                ),
-                                kpi_card(
-                                    "Contratos",
-                                    DashboardState.contratos_count_view,
-                                    "file-text",
-                                    styles.TEXT_SECONDARY,
-                                    "Activos",
-                                    variant="compact",
-                                    hover_content=rx.text(
-                                        "Total de contratos de arrendamiento vigentes.",
-                                        size="1",
-                                    ),
-                                ),
-                                kpi_card(
-                                    "Recibos Pend.",
-                                    DashboardState.recibos_monto_total_view,
-                                    "receipt",
-                                    styles.TEXT_SECONDARY,
-                                    rx.text(
-                                        DashboardState.recibos_cantidad_view, " unds"
-                                    ),
-                                    variant="compact",
-                                    hover_content=rx.text(
-                                        "Recibos de servicios públicos o administración pendientes de pago.",
-                                        size="1",
-                                    ),
-                                ),
-                                class_name="grid-compact",
+                                style=styles.NEU_PANEL_STYLE,
                                 width="100%",
+                                spacing="4",
                             ),
-                            rx.divider(margin_y="4"),
-                            # Acción Requerida (Vencimientos Próximos)
-                            rx.box(
-                                rx.text(
-                                    "ACCIÓN REQUERIDA",
-                                    size="2",
-                                    weight="medium",
-                                    color="orange.10",
-                                    letter_spacing="0.1em",
-                                    margin_bottom="2",
-                                ),
-                                vencimientos_chart(),  # Muestra "Contratos por Vencer"
-                                width="100%",
-                            ),
-                            padding="5",
-                            style=styles.NEU_PANEL_STYLE,
-                            height="fit-content",
-                            width="100%",
-                            class_name="grid-main-right",
+                            col_span=3,
                         ),
-                        class_name="grid-main",
+
+                        # 5. DETALLE DE VENCIMIENTOS (Extra Row)
+                        rx.box(
+                            tablas_vencimientos_detalle(),
+                            col_span=3,
+                        ),
+
+                        grid_template_columns="repeat(3, 1fr)",
+                        gap="6",
                         width="100%",
-                        align_items="start",
                     ),
-                    spacing="6",
-                    width="100%",
                 ),
+                width="100%",
+                padding_x=["4", "6", "8", "10"],
+                padding_y="8",
             ),
-            spacing="4",
+            spacing="0",
             width="100%",
-            padding=["4", "6", "8", "32px"],
+            background=styles.BG_APP,
             min_height="100vh",
-        ),
+        )
     )
 
 

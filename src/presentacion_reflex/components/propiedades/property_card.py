@@ -2,10 +2,48 @@ import reflex as rx
 
 from src.presentacion_reflex import styles
 from src.presentacion_reflex.state.auth_state import AuthState
-from src.presentacion_reflex.components.neuro_elements import neuro_badge, neuro_button
 
 
-def property_card(
+def neuro_badge(texto, **kwargs) -> rx.Component:
+    """Badge con estilo tokenizado."""
+    color_scheme = kwargs.pop("color_scheme", "gray")
+    custom_style = kwargs.pop("style", {})
+    bg_color = f"var(--{color_scheme}-3)"
+    text_color = f"var(--{color_scheme}-11)"
+    border_val = f"1px solid var(--{color_scheme}-6)"
+    kwargs.setdefault("variant", "outline")
+    final_style = {
+        "background": bg_color,
+        "box_shadow": styles.SHADOW_RING,
+        "border": border_val,
+        "border_radius": "12px",
+        "padding": "0.25rem 0.75rem",
+        "color": text_color,
+        "font_weight": "bold",
+        **custom_style,
+    }
+    return rx.badge(texto, style=final_style, **kwargs)
+
+
+def neuro_button(*args, **kwargs) -> rx.Component:
+    """Botón con estilo tokenizado."""
+    custom_style = kwargs.pop("style", {})
+    final_style = {**styles.NEU_BUTTON_STYLE, **custom_style}
+    kwargs.setdefault("variant", "ghost")
+    kwargs.setdefault("size", "3")
+    return rx.button(*args, style=final_style, **kwargs)
+
+
+def neuro_icon_button(*args, **kwargs) -> rx.Component:
+    """IconButton con estilo tokenizado."""
+    custom_style = kwargs.pop("style", {})
+    final_style = {**styles.NEU_BUTTON_STYLE, **custom_style}
+    kwargs.setdefault("variant", "ghost")
+    kwargs.setdefault("size", "3")
+    return rx.icon_button(*args, style=final_style, **kwargs)
+
+
+def tarjeta_propiedad(
     id_propiedad: int,
     matricula: str,
     direccion: str,
@@ -32,14 +70,9 @@ def property_card(
     on_toggle_disponibilidad: callable = None,
     on_toggle_activa: callable = None,
 ) -> rx.Component:
-    """
-    Elite Property Card Component.
-    Displays property details with high-end UI, glassmorphism, and interactive elements.
-    """
-
+    """Tarjeta de visualización de propiedad."""
     return rx.card(
         rx.vstack(
-            # Header Area (Icon + Status)
             rx.hstack(
                 rx.hover_card.root(
                     rx.hover_card.trigger(
@@ -62,8 +95,8 @@ def property_card(
                             height="40px",
                             min_width="40px",
                             border_radius="12px",
-                            background="radial-gradient(circle at center, var(--brand-accent) 0%, var(--brand-primary) 55%, var(--text-secondary) 100%)",
-                            box_shadow="0 4px 12px var(--brand-primary)",
+                            background=styles.BRAND_PRIMARY,
+                            box_shadow=styles.SHADOW_RING,
                             cursor="pointer",
                             display="flex",
                             align_items="center",
@@ -88,7 +121,7 @@ def property_card(
                                 height="208px",
                                 border_radius="12px",
                                 background=styles.BG_PANEL,
-                                box_shadow=styles.NEU_INSET_LIGHT,
+                                box_shadow=styles.SHADOW_RING,
                             ),
                             rx.box(
                                 rx.text(
@@ -217,7 +250,7 @@ def property_card(
                         codigo_agua.to(str) != "",
                         rx.tooltip(
                             rx.hstack(
-                                rx.icon("droplet", size=14, color="var(--blue-9)"),
+                                rx.icon("droplet", size=14, color=styles.BRAND_PRIMARY),
                                 rx.text(
                                     codigo_agua, size="1", color=styles.TEXT_SECONDARY
                                 ),
@@ -348,7 +381,7 @@ def property_card(
                                             "min_width": "32px",
                                             "height": "32px",
                                             "padding": "0",
-                                            "color": "var(--green-9)",
+                                            "color": styles.BRAND_PRIMARY,
                                         },
                                     ),
                                 ),
@@ -387,3 +420,6 @@ def property_card(
             "box_shadow": styles.NEU_MODAL_SHADOW,
         },
     )
+
+
+property_card = tarjeta_propiedad  # Alias de compatibilidad

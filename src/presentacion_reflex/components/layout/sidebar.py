@@ -44,11 +44,11 @@ def sidebar_item(
         border_radius="10px",
         border="none",
         background=styles.BG_PANEL,
-        box_shadow=rx.cond(is_active, styles.NEU_INSET_LIGHT, "none"),
+        box_shadow=rx.cond(is_active, styles.NEU_INSET, "none"),
         _hover={
             "box_shadow": rx.cond(
                 is_active,
-                styles.NEU_INSET_LIGHT,
+                styles.NEU_INSET,
                 styles.NEU_SHADOW,  # Elevado al hover
             ),
         },
