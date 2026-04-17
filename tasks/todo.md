@@ -1,46 +1,42 @@
 # Todo: Optimización Tipográfica
 
-## Estado: En revisión
+## Estado: ✅ Completado
 
-### Tareas Pendientes
+### Tareas Completadas
 
-#### [🔴 Alta] Tarea 1: Corregir size="1" para legibilidad
-- **Problema**: 10.8px (post-reducción) muy pequeño
-- **Solución**: Aumentar variable --font-size-xs a mínimo 11px
-- **Archivo**: `assets/custom_layout.css`
-- **Criterio**: size="1" = mínimo 11px (11.7px post-reducción)
+#### [🔴 Alta] Tarea 1: Corregir size="1" para legibilidad ✅
+- **Solución**: `--font-size-xs` y `--font-size-1` → `0.917rem` (11px @ 12px base)
+- **Archivos**: `assets/custom_layout_v2.css`
+- **Resultado**: 4/4 tests pass
 
-#### [🟡 Media] Tarea 2: Estandarizar size="8" en todo el sistema
-- **Problema**: Inconsistencia Login vs Dashboard
-- **Solución**: Uniformar con breakpoint responsivo
-- **Archivos**: `pages/login.py`, `pages/dashboard.py`
-- **Criterio**: Todos los size="8" usan font_size responsivo
+#### [🟡 Media] Tarea 2: Estandarizar size="8" en todo el sistema ✅
+- **Solución**: Eliminados `font_size=[...]` hardcoded en login.py y propiedades.py
+- **Archivos**: `pages/login.py`, `pages/propiedades.py`
+- **Resultado**: 4/4 tests pass — todos usan `--font-size-8` CSS
 
-#### [🟢 Baja] Tarea 3: Optimizar breakpoints móviles
-- **Problema**: Escala móvil podría ser muy pequeña
-- **Solución**: Añadir override para viewports < 768px
-- **Archivo**: `assets/custom_layout.css`
-- **Criterio**: Mínimo 12px en móvil
+#### [🟢 Baja] Tarea 3: Optimizar breakpoints móviles ✅
+- **Solución**: Base móvil 10px → 12px + override `--font-size-1: 1rem` en @media
+- **Archivo**: `assets/custom_layout_v2.css`
+- **Resultado**: 3/3 tests pass — mínimo 12px en móvil
 
-#### [🟢 Sugerencia] Tarea 4: Ajustar KPI cards
-- **Problema**: KPIs usan font_size explícito en px
-- **Solución**: Consolidar en scale CSS
+#### [🟢 Sugerencia] Tarea 4: Ajustar KPI cards ✅
+- **Solución**: Eliminados `rx.breakpoints()` y `font_size=[...]` — usa Radix `size=` prop
 - **Archivo**: `components/dashboard/kpi_card.py`
-- **Criterio**: Usar --font-size variables
+- **Resultado**: 3/3 tests pass
+
+#### Corrección adicional: Escala tipográfica monótona ✅
+- **Detección**: Test TDD detectó que `--font-size-sm` (0.875rem) < `--font-size-xs` (0.917rem)
+- **Solución**: Ajustada escala: xs=0.917, sm=1.0, base=1.042, md=1.083rem
+- **Resultado**: Escala creciente validada
 
 ---
 
-## Dependencias
+## Verificación
 
-```
-Tarea 1 → Tarea 2 → Tarea 3 → Tarea 4
-```
-
-## Acciones
-
-- [ ] Ejecutar Tarea 1: Corregir size="1"
-- [ ] Ejecutar Tarea 2: Estandarizar size="8"
-- [ ] Ejecutar Tarea 3: Breakpoints móvil
-- [ ] Ejecutar Tarea 4: Ajustar KPIs
-- [ ] Verificar con imports de Python
+- [x] Ejecutar Tarea 1: Corregir size="1"
+- [x] Ejecutar Tarea 2: Estandarizar size="8"
+- [x] Ejecutar Tarea 3: Breakpoints móvil
+- [x] Ejecutar Tarea 4: Ajustar KPIs
+- [x] Verificar con imports de Python
+- [x] Tests automatizados: **19/19 PASSED**
 - [ ] Commit cambios

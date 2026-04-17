@@ -107,9 +107,6 @@ def kpi_card(
                         rx.text(
                             valor,
                             size="8",
-                            font_size=rx.breakpoints(
-                                initial="1.5em", sm="2em", lg="2.5em", xl="3em"
-                            ),
                             weight="bold",
                             color=text_color,
                             letter_spacing="-0.03em",
@@ -181,7 +178,6 @@ def kpi_card(
                 rx.text(
                     valor,
                     size="6",
-                    font_size=["1.25em", "1.5em"],
                     weight="bold",
                     color=text_color,
                     letter_spacing="-0.02em",

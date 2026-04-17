@@ -20,8 +20,8 @@ def sidebar_item(
         is_active, styles.BRAND_PRIMARY, styles.TEXT_SECONDARY
     )
 
-    # Base item content (Trigger)
-    item_content = rx.hstack(
+    # Envoltura interna para mantener los iconos perfectamente alineados pero el bloque centrado
+    inner_content = rx.hstack(
         rx.icon(
             icon,
             size=20,
@@ -38,9 +38,15 @@ def sidebar_item(
             ),
         ),
         spacing="3",
-        padding_x="4",
+        align="center",
+        width="200px",  # Anchura fija para alinear el contenido internamente
+        justify="start",
+    )
+
+    # Base item content (Trigger)
+    item_content = rx.hstack(
+        inner_content,
         padding_y="3",
-        margin_left="2",
         border_radius="10px",
         border="none",
         background=styles.BG_PANEL,
@@ -53,6 +59,7 @@ def sidebar_item(
             ),
         },
         width="100%",
+        justify="center",  # Esto centra el inner_content de 200px perfectamente en la píldora
         align="center",
         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         cursor="pointer",
@@ -132,14 +139,17 @@ def sidebar_item(
 def sidebar_section(title: str, *items) -> rx.Component:
     """Sección del sidebar con título y items."""
     return rx.vstack(
-        rx.text(
-            title,
-            size="1",
-            color=rx.cond(rx.color_mode == "light", "#64748b", "white"),
-            weight="bold",
-            letter_spacing="0.5px",
-            padding_x="4",
-            padding_left="6",
+        # Contenedor para alinear el título con exactitud sobre los iconos (200px de ancho central)
+        rx.box(
+            rx.text(
+                title,
+                size="1",
+                color=rx.cond(rx.color_mode == "light", "#64748b", "white"),
+                weight="bold",
+                letter_spacing="0.5px",
+            ),
+            width="200px",
+            margin_x="auto",  # Centra la caja al igual que los links
             margin_top="2",
         ),
         *items,
@@ -374,7 +384,8 @@ def sidebar_footer() -> rx.Component:
         width="100%",
         align_items="center",
         padding_top="2",
-        padding_x="2",
+        padding_x="4",
+        padding_bottom="4",
     )
 
 
@@ -561,8 +572,10 @@ def sidebar() -> rx.Component:
         rx.box(
             sidebar_items(),
             padding_y="4",
+            padding_x="4",
             overflow_y="auto",
             flex="1",
+            width="100%",
         ),
         # Footer User Profile
         sidebar_footer(),

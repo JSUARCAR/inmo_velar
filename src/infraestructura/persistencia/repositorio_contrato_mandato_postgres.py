@@ -25,10 +25,11 @@ class RepositorioContratoMandatoPostgres:
             ID_PROPIEDAD, ID_PROPIETARIO, ID_ASESOR,
             FECHA_INICIO_CONTRATO_M, FECHA_FIN_CONTRATO_M, DURACION_CONTRATO_M,
             CANON_MANDATO, COMISION_PORCENTAJE_CONTRATO_M, IVA_CONTRATO_M,
-            ESTADO_CONTRATO_M, ALERTA_VENCIMINETO_CONTRATO_M, FECHA_RENOVACION_CONTRATO_M,
+            ESTADO_CONTRATO_M, ALERTA_VENCIMIENTO_CONTRATO_M, FECHA_RENOVACION_CONTRATO_M,
             FECHA_PAGO,
             CREATED_BY, UPDATED_BY
         ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+        RETURNING ID_CONTRATO_M
         """,
             (
                 contrato.id_propiedad,
@@ -49,10 +50,17 @@ class RepositorioContratoMandatoPostgres:
             ),
         )
 
+        row = cursor.fetchone()
         conn.commit()
-        contrato.id_contrato_m = self.db.get_last_insert_id(
-            cursor, "CONTRATOS_MANDATOS", "ID_CONTRATO_M"
-        )
+        
+        if row:
+            if hasattr(row, "values"):
+                contrato.id_contrato_m = list(row.values())[0]
+            elif isinstance(row, dict):
+                contrato.id_contrato_m = list(row.values())[0]
+            else:
+                contrato.id_contrato_m = row[0]
+                
         return contrato
 
     def obtener_por_id(self, id_contrato: int) -> Optional[ContratoMandato]:
@@ -207,7 +215,7 @@ class RepositorioContratoMandatoPostgres:
                 items=items, total=total, page=params.page, page_size=params.page_size
             )
 
-    def actualizar(self, contrato: ContratoMandato, usuario: str) -> None:
+    def actualizar(self, contrato: ContratoMandato, usuario: str) -> bool:
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
@@ -226,7 +234,7 @@ class RepositorioContratoMandatoPostgres:
             IVA_CONTRATO_M = {placeholder},
             ESTADO_CONTRATO_M = {placeholder},
             MOTIVO_CANCELACION = {placeholder},
-            ALERTA_VENCIMINETO_CONTRATO_M = {placeholder},
+            ALERTA_VENCIMIENTO_CONTRATO_M = {placeholder},
             FECHA_RENOVACION_CONTRATO_M = {placeholder},
             FECHA_PAGO = {placeholder},
             UPDATED_AT = {placeholder},
@@ -255,6 +263,7 @@ class RepositorioContratoMandatoPostgres:
         )
 
         conn.commit()
+        return cursor.rowcount > 0
 
     def _row_to_entity(self, row) -> ContratoMandato:
         if row is None:
@@ -295,8 +304,8 @@ class RepositorioContratoMandatoPostgres:
             # The original code had ALERTA_VENCIMINETO_CONTRATO_M in SQL insert/update and map.
             # We preserve it.
             alerta_vencimiento_contrato_m=(
-                row_dict.get("alerta_vencimineto_contrato_m")
-                or row_dict.get("ALERTA_VENCIMINETO_CONTRATO_M")
+                row_dict.get("alerta_vencimiento_contrato_m")
+                or row_dict.get("ALERTA_VENCIMIENTO_CONTRATO_M")
             ),
             fecha_renovacion_contrato_m=(
                 row_dict.get("fecha_renovacion_contrato_m")

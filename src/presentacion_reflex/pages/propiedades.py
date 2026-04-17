@@ -157,7 +157,6 @@ def propiedades_page() -> rx.Component:
                             rx.heading(
                                 "Gestión de Propiedades",
                                 size="8",
-                                font_size=["1.5em", "1.75em", "2em", "2.5em"],
                                 weight="bold",
                                 color=styles.TEXT_PRIMARY,
                             ),

@@ -7,7 +7,7 @@ import reflex as rx
 from src.presentacion_reflex.state.contratos_state import ContratosState
 
 
-def ipc_increment_modal() -> rx.Component:
+def modal_incremento_ipc() -> rx.Component:
     """Modal para aplicar incremento IPC."""
     return rx.dialog.root(
         rx.dialog.content(
