@@ -276,27 +276,21 @@ class IncidentesState(DocumentosStateMixin):
             )
             estado = self.filter_estado if self.filter_estado != "Todos" else None
 
-            # TODO: El servicio tiene `listar_con_filtros` pero no soporta todos en `listar_incidentes`.
-            # Usaremos `listar_con_filtros` que es más completo.
+            # Kanban carga TODOS los incidentes; Lista mantiene paginación
+            es_kanban = self.view_mode == "kanban"
+            pagina = None if es_kanban else self.page
+            tamano_pagina = None if es_kanban else self.items_per_page
+
             resultado = servicio.listar_con_filtros(
                 busqueda=self.search_text if self.search_text else None,
                 prioridad=prioridad,
-                page=self.page,
-                page_size=self.items_per_page,
-                # estado=estado # listar_con_filtros no tiene filtro directo de estado, filtramos en memoria por ahora o actualizamos servicio
+                estado=estado,
+                page=pagina,
+                page_size=tamano_pagina,
             )
 
             resultado_objs = resultado["items"]
             total_items = resultado["total"]
-
-            # Filtrado manual de estado si el servicio no lo soporta directamente en `listar_con_filtros`
-            if estado:
-                # NOTA: Al filtrar en memoria DESPUÉS de paginar, la página podría quedar vacía.
-                # Lo ideal es mover el filtro de estado al servicio.
-                # Por ahora, para mantener la consistencia con el plan, aceptamos esta limitación
-                # o el servicio debería tener el filtro de estado.
-                # REVISIÓN: listar_con_filtros NO tiene 'estado'. Se añadio en memoria.
-                resultado_objs = [i for i in resultado_objs if i.estado == estado]
 
             # Cargar propiedades para mapeo de direcciones
             from src.aplicacion.servicios.servicio_propiedades import (
@@ -431,8 +425,10 @@ class IncidentesState(DocumentosStateMixin):
             pass  # print(f"Error cargando proveedores: {e}") [OpSec Removed]
 
     def toggle_view_mode(self):
-        """Alterna entre vista lista y kanban."""
+        """Alterna entre vista lista y kanban y recarga datos."""
         self.view_mode = "list" if self.view_mode == "kanban" else "kanban"
+        self.page = 1
+        return IncidentesState.load_incidentes
 
     def set_filter_estado(self, value: str):
         self.filter_estado = value
