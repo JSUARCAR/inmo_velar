@@ -78,17 +78,17 @@
     --focus-blue: #3898ec;
 
     /* === FONT SIZE SCALE (10% reduction from 16px base) === */
-    --font-size-xs: 0.75rem;     /* 12px → 10.8px (mínimo legible) */
-    --font-size-sm: 0.875rem;    /* 14px → 12.6px */
-    --font-size-base: 0.9375rem; /* 15px → 13.5px */
-    --font-size-md: 1rem;        /* 16px → 14.4px */
+    --font-size-xs: 0.917rem;    /* Mínimo 11px legible @ 12px base */
+    --font-size-sm: 1rem;        /* 12px — escalado para mantener jerarquía */
+    --font-size-base: 1.042rem;  /* 12.5px — base legible */
+    --font-size-md: 1.083rem;    /* 13px — texto principal */
     --font-size-lg: 1.125rem;    /* 18px → 16.2px */
     --font-size-xl: 1.25rem;     /* 20px → 18px */
 }
 
 /* Force Radix Themes to use rem-based scaling */
 .radix-themes {
-    --font-size-1: 0.75rem !important;
+    --font-size-1: 0.917rem !important;
     --font-size-2: 0.875rem !important;
     --font-size-3: 1rem !important;
     --font-size-4: 1.125rem !important;
@@ -132,7 +132,7 @@
     --neu-inset-light: var(--shadow-inset-light-elite);
 
     /* === RADIX THEMES OVERRIDES (Dark Theme - ensure same scaling) === */
-    --font-size-1: 0.75rem;
+    --font-size-1: 0.917rem;
     --font-size-2: 0.875rem;
     --font-size-3: 1rem;
     --font-size-4: 1.125rem;
@@ -392,6 +392,11 @@ html {
 /* Mobile breakpoints - ensure minimum readable size */
 @media (max-width: 768px) {
     html {
-        font-size: 10px; /* Mínimo 10px en móvil */
+        font-size: 12px; /* Mismo base que desktop — mínimo 12px legible */
+    }
+
+    /* Override adicional: garantizar size="1" nunca < 12px en móvil */
+    .radix-themes {
+        --font-size-1: 1rem !important; /* 1rem × 12px = 12px mínimo */
     }
 }

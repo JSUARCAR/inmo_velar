@@ -16,7 +16,7 @@ from src.presentacion_reflex.components.shared.searchable_select import (
 )
 
 
-def contrato_arrendamiento_form() -> rx.Component:
+def formulario_contrato_arrendamiento() -> rx.Component:
     """
     Formulario modal para crear/editar contratos de arrendamiento.
     Estilo Elite: Header con gradiente, inputs con iconos, botones estilizados.

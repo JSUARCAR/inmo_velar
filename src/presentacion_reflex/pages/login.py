@@ -197,7 +197,6 @@ def login_page() -> rx.Component:
                         rx.color_mode == "light", "rgba(0,0,0,0.85)", "white"
                     ),
                     size="8",
-                    font_size=["1.5em", "1.75em", "2em", "2.5em"],
                     weight="bold",
                     letter_spacing="-0.02em",
                     font_family="Playfair Display, serif",

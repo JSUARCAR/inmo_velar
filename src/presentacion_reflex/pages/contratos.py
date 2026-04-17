@@ -13,21 +13,21 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_badge,
     neuro_panel,
 )
-from src.presentacion_reflex.components.contratos.contrato_card import contrato_card
-from src.presentacion_reflex.components.contratos.contrato_mandato_form import (
-    contrato_mandato_form,
+from src.presentacion_reflex.components.contratos.tarjeta_contrato import tarjeta_contrato
+from src.presentacion_reflex.components.contratos.formulario_contrato_mandato import (
+    formulario_contrato_mandato,
 )
-from src.presentacion_reflex.components.contratos.contrato_arrendamiento_form import (
-    contrato_arrendamiento_form,
+from src.presentacion_reflex.components.contratos.formulario_contrato_arrendamiento import (
+    formulario_contrato_arrendamiento,
 )
-from src.presentacion_reflex.components.contratos.contrato_detail_modal import (
-    contrato_detail_modal,
+from src.presentacion_reflex.components.contratos.modal_detalle_contrato import (
+    modal_detalle_contrato,
 )
-from src.presentacion_reflex.components.contratos.ipc_increment_modal import (
-    ipc_increment_modal,
+from src.presentacion_reflex.components.contratos.modal_incremento_ipc import (
+    modal_incremento_ipc,
 )
-from src.presentacion_reflex.components.contratos.contrato_renewal_modal import (
-    contrato_renewal_modal,
+from src.presentacion_reflex.components.contratos.modal_renovacion_contrato import (
+    modal_renovacion_contrato,
 )
 from src.presentacion_reflex.components.shared.elite_gradient_icon import (
     elite_gradient_icon_labeled,
@@ -511,7 +511,7 @@ def contratos_page() -> rx.Component:
                                     ContratosState.is_grid_view,
                                     rx.grid(
                                         rx.foreach(
-                                            ContratosState.contratos, contrato_card
+                                            ContratosState.contratos, tarjeta_contrato
                                         ),
                                         columns=rx.breakpoints(
                                             initial="1", sm="2", lg="3"
@@ -571,11 +571,11 @@ def contratos_page() -> rx.Component:
             ),
         ),
         # Modales
-        contrato_mandato_form(),
-        contrato_arrendamiento_form(),
-        contrato_detail_modal(),
-        ipc_increment_modal(),
-        contrato_renewal_modal(),
+        formulario_contrato_mandato(),
+        formulario_contrato_arrendamiento(),
+        modal_detalle_contrato(),
+        modal_incremento_ipc(),
+        modal_renovacion_contrato(),
     )
 
 

@@ -29,6 +29,7 @@ class RepositorioContratoArrendamientoPostgres:
             FECHA_RENOVACION_CONTRATO_A, FECHA_INCREMENTO_IPC,
             CREATED_BY, UPDATED_BY
         ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+        RETURNING ID_CONTRATO_A
         """,
             (
                 contrato.id_propiedad,
@@ -50,11 +51,17 @@ class RepositorioContratoArrendamientoPostgres:
             ),
         )
 
+        row = cursor.fetchone()
         conn.commit()
-        contrato.id_contrato_a = self.db.get_last_insert_id(
-            cursor, "CONTRATOS_ARRENDAMIENTOS", "ID_CONTRATO_A"
-        )
-
+        
+        if row:
+            if hasattr(row, "values"):
+                contrato.id_contrato_a = list(row.values())[0]
+            elif isinstance(row, dict):
+                contrato.id_contrato_a = list(row.values())[0]
+            else:
+                contrato.id_contrato_a = row[0]
+                
         return contrato
 
     def obtener_por_id(self, id_contrato: int) -> Optional[ContratoArrendamiento]:
@@ -269,7 +276,7 @@ class RepositorioContratoArrendamientoPostgres:
                 items=items, total=total, page=params.page, page_size=params.page_size
             )
 
-    def actualizar(self, contrato: ContratoArrendamiento, usuario: str) -> None:
+    def actualizar(self, contrato: ContratoArrendamiento, usuario: str) -> bool:
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
@@ -307,6 +314,7 @@ class RepositorioContratoArrendamientoPostgres:
         )
 
         conn.commit()
+        return cursor.rowcount > 0
 
     def _row_to_entity(self, row) -> ContratoArrendamiento:
         if row is None:

@@ -17,7 +17,7 @@ from src.presentacion_reflex.components.shared.searchable_select import (
 )
 
 
-def contrato_mandato_form() -> rx.Component:
+def formulario_contrato_mandato() -> rx.Component:
     """
     Formulario modal para crear/editar contratos de mandato.
     Estilo Elite: Header con gradiente, inputs con iconos, botones estilizados.
@@ -110,8 +110,15 @@ def contrato_mandato_form() -> rx.Component:
                                 spacing="4",
                                 width="100%",
                             ),
-                            # Fechas (2 columnas)
-                            rx.grid(
+                            # Fechas (3 columnas en SVG)
+                            rx.vstack(
+                                rx.text(
+                                    "Fechas",
+                                    size="2",
+                                    color="gray",
+                                    style={"font_style": "italic"},
+                                ),
+                                rx.grid(
                                 rx.vstack(
                                     rx.text("Fecha Inicio *", size="2", weight="bold"),
                                     neuro_input(
@@ -145,8 +152,15 @@ def contrato_mandato_form() -> rx.Component:
                                     width="100%",
                                 ),
                                 rx.vstack(
-                                    rx.text(
-                                        "Duración (meses) *", size="2", weight="bold"
+                                    rx.hstack(
+                                        rx.text(
+                                            "Duración (meses) *",
+                                            size="2",
+                                            weight="bold",
+                                        ),
+                                        rx.icon("lock", size=14, color="gray"),
+                                        align="center",
+                                        spacing="1",
                                     ),
                                     neuro_input(
                                         rx.input.slot(rx.icon("clock", size=16)),
@@ -165,15 +179,32 @@ def contrato_mandato_form() -> rx.Component:
                                     spacing="1",
                                     width="100%",
                                 ),
-                                columns=rx.breakpoints(initial="1", sm="2"),
+                                columns=rx.breakpoints(initial="1", sm="3"),
                                 spacing="4",
                                 width="100%",
                             ),
-                            # Canon y Fecha de Pago (2 columnas)
-                            rx.grid(
+                            width="100%",
+                            align_items="start",
+                        ),
+                        # Canon y Fecha de Pago (2 columnas)
+                            rx.vstack(
+                                rx.text(
+                                    "Canon y pago",
+                                    size="2",
+                                    color="gray",
+                                    style={"font_style": "italic"},
+                                ),
+                                rx.grid(
                                 rx.vstack(
-                                    rx.text(
-                                        "Canon Estimado *", size="2", weight="bold"
+                                    rx.hstack(
+                                        rx.text(
+                                            "Canon Estimado *",
+                                            size="2",
+                                            weight="bold",
+                                        ),
+                                        rx.icon("lock", size=14, color="gray"),
+                                        align="center",
+                                        spacing="1",
                                     ),
                                     neuro_input(
                                         rx.input.slot(rx.icon("dollar-sign", size=16)),
@@ -216,7 +247,17 @@ def contrato_mandato_form() -> rx.Component:
                                 spacing="4",
                                 width="100%",
                             ),
-                            # Comisión e IVA (2 columnas)
+                            width="100%",
+                            align_items="start",
+                        ),
+                        # Comisión e IVA (2 columnas)
+                        rx.vstack(
+                            rx.text(
+                                "Comisión e IVA",
+                                size="2",
+                                color="gray",
+                                style={"font_style": "italic"},
+                            ),
                             rx.grid(
                                 rx.vstack(
                                     rx.text("Comisión (%) *", size="2", weight="bold"),
@@ -281,6 +322,9 @@ def contrato_mandato_form() -> rx.Component:
                                 spacing="4",
                                 width="100%",
                             ),
+                            width="100%",
+                            align_items="start",
+                        ),
                             spacing="4",
                             width="100%",
                         ),

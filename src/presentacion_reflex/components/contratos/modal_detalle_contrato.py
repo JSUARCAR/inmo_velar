@@ -36,7 +36,7 @@ def section_divider(title: str) -> rx.Component:
     )
 
 
-def contrato_detail_modal() -> rx.Component:
+def modal_detalle_contrato() -> rx.Component:
     """Modal que muestra detalles completos de un contrato."""
     return rx.dialog.root(
         rx.dialog.content(

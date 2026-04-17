@@ -7,7 +7,7 @@ from src.presentacion_reflex.state.contratos_state import ContratosState
 from src.presentacion_reflex.components.neuro_elements import neuro_button, neuro_input, neuro_badge
 import src.presentacion_reflex.styles as styles
 
-def contrato_renewal_modal() -> rx.Component:
+def modal_renovacion_contrato() -> rx.Component:
     """Modal para confirmar y ejecutar la renovación de un contrato."""
     return rx.dialog.root(
         rx.dialog.content(
