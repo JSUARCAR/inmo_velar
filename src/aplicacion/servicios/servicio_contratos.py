@@ -191,6 +191,8 @@ class ServicioContratos:
         query_personas = "SELECT ID_PERSONA, NOMBRE_COMPLETO FROM PERSONAS WHERE ESTADO_REGISTRO = TRUE ORDER BY NOMBRE_COMPLETO"
         query_prop_sin_mandato = "SELECT ID_PROPIEDAD, DIRECCION_PROPIEDAD FROM PROPIEDADES P WHERE ESTADO_REGISTRO = TRUE AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS CM WHERE CM.ID_PROPIEDAD = P.ID_PROPIEDAD AND CM.ESTADO_CONTRATO_M = 'Activo') ORDER BY DIRECCION_PROPIEDAD"
         query_prop_sin_arriendo = "SELECT P.ID_PROPIEDAD, P.DIRECCION_PROPIEDAD FROM PROPIEDADES P JOIN CONTRATOS_MANDATOS CM ON P.ID_PROPIEDAD = CM.ID_PROPIEDAD WHERE P.ESTADO_REGISTRO = TRUE AND CM.ESTADO_CONTRATO_M = 'Activo' AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS CA WHERE CA.ID_PROPIEDAD = P.ID_PROPIEDAD AND CA.ESTADO_CONTRATO_A = 'Activo') ORDER BY P.DIRECCION_PROPIEDAD"
+        query_arrendatarios = "SELECT AR.ID_ARRENDATARIO, P.NOMBRE_COMPLETO FROM PERSONAS P INNER JOIN ARRENDATARIOS AR ON P.ID_PERSONA = AR.ID_PERSONA WHERE P.ESTADO_REGISTRO = TRUE AND AR.ESTADO_ARRENDATARIO = TRUE ORDER BY P.NOMBRE_COMPLETO"
+        query_codeudores = "SELECT C.ID_CODEUDOR, P.NOMBRE_COMPLETO FROM PERSONAS P INNER JOIN CODEUDORES C ON P.ID_PERSONA = C.ID_PERSONA WHERE P.ESTADO_REGISTRO = TRUE AND C.ESTADO_REGISTRO = TRUE ORDER BY P.NOMBRE_COMPLETO"
 
         def get_val(row, field):
             return str(row.get(field.upper()) or row.get(field.lower()) or "")
@@ -218,6 +220,12 @@ class ServicioContratos:
             cursor.execute(query_prop_sin_arriendo)
             prop_sin_arriendo = [[get_val(r, "DIRECCION_PROPIEDAD"), get_val(r, "ID_PROPIEDAD")] for r in cursor.fetchall()]
 
+            cursor.execute(query_arrendatarios)
+            arrendatarios_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_ARRENDATARIO")] for r in cursor.fetchall()]
+
+            cursor.execute(query_codeudores)
+            codeudores_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_CODEUDOR")] for r in cursor.fetchall()]
+
         return {
             "propiedades": propiedades_select,
             "canon_map": canon_map,
@@ -225,7 +233,9 @@ class ServicioContratos:
             "asesores": asesores_select,
             "personas": personas_select,
             "prop_sin_mandato": prop_sin_mandato,
-            "prop_sin_arriendo": prop_sin_arriendo
+            "prop_sin_arriendo": prop_sin_arriendo,
+            "arrendatarios": arrendatarios_select,
+            "codeudores": codeudores_select
         }
 
     # =========================================================================
