@@ -323,6 +323,8 @@ class ContratosState(DocumentosStateMixin):
             self.personas_select_options = ops["personas"]
             self.propiedades_mandato_libre_select_options = ops["prop_sin_mandato"]
             self.propiedades_arriendo_select_options = ops["prop_sin_arriendo"]
+            self.arrendatarios_select_options = ops.get("arrendatarios", [])
+            self.codeudores_select_options = ops.get("codeudores", [])
 
     @rx.event(background=True)
     async def load_contratos(self):
