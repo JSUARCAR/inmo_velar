@@ -597,11 +597,31 @@ class ContratosState(DocumentosStateMixin):
         try:
             from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import RepositorioContratoMandatoPostgres
             from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import RepositorioContratoArrendamientoPostgres
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+            from src.infraestructura.persistencia.repositorio_renovacion_postgres import RepositorioRenovacionPostgres
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
             from src.presentacion_reflex.state.pdf_state import PDFState
 
             repo_m = RepositorioContratoMandatoPostgres(db_manager)
             repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
-            servicio = ServicioContratos(db_manager, repo_mandato=repo_m, repo_arriendo=repo_a, repo_propiedad=None, repo_renovacion=None, repo_ipc=None, repo_arrendatario=None, repo_codeudor=None)
+            repo_p = RepositorioPropiedadPostgres(db_manager)
+            repo_r = RepositorioRenovacionPostgres(db_manager)
+            repo_i = RepositorioIPCPostgres(db_manager)
+            repo_arr = RepositorioArrendatarioPostgres(db_manager)
+            repo_cod = RepositorioCodeudorPostgres(db_manager)
+
+            servicio = ServicioContratos(
+                db_manager=db_manager,
+                repo_mandato=repo_m,
+                repo_arriendo=repo_a,
+                repo_propiedad=repo_p,
+                repo_renovacion=repo_r,
+                repo_ipc=repo_i,
+                repo_arrendatario=repo_arr,
+                repo_codeudor=repo_cod
+            )
             usuario_sistema = "admin"
 
             if estado_actual == "Activo":
