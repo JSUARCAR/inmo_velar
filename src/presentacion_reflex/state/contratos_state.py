@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import reflex as rx
-import unicodedata
 
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
 from src.infraestructura.persistencia.database import db_manager
@@ -505,7 +504,7 @@ class ContratosState(DocumentosStateMixin):
                         # Rehidratación de etiquetas
                         self.propiedad_selected_label = self._get_label_by_id(self.propiedades_select_options, c.id_propiedad)
                         self.arrendatario_selected_label = self._get_label_by_id(self.arrendatarios_select_options, c.id_arrendatario)
-                        self.codeudor_selected_label = self._get_label_by_id(self.codeudor_select_options, c.id_codeudor)
+                        self.codeudor_selected_label = self._get_label_by_id(self.codeudores_select_options, c.id_codeudor)
                         
                         self.propiedad_search = ""; self.arrendatario_search = ""; self.codeudor_search = ""
                         self.modal_open = True
@@ -569,22 +568,6 @@ class ContratosState(DocumentosStateMixin):
         finally:
             async with self: self.is_loading = False
 
-    @rx.event(background=True)
-    async def apply_ipc_increment(self, form_data: Dict):
-        async with self: self.is_loading = True
-        try:
-            servicio = ServicioContratos(db_manager)
-            res = servicio.aplicar_incremento_ipc(self.ipc_target_contrato_id, float(form_data.get("porcentaje_ipc", 0)), form_data.get("fecha_aplicacion", ""), form_data.get("observaciones", ""), "admin")
-            if res["success"]:
-                async with self: self.show_ipc_modal = False
-                yield ContratosState.load_contratos()
-                yield rx.toast.success(res["message"])
-            else:
-                async with self: self.error_message = res["message"]
-        except Exception as e:
-            async with self: self.error_message = str(e)
-        finally:
-            async with self: self.is_loading = False
 
     @rx.event(background=True)
     async def open_detail_modal(self, id_contrato: int, tipo: str):
