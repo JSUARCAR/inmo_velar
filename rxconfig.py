@@ -35,6 +35,12 @@ config = rx.Config(
     env=rx.Env.DEV,
     # Desactivar telemetría (opcional)
     telemetry_enabled=False,
+    # Permitir orígenes cruzados en producción (evita WS error en Railway)
+    cors_allowed_origins=[
+        "*", 
+        "http://localhost:3000",
+        "https://inmovelar-production.up.railway.app",
+    ],
     # Desactivar plugins internos que generan advertencias no deseadas
     disable_plugins=[rx.plugins.sitemap.SitemapPlugin],
 )
