@@ -416,6 +416,15 @@ class ContratosState(DocumentosStateMixin):
     def handle_search_key_down(self, key: str):
         if key == "Enter": return self.search_contratos()
 
+    def _get_label_by_id(self, options: List[List[str]], target_id: Any) -> str:
+        """Helper para encontrar la etiqueta descriptiva dado un ID en las opciones."""
+        if not target_id: return ""
+        tid = str(target_id)
+        for label, val in options:
+            if str(val) == tid:
+                return label
+        return ""
+
     # Modal CRUD Handlers
     def open_create_mandato_modal(self):
         self.modal_mode = "crear_mandato"
@@ -451,19 +460,54 @@ class ContratosState(DocumentosStateMixin):
                 c = servicio.obtener_mandato_por_id(id_contrato)
                 if c:
                     async with self:
-                        self.modal_mode = "editar_mandato"; self.editing_id = id_contrato
-                        self.form_data = {"id_propiedad":str(c.id_propiedad), "id_propietario":str(c.id_propietario), "id_asesor":str(c.id_asesor), "fecha_inicio":c.fecha_inicio_contrato_m, "fecha_fin":c.fecha_fin_contrato_m, "canon":c.canon_mandato, "comision_porcentaje":c.comision_porcentaje_contrato_m}
-                        self.propiedad_selected_label = c.propiedad_direccion if hasattr(c, "propiedad_direccion") else "Propiedad Seleccionada"
-                        self.propietario_selected_label = c.propietario_nombre if hasattr(c, "propietario_nombre") else "Propietario Seleccionado"
+                        self.modal_mode = "editar_mandato"
+                        self.editing_id = id_contrato
+                        # Normalización de porcentajes (Base 10000 -> Base 100)
+                        comision = float(c.comision_porcentaje_contrato_m or 0) / 100.0
+                        iva = float(c.iva_contrato_m or 0) / 100.0
+                        
+                        self.form_data = {
+                            "id_propiedad": str(c.id_propiedad),
+                            "id_propietario": str(c.id_propietario),
+                            "id_asesor": str(c.id_asesor),
+                            "fecha_inicio": c.fecha_inicio_contrato_m,
+                            "fecha_fin": c.fecha_fin_contrato_m,
+                            "duracion_meses": str(c.duracion_contrato_m),
+                            "canon": str(c.canon_mandato),
+                            "fecha_pago": c.fecha_pago or "",
+                            "comision_porcentaje": comision,
+                            "iva_porcentaje": iva
+                        }
+                        # Rehidratación de etiquetas
+                        self.propiedad_selected_label = self._get_label_by_id(self.propiedades_select_options, c.id_propiedad)
+                        self.propietario_selected_label = self._get_label_by_id(self.propietarios_select_options, c.id_propietario)
+                        self.asesor_selected_label = self._get_label_by_id(self.asesores_select_options, c.id_asesor)
+                        
+                        self.propiedad_search = ""; self.propietario_search = ""; self.asesor_search = ""
                         self.modal_open = True
             else:
                 c = servicio.obtener_arrendamiento_por_id(id_contrato)
                 if c:
                     async with self:
-                        self.modal_mode = "editar_arrendamiento"; self.editing_id = id_contrato
-                        self.form_data = {"id_propiedad":str(c.id_propiedad), "id_arrendatario":str(c.id_arrendatario), "id_codeudor":str(c.id_codeudor or ""), "fecha_inicio":c.fecha_inicio_contrato_a, "fecha_fin":c.fecha_fin_contrato_a, "canon":c.canon_arrendamiento, "deposito":c.deposito}
-                        self.propiedad_selected_label = c.propiedad_direccion if hasattr(c, "propiedad_direccion") else "Propiedad Seleccionada"
-                        self.arrendatario_selected_label = c.arrendatario_nombre if hasattr(c, "arrendatario_nombre") else "Arrendatario Seleccionado"
+                        self.modal_mode = "editar_arrendamiento"
+                        self.editing_id = id_contrato
+                        self.form_data = {
+                            "id_propiedad": str(c.id_propiedad),
+                            "id_arrendatario": str(c.id_arrendatario),
+                            "id_codeudor": str(c.id_codeudor or ""),
+                            "fecha_inicio": c.fecha_inicio_contrato_a,
+                            "fecha_fin": c.fecha_fin_contrato_a,
+                            "duracion_meses": str(c.duracion_contrato_a),
+                            "canon": str(c.canon_arrendamiento),
+                            "deposito": str(c.deposito),
+                            "fecha_pago": c.fecha_pago or ""
+                        }
+                        # Rehidratación de etiquetas
+                        self.propiedad_selected_label = self._get_label_by_id(self.propiedades_select_options, c.id_propiedad)
+                        self.arrendatario_selected_label = self._get_label_by_id(self.arrendatarios_select_options, c.id_arrendatario)
+                        self.codeudor_selected_label = self._get_label_by_id(self.codeudor_select_options, c.id_codeudor)
+                        
+                        self.propiedad_search = ""; self.arrendatario_search = ""; self.codeudor_search = ""
                         self.modal_open = True
         except Exception as e:
             async with self: self.error_message = f"Error: {e}"
