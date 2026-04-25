@@ -210,6 +210,7 @@ class ReportesState(rx.State):
     estado_contrato_options: List[str] = ["Todos", "Activo", "Finalizado", "Cancelado"]
     estado_liquidacion_options: List[str] = [
         "Todos",
+        "Sin Liquidar",
         "En Proceso",
         "Aprobada",
         "Pagada",
