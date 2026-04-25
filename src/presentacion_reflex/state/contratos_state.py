@@ -602,12 +602,10 @@ class ContratosState(DocumentosStateMixin):
             servicio = ServicioContratos(db_manager, repo_mandato=repo_m, repo_arriendo=repo_a, repo_propiedad=None, repo_renovacion=None, repo_ipc=None, repo_arrendatario=None, repo_codeudor=None)
             
             estado_filtro = "Activo" if self.solo_activos else (self.filter_estado if self.filter_estado != "Todos" else None)
-            asesor_filter = self.filter_asesor_id if self.filter_asesor_id and self.filter_asesor_id != "todos" else None
 
             csv_data = servicio.exportar_contratos_csv(
-                tipo=self.filter_tipo if self.filter_tipo != "Todos" else None,
+                filtro_tipo=self.filter_tipo if self.filter_tipo != "Todos" else None,
                 estado=estado_filtro,
-                asesor_id=asesor_filter,
                 busqueda=self.search_text if self.search_text else None,
             )
             import time
