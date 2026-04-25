@@ -328,44 +328,44 @@ class PropiedadesState(DocumentosStateMixin):
                     return "$0"
 
             # Convertir a dict
-            propiedades_data = [
-                {
-                    "id_propiedad": p.id_propiedad,
-                    "matricula_inmobiliaria": p.matricula_inmobiliaria,
-                    "direccion_propiedad": p.direccion_propiedad,
-                    "tipo_propiedad": p.tipo_propiedad,
-                    "municipio_nombre": municipios_map.get(str(p.id_municipio), "N/A"),
-                    "disponibilidad": 1 if p.disponibilidad_propiedad else 0,
-                    "valor_canon": getattr(p, "canon_arrendamiento_estimado", 0),
-                    "valor_canon_view": format_currency(
+            propiedades_data: List[PropiedadDict] = [
+                PropiedadDict(
+                    id_propiedad=p.id_propiedad,
+                    matricula_inmobiliaria=p.matricula_inmobiliaria,
+                    direccion_propiedad=p.direccion_propiedad,
+                    tipo_propiedad=p.tipo_propiedad,
+                    municipio_nombre=municipios_map.get(str(p.id_municipio), "N/A"),
+                    disponibilidad=1 if p.disponibilidad_propiedad else 0,
+                    valor_canon=getattr(p, "canon_arrendamiento_estimado", 0) or 0,
+                    valor_canon_view=format_currency(
                         getattr(p, "canon_arrendamiento_estimado", 0)
                     ),
-                    "area_metros": getattr(p, "area_m2", 0),
-                    "area_metros_view": f"{float(getattr(p, 'area_m2', 0) or 0):,.0f}m²".replace(
+                    area_metros=getattr(p, "area_m2", 0) or 0,
+                    area_metros_view=f"{float(getattr(p, 'area_m2', 0) or 0):,.0f}m²".replace(
                         ",", "."
                     ),
-                    "habitaciones": getattr(p, "habitaciones", 0),
-                    "banos": getattr(p, "bano", 0),
-                    "parqueadero": getattr(p, "parqueadero", 0),
-                    "valor_venta": getattr(p, "valor_venta_propiedad", 0),
-                    "valor_venta_view": format_currency(
+                    habitaciones=getattr(p, "habitaciones", 0) or 0,
+                    banos=getattr(p, "bano", 0) or 0,
+                    parqueadero=getattr(p, "parqueadero", 0) or 0,
+                    valor_venta=getattr(p, "valor_venta_propiedad", 0) or 0,
+                    valor_venta_view=format_currency(
                         getattr(p, "valor_venta_propiedad", 0)
                     ),
-                    "comision_venta": getattr(p, "comision_venta_propiedad", 0),
-                    "comision_venta_valor_view": format_currency(
+                    comision_venta=getattr(p, "comision_venta_propiedad", 0) or 0,
+                    comision_venta_valor_view=format_currency(
                         (getattr(p, "valor_venta_propiedad", 0) or 0)
                         * (getattr(p, "comision_venta_propiedad", 0) or 0)
                         / 100
                     ),
-                    "codigo_energia": getattr(p, "codigo_energia", ""),
-                    "energia_tooltip": f"Energía: {getattr(p, 'codigo_energia', '') or 'N/A'}",
-                    "codigo_agua": getattr(p, "codigo_agua", ""),
-                    "agua_tooltip": f"Agua: {getattr(p, 'codigo_agua', '') or 'N/A'}",
-                    "codigo_gas": getattr(p, "codigo_gas", ""),
-                    "gas_tooltip": f"Gas: {getattr(p, 'codigo_gas', '') or 'N/A'}",
-                    "imagen_id": getattr(p, "imagen_principal_id", None),
-                    "estado_registro": getattr(p, "estado_registro", 1),
-                }
+                    codigo_energia=getattr(p, "codigo_energia", "") or "",
+                    energia_tooltip=f"Energía: {getattr(p, 'codigo_energia', '') or 'N/A'}",
+                    codigo_agua=getattr(p, "codigo_agua", "") or "",
+                    agua_tooltip=f"Agua: {getattr(p, 'codigo_agua', '') or 'N/A'}",
+                    codigo_gas=getattr(p, "codigo_gas", "") or "",
+                    gas_tooltip=f"Gas: {getattr(p, 'codigo_gas', '') or 'N/A'}",
+                    imagen_id=getattr(p, "imagen_principal_id", None),
+                    estado_registro=getattr(p, "estado_registro", 1) or 0,
+                )
                 for p in result.items
             ]
 
