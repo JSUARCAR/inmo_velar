@@ -370,30 +370,32 @@ class ReportesState(rx.State):
     @rx.event(background=True)
     async def load_preview_data(self):
         """Carga datos paginados para la tabla de previsualización."""
+        # 1. Capturar TODOS los valores de estado de forma atómica
         async with self:
             if not self.selected_report_id:
                 return
             self.is_loading = True
             self.error_message = ""
 
-            # Cargar asesores si no están cargados
-            if len(self.asesor_options) <= 1:
-                # Obtenemos las opciones sin bloquear el estado todavía en el helper
-                pass
+            # Snapshot atómico de estado para uso fuera del lock
+            _report_id = self.selected_report_id
+            _page = self.current_page
+            _page_size = self.page_size
+            _necesita_asesores = len(self.asesor_options) <= 1
 
-        # Cargamos los asesores fuera del bloque inicial si es necesario
-        if len(self.asesor_options) <= 1:
+        # 2. Cargar asesores fuera del lock si es necesario
+        if _necesita_asesores:
             options = await self._fetch_asesores_options()
             if options:
                 async with self:
                     self.asesor_options = options
 
+        # 3. Ejecutar I/O de datos fuera del lock
         try:
-            # Seleccionar estrategia de carga según ID
             data, headers, total = await self._fetch_data(
-                report_id=self.selected_report_id,
-                page=self.current_page,
-                limit=self.page_size,
+                report_id=_report_id,
+                page=_page,
+                limit=_page_size,
                 is_export=False,
             )
 
