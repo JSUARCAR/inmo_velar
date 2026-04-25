@@ -185,11 +185,11 @@ class ServicioReportes:
                 page=pagina,
                 limit=limite,
             )
-            # Headers predefinidos para consistencia
+            # Headers predefinidos para consistencia - ahora incluye contratos SIN liquidar
             headers = [
-                "ID_LIQUIDACION",
                 "ID_CONTRATO_M",
                 "ID_PROPIEDAD",
+                "ID_LIQUIDACION",
                 "TIPO_DOCUMENTO_PROPIETARIO",
                 "NUMERO_DOCUMENTO_PROPIETARIO",
                 "NOMBRE_COMPLETO_PROPIETARIO",
@@ -202,13 +202,17 @@ class ServicioReportes:
                 "NUMERO_DOCUMENTO_ARRENDATARIO",
                 "NOMBRE_COMPLETO_ARRENDATARIO",
                 "FECHA_INICIO_CONTRATO",
+                "FECHA_FIN_CONTRATO",
                 "ESTADO_CONTRATO",
+                "CANON_MANDATO",
                 "DIRECCION_PROPIEDAD",
+                "MATRICULA_INMOBILIARIA",
+                "ID_CONTRATO_ARRIENDO",
+                "ESTADO_ARRIENDO",
                 "METODO_PAGO_RECAUDOS",
                 "ESTADO_RECAUDO",
                 "PERIODO_FACTURADO",
                 "NOMBRE_ASESOR",
-                "CANON_ARRENDAMIENTO",
                 "OTROS_INGRESOS",
                 "TOTAL_INGRESOS",
                 "COMISION_PORCENTAJE_ASESOR",
@@ -225,6 +229,8 @@ class ServicioReportes:
                 "NETO_A_PAGAR",
                 "ESTADO_LIQUIDACION",
                 "FECHA_PAGO",
+                "PERIODO",
+                "FECHA_GENERACION",
             ]
             return data, headers, total
 
