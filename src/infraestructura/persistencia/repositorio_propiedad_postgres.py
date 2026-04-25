@@ -313,7 +313,7 @@ class RepositorioPropiedadPostgres:
                 {placeholder}, {placeholder}, {placeholder},
                 {placeholder}, {placeholder}, {placeholder},
                 {placeholder}, {placeholder}, {placeholder},
-                {placeholder}, {placeholder},
+                {placeholder}, {placeholder}
             )
             """
 
