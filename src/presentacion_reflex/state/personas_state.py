@@ -276,20 +276,20 @@ class PersonasState(rx.State):
 
             # Convertir objetos a diccionarios para serialización Reflex
             self.personas = [
-                {
-                    "id": p.persona.id_persona,
-                    "nombre": p.nombre_completo,
-                    "documento": f"{p.persona.tipo_documento} {p.numero_documento}",
-                    "tipo_documento": p.persona.tipo_documento,
-                    "numero_documento": p.persona.numero_documento,
-                    "contacto": p.telefono_principal or "N/A",
-                    "telefono": p.persona.telefono_principal,
-                    "correo": p.correo_principal or "",
-                    "direccion": p.persona.direccion_principal or "",
-                    "roles": p.roles,
-                    "estado": "Activo" if p.esta_activa else "Inactivo",
-                    "fecha_creacion": p.persona.created_at[:10] if p.persona.created_at else "N/A",
-                }
+                PersonaDict(
+                    id=p.persona.id_persona,
+                    nombre=p.nombre_completo,
+                    documento=f"{p.persona.tipo_documento} {p.numero_documento}",
+                    tipo_documento=p.persona.tipo_documento,
+                    numero_documento=p.persona.numero_documento,
+                    contacto=p.telefono_principal or "N/A",
+                    telefono=p.persona.telefono_principal,
+                    correo=p.correo_principal or "",
+                    direccion=p.persona.direccion_principal or "",
+                    roles=p.roles,
+                    estado="Activo" if p.esta_activa else "Inactivo",
+                    fecha_creacion=p.persona.created_at[:10] if p.persona.created_at else "N/A",
+                )
                 for p in resultado.items
             ]
 
