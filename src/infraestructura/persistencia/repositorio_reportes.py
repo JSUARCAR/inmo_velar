@@ -11,7 +11,10 @@ class RepositorioReportes:
     def _ejecutar_query_paginada(
         self, query: str, params: List[Any], page: int, limit: int
     ) -> Tuple[List[Dict[str, Any]], int]:
-        """Ejecuta una consulta con paginación y retorna los datos y el conteo total."""
+        """Ejecuta una consulta con paginación y retorna los datos y el conteo total.
+        
+        Realiza rollback previo para garantizar lectura fresca bajo READ COMMITTED.
+        """
         offset = (page - 1) * limit
 
         # 1. Obtener el total de registros (Count)
@@ -22,6 +25,13 @@ class RepositorioReportes:
         paginated_params = params + [limit, offset]
 
         with self.db.obtener_conexion() as conn:
+            # Rollback preventivo: limpia cualquier transacción pendiente
+            # para garantizar que READ COMMITTED vea datos frescos
+            try:
+                conn.rollback()
+            except Exception:
+                pass  # Silenciar si no hay transacción activa
+
             # Count
             cursor = self.db.get_dict_cursor(conn)
             try:
@@ -150,6 +160,11 @@ class RepositorioReportes:
             ORDER BY p.NOMBRE_COMPLETO
         """
         with self.db.obtener_conexion() as conn:
+            # Rollback preventivo para lectura fresca
+            try:
+                conn.rollback()
+            except Exception:
+                pass
             cursor = self.db.get_dict_cursor(conn)
             try:
                 cursor.execute(query)
@@ -403,7 +418,16 @@ class RepositorioReportes:
             LEFT JOIN PERSONAS per_prop ON prop.ID_PERSONA = per_prop.ID_PERSONA
             LEFT JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR
             LEFT JOIN PERSONAS per_ase ON a.ID_PERSONA = per_ase.ID_PERSONA
-            LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON cm.ID_PROPIEDAD = ca.ID_PROPIEDAD
+            LEFT JOIN (
+                SELECT DISTINCT ON (ca_inner.ID_PROPIEDAD)
+                    ca_inner.ID_CONTRATO_A,
+                    ca_inner.ID_PROPIEDAD,
+                    ca_inner.ID_ARRENDATARIO
+                FROM CONTRATOS_ARRENDAMIENTOS ca_inner
+                ORDER BY ca_inner.ID_PROPIEDAD,
+                         CASE WHEN ca_inner.ESTADO_CONTRATO_A = 'Activo' THEN 0 ELSE 1 END,
+                         ca_inner.FECHA_INICIO_CONTRATO_A DESC
+            ) ca ON cm.ID_PROPIEDAD = ca.ID_PROPIEDAD
             LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             LEFT JOIN PERSONAS per_arr ON arr.ID_PERSONA = per_arr.ID_PERSONA
             LEFT JOIN (
