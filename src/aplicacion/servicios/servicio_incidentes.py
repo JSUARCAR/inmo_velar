@@ -68,6 +68,7 @@ class ServicioIncidentes:
         busqueda: Optional[str] = None,
         id_propiedad: Optional[int] = None,
         prioridad: Optional[str] = None,
+        estado: Optional[str] = None,
         fecha_desde: Optional[str] = None,
         fecha_hasta: Optional[str] = None,
         id_proveedor: Optional[int] = None,
@@ -75,57 +76,35 @@ class ServicioIncidentes:
         page: Optional[int] = None,
         page_size: Optional[int] = None,
     ) -> Dict[str, Any]:
-        """Lista incidentes aplicando múltiples filtros."""
-        incidentes = self.repo_incidentes.listar()
+        """Lista incidentes delegando filtros al repositorio PostgreSQL.
 
-        # Filtro por búsqueda (ID o descripción)
-        if busqueda:
-            term_norm = self.db_manager.normalize_search_term(busqueda)
-            incidentes = [
-                i
-                for i in incidentes
-                if term_norm
-                in self.db_manager.normalize_search_term(i.descripcion_incidente)
-                or str(i.id_incidente) == busqueda
-            ]
+        Args:
+            busqueda: Texto de búsqueda (descripción o ID).
+            id_propiedad: Filtro por propiedad.
+            prioridad: Filtro por prioridad.
+            estado: Filtro por estado (SQL nativo).
+            fecha_desde: Fecha mínima ISO 8601.
+            fecha_hasta: Fecha máxima ISO 8601.
+            id_proveedor: Filtro por proveedor asignado.
+            dias_min: Días mínimos sin resolver.
+            page: Página (None = sin paginación).
+            page_size: Tamaño de página (None = sin paginación).
 
-        # Filtro por propiedad
-        if id_propiedad:
-            incidentes = [i for i in incidentes if i.id_propiedad == id_propiedad]
-
-        # Filtro por prioridad
-        if prioridad:
-            incidentes = [i for i in incidentes if i.prioridad == prioridad]
-
-        # Filtro por proveedor asignado
-        if id_proveedor:
-            incidentes = [
-                i for i in incidentes if i.id_proveedor_asignado == id_proveedor
-            ]
-
-        # Filtro por días sin resolver
-        if dias_min is not None:
-            incidentes = [i for i in incidentes if i.dias_sin_resolver >= dias_min]
-
-        # Filtro por rango de fechas
-        if fecha_desde:
-            fecha_desde_dt = datetime.fromisoformat(fecha_desde)
-            incidentes = [i for i in incidentes if i.fecha_incidente >= fecha_desde_dt]
-
-        if fecha_hasta:
-            fecha_hasta_dt = datetime.fromisoformat(fecha_hasta)
-            incidentes = [i for i in incidentes if i.fecha_incidente <= fecha_hasta_dt]
-
-        # Calcular total antes de paginar
-        total_items = len(incidentes)
-
-        # Paginación (si se solicita)
-        if page is not None and page_size is not None:
-            start_idx = (page - 1) * page_size
-            end_idx = start_idx + page_size
-            incidentes = incidentes[start_idx:end_idx]
-
-        return {"items": incidentes, "total": total_items}
+        Returns:
+            Dict con 'items' (List[Incidente]) y 'total' (int).
+        """
+        return self.repo_incidentes.listar_con_filtros(
+            busqueda=busqueda,
+            id_propiedad=id_propiedad,
+            prioridad=prioridad,
+            estado=estado,
+            fecha_desde=fecha_desde,
+            fecha_hasta=fecha_hasta,
+            id_proveedor=id_proveedor,
+            dias_min=dias_min,
+            page=page,
+            page_size=page_size,
+        )
 
     def obtener_detalle(self, id_incidente: int) -> Optional[Dict[str, Any]]:
         incidente = self.repo_incidentes.obtener_por_id(id_incidente)

@@ -1,26 +1,85 @@
 import reflex as rx
 
-from src.presentacion_reflex.components.propiedades.wizard_progress import wizard_progress
-from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
-    neuro_select_root,
-    neuro_button,
-    neuro_text_area,
-    neuro_divider,
+from src.presentacion_reflex.components.propiedades.wizard_progress import (
+    progreso_asistente,
 )
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
 from src.presentacion_reflex import styles
 
 
-def form_field(label: str, content: rx.Component, error: str = None) -> rx.Component:
-    """Helper para campos de formulario con estilo elite."""
+def form_field(label: str, contenido: rx.Component, error: str = None) -> rx.Component:
+    """Campo de formulario con etiqueta y estado de error."""
     return rx.vstack(
         rx.text(label, size="2", weight="bold", color=styles.TEXT_PRIMARY),
-        content,
-        rx.cond(error, rx.text(error, color="red", size="1"), rx.fragment()),
+        contenido,
+        rx.cond(error, rx.text(error, color="var(--red-9)", size="1"), rx.fragment()),
         width="100%",
-        spacing="4", 
+        spacing="4",
     )
+
+
+def neuro_input(*args, **kwargs) -> rx.Component:
+    """Input con estilo tokenizado."""
+    custom_style = kwargs.pop("style", {})
+    final_style = {**styles.NEU_INPUT_STYLE, **custom_style}
+    kwargs["variant"] = "soft"
+    kwargs.setdefault("size", "3")
+    return rx.input(*args, style=final_style, **kwargs)
+
+
+def neuro_select_root(*args, **kwargs) -> rx.Component:
+    """Select con estilo tokenizado."""
+    placeholder = kwargs.pop("placeholder", "Seleccionar...")
+    width = kwargs.pop("width", "100%")
+    return rx.select.root(
+        rx.select.trigger(
+            placeholder=placeholder,
+            style=styles.NEU_SELECT_STYLE,
+            width=width,
+            variant="soft",
+        ),
+        rx.select.content(
+            *args,
+            style={
+                "background": styles.BG_PANEL,
+                "box_shadow": styles.SHADOW_WHISPER,
+                "border_radius": "12px",
+            },
+        ),
+        size=kwargs.pop("size", "3"),
+        **kwargs,
+    )
+
+
+def neuro_button(*args, **kwargs) -> rx.Component:
+    """Botón con estilo tokenizado."""
+    custom_style = kwargs.pop("style", {})
+    final_style = {**styles.NEU_BUTTON_STYLE, **custom_style}
+    kwargs.setdefault("variant", "ghost")
+    kwargs.setdefault("size", "3")
+    return rx.button(*args, style=final_style, **kwargs)
+
+
+def neuro_text_area(*args, **kwargs) -> rx.Component:
+    """TextArea con estilo tokenizado."""
+    custom_style = kwargs.pop("style", {})
+    final_style = {**styles.NEU_INPUT_STYLE, **custom_style}
+    kwargs.setdefault("min_height", "120px")
+    kwargs.setdefault("size", "3")
+    kwargs["variant"] = "soft"
+    return rx.text_area(*args, style=final_style, **kwargs)
+
+
+def neuro_divider(**kwargs) -> rx.Component:
+    """Divisor visual."""
+    custom_style = kwargs.pop("style", {})
+    final_style = {
+        "height": "1px",
+        "width": "100%",
+        "background": styles.BORDER_DEFAULT,
+        **custom_style,
+    }
+    return rx.box(style=final_style, **kwargs)
 
 
 def step_1_content() -> rx.Component:
@@ -31,7 +90,9 @@ def step_1_content() -> rx.Component:
             form_field(
                 "Matrícula Inmobiliaria",
                 neuro_input(
-                    rx.input.slot(rx.icon("file-text", size=16, color="var(--gray-10)")),
+                    rx.input.slot(
+                        rx.icon("file-text", size=16, color="var(--gray-10)")
+                    ),
                     placeholder="Ej: 001-123456",
                     value=PropiedadesState.form_data["matricula_inmobiliaria"],
                     on_change=lambda v: PropiedadesState.set_form_field(
@@ -47,13 +108,15 @@ def step_1_content() -> rx.Component:
                     rx.input.slot(rx.icon("map-pin", size=16, color="var(--gray-10)")),
                     placeholder="Ej: Calle 123 # 45-67",
                     value=PropiedadesState.form_data["direccion_propiedad"],
-                    on_change=lambda v: PropiedadesState.set_upper_field("direccion_propiedad", v),
+                    on_change=lambda v: PropiedadesState.set_upper_field(
+                        "direccion_propiedad", v
+                    ),
                     width="100%",
                 ),
             ),
             columns="2",
             spacing="6",
-            width="100%", # Cambiado de 98% a 100%
+            width="100%",  # Cambiado de 98% a 100%
         ),
         rx.grid(
             # Tipo
@@ -69,7 +132,9 @@ def step_1_content() -> rx.Component:
                         rx.select.item("Lote", value="Lote"),
                     ],
                     value=PropiedadesState.form_data["tipo_propiedad"],
-                    on_change=lambda v: PropiedadesState.set_form_field("tipo_propiedad", v),
+                    on_change=lambda v: PropiedadesState.set_form_field(
+                        "tipo_propiedad", v
+                    ),
                     placeholder="Tipo de Propiedad",
                     width="100%",
                 ),
@@ -80,7 +145,9 @@ def step_1_content() -> rx.Component:
                 neuro_select_root(
                     rx.foreach(
                         PropiedadesState.municipios_options,
-                        lambda item: rx.select.item(item["label"], value=item["value"].to(str))
+                        lambda item: rx.select.item(
+                            item["label"], value=item["value"].to(str)
+                        ),
                     ),
                     value=PropiedadesState.form_data["id_municipio"],
                     on_change=PropiedadesState.set_id_municipio,
@@ -90,7 +157,7 @@ def step_1_content() -> rx.Component:
             ),
             columns="2",
             spacing="6",
-            width="100%", # Cambiado de 98% a 100%
+            width="100%",  # Cambiado de 98% a 100%
         ),
         neuro_divider(),
         # Disponibilidad y Observaciones
@@ -102,32 +169,36 @@ def step_1_content() -> rx.Component:
                         rx.segmented_control.item("Disponible", value="1"),
                         rx.segmented_control.item("Ocupada", value="0"),
                         value=PropiedadesState.form_data["disponibilidad"],
-                        on_change=lambda v: PropiedadesState.set_form_field("disponibilidad", v),
+                        on_change=lambda v: PropiedadesState.set_form_field(
+                            "disponibilidad", v
+                        ),
                         radius="full",
-                        color_scheme="indigo",
+                        color_scheme="orange",
                         size="3",
                     ),
                     padding="4px",
                     border_radius="full",
                     background=styles.BG_PANEL,
-                    box_shadow=styles.NEU_INSET,
+                    box_shadow=styles.SHADOW_RING,
                     display="inline-block",
-                )
+                ),
             ),
             form_field(
                 "Observaciones",
                 neuro_text_area(
                     placeholder="Detalles adicionales sobre la propiedad...",
                     value=PropiedadesState.form_data["observaciones"],
-                    on_change=lambda v: PropiedadesState.set_form_field("observaciones", v),
+                    on_change=lambda v: PropiedadesState.set_form_field(
+                        "observaciones", v
+                    ),
                     size="3",
                     width="100%",
                 ),
             ),
-            spacing="5", # Aumentado de 4 a 5
+            spacing="5",  # Aumentado de 4 a 5
             width="100%",
         ),
-        spacing="6", # Aumentado de 5 a 6
+        spacing="6",  # Aumentado de 5 a 6
         padding="4",
         width="100%",
     )
@@ -145,7 +216,9 @@ def step_2_content() -> rx.Component:
                     type="number",
                     placeholder="0",
                     value=PropiedadesState.form_data["area_metros"],
-                    on_change=lambda v: PropiedadesState.set_form_field("area_metros", v),
+                    on_change=lambda v: PropiedadesState.set_form_field(
+                        "area_metros", v
+                    ),
                     width="100%",
                 ),
             ),
@@ -170,7 +243,7 @@ def step_2_content() -> rx.Component:
                 ),
             ),
             columns="2",
-            spacing="6", # Aumentado de 4 a 6
+            spacing="6",  # Aumentado de 4 a 6
             width="100%",
         ),
         rx.grid(
@@ -181,7 +254,9 @@ def step_2_content() -> rx.Component:
                     rx.input.slot(rx.icon("bed", size=16, color="var(--gray-10)")),
                     type="number",
                     value=PropiedadesState.form_data["habitaciones"],
-                    on_change=lambda v: PropiedadesState.set_form_field("habitaciones", v),
+                    on_change=lambda v: PropiedadesState.set_form_field(
+                        "habitaciones", v
+                    ),
                     width="100%",
                 ),
             ),
@@ -200,20 +275,27 @@ def step_2_content() -> rx.Component:
             form_field(
                 "Parqueaderos",
                 neuro_input(
-                    rx.input.slot(rx.icon("car-front", size=16, color="var(--gray-10)")),
+                    rx.input.slot(
+                        rx.icon("car-front", size=16, color="var(--gray-10)")
+                    ),
                     type="number",
                     value=PropiedadesState.form_data["parqueadero"],
-                    on_change=lambda v: PropiedadesState.set_form_field("parqueadero", v),
+                    on_change=lambda v: PropiedadesState.set_form_field(
+                        "parqueadero", v
+                    ),
                     width="100%",
                 ),
             ),
             columns="3",
-            spacing="6", # Aumentado de 4 a 6
+            spacing="6",  # Aumentado de 4 a 6
             width="100%",
         ),
         neuro_divider(),
         rx.text(
-            "Servicios Públicos (Códigos de Pago)", size="2", weight="bold", color=styles.TEXT_SECONDARY
+            "Servicios Públicos (Códigos de Pago)",
+            size="2",
+            weight="bold",
+            color=styles.TEXT_SECONDARY,
         ),
         rx.grid(
             form_field(
@@ -221,7 +303,9 @@ def step_2_content() -> rx.Component:
                 neuro_input(
                     rx.input.slot(rx.icon("zap", size=16, color="var(--gray-10)")),
                     value=PropiedadesState.form_data["codigo_energia"],
-                    on_change=lambda v: PropiedadesState.set_form_field("codigo_energia", v),
+                    on_change=lambda v: PropiedadesState.set_form_field(
+                        "codigo_energia", v
+                    ),
                     width="100%",
                 ),
             ),
@@ -230,7 +314,9 @@ def step_2_content() -> rx.Component:
                 neuro_input(
                     rx.input.slot(rx.icon("droplets", size=16, color="var(--gray-10)")),
                     value=PropiedadesState.form_data["codigo_agua"],
-                    on_change=lambda v: PropiedadesState.set_form_field("codigo_agua", v),
+                    on_change=lambda v: PropiedadesState.set_form_field(
+                        "codigo_agua", v
+                    ),
                     width="100%",
                 ),
             ),
@@ -239,15 +325,17 @@ def step_2_content() -> rx.Component:
                 neuro_input(
                     rx.input.slot(rx.icon("flame", size=16, color="var(--gray-10)")),
                     value=PropiedadesState.form_data["codigo_gas"],
-                    on_change=lambda v: PropiedadesState.set_form_field("codigo_gas", v),
+                    on_change=lambda v: PropiedadesState.set_form_field(
+                        "codigo_gas", v
+                    ),
                     width="100%",
                 ),
             ),
             columns="3",
-            spacing="6", # Aumentado de 4 a 6
+            spacing="6",  # Aumentado de 4 a 6
             width="100%",
         ),
-        spacing="6", # Aumentado de 4 a 6
+        spacing="6",  # Aumentado de 4 a 6
         padding="4",
         width="100%",
     )
@@ -260,26 +348,37 @@ def step_3_content() -> rx.Component:
         rx.box(
             rx.vstack(
                 rx.text(
-                    "Información de Arrendamiento", size="2", weight="bold", color="var(--green-9)"
+                    "Información de Arrendamiento",
+                    size="2",
+                    weight="bold",
+                    color=styles.BRAND_PRIMARY,
                 ),
                 rx.grid(
                     form_field(
                         "Canon Estimado",
                         neuro_input(
                             rx.input.slot(
-                                rx.icon("circle-dollar-sign", size=16, color="var(--gray-10)")
+                                rx.icon(
+                                    "circle-dollar-sign",
+                                    size=16,
+                                    color="var(--gray-10)",
+                                )
                             ),
                             type="number",
                             placeholder="0",
                             value=PropiedadesState.form_data["valor_canon"],
-                            on_change=lambda v: PropiedadesState.set_form_field("valor_canon", v),
+                            on_change=lambda v: PropiedadesState.set_form_field(
+                                "valor_canon", v
+                            ),
                             width="100%",
                         ),
                     ),
                     form_field(
                         "Valor Administración",
                         neuro_input(
-                            rx.input.slot(rx.icon("building", size=16, color="var(--gray-10)")),
+                            rx.input.slot(
+                                rx.icon("building", size=16, color="var(--gray-10)")
+                            ),
                             type="number",
                             placeholder="0",
                             value=PropiedadesState.form_data["valor_administracion"],
@@ -290,7 +389,7 @@ def step_3_content() -> rx.Component:
                         ),
                     ),
                     columns="2",
-                    spacing="6", # Aumentado de 4 a 6
+                    spacing="6",  # Aumentado de 4 a 6
                     width="100%",
                 ),
                 padding="4",
@@ -302,12 +401,19 @@ def step_3_content() -> rx.Component:
         # Venta (Opcional)
         rx.box(
             rx.vstack(
-                rx.text("Opción de Venta", size="2", weight="bold", color="var(--blue-9)"),
+                rx.text(
+                    "Información de Arrendamiento",
+                    size="2",
+                    weight="bold",
+                    color=styles.BRAND_PRIMARY,
+                ),
                 rx.grid(
                     form_field(
                         "Valor Venta",
                         neuro_input(
-                            rx.input.slot(rx.icon("tag", size=16, color="var(--gray-10)")),
+                            rx.input.slot(
+                                rx.icon("tag", size=16, color="var(--gray-10)")
+                            ),
                             type="number",
                             placeholder="0",
                             value=PropiedadesState.form_data["valor_venta_propiedad"],
@@ -320,10 +426,14 @@ def step_3_content() -> rx.Component:
                     form_field(
                         "Comisión Venta (%)",
                         neuro_input(
-                            rx.input.slot(rx.icon("percent", size=16, color="var(--gray-10)")),
+                            rx.input.slot(
+                                rx.icon("percent", size=16, color="var(--gray-10)")
+                            ),
                             type="number",
                             placeholder="0",
-                            value=PropiedadesState.form_data["comision_venta_propiedad"],
+                            value=PropiedadesState.form_data[
+                                "comision_venta_propiedad"
+                            ],
                             on_change=lambda v: PropiedadesState.set_form_field(
                                 "comision_venta_propiedad", v
                             ),
@@ -331,7 +441,7 @@ def step_3_content() -> rx.Component:
                         ),
                     ),
                     columns="2",
-                    spacing="6", # Aumentado de 4 a 6
+                    spacing="6",  # Aumentado de 4 a 6
                     width="100%",
                 ),
                 padding="4",
@@ -343,13 +453,14 @@ def step_3_content() -> rx.Component:
         rx.box(
             rx.vstack(
                 rx.text("Datos Administración PH", size="2", weight="bold"),
-                
                 # === ROW 1: Contacto y Cuenta ===
                 rx.grid(
                     form_field(
                         "Teléfono Admin",
                         neuro_input(
-                            rx.input.slot(rx.icon("phone", size=16, color="var(--gray-10)")),
+                            rx.input.slot(
+                                rx.icon("phone", size=16, color="var(--gray-10)")
+                            ),
                             value=PropiedadesState.form_data["telefono_administracion"],
                             on_change=lambda v: PropiedadesState.set_form_field(
                                 "telefono_administracion", v
@@ -361,8 +472,12 @@ def step_3_content() -> rx.Component:
                     form_field(
                         "Cuenta Bancaria",
                         neuro_input(
-                            rx.input.slot(rx.icon("credit-card", size=16, color="var(--gray-10)")),
-                            value=PropiedadesState.form_data["numero_cuenta_administracion"],
+                            rx.input.slot(
+                                rx.icon("credit-card", size=16, color="var(--gray-10)")
+                            ),
+                            value=PropiedadesState.form_data[
+                                "numero_cuenta_administracion"
+                            ],
                             on_change=lambda v: PropiedadesState.set_form_field(
                                 "numero_cuenta_administracion", v
                             ),
@@ -374,18 +489,21 @@ def step_3_content() -> rx.Component:
                     spacing="6",
                     width="100%",
                 ),
-                
                 # === ROW 2: Fecha y Link de Pago (NUEVO) ===
                 rx.grid(
                     form_field(
                         "Fecha Pago Admin",
                         neuro_input(
-                            rx.input.slot(rx.icon("calendar", size=16, color="var(--gray-10)")),
+                            rx.input.slot(
+                                rx.icon("calendar", size=16, color="var(--gray-10)")
+                            ),
                             type="number",
                             min_="1",
                             max_="28",
                             placeholder="Día 1-28",
-                            value=PropiedadesState.form_data["fecha_pago_administracion"],
+                            value=PropiedadesState.form_data[
+                                "fecha_pago_administracion"
+                            ],
                             on_change=lambda v: PropiedadesState.set_form_field(
                                 "fecha_pago_administracion", v
                             ),
@@ -396,10 +514,14 @@ def step_3_content() -> rx.Component:
                     form_field(
                         "Link de Pago",
                         neuro_input(
-                            rx.input.slot(rx.icon("link", size=16, color="var(--gray-10)")),
+                            rx.input.slot(
+                                rx.icon("link", size=16, color="var(--gray-10)")
+                            ),
                             type="url",
                             placeholder="https://...",
-                            value=PropiedadesState.form_data["link_pago_administracion"],
+                            value=PropiedadesState.form_data[
+                                "link_pago_administracion"
+                            ],
                             on_change=lambda v: PropiedadesState.set_form_field(
                                 "link_pago_administracion", v
                             ),
@@ -411,13 +533,14 @@ def step_3_content() -> rx.Component:
                     spacing="6",
                     width="100%",
                 ),
-                
                 # === ROW 3: Cuota Extra (NUEVO - colspan 2) ===
                 rx.grid(
                     form_field(
                         "Cuota Extra Ordinaria",
                         neuro_input(
-                            rx.input.slot(rx.icon("wallet", size=16, color="var(--gray-10)")),
+                            rx.input.slot(
+                                rx.icon("wallet", size=16, color="var(--gray-10)")
+                            ),
                             type="number",
                             placeholder="0",
                             value=PropiedadesState.form_data["cuota_extra_ordinaria"],
@@ -430,7 +553,6 @@ def step_3_content() -> rx.Component:
                     columns="1",
                     width="100%",
                 ),
-                
                 # === ROW 4: Observaciones Admin PH (NUEVO) ===
                 form_field(
                     "Observaciones Administración PH",
@@ -444,7 +566,6 @@ def step_3_content() -> rx.Component:
                         style={"min_height": "100px"},
                     ),
                 ),
-                
                 spacing="4",
                 padding="4",
                 width="100%",
@@ -458,7 +579,9 @@ def step_3_content() -> rx.Component:
     )
 
 
-from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+from src.presentacion_reflex.components.document_manager_elite import (
+    document_manager_elite,
+)
 
 
 def step_4_content() -> rx.Component:
@@ -474,14 +597,16 @@ def step_4_content() -> rx.Component:
                     color="var(--accent-9)",
                 ),
                 rx.text(
-                    "Cargue escritura, libertad, fotos y video.", size="2", color="var(--gray-10)"
+                    "Cargue escritura, libertad, fotos y video.",
+                    size="2",
+                    color="var(--gray-10)",
                 ),
                 document_manager_elite(
                     state_class=PropiedadesState,
                     max_files=15,  # Permitir más fotos
                     allow_multiple=True,
                 ),
-                spacing="5", # Aumentado de 4 a 5
+                spacing="5",  # Aumentado de 4 a 5
                 width="100%",
             ),
             # Mensaje para modo creación
@@ -526,7 +651,7 @@ def modal_propiedad() -> rx.Component:
                             rx.icon(
                                 rx.cond(PropiedadesState.is_editing, "home", "home"),
                                 size=24,
-                                color="var(--purple-9)",
+                                color=styles.BRAND_PRIMARY,
                             ),
                             rx.text(
                                 rx.cond(
@@ -549,7 +674,7 @@ def modal_propiedad() -> rx.Component:
                     align="center",
                 ),
                 # Wizard Progress
-                wizard_progress(),
+                progreso_asistente(),
                 # Content Container with Scroll
                 rx.scroll_area(
                     rx.box(
@@ -557,12 +682,15 @@ def modal_propiedad() -> rx.Component:
                         rx.cond(PropiedadesState.modal_step == 2, step_2_content()),
                         rx.cond(PropiedadesState.modal_step == 3, step_3_content()),
                         rx.cond(PropiedadesState.modal_step == 4, step_4_content()),
-                        padding_y="4", 
+                        padding_y="4",
                         padding_x="6",
                     ),
                     type="always",
                     scrollbars="vertical",
-                    style={"max_height": "550px", "height": "550px"}, # Aumentado para evitar clipping
+                    style={
+                        "max_height": "550px",
+                        "height": "550px",
+                    },  # Aumentado para evitar clipping
                 ),
                 # Footer Actions
                 rx.hstack(
@@ -588,34 +716,40 @@ def modal_propiedad() -> rx.Component:
                         rx.cond(
                             PropiedadesState.modal_step < PropiedadesState.total_steps,
                             neuro_button(
-                                rx.hstack(rx.text("Siguiente"), rx.icon("chevron-right", size=16)),
+                                rx.hstack(
+                                    rx.text("Siguiente"),
+                                    rx.icon("chevron-right", size=16),
+                                ),
                                 on_click=PropiedadesState.next_modal_step,
                             ),
                             # Save Button always visible on last step
                             neuro_button(
-                                rx.hstack(rx.text("Guardar Propiedad"), rx.icon("save", size=16)),
+                                rx.hstack(
+                                    rx.text("Guardar Propiedad"),
+                                    rx.icon("save", size=16),
+                                ),
                                 on_click=PropiedadesState.save_propiedad(
                                     PropiedadesState.form_data
                                 ),
                                 loading=PropiedadesState.is_loading,
                             ),
                         ),
-                        spacing="5", 
+                        spacing="5",
                     ),
                     width="100%",
                     justify="between",
-                    padding_top="5", # Aumentado de 4 a 5
+                    padding_top="5",  # Aumentado de 4 a 5
                     border_top=f"1px solid {styles.BORDER_DEFAULT}",
                 ),
-                spacing="5", # Aumentado de 4 a 5
+                spacing="5",  # Aumentado de 4 a 5
                 width="100%",
             ),
-            size="3", # Asegurar tamaño radix adecuado
+            size="3",  # Asegurar tamaño radix adecuado
             style={
-                "max_width": "820px", # Aumentado de 800 a 820 para margen extra
+                "max_width": "820px",  # Aumentado de 800 a 820 para margen extra
                 "width": "95%",
-                "border_radius": "20px", # Más suavizado elite
-                "padding": "32px", # Más aire interno
+                "border_radius": "20px",  # Más suavizado elite
+                "padding": "32px",  # Más aire interno
                 "background": styles.BG_PANEL,
             },
             on_escape_key_down=PropiedadesState.close_modal,
@@ -624,4 +758,3 @@ def modal_propiedad() -> rx.Component:
         open=PropiedadesState.show_modal,
         on_open_change=PropiedadesState.handle_open_change,
     )
-

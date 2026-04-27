@@ -8,26 +8,36 @@ from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 from src.presentacion_reflex import styles
 
 
-def form_field(
-    label: str,
-    name: str,
-    value: str = "",
-    type: str = "text",
-    read_only: bool = False,
-    required: bool = False,
-) -> rx.Component:
-    """Campo de formulario reutilizable con binding de valor."""
+def form_field_readonly(label: str, name: str, value: str) -> rx.Component:
+    """Campo de solo lectura para el formulario de edición."""
     return rx.vstack(
         rx.text(label, size="2", weight="medium", color="gray.700"),
         rx.input(
             name=name,
-            default_value=value,  # Usamos default_value para que sea editable
-            type=type,
-            read_only=read_only,
-            required=required,
+            default_value=value,
+            read_only=True,
             width="100%",
             style=styles.NEU_INPUT_STYLE,
-            variant="surface" if read_only else "soft",
+            variant="surface",
+        ),
+        spacing="1",
+        width="100%",
+    )
+
+
+def form_field_editable(
+    label: str, name: str, default_value: str, type: str = "number"
+) -> rx.Component:
+    """Campo editable para el formulario de edición."""
+    return rx.vstack(
+        rx.text(label, size="2", weight="medium", color="gray.700"),
+        rx.input(
+            name=name,
+            default_value=default_value,
+            type=type,
+            width="100%",
+            style=styles.NEU_INPUT_STYLE,
+            variant="soft",
         ),
         spacing="1",
         width="100%",
@@ -56,106 +66,84 @@ def liquidacion_edit_form() -> rx.Component:
             ),
             rx.form.root(
                 rx.vstack(
-                    # Campos Ocultos para IDs
                     rx.input(
                         name="id_liquidacion",
                         value=LiquidacionesState.form_data["id_liquidacion"],
                         type="hidden",
                     ),
-                    # Información Inmutable
                     section_title("Información General"),
                     rx.grid(
-                        # Fila 1: Propietario y Dirección
                         rx.grid(
-                            form_field(
+                            form_field_readonly(
                                 "Propietario",
                                 "nombre_propietario",
                                 LiquidacionesState.form_data["nombre_propietario"],
-                                read_only=True,
                             ),
-                            form_field(
+                            form_field_readonly(
                                 "Dirección Inmueble",
                                 "direccion_propiedad",
                                 LiquidacionesState.form_data["direccion_propiedad"],
-                                read_only=True,
                             ),
                             columns="2",
                             spacing="3",
                             width="100%",
                         ),
-                        # Fila 2: Canon, ID, Periodo
-                        form_field(
+                        form_field_readonly(
                             "Canon Mandato",
                             "canon_mandato",
-                            LiquidacionesState.form_data["canon_mandato"].to(str),
-                            read_only=True,
+                            LiquidacionesState.form_data["canon_mandato"],
                         ),
-                        form_field(
+                        form_field_readonly(
                             "ID Contrato",
                             "id_contrato_m",
-                            LiquidacionesState.form_data["id_contrato_m"].to(str),
-                            read_only=True,
+                            LiquidacionesState.form_data["id_contrato_m"],
                         ),
-                        form_field(
+                        form_field_readonly(
                             "Período",
                             "periodo",
                             LiquidacionesState.form_data["periodo"],
-                            read_only=True,
                         ),
                         columns="2",
                         spacing="3",
                         width="100%",
                     ),
-                    # Ingresos Editables
                     section_title("Ingresos"),
-                    rx.grid(
-                        form_field(
-                            "Otros Ingresos",
-                            "otros_ingresos",
-                            LiquidacionesState.form_data["otros_ingresos"].to(str),
-                            type="number",
-                        ),
-                        spacing="3",
-                        width="100%",
+                    form_field_editable(
+                        "Otros Ingresos",
+                        "otros_ingresos",
+                        LiquidacionesState.form_data["otros_ingresos"],
                     ),
-                    # Egresos Editables
                     section_title("Egresos Variables"),
                     rx.grid(
-                        form_field(
+                        form_field_editable(
                             "Gastos Administración",
                             "gastos_administracion",
-                            LiquidacionesState.form_data["gastos_administracion"].to(str),
-                            type="number",
+                            LiquidacionesState.form_data["gastos_administracion"],
                         ),
-                        form_field(
+                        form_field_editable(
                             "Gastos Servicios",
                             "gastos_servicios",
-                            LiquidacionesState.form_data["gastos_servicios"].to(str),
-                            type="number",
+                            LiquidacionesState.form_data["gastos_servicios"],
                         ),
-                        form_field(
+                        form_field_editable(
                             "Incidentes",
                             "gastos_reparaciones",
-                            LiquidacionesState.form_data["gastos_reparaciones"].to(str),
-                            type="number",
+                            LiquidacionesState.form_data["gastos_reparaciones"],
                         ),
-                        form_field(
+                        form_field_editable(
                             "Pago Predial",
                             "pago_predial",
-                            LiquidacionesState.form_data["pago_predial"].to(str),
-                            type="number",
+                            LiquidacionesState.form_data["pago_predial"],
                         ),
-                        form_field(
+                        form_field_editable(
                             "Otros Egresos",
                             "otros_egresos",
-                            LiquidacionesState.form_data["otros_egresos"].to(str),
-                            type="number",
+                            LiquidacionesState.form_data["otros_egresos"],
                         ),
                         columns="2",
                         spacing="3",
                         width="100%",
                     ),
-                    # Observaciones
                     section_title("Observaciones"),
                     rx.text_area(
                         name="observaciones",
@@ -165,15 +153,19 @@ def liquidacion_edit_form() -> rx.Component:
                         style=styles.NEU_INPUT_STYLE,
                     ),
                     rx.divider(margin_y="1em"),
-                    # Botones
                     rx.hstack(
                         rx.dialog.close(
                             rx.button(
-                                "Cancelar", variant="soft", color_scheme="gray", type="button"
+                                "Cancelar",
+                                variant="soft",
+                                color_scheme="gray",
+                                type="button",
                             ),
                         ),
                         rx.spacer(),
-                        rx.button("Guardar Cambios", type="submit", color_scheme="blue"),
+                        rx.button(
+                            "Guardar Cambios", type="submit", color_scheme="blue"
+                        ),
                         width="100%",
                     ),
                     spacing="4",

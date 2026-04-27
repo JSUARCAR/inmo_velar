@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
 from src.dominio.entidades.contrato_mandato import ContratoMandato
-from src.dominio.entidades.renovacion_contrato import RenovacionContrato
 
 # Integración Fase 3: CacheManager e Interfaces
 from src.aplicacion.servicios.servicio_contrato_arrendamiento import (
@@ -17,20 +16,20 @@ from src.aplicacion.servicios.servicio_contrato_arrendamiento import (
 from src.aplicacion.servicios.servicio_contrato_mandato import ServicioContratoMandato
 from src.infraestructura.cache.cache_manager import cache_manager
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
-    RepositorioArrendatarioSQLite,
+from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+    RepositorioArrendatarioPostgres,
 )
-from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
-from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
-    RepositorioContratoArrendamientoSQLite,
+from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+    RepositorioContratoArrendamientoPostgres,
 )
-from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
-    RepositorioContratoMandatoSQLite,
+from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+    RepositorioContratoMandatoPostgres,
 )
-from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
-from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
-    RepositorioRenovacionSQLite,
+from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
+    RepositorioRenovacionPostgres,
 )
 
 
@@ -38,13 +37,13 @@ class ServicioContratos:
     def __init__(
         self,
         db_manager: DatabaseManager,
-        repo_mandato: RepositorioContratoMandatoSQLite,
-        repo_arriendo: RepositorioContratoArrendamientoSQLite,
-        repo_propiedad: RepositorioPropiedadSQLite,
-        repo_renovacion: RepositorioRenovacionSQLite,
-        repo_ipc: RepositorioIPCSQLite,
-        repo_arrendatario: RepositorioArrendatarioSQLite,
-        repo_codeudor: RepositorioCodeudorSQLite
+        repo_mandato: RepositorioContratoMandatoPostgres,
+        repo_arriendo: RepositorioContratoArrendamientoPostgres,
+        repo_propiedad: RepositorioPropiedadPostgres,
+        repo_renovacion: RepositorioRenovacionPostgres,
+        repo_ipc: RepositorioIPCPostgres,
+        repo_arrendatario: RepositorioArrendatarioPostgres,
+        repo_codeudor: RepositorioCodeudorPostgres
     ):
         self.db = db_manager
         self.repo_mandato = repo_mandato
@@ -126,6 +125,118 @@ class ServicioContratos:
                 }
                 for row in cursor.fetchall()
             ]
+
+    def obtener_kpis(self, asesor_id: str = None) -> dict:
+        asesor_where_mandatos = ""
+        asesor_where_arriendos = ""
+        params = ()
+
+        if asesor_id and asesor_id != "todos":
+            asesor_where_mandatos = "WHERE ID_ASESOR = %s"
+            asesor_where_arriendos = "WHERE EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm WHERE cm.ID_PROPIEDAD = CONTRATOS_ARRENDAMIENTOS.ID_PROPIEDAD AND cm.ID_ASESOR = %s)"
+            params = (asesor_id,)
+
+        query_mandatos = f"""
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN ESTADO_CONTRATO_M = 'Activo' THEN 1 ELSE 0 END) as activos,
+            SUM(CASE WHEN ESTADO_CONTRATO_M != 'Activo' THEN 1 ELSE 0 END) as inactivos
+        FROM CONTRATOS_MANDATOS
+        {asesor_where_mandatos}
+        """
+
+        query_arriendos = f"""
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN ESTADO_CONTRATO_A = 'Activo' THEN 1 ELSE 0 END) as activos,
+            SUM(CASE WHEN ESTADO_CONTRATO_A != 'Activo' THEN 1 ELSE 0 END) as inactivos
+        FROM CONTRATOS_ARRENDAMIENTOS
+        {asesor_where_arriendos}
+        """
+
+        with self.db.obtener_conexion() as conn:
+            cursor = self.db.get_dict_cursor(conn)
+
+            cursor.execute(query_mandatos, params)
+            r_mandato = cursor.fetchone()
+
+            cursor.execute(query_arriendos, params)
+            r_arriendo = cursor.fetchone()
+            
+            def _get_val(row: Optional[dict], key: str) -> int:
+                if not row:
+                    return 0
+                val = row.get(key.lower())
+                if val is None:
+                    val = row.get(key.upper())
+                return int(val) if val is not None else 0
+            
+            return {
+                "mandatos": {
+                    "total": _get_val(r_mandato, "total"),
+                    "activos": _get_val(r_mandato, "activos"),
+                    "inactivos": _get_val(r_mandato, "inactivos"),
+                },
+                "arriendos": {
+                    "total": _get_val(r_arriendo, "total"),
+                    "activos": _get_val(r_arriendo, "activos"),
+                    "inactivos": _get_val(r_arriendo, "inactivos"),
+                }
+            }
+
+    def obtener_opciones_filtro(self) -> dict:
+        query_propiedades = "SELECT ID_PROPIEDAD, DIRECCION_PROPIEDAD, CANON_ARRENDAMIENTO_ESTIMADO FROM PROPIEDADES WHERE ESTADO_REGISTRO = TRUE ORDER BY DIRECCION_PROPIEDAD"
+        query_propietarios = "SELECT PR.ID_PROPIETARIO, P.NOMBRE_COMPLETO FROM PERSONAS P INNER JOIN PROPIETARIOS PR ON P.ID_PERSONA = PR.ID_PERSONA WHERE P.ESTADO_REGISTRO = TRUE AND PR.ESTADO_PROPIETARIO = TRUE ORDER BY P.NOMBRE_COMPLETO"
+        query_asesores = "SELECT A.ID_ASESOR, P.NOMBRE_COMPLETO FROM PERSONAS P INNER JOIN ASESORES A ON P.ID_PERSONA = A.ID_PERSONA WHERE P.ESTADO_REGISTRO = TRUE AND A.ESTADO = TRUE ORDER BY P.NOMBRE_COMPLETO"
+        query_personas = "SELECT ID_PERSONA, NOMBRE_COMPLETO FROM PERSONAS WHERE ESTADO_REGISTRO = TRUE ORDER BY NOMBRE_COMPLETO"
+        query_prop_sin_mandato = "SELECT ID_PROPIEDAD, DIRECCION_PROPIEDAD FROM PROPIEDADES P WHERE ESTADO_REGISTRO = TRUE AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS CM WHERE CM.ID_PROPIEDAD = P.ID_PROPIEDAD AND CM.ESTADO_CONTRATO_M = 'Activo') ORDER BY DIRECCION_PROPIEDAD"
+        query_prop_sin_arriendo = "SELECT P.ID_PROPIEDAD, P.DIRECCION_PROPIEDAD FROM PROPIEDADES P JOIN CONTRATOS_MANDATOS CM ON P.ID_PROPIEDAD = CM.ID_PROPIEDAD WHERE P.ESTADO_REGISTRO = TRUE AND CM.ESTADO_CONTRATO_M = 'Activo' AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS CA WHERE CA.ID_PROPIEDAD = P.ID_PROPIEDAD AND CA.ESTADO_CONTRATO_A = 'Activo') ORDER BY P.DIRECCION_PROPIEDAD"
+        query_arrendatarios = "SELECT AR.ID_ARRENDATARIO, P.NOMBRE_COMPLETO FROM PERSONAS P INNER JOIN ARRENDATARIOS AR ON P.ID_PERSONA = AR.ID_PERSONA WHERE P.ESTADO_REGISTRO = TRUE AND AR.ESTADO_ARRENDATARIO = TRUE ORDER BY P.NOMBRE_COMPLETO"
+        query_codeudores = "SELECT C.ID_CODEUDOR, P.NOMBRE_COMPLETO FROM PERSONAS P INNER JOIN CODEUDORES C ON P.ID_PERSONA = C.ID_PERSONA WHERE P.ESTADO_REGISTRO = TRUE AND C.ESTADO_REGISTRO = TRUE ORDER BY P.NOMBRE_COMPLETO"
+
+        def get_val(row, field):
+            return str(row.get(field.upper()) or row.get(field.lower()) or "")
+
+        with self.db.obtener_conexion() as conn:
+            cursor = self.db.get_dict_cursor(conn)
+            
+            cursor.execute(query_propiedades)
+            rp = cursor.fetchall()
+            propiedades_select = [[get_val(r, "DIRECCION_PROPIEDAD"), get_val(r, "ID_PROPIEDAD")] for r in rp]
+            canon_map = {get_val(r, "ID_PROPIEDAD"): float(get_val(r, "CANON_ARRENDAMIENTO_ESTIMADO") or 0.0) for r in rp}
+            
+            cursor.execute(query_propietarios)
+            propietarios_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_PROPIETARIO")] for r in cursor.fetchall()]
+            
+            cursor.execute(query_asesores)
+            asesores_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_ASESOR")] for r in cursor.fetchall()]
+
+            cursor.execute(query_personas)
+            personas_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_PERSONA")] for r in cursor.fetchall()]
+
+            cursor.execute(query_prop_sin_mandato)
+            prop_sin_mandato = [[get_val(r, "DIRECCION_PROPIEDAD"), get_val(r, "ID_PROPIEDAD")] for r in cursor.fetchall()]
+
+            cursor.execute(query_prop_sin_arriendo)
+            prop_sin_arriendo = [[get_val(r, "DIRECCION_PROPIEDAD"), get_val(r, "ID_PROPIEDAD")] for r in cursor.fetchall()]
+
+            cursor.execute(query_arrendatarios)
+            arrendatarios_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_ARRENDATARIO")] for r in cursor.fetchall()]
+
+            cursor.execute(query_codeudores)
+            codeudores_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_CODEUDOR")] for r in cursor.fetchall()]
+
+        return {
+            "propiedades": propiedades_select,
+            "canon_map": canon_map,
+            "propietarios": propietarios_select,
+            "asesores": asesores_select,
+            "personas": personas_select,
+            "prop_sin_mandato": prop_sin_mandato,
+            "prop_sin_arriendo": prop_sin_arriendo,
+            "arrendatarios": arrendatarios_select,
+            "codeudores": codeudores_select
+        }
 
     # =========================================================================
     # GESTIÓN DE MANDATOS
@@ -392,7 +503,6 @@ class ServicioContratos:
         Lista contratos de arrendamiento que vencen en los próximos N días.
         """
         fecha_limite = (datetime.now() + timedelta(days=dias_antelacion)).strftime("%Y-%m-%d")
-        fecha_hoy = datetime.now().strftime("%Y-%m-%d")
 
         query = """
         SELECT 
@@ -712,7 +822,7 @@ class ServicioContratos:
                 cm.ESTADO_CONTRATO_M,
                 cm.FECHA_PAGO,
                 cm.MOTIVO_CANCELACION,
-                cm.ALERTA_VENCIMINETO_CONTRATO_M,
+                cm.ALERTA_VENCIMIENTO_CONTRATO_M,
                 cm.FECHA_RENOVACION_CONTRATO_M,
                 cm.CREATED_AT,
                 cm.CREATED_BY,
@@ -760,7 +870,7 @@ class ServicioContratos:
                     "estado": row["ESTADO_CONTRATO_M"],
                     "fecha_pago": row["FECHA_PAGO"],
                     "motivo_cancelacion": row["MOTIVO_CANCELACION"],
-                    "alerta_vencimiento": row["ALERTA_VENCIMINETO_CONTRATO_M"],
+                    "alerta_vencimiento": row["ALERTA_VENCIMIENTO_CONTRATO_M"],
                     "fecha_renovacion": row["FECHA_RENOVACION_CONTRATO_M"],
                     "created_at": row["CREATED_AT"],
                     "created_by": row["CREATED_BY"],
@@ -837,7 +947,6 @@ class ServicioContratos:
                     "tipo": "Arrendamiento",
                     "id": row["ID_CONTRATO_A"],
                     "fecha_inicio": row["FECHA_INICIO_CONTRATO_A"],
-                    "fecha_fin": row["FECHA_FIN_CONTRATO_A"],
                     "fecha_fin": row["FECHA_FIN_CONTRATO_A"],
                     "duracion": row["DURACION_CONTRATO_A"],
                     "canon": row["CANON_ARRENDAMIENTO"],
@@ -1253,20 +1362,8 @@ class ServicioContratos:
             Dict con resultado de la operación
         """
         try:
-            # FIX "NUCLEAR": AUTOCOMMIT = TRUE con ROLLBACK MANUAL
-            # La única forma verificada de persistir cambios en este entorno es con autocommit=True.
-            # Para mantener la atomicidad, implementamos "Undo" manual en caso de error.
-            conn = self.db.obtener_conexion()
-            real_conn = conn
-            if hasattr(conn, "_conn"):
-                real_conn = conn._conn
-
-            real_conn.autocommit = True
-            cursor = real_conn.cursor()
-
-            try:
-                placeholder = "%s"
-
+            with self.db.obtener_conexion() as conn:
+                cursor = conn.cursor()
                 # 1. Validar contrato existe y está activo
                 cursor.execute(
                     """
@@ -1392,8 +1489,8 @@ class ServicioContratos:
                 except Exception:
                     pass
 
+                conn.commit()
                 cursor.close()
-                # Confirmación implicita por autocommit=True
 
                 return {
                     "success": True,
@@ -1402,61 +1499,7 @@ class ServicioContratos:
                     "canon_nuevo": canon_nuevo,
                     "porcentaje_aplicado": porcentaje_ipc,
                 }
-
-            except Exception as e:
-                # MANUAL ROLLBACK (Compensating Transaction)
-                # Restaurar valores anteriores si falla algo a mitad de camino para mantener consistencia
-                try:
-                    pass  # print(f"ERROR IPC: {str(e)} - Iniciando rollback manual...") [OpSec Removed]
-                    # Restaurar Contrato
-                    cursor.execute(
-                        """
-                        UPDATE CONTRATOS_ARRENDAMIENTOS 
-                        SET CANON_ARRENDAMIENTO=%s, FECHA_ULTIMO_INCREMENTO_IPC=%s 
-                        WHERE ID_CONTRATO_A=%s
-                    """,
-                        (canon_anterior, ultimo_incremento, id_contrato),
-                    )
-
-                    # Restaurar Propiedad
-                    cursor.execute(
-                        """
-                        UPDATE PROPIEDADES SET CANON_ARRENDAMIENTO_ESTIMADO=%s WHERE ID_PROPIEDAD=%s
-                    """,
-                        (canon_anterior, id_propiedad),
-                    )
-
-                    # Restaurar Mandato
-                    cursor.execute(
-                        """
-                        UPDATE CONTRATOS_MANDATOS SET CANON_MANDATO=%s 
-                        WHERE ID_PROPIEDAD=%s AND ESTADO_CONTRATO_M='Activo'
-                    """,
-                        (canon_anterior, id_propiedad),
-                    )
-                    pass  # print("Rollback manual completado.") [OpSec Removed]
-                except Exception:
-                    pass  # print(f"FALLO FATAL ROLLBACK: {str(e_roll)}") [OpSec Removed]
-
-                raise e
-            finally:
-                # CRITICO: Restaurar autocommit a False para no afectar otras operaciones
-                # Y NO cerrar la conexión porque es compartida (Singleton/Pool)
-                if "real_conn" in locals() and real_conn:
-                    real_conn.autocommit = False
-
-                # if 'conn' in locals():
-                #     conn.close()  <-- NO CERRAR, es gestionada por DatabaseManager
-                pass
-
         except Exception as e:
             import traceback
-
-            traceback.print_exc()
-            return {"success": False, "message": f"Error al aplicar IPC: {str(e)}"}
-
-        except Exception as e:
-            import traceback
-
             traceback.print_exc()
             return {"success": False, "message": f"Error al aplicar IPC: {str(e)}"}

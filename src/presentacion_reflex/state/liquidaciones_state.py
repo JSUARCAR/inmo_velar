@@ -6,11 +6,12 @@ import reflex as rx
 from src.aplicacion.servicios.servicio_financiero import ServicioFinanciero
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
-from src.presentacion_reflex.utils.formatters import format_currency, format_number
+from src.presentacion_reflex.utils.formatters import format_currency
 
 
 class LiquidacionDict(pydantic.BaseModel):
     """Estructura tipada para serialización de Liquidación en Reflex."""
+
     id: int
     periodo: str
     contrato: str
@@ -51,7 +52,13 @@ class LiquidacionesState(DocumentosStateMixin):
     filter_propietario_id: str = ""
 
     # Opciones de filtros (para dropdowns)
-    estado_options: List[str] = ["Todos", "En Proceso", "Aprobada", "Pagada", "Cancelada"]
+    estado_options: List[str] = [
+        "Todos",
+        "En Proceso",
+        "Aprobada",
+        "Pagada",
+        "Cancelada",
+    ]
     periodos_options: List[str] = []  # Se llenarán dinámicamente
     propiedades_options: List[Dict[str, Any]] = []
     propietarios_options: List[Dict[str, Any]] = []
@@ -88,7 +95,9 @@ class LiquidacionesState(DocumentosStateMixin):
     # Cancel/Reverse data
     cancel_motivo: str = ""
     liquidacion_id_for_action: int = 0  # ID de liquidación para acción pendiente
-    selected_liquidaciones_ids: List[int] = []  # IDs seleccionados para acciones masivas
+    selected_liquidaciones_ids: List[
+        int
+    ] = []  # IDs seleccionados para acciones masivas
 
     @rx.var
     def detalles_ingresos(self) -> List[Dict[str, Any]]:
@@ -158,8 +167,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 for row in rows_propiedades
             ]
             propiedades_select = [
-                f"{row['DIRECCION_PROPIEDAD']}"
-                for row in rows_propiedades
+                f"{row['DIRECCION_PROPIEDAD']}" for row in rows_propiedades
             ]
 
             # Propietarios
@@ -184,7 +192,7 @@ class LiquidacionesState(DocumentosStateMixin):
             self.propiedades_select_options = propiedades_select
             self.propietarios_options = propietarios
             self.propietarios_select_options = propietarios_select
-        
+
         # Cargar asesores
         await self.load_asesores_options()
 
@@ -203,11 +211,10 @@ class LiquidacionesState(DocumentosStateMixin):
                 cursor = db_manager.get_dict_cursor(conn)
                 cursor.execute(query)
                 rows = cursor.fetchall()
-            
+
             # Formatear fuera del lock para eficiencia
             opciones = ["Todos"] + [
-                f"{r['NOMBRE_COMPLETO']} ({r['ID_ASESOR']})" 
-                for r in rows
+                f"{r['NOMBRE_COMPLETO']} ({r['ID_ASESOR']})" for r in rows
             ]
 
             # Actualizar estado de forma segura
@@ -239,7 +246,9 @@ class LiquidacionesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -265,13 +274,15 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             estado = self.filter_estado if self.filter_estado != "Todos" else None
             busqueda = self.search_text.strip() if self.search_text else None
-            
+
             # Resolver ID de asesor si no es "Todos"
             id_asesor_filt = None
             if self.filter_asesor_id != "Todos":
                 try:
-                    id_asesor_filt = int(self.filter_asesor_id.split('(')[-1].replace(')', ''))
-                except:
+                    id_asesor_filt = int(
+                        self.filter_asesor_id.split("(")[-1].replace(")", "")
+                    )
+                except Exception:
                     pass
 
             # Llamar al servicio según el modo de vista
@@ -305,7 +316,7 @@ class LiquidacionesState(DocumentosStateMixin):
                     new_item["canon_view"] = format_currency(item.get("canon", 0))
                     new_item["neto_view"] = format_currency(item.get("neto", 0))
                     formatted_items.append(new_item)
-                
+
                 self.liquidaciones = formatted_items
                 self.total_items = resultado.total
                 self.is_loading = False
@@ -335,8 +346,6 @@ class LiquidacionesState(DocumentosStateMixin):
         self.page_size = int(size)
         self.current_page = 1
         return LiquidacionesState.load_liquidaciones
-
-
 
     # Búsqueda y Filtros
     def set_search(self, value: str):
@@ -396,12 +405,12 @@ class LiquidacionesState(DocumentosStateMixin):
             "nombre_propietario": "",
             "direccion_propiedad": "",
             "periodo": "",
-            "otros_ingresos": 0,
-            "gastos_administracion": 0,
-            "gastos_servicios": 0,
-            "gastos_reparaciones": 0,
-            "pago_predial": 0,
-            "otros_egresos": 0,
+            "otros_ingresos": "0",
+            "gastos_administracion": "0",
+            "gastos_servicios": "0",
+            "gastos_reparaciones": "0",
+            "pago_predial": "0",
+            "otros_egresos": "0",
             "observaciones": "",
         }
         self.error_message = ""
@@ -409,7 +418,6 @@ class LiquidacionesState(DocumentosStateMixin):
         self.propiedad_liq_selected_label = ""
         self.propiedad_liq_search = ""
         self.propiedad_liq_menu_open = False
-
 
     def set_form_field(self, field: str, value: str):
         """Actualiza un campo del formulario."""
@@ -475,7 +483,7 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             # Reset values
             self.form_data["id_contrato_m"] = ""
-            self.form_data["gastos_administracion"] = 0
+            self.form_data["gastos_administracion"] = "0"
 
         try:
             with db_manager.obtener_conexion() as conn:
@@ -511,29 +519,32 @@ class LiquidacionesState(DocumentosStateMixin):
             async with self:
                 if mandato:
                     self.form_data["id_contrato_m"] = str(mandato["ID_CONTRATO_M"])
-                    self.form_data["canon_mandato"] = f"${mandato['CANON_MANDATO']:,}".replace(
-                        ",", "."
+                    self.form_data["canon_mandato"] = (
+                        f"${mandato['CANON_MANDATO']:,}".replace(",", ".")
                     )
-                    self.form_data["direccion_propiedad"] = mandato["DIRECCION_PROPIEDAD"]
+                    self.form_data["direccion_propiedad"] = mandato[
+                        "DIRECCION_PROPIEDAD"
+                    ]
                     self.form_data["nombre_propietario"] = mandato["NOMBRE_PROPIETARIO"]
 
                 # Cargar Gastos Administración si tiene valor
                 if propiedad and propiedad["VALOR_ADMINISTRACION"] is not None:
                     valor_admin = propiedad["VALOR_ADMINISTRACION"]
-                    # Convertir a int si es posible para mostrar sin decimales
+                    # Convertir a string para el formulario
                     try:
-                        self.form_data["gastos_administracion"] = int(float(valor_admin))
+                        self.form_data["gastos_administracion"] = str(
+                            int(float(valor_admin))
+                        )
                     except (ValueError, TypeError):
-                        self.form_data["gastos_administracion"] = valor_admin
+                        self.form_data["gastos_administracion"] = str(valor_admin)
                 else:
-                    self.form_data["gastos_administracion"] = 0
-                
+                    self.form_data["gastos_administracion"] = "0"
+
                 # Forzar actualización de la UI reutilizando el diccionario
                 self.form_data = self.form_data.copy()
 
         except Exception as e:
             print(f"Error fetching contract details: {e}")
-
 
     @rx.event(background=True)
     async def open_edit_modal(self, id_liquidacion: int):
@@ -558,7 +569,9 @@ class LiquidacionesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -589,25 +602,25 @@ class LiquidacionesState(DocumentosStateMixin):
 
                 async with self:
                     self.form_data = {
-                        "id_liquidacion": id_liquidacion,
-                        # Contexto visual (inmutable)
-                        "nombre_propietario": liquidacion.get("propietario", ""),
-                        "direccion_propiedad": liquidacion.get("propiedad", ""),
-                        "canon_mandato": liquidacion.get("canon", 0),
-                        
-                        "id_contrato_m": liquidacion["id_contrato"],
-                        "periodo": liquidacion["periodo"],
-                        "otros_ingresos": liquidacion["otros_ingresos"],
-                        "gastos_administracion": (
-                            liquidacion["gastos_admin"] 
-                            if liquidacion.get("gastos_admin", 0) > 0 
-                            else int(float(liquidacion.get("valor_administracion") or 0))
+                        "id_liquidacion": str(id_liquidacion),
+                        "nombre_propietario": str(liquidacion.get("propietario", "")),
+                        "direccion_propiedad": str(liquidacion.get("propiedad", "")),
+                        "canon_mandato": str(liquidacion.get("canon", 0)),
+                        "id_contrato_m": str(liquidacion["id_contrato"]),
+                        "periodo": str(liquidacion["periodo"]),
+                        "otros_ingresos": str(liquidacion.get("otros_ingresos", 0)),
+                        "gastos_administracion": str(
+                            liquidacion["gastos_admin"]
+                            if liquidacion.get("gastos_admin", 0) > 0
+                            else int(
+                                float(liquidacion.get("valor_administracion") or 0)
+                            )
                         ),
-                        "gastos_servicios": liquidacion["gastos_serv"],
-                        "gastos_reparaciones": liquidacion["gastos_rep"],
-                        "pago_predial": liquidacion.get("pago_predial", 0),
-                        "otros_egresos": liquidacion.get("otros_egr", 0),
-                        "observaciones": liquidacion["observaciones"],
+                        "gastos_servicios": str(liquidacion.get("gastos_serv", 0)),
+                        "gastos_reparaciones": str(liquidacion.get("gastos_rep", 0)),
+                        "pago_predial": str(liquidacion.get("pago_predial", 0)),
+                        "otros_egresos": str(liquidacion.get("otros_egr", 0)),
+                        "observaciones": str(liquidacion.get("observaciones", "")),
                     }
                     self.show_edit_modal = True
                     self.show_create_modal = False
@@ -649,7 +662,9 @@ class LiquidacionesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -672,25 +687,49 @@ class LiquidacionesState(DocumentosStateMixin):
                 # Formatear valores financieros para el detalle
                 l_fmt = liquidacion.copy()
                 l_fmt["canon_view"] = format_currency(liquidacion.get("canon", 0))
-                l_fmt["neto_pagar_view"] = format_currency(liquidacion.get("neto_pagar", 0))
-                l_fmt["total_ingresos_view"] = format_currency(liquidacion.get("total_ingresos", 0))
-                l_fmt["total_egresos_view"] = format_currency(liquidacion.get("total_egresos", 0))
-                l_fmt["comision_monto_view"] = format_currency(liquidacion.get("comision_monto", 0))
-                l_fmt["iva_comision_view"] = format_currency(liquidacion.get("iva_comision", 0))
-                l_fmt["impuesto_4x1000_view"] = format_currency(liquidacion.get("impuesto_4x1000", 0))
-                l_fmt["gastos_admin_view"] = format_currency(liquidacion.get("gastos_admin", 0))
-                l_fmt["gastos_serv_view"] = format_currency(liquidacion.get("gastos_serv", 0))
-                l_fmt["gastos_rep_view"] = format_currency(liquidacion.get("gastos_rep", 0))
-                l_fmt["pago_predial_view"] = format_currency(liquidacion.get("pago_predial", 0))
-                l_fmt["seguro_monto_view"] = format_currency(liquidacion.get("seguro_monto", 0))
-                l_fmt["otros_egr_view"] = format_currency(liquidacion.get("otros_egr", 0))
-                
+                l_fmt["neto_pagar_view"] = format_currency(
+                    liquidacion.get("neto_pagar", 0)
+                )
+                l_fmt["total_ingresos_view"] = format_currency(
+                    liquidacion.get("total_ingresos", 0)
+                )
+                l_fmt["total_egresos_view"] = format_currency(
+                    liquidacion.get("total_egresos", 0)
+                )
+                l_fmt["comision_monto_view"] = format_currency(
+                    liquidacion.get("comision_monto", 0)
+                )
+                l_fmt["iva_comision_view"] = format_currency(
+                    liquidacion.get("iva_comision", 0)
+                )
+                l_fmt["impuesto_4x1000_view"] = format_currency(
+                    liquidacion.get("impuesto_4x1000", 0)
+                )
+                l_fmt["gastos_admin_view"] = format_currency(
+                    liquidacion.get("gastos_admin", 0)
+                )
+                l_fmt["gastos_serv_view"] = format_currency(
+                    liquidacion.get("gastos_serv", 0)
+                )
+                l_fmt["gastos_rep_view"] = format_currency(
+                    liquidacion.get("gastos_rep", 0)
+                )
+                l_fmt["pago_predial_view"] = format_currency(
+                    liquidacion.get("pago_predial", 0)
+                )
+                l_fmt["seguro_monto_view"] = format_currency(
+                    liquidacion.get("seguro_monto", 0)
+                )
+                l_fmt["otros_egr_view"] = format_currency(
+                    liquidacion.get("otros_egr", 0)
+                )
+
                 # Formatear listas internas si existen
                 if "propiedades_detalle" in l_fmt:
                     for p in l_fmt["propiedades_detalle"]:
                         p["canon_view"] = format_currency(p.get("canon", 0))
                         p["neto_view"] = format_currency(p.get("neto", 0))
-                
+
                 if "ingresos" in l_fmt:
                     for ing in l_fmt["ingresos"]:
                         ing["valor_view"] = format_currency(ing.get("valor", 0))
@@ -722,7 +761,9 @@ class LiquidacionesState(DocumentosStateMixin):
             )
 
             repo = RepositorioLiquidacionSQLite(dm)
-            liquidaciones = repo.listar_por_propietario_y_periodo(id_propietario, periodo)
+            liquidaciones = repo.listar_por_propietario_y_periodo(
+                id_propietario, periodo
+            )
 
             if liquidaciones and len(liquidaciones) > 0:
                 # Obtener detalles de TODAS las liquidaciones y consolidar
@@ -741,12 +782,16 @@ class LiquidacionesState(DocumentosStateMixin):
                 from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                     RepositorioContratoMandatoSQLite,
                 )
-                from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+                from src.infraestructura.servicios.servicio_documentos_pdf import (
+                    ServicioDocumentosPDF,
+                )
 
                 repo_recaudo = RepositorioRecaudo(db_manager)
                 repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
                 repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-                repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+                repo_contrato_arriendo = RepositorioContratoArrendamientoSQLite(
+                    db_manager
+                )
                 repo_contrato_mandato = RepositorioContratoMandatoSQLite(db_manager)
                 pdf_service = ServicioDocumentosPDF()
 
@@ -761,7 +806,9 @@ class LiquidacionesState(DocumentosStateMixin):
                 detalles_lista = []
 
                 for liq in liquidaciones:
-                    detalle = servicio.obtener_detalle_liquidacion_ui(liq.id_liquidacion)
+                    detalle = servicio.obtener_detalle_liquidacion_ui(
+                        liq.id_liquidacion
+                    )
                     if detalle:
                         detalles_lista.append(detalle)
 
@@ -790,31 +837,71 @@ class LiquidacionesState(DocumentosStateMixin):
                         ],
                         # Sumar todos los valores financieros
                         "canon": sum(d["canon"] for d in detalles_lista),
-                        "otros_ingresos": sum(d["otros_ingresos"] for d in detalles_lista),
-                        "total_ingresos": sum(d["total_ingresos"] for d in detalles_lista),
-                        "comision_pct": detalles_lista[0]["comision_pct"],  # Mismo % para todos
+                        "otros_ingresos": sum(
+                            d["otros_ingresos"] for d in detalles_lista
+                        ),
+                        "total_ingresos": sum(
+                            d["total_ingresos"] for d in detalles_lista
+                        ),
+                        "comision_pct": detalles_lista[0][
+                            "comision_pct"
+                        ],  # Mismo % para todos
                         "comision_pct_view": f"{int(detalles_lista[0]['comision_pct'])}%",
-                        "comision_monto": sum(d["comision_monto"] for d in detalles_lista),
+                        "comision_monto": sum(
+                            d["comision_monto"] for d in detalles_lista
+                        ),
                         "iva_comision": sum(d["iva_comision"] for d in detalles_lista),
-                        "impuesto_4x1000": sum(d["impuesto_4x1000"] for d in detalles_lista),
-                        "gastos_admin": sum(d.get("gastos_admin", 0) for d in detalles_lista),
-                        "gastos_serv": sum(d.get("gastos_serv", 0) for d in detalles_lista),
-                        "gastos_rep": sum(d.get("gastos_rep", 0) for d in detalles_lista),
-                        "pago_predial": sum(d.get("pago_predial", 0) for d in detalles_lista),
+                        "impuesto_4x1000": sum(
+                            d["impuesto_4x1000"] for d in detalles_lista
+                        ),
+                        "gastos_admin": sum(
+                            d.get("gastos_admin", 0) for d in detalles_lista
+                        ),
+                        "gastos_serv": sum(
+                            d.get("gastos_serv", 0) for d in detalles_lista
+                        ),
+                        "gastos_rep": sum(
+                            d.get("gastos_rep", 0) for d in detalles_lista
+                        ),
+                        "pago_predial": sum(
+                            d.get("pago_predial", 0) for d in detalles_lista
+                        ),
                         "otros_egr": sum(d.get("otros_egr", 0) for d in detalles_lista),
-                        "total_egresos": sum(d.get("total_egresos", 0) for d in detalles_lista),
+                        "total_egresos": sum(
+                            d.get("total_egresos", 0) for d in detalles_lista
+                        ),
                         "neto_pagar": sum(d["neto_pagar"] for d in detalles_lista),
                         # Formatted View Values
-                        "comision_monto_view": format_currency(sum(d["comision_monto"] for d in detalles_lista)),
-                        "iva_comision_view": format_currency(sum(d["iva_comision"] for d in detalles_lista)),
-                        "impuesto_4x1000_view": format_currency(sum(d["impuesto_4x1000"] for d in detalles_lista)),
-                        "gastos_admin_view": format_currency(sum(d.get("gastos_admin", 0) for d in detalles_lista)),
-                        "gastos_serv_view": format_currency(sum(d.get("gastos_serv", 0) for d in detalles_lista)),
-                        "gastos_rep_view": format_currency(sum(d.get("gastos_rep", 0) for d in detalles_lista)),
-                        "pago_predial_view": format_currency(sum(d.get("pago_predial", 0) for d in detalles_lista)),
-                        "otros_egr_view": format_currency(sum(d.get("otros_egr", 0) for d in detalles_lista)),
-                        "total_egresos_view": format_currency(sum(d.get("total_egresos", 0) for d in detalles_lista)),
-                        "neto_pagar_view": format_currency(sum(d["neto_pagar"] for d in detalles_lista)),
+                        "comision_monto_view": format_currency(
+                            sum(d["comision_monto"] for d in detalles_lista)
+                        ),
+                        "iva_comision_view": format_currency(
+                            sum(d["iva_comision"] for d in detalles_lista)
+                        ),
+                        "impuesto_4x1000_view": format_currency(
+                            sum(d["impuesto_4x1000"] for d in detalles_lista)
+                        ),
+                        "gastos_admin_view": format_currency(
+                            sum(d.get("gastos_admin", 0) for d in detalles_lista)
+                        ),
+                        "gastos_serv_view": format_currency(
+                            sum(d.get("gastos_serv", 0) for d in detalles_lista)
+                        ),
+                        "gastos_rep_view": format_currency(
+                            sum(d.get("gastos_rep", 0) for d in detalles_lista)
+                        ),
+                        "pago_predial_view": format_currency(
+                            sum(d.get("pago_predial", 0) for d in detalles_lista)
+                        ),
+                        "otros_egr_view": format_currency(
+                            sum(d.get("otros_egr", 0) for d in detalles_lista)
+                        ),
+                        "total_egresos_view": format_currency(
+                            sum(d.get("total_egresos", 0) for d in detalles_lista)
+                        ),
+                        "neto_pagar_view": format_currency(
+                            sum(d["neto_pagar"] for d in detalles_lista)
+                        ),
                         # Pago
                         "fecha_pago": detalles_lista[0].get("fecha_pago"),
                         "metodo_pago": detalles_lista[0].get("metodo_pago"),
@@ -826,16 +913,18 @@ class LiquidacionesState(DocumentosStateMixin):
 
                     async with self:
                         self.liquidacion_actual = consolidado
-                        self.propiedades_consolidadas = consolidado["propiedades_detalle"]
+                        self.propiedades_consolidadas = consolidado[
+                            "propiedades_detalle"
+                        ]
                         self.show_detail_modal = True
                         self.is_loading = False
                 else:
-                    raise ValueError("No se pudo cargar el detalle de las liquidaciones")
+                    raise ValueError(
+                        "No se pudo cargar el detalle de las liquidaciones"
+                    )
             else:
                 async with self:
-                    self.error_message = (
-                        "No hay liquidaciones para este propietario en el período seleccionado"
-                    )
+                    self.error_message = "No hay liquidaciones para este propietario en el período seleccionado"
                     self.is_loading = False
         except Exception as e:
             async with self:
@@ -921,14 +1010,27 @@ class LiquidacionesState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
+            vista_agrupada = self.vista_agrupada
 
         try:
-            from src.infraestructura.persistencia.repositorio_recaudo import RepositorioRecaudo
-            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import RepositorioLiquidacionSQLite
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import RepositorioContratoMandatoSQLite
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.persistencia.repositorio_recaudo import (
+                RepositorioRecaudo,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
+                RepositorioLiquidacionSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
+                RepositorioPropiedadSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
+                RepositorioContratoArrendamientoSQLite,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
+                RepositorioContratoMandatoSQLite,
+            )
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -967,11 +1069,13 @@ class LiquidacionesState(DocumentosStateMixin):
                 id_propietarios_activos = [row["ID_PROPIETARIO"] for row in rows]
 
             if not id_propietarios_activos:
-                raise ValueError("No se encontraron propietarios con contratos de mandato activos")
+                raise ValueError(
+                    "No se encontraron propietarios con contratos de mandato activos"
+                )
 
             generadas = 0
             errores = 0
-            
+
             # Generar liquidación consolidada para cada propietario
             for id_propietario in id_propietarios_activos:
                 try:
@@ -983,7 +1087,9 @@ class LiquidacionesState(DocumentosStateMixin):
                     )
                     generadas += 1
                 except Exception as e:
-                    print(f"Error generando liquidacion masiva para id_propietario={id_propietario}: {e}")
+                    print(
+                        f"Error generando liquidacion masiva para id_propietario={id_propietario}: {e}"
+                    )
                     errores += 1
 
             if generadas == 0 and errores > 0:
@@ -994,7 +1100,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 self.form_data = {}
 
             # Si estamos en vista agrupada, recargar
-            if self.vista_agrupada:
+            if vista_agrupada:
                 yield LiquidacionesState.load_liquidaciones()
 
         except ValueError as e:
@@ -1006,14 +1112,15 @@ class LiquidacionesState(DocumentosStateMixin):
         finally:
             async with self:
                 self.is_loading = False
+                error_msg = self.error_message
 
-            if not self.error_message:
+            if not error_msg:
                 mensaje = f"Se generaron {generadas} liquidaciones exitosamente."
                 if errores > 0:
                     mensaje += f" (Omitidas/Error: {errores})"
                 yield rx.toast.success(mensaje, position="bottom-right")
             else:
-                yield rx.toast.error(self.error_message, position="bottom-right")
+                yield rx.toast.error(error_msg, position="bottom-right")
 
     @rx.event(background=True)
     async def aprobar_liquidacion_masiva(self, id_propietario: int, periodo: str):
@@ -1038,7 +1145,9 @@ class LiquidacionesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -1058,7 +1167,9 @@ class LiquidacionesState(DocumentosStateMixin):
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             affected = servicio.aprobar_liquidacion_propietario(
-                id_propietario=id_propietario, periodo=periodo, usuario_sistema=usuario_sistema
+                id_propietario=id_propietario,
+                periodo=periodo,
+                usuario_sistema=usuario_sistema,
             )
 
             async with self:
@@ -1075,7 +1186,9 @@ class LiquidacionesState(DocumentosStateMixin):
             yield rx.toast.error(self.error_message, position="bottom-right")
             return
 
-        yield rx.toast.success(f"Se aprobaron {affected} liquidaciones", position="bottom-right")
+        yield rx.toast.success(
+            f"Se aprobaron {affected} liquidaciones", position="bottom-right"
+        )
 
     @rx.event(background=True)
     async def marcar_como_pagada_masiva(self, form_data: Dict):
@@ -1100,7 +1213,9 @@ class LiquidacionesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -1153,6 +1268,7 @@ class LiquidacionesState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
+            is_create_mode = self.show_create_modal
 
         try:
             from src.infraestructura.persistencia.repositorio_recaudo import (
@@ -1170,7 +1286,9 @@ class LiquidacionesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -1200,7 +1318,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 "observaciones": form_data.get("observaciones", ""),
             }
 
-            if self.show_create_modal:
+            if is_create_mode:
                 # Crear nueva liquidación
                 datos_procesados["id_contrato_m"] = int(form_data["id_contrato_m"])
                 datos_procesados["periodo"] = form_data["periodo"]
@@ -1236,13 +1354,14 @@ class LiquidacionesState(DocumentosStateMixin):
         finally:
             async with self:
                 self.is_loading = False
+                error_msg = self.error_message
 
-            if not self.error_message:
+            if not error_msg:
                 yield rx.toast.success(
                     "Liquidación guardada correctamente", position="bottom-right"
                 )
             else:
-                yield rx.toast.error(self.error_message, position="bottom-right")
+                yield rx.toast.error(error_msg, position="bottom-right")
 
     @rx.event(background=True)
     async def aprobar_liquidacion(self, id_liquidacion: int):
@@ -1267,7 +1386,9 @@ class LiquidacionesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -1302,7 +1423,9 @@ class LiquidacionesState(DocumentosStateMixin):
             yield rx.toast.error(self.error_message, position="bottom-right")
             return
 
-        yield rx.toast.success("Liquidación aprobada correctamente", position="bottom-right")
+        yield rx.toast.success(
+            "Liquidación aprobada correctamente", position="bottom-right"
+        )
 
     @rx.event(background=True)
     async def marcar_como_pagada(self, form_data: Dict):
@@ -1327,7 +1450,9 @@ class LiquidacionesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -1394,7 +1519,9 @@ class LiquidacionesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -1469,7 +1596,9 @@ class LiquidacionesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -1502,7 +1631,9 @@ class LiquidacionesState(DocumentosStateMixin):
             yield rx.toast.error(self.error_message, position="bottom-right")
             return
 
-        yield rx.toast.success("Liquidación reversada a 'En Proceso'", position="bottom-right")
+        yield rx.toast.success(
+            "Liquidación reversada a 'En Proceso'", position="bottom-right"
+        )
 
     def set_cancel_motivo(self, value: str):
         self.cancel_motivo = value
@@ -1533,7 +1664,9 @@ class LiquidacionesState(DocumentosStateMixin):
                 async with self:
                     self.error_message = "El motivo debe tener al menos 10 caracteres"
                     self.is_loading = False
-                yield rx.toast.warning("El motivo es muy corto", position="bottom-right")
+                yield rx.toast.warning(
+                    "El motivo es muy corto", position="bottom-right"
+                )
                 return
 
             from src.infraestructura.persistencia.repositorio_recaudo import (
@@ -1551,7 +1684,9 @@ class LiquidacionesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
                 RepositorioContratoMandatoSQLite,
             )
-            from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+            from src.infraestructura.servicios.servicio_documentos_pdf import (
+                ServicioDocumentosPDF,
+            )
 
             repo_recaudo = RepositorioRecaudo(db_manager)
             repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
@@ -1587,4 +1722,6 @@ class LiquidacionesState(DocumentosStateMixin):
             yield rx.toast.error(self.error_message, position="bottom-right")
             return
 
-        yield rx.toast.success("Liquidación cancelada correctamente", position="bottom-right")
+        yield rx.toast.success(
+            "Liquidación cancelada correctamente", position="bottom-right"
+        )

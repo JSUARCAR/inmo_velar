@@ -26,15 +26,21 @@ if not _db_url:
 config = rx.Config(
     # IMPORTANTE: app_name debe coincidir con la carpeta y archivo (inmobiliaria_velar/inmobiliaria_velar.py)
     app_name="inmobiliaria_velar",
-    # Puertos para ejecución dual con Flet
-    backend_port=8000,
-    frontend_port=3000,
+    # Puertos para ejecución (se comentan para evitar conflictos en producción con --backend-only)
+    # backend_port=8000,
+    # frontend_port=3000,
     # Configuración PostgreSQL
     db_url=_db_url,
     # Entorno de desarrollo
-    env=rx.Env.PROD,
+    env=rx.Env.DEV,
     # Desactivar telemetría (opcional)
     telemetry_enabled=False,
+    # Permitir orígenes cruzados en producción (evita WS error en Railway)
+    cors_allowed_origins=[
+        "*", 
+        "http://localhost:3000",
+        "https://inmovelar-production.up.railway.app",
+    ],
     # Desactivar plugins internos que generan advertencias no deseadas
-    disable_plugins=['reflex.plugins.sitemap.SitemapPlugin'],
+    disable_plugins=[rx.plugins.sitemap.SitemapPlugin],
 )

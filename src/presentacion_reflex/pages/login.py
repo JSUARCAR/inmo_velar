@@ -1,8 +1,12 @@
 import datetime
 import reflex as rx
 from src.presentacion_reflex.state.auth_state import AuthState
-from src.presentacion_reflex.components.shared.aurora_background import aurora_background
-from src.presentacion_reflex.components.shared.matrix_background import matrix_background
+from src.presentacion_reflex.components.shared.aurora_background import (
+    aurora_background,
+)
+from src.presentacion_reflex.components.shared.matrix_background import (
+    matrix_background,
+)
 from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
 
 
@@ -32,12 +36,12 @@ def login_card() -> rx.Component:
                         ),
                         size="6",
                         weight="bold",
-                        class_name="glass-text-elite",
+                        class_name="claude-text-elite",
                     ),
                     rx.text(
                         "Panel de Gestión Corporativa",
                         size="2",
-                        class_name="glass-subtext-elite",
+                        class_name="claude-subtext-elite",
                         weight="medium",
                     ),
                     align="center",
@@ -48,44 +52,60 @@ def login_card() -> rx.Component:
                 # Formulario
                 rx.vstack(
                     rx.vstack(
-                        rx.text("Usuario", size="2", weight="bold", class_name="glass-text-elite"),
+                        rx.text(
+                            "Usuario",
+                            size="2",
+                            weight="bold",
+                            class_name="claude-text-elite",
+                        ),
                         rx.input(
                             placeholder="Ingrese su usuario",
                             name="username",
                             size="3",
                             width="100%",
                             variant="surface",
-                            class_name="glass-input-elite",
+                            class_name="claude-input-elite",
+                            aria_label="Usuario",
                         ),
                         align_items="start",
                         width="100%",
                         spacing="2",
                     ),
                     rx.vstack(
-                        rx.text("Contraseña", size="2", weight="bold", class_name="glass-text-elite"),
+                        rx.text(
+                            "Contraseña",
+                            size="2",
+                            weight="bold",
+                            class_name="claude-text-elite",
+                        ),
                         rx.box(
                             rx.input(
-                                type=rx.cond(AuthState.password_visible, "text", "password"),
+                                type=rx.cond(
+                                    AuthState.password_visible, "text", "password"
+                                ),
                                 placeholder="••••••••",
                                 name="password",
                                 size="3",
                                 width="100%",
                                 variant="surface",
-                                class_name="glass-input-elite",
+                                class_name="claude-input-elite",
                                 padding_right="40px",
+                                aria_label="Contraseña",
                             ),
                             rx.box(
                                 rx.cond(
                                     AuthState.password_visible,
                                     rx.icon(
-                                        "eye-off", size=16,
-                                        class_name="glass-eye-icon",
+                                        "eye-off",
+                                        size=16,
+                                        class_name="claude-eye-icon",
                                         cursor="pointer",
                                         on_click=AuthState.toggle_password_visibility,
                                     ),
                                     rx.icon(
-                                        "eye", size=16,
-                                        class_name="glass-eye-icon",
+                                        "eye",
+                                        size=16,
+                                        class_name="claude-eye-icon",
                                         cursor="pointer",
                                         on_click=AuthState.toggle_password_visibility,
                                     ),
@@ -107,14 +127,13 @@ def login_card() -> rx.Component:
                         "Iniciar Sesión",
                         type="submit",
                         size="3",
-                        color_scheme="blue",
                         class_name="login-button-elite",
                         style={
                             "border_radius": "12px",
                             "box_shadow": "0 10px 15px -3px rgba(0, 0, 0, 0.4)",
                             "margin_top": "1rem",
                             "font_weight": "bold",
-                            "background": "rgba(59, 130, 246, 0.9)",
+                            "background": "var(--brand-primary)",
                             "backdrop_filter": "blur(4px)",
                             "cursor": "pointer",
                         },
@@ -124,7 +143,12 @@ def login_card() -> rx.Component:
                         AuthState.error_message != "",
                         rx.hstack(
                             rx.icon("circle_alert", size=14, color="#f87171"),
-                            rx.text(AuthState.error_message, color="#f87171", size="2", weight="medium"),
+                            rx.text(
+                                AuthState.error_message,
+                                color="#f87171",
+                                size="2",
+                                weight="medium",
+                            ),
                             spacing="2",
                             align="center",
                         ),
@@ -134,13 +158,11 @@ def login_card() -> rx.Component:
                     width="100%",
                     max_width="340px",
                 ),
-
-
                 # Footer
                 rx.text(
                     f"© {datetime.datetime.now().year} Inmobiliaria Velar SAS. Todos los derechos reservados.",
                     size="1",
-                    class_name="glass-subtext-elite",
+                    class_name="claude-subtext-elite",
                     margin_top="8",
                 ),
                 padding="10",
@@ -151,10 +173,9 @@ def login_card() -> rx.Component:
         ),
         width="100%",
         max_width="450px",
-        class_name="glass-card-elite",
+        class_name="claude-card-elite",
         position="relative",
     )
-
 
 
 @rx.page(route="/login", title="Login | Inmobiliaria Velar")
@@ -163,44 +184,45 @@ def login_page() -> rx.Component:
     Página de Login Premium.
     Diseño moderno con tarjeta flotante y fondo de gradiente.
     """
-    return rx.fragment(
+    return rx.box(
+        # Dual Visual Effects (Aurora base + Matrix rain)
+        aurora_background(),
+        matrix_background(),
+        # Header (Title and subtitle)
         rx.box(
-            # Dual Visual Effects (Aurora base + Matrix rain)
-            aurora_background(),
-            matrix_background(),
-            # Header (Title and subtitle)
-            rx.box(
-                rx.vstack(
-                    rx.heading(
-                        "VELAR CORE",
-                        color=rx.cond(rx.color_mode == "light", "rgba(0,0,0,0.85)", "white"),
-                        size="8",
-                        weight="bold",
-                        letter_spacing="-0.02em",
+            rx.vstack(
+                rx.heading(
+                    "VELAR CORE",
+                    color=rx.cond(
+                        rx.color_mode == "light", "rgba(0,0,0,0.85)", "white"
                     ),
-                    rx.text(
-                        "Sistema de Gestión Inmobiliaria Elite",
-                        color=rx.cond(
-                            rx.color_mode == "light",
-                            "rgba(0,0,0,0.6)",
-                            "rgba(255,255,255,0.7)",
-                        ),
-                        size="3",
-                        weight="medium",
-                    ),
-                    align="center",
-                    spacing="1",
+                    size="8",
+                    weight="bold",
+                    letter_spacing="-0.02em",
+                    font_family="Playfair Display, serif",
                 ),
-                class_name="login-header-elite",
-                width="100%",
+                rx.text(
+                    "Sistema de Gestión Inmobiliaria Elite",
+                    color=rx.cond(
+                        rx.color_mode == "light",
+                        "rgba(0,0,0,0.6)",
+                        "rgba(255,255,255,0.7)",
+                    ),
+                    size="3",
+                    weight="medium",
+                ),
+                align="center",
+                spacing="1",
             ),
-            # Content
-            rx.box(
-                login_card(),
-                class_name="login-container-elite",
-            ),
+            class_name="login-header-elite",
             width="100%",
-            min_height="100vh",
-            class_name="login-page-root",
         ),
+        # Content
+        rx.box(
+            login_card(),
+            class_name="login-container-elite",
+        ),
+        width="100%",
+        min_height="100vh",
+        class_name="login-page-root",
     )

@@ -125,27 +125,34 @@ def modal_recaudo() -> rx.Component:
             # Formulario
             rx.form.root(
                 rx.vstack(
-                    # Contrato (solo en creación)
+                    # ID Recaudo (Oculto para edición)
+                    rx.cond(
+                        RecaudosState.is_editing,
+                        rx.input(
+                            type="hidden",
+                            name="id_recaudo",
+                            value=RecaudosState.form_data["id_recaudo"],
+                        ),
+                    ),
+                    # ID Contrato (Oculto siempre para rx.form)
+                    rx.input(
+                        type="hidden",
+                        name="id_contrato_a",
+                        value=RecaudosState.form_data["id_contrato_a"],
+                    ),
+                    # Contrato (solo en creación, visualmente)
                     rx.cond(
                         ~RecaudosState.is_editing,
-                        rx.fragment(
-                            searchable_select(
-                                "Contrato *",
-                                "Seleccione un contrato...",
-                                RecaudosState.contrato_selected_label,
-                                RecaudosState.contrato_search,
-                                RecaudosState.contrato_menu_open,
-                                RecaudosState.filtered_contratos_options,
-                                RecaudosState.set_contrato_search,
-                                RecaudosState.toggle_contrato_menu,
-                                RecaudosState.select_contrato,
-                            ),
-                            # ID Oculto para rx.form (Fix KeyError: 'id_contrato_a')
-                            rx.input(
-                                type="hidden",
-                                name="id_contrato_a",
-                                value=RecaudosState.form_data["id_contrato_a"],
-                            ),
+                        searchable_select(
+                            "Contrato *",
+                            "Seleccione un contrato...",
+                            RecaudosState.contrato_selected_label,
+                            RecaudosState.contrato_search,
+                            RecaudosState.contrato_menu_open,
+                            RecaudosState.filtered_contratos_options,
+                            RecaudosState.set_contrato_search,
+                            RecaudosState.toggle_contrato_menu,
+                            RecaudosState.select_contrato,
                         ),
                     ),
                     # Fecha de Pago

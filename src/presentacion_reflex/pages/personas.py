@@ -6,7 +6,7 @@ from src.presentacion_reflex.components.personas.modal_detalles import modal_det
 from src.presentacion_reflex.components.personas.person_card import person_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.personas_state import PersonasState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_spinner, neuro_badge, neuro_table_container
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_spinner, neuro_badge
 from src.presentacion_reflex import styles
 
 
@@ -53,7 +53,7 @@ def persona_row(persona: dict) -> rx.Component:
                         background=styles.BG_PANEL,
                         border_radius="20px",
                         padding="2px 10px",
-                        box_shadow=styles.NEU_INSET_LIGHT,
+                        box_shadow=styles.NEU_INSET,
                         margin_right="1",
                         font_size="0.75rem",
                         font_weight="bold",
@@ -112,8 +112,7 @@ def persona_row(persona: dict) -> rx.Component:
 def personas_page() -> rx.Component:
     pass  # print("\n🌐 === PERSONAS PAGE RENDERING ===") [OpSec Removed]
     pass  # print("✅ Toast provider will be included in this page") [OpSec Removed]
-    return rx.fragment(
-        rx.toast.provider(),
+    return rx.box(
         dashboard_layout(
             rx.vstack(
                 # Modal Component

@@ -542,4 +542,4 @@ def liquidaciones_page() -> rx.Component:
 )
 def liquidaciones() -> rx.Component:
     """Página de liquidaciones con layout."""
-    return rx.fragment(rx.toast.provider(), dashboard_layout(liquidaciones_page()))
+    return rx.box(dashboard_layout(liquidaciones_page()))

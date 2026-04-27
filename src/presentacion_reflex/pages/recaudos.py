@@ -7,13 +7,21 @@ import reflex as rx
 from src.presentacion_reflex import styles
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
-from src.presentacion_reflex.components.recaudos import modal_detalle_recaudo, modal_recaudo
+from src.presentacion_reflex.components.recaudos import (
+    modal_detalle_recaudo,
+    modal_recaudo,
+)
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.pdf_state import PDFState
 from src.presentacion_reflex.state.recaudos_state import RecaudosState
 
 
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_select_root,
+    neuro_button,
+)
+
 
 def render_estado_badge(estado: rx.Var) -> rx.Component:
     """Renderiza badge con color según estado."""
@@ -22,6 +30,7 @@ def render_estado_badge(estado: rx.Var) -> rx.Component:
         ("Pendiente", rx.badge("Pendiente", color_scheme="yellow", variant="solid")),
         ("Aplicado", rx.badge("Aplicado", color_scheme="green", variant="solid")),
         ("Reversado", rx.badge("Reversado", color_scheme="red", variant="solid")),
+        ("Vencido", rx.badge("Vencido", color_scheme="red", variant="solid")),
         rx.badge(estado, color_scheme="gray", variant="soft"),
     )
 
@@ -43,6 +52,7 @@ def recaudos_toolbar() -> rx.Component:
             [
                 rx.select.item("Todos", value="Todos"),
                 rx.select.item("Pendiente", value="Pendiente"),
+                rx.select.item("Vencido", value="Vencido"),
                 rx.select.item("Aplicado", value="Aplicado"),
                 rx.select.item("Reversado", value="Reversado"),
             ],
@@ -117,7 +127,6 @@ def recaudos_toolbar() -> rx.Component:
     )
 
 
-
 def recaudos_table() -> rx.Component:
     """Tabla de recaudos."""
     return rx.table.root(
@@ -126,7 +135,9 @@ def recaudos_table() -> rx.Component:
                 rx.table.column_header_cell("ID", style={"font-weight": "600"}),
                 rx.table.column_header_cell("Fecha Pago", style={"font-weight": "600"}),
                 rx.table.column_header_cell("Propiedad", style={"font-weight": "600"}),
-                rx.table.column_header_cell("Arrendatario", style={"font-weight": "600"}),
+                rx.table.column_header_cell(
+                    "Arrendatario", style={"font-weight": "600"}
+                ),
                 rx.table.column_header_cell("Valor", style={"font-weight": "600"}),
                 rx.table.column_header_cell("Método", style={"font-weight": "600"}),
                 rx.table.column_header_cell("Estado", style={"font-weight": "600"}),
@@ -320,7 +331,9 @@ def pagination_controls() -> rx.Component:
                 align="center",
             ),
             rx.button(
-                rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
+                rx.text(
+                    "Siguiente", display=rx.breakpoints(initial="none", md="block")
+                ),
                 rx.icon("chevron-right", size=16),
                 on_click=RecaudosState.next_page,
                 disabled=RecaudosState.current_page * RecaudosState.page_size
