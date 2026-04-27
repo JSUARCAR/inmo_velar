@@ -234,7 +234,8 @@ class RepositorioContratoArrendamientoPostgres:
                     per_asesor.NOMBRE_COMPLETO as ASESOR,
                     arr.NOMBRE_HABITANTE as HABITANTE,
                     COALESCE(prop_per.NOMBRE_COMPLETO, 'N/A') as PROPIETARIO,
-                    COALESCE(prop_per.NUMERO_DOCUMENTO, 'N/A') as PROPIETARIO_DOC
+                    COALESCE(prop_per.NUMERO_DOCUMENTO, 'N/A') as PROPIETARIO_DOC,
+                    ca.FECHA_PAGO
                 {base_from}
                 LEFT JOIN PROPIETARIOS prop_ent ON cm.ID_PROPIETARIO = prop_ent.ID_PROPIETARIO
                 LEFT JOIN PERSONAS prop_per ON prop_ent.ID_PERSONA = prop_per.ID_PERSONA
@@ -270,6 +271,7 @@ class RepositorioContratoArrendamientoPostgres:
                     "propietario_documento": gv("PROPIETARIO_DOC"),
                     "habitante_nombre": gv("HABITANTE") or "",
                     "asesor_nombre": gv("ASESOR") or "Sin asesor",
+                    "fecha_pago": gv("FECHA_PAGO") or "",
                 })
 
             return PaginatedResult(

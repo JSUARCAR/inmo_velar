@@ -200,7 +200,8 @@ class RepositorioContratoMandatoPostgres:
                     COALESCE(p.CANON_ARRENDAMIENTO_ESTIMADO, 0) as CANON_ARRENDAMIENTO_ESTIMADO,
                     COALESCE(per.NOMBRE_COMPLETO, 'Propietario no encontrado') as PROPIETARIO,
                     COALESCE(per.NUMERO_DOCUMENTO, 'N/A') as NUMERO_DOCUMENTO,
-                    per_asesor.NOMBRE_COMPLETO as ASESOR
+                    per_asesor.NOMBRE_COMPLETO as ASESOR,
+                    cm.FECHA_PAGO
                 {base_from}
                 {where_clause}
                 ORDER BY cm.ID_CONTRATO_M DESC
@@ -234,6 +235,7 @@ class RepositorioContratoMandatoPostgres:
                     "arrendatario_documento": "N/A",
                     "habitante_nombre": "",
                     "asesor_nombre": gv("ASESOR") or "Sin asesor",
+                    "fecha_pago": gv("FECHA_PAGO") or "",
                 })
             return PaginatedResult(
                 items=items, total=total, page=params.page, page_size=params.page_size
