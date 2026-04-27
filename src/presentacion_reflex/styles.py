@@ -1,8 +1,8 @@
 import reflex as rx
 
 """
-Sistema de Tokens de Diseño Semántico (Dark Mode Ready)
-Usamos variables de CSS puro para evitar problemas de compilación con rx.color en SSR/Memoization.
+Sistema de Tokens de Diseño - Tema Claude (Anthropic)
+Warm, editorial, parchment-toned aesthetic
 """
 
 # --- Backgrounds ---
@@ -10,117 +10,150 @@ BG_APP = "var(--bg-app)"
 BG_PANEL = "var(--bg-panel)"
 BG_HOVER = "var(--bg-hover)"
 
-# --- Neumorphism Shadows (aliases retrocompatibles) ---
-NEU_SHADOW = "var(--neu-shadow)"
-NEU_MODAL_SHADOW = "var(--neu-modal-shadow)"
-NEU_INSET = "var(--neu-inset)"
-NEU_INSET_LIGHT = "var(--neu-inset-light)"
-
-# --- ELITE Named Shadows (fuente de verdad) ---
-SHADOW_RAISED_ELITE = "var(--shadow-raised-elite)"
-SHADOW_FLAT_ELITE   = "var(--shadow-flat-elite)"
-SHADOW_INSET_ELITE  = "var(--shadow-inset-elite)"
-SHADOW_MODAL_ELITE  = "var(--shadow-modal-elite)"
-
-# --- Textos ---
-TEXT_PRIMARY = "var(--gray-12)"
-TEXT_SECONDARY = "var(--gray-11)"
-TEXT_TERTIARY = "var(--gray-10)"
+# --- Text Colors (Warm neutrals) ---
+TEXT_PRIMARY = "var(--text-primary)"  # #141413 Anthropic Near Black
+TEXT_SECONDARY = "var(--text-secondary)"  # #5e5d59 Olive Gray
+TEXT_TERTIARY = "var(--text-tertiary)"  # #87867f Stone Gray
 TEXT_INVERTED = "white"
 
-# --- Bordes ---
-BORDER_DEFAULT = "var(--gray-6)"
-BORDER_HOVER = "var(--gray-8)"
+# --- Brand Colors ---
+BRAND_PRIMARY = "var(--brand-primary)"  # #c96442 Terracotta
+BRAND_ACCENT = "var(--brand-accent)"  # #d97757 Coral
+ACCENT_COLOR = BRAND_PRIMARY
+ACCENT_BG_SOFT = "rgba(201, 100, 66, 0.1)"  # Soft Terracotta
+ACCENT_BG = "rgba(201, 100, 66, 0.2)"
 
-# --- Accents (Brand) ---
-ACCENT_COLOR = "var(--blue-9)"
-ACCENT_BG_SOFT = "var(--blue-3)"
+# --- Typography Aliases ---
+FONT_DISPLAY = "Playfair Display, serif"
+FONT_SANS = "Inter, sans-serif"
 
-# Alias para compatibilidad con código existente
+# --- Font Size Tokens ---
+FONT_SIZE_XS = "var(--font-size-xs)"
+FONT_SIZE_SM = "var(--font-size-sm)"
+FONT_SIZE_BASE = "var(--font-size-base)"
+FONT_SIZE_MD = "var(--font-size-md)"
+FONT_SIZE_LG = "var(--font-size-lg)"
+FONT_SIZE_XL = "var(--font-size-xl)"
+
+# --- Borders ---
+BORDER_DEFAULT = "var(--border-default)"  # #f0eee6 Border Cream
+BORDER_HOVER = "var(--border-emphasis)"  # #e8e6dc Border Warm
 BORDER_COLOR = BORDER_DEFAULT
+
+# --- Shadows - Anthropic System (Elite) ---
+# Ring-based: 1px border simulation with precise coloring
+SHADOW_RING = f"0px 0px 0px 1px {BORDER_DEFAULT}"
+SHADOW_WHISPER = "0px 4px 24px rgba(0,0,0,0.05)"
+SHADOW_ELEVATED = "0px 12px 48px rgba(0,0,0,0.08)"
+SHADOW_INSET = "inset 0px 2px 4px rgba(0,0,0,0.05)"
+
+
 
 # --- Animaciones Globales ---
 GLOBAL_TRANSITION = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+TRANSITION_FAST = "0.15s ease-out"
+TRANSITION_SLOW = "0.4s cubic-bezier(0.4, 0, 0.2, 1)"
 
 # --- Component Styles ---
 NEU_DIVIDER_STYLE = {
-    "height": "2px",
+    "height": "1px",
     "width": "100%",
-    "background": f"linear-gradient(to bottom, rgba(184, 195, 218, 0.4) 0%, rgba(255, 255, 255, 0.8) 100%)",
+    "background": BORDER_DEFAULT,
     "margin_y": "1rem",
-    "border_radius": "2px",
 }
 
 NEU_INPUT_STYLE = {
     "background": BG_PANEL,
-    "box_shadow": NEU_INSET,
     "border": f"1px solid {BORDER_DEFAULT}",
+    "box_shadow": SHADOW_INSET,
     "transition": GLOBAL_TRANSITION,
     "border_radius": "12px",
     "padding": "0.75rem 1rem",
     "color": TEXT_PRIMARY,
-    "height": "44px !important",  # Forzado
+    "height": "44px !important",
     "_focus": {
-        "box_shadow": NEU_INSET + ", 0 0 0 2px rgba(102, 126, 234, 0.3)",
+        "box_shadow": f"{SHADOW_INSET}, 0 0 0 2px {BRAND_PRIMARY}4D",
         "outline": "none",
-        "border_color": ACCENT_COLOR,
+        "border_color": BRAND_PRIMARY,
     },
     "_placeholder": {
         "color": TEXT_TERTIARY,
-    }
+    },
 }
 
 NEU_SELECT_STYLE = {
     "background": BG_PANEL,
-    "box_shadow": NEU_INSET,
     "border": f"1px solid {BORDER_DEFAULT}",
+    "box_shadow": SHADOW_INSET,
     "border_radius": "12px",
     "padding": "0 1rem",
     "color": TEXT_PRIMARY,
-    "height": "44px !important",  # Forzado
+    "height": "44px !important",
     "display": "flex",
     "align_items": "center",
     "transition": GLOBAL_TRANSITION,
     "_focus": {
-        "box_shadow": NEU_INSET + ", 0 0 0 2px rgba(102, 126, 234, 0.3)",
-        "border_color": ACCENT_COLOR,
-    }
+        "box_shadow": f"{SHADOW_INSET}, 0 0 0 2px {BRAND_PRIMARY}4D",
+        "border_color": BRAND_PRIMARY,
+    },
 }
 
 NEU_BUTTON_STYLE = {
     "background": BG_PANEL,
-    "box_shadow": NEU_SHADOW,
     "border": f"1px solid {BORDER_DEFAULT}",
+    "box_shadow": SHADOW_RING,
     "border_radius": "12px",
     "color": TEXT_PRIMARY,
-    "height": "44px !important",  # Forzado
+    "height": "44px !important",
     "padding": "0 1.5rem",
     "font_weight": "600",
     "transition": GLOBAL_TRANSITION,
     "cursor": "pointer",
     "_hover": {
         "transform": "translateY(-2px)",
-        "box_shadow": NEU_MODAL_SHADOW,
+        "box_shadow": SHADOW_WHISPER,
         "background": BG_HOVER,
     },
     "_active": {
         "transform": "translateY(0)",
-        "box_shadow": NEU_INSET,
+        "box_shadow": SHADOW_INSET,
+    },
+}
+
+NEU_BUTTON_PRIMARY_STYLE = {
+    **NEU_BUTTON_STYLE,
+    "background": BRAND_PRIMARY,
+    "color": "white",
+    "border": "none",
+    "_hover": {
+        **NEU_BUTTON_STYLE.get("_hover", {}),
+        "background": BRAND_ACCENT,
+        "box_shadow": f"0 8px 16px {BRAND_PRIMARY}33",
     }
 }
 
 NEU_PANEL_STYLE = {
     "background": BG_PANEL,
-    "box_shadow": NEU_SHADOW,
-    "border": "none",
+    "border": f"1px solid {BORDER_DEFAULT}",
     "border_radius": "16px",
     "padding": "1.5rem",
+    "box_shadow": SHADOW_WHISPER,
+}
+
+NEU_CARD_STYLE = {
+    **NEU_PANEL_STYLE,
+    "transition": GLOBAL_TRANSITION,
+    "_hover": {
+        "box_shadow": SHADOW_ELEVATED,
+        "transform": "translateY(-4px)",
+        "border_color": BRAND_PRIMARY,
+    }
 }
 
 NEU_TOOLTIP_STYLE = {
     "background": BG_PANEL,
-    "box_shadow": NEU_MODAL_SHADOW,
     "border": f"1px solid {BORDER_DEFAULT}",
+    "box_shadow": SHADOW_WHISPER,
     "border_radius": "12px",
     "color": TEXT_PRIMARY,
     "padding": "0.75rem",
@@ -128,34 +161,48 @@ NEU_TOOLTIP_STYLE = {
     "z_index": "9999",
 }
 
-# Botones de icono: raised → flat → inset (sombras táctiles)
 NEU_ICON_BUTTON_STYLE = {
     "background": BG_PANEL,
-    "box_shadow": SHADOW_RAISED_ELITE,
     "border": f"1px solid {BORDER_DEFAULT}",
+    "box_shadow": SHADOW_RING,
     "border_radius": "10px",
     "color": TEXT_PRIMARY,
     "transition": GLOBAL_TRANSITION,
     "cursor": "pointer",
+    "display": "flex",
+    "align_items": "center",
+    "justify_content": "center",
     "_hover": {
-        "box_shadow": SHADOW_FLAT_ELITE,
         "background": BG_HOVER,
+        "transform": "scale(1.05)",
     },
     "_active": {
-        "box_shadow": SHADOW_INSET_ELITE,
+        "box_shadow": SHADOW_INSET,
         "transform": "scale(0.97)",
     },
 }
 
-# Card de contrato con sombra raised y hover elevado
-NEU_CONTRACT_CARD_STYLE = {
-    "background": BG_PANEL,
-    "box_shadow": SHADOW_RAISED_ELITE,
-    "border": "none",
-    "border_radius": "16px",
-    "transition": GLOBAL_TRANSITION,
-    "_hover": {
-        "box_shadow": SHADOW_MODAL_ELITE,
-        "transform": "translateY(-4px)",
-    },
+NEU_CONTRACT_CARD_STYLE = NEU_CARD_STYLE
+
+# --- Estilos de Badge/Tag ---
+NEU_BADGE_STYLE = {
+    "padding": "4px 12px",
+    "border_radius": "20px",
+    "font_size": FONT_SIZE_XS,
+    "font_weight": "bold",
+    "text_transform": "uppercase",
+    "letter_spacing": "0.05em",
 }
+
+# --- Aliases para compatibilidad ---
+SHADOW_RAISED_ELITE = SHADOW_RING
+SHADOW_FLAT_ELITE = SHADOW_RING
+SHADOW_MODAL_ELITE = SHADOW_WHISPER
+SHADOW_INSET_ELITE = SHADOW_INSET
+
+NEU_SHADOW = SHADOW_RING
+NEU_MODAL_SHADOW = SHADOW_WHISPER
+NEU_PANEL_SHADOW = SHADOW_WHISPER
+NEU_INSET = SHADOW_INSET_ELITE
+NEU_INSET_LIGHT = SHADOW_INSET_ELITE
+NEU_PANEL = NEU_PANEL_STYLE

@@ -12,17 +12,20 @@ def sidebar_item(
     url: str,
     description: str = "",
     module_name: str = "",
-    icon_color: str = "#3b82f6",
 ) -> rx.Component:
     """Item individual del sidebar con HoverCard experto y protección por permisos."""
     is_active = rx.State.router.page.path == url
 
-    # Base item content (Trigger)
-    item_content = rx.hstack(
+    resolved_icon_color = rx.cond(
+        is_active, styles.BRAND_PRIMARY, styles.TEXT_SECONDARY
+    )
+
+    # Envoltura interna para mantener los iconos perfectamente alineados pero el bloque centrado
+    inner_content = rx.hstack(
         rx.icon(
             icon,
             size=20,
-            color=icon_color,  # Use category color
+            color=resolved_icon_color,
         ),
         rx.text(
             text,
@@ -35,21 +38,28 @@ def sidebar_item(
             ),
         ),
         spacing="3",
-        padding_x="4",
+        align="center",
+        width="200px",  # Anchura fija para alinear el contenido internamente
+        justify="start",
+    )
+
+    # Base item content (Trigger)
+    item_content = rx.hstack(
+        inner_content,
         padding_y="3",
-        margin_left="2",
         border_radius="10px",
         border="none",
         background=styles.BG_PANEL,
-        box_shadow=rx.cond(is_active, styles.NEU_INSET_LIGHT, "none"),
+        box_shadow=rx.cond(is_active, styles.NEU_INSET, "none"),
         _hover={
             "box_shadow": rx.cond(
                 is_active,
-                styles.NEU_INSET_LIGHT,
+                styles.NEU_INSET,
                 styles.NEU_SHADOW,  # Elevado al hover
             ),
         },
         width="100%",
+        justify="center",  # Esto centra el inner_content de 200px perfectamente en la píldora
         align="center",
         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
         cursor="pointer",
@@ -129,14 +139,17 @@ def sidebar_item(
 def sidebar_section(title: str, *items) -> rx.Component:
     """Sección del sidebar con título y items."""
     return rx.vstack(
-        rx.text(
-            title,
-            size="1",
-            color=rx.cond(rx.color_mode == "light", "#64748b", "white"),
-            weight="bold",
-            letter_spacing="0.5px",
-            padding_x="4",
-            padding_left="6",
+        # Contenedor para alinear el título con exactitud sobre los iconos (200px de ancho central)
+        rx.box(
+            rx.text(
+                title,
+                size="1",
+                color=rx.cond(rx.color_mode == "light", "#64748b", "white"),
+                weight="bold",
+                letter_spacing="0.5px",
+            ),
+            width="200px",
+            margin_x="auto",  # Centra la caja al igual que los links
             margin_top="2",
         ),
         *items,
@@ -158,7 +171,6 @@ def sidebar_items() -> rx.Component:
                 "/dashboard",
                 "Panel de control general con métricas estratégicas y KPIs operativos.",
                 module_name="Dashboard",
-                icon_color="#3b82f6",  # Blue
             ),
         ),
         # Sección Gestión
@@ -170,7 +182,6 @@ def sidebar_items() -> rx.Component:
                 "/personas",
                 "Gestión integral de propietarios, arrendatarios, codeudores y asesores.",
                 module_name="Personas",
-                icon_color="#10b981",  # Green
             ),
             sidebar_item(
                 "Propiedades",
@@ -178,7 +189,6 @@ def sidebar_items() -> rx.Component:
                 "/propiedades",
                 "Administración del inventario de inmuebles, características y estados.",
                 module_name="Propiedades",
-                icon_color="#10b981",  # Green
             ),
             sidebar_item(
                 "Contratos",
@@ -186,7 +196,6 @@ def sidebar_items() -> rx.Component:
                 "/contratos",
                 "Control de contratos de mandato y arrendamiento vigentes e históricos.",
                 module_name="Contratos",
-                icon_color="#10b981",  # Green
             ),
             sidebar_item(
                 "Prop. Horizontal",
@@ -194,7 +203,6 @@ def sidebar_items() -> rx.Component:
                 "/propiedad-horizontal",
                 "Gestión de asambleas y pagos de administración de PH.",
                 module_name="Propiedad Horizontal",
-                icon_color="#10b981",  # Green
             ),
             sidebar_item(
                 "Proveedores",
@@ -202,7 +210,6 @@ def sidebar_items() -> rx.Component:
                 "/proveedores",
                 "Directorio y gestión de proveedores de servicios y mantenimiento.",
                 module_name="Proveedores",
-                icon_color="#10b981",  # Green
             ),
         ),
         # Sección Operaciones
@@ -212,9 +219,8 @@ def sidebar_items() -> rx.Component:
                 "Liquidaciones",
                 "dollar_sign",
                 "/liquidaciones",
-                "Procesamiento de liquidaciones a propietarios y gestión financiera.",
+                "Gestión de liquidaciones de arriendo, cálculo de intereses y mora.",
                 module_name="Liquidaciones",
-                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
                 "Liquidación Asesores",
@@ -222,7 +228,6 @@ def sidebar_items() -> rx.Component:
                 "/liquidacion-asesores",
                 "Cálculo y pago de comisiones, bonificaciones y estructura comercial.",
                 module_name="Liquidación Asesores",
-                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
                 "Recaudos",
@@ -230,7 +235,6 @@ def sidebar_items() -> rx.Component:
                 "/recaudos",
                 "Registro y seguimiento de pagos recibidos de arrendatarios.",
                 module_name="Recaudos",
-                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
                 "Desocupaciones",
@@ -238,7 +242,6 @@ def sidebar_items() -> rx.Component:
                 "/desocupaciones",
                 "Gestión de procesos de desocupación, inspecciones y restitución.",
                 module_name="Desocupaciones",
-                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
                 "Incidentes",
@@ -246,7 +249,6 @@ def sidebar_items() -> rx.Component:
                 "/incidentes",
                 "Seguimiento y resolución de incidencias, reparaciones y mantenimiento.",
                 module_name="Incidentes",
-                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
                 "Seguros",
@@ -254,7 +256,6 @@ def sidebar_items() -> rx.Component:
                 "/seguros",
                 "Control de pólizas de seguro de arrendamiento y hogar.",
                 module_name="Seguros",
-                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
                 "Recibos Públicos",
@@ -262,7 +263,6 @@ def sidebar_items() -> rx.Component:
                 "/recibos-publicos",
                 "Gestión de pagos y control de servicios públicos de los inmuebles.",
                 module_name="Recibos Públicos",
-                icon_color="#f59e0b",  # Amber
             ),
             sidebar_item(
                 "Saldos a Favor",
@@ -270,7 +270,6 @@ def sidebar_items() -> rx.Component:
                 "/saldos-favor",
                 "Administración de saldos a favor de terceros y devoluciones.",
                 module_name="Saldos a Favor",
-                icon_color="#f59e0b",  # Amber
             ),
         ),
         # Sección Administración
@@ -282,7 +281,6 @@ def sidebar_items() -> rx.Component:
                 "/usuarios",
                 "Gestión de usuarios del sistema, roles y permisos de acceso.",
                 module_name="Usuarios",
-                icon_color="#8b5cf6",  # Purple
             ),
             sidebar_item(
                 "Configuración",
@@ -290,7 +288,6 @@ def sidebar_items() -> rx.Component:
                 "/configuracion",
                 "Ajustes generales del sistema y parámetros globales.",
                 module_name="Configuración",
-                icon_color="#8b5cf6",  # Purple
             ),
             sidebar_item(
                 "IPC / Incrementos",
@@ -298,7 +295,6 @@ def sidebar_items() -> rx.Component:
                 "/incrementos",
                 "Aplicación de incrementos anuales e indexación masiva por IPC.",
                 module_name="IPC / Incrementos",
-                icon_color="#8b5cf6",  # Purple
             ),
             sidebar_item(
                 "Auditoría",
@@ -306,7 +302,6 @@ def sidebar_items() -> rx.Component:
                 "/auditoria",
                 "Registro detallado (logs) de cambios y actividades en el sistema.",
                 module_name="Auditoría",
-                icon_color="#8b5cf6",  # Purple
             ),
             sidebar_item(
                 "Reportes",
@@ -314,7 +309,6 @@ def sidebar_items() -> rx.Component:
                 "/reportes",
                 "Generación y exportación de reportes detallados en CSV.",
                 module_name="Reportes",
-                icon_color="#8b5cf6",  # Purple
             ),
         ),
         spacing="0",
@@ -327,7 +321,7 @@ def sidebar_footer() -> rx.Component:
     from src.presentacion_reflex.components.layout.theme_toggle import theme_toggle_icon
 
     return rx.hstack(
-        rx.icon("user-check", size=30, color="#3b82f6"),
+        rx.icon("user-check", size=30, color="var(--text-secondary)"),
         rx.vstack(
             rx.text(
                 AuthState.user_nombre,
@@ -390,7 +384,8 @@ def sidebar_footer() -> rx.Component:
         width="100%",
         align_items="center",
         padding_top="2",
-        padding_x="2",
+        padding_x="4",
+        padding_bottom="4",
     )
 
 
@@ -417,7 +412,7 @@ def sidebar() -> rx.Component:
                             rx.icon(
                                 "building",
                                 size=40,
-                                color="#3b82f6",
+                                color="var(--brand-primary)",
                                 margin_bottom="2",
                                 cursor="pointer",
                             ),
@@ -474,7 +469,9 @@ def sidebar() -> rx.Component:
                                 margin_top="1",
                             ),
                             rx.hstack(
-                                rx.icon("user-check", size=14, color="#3b82f6"),
+                                rx.icon(
+                                    "user-check", size=14, color="var(--text-tertiary)"
+                                ),
                                 rx.text(
                                     ConfiguracionState.empresa["representante_legal"],
                                     size="2",
@@ -575,8 +572,10 @@ def sidebar() -> rx.Component:
         rx.box(
             sidebar_items(),
             padding_y="4",
+            padding_x="4",
             overflow_y="auto",
             flex="1",
+            width="100%",
         ),
         # Footer User Profile
         sidebar_footer(),

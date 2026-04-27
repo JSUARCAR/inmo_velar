@@ -3,26 +3,25 @@ import reflex as rx
 from src.presentacion_reflex.state.personas_state import PersonasState
 from src.presentacion_reflex import styles
 
+def progreso_asistente() -> rx.Component:
+    """Indicador de progreso premium para el asistente multi-paso con estetica Claude (Anthropic)."""
 
-def wizard_progress() -> rx.Component:
-    """Premium progress indicator for multi-step wizard with Neumorphism sculpting."""
-
-    def step_indicator(step_num: int, label: str) -> rx.Component:
-        """Individual step circle with pneumatic depth."""
-        is_current = PersonasState.modal_step == step_num
-        is_completed = PersonasState.modal_step > step_num
+    def indicador_paso(num_paso: int, etiqueta: str) -> rx.Component:
+        """Circulo indicador de paso individual con profundidad basada en anillos."""
+        es_actual = PersonasState.modal_step == num_paso
+        esta_completado = PersonasState.modal_step > num_paso
 
         return rx.vstack(
-            # Step circle sculpted
+            # Circulo del paso esculpido
             rx.box(
                 rx.cond(
-                    is_completed,
-                    rx.icon("check", size=20, color="var(--green-9)"),
+                    esta_completado,
+                    rx.icon("check", size=20, color=styles.BRAND_PRIMARY),
                     rx.text(
-                        str(step_num),
+                        str(num_paso),
                         size="3",
                         weight="bold",
-                        color=rx.cond(is_current, styles.ACCENT_COLOR, styles.TEXT_TERTIARY),
+                        color=rx.cond(es_actual, styles.BRAND_PRIMARY, styles.TEXT_TERTIARY),
                     ),
                 ),
                 width="42px",
@@ -32,61 +31,51 @@ def wizard_progress() -> rx.Component:
                 align_items="center",
                 justify_content="center",
                 style={
-                    "background": styles.BG_PANEL,
-                    "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    "background": rx.cond(es_actual, "white", styles.BG_PANEL),
+                    "transition": styles.GLOBAL_TRANSITION,
                     "box_shadow": rx.cond(
-                        is_completed | is_current,
-                        styles.NEU_INSET, # Completed/Current look "sculpted in"
-                        styles.NEU_SHADOW, # Pending look "raised"
+                        esta_completado | es_actual,
+                        styles.SHADOW_INSET,
+                        styles.SHADOW_RING,
                     ),
-                    "opacity": rx.cond(is_completed | is_current, "1", "0.6"),
                     "border": rx.cond(
-                        is_current,
-                        f"2px solid {styles.ACCENT_COLOR}",
-                        "none"
+                        es_actual,
+                        f"2px solid {styles.BRAND_PRIMARY}",
+                        f"1px solid {styles.BORDER_DEFAULT}"
                     ),
+                    "transform": rx.cond(es_actual, "scale(1.1)", "scale(1)"),
                 },
             ),
-            # Step label
+            # Etiqueta del paso
             rx.text(
-                label,
+                etiqueta,
                 size="2",
-                weight=rx.cond(is_current, "bold", "medium"),
-                color=rx.cond(is_current, styles.TEXT_PRIMARY, styles.TEXT_TERTIARY),
+                weight=rx.cond(es_actual, "bold", "medium"),
+                color=rx.cond(es_actual, styles.TEXT_PRIMARY, styles.TEXT_TERTIARY),
                 text_align="center",
             ),
             spacing="2",
             align="center",
         )
 
+    def conector() -> rx.Component:
+        """Linea conectora con estilo editorial."""
+        return rx.box(
+            width=["30px", "50px", "70px"],
+            height="1px",
+            margin_top="21px",
+            background=styles.BORDER_DEFAULT,
+            style={
+                "transition": styles.GLOBAL_TRANSITION,
+            },
+        )
+
     return rx.hstack(
-        step_indicator(1, "Información Básica"),
-        # Connector line with depth
-        rx.box(
-            width=["30px", "50px", "70px"],
-            height="6px",
-            margin_top="19px",
-            border_radius="full",
-            style={
-                "background": styles.BG_PANEL,
-                "box_shadow": "inset 1px 1px 2px rgba(0,0,0,0.1), inset -1px -1px 2px rgba(255,255,255,0.5)",
-                "transition": styles.GLOBAL_TRANSITION,
-            },
-        ),
-        step_indicator(2, "Roles"),
-        # Connector line 2-3
-        rx.box(
-            width=["30px", "50px", "70px"],
-            height="6px",
-            margin_top="19px",
-            border_radius="full",
-            style={
-                "background": styles.BG_PANEL,
-                "box_shadow": "inset 1px 1px 2px rgba(0,0,0,0.1), inset -1px -1px 2px rgba(255,255,255,0.5)",
-                "transition": styles.GLOBAL_TRANSITION,
-            },
-        ),
-        step_indicator(3, "Detalles"),
+        indicador_paso(1, "Información Básica"),
+        conector(),
+        indicador_paso(2, "Roles"),
+        conector(),
+        indicador_paso(3, "Detalles"),
         justify="center",
         align="start",
         width="100%",
