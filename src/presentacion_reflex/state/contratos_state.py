@@ -64,6 +64,7 @@ class ContratosState(DocumentosStateMixin):
     filter_persona_id: str = ""
     filter_asesor_id: str = "todos"
     solo_activos: bool = True
+    filter_sin_arrendamiento: bool = False
 
     # Opciones de filtros
     tipo_options: List[str] = ["Todos", "Mandato", "Arrendamiento"]
@@ -212,6 +213,9 @@ class ContratosState(DocumentosStateMixin):
     def set_filter_tipo(self, value: str):
         self.filter_tipo = value
         self.current_page = 1
+        # Reset filtro sin_arrendamiento si tipo != Mandato
+        if value != "Mandato":
+            self.filter_sin_arrendamiento = False
         return ContratosState.load_contratos
 
     def set_filter_estado(self, value: str):
@@ -223,6 +227,15 @@ class ContratosState(DocumentosStateMixin):
         self.filter_asesor_id = val
         self.current_page = 1
         return [ContratosState.load_contratos, ContratosState.load_kpis]
+
+    def set_filter_sin_arrendamiento(self, value: bool):
+        """Activa/desactiva filtro de mandatos sin arrendamiento activo.
+        Fuerza filter_tipo a 'Mandato' cuando se activa."""
+        self.filter_sin_arrendamiento = value
+        if value:
+            self.filter_tipo = "Mandato"
+        self.current_page = 1
+        return ContratosState.load_contratos
 
     def toggle_view(self):
         self.is_grid_view = not self.is_grid_view
@@ -359,8 +372,13 @@ class ContratosState(DocumentosStateMixin):
                 "id_asesor": asesor_filter
             }
 
+            # Parámetro exclusivo para mandatos
+            kwargs_mandatos = {**kwargs_paginacion}
+            if self.filter_sin_arrendamiento:
+                kwargs_mandatos["sin_arrendamiento"] = True
+
             if self.filter_tipo == "Mandato":
-                res = servicio.listar_mandatos_paginado(**kwargs_paginacion)
+                res = servicio.listar_mandatos_paginado(**kwargs_mandatos)
                 items = [ContratoDict(tipo_contrato="Mandato", **item) for item in res.items]
                 total = res.total
             elif self.filter_tipo == "Arrendamiento":
@@ -368,7 +386,7 @@ class ContratosState(DocumentosStateMixin):
                 items = [ContratoDict(tipo_contrato="Arrendamiento", **item) for item in res.items]
                 total = res.total
             else:
-                res_m = servicio.listar_mandatos_paginado(**kwargs_paginacion)
+                res_m = servicio.listar_mandatos_paginado(**kwargs_mandatos)
                 res_a = servicio.listar_arrendamientos_paginado(**kwargs_paginacion)
                 items = [ContratoDict(tipo_contrato="Mandato", **item) for item in res_m.items] + \
                         [ContratoDict(tipo_contrato="Arrendamiento", **item) for item in res_a.items]
