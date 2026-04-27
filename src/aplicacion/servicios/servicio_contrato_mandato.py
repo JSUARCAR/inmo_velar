@@ -109,8 +109,12 @@ class ServicioContratoMandato:
 
         self.repo_mandato.actualizar(mandato, usuario_sistema)
 
-    def listar_mandatos_paginado(self, **kwargs):
-        """Delega el listado al repositorio (Inyección de Infraestructura)."""
+    def listar_mandatos_paginado(self, **kwargs) -> Any:
+        """Delega el listado al repositorio (Inyección de Infraestructura).
+
+        Acepta sin_arrendamiento como kwarg opcional para filtrar mandatos
+        cuya propiedad no tenga arrendamiento activo.
+        """
         return self.repo_mandato.listar_paginado(**kwargs)
 
     def calcular_proyeccion_renovacion(self, id_contrato: int) -> dict:
