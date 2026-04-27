@@ -450,6 +450,38 @@ def contratos_page() -> rx.Component:
                                     "border_radius": "8px",
                                 },
                             ),
+                            # Filtro: Mandatos sin arriendo activo
+                            rx.cond(
+                                ContratosState.filter_tipo != "Arrendamiento",
+                                rx.tooltip(
+                                    rx.box(
+                                        rx.checkbox(
+                                            "Sin arriendo",
+                                            checked=ContratosState.filter_sin_arrendamiento,
+                                            on_change=ContratosState.set_filter_sin_arrendamiento,
+                                            size="2",
+                                            color_scheme="orange",
+                                        ),
+                                        padding="8px 12px",
+                                        border_radius="8px",
+                                        background=rx.cond(
+                                            ContratosState.filter_sin_arrendamiento,
+                                            "var(--orange-3)",
+                                            "transparent",
+                                        ),
+                                        style={
+                                            "box_shadow": rx.cond(
+                                                ContratosState.filter_sin_arrendamiento,
+                                                styles.SHADOW_INSET_ELITE,
+                                                "none",
+                                            ),
+                                            "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                            "white_space": "nowrap",
+                                        },
+                                    ),
+                                    content="Mostrar solo mandatos sin contrato de arriendo activo",
+                                ),
+                            ),
                             neuro_button(
                                 rx.cond(
                                     ContratosState.is_grid_view,

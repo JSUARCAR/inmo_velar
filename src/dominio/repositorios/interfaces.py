@@ -34,6 +34,7 @@ class RepositorioContratoMandato(Protocol):
         estado: Optional[str] = None,
         busqueda: Optional[str] = None,
         id_asesor: Optional[str] = None,
+        sin_arrendamiento: bool = False,
     ) -> Any: ...
 
 class RepositorioContratoArrendamiento(Protocol):
