@@ -1,12 +1,58 @@
 from typing import List, Dict, Any, Tuple, Optional
 from src.infraestructura.persistencia.repositorio_reportes import RepositorioReportes
-from src.infraestructura.persistencia.repositorio_persona_sqlite import (
-    RepositorioPersonaSQLite,
-)
-from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-    RepositorioPropiedadSQLite,
-)
-from src.infraestructura.persistencia.database import db_manager
+
+# Constante de módulo: headers del Reporte Financiero Consolidado (37 columnas)
+# Actualizar aquí si se agregan columnas al SELECT en repositorio_reportes.py
+HEADERS_REPORTE_CONSOLIDADO: List[str] = [
+    "ID_CONTRATO_M",
+    "ID_PROPIEDAD",
+    "ID_LIQUIDACION",
+    "TIPO_DOCUMENTO_PROPIETARIO",
+    "NUMERO_DOCUMENTO_PROPIETARIO",
+    "NOMBRE_COMPLETO_PROPIETARIO",
+    "BANCO_PROPIETARIO",
+    "NUMERO_CUENTA_PROPIETARIO",
+    "TIPO_CUENTA_PROPIETARIO",
+    "CONSIGNATARIO_PROPIETARIO",
+    "DOCUMENTO_CONSIGNATARIO_PROPIETARIO",
+    "TIPO_DOCUMENTO_ARRENDATARIO",
+    "NUMERO_DOCUMENTO_ARRENDATARIO",
+    "NOMBRE_COMPLETO_ARRENDATARIO",
+    "FECHA_INICIO_CONTRATO",
+    "FECHA_FIN_CONTRATO",
+    "ESTADO_CONTRATO",
+    "CANON_MANDATO",
+    "DIRECCION_PROPIEDAD",
+    "MATRICULA_INMOBILIARIA",
+    "ID_CONTRATO_ARRIENDO",
+    "ESTADO_ARRIENDO",
+    "METODO_PAGO_RECAUDOS",
+    "ESTADO_RECAUDO",
+    "PERIODO_FACTURADO",
+    "NOMBRE_ASESOR",
+    "OTROS_INGRESOS",
+    "TOTAL_INGRESOS",
+    "COMISION_PORCENTAJE_ASESOR",
+    "COMISION_MONTO_ASESOR",
+    "IVA_COMISION",
+    "IMPUESTO_4X1000",
+    "VALOR_ADMINISTRACION_PROPIEDAD",
+    "ESTADO_PAGO_ADMINISTRACION",
+    "GASTOS_SERVICIOS",
+    "GASTOS_REPARACIONES",
+    "PAGO_PREDIAL",
+    "OTROS_EGRESOS",
+    "TOTAL_EGRESOS",
+    "NETO_A_PAGAR",
+    "ESTADO_LIQUIDACION",
+    "FECHA_PAGO",
+    "PERIODO",
+    "FECHA_GENERACION",
+    # Administración de Propiedad (datos maestros desde PROPIEDADES)
+    "VALOR_ADMIN_PROPIEDAD_BASE",  # COALESCE(p.VALOR_ADMINISTRACION, 0)
+    "DIA_PAGO_ADMIN",              # p.FECHA_PAGO_ADMINISTRACION (entero: día del mes 1-28)
+    "LINK_PAGO_ADMIN",             # COALESCE(p.LINK_PAGO_ADMINISTRACION, '')
+]
 
 
 class ServicioReportes:
@@ -14,9 +60,23 @@ class ServicioReportes:
 
     def __init__(self):
         self.repo_reportes = RepositorioReportes()
-        # Nota: Usamos db_manager para mantener compatibilidad con repositorios existentes
-        self.repo_personas = RepositorioPersonaSQLite(db_manager)
-        self.repo_propiedades = RepositorioPropiedadSQLite(db_manager)
+
+    @staticmethod
+    def _parsear_asesor_id(texto: Optional[str]) -> Optional[int]:
+        """Parsea el formato 'Nombre Asesor (id)' retornando el id entero.
+
+        Args:
+            texto: String con el formato 'Nombre (id)' o None.
+
+        Returns:
+            Entero con el ID del asesor, o None si no aplica.
+        """
+        if not texto or texto == "Todos":
+            return None
+        try:
+            return int(texto.split("(")[-1].replace(")", "").strip())
+        except ValueError:
+            return None
 
     async def obtener_datos_reporte(
         self,
@@ -37,49 +97,42 @@ class ServicioReportes:
         busqueda = filtros.get("busqueda")
         estado = filtros.get("estado", "Todos")
 
-        # 1. Reportes de Entidades Base (Uso de repositorios existentes)
+        # 1. Reportes de Entidades Base (Paginación real en PostgreSQL)
         if report_id == "personas":
-            solo_activos = (
-                True
-                if estado == "Activo"
-                else (False if estado == "Inactivo" else None)
+            solo_activos: Optional[bool] = (
+                True if estado == "Activo" else (False if estado == "Inactivo" else None)
             )
-            rol = filtros.get("rol") if filtros.get("rol") != "Todos" else None
-
-            # Nota: Estos repositorios cargan todo en memoria, se debe mejorar en sus clases base
-            personas = self.repo_personas.obtener_todos(
+            filtro_rol = filtros.get("rol") if filtros.get("rol") != "Todos" else None
+            data, total = self.repo_reportes.obtener_reporte_personas(
                 busqueda=busqueda,
-                solo_activos=solo_activos if solo_activos is not None else False,
-                filtro_rol=rol,
+                solo_activos=solo_activos,
+                filtro_rol=filtro_rol,
+                page=pagina,
+                limit=limite,
             )
-
-            if estado == "Inactivo":
-                personas = [p for p in personas if not p.estado_registro]
-            elif estado == "Activo":
-                personas = [p for p in personas if p.estado_registro]
-
-            total = len(personas)
-            offset = (pagina - 1) * limite
-            paginated = personas[offset : offset + limite]
-
-            data = [self._limpiar_dict(p.__dict__) for p in paginated]
-            headers = list(data[0].keys()) if data else []
+            headers = list(data[0].keys()) if data else [
+                "ID_PERSONA", "TIPO_DOCUMENTO", "NUMERO_DOCUMENTO",
+                "NOMBRE_COMPLETO", "TELEFONO_PRINCIPAL",
+                "CORREO_ELECTRONICO", "DIRECCION_PRINCIPAL", "ESTADO_REGISTRO",
+            ]
             return data, headers, total
 
         if report_id == "propiedades":
-            solo_activas = (
-                True
-                if estado == "Activo"
-                else (False if estado == "Inactivo" else None)
+            solo_activas: Optional[bool] = (
+                True if estado == "Activo" else (False if estado == "Inactivo" else None)
             )
-            props = self.repo_propiedades.listar_con_filtros(
-                busqueda=busqueda, solo_activas=solo_activas
+            data, total = self.repo_reportes.obtener_reporte_propiedades(
+                busqueda=busqueda,
+                solo_activas=solo_activas,
+                page=pagina,
+                limit=limite,
             )
-            total = len(props)
-            offset = (pagina - 1) * limite
-            paginated = props[offset : offset + limite]
-            data = [self._limpiar_dict(p.__dict__) for p in paginated]
-            headers = list(data[0].keys()) if data else []
+            headers = list(data[0].keys()) if data else [
+                "ID_PROPIEDAD", "MATRICULA_INMOBILIARIA", "DIRECCION_PROPIEDAD",
+                "TIPO_PROPIEDAD", "AREA_M2", "HABITACIONES", "ESTRATO",
+                "VALOR_ADMINISTRACION", "CANON_ARRENDAMIENTO_ESTIMADO",
+                "DISPONIBILIDAD_PROPIEDAD", "ESTADO_REGISTRO",
+            ]
             return data, headers, total
 
         # 2. Reportes de Roles (Paginación Real en DB)
@@ -145,15 +198,7 @@ class ServicioReportes:
 
         # 5. Reporte Liquidaciones (Paginación Real en DB)
         if report_id == "liquidaciones":
-            asesor_id = None
-            if filtros.get("asesor_id") and filtros.get("asesor_id") != "Todos":
-                try:
-                    asesor_id = int(
-                        filtros.get("asesor_id").split("(")[-1].replace(")", "")
-                    )
-                except:
-                    pass
-
+            asesor_id = self._parsear_asesor_id(filtros.get("asesor_id"))
             data, total = self.repo_reportes.obtener_reporte_liquidaciones(
                 asesor_id=asesor_id, busqueda=busqueda, page=pagina, limit=limite
             )
@@ -162,16 +207,7 @@ class ServicioReportes:
 
         # 6. Reporte Consolidado (Información financiera y contractual unificada)
         if report_id == "reporte_consolidado":
-            # Parsear asesor_id si viene formateado
-            asesor_id = None
-            if filtros.get("asesor_id") and filtros.get("asesor_id") != "Todos":
-                try:
-                    asesor_id = int(
-                        filtros.get("asesor_id").split("(")[-1].replace(")", "")
-                    )
-                except:
-                    pass
-
+            asesor_id = self._parsear_asesor_id(filtros.get("asesor_id"))
             data, total = self.repo_reportes.obtener_reporte_consolidado(
                 fecha_pago_inicio=filtros.get("fecha_pago_inicio"),
                 fecha_pago_fin=filtros.get("fecha_pago_fin"),
@@ -185,56 +221,11 @@ class ServicioReportes:
                 page=pagina,
                 limit=limite,
             )
-            # Headers predefinidos para consistencia - ahora incluye contratos SIN liquidar
-            headers = [
-                "ID_CONTRATO_M",
-                "ID_PROPIEDAD",
-                "ID_LIQUIDACION",
-                "TIPO_DOCUMENTO_PROPIETARIO",
-                "NUMERO_DOCUMENTO_PROPIETARIO",
-                "NOMBRE_COMPLETO_PROPIETARIO",
-                "BANCO_PROPIETARIO",
-                "NUMERO_CUENTA_PROPIETARIO",
-                "TIPO_CUENTA_PROPIETARIO",
-                "CONSIGNATARIO_PROPIETARIO",
-                "DOCUMENTO_CONSIGNATARIO_PROPIETARIO",
-                "TIPO_DOCUMENTO_ARRENDATARIO",
-                "NUMERO_DOCUMENTO_ARRENDATARIO",
-                "NOMBRE_COMPLETO_ARRENDATARIO",
-                "FECHA_INICIO_CONTRATO",
-                "FECHA_FIN_CONTRATO",
-                "ESTADO_CONTRATO",
-                "CANON_MANDATO",
-                "DIRECCION_PROPIEDAD",
-                "MATRICULA_INMOBILIARIA",
-                "ID_CONTRATO_ARRIENDO",
-                "ESTADO_ARRIENDO",
-                "METODO_PAGO_RECAUDOS",
-                "ESTADO_RECAUDO",
-                "PERIODO_FACTURADO",
-                "NOMBRE_ASESOR",
-                "OTROS_INGRESOS",
-                "TOTAL_INGRESOS",
-                "COMISION_PORCENTAJE_ASESOR",
-                "COMISION_MONTO_ASESOR",
-                "IVA_COMISION",
-                "IMPUESTO_4X1000",
-                "VALOR_ADMINISTRACION_PROPIEDAD",
-                "ESTADO_PAGO_ADMINISTRACION",
-                "GASTOS_SERVICIOS",
-                "GASTOS_REPARACIONES",
-                "PAGO_PREDIAL",
-                "OTROS_EGRESOS",
-                "TOTAL_EGRESOS",
-                "NETO_A_PAGAR",
-                "ESTADO_LIQUIDACION",
-                "FECHA_PAGO",
-                "PERIODO",
-                "FECHA_GENERACION",
-            ]
+            # Referencia a la constante de módulo — actualizar HEADERS_REPORTE_CONSOLIDADO si cambia el SELECT
+            headers = HEADERS_REPORTE_CONSOLIDADO
             return data, headers, total
 
-        # 6. Reportes Genéricos (Paginación Real en DB)
+        # 7. Reportes Genéricos (Paginación Real en DB)
         table_map = {
             "contratos_mandato": "CONTRATOS_MANDATOS",
             "contratos_arrendamiento": "CONTRATOS_ARRENDAMIENTOS",
