@@ -160,6 +160,22 @@ def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
                     rx.text(contrato.fecha_fin, size="2", weight="medium"),
                     spacing="0",
                 ),
+                rx.tooltip(
+                    rx.vstack(
+                        rx.text("Fecha Pago", size="1", color="var(--gray-9)"),
+                        rx.cond(
+                            contrato.fecha_pago != "",
+                            rx.text(f"Día {contrato.fecha_pago}", size="2", weight="medium"),
+                            rx.text("N/R", size="1", color="var(--gray-9)", font_style="italic"),
+                        ),
+                        spacing="0",
+                    ),
+                    content=rx.cond(
+                        contrato.fecha_pago != "",
+                        f"Pago día {contrato.fecha_pago} de cada mes",
+                        "Configure la fecha de pago en el detalle del contrato",
+                    ),
+                ),
                 rx.vstack(
                     rx.text("Valor", size="1", color="var(--gray-9)"),
                     rx.text(
@@ -171,7 +187,7 @@ def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
                     ),
                     spacing="0",
                 ),
-                columns="3",
+                columns="4",
                 width="100%",
                 gap="2",
             ),

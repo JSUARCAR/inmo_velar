@@ -104,8 +104,19 @@ class RepositorioContratoMandatoPostgres:
         estado: Optional[str] = None,
         busqueda: Optional[str] = None,
         id_asesor: Optional[str] = None,
+        sin_arrendamiento: bool = False,
     ) -> PaginatedResult:
-        """Lista contratos de mandato con paginación y filtros."""
+        """Lista contratos de mandato con paginación y filtros.
+
+        Args:
+            page: Número de página.
+            page_size: Tamaño de página.
+            estado: Filtro de estado (Activo, Cancelado, Todos).
+            busqueda: Texto de búsqueda libre.
+            id_asesor: ID del asesor para filtrar.
+            sin_arrendamiento: Si True, retorna solo mandatos cuya propiedad
+                NO tiene un contrato de arrendamiento activo.
+        """
         params = PaginationParams(page=page, page_size=page_size)
 
         with self.db.obtener_conexion() as conn:
@@ -114,9 +125,9 @@ class RepositorioContratoMandatoPostgres:
 
             base_from = """
                 FROM CONTRATOS_MANDATOS cm
-                JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
-                JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
-                JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+                LEFT JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+                LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
+                LEFT JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
                 LEFT JOIN ASESORES am ON cm.ID_ASESOR = am.ID_ASESOR
                 LEFT JOIN PERSONAS per_asesor ON am.ID_PERSONA = per_asesor.ID_PERSONA
             """
@@ -134,7 +145,11 @@ class RepositorioContratoMandatoPostgres:
                     query_params.append(estado)
 
             if busqueda:
-                cols = ["p.DIRECCION_PROPIEDAD", "per.NOMBRE_COMPLETO", "per.NUMERO_DOCUMENTO"]
+                cols = [
+                    "COALESCE(p.DIRECCION_PROPIEDAD, '')",
+                    "COALESCE(per.NOMBRE_COMPLETO, '')",
+                    "COALESCE(per.NUMERO_DOCUMENTO, '')",
+                ]
                 cond = self.db.get_search_condition(cols)
                 conditions.append(f"({cond})")
                 
@@ -144,6 +159,15 @@ class RepositorioContratoMandatoPostgres:
             if id_asesor:
                 conditions.append(f"cm.ID_ASESOR = {placeholder}")
                 query_params.append(int(id_asesor))
+
+            if sin_arrendamiento:
+                conditions.append(
+                    """NOT EXISTS (
+                        SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca
+                        WHERE ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
+                          AND ca.ESTADO_CONTRATO_A = 'Activo'
+                    )"""
+                )
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
@@ -170,13 +194,14 @@ class RepositorioContratoMandatoPostgres:
                     cm.CANON_MANDATO,
                     cm.FECHA_INICIO_CONTRATO_M,
                     cm.FECHA_FIN_CONTRATO_M,
-                    p.DIRECCION_PROPIEDAD,
-                    p.MATRICULA_INMOBILIARIA,
-                    p.TIPO_PROPIEDAD,
-                    p.CANON_ARRENDAMIENTO_ESTIMADO,
-                    per.NOMBRE_COMPLETO as PROPIETARIO,
-                    per.NUMERO_DOCUMENTO,
-                    per_asesor.NOMBRE_COMPLETO as ASESOR
+                    COALESCE(p.DIRECCION_PROPIEDAD, 'Propiedad no encontrada') as DIRECCION_PROPIEDAD,
+                    COALESCE(p.MATRICULA_INMOBILIARIA, 'N/A') as MATRICULA_INMOBILIARIA,
+                    COALESCE(p.TIPO_PROPIEDAD, 'N/A') as TIPO_PROPIEDAD,
+                    COALESCE(p.CANON_ARRENDAMIENTO_ESTIMADO, 0) as CANON_ARRENDAMIENTO_ESTIMADO,
+                    COALESCE(per.NOMBRE_COMPLETO, 'Propietario no encontrado') as PROPIETARIO,
+                    COALESCE(per.NUMERO_DOCUMENTO, 'N/A') as NUMERO_DOCUMENTO,
+                    per_asesor.NOMBRE_COMPLETO as ASESOR,
+                    cm.FECHA_PAGO
                 {base_from}
                 {where_clause}
                 ORDER BY cm.ID_CONTRATO_M DESC
@@ -197,7 +222,7 @@ class RepositorioContratoMandatoPostgres:
                 items.append({
                     "id_contrato": gv("ID_CONTRATO_M"),
                     "estado_contrato": gv("ESTADO_CONTRATO_M"),
-                    "valor_canon": gv("CANON_MANDATO"),
+                    "valor_canon": gv("CANON_MANDATO") or 0,
                     "valor_administracion": 0,
                     "fecha_inicio": gv("FECHA_INICIO_CONTRATO_M"),
                     "fecha_fin": gv("FECHA_FIN_CONTRATO_M"),
@@ -210,6 +235,7 @@ class RepositorioContratoMandatoPostgres:
                     "arrendatario_documento": "N/A",
                     "habitante_nombre": "",
                     "asesor_nombre": gv("ASESOR") or "Sin asesor",
+                    "fecha_pago": gv("FECHA_PAGO") or "",
                 })
             return PaginatedResult(
                 items=items, total=total, page=params.page, page_size=params.page_size
