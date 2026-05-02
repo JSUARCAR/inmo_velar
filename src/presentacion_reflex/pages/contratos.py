@@ -126,6 +126,7 @@ def render_table_view() -> rx.Component:
                 rx.table.column_header_cell("Cumplimiento"),
                 rx.table.column_header_cell("Propietario/Arrendatario"),
                 rx.table.column_header_cell("Valor"),
+                rx.table.column_header_cell("Fecha Pago"),
                 rx.table.column_header_cell("Fechas"),
                 rx.table.column_header_cell("Acciones"),
             )
@@ -258,6 +259,23 @@ def render_table_view() -> rx.Component:
                     ),
                     rx.table.cell(
                         rx.text("$", c.valor_canon.to_string(), weight="bold")
+                    ),
+                    rx.table.cell(
+                        rx.tooltip(
+                            rx.cond(
+                                c.fecha_pago != "",
+                                rx.vstack(
+                                    rx.text(f"Día {c.fecha_pago}", size="2"),
+                                    spacing="0",
+                                ),
+                                rx.text("No registrada", size="1", color="var(--gray-9)", font_style="italic"),
+                            ),
+                            content=rx.cond(
+                                c.fecha_pago != "",
+                                f"Pago día {c.fecha_pago} de cada mes",
+                                "Configure la fecha de pago en el detalle del contrato",
+                            ),
+                        )
                     ),
                     rx.table.cell(
                         rx.vstack(
@@ -449,6 +467,38 @@ def contratos_page() -> rx.Component:
                                     "box_shadow": styles.SHADOW_INSET_ELITE,
                                     "border_radius": "8px",
                                 },
+                            ),
+                            # Filtro: Mandatos sin arriendo activo
+                            rx.cond(
+                                ContratosState.filter_tipo != "Arrendamiento",
+                                rx.tooltip(
+                                    rx.box(
+                                        rx.checkbox(
+                                            "Sin arriendo",
+                                            checked=ContratosState.filter_sin_arrendamiento,
+                                            on_change=ContratosState.set_filter_sin_arrendamiento,
+                                            size="2",
+                                            color_scheme="orange",
+                                        ),
+                                        padding="8px 12px",
+                                        border_radius="8px",
+                                        background=rx.cond(
+                                            ContratosState.filter_sin_arrendamiento,
+                                            "var(--orange-3)",
+                                            "transparent",
+                                        ),
+                                        style={
+                                            "box_shadow": rx.cond(
+                                                ContratosState.filter_sin_arrendamiento,
+                                                styles.SHADOW_INSET_ELITE,
+                                                "none",
+                                            ),
+                                            "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                            "white_space": "nowrap",
+                                        },
+                                    ),
+                                    content="Mostrar solo mandatos sin contrato de arriendo activo",
+                                ),
                             ),
                             neuro_button(
                                 rx.cond(

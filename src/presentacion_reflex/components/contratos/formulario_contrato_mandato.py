@@ -383,7 +383,6 @@ def formulario_contrato_mandato() -> rx.Component:
                             width="100%",
                         ),
                         on_submit=ContratosState.save_contrato,
-                        reset_on_submit=True,
                     ),
                     value="datos",
                     padding_top="4",

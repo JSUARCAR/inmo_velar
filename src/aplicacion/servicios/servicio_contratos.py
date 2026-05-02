@@ -253,42 +253,8 @@ class ServicioContratos:
 
     @cache_manager.invalidates("mandatos:list_paginated")
     def actualizar_mandato(self, id_contrato: int, datos: Dict, usuario_sistema: str) -> None:
+        """Actualiza un contrato de mandato existente. Delega al servicio especializado."""
         return self.servicio_mandato.actualizar_mandato(id_contrato, datos, usuario_sistema)
-        """
-        Actualiza un contrato de mandato existente.
-        """
-        pass  # print(f">>> DEBUG [ServicioContratos]: actualizar_mandato(id={id_contrato})") [OpSec Removed]
-        pass  # print(f">>> DEBUG [ServicioContratos]: Datos recibidos: {datos}") [OpSec Removed]
-
-        mandato = self.repo_mandato.obtener_por_id(id_contrato)
-        if not mandato:
-            pass  # print(f">>> DEBUG [ServicioContratos]: Contrato no encontrado") [OpSec Removed]
-            raise ValueError(f"No existe el contrato de mandato con ID {id_contrato}")
-
-        pass  # print(f">>> DEBUG [ServicioContratos]: Estado previo: {mandato}") [OpSec Removed]
-
-        # Actualizar campos (IDs pueden cambiar en edición)
-        mandato.id_propiedad = datos.get("id_propiedad", mandato.id_propiedad)
-        mandato.id_propietario = datos.get("id_propietario", mandato.id_propietario)
-        mandato.id_asesor = datos.get("id_asesor", mandato.id_asesor)
-
-        # Actualizar fechas y condiciones
-        mandato.fecha_inicio_contrato_m = datos.get("fecha_inicio", mandato.fecha_inicio_contrato_m)
-        mandato.fecha_fin_contrato_m = datos.get("fecha_fin", mandato.fecha_fin_contrato_m)
-        mandato.duracion_contrato_m = datos.get("duracion_meses", mandato.duracion_contrato_m)
-        mandato.canon_mandato = datos.get("canon", mandato.canon_mandato)
-        mandato.comision_porcentaje_contrato_m = datos.get(
-            "comision_porcentaje", mandato.comision_porcentaje_contrato_m
-        )
-
-        # Actualizar metadatos
-        mandato.updated_by = usuario_sistema
-        mandato.updated_at = datetime.now().isoformat()
-
-        pass  # print(f">>> DEBUG [ServicioContratos]: Estado actualizado: {mandato}") [OpSec Removed]
-        pass  # print(f">>> DEBUG [ServicioContratos]: Llamando repo.actualizar...") [OpSec Removed]
-        self.repo_mandato.actualizar(mandato, usuario_sistema)
-        pass  # print(f">>> DEBUG [ServicioContratos]: repo.actualizar finalizado.") [OpSec Removed]
 
     def listar_mandatos(self) -> List[Dict[str, Any]]:
         """
@@ -378,26 +344,8 @@ class ServicioContratos:
 
     @cache_manager.invalidates("arriendos:list_paginated")
     def actualizar_arrendamiento(self, id_contrato: int, datos: Dict, usuario_sistema: str) -> None:
+        """Actualiza un contrato de arrendamiento existente. Delega al servicio especializado."""
         return self.servicio_arriendo.actualizar_arrendamiento(id_contrato, datos, usuario_sistema)
-        """
-        Actualiza un contrato de arrendamiento existente.
-        Nota: No actualiza propiedad ni inquilinos, solo condiciones.
-        """
-        arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
-        if not arriendo:
-            raise ValueError(f"No existe el contrato de arrendamiento con ID {id_contrato}")
-
-        # Actualizar campos permitidos
-        arriendo.fecha_fin_contrato_a = datos.get("fecha_fin", arriendo.fecha_fin_contrato_a)
-        arriendo.canon_arrendamiento = datos.get("canon", arriendo.canon_arrendamiento)
-
-        # El repositorio actualiza: FECHA_FIN, CANON, ESTADO, MOTIVO, ALERTAS...
-        # No actualiza: DEPOSITO, DURACION (?), PROPIEDAD, ARRENDATARIO
-
-        arriendo.updated_by = usuario_sistema
-        arriendo.updated_at = datetime.now().isoformat()
-
-        self.repo_arriendo.actualizar(arriendo, usuario_sistema)
 
     @cache_manager.invalidates("arriendos:list_paginated")
     def renovar_arrendamiento(
