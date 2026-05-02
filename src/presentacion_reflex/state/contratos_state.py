@@ -693,6 +693,9 @@ class ContratosState(DocumentosStateMixin):
     async def save_contrato(self, form_data: Dict):
         async with self:
             self.is_loading = True
+            # Capturar snapshot del state ANTES de soltar el lock
+            # para evitar race conditions con on_change / reset_on_submit
+            state_snapshot = dict(self.form_data)
         try:
             from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
                 RepositorioContratoMandatoPostgres,
@@ -707,7 +710,9 @@ class ContratosState(DocumentosStateMixin):
                 db_manager, repo_m, repo_a, None, None, None, None, None
             )
 
-            full_data = {**form_data, **self.form_data}
+            # form_data HTML tiene prioridad sobre state_snapshot
+            # porque contiene los valores al momento exacto del submit
+            full_data = {**state_snapshot, **form_data}
             usuario = "admin"
 
             if "mandato" in self.modal_mode:
