@@ -5,6 +5,7 @@ from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
 from src.dominio.entidades.renovacion_contrato import RenovacionContrato
 from src.dominio.repositorios.interfaces import (
     RepositorioContratoArrendamiento,
+    RepositorioContratoMandato,
     RepositorioIPC,
     RepositorioPropiedad,
     RepositorioRenovacion,
@@ -24,11 +25,13 @@ class ServicioContratoArrendamiento:
         repo_propiedad: RepositorioPropiedad,
         repo_renovacion: RepositorioRenovacion,
         repo_ipc: RepositorioIPC,
+        repo_mandato: RepositorioContratoMandato,
     ):
         self.repo_arriendo = repo_arriendo
         self.repo_propiedad = repo_propiedad
         self.repo_renovacion = repo_renovacion
         self.repo_ipc = repo_ipc
+        self.repo_mandato = repo_mandato
 
     # =========================================================================
     # HELPERS UI / DROPDOWNS
@@ -244,6 +247,14 @@ class ServicioContratoArrendamiento:
         if propiedad:
             propiedad.canon_arrendamiento_estimado = nuevo_canon
             self.repo_propiedad.actualizar(propiedad, usuario_sistema)
+
+        # 6. Sincronizar canon en mandato activo asociado a la misma propiedad
+        mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
+        if mandato:
+            mandato.canon_mandato = nuevo_canon
+            mandato.updated_by = usuario_sistema
+            mandato.updated_at = datetime.now().isoformat()
+            self.repo_mandato.actualizar(mandato, usuario_sistema)
 
         return arriendo
 
