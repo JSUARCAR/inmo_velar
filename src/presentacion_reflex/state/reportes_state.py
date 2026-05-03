@@ -383,6 +383,21 @@ class ReportesState(rx.State):
             _page = self.current_page
             _page_size = self.page_size
             _necesita_asesores = len(self.asesor_options) <= 1
+            _filtros = {
+                "busqueda": self.filter_busqueda_tabla,
+                "estado": self.filter_estado,
+                "rol": self.filter_rol,
+                "asesor_id": self.filter_asesor_id,
+                "estado_recaudo": self.filter_estado_recaudo,
+                "metodo_pago": self.filter_metodo_pago,
+                "periodo_inicio": self.filter_periodo_inicio,
+                "periodo_fin": self.filter_periodo_fin,
+                "fecha_pago_inicio": self.filter_fecha_pago_inicio,
+                "fecha_pago_fin": self.filter_fecha_pago_fin,
+                "estado_contrato": self.filter_estado_contrato,
+                "estado_liquidacion": self.filter_estado_liquidacion,
+                "propietario_buscar": self.filter_propietario_buscar,
+            }
 
         # 2. Cargar asesores fuera del lock si es necesario
         if _necesita_asesores:
@@ -397,6 +412,7 @@ class ReportesState(rx.State):
                 report_id=_report_id,
                 page=_page,
                 limit=_page_size,
+                filtros=_filtros,
                 is_export=False,
             )
 
@@ -424,12 +440,35 @@ class ReportesState(rx.State):
 
     async def download_csv(self):
         """Genera y descarga todo el dataset en CSV UTF-8 con BOM."""
-        # 1. Obtener TODOS los datos sin paginación
+        # 1. Snapshot atómico del estado
+        async with self:
+            if not self.selected_report_id:
+                return rx.window_alert("No hay reporte seleccionado.")
+            
+            _report_id = self.selected_report_id
+            _filtros = {
+                "busqueda": self.filter_busqueda_tabla,
+                "estado": self.filter_estado,
+                "rol": self.filter_rol,
+                "asesor_id": self.filter_asesor_id,
+                "estado_recaudo": self.filter_estado_recaudo,
+                "metodo_pago": self.filter_metodo_pago,
+                "periodo_inicio": self.filter_periodo_inicio,
+                "periodo_fin": self.filter_periodo_fin,
+                "fecha_pago_inicio": self.filter_fecha_pago_inicio,
+                "fecha_pago_fin": self.filter_fecha_pago_fin,
+                "estado_contrato": self.filter_estado_contrato,
+                "estado_liquidacion": self.filter_estado_liquidacion,
+                "propietario_buscar": self.filter_propietario_buscar,
+            }
+
+        # 2. Obtener TODOS los datos sin paginación (fuera del lock)
         try:
             data, headers, _ = await self._fetch_data(
-                report_id=self.selected_report_id,
+                report_id=_report_id,
                 page=1,
                 limit=999999,  # Fetch All
+                filtros=_filtros,
                 is_export=True,
             )
 
@@ -463,25 +502,11 @@ class ReportesState(rx.State):
         # Convertir a string y eliminar saltos de línea
         return str(value).replace("\n", " ").replace("\r", "").strip()
 
-    async def _fetch_data(self, report_id: str, page: int, limit: int, is_export: bool):
+    async def _fetch_data(self, report_id: str, page: int, limit: int, filtros: dict, is_export: bool):
         """
         Hub central de lógica de obtención de datos delegando al ServicioReportes.
+        Los filtros se reciben por parámetro para evitar race conditions al leer self.* fuera de locks.
         """
-        filtros = {
-            "busqueda": self.filter_busqueda_tabla,
-            "estado": self.filter_estado,
-            "rol": self.filter_rol,
-            "asesor_id": self.filter_asesor_id,
-            "estado_recaudo": self.filter_estado_recaudo,
-            "metodo_pago": self.filter_metodo_pago,
-            "periodo_inicio": self.filter_periodo_inicio,
-            "periodo_fin": self.filter_periodo_fin,
-            "fecha_pago_inicio": self.filter_fecha_pago_inicio,
-            "fecha_pago_fin": self.filter_fecha_pago_fin,
-            "estado_contrato": self.filter_estado_contrato,
-            "estado_liquidacion": self.filter_estado_liquidacion,
-            "propietario_buscar": self.filter_propietario_buscar,
-        }
 
         try:
             servicio = ServicioReportes()

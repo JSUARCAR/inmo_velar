@@ -36,7 +36,7 @@ HEADERS_REPORTE_CONSOLIDADO: List[str] = [
     "COMISION_MONTO_ASESOR",
     "IVA_COMISION",
     "IMPUESTO_4X1000",
-    "VALOR_ADMINISTRACION_PROPIEDAD",
+    "GASTOS_ADMINISTRACION",
     "ESTADO_PAGO_ADMINISTRACION",
     "GASTOS_SERVICIOS",
     "GASTOS_REPARACIONES",
@@ -221,8 +221,8 @@ class ServicioReportes:
                 page=pagina,
                 limit=limite,
             )
-            # Referencia a la constante de módulo — actualizar HEADERS_REPORTE_CONSOLIDADO si cambia el SELECT
-            headers = HEADERS_REPORTE_CONSOLIDADO
+            # Extraer headers dinámicamente si hay datos para evitar desincronización con el repositorio
+            headers = list(data[0].keys()) if data else HEADERS_REPORTE_CONSOLIDADO
             return data, headers, total
 
         # 7. Reportes Genéricos (Paginación Real en DB)
