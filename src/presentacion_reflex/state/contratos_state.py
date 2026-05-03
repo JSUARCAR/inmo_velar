@@ -966,21 +966,30 @@ class ContratosState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
                 RepositorioContratoArrendamientoPostgres,
             )
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+                RepositorioIPCPostgres,
+            )
 
             repo_m = RepositorioContratoMandatoPostgres(db_manager)
             repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
+            repo_p = RepositorioPropiedadPostgres(db_manager)
+            repo_i = RepositorioIPCPostgres(db_manager)
+            
             servicio = ServicioContratos(
                 db_manager,
                 repo_mandato=repo_m,
                 repo_arriendo=repo_a,
-                repo_propiedad=None,
+                repo_propiedad=repo_p,
                 repo_renovacion=None,
-                repo_ipc=None,
+                repo_ipc=repo_i,
                 repo_arrendatario=None,
                 repo_codeudor=None,
             )
 
-            proyeccion = servicio.proyectar_renovacion_automatica(id_contrato)
+            proyeccion = servicio.calcular_proyeccion_renovacion(id_contrato, tipo)
             async with self:
                 self.renewal_proyeccion = proyeccion
                 if not proyeccion.get("error"):
@@ -1006,26 +1015,57 @@ class ContratosState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
                 RepositorioContratoArrendamientoPostgres,
             )
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+                RepositorioIPCPostgres,
+            )
 
             repo_m = RepositorioContratoMandatoPostgres(db_manager)
             repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
             repo_r = RepositorioRenovacionPostgres(db_manager)
+            repo_p = RepositorioPropiedadPostgres(db_manager)
+            repo_i = RepositorioIPCPostgres(db_manager)
+            
             servicio = ServicioContratos(
                 db_manager,
                 repo_mandato=repo_m,
                 repo_arriendo=repo_a,
-                repo_propiedad=None,
+                repo_propiedad=repo_p,
                 repo_renovacion=repo_r,
-                repo_ipc=None,
+                repo_ipc=repo_i,
                 repo_arrendatario=None,
                 repo_codeudor=None,
             )
 
-            res = servicio.ejecutar_renovacion(
-                id_contrato=self.renewal_target_id,
-                nueva_fecha_fin=self.renewal_nueva_fecha_fin,
-                usuario="admin",
-            )
+            res = {"success": False, "message": "Error desconocido"}
+            try:
+                if self.renewal_target_tipo == "Mandato":
+                    contrato = servicio.renovar_mandato(
+                        id_contrato=self.renewal_target_id,
+                        usuario_sistema="admin",
+                        nueva_fecha_fin=self.renewal_nueva_fecha_fin or None,
+                    )
+                    res = {
+                        "success": True,
+                        "message": f"Mandato renovado: {contrato.fecha_fin_contrato_m if contrato else ''}",
+                    }
+                else:
+                    contrato = servicio.renovar_arrendamiento(
+                        id_contrato=self.renewal_target_id,
+                        usuario_sistema="admin",
+                        nueva_fecha_fin=self.renewal_nueva_fecha_fin or None,
+                    )
+                    res = {
+                        "success": True,
+                        "message": f"Arrendamiento renovado: {contrato.fecha_fin_contrato_a if contrato else ''}",
+                    }
+            except ValueError as e:
+                res = {"success": False, "message": str(e)}
+            except Exception as e:
+                res = {"success": False, "message": f"Error: {e}"}
+
             if res["success"]:
                 async with self:
                     self.show_renewal_confirm = False

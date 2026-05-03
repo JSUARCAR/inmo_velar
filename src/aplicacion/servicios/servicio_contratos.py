@@ -19,15 +19,21 @@ from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
     RepositorioArrendatarioPostgres,
 )
-from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+    RepositorioCodeudorPostgres,
+)
 from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
     RepositorioContratoArrendamientoPostgres,
 )
 from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
     RepositorioContratoMandatoPostgres,
 )
-from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
-from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+    RepositorioIPCPostgres,
+)
+from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+    RepositorioPropiedadPostgres,
+)
 from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
     RepositorioRenovacionPostgres,
 )
@@ -43,7 +49,7 @@ class ServicioContratos:
         repo_renovacion: RepositorioRenovacionPostgres,
         repo_ipc: RepositorioIPCPostgres,
         repo_arrendatario: RepositorioArrendatarioPostgres,
-        repo_codeudor: RepositorioCodeudorPostgres
+        repo_codeudor: RepositorioCodeudorPostgres,
     ):
         self.db = db_manager
         self.repo_mandato = repo_mandato
@@ -57,7 +63,11 @@ class ServicioContratos:
             self.repo_mandato, self.repo_propiedad, self.repo_renovacion
         )
         self.servicio_arriendo = ServicioContratoArrendamiento(
-            self.repo_arriendo, self.repo_propiedad, self.repo_renovacion, self.repo_ipc
+            self.repo_arriendo,
+            self.repo_propiedad,
+            self.repo_renovacion,
+            self.repo_ipc,
+            self.repo_mandato,
         )
 
         # Repositorios auxiliares
@@ -162,7 +172,7 @@ class ServicioContratos:
 
             cursor.execute(query_arriendos, params)
             r_arriendo = cursor.fetchone()
-            
+
             def _get_val(row: Optional[dict], key: str) -> int:
                 if not row:
                     return 0
@@ -170,7 +180,7 @@ class ServicioContratos:
                 if val is None:
                     val = row.get(key.upper())
                 return int(val) if val is not None else 0
-            
+
             return {
                 "mandatos": {
                     "total": _get_val(r_mandato, "total"),
@@ -181,7 +191,7 @@ class ServicioContratos:
                     "total": _get_val(r_arriendo, "total"),
                     "activos": _get_val(r_arriendo, "activos"),
                     "inactivos": _get_val(r_arriendo, "inactivos"),
-                }
+                },
             }
 
     def obtener_opciones_filtro(self) -> dict:
@@ -199,32 +209,61 @@ class ServicioContratos:
 
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
-            
+
             cursor.execute(query_propiedades)
             rp = cursor.fetchall()
-            propiedades_select = [[get_val(r, "DIRECCION_PROPIEDAD"), get_val(r, "ID_PROPIEDAD")] for r in rp]
-            canon_map = {get_val(r, "ID_PROPIEDAD"): float(get_val(r, "CANON_ARRENDAMIENTO_ESTIMADO") or 0.0) for r in rp}
-            
+            propiedades_select = [
+                [get_val(r, "DIRECCION_PROPIEDAD"), get_val(r, "ID_PROPIEDAD")]
+                for r in rp
+            ]
+            canon_map = {
+                get_val(r, "ID_PROPIEDAD"): float(
+                    get_val(r, "CANON_ARRENDAMIENTO_ESTIMADO") or 0.0
+                )
+                for r in rp
+            }
+
             cursor.execute(query_propietarios)
-            propietarios_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_PROPIETARIO")] for r in cursor.fetchall()]
-            
+            propietarios_select = [
+                [get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_PROPIETARIO")]
+                for r in cursor.fetchall()
+            ]
+
             cursor.execute(query_asesores)
-            asesores_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_ASESOR")] for r in cursor.fetchall()]
+            asesores_select = [
+                [get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_ASESOR")]
+                for r in cursor.fetchall()
+            ]
 
             cursor.execute(query_personas)
-            personas_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_PERSONA")] for r in cursor.fetchall()]
+            personas_select = [
+                [get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_PERSONA")]
+                for r in cursor.fetchall()
+            ]
 
             cursor.execute(query_prop_sin_mandato)
-            prop_sin_mandato = [[get_val(r, "DIRECCION_PROPIEDAD"), get_val(r, "ID_PROPIEDAD")] for r in cursor.fetchall()]
+            prop_sin_mandato = [
+                [get_val(r, "DIRECCION_PROPIEDAD"), get_val(r, "ID_PROPIEDAD")]
+                for r in cursor.fetchall()
+            ]
 
             cursor.execute(query_prop_sin_arriendo)
-            prop_sin_arriendo = [[get_val(r, "DIRECCION_PROPIEDAD"), get_val(r, "ID_PROPIEDAD")] for r in cursor.fetchall()]
+            prop_sin_arriendo = [
+                [get_val(r, "DIRECCION_PROPIEDAD"), get_val(r, "ID_PROPIEDAD")]
+                for r in cursor.fetchall()
+            ]
 
             cursor.execute(query_arrendatarios)
-            arrendatarios_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_ARRENDATARIO")] for r in cursor.fetchall()]
+            arrendatarios_select = [
+                [get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_ARRENDATARIO")]
+                for r in cursor.fetchall()
+            ]
 
             cursor.execute(query_codeudores)
-            codeudores_select = [[get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_CODEUDOR")] for r in cursor.fetchall()]
+            codeudores_select = [
+                [get_val(r, "NOMBRE_COMPLETO"), get_val(r, "ID_CODEUDOR")]
+                for r in cursor.fetchall()
+            ]
 
         return {
             "propiedades": propiedades_select,
@@ -235,7 +274,7 @@ class ServicioContratos:
             "prop_sin_mandato": prop_sin_mandato,
             "prop_sin_arriendo": prop_sin_arriendo,
             "arrendatarios": arrendatarios_select,
-            "codeudores": codeudores_select
+            "codeudores": codeudores_select,
         }
 
     # =========================================================================
@@ -246,15 +285,21 @@ class ServicioContratos:
         return self.servicio_mandato.crear_mandato(datos, usuario_sistema)
 
     def obtener_mandato_activo(self, id_propiedad: int) -> Optional[ContratoMandato]:
-        return self.servicio_mandato.repo_mandato.obtener_activo_por_propiedad(id_propiedad)
+        return self.servicio_mandato.repo_mandato.obtener_activo_por_propiedad(
+            id_propiedad
+        )
 
     def obtener_mandato_por_id(self, id_contrato: int) -> Optional[ContratoMandato]:
         return self.servicio_mandato.obtener_mandato(id_contrato)
 
     @cache_manager.invalidates("mandatos:list_paginated")
-    def actualizar_mandato(self, id_contrato: int, datos: Dict, usuario_sistema: str) -> None:
+    def actualizar_mandato(
+        self, id_contrato: int, datos: Dict, usuario_sistema: str
+    ) -> None:
         """Actualiza un contrato de mandato existente. Delega al servicio especializado."""
-        return self.servicio_mandato.actualizar_mandato(id_contrato, datos, usuario_sistema)
+        return self.servicio_mandato.actualizar_mandato(
+            id_contrato, datos, usuario_sistema
+        )
 
     def listar_mandatos(self) -> List[Dict[str, Any]]:
         """
@@ -333,31 +378,51 @@ class ServicioContratos:
     # GESTIÓN DE ARRENDAMIENTOS
     # =========================================================================
 
-    def crear_arrendamiento(self, datos: Dict, usuario_sistema: str) -> ContratoArrendamiento:
+    def crear_arrendamiento(
+        self, datos: Dict, usuario_sistema: str
+    ) -> ContratoArrendamiento:
         return self.servicio_arriendo.crear_arrendamiento(datos, usuario_sistema)
 
-    def obtener_arrendamiento_activo(self, id_propiedad: int) -> Optional[ContratoArrendamiento]:
-        return self.servicio_arriendo.repo_arriendo.obtener_activo_por_propiedad(id_propiedad)
+    def obtener_arrendamiento_activo(
+        self, id_propiedad: int
+    ) -> Optional[ContratoArrendamiento]:
+        return self.servicio_arriendo.repo_arriendo.obtener_activo_por_propiedad(
+            id_propiedad
+        )
 
-    def obtener_arrendamiento_por_id(self, id_contrato: int) -> Optional[ContratoArrendamiento]:
+    def obtener_arrendamiento_por_id(
+        self, id_contrato: int
+    ) -> Optional[ContratoArrendamiento]:
         return self.servicio_arriendo.obtener_arrendamiento(id_contrato)
 
     @cache_manager.invalidates("arriendos:list_paginated")
-    def actualizar_arrendamiento(self, id_contrato: int, datos: Dict, usuario_sistema: str) -> None:
+    def actualizar_arrendamiento(
+        self, id_contrato: int, datos: Dict, usuario_sistema: str
+    ) -> None:
         """Actualiza un contrato de arrendamiento existente. Delega al servicio especializado."""
-        return self.servicio_arriendo.actualizar_arrendamiento(id_contrato, datos, usuario_sistema)
+        return self.servicio_arriendo.actualizar_arrendamiento(
+            id_contrato, datos, usuario_sistema
+        )
 
     @cache_manager.invalidates("arriendos:list_paginated")
     def renovar_arrendamiento(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoArrendamiento:
-        return self.servicio_arriendo.renovar_arrendamiento(id_contrato, usuario_sistema, nueva_fecha_fin)
+        return self.servicio_arriendo.renovar_arrendamiento(
+            id_contrato, usuario_sistema, nueva_fecha_fin
+        )
 
     @cache_manager.invalidates("mandatos:list_paginated")
-    def renovar_mandato(self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None) -> ContratoMandato:
-        return self.servicio_mandato.renovar_mandato(id_contrato, usuario_sistema, nueva_fecha_fin)
+    def renovar_mandato(
+        self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
+    ) -> ContratoMandato:
+        return self.servicio_mandato.renovar_mandato(
+            id_contrato, usuario_sistema, nueva_fecha_fin
+        )
 
-    def calcular_proyeccion_renovacion(self, id_contrato: int, tipo: str) -> Dict[str, Any]:
+    def calcular_proyeccion_renovacion(
+        self, id_contrato: int, tipo: str
+    ) -> Dict[str, Any]:
         """
         Calcula la proyección de renovación (nueva fecha y canon) sin guardar en BD.
         Usado para mostrar la información en el diálogo de confirmación.
@@ -368,12 +433,20 @@ class ServicioContratos:
             return self.servicio_mandato.calcular_proyeccion_renovacion(id_contrato)
 
     @cache_manager.invalidates("arriendos:list_paginated")
-    def terminar_arrendamiento(self, id_contrato: int, motivo: str, usuario_sistema: str) -> None:
-        return self.servicio_arriendo.terminar_arrendamiento(id_contrato, motivo, usuario_sistema)
+    def terminar_arrendamiento(
+        self, id_contrato: int, motivo: str, usuario_sistema: str
+    ) -> None:
+        return self.servicio_arriendo.terminar_arrendamiento(
+            id_contrato, motivo, usuario_sistema
+        )
 
     @cache_manager.invalidates("mandatos:list_paginated")
-    def terminar_mandato(self, id_contrato: int, motivo: str, usuario_sistema: str) -> None:
-        return self.servicio_mandato.terminar_mandato(id_contrato, motivo, usuario_sistema)
+    def terminar_mandato(
+        self, id_contrato: int, motivo: str, usuario_sistema: str
+    ) -> None:
+        return self.servicio_mandato.terminar_mandato(
+            id_contrato, motivo, usuario_sistema
+        )
 
     def _verificar_paz_y_salvo(self, id_contrato: int) -> bool:
         """
@@ -446,11 +519,15 @@ class ServicioContratos:
     def listar_arrendamientos_paginado(self, **kwargs) -> Any:
         return self.servicio_arriendo.listar_arrendamientos_paginado(**kwargs)
 
-    def listar_arrendamientos_por_vencer(self, dias_antelacion: int = 60) -> List[Dict[str, Any]]:
+    def listar_arrendamientos_por_vencer(
+        self, dias_antelacion: int = 60
+    ) -> List[Dict[str, Any]]:
         """
         Lista contratos de arrendamiento que vencen en los próximos N días.
         """
-        fecha_limite = (datetime.now() + timedelta(days=dias_antelacion)).strftime("%Y-%m-%d")
+        fecha_limite = (datetime.now() + timedelta(days=dias_antelacion)).strftime(
+            "%Y-%m-%d"
+        )
 
         query = """
         SELECT 
@@ -482,18 +559,23 @@ class ServicioContratos:
                     "propiedad": row["DIRECCION_PROPIEDAD"],
                     "arrendatario": row["ARRENDATARIO"],
                     "dias_restantes": (
-                        datetime.strptime(row["FECHA_FIN_CONTRATO_A"], "%Y-%m-%d") - datetime.now()
+                        datetime.strptime(row["FECHA_FIN_CONTRATO_A"], "%Y-%m-%d")
+                        - datetime.now()
                     ).days,
                 }
                 for row in cursor.fetchall()
             ]
 
-    def listar_mandatos_por_vencer(self, dias_antelacion: int = 60) -> List[Dict[str, Any]]:
+    def listar_mandatos_por_vencer(
+        self, dias_antelacion: int = 60
+    ) -> List[Dict[str, Any]]:
         """
         Lista contratos de mandato que vencen en los próximos N días (incluyendo vencidos).
         """
-        fecha_limite = (datetime.now() + timedelta(days=dias_antelacion)).strftime("%Y-%m-%d")
-        
+        fecha_limite = (datetime.now() + timedelta(days=dias_antelacion)).strftime(
+            "%Y-%m-%d"
+        )
+
         query = """
         SELECT 
             cm.ID_CONTRATO_M,
@@ -521,7 +603,8 @@ class ServicioContratos:
                     "propiedad": row["DIRECCION_PROPIEDAD"],
                     "propietario": row["PROPIETARIO"],
                     "dias_restantes": (
-                        datetime.strptime(row["FECHA_FIN_CONTRATO_M"], "%Y-%m-%d") - datetime.now()
+                        datetime.strptime(row["FECHA_FIN_CONTRATO_M"], "%Y-%m-%d")
+                        - datetime.now()
                     ).days,
                 }
                 for row in cursor.fetchall()
@@ -567,9 +650,13 @@ class ServicioContratos:
                         "persona": get_val(
                             m, ["PROPIETARIO", "nombre_propietario", "nombre_completo"]
                         ),
-                        "documento": get_val(m, ["NUMERO_DOCUMENTO", "documento_propietario"]),
+                        "documento": get_val(
+                            m, ["NUMERO_DOCUMENTO", "documento_propietario"]
+                        ),
                         "canon": get_val(m, ["CANON_MANDATO", "canon"]),
-                        "fecha_inicio": get_val(m, ["FECHA_INICIO_CONTRATO_M", "fecha_inicio"]),
+                        "fecha_inicio": get_val(
+                            m, ["FECHA_INICIO_CONTRATO_M", "fecha_inicio"]
+                        ),
                         "fecha_fin": get_val(m, ["FECHA_FIN_CONTRATO_M", "fecha_fin"]),
                     }
                 )
@@ -584,10 +671,14 @@ class ServicioContratos:
                         "tipo": "Arrendamiento",
                         "estado": get_val(a, ["ESTADO_CONTRATO_A", "estado"]),
                         "propiedad": get_val(a, ["DIRECCION_PROPIEDAD", "propiedad"]),
-                        "persona": get_val(a, ["ARRENDATARIO", "nombre_b", "nombre_completo"]),
+                        "persona": get_val(
+                            a, ["ARRENDATARIO", "nombre_b", "nombre_completo"]
+                        ),
                         "documento": get_val(a, ["NUMERO_DOCUMENTO", "documento"]),
                         "canon": get_val(a, ["CANON_ARRENDAMIENTO", "canon"]),
-                        "fecha_inicio": get_val(a, ["FECHA_INICIO_CONTRATO_A", "fecha_inicio"]),
+                        "fecha_inicio": get_val(
+                            a, ["FECHA_INICIO_CONTRATO_A", "fecha_inicio"]
+                        ),
                         "fecha_fin": get_val(a, ["FECHA_FIN_CONTRATO_A", "fecha_fin"]),
                     }
                 )
@@ -744,7 +835,9 @@ class ServicioContratos:
             cursor.execute(base_query, params)
             return cursor.fetchall()
 
-    def obtener_detalle_contrato_ui(self, id_contrato: int, tipo: str) -> Optional[Dict[str, Any]]:
+    def obtener_detalle_contrato_ui(
+        self, id_contrato: int, tipo: str
+    ) -> Optional[Dict[str, Any]]:
         """
         Obtiene detalles completos de un contrato para mostrar en la UI.
 
@@ -1169,7 +1262,9 @@ class ServicioContratos:
             ID_ENTIDAD_RELACIONADA, TIPO_ENTIDAD, CREATED_BY
         ) VALUES (?, ?, 'Alta', ?, ?, ?)
         """
-        cursor.execute(insert_query, (tipo, descripcion, id_entidad, tipo_entidad, usuario))
+        cursor.execute(
+            insert_query, (tipo, descripcion, id_entidad, tipo_entidad, usuario)
+        )
 
     def obtener_detalle_mandato_ui(self, id_contrato: int) -> Optional[Dict[str, Any]]:
         """
@@ -1226,8 +1321,10 @@ class ServicioContratos:
                     "created_by": row["created_by"],
                     "id_view": str(row["id_contrato_m"]),
                     "canon_view": f"${row['canon_mandato']:,}".replace(",", "."),
-                    "comision_view": f"{row['comision_porcentaje_contrato_m'] / 100.0:.2f}%" if row['comision_porcentaje_contrato_m'] else "0.00%",
-                    "iva_view": "19.00%", # Default or from row if added
+                    "comision_view": f"{row['comision_porcentaje_contrato_m'] / 100.0:.2f}%"
+                    if row["comision_porcentaje_contrato_m"]
+                    else "0.00%",
+                    "iva_view": "19.00%",  # Default or from row if added
                 }
             return None
 
@@ -1325,7 +1422,10 @@ class ServicioContratos:
 
                 row = cursor.fetchone()
                 if not row:
-                    return {"success": False, "message": f"Contrato {id_contrato} no encontrado"}
+                    return {
+                        "success": False,
+                        "message": f"Contrato {id_contrato} no encontrado",
+                    }
 
                 estado = row[2]
                 if estado != "Activo":
@@ -1449,5 +1549,6 @@ class ServicioContratos:
                 }
         except Exception as e:
             import traceback
+
             traceback.print_exc()
             return {"success": False, "message": f"Error al aplicar IPC: {str(e)}"}
