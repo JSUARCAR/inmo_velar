@@ -17,35 +17,36 @@ class RepositorioReportes:
         """
         offset = (page - 1) * limit
 
-        # 1. Obtener el total de registros (Count)
-        count_query = f"SELECT COUNT(*) as total FROM ({query}) AS subquery"
-
-        # 2. Agregar LIMIT y OFFSET
-        paginated_query = f"{query} LIMIT %s OFFSET %s"
+        # Utilizamos una Window Function para obtener el count total y los datos en un solo viaje
+        paginated_query = f"""
+            SELECT subquery.*, COUNT(*) OVER() as _total_count
+            FROM ({query}) AS subquery
+            LIMIT %s OFFSET %s
+        """
         paginated_params = params + [limit, offset]
 
         with self.db.obtener_conexion() as conn:
-            # Rollback preventivo: limpia cualquier transacción pendiente
-            # para garantizar que READ COMMITTED vea datos frescos
+            # Limpiar estado transaccional para asegurar READ COMMITTED con datos frescos.
+            # En PostgreSQL, si la conexión fue usada previamente y no se hizo commit/rollback,
+            # podríamos leer datos estancados (stale snapshot).
             try:
                 conn.rollback()
-            except Exception:
-                pass  # Silenciar si no hay transacción activa
+            except getattr(conn, "OperationalError", Exception) as e:
+                # Fallar si la conexión está severamente dañada, en lugar de silenciar todo
+                pass
 
-            # Count
-            cursor = self.db.get_dict_cursor(conn)
-            try:
-                cursor.execute(count_query, params)
-                res = cursor.fetchone()
-                total = res.get("TOTAL", res.get("total", 0)) if res else 0
-            finally:
-                cursor.close()
-
-            # Data
             cursor = self.db.get_dict_cursor(conn)
             try:
                 cursor.execute(paginated_query, paginated_params)
                 rows = cursor.fetchall()
+                
+                # Extraer el total_count de la primera fila si existen resultados
+                total = rows[0].get("_total_count", 0) if rows else 0
+                
+                # Limpiar la columna auxiliar de los resultados
+                for row in rows:
+                    if "_total_count" in row:
+                        del row["_total_count"]
             finally:
                 cursor.close()
 
@@ -60,6 +61,10 @@ class RepositorioReportes:
         limit: int = 20,
     ) -> Tuple[List[Dict[str, Any]], int]:
         """Obtiene datos de personas con un rol específico (Propietarios, Arrendatarios, etc)."""
+        _TABLAS_PERMITIDAS = {"PROPIETARIOS", "ARRENDATARIOS", "CODEUDORES", "ASESORES", "TERCEROS"}
+        if role_table.upper() not in _TABLAS_PERMITIDAS:
+            raise ValueError(f"Tabla no permitida para reporte de roles: {role_table}")
+            
         query = f"""
             SELECT p.TIPO_DOCUMENTO, p.NUMERO_DOCUMENTO, p.NOMBRE_COMPLETO, 
                    p.TELEFONO_PRINCIPAL, p.CORREO_ELECTRONICO, p.DIRECCION_PRINCIPAL,
@@ -82,6 +87,148 @@ class RepositorioReportes:
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
+
+        return self._ejecutar_query_paginada(query, params, page, limit)
+
+    def obtener_reporte_personas(
+        self,
+        busqueda: Optional[str] = None,
+        solo_activos: Optional[bool] = None,
+        filtro_rol: Optional[str] = None,
+        page: int = 1,
+        limit: int = 20,
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """Reporte de personas con paginación real en PostgreSQL.
+
+        Reemplaza la carga en memoria del RepositorioPersonaSQLite.
+
+        Args:
+            busqueda: Texto libre sobre nombre completo o número de documento.
+            solo_activos: True=solo activos, False=solo inactivos, None=todos.
+            filtro_rol: Nombre del rol (PROPIETARIOS, ARRENDATARIOS, etc.) para filtrar por tabla de rol.
+            page: Página actual (1-indexed).
+            limit: Registros por página.
+
+        Returns:
+            Tupla (lista de registros, total de registros).
+        """
+        # Mapa de nombres de rol de dominio a tablas de DB
+        _MAPA_ROLES: Dict[str, str] = {
+            "Propietario": "PROPIETARIOS",
+            "Arrendatario": "ARRENDATARIOS",
+            "Codeudor": "CODEUDORES",
+            "Asesor": "ASESORES",
+        }
+
+        rol_tabla = _MAPA_ROLES.get(filtro_rol) if filtro_rol else None
+
+        if rol_tabla:
+            # Filtro por rol: JOIN a tabla específica
+            query = f"""
+                SELECT
+                    p.ID_PERSONA,
+                    p.TIPO_DOCUMENTO,
+                    p.NUMERO_DOCUMENTO,
+                    p.NOMBRE_COMPLETO,
+                    p.TELEFONO_PRINCIPAL,
+                    p.CORREO_ELECTRONICO,
+                    p.DIRECCION_PRINCIPAL,
+                    p.ESTADO_REGISTRO
+                FROM PERSONAS p
+                INNER JOIN {rol_tabla} r ON p.ID_PERSONA = r.ID_PERSONA
+            """
+        else:
+            query = """
+                SELECT
+                    p.ID_PERSONA,
+                    p.TIPO_DOCUMENTO,
+                    p.NUMERO_DOCUMENTO,
+                    p.NOMBRE_COMPLETO,
+                    p.TELEFONO_PRINCIPAL,
+                    p.CORREO_ELECTRONICO,
+                    p.DIRECCION_PRINCIPAL,
+                    p.ESTADO_REGISTRO
+                FROM PERSONAS p
+            """
+
+        conditions = []
+        params = []
+
+        if busqueda:
+            conditions.append(
+                "(p.NOMBRE_COMPLETO ILIKE %s OR p.NUMERO_DOCUMENTO ILIKE %s)"
+            )
+            params.extend([f"%{busqueda}%", f"%{busqueda}%"])
+
+        if solo_activos is True:
+            conditions.append("p.ESTADO_REGISTRO = %s")
+            params.append(True)
+        elif solo_activos is False:
+            conditions.append("p.ESTADO_REGISTRO = %s")
+            params.append(False)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY p.NOMBRE_COMPLETO"
+
+        return self._ejecutar_query_paginada(query, params, page, limit)
+
+    def obtener_reporte_propiedades(
+        self,
+        busqueda: Optional[str] = None,
+        solo_activas: Optional[bool] = None,
+        page: int = 1,
+        limit: int = 20,
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """Reporte de propiedades con paginación real en PostgreSQL.
+
+        Reemplaza la carga en memoria del RepositorioPropiedadSQLite.
+
+        Args:
+            busqueda: Texto libre sobre dirección o matrícula inmobiliaria.
+            solo_activas: True=solo activas, False=solo inactivas, None=todas.
+            page: Página actual (1-indexed).
+            limit: Registros por página.
+
+        Returns:
+            Tupla (lista de registros, total de registros).
+        """
+        query = """
+            SELECT
+                p.ID_PROPIEDAD,
+                p.MATRICULA_INMOBILIARIA,
+                p.DIRECCION_PROPIEDAD,
+                p.TIPO_PROPIEDAD,
+                p.AREA_M2,
+                p.HABITACIONES,
+                p.ESTRATO,
+                p.VALOR_ADMINISTRACION,
+                p.CANON_ARRENDAMIENTO_ESTIMADO,
+                p.DISPONIBILIDAD_PROPIEDAD,
+                p.ESTADO_REGISTRO
+            FROM PROPIEDADES p
+        """
+        conditions = []
+        params = []
+
+        if busqueda:
+            conditions.append(
+                "(p.DIRECCION_PROPIEDAD ILIKE %s OR p.MATRICULA_INMOBILIARIA ILIKE %s)"
+            )
+            params.extend([f"%{busqueda}%", f"%{busqueda}%"])
+
+        if solo_activas is True:
+            conditions.append("p.ESTADO_REGISTRO = %s")
+            params.append(True)
+        elif solo_activas is False:
+            conditions.append("p.ESTADO_REGISTRO = %s")
+            params.append(False)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY p.MATRICULA_INMOBILIARIA"
 
         return self._ejecutar_query_paginada(query, params, page, limit)
 
@@ -139,7 +286,14 @@ class RepositorioReportes:
         self, tabla: str, busqueda: Optional[str] = None, page: int = 1, limit: int = 20
     ) -> Tuple[List[Dict[str, Any]], int]:
         """Obtiene todos los registros de una tabla con búsqueda simple y paginación."""
-        query = f"SELECT * FROM {tabla}"
+        _TABLAS_PERMITIDAS = {
+            "PERSONAS", "PROPIETARIOS", "ARRENDATARIOS", "CODEUDORES", "ASESORES", "TERCEROS",
+            "PROPIEDADES", "CONTRATOS_MANDATOS", "CONTRATOS_ARRENDAMIENTOS", "RECAUDOS", "LIQUIDACIONES", "INCIDENTES"
+        }
+        if tabla.upper() not in _TABLAS_PERMITIDAS:
+            raise ValueError(f"Tabla genérica no permitida: {tabla}")
+            
+        query = f"SELECT * FROM {tabla.upper()}"
         params = []
 
         if busqueda:
@@ -401,7 +555,7 @@ class RepositorioReportes:
                 COALESCE(l.IMPUESTO_4X1000, 0) AS "IMPUESTO_4X1000",
 
                 -- Egresos
-                COALESCE(l.GASTOS_ADMINISTRACION, 0) AS "VALOR_ADMINISTRACION_PROPIEDAD",
+                COALESCE(l.GASTOS_ADMINISTRACION, 0) AS "GASTOS_ADMINISTRACION",
                 CASE WHEN l.GASTOS_ADMINISTRACION > 0 AND l.ESTADO_LIQUIDACION = 'Pagada'
                      THEN 'Pagado'
                      WHEN l.GASTOS_ADMINISTRACION > 0 THEN 'Pendiente'
@@ -420,7 +574,12 @@ class RepositorioReportes:
                 COALESCE(l.ESTADO_LIQUIDACION, 'Sin Liquidar') AS "ESTADO_LIQUIDACION",
                 l.FECHA_PAGO AS "FECHA_PAGO",
                 l.PERIODO AS "PERIODO",
-                l.FECHA_GENERACION AS "FECHA_GENERACION"
+                l.FECHA_GENERACION AS "FECHA_GENERACION",
+
+                -- Administración de Propiedad (datos maestros desde PROPIEDADES)
+                COALESCE(p.VALOR_ADMINISTRACION, 0)          AS "VALOR_ADMIN_PROPIEDAD_BASE",
+                p.FECHA_PAGO_ADMINISTRACION                  AS "DIA_PAGO_ADMIN",
+                COALESCE(p.LINK_PAGO_ADMINISTRACION, '')     AS "LINK_PAGO_ADMIN"
             FROM CONTRATOS_MANDATOS cm
             LEFT JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
             LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
@@ -443,14 +602,11 @@ class RepositorioReportes:
             LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             LEFT JOIN PERSONAS per_arr ON arr.ID_PERSONA = per_arr.ID_PERSONA
             LEFT JOIN (
-                SELECT r.ID_RECAUDO, r.ID_CONTRATO_A, r.METODO_PAGO, r.ESTADO_RECAUDO
+                SELECT DISTINCT ON (r.ID_CONTRATO_A)
+                    r.ID_RECAUDO, r.ID_CONTRATO_A, r.METODO_PAGO, r.ESTADO_RECAUDO
                 FROM RECAUDOS r
-                INNER JOIN (
-                    SELECT ID_CONTRATO_A, MAX(FECHA_PAGO) AS ultima_fecha
-                    FROM RECAUDOS
-                    WHERE ESTADO_RECAUDO = 'Aplicado'
-                    GROUP BY ID_CONTRATO_A
-                ) max_r ON r.ID_CONTRATO_A = max_r.ID_CONTRATO_A AND r.FECHA_PAGO = max_r.ultima_fecha
+                WHERE r.ESTADO_RECAUDO = 'Aplicado'
+                ORDER BY r.ID_CONTRATO_A, r.FECHA_PAGO DESC, r.ID_RECAUDO DESC
             ) r ON ca.ID_CONTRATO_A = r.ID_CONTRATO_A
         """
 

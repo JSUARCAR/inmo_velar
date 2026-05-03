@@ -97,23 +97,29 @@ def reports_content():
                 rx.cond(
                     ReportesState.selected_report_id == "reporte_consolidado",
                     rx.hstack(
-                        rx.input(
-                            placeholder="Fecha pago inicio (YYYY-MM-DD)",
-                            on_change=lambda v: ReportesState.set_filter_fecha_pago(
-                                v, ReportesState.filter_fecha_pago_fin
+                        rx.debounce_input(
+                            rx.input(
+                                placeholder="Fecha pago inicio (YYYY-MM-DD)",
+                                on_change=lambda v: ReportesState.set_filter_fecha_pago(
+                                    v, ReportesState.filter_fecha_pago_fin
+                                ),
+                                value=ReportesState.filter_fecha_pago_inicio,
+                                size="2",
+                                width="180px",
                             ),
-                            value=ReportesState.filter_fecha_pago_inicio,
-                            size="2",
-                            width="180px",
+                            debounce_timeout=500,
                         ),
-                        rx.input(
-                            placeholder="Fecha pago fin (YYYY-MM-DD)",
-                            on_change=lambda v: ReportesState.set_filter_fecha_pago(
-                                ReportesState.filter_fecha_pago_inicio, v
+                        rx.debounce_input(
+                            rx.input(
+                                placeholder="Fecha pago fin (YYYY-MM-DD)",
+                                on_change=lambda v: ReportesState.set_filter_fecha_pago(
+                                    ReportesState.filter_fecha_pago_inicio, v
+                                ),
+                                value=ReportesState.filter_fecha_pago_fin,
+                                size="2",
+                                width="180px",
                             ),
-                            value=ReportesState.filter_fecha_pago_fin,
-                            size="2",
-                            width="180px",
+                            debounce_timeout=500,
                         ),
                         rx.select(
                             ReportesState.estado_contrato_options,
@@ -139,12 +145,15 @@ def reports_content():
                             size="2",
                             width="180px",
                         ),
-                        rx.input(
-                            placeholder="Propietario...",
-                            on_change=ReportesState.set_filter_propietario,
-                            value=ReportesState.filter_propietario_buscar,
-                            size="2",
-                            width="180px",
+                        rx.debounce_input(
+                            rx.input(
+                                placeholder="Propietario...",
+                                on_change=ReportesState.set_filter_propietario,
+                                value=ReportesState.filter_propietario_buscar,
+                                size="2",
+                                width="180px",
+                            ),
+                            debounce_timeout=500,
                         ),
                         spacing="2",
                     ),
@@ -168,16 +177,65 @@ def reports_content():
                                 width="200px",
                             ),
                         ),
+                        rx.cond(
+                            ReportesState.selected_report_id == "recaudos",
+                            rx.hstack(
+                                rx.select(
+                                    ReportesState.estado_recaudo_options,
+                                    placeholder="Estado Recaudo",
+                                    on_change=ReportesState.set_filter_estado_recaudo,
+                                    value=ReportesState.filter_estado_recaudo,
+                                    size="2",
+                                    width="160px",
+                                ),
+                                rx.select(
+                                    ReportesState.metodo_pago_options,
+                                    placeholder="Método Pago",
+                                    on_change=ReportesState.set_filter_metodo_pago,
+                                    value=ReportesState.filter_metodo_pago,
+                                    size="2",
+                                    width="160px",
+                                ),
+                                rx.debounce_input(
+                                    rx.input(
+                                        placeholder="Periodo inicio (YYYY-MM)",
+                                        on_change=lambda v: ReportesState.set_filter_periodo(
+                                            v, ReportesState.filter_periodo_fin
+                                        ),
+                                        value=ReportesState.filter_periodo_inicio,
+                                        size="2",
+                                        width="180px",
+                                    ),
+                                    debounce_timeout=500,
+                                ),
+                                rx.debounce_input(
+                                    rx.input(
+                                        placeholder="Periodo fin (YYYY-MM)",
+                                        on_change=lambda v: ReportesState.set_filter_periodo(
+                                            ReportesState.filter_periodo_inicio, v
+                                        ),
+                                        value=ReportesState.filter_periodo_fin,
+                                        size="2",
+                                        width="180px",
+                                    ),
+                                    debounce_timeout=500,
+                                ),
+                                spacing="2",
+                            ),
+                        ),
                         spacing="2",
                     ),
                 ),
-                rx.input(
-                    placeholder="Filtrar en tabla...",
-                    icon="search",
-                    on_change=ReportesState.set_filter_busqueda,
-                    value=ReportesState.filter_busqueda_tabla,
-                    size="2",
-                    width="250px",
+                rx.debounce_input(
+                    rx.input(
+                        placeholder="Filtrar en tabla...",
+                        icon="search",
+                        on_change=ReportesState.set_filter_busqueda,
+                        value=ReportesState.filter_busqueda_tabla,
+                        size="2",
+                        width="250px",
+                    ),
+                    debounce_timeout=500,
                 ),
                 rx.spacer(),
                 rx.button(
@@ -211,29 +269,33 @@ def reports_content():
         rx.cond(
             ReportesState.is_loading,
             rx.center(rx.spinner(), padding="4", width="100%"),
-            rx.table.root(
-                rx.table.header(
-                    rx.table.row(
-                        rx.foreach(
-                            ReportesState.preview_headers,
-                            lambda h: rx.table.column_header_cell(h),
-                        )
-                    )
-                ),
-                rx.table.body(
-                    rx.foreach(
-                        ReportesState.preview_data,
-                        lambda row: rx.table.row(
+            rx.box(
+                rx.table.root(
+                    rx.table.header(
+                        rx.table.row(
                             rx.foreach(
                                 ReportesState.preview_headers,
-                                lambda h: rx.table.cell(row[h]),
+                                lambda h: rx.table.column_header_cell(h),
                             )
-                        ),
-                    )
+                        )
+                    ),
+                    rx.table.body(
+                        rx.foreach(
+                            ReportesState.preview_data,
+                            lambda row: rx.table.row(
+                                rx.foreach(
+                                    ReportesState.preview_headers,
+                                    lambda h: rx.table.cell(row[h]),
+                                )
+                            ),
+                        )
+                    ),
+                    variant="surface",
+                    size="1",
+                    width="100%",
                 ),
-                variant="surface",
-                size="1",
                 width="100%",
+                overflow_x="auto",
             ),
         ),
         # Paginación (Preview)
