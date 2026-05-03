@@ -1,1 +1,0 @@
-DEBUG [database.py]: Final DB_MODE: postgresql
