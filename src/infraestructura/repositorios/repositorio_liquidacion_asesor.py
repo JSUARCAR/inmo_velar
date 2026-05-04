@@ -79,7 +79,9 @@ class RepositorioLiquidacionAsesor:
                 )
             raise
 
-    def actualizar(self, liquidacion: LiquidacionAsesor, usuario: str) -> LiquidacionAsesor:
+    def actualizar(
+        self, liquidacion: LiquidacionAsesor, usuario: str
+    ) -> LiquidacionAsesor:
         """
         Actualiza una liquidación existente.
 
@@ -257,6 +259,8 @@ class RepositorioLiquidacionAsesor:
         id_asesor: Optional[int] = None,
         periodo: Optional[str] = None,
         estado: Optional[str] = None,
+        sort_by: str = "PERIODO_LIQUIDACION",
+        sort_order: str = "desc",
     ) -> tuple[List[LiquidacionAsesor], int]:
         """
         Lista liquidaciones con paginación y filtros.
@@ -267,6 +271,8 @@ class RepositorioLiquidacionAsesor:
             id_asesor: Filtro por asesor
             periodo: Filtro por período
             estado: Filtro por estado
+            sort_by: Columna para ordenar
+            sort_order: Orden (asc/desc)
 
         Returns:
             Tupla (lista de liquidaciones, total de registros)
@@ -279,6 +285,20 @@ class RepositorioLiquidacionAsesor:
             self.db_manager.get_placeholder()
             if hasattr(self.db_manager, "get_placeholder")
             else "?"
+        )
+
+        # Whitelist de columnas permitidas para ORDER BY
+        SORT_COLUMNS = {
+            "ID_LIQUIDACION_ASESOR": "la.ID_LIQUIDACION_ASESOR",
+            "PERIODO_LIQUIDACION": "la.PERIODO_LIQUIDACION",
+            "COMISION_BRUTA": "la.COMISION_BRUTA",
+            "VALOR_NETO_ASESOR": "la.VALOR_NETO_ASESOR",
+            "ESTADO_LIQUIDACION": "la.ESTADO_LIQUIDACION",
+            "NOMBRE_ASESOR": "p.NOMBRE_COMPLETO",
+        }
+        sort_column = SORT_COLUMNS.get(sort_by, "la.PERIODO_LIQUIDACION")
+        sort_order_valid = (
+            sort_order.lower() if sort_order.lower() in ("asc", "desc") else "desc"
         )
 
         # Query base con JOIN a ASESORES y PERSONAS para obtener nombre del asesor
@@ -311,7 +331,7 @@ class RepositorioLiquidacionAsesor:
                 la.*,
                 p.NOMBRE_COMPLETO as NOMBRE_ASESOR
             {base_query}
-            ORDER BY la.PERIODO_LIQUIDACION DESC, la.ID_ASESOR 
+            ORDER BY {sort_column} {sort_order_valid}
             LIMIT {ph} OFFSET {ph}
         """
         data_params = params + [page_size, offset]
