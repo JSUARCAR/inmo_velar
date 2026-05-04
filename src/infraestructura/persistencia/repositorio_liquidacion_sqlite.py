@@ -760,15 +760,29 @@ class RepositorioLiquidacionSQLite:
         periodo: Optional[str] = None,
         busqueda: Optional[str] = None,
         id_asesor: Optional[int] = None,
+        sort_by: str = "periodo",
+        sort_order: str = "desc",
     ):
         """
         Lista liquidaciones agrupadas por propietario con totales consolidados.
-        Retorna un resultado paginado con información agregada.
+        Retorna un resultado paginado con información agregada y ordenamiento dinámico.
         """
         from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
 
         params = PaginationParams(page=page, page_size=page_size)
         placeholder = self.db.get_placeholder()
+
+        # Whitelisting para ordenamiento agrupado
+        SORT_COLUMNS = {
+            "periodo": "l.PERIODO",
+            "propietario": "per.NOMBRE_COMPLETO",
+            "cantidad_propiedades": "CANTIDAD_PROPIEDADES",
+            "canon": "TOTAL_CANON_BRUTO",
+            "neto": "NETO_TOTAL"
+        }
+
+        sort_col = SORT_COLUMNS.get(sort_by, "l.PERIODO")
+        order = "ASC" if sort_order.lower() == "asc" else "DESC"
 
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
@@ -830,7 +844,7 @@ class RepositorioLiquidacionSQLite:
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
             group_by = " GROUP BY cm.ID_PROPIETARIO, l.PERIODO, per.NOMBRE_COMPLETO, per.NUMERO_DOCUMENTO"
 
-            # Count de grupos (propietarios únicos con liquidaciones)
+            # Count de grupos
             count_query = f"""
                 SELECT COUNT(*) as TOTAL FROM (
                     SELECT cm.ID_PROPIETARIO, l.PERIODO
@@ -840,7 +854,8 @@ class RepositorioLiquidacionSQLite:
                 ) AS grupos
             """
             cursor.execute(count_query, query_params)
-            total = cursor.fetchone()["TOTAL"]
+            total_row = cursor.fetchone()
+            total = total_row["TOTAL"] if total_row else 0
 
             # Data query con ordenamiento
             data_query = f"""
@@ -848,7 +863,7 @@ class RepositorioLiquidacionSQLite:
                 {base_from}
                 {where_clause}
                 {group_by}
-                ORDER BY l.PERIODO DESC, per.NOMBRE_COMPLETO
+                ORDER BY {sort_col} {order}, l.PERIODO DESC
                 LIMIT {placeholder} OFFSET {placeholder}
             """
 
@@ -857,7 +872,6 @@ class RepositorioLiquidacionSQLite:
             items = []
             for row in cursor.fetchall():
                 # Determinar estado consolidado
-                # Consultar estados individuales para determinar consolidado
                 cursor.execute(
                     f"""
                     SELECT ESTADO_LIQUIDACION, COUNT(*) as CNT
@@ -874,7 +888,6 @@ class RepositorioLiquidacionSQLite:
                 }
                 total_liq = sum(estados_map.values())
 
-                # Lógica de estado consolidado
                 if estados_map.get("En Proceso", 0) > 0:
                     estado_consolidado = "En Proceso"
                 elif estados_map.get("Aprobada", 0) == total_liq:
@@ -1252,11 +1265,36 @@ class RepositorioLiquidacionSQLite:
         periodo: Optional[str] = None,
         busqueda: Optional[str] = None,
         id_asesor: Optional[int] = None,
+        sort_by: str = "periodo",
+        sort_order: str = "desc",
     ) -> List[Dict[str, Any]]:
         """Lista liquidaciones con paginación y filtros complejos."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
+
+        # Mapeo de columnas para ordenamiento (Whitelisting contra SQL Injection)
+        SORT_COLUMNS = {
+            "id": "l.ID_LIQUIDACION",
+            "periodo": "l.PERIODO",
+            "estado": "l.ESTADO_LIQUIDACION",
+            "canon": "l.CANON_BRUTO",
+            "neto": "l.NETO_A_PAGAR",
+            "contrato": "p.DIRECCION_PROPIEDAD",
+            "dia_pago": "cm.FECHA_PAGO"
+        }
+
+        sort_col_raw = SORT_COLUMNS.get(sort_by, "l.PERIODO")
+        order = "ASC" if sort_order.lower() == "asc" else "DESC"
+        
+        # Tratamiento especial para dia_pago (cast numérico)
+        if sort_by == "dia_pago":
+            if self.db.use_postgresql:
+                sort_col = f"CAST(NULLIF(TRIM({sort_col_raw}), '') AS INTEGER)"
+            else:
+                sort_col = f"CAST({sort_col_raw} AS INTEGER)"
+        else:
+            sort_col = sort_col_raw
 
         base_from = """
             FROM LIQUIDACIONES l
@@ -1302,9 +1340,9 @@ class RepositorioLiquidacionSQLite:
                 l.OTROS_INGRESOS, l.COMISION_MONTO, l.IVA_COMISION, l.IMPUESTO_4X1000,
                 l.GASTOS_ADMINISTRACION, l.GASTOS_SERVICIOS, l.GASTOS_REPARACIONES, 
                 l.PAGO_PREDIAL, l.OTROS_EGRESOS, l.NETO_A_PAGAR,
-                p.DIRECCION_PROPIEDAD
+                p.DIRECCION_PROPIEDAD, cm.FECHA_PAGO
             {base_from} {where_clause}
-            ORDER BY l.PERIODO DESC, l.ID_LIQUIDACION DESC
+            ORDER BY {sort_col} {order}, l.ID_LIQUIDACION DESC
             LIMIT {placeholder} OFFSET {placeholder}
         """
 
@@ -1320,6 +1358,7 @@ class RepositorioLiquidacionSQLite:
                     "canon": row["CANON_BRUTO"],
                     "neto": row["NETO_A_PAGAR"],
                     "contrato": row["DIRECCION_PROPIEDAD"],
+                    "fecha_pago_mandato": row["FECHA_PAGO"],
                 }
             )
         return items

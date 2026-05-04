@@ -21,6 +21,8 @@ class FiltrosRecaudo:
     fecha_hasta: Optional[str] = None
     id_contrato: Optional[int] = None
     busqueda: Optional[str] = None
+    sort_by: str = "fecha_pago"
+    sort_order: str = "desc"
     page: int = 1
     page_size: int = 25
 
@@ -68,8 +70,10 @@ class IRepositorioRecaudo(ABC):
         fecha_desde: Optional[str] = None,
         fecha_hasta: Optional[str] = None,
         busqueda: Optional[str] = None,
+        sort_by: str = "fecha_pago",
+        sort_order: str = "desc",
     ) -> List[Dict[str, Any]]:
-        """Lista recaudos paginados con filtros."""
+        """Lista recaudos paginados con filtros y ordenamiento."""
         raise NotImplementedError
 
     @abstractmethod
