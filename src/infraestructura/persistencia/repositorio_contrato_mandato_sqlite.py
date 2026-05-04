@@ -60,12 +60,15 @@ class RepositorioContratoMandatoSQLite:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
         cursor.execute(
-            f"SELECT * FROM CONTRATOS_MANDATOS WHERE ID_CONTRATO_M = {placeholder}", (id_contrato,)
+            f"SELECT * FROM CONTRATOS_MANDATOS WHERE ID_CONTRATO_M = {placeholder}",
+            (id_contrato,),
         )
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
-    def obtener_activo_por_propiedad(self, id_propiedad: int) -> Optional[ContratoMandato]:
+    def obtener_activo_por_propiedad(
+        self, id_propiedad: int
+    ) -> Optional[ContratoMandato]:
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
@@ -96,6 +99,8 @@ class RepositorioContratoMandatoSQLite:
         estado: Optional[str] = None,
         busqueda: Optional[str] = None,
         id_asesor: Optional[str] = None,
+        sort_by: str = "ID_CONTRATO_M",
+        sort_order: str = "desc",
     ) -> PaginatedResult:
         """Lista contratos de mandato con paginación y filtros."""
         params = PaginationParams(page=page, page_size=page_size)
@@ -126,10 +131,14 @@ class RepositorioContratoMandatoSQLite:
                     query_params.append(estado)
 
             if busqueda:
-                cols = ["p.DIRECCION_PROPIEDAD", "per.NOMBRE_COMPLETO", "per.NUMERO_DOCUMENTO"]
+                cols = [
+                    "p.DIRECCION_PROPIEDAD",
+                    "per.NOMBRE_COMPLETO",
+                    "per.NUMERO_DOCUMENTO",
+                ]
                 cond = self.db.get_search_condition(cols)
                 conditions.append(f"({cond})")
-                
+
                 term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
                 query_params.extend([term_norm] * len(cols))
 
@@ -139,14 +148,29 @@ class RepositorioContratoMandatoSQLite:
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
+            # Whitelist de columnas permitidas para ORDER BY
+            SORT_COLUMNS = {
+                "ID_CONTRATO_M": "cm.ID_CONTRATO_M",
+                "FECHA_INICIO_CONTRATO_M": "cm.FECHA_INICIO_CONTRATO_M",
+                "FECHA_FIN_CONTRATO_M": "cm.FECHA_FIN_CONTRATO_M",
+                "CANON_MANDATO": "cm.CANON_MANDATO",
+                "PROPIETARIO": "per.NOMBRE_COMPLETO",
+                "DIRECCION": "p.DIRECCION_PROPIEDAD",
+            }
+            sort_column = SORT_COLUMNS.get(sort_by, "cm.ID_CONTRATO_M")
+            sort_order = (
+                sort_order.lower() if sort_order.lower() in ("asc", "desc") else "desc"
+            )
+
             # 1. Count
             count_query = f"SELECT COUNT(*) as TOTAL {base_from} {where_clause}"
-            print(f"[SQL_DEBUG_MANDATOS] Conteo Query: {count_query} | Params: {query_params}")
+            print(
+                f"[SQL_DEBUG_MANDATOS] Conteo Query: {count_query} | Params: {query_params}"
+            )
             cursor.execute(count_query, query_params)
             row = cursor.fetchone()
             total = 0
             if row:
-                # Acceso robusto al total (soporta TOTAL, total o índice 0)
                 try:
                     total = row["TOTAL"]
                 except (KeyError, TypeError):
@@ -156,7 +180,7 @@ class RepositorioContratoMandatoSQLite:
 
             # 2. Data
             data_query = f"""
-                SELECT
+                SELECT 
                     cm.ID_CONTRATO_M,
                     cm.ESTADO_CONTRATO_M,
                     cm.CANON_MANDATO,
@@ -171,12 +195,14 @@ class RepositorioContratoMandatoSQLite:
                     per_asesor.NOMBRE_COMPLETO as ASESOR
                 {base_from}
                 {where_clause}
-                ORDER BY cm.ID_CONTRATO_M DESC
+                ORDER BY {sort_column} {sort_order}
                 LIMIT {placeholder} OFFSET {placeholder}
             """
 
             data_params = query_params + [params.page_size, params.offset]
-            print(f"[SQL_DEBUG_MANDATOS] Data Query: {data_query} | Params: {data_params}")
+            print(
+                f"[SQL_DEBUG_MANDATOS] Data Query: {data_query} | Params: {data_params}"
+            )
             cursor.execute(data_query, data_params)
             rows = cursor.fetchall()
             print(f"[SQL_DEBUG_MANDATOS] Filas recuperadas: {len(rows)}")
@@ -184,25 +210,28 @@ class RepositorioContratoMandatoSQLite:
             items = []
             for row in rows:
                 # Helper para obtener valor insensible a mayúsculas
-                def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+                def gv(k):
+                    return row.get(k) or row.get(k.upper()) or row.get(k.lower())
 
-                items.append({
-                    "id_contrato": gv("ID_CONTRATO_M"),
-                    "estado_contrato": gv("ESTADO_CONTRATO_M"),
-                    "valor_canon": gv("CANON_MANDATO"),
-                    "valor_administracion": 0,
-                    "fecha_inicio": gv("FECHA_INICIO_CONTRATO_M"),
-                    "fecha_fin": gv("FECHA_FIN_CONTRATO_M"),
-                    "propiedad_direccion": gv("DIRECCION_PROPIEDAD"),
-                    "propiedad_matricula": gv("MATRICULA_INMOBILIARIA"),
-                    "propiedad_tipo": gv("TIPO_PROPIEDAD"),
-                    "propietario_nombre": gv("PROPIETARIO"),
-                    "propietario_documento": gv("NUMERO_DOCUMENTO"),
-                    "arrendatario_nombre": "N/A",
-                    "arrendatario_documento": "N/A",
-                    "habitante_nombre": "",
-                    "asesor_nombre": gv("ASESOR") or "Sin asesor",
-                })
+                items.append(
+                    {
+                        "id_contrato": gv("ID_CONTRATO_M"),
+                        "estado_contrato": gv("ESTADO_CONTRATO_M"),
+                        "valor_canon": gv("CANON_MANDATO"),
+                        "valor_administracion": 0,
+                        "fecha_inicio": gv("FECHA_INICIO_CONTRATO_M"),
+                        "fecha_fin": gv("FECHA_FIN_CONTRATO_M"),
+                        "propiedad_direccion": gv("DIRECCION_PROPIEDAD"),
+                        "propiedad_matricula": gv("MATRICULA_INMOBILIARIA"),
+                        "propiedad_tipo": gv("TIPO_PROPIEDAD"),
+                        "propietario_nombre": gv("PROPIETARIO"),
+                        "propietario_documento": gv("NUMERO_DOCUMENTO"),
+                        "arrendatario_nombre": "N/A",
+                        "arrendatario_documento": "N/A",
+                        "habitante_nombre": "",
+                        "asesor_nombre": gv("ASESOR") or "Sin asesor",
+                    }
+                )
             return PaginatedResult(
                 items=items, total=total, page=params.page, page_size=params.page_size
             )
@@ -266,25 +295,36 @@ class RepositorioContratoMandatoSQLite:
             row_dict = row
 
         return ContratoMandato(
-            id_contrato_m=(row_dict.get("id_contrato_m") or row_dict.get("ID_CONTRATO_M")),
+            id_contrato_m=(
+                row_dict.get("id_contrato_m") or row_dict.get("ID_CONTRATO_M")
+            ),
             id_propiedad=(row_dict.get("id_propiedad") or row_dict.get("ID_PROPIEDAD")),
-            id_propietario=(row_dict.get("id_propietario") or row_dict.get("ID_PROPIETARIO")),
+            id_propietario=(
+                row_dict.get("id_propietario") or row_dict.get("ID_PROPIETARIO")
+            ),
             id_asesor=(row_dict.get("id_asesor") or row_dict.get("ID_ASESOR")),
             fecha_inicio_contrato_m=(
-                row_dict.get("fecha_inicio_contrato_m") or row_dict.get("FECHA_INICIO_CONTRATO_M")
+                row_dict.get("fecha_inicio_contrato_m")
+                or row_dict.get("FECHA_INICIO_CONTRATO_M")
             ),
             fecha_fin_contrato_m=(
-                row_dict.get("fecha_fin_contrato_m") or row_dict.get("FECHA_FIN_CONTRATO_M")
+                row_dict.get("fecha_fin_contrato_m")
+                or row_dict.get("FECHA_FIN_CONTRATO_M")
             ),
             duracion_contrato_m=(
-                row_dict.get("duracion_contrato_m") or row_dict.get("DURACION_CONTRATO_M")
+                row_dict.get("duracion_contrato_m")
+                or row_dict.get("DURACION_CONTRATO_M")
             ),
-            canon_mandato=(row_dict.get("canon_mandato") or row_dict.get("CANON_MANDATO")),
+            canon_mandato=(
+                row_dict.get("canon_mandato") or row_dict.get("CANON_MANDATO")
+            ),
             comision_porcentaje_contrato_m=(
                 row_dict.get("comision_porcentaje_contrato_m")
                 or row_dict.get("COMISION_PORCENTAJE_CONTRATO_M")
             ),
-            iva_contrato_m=(row_dict.get("iva_contrato_m") or row_dict.get("IVA_CONTRATO_M")),
+            iva_contrato_m=(
+                row_dict.get("iva_contrato_m") or row_dict.get("IVA_CONTRATO_M")
+            ),
             estado_contrato_m=(
                 row_dict.get("estado_contrato_m") or row_dict.get("ESTADO_CONTRATO_M")
             ),
