@@ -878,6 +878,8 @@ class ServicioContratos:
                 prop.BANCO_PROPIETARIO,
                 prop.NUMERO_CUENTA_PROPIETARIO,
                 prop.TIPO_CUENTA,
+                prop.CONSIGNATARIO,
+                prop.DOCUMENTO_CONSIGNATARIO,
                 m.NOMBRE_MUNICIPIO,
                 m.DEPARTAMENTO,
                 ases.NOMBRE_COMPLETO as ASESOR
@@ -927,6 +929,8 @@ class ServicioContratos:
                     "documento": row["NUMERO_DOCUMENTO"],
                     "telefono": row["TELEFONO"] or "N/A",
                     "email": row["EMAIL"] or "N/A",
+                    "consignatario": row["CONSIGNATARIO"] or "",
+                    "documento_consignatario": row["DOCUMENTO_CONSIGNATARIO"] or "",
                     "banco": row["BANCO_PROPIETARIO"] or "N/A",
                     "numero_cuenta": row["NUMERO_CUENTA_PROPIETARIO"] or "N/A",
                     "tipo_cuenta": row["TIPO_CUENTA"] or "N/A",
