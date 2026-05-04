@@ -51,6 +51,10 @@ class PersonasState(rx.State):
     fecha_inicio: str = ""
     fecha_fin: str = ""
 
+    # --- Ordenamiento ---
+    sort_by: str = "id_persona"
+    sort_order: str = "desc"
+
     # --- UI State ---
     is_loading: bool = False
 
@@ -262,6 +266,8 @@ class PersonasState(rx.State):
                 busqueda=self.search_query if self.search_query else None,
                 fecha_inicio=self.fecha_inicio if self.fecha_inicio else None,
                 fecha_fin=self.fecha_fin if self.fecha_fin else None,
+                sort_by=self.sort_by,
+                sort_order=self.sort_order,
             )
 
             self.total_items = resultado.total
@@ -1064,3 +1070,14 @@ class PersonasState(rx.State):
                 self.error_message = f"Error inesperado: {str(e)}"
                 self.is_loading = False
             yield rx.toast.error(f"Error al guardar: {str(e)}", duration=5000)
+
+    def toggle_sort(self, column: str):
+        """Cambia el criterio de ordenamiento de personas."""
+        if self.sort_by == column:
+            self.sort_order = "desc" if self.sort_order == "asc" else "asc"
+        else:
+            self.sort_by = column
+            self.sort_order = "desc"
+        
+        self.page = 1
+        return PersonasState.load_personas

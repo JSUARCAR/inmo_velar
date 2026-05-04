@@ -5,6 +5,7 @@ Gestión de inventario inmobiliario con filtros, vista cards/tabla, y paginació
 
 import reflex as rx
 
+from src.presentacion_reflex.components.table_utils import header_cell_sortable
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.components.propiedades.modal_form import modal_propiedad
 from src.presentacion_reflex.components.propiedades.property_card import (
@@ -453,22 +454,12 @@ def propiedades_page() -> rx.Component:
                                         rx.table.root(
                                             rx.table.header(
                                                 rx.table.row(
-                                                    rx.table.column_header_cell(
-                                                        "Propiedad"
-                                                    ),
-                                                    rx.table.column_header_cell("Tipo"),
-                                                    rx.table.column_header_cell(
-                                                        "Municipio"
-                                                    ),
-                                                    rx.table.column_header_cell(
-                                                        "Estado"
-                                                    ),
-                                                    rx.table.column_header_cell(
-                                                        "Canon"
-                                                    ),
-                                                    rx.table.column_header_cell(
-                                                        "Venta / Comisión"
-                                                    ),
+                                                    header_cell_sortable("Propiedad", "direccion", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
+                                                    header_cell_sortable("Tipo", "tipo", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
+                                                    header_cell_sortable("Municipio", "ciudad", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
+                                                    header_cell_sortable("Estado", "disponibilidad", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
+                                                    header_cell_sortable("Canon", "canon_estimado", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
+                                                    header_cell_sortable("Venta / Comisión", "valor_venta", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
                                                     rx.table.column_header_cell(
                                                         "Servicios"
                                                     ),

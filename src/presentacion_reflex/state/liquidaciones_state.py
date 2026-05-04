@@ -25,6 +25,7 @@ class LiquidacionDict(pydantic.BaseModel):
     canon_view: str
     neto_view: str
     cantidad_propiedades: Optional[int]
+    fecha_pago_mandato: Optional[str] = None
 
 
 class LiquidacionesState(DocumentosStateMixin):
@@ -76,6 +77,10 @@ class LiquidacionesState(DocumentosStateMixin):
 
     # Vista agrupada/consolidada
     vista_agrupada: bool = False  # False = Individual, True = Por propietario
+
+    # Ordenamiento
+    sort_by: str = "periodo"
+    sort_order: str = "desc"
 
     # Modales
     show_detail_modal: bool = False
@@ -295,6 +300,8 @@ class LiquidacionesState(DocumentosStateMixin):
                     estado=estado,
                     busqueda=busqueda,
                     id_asesor=id_asesor_filt,
+                    sort_by=self.sort_by,
+                    sort_order=self.sort_order,
                 )
             else:
                 # Vista individual por propiedad
@@ -305,6 +312,8 @@ class LiquidacionesState(DocumentosStateMixin):
                     estado=estado,
                     busqueda=busqueda,
                     id_asesor=id_asesor_filt,
+                    sort_by=self.sort_by,
+                    sort_order=self.sort_order,
                 )
 
             async with self:
@@ -327,6 +336,17 @@ class LiquidacionesState(DocumentosStateMixin):
                 self.liquidaciones = []
                 self.total_items = 0
                 self.is_loading = False
+
+    def toggle_sort(self, column: str):
+        """Cambia el criterio de ordenamiento."""
+        if self.sort_by == column:
+            self.sort_order = "desc" if self.sort_order == "asc" else "asc"
+        else:
+            self.sort_by = column
+            self.sort_order = "desc"
+        
+        self.current_page = 1
+        return LiquidacionesState.load_liquidaciones
 
     # Paginación
     def next_page(self):

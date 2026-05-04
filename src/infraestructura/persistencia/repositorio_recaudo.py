@@ -498,30 +498,37 @@ class RepositorioRecaudo:
         fecha_desde: Optional[str] = None,
         fecha_hasta: Optional[str] = None,
         busqueda: Optional[str] = None,
+        sort_by: str = "fecha_pago",
+        sort_order: str = "desc",
     ) -> List[Dict[str, Any]]:
         """
         Lista recaudos paginados con JOINs a contratos, propiedades y arrendatarios.
-
-        Args:
-            limit: Cantidad máxima de registros
-            offset: Registros a saltar
-            estado: Filtro por estado del recaudo
-            fecha_desde: Filtro por fecha mínima
-            fecha_hasta: Filtro por fecha máxima
-            busqueda: Texto de búsqueda general
-
-        Returns:
-            Lista de diccionarios con datos del recaudo y relaciones
+        Incluye fecha de pago contractual y ordenamiento dinámico.
         """
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
+
+        # Mapeo de columnas para ordenamiento (Whitelisting contra SQL Injection)
+        SORT_COLUMNS = {
+            "id_recaudo": "r.ID_RECAUDO",
+            "fecha_pago": "r.FECHA_PAGO",
+            "fecha_pago_contrato": "ca.FECHA_PAGO",
+            "valor_total": "r.VALOR_TOTAL",
+            "estado": "r.ESTADO_RECAUDO",
+            "arrendatario": "per.NOMBRE_COMPLETO",
+            "direccion": "p.DIRECCION_PROPIEDAD"
+        }
+        
+        sort_col = SORT_COLUMNS.get(sort_by, "r.FECHA_PAGO")
+        order = "ASC" if sort_order.lower() == "asc" else "DESC"
 
         query = """
             SELECT 
                 r.ID_RECAUDO,
                 r.ID_CONTRATO_A,
                 r.FECHA_PAGO,
+                ca.FECHA_PAGO AS FECHA_PAGO_CONTRATO,
                 r.VALOR_TOTAL,
                 r.METODO_PAGO,
                 r.REFERENCIA_BANCARIA,
@@ -564,7 +571,7 @@ class RepositorioRecaudo:
             term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
             params.extend([term_norm] * len(cols))
 
-        query += " ORDER BY r.FECHA_PAGO DESC"
+        query += f" ORDER BY {sort_col} {order}"
         query += f" LIMIT {placeholder} OFFSET {placeholder}"
         params.extend([limit, offset])
 
@@ -580,6 +587,7 @@ class RepositorioRecaudo:
                 "matricula": row["MATRICULA_INMOBILIARIA"],
                 "arrendatario": row["NOMBRE_ARRENDATARIO"],
                 "fecha_pago": row["FECHA_PAGO"],
+                "fecha_pago_contrato": row["FECHA_PAGO_CONTRATO"] or "N/A",
                 "valor_total": row["VALOR_TOTAL"],
                 "metodo_pago": row["METODO_PAGO"],
                 "referencia": row["REFERENCIA_BANCARIA"] or "",
