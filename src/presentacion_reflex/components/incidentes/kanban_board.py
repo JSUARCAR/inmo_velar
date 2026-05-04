@@ -3,7 +3,10 @@ from typing import Any, Dict, List
 import reflex as rx
 
 from src.presentacion_reflex.components.incidentes.incident_card import incident_card
-from src.presentacion_reflex.state.incidentes_state import IncidentesState, IncidenteDict
+from src.presentacion_reflex.state.incidentes_state import (
+    IncidentesState,
+    IncidenteDict,
+)
 from src.presentacion_reflex import styles
 
 
@@ -31,9 +34,33 @@ def _empty_state(title: str) -> rx.Component:
     )
 
 
-def _kanban_column(
-    title: str, items: Any, color_scheme: str
-) -> rx.Component:
+def _skeleton_card() -> rx.Component:
+    """Skeleton loader para simular una tarjeta de incidente durante carga."""
+    return rx.vstack(
+        rx.skeleton(height="14px", width="70%"),
+        rx.skeleton(height="10px", width="100%"),
+        rx.skeleton(height="10px", width="50%"),
+        spacing="2",
+        width="100%",
+        padding="1rem",
+        border_radius="12px",
+        background="var(--gray-2)",
+    )
+
+
+def _skeleton_column() -> rx.Component:
+    """Columna skeleton completa con 3 tarjetas placeholder."""
+    return rx.vstack(
+        _skeleton_card(),
+        _skeleton_card(),
+        _skeleton_card(),
+        spacing="3",
+        width="100%",
+        padding_y="4px",
+    )
+
+
+def _kanban_column(title: str, items: Any, color_scheme: str) -> rx.Component:
     return rx.vstack(
         # --- Header ---
         rx.hstack(
@@ -59,15 +86,19 @@ def _kanban_column(
         # --- Content ---
         rx.scroll_area(
             rx.cond(
-                items.length() > 0,
-                rx.vstack(
-                    rx.foreach(items.to(list[IncidenteDict]), incident_card),
-                    spacing="3",
-                    width="100%",
-                    padding_y="4px",
-                    padding_x="2px",
+                IncidentesState.is_loading,
+                _skeleton_column(),
+                rx.cond(
+                    items.length() > 0,
+                    rx.vstack(
+                        rx.foreach(items.to(list[IncidenteDict]), incident_card),
+                        spacing="3",
+                        width="100%",
+                        padding_y="4px",
+                        padding_x="2px",
+                    ),
+                    _empty_state(title),
                 ),
-                _empty_state(title),
             ),
             height="100%",
             width="100%",
@@ -77,7 +108,7 @@ def _kanban_column(
             style={
                 "padding_bottom": "100px",
                 "scrollbar_width": "thin",
-                "scrollbar_color": "#a3b1c6 transparent",
+                "scrollbar_color": "var(--border-default) transparent",
             },
         ),
         # --- Container Styles ---

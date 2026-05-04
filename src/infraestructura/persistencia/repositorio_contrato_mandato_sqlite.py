@@ -25,7 +25,7 @@ class RepositorioContratoMandatoSQLite:
             ID_PROPIEDAD, ID_PROPIETARIO, ID_ASESOR,
             FECHA_INICIO_CONTRATO_M, FECHA_FIN_CONTRATO_M, DURACION_CONTRATO_M,
             CANON_MANDATO, COMISION_PORCENTAJE_CONTRATO_M, IVA_CONTRATO_M,
-            ESTADO_CONTRATO_M, ALERTA_VENCIMINETO_CONTRATO_M, FECHA_RENOVACION_CONTRATO_M,
+            ESTADO_CONTRATO_M, ALERTA_VENCIMIENTO_CONTRATO_M, FECHA_RENOVACION_CONTRATO_M,
             FECHA_PAGO,
             CREATED_BY, UPDATED_BY
         ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
@@ -226,7 +226,7 @@ class RepositorioContratoMandatoSQLite:
             IVA_CONTRATO_M = {placeholder},
             ESTADO_CONTRATO_M = {placeholder},
             MOTIVO_CANCELACION = {placeholder},
-            ALERTA_VENCIMINETO_CONTRATO_M = {placeholder},
+            ALERTA_VENCIMIENTO_CONTRATO_M = {placeholder},
             FECHA_RENOVACION_CONTRATO_M = {placeholder},
             FECHA_PAGO = {placeholder},
             UPDATED_AT = {placeholder},
@@ -295,8 +295,8 @@ class RepositorioContratoMandatoSQLite:
             # The original code had ALERTA_VENCIMINETO_CONTRATO_M in SQL insert/update and map.
             # We preserve it.
             alerta_vencimiento_contrato_m=(
-                row_dict.get("alerta_vencimineto_contrato_m")
-                or row_dict.get("ALERTA_VENCIMINETO_CONTRATO_M")
+                row_dict.get("alerta_vencimiento_contrato_m")
+                or row_dict.get("ALERTA_VENCIMIENTO_CONTRATO_M")
             ),
             fecha_renovacion_contrato_m=(
                 row_dict.get("fecha_renovacion_contrato_m")

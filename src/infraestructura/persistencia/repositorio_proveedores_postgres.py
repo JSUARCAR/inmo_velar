@@ -42,6 +42,10 @@ class RepositorioProveedoresPostgres(RepositorioProveedores):
             row = cursor.fetchone()
             return self._mapear_proveedor(row) if row else None
 
+    def obtener_por_persona(self, id_persona: int) -> Optional[Proveedor]:
+        """Alias para obtener_por_persona_id."""
+        return self.obtener_por_persona_id(id_persona)
+
     def obtener_por_persona_id(self, id_persona: int) -> Optional[Proveedor]:
         query = """
         SELECT P.ID_PROVEEDOR, P.ID_PERSONA, P.ESPECIALIDAD, P.CALIFICACION, P.OBSERVACIONES, 

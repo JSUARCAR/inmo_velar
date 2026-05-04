@@ -313,7 +313,7 @@ class RepositorioPropiedadSQLite:
                 {placeholder}, {placeholder}, {placeholder},
                 {placeholder}, {placeholder}, {placeholder},
                 {placeholder}, {placeholder}, {placeholder},
-                {placeholder}, {placeholder},
+                {placeholder}, {placeholder}
             )
             """
 

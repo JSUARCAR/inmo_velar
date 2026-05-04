@@ -154,7 +154,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         page_size: Optional[int] = None,
     ) -> Dict[str, Any]:
         query = """
-        SELECT I.*, PR.NOMBRE_PROVEEDOR,
+        SELECT I.*, PER_PROV.NOMBRE_COMPLETO AS NOMBRE_PROVEEDOR,
             COALESCE(
                 (SELECT JSON_AGG(
                     JSON_BUILD_OBJECT(
@@ -168,6 +168,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             ) AS COTIZACIONES_JSON
         FROM INCIDENTES I
         LEFT JOIN PROVEEDORES PR ON I.ID_PROVEEDOR_ASIGNADO = PR.ID_PROVEEDOR
+        LEFT JOIN PERSONAS PER_PROV ON PR.ID_PERSONA = PER_PROV.ID_PERSONA
         WHERE 1=1"""
         params = []
 
@@ -203,15 +204,51 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             query += " AND FECHA_INCIDENTE <= %s"
             params.append(fecha_hasta)
 
-        count_query = query.replace("SELECT *", "SELECT COUNT(*) as total")
+        # Count query independiente — evita romper con el SELECT complejo
+        count_query = """
+        SELECT COUNT(*) AS total
+        FROM INCIDENTES I
+        LEFT JOIN PROVEEDORES PR ON I.ID_PROVEEDOR_ASIGNADO = PR.ID_PROVEEDOR
+        WHERE 1=1"""
+
+        # Re-aplicar los mismos filtros al count_query
+        count_params = []
+        if busqueda:
+            count_query += " AND (I.DESCRIPCION_INCIDENTE ILIKE %s OR CAST(I.ID_INCIDENTE AS TEXT) = %s)"
+            count_params.extend([f"%{busqueda}%", busqueda])
+        if id_propiedad:
+            count_query += " AND I.ID_PROPIEDAD = %s"
+            count_params.append(id_propiedad)
+        if prioridad:
+            count_query += " AND I.PRIORIDAD = %s"
+            count_params.append(prioridad)
+        if estado:
+            count_query += " AND I.ESTADO = %s"
+            count_params.append(estado)
+        if id_proveedor:
+            count_query += " AND I.ID_PROVEEDOR_ASIGNADO = %s"
+            count_params.append(id_proveedor)
+        if dias_min is not None:
+            count_query += " AND I.DIAS_SIN_RESOLVER >= %s"
+            count_params.append(dias_min)
+        if fecha_desde:
+            count_query += " AND I.FECHA_INCIDENTE >= %s"
+            count_params.append(fecha_desde)
+        if fecha_hasta:
+            count_query += " AND I.FECHA_INCIDENTE <= %s"
+            count_params.append(fecha_hasta)
 
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
-        cursor.execute(count_query, tuple(params))
+        cursor.execute(count_query, tuple(count_params))
         total_row = cursor.fetchone()
-        total = total_row.get("total", 0) if total_row else 0
+        
+        # Soportar clave en minúscula o mayúscula según comportamiento del entorno
+        total = 0
+        if total_row:
+            total = int(total_row.get("total") or total_row.get("TOTAL") or 0)
 
-        query += " ORDER BY FECHA_INCIDENTE DESC"
+        query += " ORDER BY I.FECHA_INCIDENTE DESC"
 
         if page is not None and page_size is not None:
             query += " LIMIT %s OFFSET %s"

@@ -210,6 +210,7 @@ class ReportesState(rx.State):
     estado_contrato_options: List[str] = ["Todos", "Activo", "Finalizado", "Cancelado"]
     estado_liquidacion_options: List[str] = [
         "Todos",
+        "Sin Liquidar",
         "En Proceso",
         "Aprobada",
         "Pagada",
@@ -370,30 +371,48 @@ class ReportesState(rx.State):
     @rx.event(background=True)
     async def load_preview_data(self):
         """Carga datos paginados para la tabla de previsualización."""
+        # 1. Capturar TODOS los valores de estado de forma atómica
         async with self:
             if not self.selected_report_id:
                 return
             self.is_loading = True
             self.error_message = ""
 
-            # Cargar asesores si no están cargados
-            if len(self.asesor_options) <= 1:
-                # Obtenemos las opciones sin bloquear el estado todavía en el helper
-                pass
+            # Snapshot atómico de estado para uso fuera del lock
+            _report_id = self.selected_report_id
+            _page = self.current_page
+            _page_size = self.page_size
+            _necesita_asesores = len(self.asesor_options) <= 1
+            _filtros = {
+                "busqueda": self.filter_busqueda_tabla,
+                "estado": self.filter_estado,
+                "rol": self.filter_rol,
+                "asesor_id": self.filter_asesor_id,
+                "estado_recaudo": self.filter_estado_recaudo,
+                "metodo_pago": self.filter_metodo_pago,
+                "periodo_inicio": self.filter_periodo_inicio,
+                "periodo_fin": self.filter_periodo_fin,
+                "fecha_pago_inicio": self.filter_fecha_pago_inicio,
+                "fecha_pago_fin": self.filter_fecha_pago_fin,
+                "estado_contrato": self.filter_estado_contrato,
+                "estado_liquidacion": self.filter_estado_liquidacion,
+                "propietario_buscar": self.filter_propietario_buscar,
+            }
 
-        # Cargamos los asesores fuera del bloque inicial si es necesario
-        if len(self.asesor_options) <= 1:
+        # 2. Cargar asesores fuera del lock si es necesario
+        if _necesita_asesores:
             options = await self._fetch_asesores_options()
             if options:
                 async with self:
                     self.asesor_options = options
 
+        # 3. Ejecutar I/O de datos fuera del lock
         try:
-            # Seleccionar estrategia de carga según ID
             data, headers, total = await self._fetch_data(
-                report_id=self.selected_report_id,
-                page=self.current_page,
-                limit=self.page_size,
+                report_id=_report_id,
+                page=_page,
+                limit=_page_size,
+                filtros=_filtros,
                 is_export=False,
             )
 
@@ -421,12 +440,35 @@ class ReportesState(rx.State):
 
     async def download_csv(self):
         """Genera y descarga todo el dataset en CSV UTF-8 con BOM."""
-        # 1. Obtener TODOS los datos sin paginación
+        # 1. Snapshot atómico del estado
+        async with self:
+            if not self.selected_report_id:
+                return rx.window_alert("No hay reporte seleccionado.")
+            
+            _report_id = self.selected_report_id
+            _filtros = {
+                "busqueda": self.filter_busqueda_tabla,
+                "estado": self.filter_estado,
+                "rol": self.filter_rol,
+                "asesor_id": self.filter_asesor_id,
+                "estado_recaudo": self.filter_estado_recaudo,
+                "metodo_pago": self.filter_metodo_pago,
+                "periodo_inicio": self.filter_periodo_inicio,
+                "periodo_fin": self.filter_periodo_fin,
+                "fecha_pago_inicio": self.filter_fecha_pago_inicio,
+                "fecha_pago_fin": self.filter_fecha_pago_fin,
+                "estado_contrato": self.filter_estado_contrato,
+                "estado_liquidacion": self.filter_estado_liquidacion,
+                "propietario_buscar": self.filter_propietario_buscar,
+            }
+
+        # 2. Obtener TODOS los datos sin paginación (fuera del lock)
         try:
             data, headers, _ = await self._fetch_data(
-                report_id=self.selected_report_id,
+                report_id=_report_id,
                 page=1,
                 limit=999999,  # Fetch All
+                filtros=_filtros,
                 is_export=True,
             )
 
@@ -460,25 +502,11 @@ class ReportesState(rx.State):
         # Convertir a string y eliminar saltos de línea
         return str(value).replace("\n", " ").replace("\r", "").strip()
 
-    async def _fetch_data(self, report_id: str, page: int, limit: int, is_export: bool):
+    async def _fetch_data(self, report_id: str, page: int, limit: int, filtros: dict, is_export: bool):
         """
         Hub central de lógica de obtención de datos delegando al ServicioReportes.
+        Los filtros se reciben por parámetro para evitar race conditions al leer self.* fuera de locks.
         """
-        filtros = {
-            "busqueda": self.filter_busqueda_tabla,
-            "estado": self.filter_estado,
-            "rol": self.filter_rol,
-            "asesor_id": self.filter_asesor_id,
-            "estado_recaudo": self.filter_estado_recaudo,
-            "metodo_pago": self.filter_metodo_pago,
-            "periodo_inicio": self.filter_periodo_inicio,
-            "periodo_fin": self.filter_periodo_fin,
-            "fecha_pago_inicio": self.filter_fecha_pago_inicio,
-            "fecha_pago_fin": self.filter_fecha_pago_fin,
-            "estado_contrato": self.filter_estado_contrato,
-            "estado_liquidacion": self.filter_estado_liquidacion,
-            "propietario_buscar": self.filter_propietario_buscar,
-        }
 
         try:
             servicio = ServicioReportes()

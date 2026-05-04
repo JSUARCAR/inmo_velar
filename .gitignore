@@ -70,3 +70,11 @@ tmp/
 
 # Generados por la app
 documentos_generados/
+
+# Antigravity / Agent tools
+agent-skills/
+skills/
+agent-skills.zip
+skills.zip
+scratch/
+nul

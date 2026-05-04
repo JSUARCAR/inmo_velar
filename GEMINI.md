@@ -16,7 +16,7 @@ Este manifiesto define los estándares de ejecución técnica, arquitectónica y
 - **Aplicación (`src/aplicacion/`):** Servicios de orquestación y DTOs (Pydantic con validaciones estrictas). Coordina dominio e infraestructura.
 - **Infraestructura (`src/infraestructura/`):** 
     - **Persistencia:** Repositorios PostgreSQL. **PROHIBIDO** el sufijo `_sqlite.py`. Usar prefijo `repositorio_[entidad].py`.
-    - **Motores:** PDF Elite (Neumorfismo con validación de assets), O365, Cache, etc.
+    - **Motores:** PDF Elite (Claude Design System con validación de assets), O365, Cache, etc.
 - **Presentación (`src/presentacion_reflex/`):** UI con Reflex. State management centralizado usando mutaciones atómicas (nunca mutar listas/diccionarios in-place).
 
 ### 2.2. Lingüística, Nomenclatura y Tipado (Explicit over Implicit)
@@ -36,11 +36,14 @@ Este manifiesto define los estándares de ejecución técnica, arquitectónica y
 - **Tipos Estrictos (Fail Fast):** PostgreSQL no perdona. Validar booleanos (`True/False` explícito) y fechas (`ISO 8601`) antes de enviarlas al repositorio.
 - **Agnosticismo:** Módulos de persistencia deben ser independientes de la tecnología de transporte de datos.
 
-## 3. SISTEMA DE DISEÑO (NEUMORFISMO EJECUTIVO)
-- **Colores Base:** Superficie (`#e0e5ec`), Sombra Clara (`#ffffff`), Sombra Oscura (`#a3b1c6`), Primario (`#6d5dfc`), Primario Claro (`#8abdff`), Secundario (`#ff6b6b`), Éxito (`#51cf66`), Info (`#ffd43b`).
-- **Textos:** Principal (`#4d5f71`), Secundario (`#8a9bb8`), Deshabilitado (`#a0aec0`).
-- **Efectos:** Sombras Elevadas (`shadow_raised`) para interactuables y cards, Hundidas (`shadow_inset`) para inputs y estados seleccionados/activos, Plano (`shadow_flat`) para hovers.
+## 3. SISTEMA DE DISEÑO (CLAUDE/ANTHROPIC DESIGN SYSTEM)
+- **Colores Base:** Parchment (`#f5f4ed`), Ivory (`#faf9f5`), Warm Sand (`#e8e6dc`).
+- **Textos:** Anthropic Near Black (`#141413`), Olive Gray (`#5e5d59`), Stone Gray (`#87867f`).
+- **Brand Color:** Terracotta (`#c96442`), Coral (`#d97757`).
+- **Sombras:** Ring-based system (`0px 0px 0px 1px`) - no más sombras duales.
+- **Depth:** Whisper shadow (`0px 4px 24px rgba(0,0,0,0.05)`) para elevate content.
 - **Transiciones:** Estándar `all 0.3s cubic-bezier(0.4, 0, 0.2, 1)`, rápida `0.15s ease-out`, lenta (modales) `0.4s cubic-bezier(...)`.
+- **Fuentes:** Playfair Display (serif headlines) + Inter (UI/sans).
 
 ## 4. HIGIENE Y SEGURIDAD (PROTOCOLO ZERO LEAK)
 - **Cero Filtraciones:** Protección absoluta de `.env`, `railway.json`, credenciales de O365 y claves criptográficas.

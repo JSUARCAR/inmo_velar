@@ -4,12 +4,10 @@ Este test verifica que el acceso a show_create_modal no cause el error
 'StateProxy is immutable outside of a context manager'.
 """
 
-import asyncio
 import sys
 
 sys.path.insert(0, "src")
 
-from reflex.testing import AppHarness
 
 
 def test_save_liquidacion_no_stateproxy_error():
@@ -40,10 +38,7 @@ def test_save_liquidacion_no_stateproxy_error():
     lines = method_body.split("\n")
 
     in_async_with_self = False
-    async_with_depth = 0
-
     problematic_accesses = []
-    safe_accesses = []
 
     for i, line in enumerate(lines):
         stripped = line.strip()
@@ -76,7 +71,7 @@ def test_save_liquidacion_no_stateproxy_error():
         print(
             "ERROR: El fix no está aplicado - show_create_modal no se captura en variable local"
         )
-        print(f"Accesos problemáticos fuera del async with self:")
+        print("Accesos problemáticos fuera del async with self:")
         for line_num, line_text in problematic_accesses:
             print(f"  Línea {line_num}: {line_text}")
         sys.exit(1)
