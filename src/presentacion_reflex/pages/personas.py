@@ -1,5 +1,6 @@
 import reflex as rx
 
+from src.presentacion_reflex.components.table_utils import header_cell_sortable
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.components.personas.modal_form import modal_persona
 from src.presentacion_reflex.components.personas.modal_detalles import modal_detalles
@@ -321,24 +322,14 @@ def personas_page() -> rx.Component:
                                 rx.table.root(
                                     rx.table.header(
                                         rx.table.row(
-                                            rx.table.column_header_cell(
-                                                "Nombre", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
-                                            ),
-                                            rx.table.column_header_cell(
-                                                "Documento", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
-                                            ),
-                                            rx.table.column_header_cell(
-                                                "Contacto", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
-                                            ),
-                                            rx.table.column_header_cell(
-                                                "Fecha Creación", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
-                                            ),
+                                            header_cell_sortable("Nombre", "nombre", PersonasState.sort_by, PersonasState.sort_order, PersonasState.toggle_sort),
+                                            header_cell_sortable("Documento", "documento", PersonasState.sort_by, PersonasState.sort_order, PersonasState.toggle_sort),
+                                            header_cell_sortable("Contacto", "email", PersonasState.sort_by, PersonasState.sort_order, PersonasState.toggle_sort),
+                                            header_cell_sortable("Fecha Creación", "creado", PersonasState.sort_by, PersonasState.sort_order, PersonasState.toggle_sort),
                                             rx.table.column_header_cell(
                                                 "Roles", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),
-                                            rx.table.column_header_cell(
-                                                "Estado", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
-                                            ),
+                                            header_cell_sortable("Estado", "estado", PersonasState.sort_by, PersonasState.sort_order, PersonasState.toggle_sort),
                                             rx.table.column_header_cell(
                                                 "Acciones", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
                                             ),

@@ -121,9 +121,11 @@ class ServicioPersonas:
         busqueda: Optional[str] = None,
         fecha_inicio: Optional[str] = None,
         fecha_fin: Optional[str] = None,
+        sort_by: str = "id_persona",
+        sort_order: str = "desc",
     ):
-        """Lista personas con paginación y filtros adicionales."""
-        logger.debug(f"Listando personas paginado: page={page}, page_size={page_size}, filtro_rol={filtro_rol}, solo_activos={solo_activos}, busqueda={busqueda}, fecha_inicio={fecha_inicio}, fecha_fin={fecha_fin}")
+        """Lista personas con paginación, filtros y ordenamiento dinámico."""
+        logger.debug(f"Listando personas paginado: page={page}, sort_by={sort_by}")
         from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
 
         params = PaginationParams(page=page, page_size=page_size)
@@ -143,7 +145,9 @@ class ServicioPersonas:
             fecha_inicio=fecha_inicio,
             fecha_fin=fecha_fin,
             limit=params.limit,
-            offset=params.offset
+            offset=params.offset,
+            sort_by=sort_by,
+            sort_order=sort_order
         )
 
         items = [

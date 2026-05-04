@@ -20,7 +20,9 @@ class IRepositorioPropiedad(Protocol):
         solo_activas: bool = True,
         busqueda: Optional[str] = None,
         limit: Optional[int] = None,
-        offset: int = 0
+        offset: int = 0,
+        sort_by: str = "id_propiedad",
+        sort_order: str = "desc"
     ) -> List[Propiedad]:
         ...
         
