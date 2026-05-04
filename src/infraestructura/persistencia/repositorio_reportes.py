@@ -11,31 +11,42 @@ class RepositorioReportes:
     def _ejecutar_query_paginada(
         self, query: str, params: List[Any], page: int, limit: int
     ) -> Tuple[List[Dict[str, Any]], int]:
-        """Ejecuta una consulta con paginación y retorna los datos y el conteo total."""
+        """Ejecuta una consulta con paginación y retorna los datos y el conteo total.
+
+        Realiza rollback previo para garantizar lectura fresca bajo READ COMMITTED.
+        """
         offset = (page - 1) * limit
 
-        # 1. Obtener el total de registros (Count)
-        count_query = f"SELECT COUNT(*) as total FROM ({query}) AS subquery"
-
-        # 2. Agregar LIMIT y OFFSET
-        paginated_query = f"{query} LIMIT %s OFFSET %s"
+        # Utilizamos una Window Function para obtener el count total y los datos en un solo viaje
+        paginated_query = f"""
+            SELECT subquery.*, COUNT(*) OVER() as _total_count
+            FROM ({query}) AS subquery
+            LIMIT %s OFFSET %s
+        """
         paginated_params = params + [limit, offset]
 
         with self.db.obtener_conexion() as conn:
-            # Count
-            cursor = self.db.get_dict_cursor(conn)
+            # Limpiar estado transaccional para asegurar READ COMMITTED con datos frescos.
+            # En PostgreSQL, si la conexión fue usada previamente y no se hizo commit/rollback,
+            # podríamos leer datos estancados (stale snapshot).
             try:
-                cursor.execute(count_query, params)
-                res = cursor.fetchone()
-                total = res.get("TOTAL", res.get("total", 0)) if res else 0
-            finally:
-                cursor.close()
+                conn.rollback()
+            except getattr(conn, "OperationalError", Exception) as e:
+                # Fallar si la conexión está severamente dañada, en lugar de silenciar todo
+                pass
 
-            # Data
             cursor = self.db.get_dict_cursor(conn)
             try:
                 cursor.execute(paginated_query, paginated_params)
                 rows = cursor.fetchall()
+                
+                # Extraer el total_count de la primera fila si existen resultados
+                total = rows[0].get("_total_count", 0) if rows else 0
+                
+                # Limpiar la columna auxiliar de los resultados
+                for row in rows:
+                    if "_total_count" in row:
+                        del row["_total_count"]
             finally:
                 cursor.close()
 
@@ -50,6 +61,10 @@ class RepositorioReportes:
         limit: int = 20,
     ) -> Tuple[List[Dict[str, Any]], int]:
         """Obtiene datos de personas con un rol específico (Propietarios, Arrendatarios, etc)."""
+        _TABLAS_PERMITIDAS = {"PROPIETARIOS", "ARRENDATARIOS", "CODEUDORES", "ASESORES", "TERCEROS"}
+        if role_table.upper() not in _TABLAS_PERMITIDAS:
+            raise ValueError(f"Tabla no permitida para reporte de roles: {role_table}")
+            
         query = f"""
             SELECT p.TIPO_DOCUMENTO, p.NUMERO_DOCUMENTO, p.NOMBRE_COMPLETO, 
                    p.TELEFONO_PRINCIPAL, p.CORREO_ELECTRONICO, p.DIRECCION_PRINCIPAL,
@@ -72,6 +87,148 @@ class RepositorioReportes:
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
+
+        return self._ejecutar_query_paginada(query, params, page, limit)
+
+    def obtener_reporte_personas(
+        self,
+        busqueda: Optional[str] = None,
+        solo_activos: Optional[bool] = None,
+        filtro_rol: Optional[str] = None,
+        page: int = 1,
+        limit: int = 20,
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """Reporte de personas con paginación real en PostgreSQL.
+
+        Reemplaza la carga en memoria del RepositorioPersonaSQLite.
+
+        Args:
+            busqueda: Texto libre sobre nombre completo o número de documento.
+            solo_activos: True=solo activos, False=solo inactivos, None=todos.
+            filtro_rol: Nombre del rol (PROPIETARIOS, ARRENDATARIOS, etc.) para filtrar por tabla de rol.
+            page: Página actual (1-indexed).
+            limit: Registros por página.
+
+        Returns:
+            Tupla (lista de registros, total de registros).
+        """
+        # Mapa de nombres de rol de dominio a tablas de DB
+        _MAPA_ROLES: Dict[str, str] = {
+            "Propietario": "PROPIETARIOS",
+            "Arrendatario": "ARRENDATARIOS",
+            "Codeudor": "CODEUDORES",
+            "Asesor": "ASESORES",
+        }
+
+        rol_tabla = _MAPA_ROLES.get(filtro_rol) if filtro_rol else None
+
+        if rol_tabla:
+            # Filtro por rol: JOIN a tabla específica
+            query = f"""
+                SELECT
+                    p.ID_PERSONA,
+                    p.TIPO_DOCUMENTO,
+                    p.NUMERO_DOCUMENTO,
+                    p.NOMBRE_COMPLETO,
+                    p.TELEFONO_PRINCIPAL,
+                    p.CORREO_ELECTRONICO,
+                    p.DIRECCION_PRINCIPAL,
+                    p.ESTADO_REGISTRO
+                FROM PERSONAS p
+                INNER JOIN {rol_tabla} r ON p.ID_PERSONA = r.ID_PERSONA
+            """
+        else:
+            query = """
+                SELECT
+                    p.ID_PERSONA,
+                    p.TIPO_DOCUMENTO,
+                    p.NUMERO_DOCUMENTO,
+                    p.NOMBRE_COMPLETO,
+                    p.TELEFONO_PRINCIPAL,
+                    p.CORREO_ELECTRONICO,
+                    p.DIRECCION_PRINCIPAL,
+                    p.ESTADO_REGISTRO
+                FROM PERSONAS p
+            """
+
+        conditions = []
+        params = []
+
+        if busqueda:
+            conditions.append(
+                "(p.NOMBRE_COMPLETO ILIKE %s OR p.NUMERO_DOCUMENTO ILIKE %s)"
+            )
+            params.extend([f"%{busqueda}%", f"%{busqueda}%"])
+
+        if solo_activos is True:
+            conditions.append("p.ESTADO_REGISTRO = %s")
+            params.append(True)
+        elif solo_activos is False:
+            conditions.append("p.ESTADO_REGISTRO = %s")
+            params.append(False)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY p.NOMBRE_COMPLETO"
+
+        return self._ejecutar_query_paginada(query, params, page, limit)
+
+    def obtener_reporte_propiedades(
+        self,
+        busqueda: Optional[str] = None,
+        solo_activas: Optional[bool] = None,
+        page: int = 1,
+        limit: int = 20,
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """Reporte de propiedades con paginación real en PostgreSQL.
+
+        Reemplaza la carga en memoria del RepositorioPropiedadSQLite.
+
+        Args:
+            busqueda: Texto libre sobre dirección o matrícula inmobiliaria.
+            solo_activas: True=solo activas, False=solo inactivas, None=todas.
+            page: Página actual (1-indexed).
+            limit: Registros por página.
+
+        Returns:
+            Tupla (lista de registros, total de registros).
+        """
+        query = """
+            SELECT
+                p.ID_PROPIEDAD,
+                p.MATRICULA_INMOBILIARIA,
+                p.DIRECCION_PROPIEDAD,
+                p.TIPO_PROPIEDAD,
+                p.AREA_M2,
+                p.HABITACIONES,
+                p.ESTRATO,
+                p.VALOR_ADMINISTRACION,
+                p.CANON_ARRENDAMIENTO_ESTIMADO,
+                p.DISPONIBILIDAD_PROPIEDAD,
+                p.ESTADO_REGISTRO
+            FROM PROPIEDADES p
+        """
+        conditions = []
+        params = []
+
+        if busqueda:
+            conditions.append(
+                "(p.DIRECCION_PROPIEDAD ILIKE %s OR p.MATRICULA_INMOBILIARIA ILIKE %s)"
+            )
+            params.extend([f"%{busqueda}%", f"%{busqueda}%"])
+
+        if solo_activas is True:
+            conditions.append("p.ESTADO_REGISTRO = %s")
+            params.append(True)
+        elif solo_activas is False:
+            conditions.append("p.ESTADO_REGISTRO = %s")
+            params.append(False)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY p.MATRICULA_INMOBILIARIA"
 
         return self._ejecutar_query_paginada(query, params, page, limit)
 
@@ -129,7 +286,14 @@ class RepositorioReportes:
         self, tabla: str, busqueda: Optional[str] = None, page: int = 1, limit: int = 20
     ) -> Tuple[List[Dict[str, Any]], int]:
         """Obtiene todos los registros de una tabla con búsqueda simple y paginación."""
-        query = f"SELECT * FROM {tabla}"
+        _TABLAS_PERMITIDAS = {
+            "PERSONAS", "PROPIETARIOS", "ARRENDATARIOS", "CODEUDORES", "ASESORES", "TERCEROS",
+            "PROPIEDADES", "CONTRATOS_MANDATOS", "CONTRATOS_ARRENDAMIENTOS", "RECAUDOS", "LIQUIDACIONES", "INCIDENTES"
+        }
+        if tabla.upper() not in _TABLAS_PERMITIDAS:
+            raise ValueError(f"Tabla genérica no permitida: {tabla}")
+            
+        query = f"SELECT * FROM {tabla.upper()}"
         params = []
 
         if busqueda:
@@ -150,6 +314,11 @@ class RepositorioReportes:
             ORDER BY p.NOMBRE_COMPLETO
         """
         with self.db.obtener_conexion() as conn:
+            # Rollback preventivo para lectura fresca
+            try:
+                conn.rollback()
+            except Exception:
+                pass
             cursor = self.db.get_dict_cursor(conn)
             try:
                 cursor.execute(query)
@@ -329,10 +498,17 @@ class RepositorioReportes:
     ) -> Tuple[List[Dict[str, Any]], int]:
         """
         Reporte consolidado unificado de información financiera y contractual.
+        Cambiado: TABLA BASE es CONTRATOS_MANDATOS para mostrar TODOS los contratos,
+        sin importar si tienen liquidación o no.
         Consolida: Propietario, Arrendatario, Contrato, Recaudos, Liquidaciones.
         """
         query = """
             SELECT
+                -- IDs para relaciones
+                cm.ID_CONTRATO_M AS "ID_CONTRATO_M",
+                p.ID_PROPIEDAD AS "ID_PROPIEDAD",
+                COALESCE(l.ID_LIQUIDACION, 0) AS "ID_LIQUIDACION",
+
                 -- Información del Propietario
                 per_prop.TIPO_DOCUMENTO AS "TIPO_DOCUMENTO_PROPIETARIO",
                 per_prop.NUMERO_DOCUMENTO AS "NUMERO_DOCUMENTO_PROPIETARIO",
@@ -350,30 +526,37 @@ class RepositorioReportes:
 
                 -- Información del Contrato
                 cm.FECHA_INICIO_CONTRATO_M AS "FECHA_INICIO_CONTRATO",
+                cm.FECHA_FIN_CONTRATO_M AS "FECHA_FIN_CONTRATO",
                 cm.ESTADO_CONTRATO_M AS "ESTADO_CONTRATO",
+                cm.CANON_MANDATO AS "CANON_MANDATO",
+                cm.FECHA_PAGO AS "FECHA_PAGO_CONTRATO",
                 p.DIRECCION_PROPIEDAD AS "DIRECCION_PROPIEDAD",
+                p.MATRICULA_INMOBILIARIA AS "MATRICULA_INMOBILIARIA",
+
+                -- Información del Contrato de Arriendo (si existe)
+                COALESCE(ca.ID_CONTRATO_A, 0) AS "ID_CONTRATO_ARRIENDO",
+                COALESCE(ca.ESTADO_CONTRATO_A, 'N/A') AS "ESTADO_ARRIENDO",
 
                 -- Información de Recaudos (del recaudo relacionado a la liquidación)
                 COALESCE(r.METODO_PAGO, '') AS "METODO_PAGO_RECAUDOS",
                 COALESCE(r.ESTADO_RECAUDO, '') AS "ESTADO_RECAUDO",
-                l.PERIODO AS "PERIODO_FACTURADO",
+                COALESCE(l.PERIODO, '') AS "PERIODO_FACTURADO",
 
                 -- Información Comercial
                 per_ase.NOMBRE_COMPLETO AS "NOMBRE_ASESOR",
-                cm.CANON_MANDATO AS "CANON_ARRENDAMIENTO",
 
-                -- Ingresos (Liquidaciones)
+                -- Ingresos (Liquidaciones) - ahora manejan NULL
                 COALESCE(l.OTROS_INGRESOS, 0) AS "OTROS_INGRESOS",
-                l.TOTAL_INGRESOS AS "TOTAL_INGRESOS",
+                COALESCE(l.TOTAL_INGRESOS, 0) AS "TOTAL_INGRESOS",
 
                 -- Comisiones
-                l.COMISION_PORCENTAJE AS "COMISION_PORCENTAJE_ASESOR",
-                l.COMISION_MONTO AS "COMISION_MONTO_ASESOR",
+                COALESCE(l.COMISION_PORCENTAJE, 0) AS "COMISION_PORCENTAJE_ASESOR",
+                COALESCE(l.COMISION_MONTO, 0) AS "COMISION_MONTO_ASESOR",
                 COALESCE(l.IVA_COMISION, 0) AS "IVA_COMISION",
                 COALESCE(l.IMPUESTO_4X1000, 0) AS "IMPUESTO_4X1000",
 
                 -- Egresos
-                COALESCE(l.GASTOS_ADMINISTRACION, 0) AS "VALOR_ADMINISTRACION_PROPIEDAD",
+                COALESCE(l.GASTOS_ADMINISTRACION, 0) AS "GASTOS_ADMINISTRACION",
                 CASE WHEN l.GASTOS_ADMINISTRACION > 0 AND l.ESTADO_LIQUIDACION = 'Pagada'
                      THEN 'Pagado'
                      WHEN l.GASTOS_ADMINISTRACION > 0 THEN 'Pendiente'
@@ -383,38 +566,48 @@ class RepositorioReportes:
                 COALESCE(l.GASTOS_REPARACIONES, 0) AS "GASTOS_REPARACIONES",
                 COALESCE(l.PAGO_PREDIAL, 0) AS "PAGO_PREDIAL",
                 COALESCE(l.OTROS_EGRESOS, 0) AS "OTROS_EGRESOS",
-                l.TOTAL_EGRESOS AS "TOTAL_EGRESOS",
+                COALESCE(l.TOTAL_EGRESOS, 0) AS "TOTAL_EGRESOS",
 
                 -- Resultado Financiero
-                l.NETO_A_PAGAR AS "NETO_A_PAGAR",
+                COALESCE(l.NETO_A_PAGAR, 0) AS "NETO_A_PAGAR",
 
                 -- Estado y Fechas
-                l.ESTADO_LIQUIDACION AS "ESTADO_LIQUIDACION",
+                COALESCE(l.ESTADO_LIQUIDACION, 'Sin Liquidar') AS "ESTADO_LIQUIDACION",
                 l.FECHA_PAGO AS "FECHA_PAGO",
+                l.PERIODO AS "PERIODO",
+                l.FECHA_GENERACION AS "FECHA_GENERACION",
 
-                -- IDs para relaciones
-                l.ID_LIQUIDACION AS "ID_LIQUIDACION",
-                cm.ID_CONTRATO_M AS "ID_CONTRATO_M",
-                p.ID_PROPIEDAD AS "ID_PROPIEDAD"
-            FROM liquidaciones l
-            LEFT JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+                -- Administración de Propiedad (datos maestros desde PROPIEDADES)
+                COALESCE(p.VALOR_ADMINISTRACION, 0)          AS "VALOR_ADMIN_PROPIEDAD_BASE",
+                p.FECHA_PAGO_ADMINISTRACION                  AS "DIA_PAGO_ADMIN",
+                COALESCE(p.LINK_PAGO_ADMINISTRACION, '')     AS "LINK_PAGO_ADMIN"
+            FROM CONTRATOS_MANDATOS cm
             LEFT JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
             LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
             LEFT JOIN PERSONAS per_prop ON prop.ID_PERSONA = per_prop.ID_PERSONA
             LEFT JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR
             LEFT JOIN PERSONAS per_ase ON a.ID_PERSONA = per_ase.ID_PERSONA
-            LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON cm.ID_PROPIEDAD = ca.ID_PROPIEDAD
+            LEFT JOIN liquidaciones l ON cm.ID_CONTRATO_M = l.ID_CONTRATO_M
+            LEFT JOIN (
+                SELECT DISTINCT ON (ca_inner.ID_PROPIEDAD)
+                    ca_inner.ID_CONTRATO_A,
+                    ca_inner.ID_PROPIEDAD,
+                    ca_inner.ID_ARRENDATARIO,
+                    ca_inner.ESTADO_CONTRATO_A,
+                    ca_inner.FECHA_INICIO_CONTRATO_A
+                FROM CONTRATOS_ARRENDAMIENTOS ca_inner
+                ORDER BY ca_inner.ID_PROPIEDAD,
+                         CASE WHEN ca_inner.ESTADO_CONTRATO_A = 'Activo' THEN 0 ELSE 1 END,
+                         ca_inner.FECHA_INICIO_CONTRATO_A DESC
+            ) ca ON cm.ID_PROPIEDAD = ca.ID_PROPIEDAD
             LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             LEFT JOIN PERSONAS per_arr ON arr.ID_PERSONA = per_arr.ID_PERSONA
             LEFT JOIN (
-                SELECT r.ID_RECAUDO, r.ID_CONTRATO_A, r.METODO_PAGO, r.ESTADO_RECAUDO
+                SELECT DISTINCT ON (r.ID_CONTRATO_A)
+                    r.ID_RECAUDO, r.ID_CONTRATO_A, r.METODO_PAGO, r.ESTADO_RECAUDO
                 FROM RECAUDOS r
-                INNER JOIN (
-                    SELECT ID_CONTRATO_A, MAX(FECHA_PAGO) AS ultima_fecha
-                    FROM RECAUDOS
-                    WHERE ESTADO_RECAUDO = 'Aplicado'
-                    GROUP BY ID_CONTRATO_A
-                ) max_r ON r.ID_CONTRATO_A = max_r.ID_CONTRATO_A AND r.FECHA_PAGO = max_r.ultima_fecha
+                WHERE r.ESTADO_RECAUDO = 'Aplicado'
+                ORDER BY r.ID_CONTRATO_A, r.FECHA_PAGO DESC, r.ID_RECAUDO DESC
             ) r ON ca.ID_CONTRATO_A = r.ID_CONTRATO_A
         """
 
@@ -426,10 +619,13 @@ class RepositorioReportes:
             conditions.append("cm.ESTADO_CONTRATO_M = %s")
             params.append(estado_contrato)
 
-        # Filtro: Estado de Liquidación
+        # Filtro: Estado de Liquidación - ahora incluye "Sin Liquidar"
         if estado_liquidacion and estado_liquidacion != "Todos":
-            conditions.append("l.ESTADO_LIQUIDACION = %s")
-            params.append(estado_liquidacion)
+            if estado_liquidacion == "Sin Liquidar":
+                conditions.append("l.ID_LIQUIDACION IS NULL")
+            else:
+                conditions.append("l.ESTADO_LIQUIDACION = %s")
+                params.append(estado_liquidacion)
 
         # Filtro: Asesor
         if asesor_id:
@@ -444,22 +640,34 @@ class RepositorioReportes:
             )""")
             params.extend([f"%{propietario_buscar}%", f"%{propietario_buscar}%"])
 
-        # Filtro: Rango de fechas de pago (FECHA_PAGO)
+        # Filtro: Rango de fechas de pago (FECHA_PAGO) - solo aplica si hay liquidación
         if fecha_pago_inicio:
-            conditions.append("l.FECHA_PAGO >= %s")
+            conditions.append("""(
+                l.FECHA_PAGO >= %s OR 
+                l.ID_LIQUIDACION IS NULL
+            )""")
             params.append(fecha_pago_inicio)
 
         if fecha_pago_fin:
-            conditions.append("l.FECHA_PAGO <= %s")
+            conditions.append("""(
+                l.FECHA_PAGO <= %s OR 
+                l.ID_LIQUIDACION IS NULL
+            )""")
             params.append(fecha_pago_fin)
 
-        # Filtro: Período facturado
+        # Filtro: Período facturado - solo aplica si hay liquidación
         if periodo_inicio:
-            conditions.append("l.PERIODO >= %s")
+            conditions.append("""(
+                l.PERIODO >= %s OR 
+                l.ID_LIQUIDACION IS NULL
+            )""")
             params.append(periodo_inicio)
 
         if periodo_fin:
-            conditions.append("l.PERIODO <= %s")
+            conditions.append("""(
+                l.PERIODO <= %s OR 
+                l.ID_LIQUIDACION IS NULL
+            )""")
             params.append(periodo_fin)
 
         # Búsqueda general
@@ -469,13 +677,15 @@ class RepositorioReportes:
                 per_arr.NOMBRE_COMPLETO ILIKE %s OR
                 p.DIRECCION_PROPIEDAD ILIKE %s OR
                 per_ase.NOMBRE_COMPLETO ILIKE %s OR
-                CAST(l.ID_LIQUIDACION AS TEXT) ILIKE %s
+                cm.ID_CONTRATO_M::TEXT ILIKE %s OR
+                p.MATRICULA_INMOBILIARIA ILIKE %s
             )""")
-            params.extend([f"%{busqueda}%"] * 5)
+            params.extend([f"%{busqueda}%"] * 6)
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
 
-        query += " ORDER BY l.FECHA_PAGO DESC, l.ID_LIQUIDACION DESC"
+        # Order by: primero contratos con liquidaciones recientes, luego por fecha inicio contrato
+        query += " ORDER BY l.FECHA_PAGO DESC NULLS LAST, cm.FECHA_INICIO_CONTRATO_M DESC, cm.ID_CONTRATO_M DESC"
 
         return self._ejecutar_query_paginada(query, params, page, limit)

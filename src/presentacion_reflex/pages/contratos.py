@@ -13,21 +13,21 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_badge,
     neuro_panel,
 )
-from src.presentacion_reflex.components.contratos.contrato_card import contrato_card
-from src.presentacion_reflex.components.contratos.contrato_mandato_form import (
-    contrato_mandato_form,
+from src.presentacion_reflex.components.contratos.tarjeta_contrato import tarjeta_contrato
+from src.presentacion_reflex.components.contratos.formulario_contrato_mandato import (
+    formulario_contrato_mandato,
 )
-from src.presentacion_reflex.components.contratos.contrato_arrendamiento_form import (
-    contrato_arrendamiento_form,
+from src.presentacion_reflex.components.contratos.formulario_contrato_arrendamiento import (
+    formulario_contrato_arrendamiento,
 )
-from src.presentacion_reflex.components.contratos.contrato_detail_modal import (
-    contrato_detail_modal,
+from src.presentacion_reflex.components.contratos.modal_detalle_contrato import (
+    modal_detalle_contrato,
 )
-from src.presentacion_reflex.components.contratos.ipc_increment_modal import (
-    ipc_increment_modal,
+from src.presentacion_reflex.components.contratos.modal_incremento_ipc import (
+    modal_incremento_ipc,
 )
-from src.presentacion_reflex.components.contratos.contrato_renewal_modal import (
-    contrato_renewal_modal,
+from src.presentacion_reflex.components.contratos.modal_renovacion_contrato import (
+    modal_renovacion_contrato,
 )
 from src.presentacion_reflex.components.shared.elite_gradient_icon import (
     elite_gradient_icon_labeled,
@@ -126,6 +126,7 @@ def render_table_view() -> rx.Component:
                 rx.table.column_header_cell("Cumplimiento"),
                 rx.table.column_header_cell("Propietario/Arrendatario"),
                 rx.table.column_header_cell("Valor"),
+                rx.table.column_header_cell("Fecha Pago"),
                 rx.table.column_header_cell("Fechas"),
                 rx.table.column_header_cell("Acciones"),
             )
@@ -260,6 +261,23 @@ def render_table_view() -> rx.Component:
                         rx.text("$", c.valor_canon.to_string(), weight="bold")
                     ),
                     rx.table.cell(
+                        rx.tooltip(
+                            rx.cond(
+                                c.fecha_pago != "",
+                                rx.vstack(
+                                    rx.text(f"Día {c.fecha_pago}", size="2"),
+                                    spacing="0",
+                                ),
+                                rx.text("No registrada", size="1", color="var(--gray-9)", font_style="italic"),
+                            ),
+                            content=rx.cond(
+                                c.fecha_pago != "",
+                                f"Pago día {c.fecha_pago} de cada mes",
+                                "Configure la fecha de pago en el detalle del contrato",
+                            ),
+                        )
+                    ),
+                    rx.table.cell(
                         rx.vstack(
                             rx.text("Inicia: ", c.fecha_inicio, size="1"),
                             rx.text("Vence: ", c.fecha_fin, size="1"),
@@ -338,7 +356,7 @@ def contratos_page() -> rx.Component:
                             "Gestión de Contratos",
                             description="Administración de mandatos y arrendamientos",
                             size=28,
-                            accent="purple",
+                            color_scheme="terracotta",
                         ),
                         rx.cond(
                             AuthState.check_action("Contratos", "CREAR"),
@@ -450,6 +468,38 @@ def contratos_page() -> rx.Component:
                                     "border_radius": "8px",
                                 },
                             ),
+                            # Filtro: Mandatos sin arriendo activo
+                            rx.cond(
+                                ContratosState.filter_tipo != "Arrendamiento",
+                                rx.tooltip(
+                                    rx.box(
+                                        rx.checkbox(
+                                            "Sin arriendo",
+                                            checked=ContratosState.filter_sin_arrendamiento,
+                                            on_change=ContratosState.set_filter_sin_arrendamiento,
+                                            size="2",
+                                            color_scheme="orange",
+                                        ),
+                                        padding="8px 12px",
+                                        border_radius="8px",
+                                        background=rx.cond(
+                                            ContratosState.filter_sin_arrendamiento,
+                                            "var(--orange-3)",
+                                            "transparent",
+                                        ),
+                                        style={
+                                            "box_shadow": rx.cond(
+                                                ContratosState.filter_sin_arrendamiento,
+                                                styles.SHADOW_INSET_ELITE,
+                                                "none",
+                                            ),
+                                            "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                            "white_space": "nowrap",
+                                        },
+                                    ),
+                                    content="Mostrar solo mandatos sin contrato de arriendo activo",
+                                ),
+                            ),
                             neuro_button(
                                 rx.cond(
                                     ContratosState.is_grid_view,
@@ -511,7 +561,7 @@ def contratos_page() -> rx.Component:
                                     ContratosState.is_grid_view,
                                     rx.grid(
                                         rx.foreach(
-                                            ContratosState.contratos, contrato_card
+                                            ContratosState.contratos, tarjeta_contrato
                                         ),
                                         columns=rx.breakpoints(
                                             initial="1", sm="2", lg="3"
@@ -571,11 +621,11 @@ def contratos_page() -> rx.Component:
             ),
         ),
         # Modales
-        contrato_mandato_form(),
-        contrato_arrendamiento_form(),
-        contrato_detail_modal(),
-        ipc_increment_modal(),
-        contrato_renewal_modal(),
+        formulario_contrato_mandato(),
+        formulario_contrato_arrendamiento(),
+        modal_detalle_contrato(),
+        modal_incremento_ipc(),
+        modal_renovacion_contrato(),
     )
 
 

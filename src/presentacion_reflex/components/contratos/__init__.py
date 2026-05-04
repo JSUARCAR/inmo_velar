@@ -1,15 +1,17 @@
 """Exports de componentes de contratos."""
 
-from .contrato_arrendamiento_form import contrato_arrendamiento_form
-from .contrato_card import contrato_card
-from .contrato_detail_modal import contrato_detail_modal
-from .contrato_mandato_form import contrato_mandato_form
-from .ipc_increment_modal import ipc_increment_modal
+from .formulario_contrato_arrendamiento import formulario_contrato_arrendamiento
+from .tarjeta_contrato import tarjeta_contrato
+from .modal_detalle_contrato import modal_detalle_contrato
+from .formulario_contrato_mandato import formulario_contrato_mandato
+from .modal_incremento_ipc import modal_incremento_ipc
+from .modal_renovacion_contrato import modal_renovacion_contrato
 
 __all__ = [
-    "contrato_arrendamiento_form",
-    "contrato_mandato_form",
-    "contrato_detail_modal",
-    "ipc_increment_modal",
-    "contrato_card",
+    "formulario_contrato_arrendamiento",
+    "formulario_contrato_mandato",
+    "modal_detalle_contrato",
+    "modal_incremento_ipc",
+    "tarjeta_contrato",
+    "modal_renovacion_contrato",
 ]

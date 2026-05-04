@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import reflex as rx
-import unicodedata
 
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
 from src.infraestructura.persistencia.database import db_manager
@@ -29,6 +28,7 @@ class ContratoDict(pydantic.BaseModel):
     fecha_fin: str
     valor_canon: float
     valor_administracion: float
+    fecha_pago: str = ""
     estado_cumplimiento: str = "PENDIENTE"  # AL_DIA, PENDIENTE, VENCIDO
 
 
@@ -46,7 +46,7 @@ class ContratosState(DocumentosStateMixin):
     contratos: List[ContratoDict] = []
     is_loading: bool = False
     error_message: str = ""
-    is_grid_view: bool = False  # Default to Table, or True for Elite default
+    is_grid_view: bool = False
 
     # KPIs
     kpi_mandatos_total: int = 0
@@ -59,36 +59,57 @@ class ContratosState(DocumentosStateMixin):
 
     # Búsqueda y Filtros
     search_text: str = ""
-    filter_tipo: str = "Todos"  # Todos, Mandato, Arrendamiento
-    filter_estado: str = "Activo"  # Todos, Activo, Cancelado
+    filter_tipo: str = "Todos"
+    filter_estado: str = "Activo"
     filter_propiedad_id: str = ""
     filter_persona_id: str = ""
     filter_asesor_id: str = "todos"
     solo_activos: bool = True
+    filter_sin_arrendamiento: bool = False
 
-    # Opciones de filtros (para dropdowns)
+    # Opciones de filtros
     tipo_options: List[str] = ["Todos", "Mandato", "Arrendamiento"]
     estado_options: List[str] = ["Todos", "Activo", "Cancelado"]
     propiedades_options: List[Dict[str, Any]] = []
     personas_options: List[Dict[str, Any]] = []
 
-    # Opciones para selects (listas de listas ["label", "value"])
+    # Opciones para selects
     propiedades_select_options: List[List[str]] = []
     propietarios_select_options: List[List[str]] = []
     asesores_select_options: List[List[str]] = []
     personas_select_options: List[List[str]] = []
-    # Nuevas opciones para Arrendamiento y Mandato
     propiedades_arriendo_select_options: List[List[str]] = []
     propiedades_mandato_libre_select_options: List[List[str]] = []
     arrendatarios_select_options: List[List[str]] = []
     codeudores_select_options: List[List[str]] = []
+
+    # --- Searchable Selects State ---
+    propiedad_search: str = ""
+    propiedad_menu_open: bool = False
+    propiedad_selected_label: str = ""
+
+    propietario_search: str = ""
+    propietario_menu_open: bool = False
+    propietario_selected_label: str = ""
+
+    asesor_search: str = ""
+    asesor_menu_open: bool = False
+    asesor_selected_label: str = ""
+
+    arrendatario_search: str = ""
+    arrendatario_menu_open: bool = False
+    arrendatario_selected_label: str = ""
+
+    codeudor_search: str = ""
+    codeudor_menu_open: bool = False
+    codeudor_selected_label: str = ""
 
     # Mapas de datos adicionales
     propiedades_canon_map: Dict[str, float] = {}
 
     # Modal CRUD
     modal_open: bool = False
-    modal_mode: str = "crear_mandato"  # crear_mandato, crear_arrendamiento, editar
+    modal_mode: str = "crear_mandato"
     editing_id: Optional[int] = None
     form_data: Dict[str, Any] = {}
 
@@ -96,33 +117,156 @@ class ContratosState(DocumentosStateMixin):
     show_detail_modal: bool = False
     contrato_detalle: Dict[str, Any] = {}
 
+    # Renovacion
+    show_renewal_confirm: bool = False
+    renewal_loading_proyeccion: bool = False
+    renewal_proyeccion: Dict[str, Any] = {}
+    renewal_nueva_fecha_fin: str = ""
+    renewal_target_id: int = 0
+    renewal_target_tipo: str = ""
+
     # Modal IPC Increment
     show_ipc_modal: bool = False
     ipc_target_contrato_id: int = 0
-    # Document Management Vars (Inherited from DocumentosStateMixin)
-    # current_entidad_tipo and current_entidad_id are now in the mixin
+
+    # --- Computed Filtered Options ---
+    @rx.var
+    def filtered_propiedades_options(self) -> List[List[str]]:
+        s = self.propiedad_search.lower()
+        if not s:
+            return self.propiedades_select_options
+        return [opt for opt in self.propiedades_select_options if s in opt[0].lower()]
+
+    @rx.var
+    def filtered_propietarios_options(self) -> List[List[str]]:
+        s = self.propietario_search.lower()
+        if not s:
+            return self.propietarios_select_options
+        return [opt for opt in self.propietarios_select_options if s in opt[0].lower()]
+
+    @rx.var
+    def filtered_asesores_options(self) -> List[List[str]]:
+        s = self.asesor_search.lower()
+        if not s:
+            return self.asesores_select_options
+        return [opt for opt in self.asesores_select_options if s in opt[0].lower()]
+
+    @rx.var
+    def filtered_arrendatarios_options(self) -> List[List[str]]:
+        s = self.arrendatario_search.lower()
+        if not s:
+            return self.arrendatarios_select_options
+        return [opt for opt in self.arrendatarios_select_options if s in opt[0].lower()]
+
+    @rx.var
+    def filtered_codeudores_options(self) -> List[List[str]]:
+        s = self.codeudor_search.lower()
+        if not s:
+            return self.codeudores_select_options
+        return [opt for opt in self.codeudores_select_options if s in opt[0].lower()]
+
+    # --- Searchable Select Handlers ---
+    def set_propiedad_search(self, value: str):
+        self.propiedad_search = value
+
+    def toggle_propiedad_menu(self, open: bool):
+        self.propiedad_menu_open = open
+
+    def select_propiedad(self, value: str, label: str):
+        self.propiedad_selected_label = label
+        self.form_data["id_propiedad"] = value
+        self.propiedad_menu_open = False
+        if self.modal_mode in ["crear_mandato", "editar_mandato"]:
+            self.on_change_propiedad(value)
+        else:
+            self.on_change_propiedad_arriendo(value)
+
+    def set_propietario_search(self, value: str):
+        self.propietario_search = value
+
+    def toggle_propietario_menu(self, open: bool):
+        self.propietario_menu_open = open
+
+    def select_propietario(self, value: str, label: str):
+        self.propietario_selected_label = label
+        self.form_data["id_propietario"] = value
+        self.propietario_menu_open = False
+
+    def set_asesor_search(self, value: str):
+        self.asesor_search = value
+
+    def toggle_asesor_menu(self, open: bool):
+        self.asesor_menu_open = open
+
+    def select_asesor(self, value: str, label: str):
+        self.asesor_selected_label = label
+        self.form_data["id_asesor"] = value
+        self.asesor_menu_open = False
+
+    def set_arrendatario_search(self, value: str):
+        self.arrendatario_search = value
+
+    def toggle_arrendatario_menu(self, open: bool):
+        self.arrendatario_menu_open = open
+
+    def select_arrendatario(self, value: str, label: str):
+        self.arrendatario_selected_label = label
+        self.form_data["id_arrendatario"] = value
+        self.arrendatario_menu_open = False
+
+    def set_codeudor_search(self, value: str):
+        self.codeudor_search = value
+
+    def toggle_codeudor_menu(self, open: bool):
+        self.codeudor_menu_open = open
+
+    def select_codeudor(self, value: str, label: str):
+        self.codeudor_selected_label = label
+        self.form_data["id_codeudor"] = value
+        self.codeudor_menu_open = False
 
     def set_form_field(self, name: str, value: Any):
-        """Actualiza un campo del formulario."""
         self.form_data[name] = value
 
     @rx.var
     def asesores_filter_options(self) -> List[List[str]]:
-        """Opciones de asesores para el select del filtro principal."""
         return [["Todos los Asesores", "todos"]] + self.asesores_select_options
 
+    def set_search(self, value: str):
+        self.search_text = value
+        self.current_page = 1
+
+    def set_filter_tipo(self, value: str):
+        self.filter_tipo = value
+        self.current_page = 1
+        # Reset filtro sin_arrendamiento si tipo != Mandato
+        if value != "Mandato":
+            self.filter_sin_arrendamiento = False
+        return ContratosState.load_contratos
+
+    def set_filter_estado(self, value: str):
+        self.filter_estado = value
+        self.current_page = 1
+        return ContratosState.load_contratos
+
     def set_filter_asesor_id(self, val: str):
-        """Setter para el filtro de asesores que recarga la página."""
         self.filter_asesor_id = val
         self.current_page = 1
         return [ContratosState.load_contratos, ContratosState.load_kpis]
 
+    def set_filter_sin_arrendamiento(self, value: bool):
+        """Activa/desactiva filtro de mandatos sin arrendamiento activo.
+        Fuerza filter_tipo a 'Mandato' cuando se activa."""
+        self.filter_sin_arrendamiento = value
+        if value:
+            self.filter_tipo = "Mandato"
+        self.current_page = 1
+        return ContratosState.load_contratos
+
     def toggle_view(self):
-        """Alterna entre vista de tabla y grid."""
         self.is_grid_view = not self.is_grid_view
 
     def on_change_propiedad(self, id_propiedad: str):
-        """Maneja cambio propiedad Mandato."""
         self.form_data["id_propiedad"] = id_propiedad
         if id_propiedad and id_propiedad in self.propiedades_canon_map:
             canon = self.propiedades_canon_map[id_propiedad]
@@ -131,23 +275,16 @@ class ContratosState(DocumentosStateMixin):
             self.form_data["canon"] = ""
 
     def on_change_propiedad_arriendo(self, id_propiedad: str):
-        """
-        Maneja cambio propiedad Arrendamiento.
-        1. Carga canon.
-        2. Calcula deposito (50% canon).
-        """
         self.form_data["id_propiedad"] = id_propiedad
         if id_propiedad and id_propiedad in self.propiedades_canon_map:
             canon = self.propiedades_canon_map[id_propiedad]
             self.form_data["canon"] = str(int(canon))
-            # Calcular deposito
             self.form_data["deposito"] = str(int(canon * 0.5))
         else:
             self.form_data["canon"] = ""
             self.form_data["deposito"] = "0"
 
     def on_change_canon_arriendo(self, canon: str):
-        """Recalcula deposito si cambia el canon manual."""
         self.form_data["canon"] = canon
         try:
             val_canon = float(canon) if canon else 0
@@ -156,54 +293,36 @@ class ContratosState(DocumentosStateMixin):
             pass
 
     def _calcular_duracion(self):
-        """Calcula la duración en meses entre fecha inicio y fin."""
         f_inicio = self.form_data.get("fecha_inicio")
         f_fin = self.form_data.get("fecha_fin")
-
         if f_inicio and f_fin:
             try:
                 d_inicio = datetime.strptime(f_inicio, "%Y-%m-%d")
                 d_fin = datetime.strptime(f_fin, "%Y-%m-%d")
-
-                # Calcular diferencia en meses
-                # Formula: (Años * 12) + Meses
                 diff_years = d_fin.year - d_inicio.year
                 diff_months = d_fin.month - d_inicio.month
-
                 total_meses = (diff_years * 12) + diff_months
-
-                # Ajuste basico: si el dia de fin es menor al de inicio, no ha completado el mes?
-                # Usualmente en contratos se cuenta la diferencia de meses calendario.
-                # Si total_meses < 0, poner 0.
                 if total_meses < 0:
                     total_meses = 0
-
                 self.form_data["duracion_meses"] = str(total_meses)
             except ValueError:
-                pass  # Formato de fecha invalido
+                pass
 
     def on_change_fecha_inicio(self, fecha: str):
-        """Actualiza fecha inicio y recalcula duración."""
         self.form_data["fecha_inicio"] = fecha
         self._calcular_duracion()
 
     def on_change_fecha_fin(self, fecha: str):
-        """Actualiza fecha fin y recalcula duración."""
         self.form_data["fecha_fin"] = fecha
         self._calcular_duracion()
 
     @rx.event(background=True)
     async def on_load(self):
-        """Carga inicial al montar la página."""
         async with self:
             self.is_loading = True
-
         try:
-            # Cargar opciones de filtros
             yield ContratosState.load_filter_options()
-            # Cargar contratos
             yield ContratosState.load_contratos()
-            # Cargar KPIs
             yield ContratosState.load_kpis()
         finally:
             async with self:
@@ -211,702 +330,153 @@ class ContratosState(DocumentosStateMixin):
 
     @rx.event(background=True)
     async def load_kpis(self):
-        """Carga los contadores KPI directos desde la BD."""
+        from src.aplicacion.servicios.servicio_contratos import ServicioContratos
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+            RepositorioContratoMandatoPostgres,
+        )
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+            RepositorioContratoArrendamientoPostgres,
+        )
 
-        asesor_where_mandatos = ""
-        asesor_where_arriendos = ""
-        params = ()
-
-        if self.filter_asesor_id and self.filter_asesor_id != "todos":
-            asesor_where_mandatos = "WHERE ID_ASESOR = %s"
-            asesor_where_arriendos = "WHERE EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm WHERE cm.ID_PROPIEDAD = CONTRATOS_ARRENDAMIENTOS.ID_PROPIEDAD AND cm.ID_ASESOR = %s)"
-            params = (self.filter_asesor_id,)
-
-        query_mandatos = f"""
-        SELECT 
-            COUNT(*) as total,
-            SUM(CASE WHEN ESTADO_CONTRATO_M = 'Activo' THEN 1 ELSE 0 END) as activos,
-            SUM(CASE WHEN ESTADO_CONTRATO_M != 'Activo' THEN 1 ELSE 0 END) as inactivos
-        FROM CONTRATOS_MANDATOS
-        {asesor_where_mandatos}
-        """
-
-        query_arriendos = f"""
-        SELECT 
-            COUNT(*) as total,
-            SUM(CASE WHEN ESTADO_CONTRATO_A = 'Activo' THEN 1 ELSE 0 END) as activos,
-            SUM(CASE WHEN ESTADO_CONTRATO_A != 'Activo' THEN 1 ELSE 0 END) as inactivos
-        FROM CONTRATOS_ARRENDAMIENTOS
-        {asesor_where_arriendos}
-        """
-
-        with db_manager.obtener_conexion() as conn:
-            cursor = db_manager.get_dict_cursor(conn)
-
-            cursor.execute(query_mandatos, params)
-            r_mandato = cursor.fetchone()
-
-            cursor.execute(query_arriendos, params)
-            r_arriendo = cursor.fetchone()
-
-            async with self:
-                if r_mandato:
-                    self.kpi_mandatos_total = (
-                        r_mandato.get("TOTAL", r_mandato.get("total", 0)) or 0
-                    )
-                    self.kpi_mandatos_activos = (
-                        r_mandato.get("ACTIVOS", r_mandato.get("activos", 0)) or 0
-                    )
-                    self.kpi_mandatos_inactivos = (
-                        r_mandato.get("INACTIVOS", r_mandato.get("inactivos", 0)) or 0
-                    )
-                else:
-                    self.kpi_mandatos_total = self.kpi_mandatos_activos = (
-                        self.kpi_mandatos_inactivos
-                    ) = 0
-
-                if r_arriendo:
-                    self.kpi_arriendos_total = (
-                        r_arriendo.get("TOTAL", r_arriendo.get("total", 0)) or 0
-                    )
-                    self.kpi_arriendos_activos = (
-                        r_arriendo.get("ACTIVOS", r_arriendo.get("activos", 0)) or 0
-                    )
-                    self.kpi_arriendos_inactivos = (
-                        r_arriendo.get("INACTIVOS", r_arriendo.get("inactivos", 0)) or 0
-                    )
-                else:
-                    self.kpi_arriendos_total = self.kpi_arriendos_activos = (
-                        self.kpi_arriendos_inactivos
-                    ) = 0
+        repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
+        servicio = ServicioContratos(
+            db_manager, repo_mandato, repo_arriendo, None, None, None, None, None
+        )
+        kpis = servicio.obtener_kpis(self.filter_asesor_id)
+        async with self:
+            m = kpis.get("mandatos", {})
+            self.kpi_mandatos_total = m.get("total", 0) or 0
+            self.kpi_mandatos_activos = m.get("activos", 0) or 0
+            self.kpi_mandatos_inactivos = m.get("inactivos", 0) or 0
+            a = kpis.get("arriendos", {})
+            self.kpi_arriendos_total = a.get("total", 0) or 0
+            self.kpi_arriendos_activos = a.get("activos", 0) or 0
+            self.kpi_arriendos_inactivos = a.get("inactivos", 0) or 0
 
     @rx.event(background=True)
     async def load_filter_options(self):
-        """Carga opciones para dropdowns de filtros."""
-        # Instanciar repositorios y servicio
-        from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-            RepositorioPropiedadSQLite,
+        from src.aplicacion.servicios.servicio_contratos import ServicioContratos
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+            RepositorioContratoMandatoPostgres,
         )
-        from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
-            RepositorioContratoMandatoSQLite,
-        )
-        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
-            RepositorioContratoArrendamientoSQLite,
-        )
-        from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
-            RepositorioRenovacionSQLite,
-        )
-        from src.infraestructura.persistencia.repositorio_ipc_sqlite import (
-            RepositorioIPCSQLite,
-        )
-        from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
-            RepositorioArrendatarioSQLite,
-        )
-        from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
-            RepositorioCodeudorSQLite,
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+            RepositorioContratoArrendamientoPostgres,
         )
 
-        repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-        repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-        repo_ipc = RepositorioIPCSQLite(db_manager)
-        repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-        repo_codeudor = RepositorioCodeudorSQLite(db_manager)
-
-        # Como solo cargamos opciones SQL directas aqui, no necesitamos el servicio completo,
-        # pero mantenemos la estructura por si acaso se usa logica de negocio luego.
-        # De hecho, el código original INSTANCIABA el servicio pero NO LO USABA en load_filter_options
-        # porque hacía queries directos con db_manager.
-        # Mantendremos la instanciación correcta si se quiere usar, pero el bloque de abajo usa db_manager directo.
-
-        # 1. Cargar TODAS las Propiedades activas
-        # NOTE: Load ALL properties (not just those without contracts) to support edit mode
-        query_propiedades = """
-        SELECT P.ID_PROPIEDAD, P.MATRICULA_INMOBILIARIA, P.DIRECCION_PROPIEDAD, P.CANON_ARRENDAMIENTO_ESTIMADO
-        FROM PROPIEDADES P
-        WHERE P.ESTADO_REGISTRO = TRUE
-        ORDER BY P.DIRECCION_PROPIEDAD
-        """
-
-        # 2. Cargar Propietarios: Unir PERSONAS con PROPIETARIOS
-        query_propietarios = """
-        SELECT PR.ID_PROPIETARIO, P.NOMBRE_COMPLETO, P.NUMERO_DOCUMENTO
-        FROM PERSONAS P
-        INNER JOIN PROPIETARIOS PR ON P.ID_PERSONA = PR.ID_PERSONA
-        WHERE P.ESTADO_REGISTRO = TRUE AND PR.ESTADO_PROPIETARIO = TRUE
-        ORDER BY P.NOMBRE_COMPLETO
-        """
-
-        # 3. Cargar Asesores: Unir PERSONAS con ASESORES
-        query_asesores = """
-        SELECT A.ID_ASESOR, P.NOMBRE_COMPLETO, P.NUMERO_DOCUMENTO
-        FROM PERSONAS P
-        INNER JOIN ASESORES A ON P.ID_PERSONA = A.ID_PERSONA
-        WHERE P.ESTADO_REGISTRO = TRUE AND A.ESTADO = TRUE
-        ORDER BY P.NOMBRE_COMPLETO
-        """
-
-        # 4. Cargar Personas (Generico para Arrendatarios/Codeudores) - MANTENER ID_PERSONA?
-        # Para arrendamiento usamos las especificas abajo. Esta es select generico tal vez para otros usos?
-        # Si se usa para algo que requiera ID_PERSONA, dejarlo.
-        query_personas = """
-        SELECT ID_PERSONA, NOMBRE_COMPLETO, NUMERO_DOCUMENTO
-        FROM PERSONAS
-        WHERE ESTADO_REGISTRO = TRUE
-        ORDER BY NOMBRE_COMPLETO
-        """
-
-        # Helper local para acceso seguro a diccionarios (Case Insensitive)
-        def get_val(row: dict, field: str) -> str:
-            """Intenta obtener valor con clave en mayúscula o minúscula."""
-            val = row.get(field.upper())
-            if val is None:
-                val = row.get(field.lower())
-            if val is None:
-                # Fallback para claves mixtas si fuera necesario
-                return ""
-            return str(val)
-
-        with db_manager.obtener_conexion() as conn:
-            cursor = db_manager.get_dict_cursor(conn)
-
-            # Propiedades
-            cursor.execute(query_propiedades)
-            rows_propiedades = cursor.fetchall()
-            # Formato para Reflex Select: [Label, Value]
-            propiedades_select = [
-                [
-                    get_val(row, "DIRECCION_PROPIEDAD"),
-                    get_val(row, "ID_PROPIEDAD"),
-                ]
-                for row in rows_propiedades
-            ]
-
-            # Crear mapa de canones: ID -> Canon (float/int)
-            canon_map = {}
-            for row in rows_propiedades:
-                # Intentar obtener el canon con manejo de mayusculas/minusculas
-                canon_str = get_val(row, "CANON_ARRENDAMIENTO_ESTIMADO")
-                id_prop = get_val(row, "ID_PROPIEDAD")
-                canon_map[id_prop] = float(canon_str) if canon_str else 0.0
-
-            # Propietarios
-            cursor.execute(query_propietarios)
-            rows_propietarios = cursor.fetchall()
-            propietarios_select = [
-                [
-                    get_val(row, "NOMBRE_COMPLETO"),
-                    get_val(row, "ID_PROPIETARIO"),
-                ]
-                for row in rows_propietarios
-            ]
-
-            # Asesores
-            cursor.execute(query_asesores)
-            rows_asesores = cursor.fetchall()
-            asesores_select = [
-                [
-                    get_val(row, "NOMBRE_COMPLETO"),
-                    get_val(row, "ID_ASESOR"),
-                ]
-                for row in rows_asesores
-            ]
-
-            # Personas (Generico)
-            cursor.execute(query_personas)
-            rows_personas = cursor.fetchall()
-            personas_select = [
-                [
-                    get_val(row, "NOMBRE_COMPLETO"),
-                    get_val(row, "ID_PERSONA"),
-                ]
-                for row in rows_personas
-            ]
-
-            # 4.1. Propiedades para NUEVO MANDATO (Sin mandato activo)
-            # NOTE: Load properties without active Mandate
-            query_propiedades_libre_mandato = """
-            SELECT P.ID_PROPIEDAD, P.MATRICULA_INMOBILIARIA, P.DIRECCION_PROPIEDAD
-            FROM PROPIEDADES P
-            WHERE P.ESTADO_REGISTRO = TRUE
-            AND NOT EXISTS (
-                SELECT 1 FROM CONTRATOS_MANDATOS CM 
-                WHERE CM.ID_PROPIEDAD = P.ID_PROPIEDAD
-                AND CM.ESTADO_CONTRATO_M = 'Activo'
-            )
-            ORDER BY P.DIRECCION_PROPIEDAD
-            """
-            cursor.execute(query_propiedades_libre_mandato)
-            rows_prop_libre = cursor.fetchall()
-            propiedades_libre_select = [
-                [
-                    get_val(row, "DIRECCION_PROPIEDAD"),
-                    get_val(row, "ID_PROPIEDAD"),
-                ]
-                for row in rows_prop_libre
-            ]
-
-            # ---------------------------------------------------------
-            # CARGADORES ESPECIFICOS PAR ARRENDAMIENTO
-            # ---------------------------------------------------------
-
-            # 5. Propiedades para Arrendamiento (Con Mandato Activo Y SIN Arrendamiento Activo)
-            # NOTE: Load properties with active Mandate AND NO active Lease
-            query_propiedades_arriendo = """
-            SELECT P.ID_PROPIEDAD, P.MATRICULA_INMOBILIARIA, P.DIRECCION_PROPIEDAD, P.CANON_ARRENDAMIENTO_ESTIMADO
-            FROM PROPIEDADES P
-            JOIN CONTRATOS_MANDATOS CM ON P.ID_PROPIEDAD = CM.ID_PROPIEDAD
-            WHERE P.ESTADO_REGISTRO = TRUE
-            AND CM.ESTADO_CONTRATO_M = 'Activo'
-            AND NOT EXISTS (
-                SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS CA 
-                WHERE CA.ID_PROPIEDAD = P.ID_PROPIEDAD 
-                AND CA.ESTADO_CONTRATO_A = 'Activo'
-            )
-            ORDER BY P.DIRECCION_PROPIEDAD
-            """
-            cursor.execute(query_propiedades_arriendo)
-            rows_prop_arriendo = cursor.fetchall()
-            propiedades_arriendo_select = [
-                [
-                    get_val(row, "DIRECCION_PROPIEDAD"),
-                    get_val(row, "ID_PROPIEDAD"),
-                ]
-                for row in rows_prop_arriendo
-            ]
-
-            # Actualizar mapa de canones con estas propiedades tambien
-            for row in rows_prop_arriendo:
-                canon_str = get_val(row, "CANON_ARRENDAMIENTO_ESTIMADO")
-                id_prop = get_val(row, "ID_PROPIEDAD")
-                if id_prop:
-                    canon_map[id_prop] = float(canon_str) if canon_str else 0.0
-
-            # 6. Arrendatarios (Personas con rol Arrendatario)
-            query_arrendatarios = """
-            SELECT A.ID_ARRENDATARIO, P.NOMBRE_COMPLETO, P.NUMERO_DOCUMENTO
-            FROM PERSONAS P
-            INNER JOIN ARRENDATARIOS A ON P.ID_PERSONA = A.ID_PERSONA
-            WHERE P.ESTADO_REGISTRO = TRUE AND A.ESTADO_ARRENDATARIO = TRUE
-            ORDER BY P.NOMBRE_COMPLETO
-            """
-            cursor.execute(query_arrendatarios)
-            rows_arrendatarios = cursor.fetchall()
-            arrendatarios_select = [
-                [
-                    get_val(row, "NOMBRE_COMPLETO"),
-                    get_val(row, "ID_ARRENDATARIO"),
-                ]
-                for row in rows_arrendatarios
-            ]
-
-            # 7. Codeudores (Personas con rol Codeudor)
-            query_codeudores = """
-            SELECT C.ID_CODEUDOR, P.NOMBRE_COMPLETO, P.NUMERO_DOCUMENTO
-            FROM PERSONAS P
-            INNER JOIN CODEUDORES C ON P.ID_PERSONA = C.ID_PERSONA
-            WHERE P.ESTADO_REGISTRO = TRUE AND C.ESTADO_REGISTRO = TRUE
-            ORDER BY P.NOMBRE_COMPLETO
-            """
-            cursor.execute(query_codeudores)
-            rows_codeudores = cursor.fetchall()
-            codeudores_select = [
-                [
-                    get_val(row, "NOMBRE_COMPLETO"),
-                    get_val(row, "ID_CODEUDOR"),
-                ]
-                for row in rows_codeudores
-            ]
-
+        repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
+        servicio = ServicioContratos(
+            db_manager, repo_mandato, repo_arriendo, None, None, None, None, None
+        )
+        ops = servicio.obtener_opciones_filtro()
         async with self:
-            # self.propiedades_options = ... # Ya no usamos listas de dicts viejas si no se necesitan
-            self.propiedades_select_options = propiedades_select
-            self.propiedades_mandato_libre_select_options = propiedades_libre_select
-            self.propietarios_select_options = propietarios_select
-            self.asesores_select_options = asesores_select
-            self.personas_select_options = personas_select
-            self.propiedades_arriendo_select_options = propiedades_arriendo_select
-            self.arrendatarios_select_options = arrendatarios_select
-            self.codeudores_select_options = codeudores_select
-            self.propiedades_canon_map = canon_map
-
-    # --- Custom Searchable Select Logic ---
-
-    # Search Texts
-    propiedad_search: str = ""
-    propietario_search: str = ""
-    asesor_search: str = ""
-    arrendatario_search: str = ""
-    codeudor_search: str = ""
-
-    # Menu Open States
-    propiedad_menu_open: bool = False
-    propietario_menu_open: bool = False
-    asesor_menu_open: bool = False
-    arrendatario_menu_open: bool = False
-    codeudor_menu_open: bool = False
-
-    def _strip_accents(self, s: str) -> str:
-        """Helper to remove accents for search."""
-        if not s:
-            return ""
-        return "".join(
-            c
-            for c in unicodedata.normalize("NFD", s)
-            if unicodedata.category(c) != "Mn"
-        )
-
-    @rx.var
-    def filtered_propiedades_options(self) -> List[List[str]]:
-        """Filtra opciones de propiedad según el texto de búsqueda."""
-        if self.modal_mode == "crear_mandato":
-            options = self.propiedades_mandato_libre_select_options
-        elif self.modal_mode in ["crear_arrendamiento", "editar_arrendamiento"]:
-            options = self.propiedades_arriendo_select_options
-        else:
-            options = self.propiedades_select_options
-
-        if not self.propiedad_search:
-            return options
-        return [
-            opt
-            for opt in options
-            if self._strip_accents(self.propiedad_search).lower()
-            in self._strip_accents(opt[0]).lower()
-        ]
-
-    @rx.var
-    def filtered_propietarios_options(self) -> List[List[str]]:
-        """Filtra opciones de propietario según el texto de búsqueda."""
-        if not self.propietario_search:
-            return self.propietarios_select_options
-        return [
-            opt
-            for opt in self.propietarios_select_options
-            if self._strip_accents(self.propietario_search).lower()
-            in self._strip_accents(opt[0]).lower()
-        ]
-
-    @rx.var
-    def filtered_asesores_options(self) -> List[List[str]]:
-        """Filtra opciones de asesor según el texto de búsqueda."""
-        if not self.asesor_search:
-            return self.asesores_select_options
-        return [
-            opt
-            for opt in self.asesores_select_options
-            if self._strip_accents(self.asesor_search).lower()
-            in self._strip_accents(opt[0]).lower()
-        ]
-
-    @rx.var
-    def filtered_arrendatarios_options(self) -> List[List[str]]:
-        """Filtra opciones de arrendatario según el texto de búsqueda."""
-        if not self.arrendatario_search:
-            return self.arrendatarios_select_options
-        return [
-            opt
-            for opt in self.arrendatarios_select_options
-            if self._strip_accents(self.arrendatario_search).lower()
-            in self._strip_accents(opt[0]).lower()
-        ]
-
-    @rx.var
-    def filtered_codeudores_options(self) -> List[List[str]]:
-        """Filtra opciones de codeudor según el texto de búsqueda."""
-        if not self.codeudor_search:
-            return self.codeudores_select_options
-        return [
-            opt
-            for opt in self.codeudores_select_options
-            if self._strip_accents(self.codeudor_search).lower()
-            in self._strip_accents(opt[0]).lower()
-        ]
-
-    @rx.var
-    def propiedad_selected_label(self) -> str:
-        """Obtiene el label de la propiedad seleccionada."""
-        id_p = self.form_data.get("id_propiedad")
-        if not id_p:
-            return ""
-        # Buscamos en todas las listas para asegurar que se muestre
-        all_options = (
-            self.propiedades_select_options
-            + self.propiedades_mandato_libre_select_options
-            + self.propiedades_arriendo_select_options
-        )
-        for opt in all_options:
-            if str(opt[1]) == str(id_p):
-                return opt[0]
-        return ""
-
-    @rx.var
-    def propietario_selected_label(self) -> str:
-        """Obtiene el label del propietario seleccionado."""
-        id_p = self.form_data.get("id_propietario")
-        if not id_p:
-            return ""
-        for opt in self.propietarios_select_options:
-            if str(opt[1]) == str(id_p):
-                return opt[0]
-        return ""
-
-    @rx.var
-    def asesor_selected_label(self) -> str:
-        """Obtiene el label del asesor seleccionado."""
-        id_a = self.form_data.get("id_asesor")
-        if not id_a:
-            return ""
-        for opt in self.asesores_select_options:
-            if str(opt[1]) == str(id_a):
-                return opt[0]
-        return ""
-
-    @rx.var
-    def arrendatario_selected_label(self) -> str:
-        """Obtiene el label del arrendatario seleccionado."""
-        id_arr = self.form_data.get("id_arrendatario")
-        if not id_arr:
-            return ""
-        for opt in self.arrendatarios_select_options:
-            if str(opt[1]) == str(id_arr):
-                return opt[0]
-        return ""
-
-    @rx.var
-    def codeudor_selected_label(self) -> str:
-        """Obtiene el label del codeudor seleccionado."""
-        id_cod = self.form_data.get("id_codeudor")
-        if not id_cod:
-            return ""
-        for opt in self.codeudores_select_options:
-            if str(opt[1]) == str(id_cod):
-                return opt[0]
-        return ""
-
-    def select_propiedad(self, id_propiedad: str, label: str):
-        """Selecciona una propiedad y cierra el menú."""
-        if self.modal_mode in ["crear_arrendamiento", "editar_arrendamiento"]:
-            self.on_change_propiedad_arriendo(id_propiedad)
-        else:
-            self.on_change_propiedad(id_propiedad)
-        self.propiedad_search = ""
-        self.propiedad_menu_open = False
-
-    def select_propietario(self, id_propietario: str, label: str):
-        """Selecciona un propietario y cierra el menú."""
-        self.set_form_field("id_propietario", id_propietario)
-        self.propietario_search = ""
-        self.propietario_menu_open = False
-
-    def select_asesor(self, id_asesor: str, label: str):
-        """Selecciona un asesor y cierra el menú."""
-        self.set_form_field("id_asesor", id_asesor)
-        self.asesor_search = ""
-        self.asesor_menu_open = False
-
-    def select_arrendatario(self, id_arrendatario: str, label: str):
-        """Selecciona un arrendatario y cierra el menú."""
-        self.set_form_field("id_arrendatario", id_arrendatario)
-        self.arrendatario_search = ""
-        self.arrendatario_menu_open = False
-
-    def select_codeudor(self, id_codeudor: str, label: str):
-        """Selecciona un codeudor y cierra el menú."""
-        self.set_form_field("id_codeudor", id_codeudor)
-        self.codeudor_search = ""
-        self.codeudor_menu_open = False
-
-    def toggle_propiedad_menu(self):
-        self.propiedad_menu_open = not self.propiedad_menu_open
-        if self.propiedad_menu_open:
-            self.propiedad_search = ""
-
-    def toggle_propietario_menu(self):
-        self.propietario_menu_open = not self.propietario_menu_open
-        if self.propietario_menu_open:
-            self.propietario_search = ""
-
-    def toggle_asesor_menu(self):
-        self.asesor_menu_open = not self.asesor_menu_open
-        if self.asesor_menu_open:
-            self.asesor_search = ""
-
-    def toggle_arrendatario_menu(self):
-        self.arrendatario_menu_open = not self.arrendatario_menu_open
-        if self.arrendatario_menu_open:
-            self.arrendatario_search = ""
-
-    def toggle_codeudor_menu(self):
-        self.codeudor_menu_open = not self.codeudor_menu_open
-        if self.codeudor_menu_open:
-            self.codeudor_search = ""
-
-    def set_propiedad_search(self, val: str):
-        self.propiedad_search = val
-
-    def set_propietario_search(self, val: str):
-        self.propietario_search = val
-
-    def set_asesor_search(self, val: str):
-        self.asesor_search = val
-
-    def set_arrendatario_search(self, val: str):
-        self.arrendatario_search = val
-
-    def set_codeudor_search(self, val: str):
-        self.codeudor_search = val
+            self.propiedades_select_options = ops["propiedades"]
+            self.propiedades_canon_map = ops["canon_map"]
+            self.propietarios_select_options = ops["propietarios"]
+            self.asesores_select_options = ops["asesores"]
+            self.personas_select_options = ops["personas"]
+            self.propiedades_mandato_libre_select_options = ops["prop_sin_mandato"]
+            self.propiedades_arriendo_select_options = ops["prop_sin_arriendo"]
+            self.arrendatarios_select_options = ops.get("arrendatarios", [])
+            self.codeudores_select_options = ops.get("codeudores", [])
 
     @rx.event(background=True)
     async def load_contratos(self):
-        """Carga contratos con filtros y paginación (unificados)."""
-        print("[CONTRATOS_DEBUG] Iniciando load_contratos...")
         async with self:
             self.is_loading = True
             self.error_message = ""
-
         try:
-            # ... imports ...
-            print(
-                f"[CONTRATOS_DEBUG] Filtros: Tipo={self.filter_tipo}, Estado={self.filter_estado}, Busqueda='{self.search_text}'"
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+                RepositorioContratoMandatoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
+                RepositorioRenovacionPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+                RepositorioIPCPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
             )
 
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
-                RepositorioContratoMandatoSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
-                RepositorioContratoArrendamientoSQLite,
-            )
-            # ... resto de imports ...
-
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
-                RepositorioRenovacionSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import (
-                RepositorioIPCSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
-                RepositorioArrendatarioSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
-                RepositorioCodeudorSQLite,
-            )
-
-            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-            repo_ipc = RepositorioIPCSQLite(db_manager)
-            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+            repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
+            repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
+            repo_renovacion = RepositorioRenovacionPostgres(db_manager)
+            repo_ipc = RepositorioIPCPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
 
             servicio = ServicioContratos(
                 db_manager,
-                repo_mandato=repo_mandato,
-                repo_arriendo=repo_arriendo,
-                repo_propiedad=repo_propiedad,
-                repo_renovacion=repo_renovacion,
-                repo_ipc=repo_ipc,
-                repo_arrendatario=repo_arrendatario,
-                repo_codeudor=repo_codeudor,
+                repo_mandato,
+                repo_arriendo,
+                repo_propiedad,
+                repo_renovacion,
+                repo_ipc,
+                repo_arrendatario,
+                repo_codeudor,
             )
-
-            # Helper para el filtro de asesor (manejar "todos" o vacio)
             asesor_filter = (
                 self.filter_asesor_id
                 if self.filter_asesor_id and self.filter_asesor_id != "todos"
                 else None
             )
-
-            # Determinar estado de filtrado (si solo_activos, forzar Activo)
             estado_filtro = (
                 "Activo"
                 if self.solo_activos
                 else (self.filter_estado if self.filter_estado != "Todos" else None)
             )
 
-            # Determinar qué tipo de contratos cargar
+            kwargs_paginacion = {
+                "page": self.current_page,
+                "page_size": self.page_size,
+                "estado": estado_filtro,
+                "busqueda": self.search_text or None,
+                "id_asesor": asesor_filter,
+            }
+
+            # Parámetro exclusivo para mandatos
+            kwargs_mandatos = {**kwargs_paginacion}
+            if self.filter_sin_arrendamiento:
+                kwargs_mandatos["sin_arrendamiento"] = True
+
             if self.filter_tipo == "Mandato":
-                # Solo mandatos
-                resultado = servicio.listar_mandatos_paginado(
-                    page=self.current_page,
-                    page_size=self.page_size,
-                    estado=estado_filtro,
-                    busqueda=self.search_text if self.search_text else None,
-                    id_asesor=asesor_filter,
-                )
-                # Agregar campo 'tipo_contrato' para la UI
+                res = servicio.listar_mandatos_paginado(**kwargs_mandatos)
                 items = [
-                    {"tipo_contrato": "Mandato", **item} for item in resultado.items
+                    ContratoDict(tipo_contrato="Mandato", **item) for item in res.items
                 ]
-
+                total = res.total
             elif self.filter_tipo == "Arrendamiento":
-                # Solo arrendamientos
-                resultado = servicio.listar_arrendamientos_paginado(
-                    page=self.current_page,
-                    page_size=self.page_size,
-                    estado=estado_filtro,
-                    busqueda=self.search_text if self.search_text else None,
-                    id_asesor=asesor_filter,
-                )
+                res = servicio.listar_arrendamientos_paginado(**kwargs_paginacion)
                 items = [
-                    {"tipo_contrato": "Arrendamiento", **item}
-                    for item in resultado.items
+                    ContratoDict(tipo_contrato="Arrendamiento", **item)
+                    for item in res.items
                 ]
-
+                total = res.total
             else:
-                # Todos: combinar mandatos y arrendamientos
-                resultado_mandatos = servicio.listar_mandatos_paginado(
-                    page=self.current_page,
-                    page_size=self.page_size,
-                    estado=estado_filtro,
-                    busqueda=self.search_text if self.search_text else None,
-                    id_asesor=asesor_filter,
-                )
-
-                resultado_arrendamientos = servicio.listar_arrendamientos_paginado(
-                    page=self.current_page,
-                    page_size=self.page_size,
-                    estado=estado_filtro,
-                    busqueda=self.search_text if self.search_text else None,
-                    id_asesor=asesor_filter,
-                )
-
-                # Normalizar usando el mismo patrón que en if/elif
-                mandatos = [
-                    {"tipo_contrato": "Mandato", **item}
-                    for item in resultado_mandatos.items
+                res_m = servicio.listar_mandatos_paginado(**kwargs_mandatos)
+                res_a = servicio.listar_arrendamientos_paginado(**kwargs_paginacion)
+                items = [
+                    ContratoDict(tipo_contrato="Mandato", **item)
+                    for item in res_m.items
+                ] + [
+                    ContratoDict(tipo_contrato="Arrendamiento", **item)
+                    for item in res_a.items
                 ]
-                arrendamientos = [
-                    {"tipo_contrato": "Arrendamiento", **item}
-                    for item in resultado_arrendamientos.items
-                ]
+                total = res_m.total + res_a.total
 
-                items = mandatos + arrendamientos
-                print(
-                    f"[CONTRATOS_DEBUG] Combinados: {len(items)} items. Total calculado: {resultado_mandatos.total + resultado_arrendamientos.total}"
-                )
-
-                # Total combinado y estructura de resultado robusta
-                from src.dominio.modelos.pagination import PaginatedResult
-
-                resultado = PaginatedResult(
-                    items=items,
-                    total=resultado_mandatos.total + resultado_arrendamientos.total,
-                    page=self.current_page,
-                    page_size=self.page_size,
-                )
-
-            # Actualización del estado (FUERA del if/elif/else para que funcione siempre)
-            print(
-                f"[CONTRATOS_DEBUG] Actualizando estado con {len(items)} contratos..."
-            )
-
-            # Calcular estado de cumplimiento para cada contrato
+            # Cargar cumplimiento (Excepción temporal SQLite hasta migrar liquidaciones/recaudos)
             from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
                 RepositorioLiquidacionSQLite,
             )
@@ -919,747 +489,384 @@ class ContratosState(DocumentosStateMixin):
 
             repo_liq = RepositorioLiquidacionSQLite(db_manager)
             repo_recaudo = RepositorioRecaudo(db_manager)
-            periodo_actual = obtener_periodo_actual()
+            periodo = obtener_periodo_actual()
 
-            for item in items:
-                id_contrato = item.get("id_contrato")
-                tipo = item.get("tipo_contrato")
-
-                if not id_contrato or not tipo:
-                    continue
-
+            for it in items:
                 try:
-                    if tipo == "Mandato":
-                        item["estado_cumplimiento"] = (
-                            repo_liq.obtener_estado_pago_actual(
-                                id_contrato, periodo_actual
-                            )
+                    if it.tipo_contrato == "Mandato":
+                        it.estado_cumplimiento = repo_liq.obtener_estado_pago_actual(
+                            it.id_contrato, periodo
                         )
-                    else:  # Arrendamiento
-                        item["estado_cumplimiento"] = (
+                    else:
+                        it.estado_cumplimiento = (
                             repo_recaudo.obtener_estado_pago_actual(
-                                id_contrato, periodo_actual
+                                it.id_contrato, periodo
                             )
                         )
-                except Exception:
-                    item["estado_cumplimiento"] = "PENDIENTE"
+                except:
+                    it.estado_cumplimiento = "PENDIENTE"
 
             async with self:
                 self.contratos = items
-                self.total_items = resultado.total
+                self.total_items = total
                 self.is_loading = False
-            print("[CONTRATOS_DEBUG] Estado actualizado OK.")
-
         except Exception as e:
-            print(f"[CONTRATOS_DEBUG] ERROR CRÍTICO en load_contratos: {str(e)}")
-            import traceback
-
-            traceback.print_exc()
             async with self:
-                self.error_message = f"Error al cargar contratos: {str(e)}"
-                self.contratos = []
-                self.total_items = 0
+                self.error_message = f"Error: {e}"
                 self.is_loading = False
 
-    # Paginación
     def next_page(self):
-        """Avanza a la siguiente página."""
         if self.current_page * self.page_size < self.total_items:
             self.current_page += 1
             return ContratosState.load_contratos
 
     def prev_page(self):
-        """Retrocede a la página anterior."""
         if self.current_page > 1:
             self.current_page -= 1
             return ContratosState.load_contratos
 
-    def set_page_size(self, size: str):
-        """Cambia el tamaño de página."""
-        self.page_size = int(size)
-        self.current_page = 1
-        return ContratosState.load_contratos
-
-    # Búsqueda y Filtros
-    def set_search(self, value: str):
-        """Actualiza búsqueda."""
-        self.search_text = value
-
     def search_contratos(self):
-        """Ejecuta búsqueda."""
         self.current_page = 1
         return ContratosState.load_contratos
 
     def handle_search_key_down(self, key: str):
-        """
-        Maneja el evento de teclado en el campo de búsqueda.
-        Si se presiona Enter, ejecuta la búsqueda.
-        """
         if key == "Enter":
             return self.search_contratos()
 
-    def set_filter_tipo(self, value: str):
-        """Cambia filtro de tipo."""
-        self.filter_tipo = value
-        self.current_page = 1
-        return ContratosState.load_contratos
+    def _get_label_by_id(self, options: List[List[str]], target_id: Any) -> str:
+        """Helper para encontrar la etiqueta descriptiva dado un ID en las opciones."""
+        if not target_id:
+            return ""
+        tid = str(target_id)
+        for label, val in options:
+            if str(val) == tid:
+                return label
+        return ""
 
-    def set_filter_estado(self, value: str):
-        """Cambia filtro de estado."""
-        self.filter_estado = value
-        self.current_page = 1
-        return ContratosState.load_contratos
-
-    def set_filter_propiedad(self, value: str):
-        """Cambia filtro de propiedad."""
-        self.filter_propiedad_id = value
-        self.current_page = 1
-        return ContratosState.load_contratos
-
-    def set_filter_persona(self, value: str):
-        """Cambia filtro de persona."""
-        self.filter_persona_id = value
-        self.current_page = 1
-        return ContratosState.load_contratos
-
-    def set_filter_asesor(self, value: str):
-        """Cambia filtro de asesor."""
-        self.filter_asesor_id = value
-        self.current_page = 1
-        return ContratosState.load_contratos
-
-    def toggle_solo_activos(self, checked: bool):
-        """Toggle solo activos."""
-        self.solo_activos = checked
-        self.current_page = 1
-        return ContratosState.load_contratos
-
-    # Modal CRUD
-    def open_modal(self):
-        """Abre el modal de creación de mandato (por defecto)."""
-        return self.open_create_mandato_modal()
-
+    # Modal CRUD Handlers
     def open_create_mandato_modal(self):
-        """Abre modal para crear nuevo mandato."""
         self.modal_mode = "crear_mandato"
         self.editing_id = None
         self.form_data = {
             "id_propiedad": "",
             "id_propietario": "",
             "id_asesor": "",
-            "fecha_inicio": "",
-            "fecha_fin": "",
-            "fecha_pago": "",
-            "duracion_meses": 12,
-            "canon": 0,
-            "comision_porcentaje": 10,  # 10% Predeterminado
-            "iva_porcentaje": 19,  # 19% Predeterminado
+            "comision_porcentaje": 10,
+            "iva_porcentaje": 19,
         }
+        self.propiedad_selected_label = ""
+        self.propietario_selected_label = ""
+        self.asesor_selected_label = ""
+        self.propiedad_search = ""
+        self.propietario_search = ""
+        self.asesor_search = ""
         self.modal_open = True
-        self.error_message = ""
 
     def open_create_arrendamiento_modal(self):
-        """Abre modal para crear nuevo arrendamiento."""
         self.modal_mode = "crear_arrendamiento"
         self.editing_id = None
-        self.form_data = {
-            "id_propiedad": "",
-            "id_arrendatario": "",
-            "id_codeudor": "",
-            "fecha_inicio": "",
-            "fecha_fin": "",
-            "duracion_meses": 12,
-            "canon": 0,
-            "deposito": 0,
-            "fecha_pago": "",
-        }
+        self.form_data = {"id_propiedad": "", "id_arrendatario": "", "id_codeudor": ""}
+        self.propiedad_selected_label = ""
+        self.arrendatario_selected_label = ""
+        self.codeudor_selected_label = ""
+        self.propiedad_search = ""
+        self.arrendatario_search = ""
+        self.codeudor_search = ""
         self.modal_open = True
-        self.error_message = ""
 
     @rx.event(background=True)
     async def open_edit_modal(self, id_contrato: int, tipo: str):
-        """Abre modal para editar contrato existente."""
         async with self:
             self.is_loading = True
-            self.error_message = ""
-
         try:
-            # Instanciar repositorios y servicio
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
-                RepositorioContratoMandatoSQLite,
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+                RepositorioContratoMandatoPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
-                RepositorioContratoArrendamientoSQLite,
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
-                RepositorioRenovacionSQLite,
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import (
-                RepositorioIPCSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
-                RepositorioArrendatarioSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
-                RepositorioCodeudorSQLite,
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
             )
 
-            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-            repo_ipc = RepositorioIPCSQLite(db_manager)
-            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
-
+            repo_m = RepositorioContratoMandatoPostgres(db_manager)
+            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
             servicio = ServicioContratos(
                 db_manager,
-                repo_mandato=repo_mandato,
-                repo_arriendo=repo_arriendo,
-                repo_propiedad=repo_propiedad,
-                repo_renovacion=repo_renovacion,
-                repo_ipc=repo_ipc,
-                repo_arrendatario=repo_arrendatario,
-                repo_codeudor=repo_codeudor,
+                repo_m,
+                repo_a,
+                RepositorioPropiedadPostgres(db_manager),
+                None,
+                None,
+                RepositorioArrendatarioPostgres(db_manager),
+                RepositorioCodeudorPostgres(db_manager),
             )
 
             if tipo == "Mandato":
-                contrato = servicio.obtener_mandato_por_id(id_contrato)
-                if contrato:
+                c = servicio.obtener_mandato_por_id(id_contrato)
+                if c:
                     async with self:
                         self.modal_mode = "editar_mandato"
                         self.editing_id = id_contrato
+                        # Normalización de porcentajes (Base 10000 -> Base 100)
+                        comision = float(c.comision_porcentaje_contrato_m or 0) / 100.0
+                        iva = float(c.iva_contrato_m or 0) / 100.0
+
                         self.form_data = {
-                            "id_propiedad": str(contrato.id_propiedad),
-                            "id_propietario": str(contrato.id_propietario),
-                            "id_asesor": str(contrato.id_asesor),
-                            "fecha_inicio": contrato.fecha_inicio_contrato_m,
-                            "fecha_fin": contrato.fecha_fin_contrato_m,
-                            "fecha_pago": contrato.fecha_pago or "",
-                            "duracion_meses": contrato.duracion_contrato_m,
-                            "canon": contrato.canon_mandato,
-                            "comision_porcentaje": contrato.comision_porcentaje_contrato_m,
+                            "id_propiedad": str(c.id_propiedad),
+                            "id_propietario": str(c.id_propietario),
+                            "id_asesor": str(c.id_asesor),
+                            "fecha_inicio": c.fecha_inicio_contrato_m,
+                            "fecha_fin": c.fecha_fin_contrato_m,
+                            "duracion_meses": str(c.duracion_contrato_m),
+                            "canon": str(c.canon_mandato),
+                            "fecha_pago": c.fecha_pago or "",
+                            "comision_porcentaje": comision,
+                            "iva_porcentaje": iva,
                         }
+                        # Rehidratación de etiquetas
+                        self.propiedad_selected_label = self._get_label_by_id(
+                            self.propiedades_select_options, c.id_propiedad
+                        )
+                        self.propietario_selected_label = self._get_label_by_id(
+                            self.propietarios_select_options, c.id_propietario
+                        )
+                        self.asesor_selected_label = self._get_label_by_id(
+                            self.asesores_select_options, c.id_asesor
+                        )
 
-                        # Set Document Context for Mandato
-                        self.current_entidad_tipo = "CONTRATO_MANDATO"
-                        self.current_entidad_id = str(id_contrato)
-                        pass  # print(f"DEBUG: open_edit_modal Mandato. Set ID: {self.current_entidad_id}") [OpSec Removed]
-                        self.cargar_documentos()
-
+                        self.propiedad_search = ""
+                        self.propietario_search = ""
+                        self.asesor_search = ""
                         self.modal_open = True
             else:
-                contrato = servicio.obtener_arrendamiento_por_id(id_contrato)
-                if contrato:
+                c = servicio.obtener_arrendamiento_por_id(id_contrato)
+                if c:
                     async with self:
                         self.modal_mode = "editar_arrendamiento"
                         self.editing_id = id_contrato
                         self.form_data = {
-                            "id_propiedad": str(contrato.id_propiedad),
-                            "id_arrendatario": str(contrato.id_arrendatario),
-                            "id_codeudor": (
-                                str(contrato.id_codeudor)
-                                if contrato.id_codeudor
-                                else ""
-                            ),
-                            "fecha_inicio": contrato.fecha_inicio_contrato_a,
-                            "fecha_fin": contrato.fecha_fin_contrato_a,
-                            "duracion_meses": contrato.duracion_contrato_a,
-                            "canon": contrato.canon_arrendamiento,
-                            "deposito": contrato.deposito,
-                            "fecha_pago": contrato.fecha_pago or "",
+                            "id_propiedad": str(c.id_propiedad),
+                            "id_arrendatario": str(c.id_arrendatario),
+                            "id_codeudor": str(c.id_codeudor or ""),
+                            "fecha_inicio": c.fecha_inicio_contrato_a,
+                            "fecha_fin": c.fecha_fin_contrato_a,
+                            "duracion_meses": str(c.duracion_contrato_a),
+                            "canon": str(c.canon_arrendamiento),
+                            "deposito": str(c.deposito),
+                            "fecha_pago": c.fecha_pago or "",
                         }
+                        # Rehidratación de etiquetas
+                        self.propiedad_selected_label = self._get_label_by_id(
+                            self.propiedades_select_options, c.id_propiedad
+                        )
+                        self.arrendatario_selected_label = self._get_label_by_id(
+                            self.arrendatarios_select_options, c.id_arrendatario
+                        )
+                        self.codeudor_selected_label = self._get_label_by_id(
+                            self.codeudores_select_options, c.id_codeudor
+                        )
 
-                        # Set Document Context for Arrendamiento
-                        self.current_entidad_tipo = "CONTRATO_ARRENDAMIENTO"
-                        self.current_entidad_id = str(id_contrato)
-                        pass  # print(f"DEBUG: open_edit_modal Arrendamiento. Set ID: {self.current_entidad_id}") [OpSec Removed]
-                        self.cargar_documentos()
-
+                        self.propiedad_search = ""
+                        self.arrendatario_search = ""
+                        self.codeudor_search = ""
                         self.modal_open = True
-
         except Exception as e:
             async with self:
-                self.error_message = f"Error al cargar contrato: {str(e)}"
+                self.error_message = f"Error: {e}"
         finally:
             async with self:
                 self.is_loading = False
 
     def close_modal(self):
-        """Cierra el modal."""
         self.modal_open = False
         self.editing_id = None
         self.form_data = {}
-        self.error_message = ""
-
-    @rx.event(background=True)
-    async def open_detail_modal(self, id_contrato: int, tipo: str):
-        """Abre modal con detalle completo del contrato."""
-        async with self:
-            self.is_loading = True
-            self.error_message = ""
-
-        try:
-            # Instanciar repositorios y servicio
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
-                RepositorioContratoMandatoSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
-                RepositorioContratoArrendamientoSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
-                RepositorioRenovacionSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import (
-                RepositorioIPCSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
-                RepositorioArrendatarioSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
-                RepositorioCodeudorSQLite,
-            )
-
-            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-            repo_ipc = RepositorioIPCSQLite(db_manager)
-            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
-
-            servicio = ServicioContratos(
-                db_manager,
-                repo_mandato=repo_mandato,
-                repo_arriendo=repo_arriendo,
-                repo_propiedad=repo_propiedad,
-                repo_renovacion=repo_renovacion,
-                repo_ipc=repo_ipc,
-                repo_arrendatario=repo_arrendatario,
-                repo_codeudor=repo_codeudor,
-            )
-            detalle = servicio.obtener_detalle_contrato_ui(id_contrato, tipo)
-
-            if detalle:
-                async with self:
-                    self.contrato_detalle = detalle
-                    self.show_detail_modal = True
-                    self.is_loading = False
-            else:
-                async with self:
-                    self.error_message = "Contrato no encontrado"
-                    self.is_loading = False
-        except Exception as e:
-            async with self:
-                self.error_message = f"Error al cargar detalle: {str(e)}"
-                self.is_loading = False
-
-    def close_detail_modal(self):
-        """Cierra modal de detalle."""
-        self.show_detail_modal = False
-        self.contrato_detalle = {}
 
     @rx.event(background=True)
     async def save_contrato(self, form_data: Dict):
-        """Guarda contrato (crear o editar)."""
         async with self:
             self.is_loading = True
-            self.error_message = ""
-
+            # Capturar snapshot del state ANTES de soltar el lock
+            # para evitar race conditions con on_change / reset_on_submit
+            state_snapshot = dict(self.form_data)
         try:
-            # Instanciar repositorios y servicio
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
-                RepositorioContratoMandatoSQLite,
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+                RepositorioContratoMandatoPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
-                RepositorioContratoArrendamientoSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-                RepositorioPropiedadSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
-                RepositorioRenovacionSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_ipc_sqlite import (
-                RepositorioIPCSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
-                RepositorioArrendatarioSQLite,
-            )
-            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
-                RepositorioCodeudorSQLite,
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
             )
 
-            repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-            repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-            repo_ipc = RepositorioIPCSQLite(db_manager)
-            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
-
+            repo_m = RepositorioContratoMandatoPostgres(db_manager)
+            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
             servicio = ServicioContratos(
-                db_manager,
-                repo_mandato=repo_mandato,
-                repo_arriendo=repo_arriendo,
-                repo_propiedad=repo_propiedad,
-                repo_renovacion=repo_renovacion,
-                repo_ipc=repo_ipc,
-                repo_arrendatario=repo_arrendatario,
-                repo_codeudor=repo_codeudor,
+                db_manager, repo_m, repo_a, None, None, None, None, None
             )
-            usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
-            # Combinar datos del formulario con los del estado
-            # PRIORIDAD: self.form_data contiene los IDs de los searchable_select que el usuario ha modificado.
-            # form_data original que llega del browser puede traer strings vacíos para keys no presentes en el HTML form.
-            full_data = {**form_data, **self.form_data}
+            # form_data HTML tiene prioridad sobre state_snapshot
+            # porque contiene los valores al momento exacto del submit
+            full_data = {**state_snapshot, **form_data}
+            usuario = "admin"
 
-            # Procesar datos del formulario según el tipo
-            if (
-                self.modal_mode == "crear_mandato"
-                or self.modal_mode == "editar_mandato"
-            ):
-                # Convertir tipos para mandato
-                datos_procesados = {
+            if "mandato" in self.modal_mode:
+                datos = {
                     "id_propiedad": int(full_data["id_propiedad"]),
                     "id_propietario": int(full_data["id_propietario"]),
                     "id_asesor": int(full_data["id_asesor"]),
                     "fecha_inicio": full_data["fecha_inicio"],
                     "fecha_fin": full_data["fecha_fin"],
-                    "fecha_pago": full_data.get("fecha_pago"),
-                    "duracion_meses": int(full_data.get("duracion_meses") or 12),
                     "canon": int(full_data.get("canon") or 0),
                     "comision_porcentaje": int(
                         float(full_data.get("comision_porcentaje") or 10) * 100
-                    ),  # Convertir % a base 10000
-                    "iva_porcentaje": int(
-                        float(full_data.get("iva_porcentaje", 19) or 19) * 100
-                    ),  # Convertir % a base 10000
-                }
-
-                if self.modal_mode == "crear_mandato":
-                    servicio.crear_mandato(datos_procesados, usuario_sistema)
-                else:
-                    servicio.actualizar_mandato(
-                        self.editing_id, datos_procesados, usuario_sistema
-                    )
-
-            elif (
-                self.modal_mode == "crear_arrendamiento"
-                or self.modal_mode == "editar_arrendamiento"
-            ):
-                # Convertir tipos para arrendamiento
-                datos_procesados = {
-                    "id_propiedad": int(full_data["id_propiedad"]),
-                    "id_arrendatario": int(full_data["id_arrendatario"]),
-                    "id_codeudor": (
-                        int(full_data["id_codeudor"])
-                        if full_data.get("id_codeudor")
-                        else None
                     ),
-                    "fecha_inicio": full_data["fecha_inicio"],
-                    "fecha_fin": full_data["fecha_fin"],
+                    "iva_porcentaje": int(
+                        float(full_data.get("iva_porcentaje") or 19) * 100
+                    ),
                     "duracion_meses": int(full_data.get("duracion_meses") or 12),
-                    "canon": int(full_data.get("canon") or 0),
-                    "deposito": int(full_data.get("deposito") or 0),
                     "fecha_pago": full_data.get("fecha_pago", ""),
                 }
-
-                if self.modal_mode == "crear_arrendamiento":
-                    servicio.crear_arrendamiento(datos_procesados, usuario_sistema)
+                if self.modal_mode == "crear_mandato":
+                    servicio.crear_mandato(datos, usuario)
                 else:
-                    servicio.actualizar_arrendamiento(
-                        self.editing_id, datos_procesados, usuario_sistema
-                    )
+                    servicio.actualizar_mandato(self.editing_id, datos, usuario)
+            else:
+                datos = {
+                    "id_propiedad": int(full_data["id_propiedad"]),
+                    "id_arrendatario": int(full_data["id_arrendatario"]),
+                    "id_codeudor": int(full_data["id_codeudor"])
+                    if full_data.get("id_codeudor")
+                    else None,
+                    "fecha_inicio": full_data["fecha_inicio"],
+                    "fecha_fin": full_data["fecha_fin"],
+                    "canon": int(full_data.get("canon") or 0),
+                    "deposito": int(full_data.get("deposito") or 0),
+                    "duracion_meses": int(full_data.get("duracion_meses") or 12),
+                    "fecha_pago": full_data.get("fecha_pago", ""),
+                }
+                if self.modal_mode == "crear_arrendamiento":
+                    servicio.crear_arrendamiento(datos, usuario)
+                else:
+                    servicio.actualizar_arrendamiento(self.editing_id, datos, usuario)
 
             async with self:
                 self.modal_open = False
-                self.editing_id = None
                 self.form_data = {}
-
-            # Recargar lista
             yield ContratosState.load_contratos()
-
-            # Notificación de éxito
-            yield rx.toast.success(
-                "El contrato ha sido guardado exitosamente.", position="bottom-right"
-            )
-
-        except ValueError as e:
+            yield rx.toast.success("Guardado exitoso", position="bottom-right")
+        except Exception as e:
             async with self:
                 self.error_message = str(e)
-            yield rx.toast.error(
-                f"Error de validación: {str(e)}", position="bottom-right"
-            )
-        except Exception as e:
-            async with self:
-                self.error_message = f"Error al guardar: {str(e)}"
-            yield rx.toast.error(f"Error inesperado: {str(e)}", position="bottom-right")
+            yield rx.toast.error(f"Error: {e}")
         finally:
             async with self:
                 self.is_loading = False
 
-    # Renovación
-    show_renewal_confirm: bool = False
-    selected_contract_id_renew: Optional[int] = None
-    selected_contract_type_renew: str = ""
-    # Proyección pre-calculada para mostrar en el diálogo
-    renewal_proyeccion: Dict[str, Any] = {}
-    renewal_nueva_fecha_fin: str = ""  # Editable por el usuario en el diálogo
-    renewal_loading_proyeccion: bool = False
-
     @rx.event(background=True)
-    async def confirm_renewal(self, id_contrato: int, tipo: str):
-        """Abre el diálogo de renovación y pre-calcula la proyección."""
+    async def open_detail_modal(self, id_contrato: int, tipo: str):
         async with self:
-            self.selected_contract_id_renew = id_contrato
-            self.selected_contract_type_renew = tipo
-            self.renewal_proyeccion = {}
-            self.renewal_nueva_fecha_fin = ""
-            self.renewal_loading_proyeccion = True
-            self.show_renewal_confirm = True
-
-        try:
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-                RepositorioContratoMandatoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-                RepositorioContratoArrendamientoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
-                RepositorioPropiedadPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
-                RepositorioRenovacionPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
-                RepositorioIPCPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
-                RepositorioArrendatarioPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
-                RepositorioCodeudorPostgres,
-            )
-
-            repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
-            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
-            repo_renovacion = RepositorioRenovacionPostgres(db_manager)
-            repo_ipc = RepositorioIPCPostgres(db_manager)
-            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
-            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
-
-            servicio = ServicioContratos(
-                db_manager,
-                repo_mandato=repo_mandato,
-                repo_arriendo=repo_arriendo,
-                repo_propiedad=repo_propiedad,
-                repo_renovacion=repo_renovacion,
-                repo_ipc=repo_ipc,
-                repo_arrendatario=repo_arrendatario,
-                repo_codeudor=repo_codeudor,
-            )
-
-            proyeccion = servicio.calcular_proyeccion_renovacion(id_contrato, tipo)
-
-            async with self:
-                self.renewal_proyeccion = proyeccion
-                self.renewal_nueva_fecha_fin = proyeccion.get("nueva_fecha_fin", "")
-                self.renewal_loading_proyeccion = False
-
-        except Exception as e:
-            async with self:
-                self.renewal_loading_proyeccion = False
-                self.renewal_proyeccion = {"error": str(e)}
-
-    def set_renewal_fecha_fin(self, value: str):
-        """Permite al usuario editar la nueva fecha fin desde el diálogo."""
-        self.renewal_nueva_fecha_fin = value
-
-    def cancel_renewal(self):
-        """Cierra el diálogo de confirmación y limpia el estado."""
-        self.show_renewal_confirm = False
-        self.selected_contract_id_renew = None
-        self.selected_contract_type_renew = ""
-        self.renewal_proyeccion = {}
-        self.renewal_nueva_fecha_fin = ""
-        self.renewal_loading_proyeccion = False
-
-    @rx.event(background=True)
-    async def execute_renewal(self):
-        """Ejecuta la renovación del contrato seleccionado."""
-        async with self:
-            self.show_renewal_confirm = False  # Cerrar dialogo inmediatamente
             self.is_loading = True
-
         try:
-            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
-                RepositorioPropiedadPostgres,
-            )
             from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
                 RepositorioContratoMandatoPostgres,
             )
             from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
                 RepositorioContratoArrendamientoPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
-                RepositorioRenovacionPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
-                RepositorioIPCPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
-                RepositorioArrendatarioPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
-                RepositorioCodeudorPostgres,
-            )
 
-            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
-            repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
-            repo_renovacion = RepositorioRenovacionPostgres(db_manager)
-            repo_ipc = RepositorioIPCPostgres(db_manager)
-            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
-            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
-
+            repo_m = RepositorioContratoMandatoPostgres(db_manager)
+            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
             servicio = ServicioContratos(
                 db_manager,
-                repo_mandato=repo_mandato,
-                repo_arriendo=repo_arriendo,
-                repo_propiedad=repo_propiedad,
-                repo_renovacion=repo_renovacion,
-                repo_ipc=repo_ipc,
-                repo_arrendatario=repo_arrendatario,
-                repo_codeudor=repo_codeudor,
+                repo_mandato=repo_m,
+                repo_arriendo=repo_a,
+                repo_propiedad=None,
+                repo_renovacion=None,
+                repo_ipc=None,
+                repo_arrendatario=None,
+                repo_codeudor=None,
             )
-            usuario_sistema = "admin"  # TODO: Auth
 
-            tipo = self.selected_contract_type_renew
-            id_contrato = self.selected_contract_id_renew
-            # Usar la fecha personalizada si el usuario la editó
-            fecha_fin_personalizada = self.renewal_nueva_fecha_fin or None
-
-            resultado_msg = ""
-
-            if tipo == "Arrendamiento":
-                contrato_renovado = servicio.renovar_arrendamiento(
-                    id_contrato, usuario_sistema, fecha_fin_personalizada
-                )
-                resultado_msg = f"Arrendamiento renovado. Nuevo Canon: ${contrato_renovado.canon_arrendamiento:,}, Fin: {contrato_renovado.fecha_fin_contrato_a}"
-            elif tipo == "Mandato":
-                contrato_renovado = servicio.renovar_mandato(
-                    id_contrato, usuario_sistema, fecha_fin_personalizada
-                )
-                resultado_msg = (
-                    f"Mandato renovado. Fin: {contrato_renovado.fecha_fin_contrato_m}"
-                )
-
-            # Recargar lista
-            yield ContratosState.load_contratos()
-            yield rx.toast.success(resultado_msg, position="bottom-right")
-
+            detalle = servicio.obtener_detalle_contrato_ui(id_contrato, tipo)
+            if detalle:
+                async with self:
+                    self.contrato_detalle = detalle
+                    self.show_detail_modal = True
+            else:
+                async with self:
+                    self.error_message = "Detalles no encontrados"
         except Exception as e:
-            yield rx.toast.error(f"Error al renovar: {str(e)}", position="bottom-right")
-
+            async with self:
+                self.error_message = f"Error: {e}"
         finally:
             async with self:
                 self.is_loading = False
-                self.selected_contract_id_renew = None
-                self.selected_contract_type_renew = ""
-                self.renewal_proyeccion = {}
-                self.renewal_nueva_fecha_fin = ""
 
-    def exportar_csv(self):
-        """Genera y descarga el CSV de contratos."""
+    @rx.event(background=True)
+    async def exportar_csv(self):
+        async with self:
+            self.is_loading = True
         try:
-            # Instanciar repositorios y servicio
             from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
                 RepositorioContratoMandatoPostgres,
             )
             from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
                 RepositorioContratoArrendamientoPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
-                RepositorioPropiedadPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
-                RepositorioRenovacionPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
-                RepositorioIPCPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
-                RepositorioArrendatarioPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
-                RepositorioCodeudorPostgres,
-            )
 
-            repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
-            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
-            repo_renovacion = RepositorioRenovacionPostgres(db_manager)
-            repo_ipc = RepositorioIPCPostgres(db_manager)
-            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
-            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
-
+            repo_m = RepositorioContratoMandatoPostgres(db_manager)
+            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
             servicio = ServicioContratos(
-                db_manager=db_manager,
-                repo_mandato=repo_mandato,
-                repo_arriendo=repo_arriendo,
-                repo_propiedad=repo_propiedad,
-                repo_renovacion=repo_renovacion,
-                repo_ipc=repo_ipc,
-                repo_arrendatario=repo_arrendatario,
-                repo_codeudor=repo_codeudor,
+                db_manager,
+                repo_mandato=repo_m,
+                repo_arriendo=repo_a,
+                repo_propiedad=None,
+                repo_renovacion=None,
+                repo_ipc=None,
+                repo_arrendatario=None,
+                repo_codeudor=None,
             )
 
-            # Obtener datos CSV usando los filtros actuales
+            estado_filtro = (
+                "Activo"
+                if self.solo_activos
+                else (self.filter_estado if self.filter_estado != "Todos" else None)
+            )
+
             csv_data = servicio.exportar_contratos_csv(
-                filtro_tipo=self.filter_tipo,
-                estado=self.filter_estado if self.filter_estado != "Todos" else None,
+                filtro_tipo=self.filter_tipo if self.filter_tipo != "Todos" else None,
+                estado=estado_filtro,
                 busqueda=self.search_text if self.search_text else None,
             )
-
-            # Preparar descarga
             import time
 
             timestamp = int(time.time())
             filename = f"reporte_contratos_{timestamp}.csv"
-
-            # Convertir a bytes para descarga
-            if isinstance(csv_data, str):
-                data_bytes = csv_data.encode("utf-8-sig")
-            else:
-                data_bytes = csv_data
-
-            yield rx.download(data=data_bytes, filename=filename)
-            yield rx.toast.success("Descarga iniciada", position="bottom-right")
-
-        except Exception as e:
-            pass  # print(f"Error exportando CSV: {e}") [OpSec Removed]
-            yield rx.toast.error(
-                f"Error al exportar: {str(e)}", position="bottom-right"
+            yield rx.download(
+                data=csv_data.encode("utf-8-sig")
+                if isinstance(csv_data, str)
+                else csv_data,
+                filename=filename,
             )
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error exportando: {e}"
+            yield rx.toast.error(f"Error: {e}")
+        finally:
+            async with self:
+                self.is_loading = False
 
     @rx.event(background=True)
     async def toggle_estado(self, id_contrato: int, tipo: str, estado_actual: str):
-        """Cambia estado de un contrato (Activo <-> Cancelado) y emite PDF."""
         async with self:
             self.is_loading = True
-            self.error_message = ""
-
         try:
-            # Instanciar repositorios Postgres y servicio
             from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
                 RepositorioContratoMandatoPostgres,
             )
@@ -1683,38 +890,37 @@ class ContratosState(DocumentosStateMixin):
             )
             from src.presentacion_reflex.state.pdf_state import PDFState
 
-            repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
-            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
-            repo_renovacion = RepositorioRenovacionPostgres(db_manager)
-            repo_ipc = RepositorioIPCPostgres(db_manager)
-            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
-            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
+            repo_m = RepositorioContratoMandatoPostgres(db_manager)
+            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
+            repo_p = RepositorioPropiedadPostgres(db_manager)
+            repo_r = RepositorioRenovacionPostgres(db_manager)
+            repo_i = RepositorioIPCPostgres(db_manager)
+            repo_arr = RepositorioArrendatarioPostgres(db_manager)
+            repo_cod = RepositorioCodeudorPostgres(db_manager)
 
             servicio = ServicioContratos(
-                db_manager,
-                repo_mandato=repo_mandato,
-                repo_arriendo=repo_arriendo,
-                repo_propiedad=repo_propiedad,
-                repo_renovacion=repo_renovacion,
-                repo_ipc=repo_ipc,
-                repo_arrendatario=repo_arrendatario,
-                repo_codeudor=repo_codeudor,
+                db_manager=db_manager,
+                repo_mandato=repo_m,
+                repo_arriendo=repo_a,
+                repo_propiedad=repo_p,
+                repo_renovacion=repo_r,
+                repo_ipc=repo_i,
+                repo_arrendatario=repo_arr,
+                repo_codeudor=repo_cod,
             )
-            usuario_sistema = "admin"  # TODO: Obtener de AuthState
+            usuario_sistema = "admin"
 
             if estado_actual == "Activo":
-                # Obtener detalles para el PDF antes de cancelar
                 detalle = servicio.obtener_detalle_contrato_ui(id_contrato, tipo)
-                beneficiario = "Interesado"
-                if detalle:
-                    if tipo == "Mandato":
-                        beneficiario = detalle.get("propietario", "Propietario")
-                    else:
-                        beneficiario = detalle.get("arrendatario", "Arrendatario")
-
-                # Cancelar contrato
+                beneficiario = (
+                    detalle.get("propietario", "Propietario")
+                    if tipo == "Mandato"
+                    else detalle.get("arrendatario", "Arrendatario")
+                    if detalle
+                    else "Interesado"
+                )
                 motivo = "Cancelación manual desde interfaz"
+
                 if tipo == "Mandato":
                     servicio.terminar_mandato(id_contrato, motivo, usuario_sistema)
                 else:
@@ -1722,41 +928,169 @@ class ContratosState(DocumentosStateMixin):
                         id_contrato, motivo, usuario_sistema
                     )
 
-                # Generar Acta de Terminación / Paz y Salvo
                 yield PDFState.generar_certificado_paz_y_salvo(
                     id_contrato, beneficiario
                 )
+                yield ContratosState.load_contratos()
+                yield rx.toast.info("Contrato cancelado")
             else:
-                # No implementado: reactivar contrato cancelado
-                # Por ahora solo permitimos desactivar
                 async with self:
                     self.error_message = "No se puede reactivar un contrato cancelado"
-                    self.is_loading = False
-                return
-
-            # Recargar lista
-            yield ContratosState.load_contratos()
-            yield rx.toast.info(
-                f"Contrato {estado_actual.lower()} desactivado/cancelado.",
-                position="bottom-right",
-            )
-
         except Exception as e:
             async with self:
-                self.error_message = f"Error al cambiar estado: {str(e)}"
-            yield rx.toast.error(
-                f"Error al cambiar estado: {str(e)}", position="bottom-right"
-            )
+                self.error_message = f"Error: {e}"
         finally:
             async with self:
                 self.is_loading = False
 
-    # =========================================================================
-    # IPC INCREMENT HANDLERS
-    # =========================================================================
+    def set_renewal_fecha_fin(self, val: str):
+        self.renewal_nueva_fecha_fin = val
+
+    def cancel_renewal(self):
+        self.show_renewal_confirm = False
+        self.renewal_proyeccion = {}
+        self.error_message = ""
+
+    @rx.event(background=True)
+    async def confirm_renewal(self, id_contrato: int, tipo: str):
+        async with self:
+            self.renewal_target_id = id_contrato
+            self.renewal_target_tipo = tipo
+            self.renewal_loading_proyeccion = True
+            self.show_renewal_confirm = True
+            self.error_message = ""
+        try:
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+                RepositorioContratoMandatoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+                RepositorioIPCPostgres,
+            )
+
+            repo_m = RepositorioContratoMandatoPostgres(db_manager)
+            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
+            repo_p = RepositorioPropiedadPostgres(db_manager)
+            repo_i = RepositorioIPCPostgres(db_manager)
+            
+            servicio = ServicioContratos(
+                db_manager,
+                repo_mandato=repo_m,
+                repo_arriendo=repo_a,
+                repo_propiedad=repo_p,
+                repo_renovacion=None,
+                repo_ipc=repo_i,
+                repo_arrendatario=None,
+                repo_codeudor=None,
+            )
+
+            proyeccion = servicio.calcular_proyeccion_renovacion(id_contrato, tipo)
+            async with self:
+                self.renewal_proyeccion = proyeccion
+                if not proyeccion.get("error"):
+                    self.renewal_nueva_fecha_fin = proyeccion.get("fecha_fin", "")
+        except Exception as e:
+            async with self:
+                self.renewal_proyeccion = {"error": f"Error: {e}"}
+        finally:
+            async with self:
+                self.renewal_loading_proyeccion = False
+
+    @rx.event(background=True)
+    async def execute_renewal(self):
+        async with self:
+            self.is_loading = True
+        try:
+            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
+                RepositorioRenovacionPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+                RepositorioContratoMandatoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+                RepositorioPropiedadPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+                RepositorioIPCPostgres,
+            )
+
+            repo_m = RepositorioContratoMandatoPostgres(db_manager)
+            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
+            repo_r = RepositorioRenovacionPostgres(db_manager)
+            repo_p = RepositorioPropiedadPostgres(db_manager)
+            repo_i = RepositorioIPCPostgres(db_manager)
+            
+            servicio = ServicioContratos(
+                db_manager,
+                repo_mandato=repo_m,
+                repo_arriendo=repo_a,
+                repo_propiedad=repo_p,
+                repo_renovacion=repo_r,
+                repo_ipc=repo_i,
+                repo_arrendatario=None,
+                repo_codeudor=None,
+            )
+
+            res = {"success": False, "message": "Error desconocido"}
+            try:
+                if self.renewal_target_tipo == "Mandato":
+                    contrato = servicio.renovar_mandato(
+                        id_contrato=self.renewal_target_id,
+                        usuario_sistema="admin",
+                        nueva_fecha_fin=self.renewal_nueva_fecha_fin or None,
+                    )
+                    res = {
+                        "success": True,
+                        "message": f"Mandato renovado: {contrato.fecha_fin_contrato_m if contrato else ''}",
+                    }
+                else:
+                    contrato = servicio.renovar_arrendamiento(
+                        id_contrato=self.renewal_target_id,
+                        usuario_sistema="admin",
+                        nueva_fecha_fin=self.renewal_nueva_fecha_fin or None,
+                    )
+                    res = {
+                        "success": True,
+                        "message": f"Arrendamiento renovado: {contrato.fecha_fin_contrato_a if contrato else ''}",
+                    }
+            except ValueError as e:
+                res = {"success": False, "message": str(e)}
+            except Exception as e:
+                res = {"success": False, "message": f"Error: {e}"}
+
+            if res["success"]:
+                async with self:
+                    self.show_renewal_confirm = False
+                    self.renewal_proyeccion = {}
+                yield ContratosState.load_contratos()
+                yield rx.toast.success(res["message"])
+            else:
+                async with self:
+                    self.error_message = res["message"]
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error: {e}"
+        finally:
+            async with self:
+                self.is_loading = False
+
+    def close_detail_modal(self):
+        self.show_detail_modal = False
+        self.contrato_detalle = {}
+
+    def close_ipc_modal(self):
+        self.show_ipc_modal = False
+        self.error_message = ""
 
     def open_ipc_modal(self, id_contrato: int):
-        """Abre modal para aplicar incremento IPC."""
         from datetime import datetime
 
         self.ipc_target_contrato_id = id_contrato
@@ -1767,16 +1101,8 @@ class ContratosState(DocumentosStateMixin):
         }
         self.show_ipc_modal = True
 
-    def close_ipc_modal(self):
-        """Cierra modal de IPC."""
-        self.show_ipc_modal = False
-        self.ipc_target_contrato_id = 0
-        self.form_data = {}
-        self.error_message = ""
-
     @rx.event(background=True)
     async def apply_ipc_increment(self, form_data: Dict):
-        """Aplica incremento IPC al contrato seleccionado."""
         async with self:
             self.is_loading = True
             self.error_message = ""
@@ -1786,10 +1112,30 @@ class ContratosState(DocumentosStateMixin):
             fecha = form_data.get("fecha_aplicacion", "")
             observaciones = form_data.get("observaciones", "")
 
-            from src.aplicacion.servicios.servicio_contratos import ServicioContratos
-            from src.infraestructura.persistencia.database import db_manager
+            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+                RepositorioContratoMandatoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+                RepositorioIPCPostgres,
+            )
 
-            servicio = ServicioContratos(db_manager)
+            repo_m = RepositorioContratoMandatoPostgres(db_manager)
+            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
+            repo_ipc = RepositorioIPCPostgres(db_manager)
+            servicio = ServicioContratos(
+                db_manager,
+                repo_mandato=repo_m,
+                repo_arriendo=repo_a,
+                repo_propiedad=None,
+                repo_renovacion=None,
+                repo_ipc=repo_ipc,
+                repo_arrendatario=None,
+                repo_codeudor=None,
+            )
+
             resultado = servicio.aplicar_incremento_ipc(
                 id_contrato=self.ipc_target_contrato_id,
                 porcentaje_ipc=porcentaje,
@@ -1803,8 +1149,6 @@ class ContratosState(DocumentosStateMixin):
                     self.show_ipc_modal = False
                     self.ipc_target_contrato_id = 0
                     self.form_data = {}
-
-                # Recargar contratos
                 yield ContratosState.load_contratos()
                 yield rx.toast.success(resultado["message"], position="bottom-right")
             else:

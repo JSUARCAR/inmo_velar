@@ -30,10 +30,10 @@ class ServicioFinanciero:
         repo_recaudo: IRepositorioRecaudo,
         repo_liquidacion: IRepositorioLiquidacion,
         repo_propiedad: IRepositorioPropiedad,
-        repo_arriendo: Any, # Podría ser IRepositorioContratoArriendo
+        repo_arriendo: Any,  # Podría ser IRepositorioContratoArriendo
         repo_mandato: Any,  # Podría ser IRepositorioContratoMandato
         pdf_service: ServicioDocumentosPDF,
-        servicio_configuracion: Optional[ServicioConfiguracion] = None
+        servicio_configuracion: Optional[ServicioConfiguracion] = None,
     ):
         self.repo_recaudo = repo_recaudo
         self.repo_liquidacion = repo_liquidacion
@@ -44,7 +44,10 @@ class ServicioFinanciero:
         self.servicio_config = servicio_configuracion
 
     def registrar_recaudo(
-        self, datos: Dict[str, Any], conceptos_data: List[Dict[str, Any]], usuario_sistema: str
+        self,
+        datos: Dict[str, Any],
+        conceptos_data: List[Dict[str, Any]],
+        usuario_sistema: str,
     ) -> Recaudo:
         """DEPRECATED - Usar ServicioRecaudo.registrar_pago() en su lugar.
         Registra un nuevo pago del inquilino."""
@@ -73,14 +76,20 @@ class ServicioFinanciero:
         fecha_lim = datetime.fromisoformat(fecha_limite)
         fecha_pag = datetime.fromisoformat(fecha_pago)
         dias_mora = (fecha_pag - fecha_lim).days
-        if dias_mora <= 0: return 0
+        if dias_mora <= 0:
+            return 0
         tasa_diaria = 0.06 / 365
         return int(valor_canon * tasa_diaria * dias_mora)
 
     def aplicar_pago_anticipado(
-        self, id_contrato_a: int, meses_adelantados: int, valor_canon_mensual: int,
-        fecha_pago: str, metodo_pago: str, referencia_bancaria: Optional[str],
-        usuario_sistema: str
+        self,
+        id_contrato_a: int,
+        meses_adelantados: int,
+        valor_canon_mensual: int,
+        fecha_pago: str,
+        metodo_pago: str,
+        referencia_bancaria: Optional[str],
+        usuario_sistema: str,
     ) -> Recaudo:
         """Registra un pago anticipado."""
         valor_total = valor_canon_mensual * meses_adelantados
@@ -89,12 +98,20 @@ class ServicioFinanciero:
 
         for i in range(meses_adelantados):
             periodo = (fecha_base + relativedelta(months=i)).strftime("%Y-%m")
-            conceptos_data.append({"tipo_concepto": "Canon", "periodo": periodo, "valor": valor_canon_mensual})
+            conceptos_data.append(
+                {
+                    "tipo_concepto": "Canon",
+                    "periodo": periodo,
+                    "valor": valor_canon_mensual,
+                }
+            )
 
         return self.registrar_recaudo(
             datos={
-                "id_contrato_a": id_contrato_a, "fecha_pago": fecha_pago,
-                "valor_total": valor_total, "metodo_pago": metodo_pago,
+                "id_contrato_a": id_contrato_a,
+                "fecha_pago": fecha_pago,
+                "valor_total": valor_total,
+                "metodo_pago": metodo_pago,
                 "referencia_bancaria": referencia_bancaria,
                 "observaciones": f"Pago anticipado de {meses_adelantados} meses",
             },
@@ -103,15 +120,20 @@ class ServicioFinanciero:
         )
 
     def generar_liquidacion_mensual(
-        self, id_contrato_m: int, periodo: str, datos_adicionales: Dict[str, Any],
-        usuario_sistema: str
+        self,
+        id_contrato_m: int,
+        periodo: str,
+        datos_adicionales: Dict[str, Any],
+        usuario_sistema: str,
     ) -> Liquidacion:
         """Genera la liquidación mensual."""
         contrato = self.repo_mandato.obtener_por_id(id_contrato_m)
         if not contrato:
             raise ValueError(f"No existe el contrato de mandato con ID {id_contrato_m}")
 
-        existente = self.repo_liquidacion.obtener_por_contrato_y_periodo(id_contrato_m, periodo)
+        existente = self.repo_liquidacion.obtener_por_contrato_y_periodo(
+            id_contrato_m, periodo
+        )
         if existente:
             raise ValueError(f"Ya existe una liquidación para el período {periodo}")
 
@@ -119,22 +141,27 @@ class ServicioFinanciero:
         otros_ingresos = datos_adicionales.get("otros_ingresos", 0)
         total_ingresos = canon_bruto + otros_ingresos
 
-        comision_porcentaje = datos_adicionales.get("comision_porcentaje", contrato.comision_porcentaje_contrato_m)
+        comision_porcentaje = datos_adicionales.get(
+            "comision_porcentaje", contrato.comision_porcentaje_contrato_m
+        )
         comision_monto = int((canon_bruto * comision_porcentaje) / 10000)
-        
+
         # Sincronización de Parámetros Globales
         iva_val = 1900
         imp_4x1000_val = 4
-        
+
         if self.servicio_config:
             iva_val = self.servicio_config.obtener_valor_parametro("IVA_DEFAULT", 1900)
-            imp_4x1000_val = self.servicio_config.obtener_valor_parametro("IMPUESTO_4X1000", 4)
-            
+            imp_4x1000_val = self.servicio_config.obtener_valor_parametro(
+                "IMPUESTO_4X1000", 4
+            )
+
         iva_comision = int(comision_monto * (iva_val / 10000.0))
         impuesto_4x1000 = int(total_ingresos * (imp_4x1000_val / 1000.0))
 
-        # Cálculo del Seguro: obtener porcentaje desde Póliza o Arrendatario
+        # Cálculo del Seguro y Administración: obtener desde Propiedad
         seguro_monto = 0
+        valor_admin_propiedad = 0
         try:
             from src.infraestructura.persistencia.database import db_manager
 
@@ -144,13 +171,19 @@ class ServicioFinanciero:
 
                 # Obtener propiedad del contrato de mandato
                 cursor.execute(
-                    f"SELECT ID_PROPIEDAD FROM CONTRATOS_MANDATOS WHERE ID_CONTRATO_M = {placeholder}",
+                    f"""
+                    SELECT cm.ID_PROPIEDAD, p.VALOR_ADMINISTRACION 
+                    FROM CONTRATOS_MANDATOS cm 
+                    LEFT JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD 
+                    WHERE cm.ID_CONTRATO_M = {placeholder}
+                    """,
                     (id_contrato_m,),
                 )
                 row_prop = cursor.fetchone()
 
                 if row_prop:
                     id_propiedad = row_prop["ID_PROPIEDAD"]
+                    valor_admin_propiedad = row_prop["VALOR_ADMINISTRACION"] or 0
 
                     # Buscar seguro: Póliza activa → Seguro del arrendatario
                     query_seguro = f"""
@@ -187,7 +220,9 @@ class ServicioFinanciero:
             comision_monto=comision_monto,
             iva_comision=iva_comision,
             impuesto_4x1000=impuesto_4x1000,
-            gastos_administracion=datos_adicionales.get("gastos_administracion", 0),
+            gastos_administracion=datos_adicionales.get(
+                "gastos_administracion", valor_admin_propiedad
+            ),
             gastos_servicios=datos_adicionales.get("gastos_servicios", 0),
             gastos_reparaciones=datos_adicionales.get("gastos_reparaciones", 0),
             pago_predial=datos_adicionales.get("pago_predial", 0),
@@ -199,14 +234,18 @@ class ServicioFinanciero:
         return self.repo_liquidacion.crear(liquidacion, usuario_sistema)
 
     def generar_liquidacion_propietario(
-        self, id_propietario: int, periodo: str, datos_adicionales_por_contrato: Optional[Dict], usuario_sistema: str
+        self,
+        id_propietario: int,
+        periodo: str,
+        datos_adicionales_por_contrato: Optional[Dict],
+        usuario_sistema: str,
     ) -> int:
         """
         Genera liquidaciones individuales para todos los contratos de mandato activos de un propietario.
         Retorna la cantidad de liquidaciones generadas.
         """
         from src.infraestructura.persistencia.database import db_manager
-        
+
         with db_manager.obtener_conexion() as conn:
             cursor = db_manager.get_dict_cursor(conn)
             query = """
@@ -216,31 +255,36 @@ class ServicioFinanciero:
             """
             cursor.execute(query, (id_propietario,))
             contratos = cursor.fetchall()
-            
+
         if not contratos:
             return 0
-            
+
         generadas = 0
         for row in contratos:
             id_contrato_m = row["ID_CONTRATO_M"]
             datos_adicionales = {}
-            if datos_adicionales_por_contrato and id_contrato_m in datos_adicionales_por_contrato:
+            if (
+                datos_adicionales_por_contrato
+                and id_contrato_m in datos_adicionales_por_contrato
+            ):
                 datos_adicionales = datos_adicionales_por_contrato[id_contrato_m]
-                
+
             try:
                 self.generar_liquidacion_mensual(
                     id_contrato_m=id_contrato_m,
                     periodo=periodo,
                     datos_adicionales=datos_adicionales,
-                    usuario_sistema=usuario_sistema
+                    usuario_sistema=usuario_sistema,
                 )
                 generadas += 1
             except ValueError:
                 pass
-                
+
         if generadas == 0:
-            raise ValueError(f"Ya existían liquidaciones para las propiedades de este propietario en el período {periodo}")
-            
+            raise ValueError(
+                f"Ya existían liquidaciones para las propiedades de este propietario en el período {periodo}"
+            )
+
         return generadas
 
     def listar_todas_liquidaciones(self) -> List[Dict[str, Any]]:
@@ -258,25 +302,46 @@ class ServicioFinanciero:
         )
 
     def marcar_liquidacion_pagada(
-        self, id_liquidacion: int, fecha_pago: str, metodo_pago: str, referencia_pago: str, usuario_sistema: str
+        self,
+        id_liquidacion: int,
+        fecha_pago: str,
+        metodo_pago: str,
+        referencia_pago: str,
+        usuario_sistema: str,
     ) -> None:
-        self.repo_liquidacion.marcar_como_pagada(id_liquidacion, fecha_pago, metodo_pago, referencia_pago, usuario_sistema)
+        self.repo_liquidacion.marcar_como_pagada(
+            id_liquidacion, fecha_pago, metodo_pago, referencia_pago, usuario_sistema
+        )
 
     def marcar_liquidacion_propietario_pagada(
-        self, id_propietario: int, periodo: str, fecha_pago: str, metodo_pago: str, referencia_pago: str, usuario_sistema: str
+        self,
+        id_propietario: int,
+        periodo: str,
+        fecha_pago: str,
+        metodo_pago: str,
+        referencia_pago: str,
+        usuario_sistema: str,
     ) -> int:
         """Marca como pagadas todas las liquidaciones aprobadas de un propietario para un periodo."""
-        liquidaciones = self.repo_liquidacion.listar_por_propietario_y_periodo(id_propietario, periodo)
+        liquidaciones = self.repo_liquidacion.listar_por_propietario_y_periodo(
+            id_propietario, periodo
+        )
         afectadas = 0
         for liq in liquidaciones:
-            if liq.estado_liquidacion == 'Aprobada':
+            if liq.estado_liquidacion == "Aprobada":
                 self.repo_liquidacion.marcar_como_pagada(
-                    liq.id_liquidacion, fecha_pago, metodo_pago, referencia_pago, usuario_sistema
+                    liq.id_liquidacion,
+                    fecha_pago,
+                    metodo_pago,
+                    referencia_pago,
+                    usuario_sistema,
                 )
                 afectadas += 1
         return afectadas
 
-    def cancelar_liquidacion(self, id_liquidacion: int, motivo: str, usuario_sistema: str) -> None:
+    def cancelar_liquidacion(
+        self, id_liquidacion: int, motivo: str, usuario_sistema: str
+    ) -> None:
         self.repo_liquidacion.cancelar(id_liquidacion, motivo, usuario_sistema)
 
     def reversar_liquidacion(self, id_liquidacion: int, usuario_sistema: str) -> None:
@@ -288,40 +353,87 @@ class ServicioFinanciero:
         all_aps = self.repo_liquidacion.listar_todas()
         # Nota: listar_todas suele retornar dicts. El servicio original devolvía entidades.
         # Implementaremos un método específico en repo si es necesario.
-        return [self.repo_liquidacion._row_to_entity(r) for r in all_aps if r.get('estado') == 'Aprobada']
+        return [
+            self.repo_liquidacion._row_to_entity(r)
+            for r in all_aps
+            if r.get("estado") == "Aprobada"
+        ]
 
-    def listar_recaudos_paginado(self, page: int = 1, page_size: int = 25, estado: Optional[str] = None,
-                                fecha_desde: Optional[str] = None, fecha_hasta: Optional[str] = None, busqueda: Optional[str] = None):
+    def listar_recaudos_paginado(
+        self,
+        page: int = 1,
+        page_size: int = 25,
+        estado: Optional[str] = None,
+        fecha_desde: Optional[str] = None,
+        fecha_hasta: Optional[str] = None,
+        busqueda: Optional[str] = None,
+    ):
         from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
-        params = PaginationParams(page=page, page_size=page_size)
-        total = self.repo_recaudo.contar_con_filtros(estado, fecha_desde, fecha_hasta, busqueda)
-        items = self.repo_recaudo.listar_paginado(params.page_size, params.offset, estado, fecha_desde, fecha_hasta, busqueda)
-        return PaginatedResult(items=items, total=total, page=params.page, page_size=params.page_size)
 
-    def listar_liquidaciones_paginado(self, page: int = 1, page_size: int = 25, estado: Optional[str] = None,
-                                     periodo: Optional[str] = None, busqueda: Optional[str] = None, id_asesor: Optional[int] = None):
-        from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
         params = PaginationParams(page=page, page_size=page_size)
-        total = self.repo_liquidacion.contar_con_filtros(estado, periodo, busqueda, id_asesor)
-        items = self.repo_liquidacion.listar_paginado(params.page_size, params.offset, estado, periodo, busqueda, id_asesor)
-        return PaginatedResult(items=items, total=total, page=params.page, page_size=params.page_size)
+        total = self.repo_recaudo.contar_con_filtros(
+            estado, fecha_desde, fecha_hasta, busqueda
+        )
+        items = self.repo_recaudo.listar_paginado(
+            params.page_size, params.offset, estado, fecha_desde, fecha_hasta, busqueda
+        )
+        return PaginatedResult(
+            items=items, total=total, page=params.page, page_size=params.page_size
+        )
+
+    def listar_liquidaciones_paginado(
+        self,
+        page: int = 1,
+        page_size: int = 25,
+        estado: Optional[str] = None,
+        periodo: Optional[str] = None,
+        busqueda: Optional[str] = None,
+        id_asesor: Optional[int] = None,
+    ):
+        from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
+
+        params = PaginationParams(page=page, page_size=page_size)
+        total = self.repo_liquidacion.contar_con_filtros(
+            estado, periodo, busqueda, id_asesor
+        )
+        items = self.repo_liquidacion.listar_paginado(
+            params.page_size, params.offset, estado, periodo, busqueda, id_asesor
+        )
+        return PaginatedResult(
+            items=items, total=total, page=params.page, page_size=params.page_size
+        )
 
     def obtener_detalle_recaudo_ui(self, id_recaudo: int) -> Optional[Dict[str, Any]]:
         recaudo = self.repo_recaudo.obtener_por_id(id_recaudo)
-        if not recaudo: return None
+        if not recaudo:
+            return None
         contrato = self.repo_arriendo.obtener_por_id(recaudo.id_contrato_a)
-        if not contrato: return None
+        if not contrato:
+            return None
         propiedad = self.repo_propiedad.obtener_por_id(contrato.id_propiedad)
         conceptos = self.repo_recaudo.obtener_conceptos_por_recaudo(id_recaudo)
         return {
-            "id_recaudo": recaudo.id_recaudo, "fecha_pago": recaudo.fecha_pago,
-            "valor_total": recaudo.valor_total, "metodo_pago": recaudo.metodo_pago,
+            "id_recaudo": recaudo.id_recaudo,
+            "fecha_pago": recaudo.fecha_pago,
+            "valor_total": recaudo.valor_total,
+            "metodo_pago": recaudo.metodo_pago,
             "referencia_bancaria": recaudo.referencia_bancaria or "N/A",
-            "estado_recaudo": recaudo.estado_recaudo, "observaciones": recaudo.observaciones or "Sin observaciones",
+            "estado_recaudo": recaudo.estado_recaudo,
+            "observaciones": recaudo.observaciones or "Sin observaciones",
             "id_contrato_a": recaudo.id_contrato_a,
-            "direccion_propiedad": propiedad.direccion_propiedad if propiedad else "N/A",
-            "conceptos": [{"tipo_concepto": c.tipo_concepto, "periodo": c.periodo, "valor": c.valor} for c in conceptos],
-            "created_at": recaudo.created_at, "created_by": recaudo.created_by or "Sistema"
+            "direccion_propiedad": propiedad.direccion_propiedad
+            if propiedad
+            else "N/A",
+            "conceptos": [
+                {
+                    "tipo_concepto": c.tipo_concepto,
+                    "periodo": c.periodo,
+                    "valor": c.valor,
+                }
+                for c in conceptos
+            ],
+            "created_at": recaudo.created_at,
+            "created_by": recaudo.created_by or "Sistema",
         }
 
     def aprobar_recaudo(self, id_recaudo: int, usuario_sistema: str) -> None:
@@ -358,22 +470,31 @@ class ServicioFinanciero:
         """
         return self.repo_liquidacion.obtener_datos_para_pdf(id_liquidacion)
 
-    def obtener_detalle_liquidacion_ui(self, id_liquidacion: int) -> Optional[Dict[str, Any]]:
+    def obtener_detalle_liquidacion_ui(
+        self, id_liquidacion: int
+    ) -> Optional[Dict[str, Any]]:
         """
         Obtiene datos detallados de una liquidación para mostrar en UI (Modales de Detalle/Edición).
         Reutiliza la lógica de obtención de datos para PDF ya que contiene toda la info necesaria.
         """
         return self.repo_liquidacion.obtener_datos_para_pdf(id_liquidacion)
 
-    def obtener_datos_consolidados_para_pdf(self, id_propietario: int, periodo: str) -> Dict[str, Any]:
+    def obtener_datos_consolidados_para_pdf(
+        self, id_propietario: int, periodo: str
+    ) -> Dict[str, Any]:
         """
         Obtiene datos consolidados de estado de cuenta para PDF.
         Delega la consulta al repositorio.
         """
-        return self.repo_liquidacion.obtener_consolidado_propietario(id_propietario, periodo)
+        return self.repo_liquidacion.obtener_consolidado_propietario(
+            id_propietario, periodo
+        )
 
     def actualizar_liquidacion(
-        self, id_liquidacion: int, datos_actualizados: Dict[str, Any], usuario_sistema: str
+        self,
+        id_liquidacion: int,
+        datos_actualizados: Dict[str, Any],
+        usuario_sistema: str,
     ) -> None:
         """
         Actualiza los datos variables de una liquidación existente.
@@ -383,35 +504,57 @@ class ServicioFinanciero:
         liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
         if not liquidacion:
             raise ValueError(f"No existe liquidación con ID {id_liquidacion}")
-            
+
         if liquidacion.estado_liquidacion != "En Proceso":
-            raise ValueError("Solo se pueden editar liquidaciones en estado 'En Proceso'")
-            
+            raise ValueError(
+                "Solo se pueden editar liquidaciones en estado 'En Proceso'"
+            )
+
         # Actualizar campos editables
-        liquidacion.otros_ingresos = datos_actualizados.get("otros_ingresos", liquidacion.otros_ingresos)
-        liquidacion.gastos_administracion = datos_actualizados.get("gastos_administracion", liquidacion.gastos_administracion)
-        liquidacion.gastos_servicios = datos_actualizados.get("gastos_servicios", liquidacion.gastos_servicios)
-        liquidacion.gastos_reparaciones = datos_actualizados.get("gastos_reparaciones", liquidacion.gastos_reparaciones)
-        liquidacion.pago_predial = datos_actualizados.get("pago_predial", liquidacion.pago_predial)
-        liquidacion.otros_egresos = datos_actualizados.get("otros_egresos", liquidacion.otros_egresos)
-        liquidacion.observaciones = datos_actualizados.get("observaciones", liquidacion.observaciones)
-        
+        liquidacion.otros_ingresos = datos_actualizados.get(
+            "otros_ingresos", liquidacion.otros_ingresos
+        )
+        liquidacion.gastos_administracion = datos_actualizados.get(
+            "gastos_administracion", liquidacion.gastos_administracion
+        )
+        liquidacion.gastos_servicios = datos_actualizados.get(
+            "gastos_servicios", liquidacion.gastos_servicios
+        )
+        liquidacion.gastos_reparaciones = datos_actualizados.get(
+            "gastos_reparaciones", liquidacion.gastos_reparaciones
+        )
+        liquidacion.pago_predial = datos_actualizados.get(
+            "pago_predial", liquidacion.pago_predial
+        )
+        liquidacion.otros_egresos = datos_actualizados.get(
+            "otros_egresos", liquidacion.otros_egresos
+        )
+        liquidacion.observaciones = datos_actualizados.get(
+            "observaciones", liquidacion.observaciones
+        )
+
         # Recalcular valores derivados (Comisión e Impuesto dependen de Ingresos)
         # 1. Total Ingresos
-        liquidacion.total_ingresos = liquidacion.canon_bruto + liquidacion.otros_ingresos
-        
+        liquidacion.total_ingresos = (
+            liquidacion.canon_bruto + liquidacion.otros_ingresos
+        )
+
         # 2. Comisión (Si cambia el ingreso, podría cambiar la base? Normalmente es sobre canon)
-        # Pero si la comisión es fija sobre canon, no cambia. 
+        # Pero si la comisión es fija sobre canon, no cambia.
         # Si la lógica de negocio dice que otros ingresos comisionan, habría que ajustar.
         # Asumiremos la lógica original: Comisión sobre CANON.
         # Sin embargo, el TOTAL INGRESOS afecta el 4x1000.
-        
+
         # Recalcular 4x1000
         imp_4x1000_val = 4
         if self.servicio_config:
-            imp_4x1000_val = self.servicio_config.obtener_valor_parametro("IMPUESTO_4X1000", 4)
-            
-        liquidacion.impuesto_4x1000 = int(liquidacion.total_ingresos * (imp_4x1000_val / 1000.0))
-        
+            imp_4x1000_val = self.servicio_config.obtener_valor_parametro(
+                "IMPUESTO_4X1000", 4
+            )
+
+        liquidacion.impuesto_4x1000 = int(
+            liquidacion.total_ingresos * (imp_4x1000_val / 1000.0)
+        )
+
         # El método repository.actualizar llamará a calcular_totales() para sumar egresos y neto
         self.repo_liquidacion.actualizar(liquidacion, usuario_sistema)

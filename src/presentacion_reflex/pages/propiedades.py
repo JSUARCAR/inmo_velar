@@ -7,13 +7,21 @@ import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.components.propiedades.modal_form import modal_propiedad
-from src.presentacion_reflex.components.propiedades.property_card import property_card
+from src.presentacion_reflex.components.propiedades.property_card import (
+    tarjeta_propiedad,
+)
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_switch, neuro_spinner, neuro_badge, neuro_panel
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_select_root,
+    neuro_button,
+    neuro_switch,
+    neuro_spinner,
+    neuro_badge,
+    neuro_panel,
+)
 from src.presentacion_reflex import styles
-
-
 
 
 def render_property_actions(prop: rx.Var) -> rx.Component:
@@ -38,7 +46,9 @@ def render_property_actions(prop: rx.Var) -> rx.Component:
                     neuro_button(
                         rx.icon("pencil", size=14),
                         size="1",
-                        on_click=lambda: PropiedadesState.open_edit_modal(prop.id_propiedad),
+                        on_click=lambda: PropiedadesState.open_edit_modal(
+                            prop.id_propiedad
+                        ),
                         style={"min_width": "32px", "height": "32px", "padding": "0"},
                     ),
                     content="Editar",
@@ -49,19 +59,27 @@ def render_property_actions(prop: rx.Var) -> rx.Component:
                         neuro_button(
                             rx.icon("power-off", size=14),
                             size="1",
-                            on_click=lambda: PropiedadesState.toggle_activa(prop.id_propiedad, 1),
+                            on_click=lambda: PropiedadesState.toggle_activa(
+                                prop.id_propiedad, 1
+                            ),
                             style={
-                                "min_width": "32px", "height": "32px", "padding": "0",
+                                "min_width": "32px",
+                                "height": "32px",
+                                "padding": "0",
                                 "color": "var(--red-9)",
                             },
                         ),
                         neuro_button(
                             rx.icon("power", size=14),
                             size="1",
-                            on_click=lambda: PropiedadesState.toggle_activa(prop.id_propiedad, 0),
+                            on_click=lambda: PropiedadesState.toggle_activa(
+                                prop.id_propiedad, 0
+                            ),
                             style={
-                                "min_width": "32px", "height": "32px", "padding": "0",
-                                "color": "var(--green-9)",
+                                "min_width": "32px",
+                                "height": "32px",
+                                "padding": "0",
+                                "color": "var(--brand-primary)",
                             },
                         ),
                     ),
@@ -73,7 +91,9 @@ def render_property_actions(prop: rx.Var) -> rx.Component:
     )
 
 
-def _render_kpi_card(title: str, icon: str, total: int, activas: int, inactivas: int, color_scheme: str) -> rx.Component:
+def _render_kpi_card(
+    title: str, icon: str, total: int, activas: int, inactivas: int, color_scheme: str
+) -> rx.Component:
     """Componente para renderizar un KPI de Elite."""
     return neuro_panel(
         rx.hstack(
@@ -86,18 +106,31 @@ def _render_kpi_card(title: str, icon: str, total: int, activas: int, inactivas:
             rx.vstack(
                 rx.text(title, size="2", color=styles.TEXT_SECONDARY, weight="medium"),
                 rx.hstack(
-                    rx.text(total.to_string(), size="6", weight="bold", color="var(--gray-12)"),
+                    rx.text(
+                        total.to_string(),
+                        size="6",
+                        weight="bold",
+                        color="var(--gray-12)",
+                    ),
                     rx.spacer(),
                     rx.hstack(
-                        neuro_badge(f"{activas.to_string()} Activas", color_scheme="green", size="1"),
-                        neuro_badge(f"{inactivas.to_string()} Inactivas", color_scheme="gray", size="1"),
+                        neuro_badge(
+                            f"{activas.to_string()} Activas",
+                            color_scheme="orange",
+                            size="1",
+                        ),
+                        neuro_badge(
+                            f"{inactivas.to_string()} Inactivas",
+                            color_scheme="gray",
+                            size="1",
+                        ),
                         spacing="2",
                     ),
                     align="center",
-                    width="100%"
+                    width="100%",
                 ),
                 width="100%",
-                spacing="1"
+                spacing="1",
             ),
             spacing="4",
             align="center",
@@ -159,10 +192,10 @@ def propiedades_page() -> rx.Component:
                                     variant="solid",
                                     width=["100%", "100%", "auto"],
                                     style={
-                                        "background": "var(--accent-9)",
+                                        "background": "var(--brand-primary)",
                                         "color": "white",
                                         "padding": "0 2rem",
-                                    }
+                                    },
                                 ),
                                 content="Crear nueva propiedad",
                             ),
@@ -180,30 +213,28 @@ def propiedades_page() -> rx.Component:
                     border_radius="16px",
                     style=styles.NEU_PANEL_STYLE,
                 ),
-
                 # --- KPIs ---
                 rx.grid(
                     _render_kpi_card(
-                        "Disponibles", 
-                        "home", 
+                        "Disponibles",
+                        "home",
                         PropiedadesState.kpi_disponibles_total,
                         PropiedadesState.kpi_disponibles_activas,
                         PropiedadesState.kpi_disponibles_inactivas,
-                        "blue"
+                        "orange",
                     ),
                     _render_kpi_card(
-                        "Ocupadas", 
-                        "key", 
+                        "Ocupadas",
+                        "key",
                         PropiedadesState.kpi_ocupadas_total,
                         PropiedadesState.kpi_ocupadas_activas,
                         PropiedadesState.kpi_ocupadas_inactivas,
-                        "indigo"
+                        "gray",
                     ),
                     columns=rx.breakpoints(initial="1", md="2"),
                     spacing="4",
                     width="100%",
                 ),
-
                 # --- Main Content Area ---
                 rx.vstack(
                     # Toolbar Section
@@ -216,7 +247,9 @@ def propiedades_page() -> rx.Component:
                                 value=PropiedadesState.search_text,
                                 on_change=PropiedadesState.set_search,
                                 size="3",
-                                width=rx.breakpoints(initial="100%", md="350px"), # Aumentado de 320 a 350
+                                width=rx.breakpoints(
+                                    initial="100%", md="350px"
+                                ),  # Aumentado de 320 a 350
                             ),
                             rx.spacer(),
                             # Filters Row
@@ -229,7 +262,9 @@ def propiedades_page() -> rx.Component:
                                     placeholder="Tipo",
                                     value=PropiedadesState.filter_tipo,
                                     on_change=PropiedadesState.set_filter_tipo,
-                                    width=rx.breakpoints(initial="100%", sm="160px"), # Aumentado
+                                    width=rx.breakpoints(
+                                        initial="100%", sm="160px"
+                                    ),  # Aumentado
                                 ),
                                 neuro_select_root(
                                     [
@@ -253,7 +288,7 @@ def propiedades_page() -> rx.Component:
                                             ),
                                             on_click=PropiedadesState.toggle_vista,
                                             size="3",
-                                            style={"min_width": "44px"}
+                                            style={"min_width": "44px"},
                                         ),
                                         content=rx.cond(
                                             PropiedadesState.vista_tipo == "cards",
@@ -266,19 +301,21 @@ def propiedades_page() -> rx.Component:
                                             rx.icon("file-spreadsheet", size=16),
                                             on_click=PropiedadesState.exportar_csv,
                                             size="3",
-                                            style={"min_width": "44px"}
+                                            style={"min_width": "44px"},
                                         ),
                                         content="Exportar a Excel",
                                     ),
                                     spacing="3",
-                                    align="center"
+                                    align="center",
                                 ),
                                 spacing="5",
-                                flex_direction=rx.breakpoints(initial="column", sm="row"),
+                                flex_direction=rx.breakpoints(
+                                    initial="column", sm="row"
+                                ),
                                 width=rx.breakpoints(initial="100%", md="auto"),
                                 align="center",
                             ),
-                            spacing="4", # Aumentado de 3 a 4
+                            spacing="4",  # Aumentado de 3 a 4
                             width="100%",
                             align=rx.breakpoints(initial="start", md="center"),
                             flex_direction=rx.breakpoints(initial="column", md="row"),
@@ -291,7 +328,6 @@ def propiedades_page() -> rx.Component:
                         },
                         width="100%",
                     ),
-
                     # Stats/Counter
                     rx.flex(
                         rx.text(
@@ -306,12 +342,17 @@ def propiedades_page() -> rx.Component:
                         ),
                         # Toggle solo activas
                         rx.flex(
-                            rx.text("Solo Activas", size="2", color="var(--gray-10)", weight="bold"),
+                            rx.text(
+                                "Solo Activas",
+                                size="2",
+                                color="var(--gray-10)",
+                                weight="bold",
+                            ),
                             neuro_switch(
                                 checked=PropiedadesState.solo_activas,
                                 on_change=PropiedadesState.toggle_solo_activas,
                                 size="2",
-                                color_scheme="green",
+                                color_scheme="orange",
                             ),
                             align="center",
                             gap="3",
@@ -329,7 +370,9 @@ def propiedades_page() -> rx.Component:
                         rx.center(
                             rx.vstack(
                                 neuro_spinner(size="3"),
-                                rx.text("Cargando inventario...", color="var(--gray-10)"),
+                                rx.text(
+                                    "Cargando inventario...", color="var(--gray-10)"
+                                ),
                                 spacing="4",
                             ),
                             height="400px",
@@ -340,7 +383,9 @@ def propiedades_page() -> rx.Component:
                                 PropiedadesState.propiedades.length() == 0,
                                 rx.center(
                                     rx.vstack(
-                                        rx.icon("search-x", size=64, color="var(--gray-6)"),
+                                        rx.icon(
+                                            "search-x", size=64, color="var(--gray-6)"
+                                        ),
                                         rx.text(
                                             "No se encontraron propiedades",
                                             size="5",
@@ -369,7 +414,7 @@ def propiedades_page() -> rx.Component:
                                     rx.grid(
                                         rx.foreach(
                                             PropiedadesState.propiedades,
-                                            lambda prop: property_card(
+                                            lambda prop: tarjeta_propiedad(
                                                 id_propiedad=prop.id_propiedad,
                                                 matricula=prop.matricula_inmobiliaria,
                                                 direccion=prop.direccion_propiedad,
@@ -397,7 +442,9 @@ def propiedades_page() -> rx.Component:
                                                 on_toggle_activa=PropiedadesState.toggle_activa,
                                             ),
                                         ),
-                                        columns=rx.breakpoints(initial="1", sm="2", lg="3"),
+                                        columns=rx.breakpoints(
+                                            initial="1", sm="2", lg="3"
+                                        ),
                                         gap="3rem",
                                         width="100%",
                                     ),
@@ -406,14 +453,28 @@ def propiedades_page() -> rx.Component:
                                         rx.table.root(
                                             rx.table.header(
                                                 rx.table.row(
-                                                    rx.table.column_header_cell("Propiedad"),
+                                                    rx.table.column_header_cell(
+                                                        "Propiedad"
+                                                    ),
                                                     rx.table.column_header_cell("Tipo"),
-                                                    rx.table.column_header_cell("Municipio"),
-                                                    rx.table.column_header_cell("Estado"),
-                                                    rx.table.column_header_cell("Canon"),
-                                                    rx.table.column_header_cell("Venta / Comisión"),
-                                                    rx.table.column_header_cell("Servicios"),
-                                                    rx.table.column_header_cell("Acciones"),
+                                                    rx.table.column_header_cell(
+                                                        "Municipio"
+                                                    ),
+                                                    rx.table.column_header_cell(
+                                                        "Estado"
+                                                    ),
+                                                    rx.table.column_header_cell(
+                                                        "Canon"
+                                                    ),
+                                                    rx.table.column_header_cell(
+                                                        "Venta / Comisión"
+                                                    ),
+                                                    rx.table.column_header_cell(
+                                                        "Servicios"
+                                                    ),
+                                                    rx.table.column_header_cell(
+                                                        "Acciones"
+                                                    ),
                                                 ),
                                             ),
                                             rx.table.body(
@@ -449,18 +510,26 @@ def propiedades_page() -> rx.Component:
                                                                 align="center",
                                                             )
                                                         ),
-                                                         rx.table.cell(
-                                                            neuro_badge( # Converted to neuro_badge
+                                                        rx.table.cell(
+                                                            neuro_badge(  # Converted to neuro_badge
                                                                 prop.tipo_propiedad,
-                                                                color_scheme="blue",
+                                                                color_scheme="orange",
                                                             )
                                                         ),
-                                                         rx.table.cell(prop.municipio_nombre),
-                                                         rx.table.cell(
+                                                        rx.table.cell(
+                                                            prop.municipio_nombre
+                                                        ),
+                                                        rx.table.cell(
                                                             rx.cond(
                                                                 prop.disponibilidad,
-                                                                neuro_badge("Disponible", color_scheme="green"), # Converted to neuro_badge
-                                                                neuro_badge("Ocupada", color_scheme="gray"), # Converted to neuro_badge
+                                                                neuro_badge(
+                                                                    "Disponible",
+                                                                    color_scheme="orange",
+                                                                ),  # Converted to neuro_badge
+                                                                neuro_badge(
+                                                                    "Ocupada",
+                                                                    color_scheme="gray",
+                                                                ),  # Converted to neuro_badge
                                                             )
                                                         ),
                                                         rx.table.cell(
@@ -499,7 +568,8 @@ def propiedades_page() -> rx.Component:
                                                         rx.table.cell(
                                                             rx.hstack(
                                                                 rx.cond(
-                                                                    prop.codigo_energia != "",
+                                                                    prop.codigo_energia
+                                                                    != "",
                                                                     rx.tooltip(
                                                                         rx.icon(
                                                                             "zap",
@@ -510,18 +580,20 @@ def propiedades_page() -> rx.Component:
                                                                     ),
                                                                 ),
                                                                 rx.cond(
-                                                                    prop.codigo_agua != "",
+                                                                    prop.codigo_agua
+                                                                    != "",
                                                                     rx.tooltip(
                                                                         rx.icon(
                                                                             "droplet",
                                                                             size=14,
-                                                                            color="var(--blue-9)",
+                                                                            color="var(--brand-primary)",
                                                                         ),
                                                                         content=prop.agua_tooltip,
                                                                     ),
                                                                 ),
                                                                 rx.cond(
-                                                                    prop.codigo_gas != "",
+                                                                    prop.codigo_gas
+                                                                    != "",
                                                                     rx.tooltip(
                                                                         rx.icon(
                                                                             "flame",
@@ -535,7 +607,9 @@ def propiedades_page() -> rx.Component:
                                                             )
                                                         ),
                                                         rx.table.cell(
-                                                            render_property_actions(prop)
+                                                            render_property_actions(
+                                                                prop
+                                                            )
                                                         ),
                                                     ),
                                                 ),
@@ -560,7 +634,10 @@ def propiedades_page() -> rx.Component:
                         rx.hstack(
                             neuro_button(
                                 rx.icon("chevron-left", size=16),
-                                rx.text("Anterior", display=rx.breakpoints(initial="none", md="block")),
+                                rx.text(
+                                    "Anterior",
+                                    display=rx.breakpoints(initial="none", md="block"),
+                                ),
                                 on_click=PropiedadesState.prev_page,
                                 disabled=PropiedadesState.current_page == 1,
                                 size="3",
@@ -574,13 +651,18 @@ def propiedades_page() -> rx.Component:
                                     color=styles.TEXT_PRIMARY,
                                 ),
                                 rx.text(
-                                    "Mostrando ", 
-                                    (PropiedadesState.current_page - 1) * PropiedadesState.page_size + 1,
+                                    "Mostrando ",
+                                    (PropiedadesState.current_page - 1)
+                                    * PropiedadesState.page_size
+                                    + 1,
                                     " - ",
                                     rx.cond(
-                                        PropiedadesState.current_page * PropiedadesState.page_size > PropiedadesState.total_items,
+                                        PropiedadesState.current_page
+                                        * PropiedadesState.page_size
+                                        > PropiedadesState.total_items,
                                         PropiedadesState.total_items,
-                                        PropiedadesState.current_page * PropiedadesState.page_size,
+                                        PropiedadesState.current_page
+                                        * PropiedadesState.page_size,
                                     ),
                                     " de ",
                                     PropiedadesState.total_items,
@@ -592,11 +674,15 @@ def propiedades_page() -> rx.Component:
                                 align="center",
                             ),
                             neuro_button(
-                                rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
+                                rx.text(
+                                    "Siguiente",
+                                    display=rx.breakpoints(initial="none", md="block"),
+                                ),
                                 rx.icon("chevron-right", size=16),
                                 on_click=PropiedadesState.next_page,
                                 disabled=(
-                                    PropiedadesState.current_page * PropiedadesState.page_size
+                                    PropiedadesState.current_page
+                                    * PropiedadesState.page_size
                                 )
                                 >= PropiedadesState.total_items,
                                 size="3",
@@ -614,7 +700,6 @@ def propiedades_page() -> rx.Component:
                             "border": "none",
                         },
                     ),
-
                     spacing="6",
                     width="100%",
                     padding_x=["4", "6"],
@@ -630,6 +715,8 @@ def propiedades_page() -> rx.Component:
 
 
 # Ruta protegida
-@rx.page(route="/propiedades", on_load=[AuthState.require_login, PropiedadesState.on_load])
+@rx.page(
+    route="/propiedades", on_load=[AuthState.require_login, PropiedadesState.on_load]
+)
 def propiedades():
     return propiedades_page()

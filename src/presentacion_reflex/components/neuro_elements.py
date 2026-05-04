@@ -138,7 +138,7 @@ def neuro_badge(text, *args, **kwargs) -> rx.Component:
 
     final_style = {
         "background": bg_color,
-        "box_shadow": styles.NEU_INSET_LIGHT,
+        "box_shadow": styles.NEU_INSET,
         "border": border_val,
         "border_radius": "12px",
         "padding": "0.25rem 0.75rem",

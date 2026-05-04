@@ -29,6 +29,7 @@ class RepositorioContratoArrendamientoPostgres:
             FECHA_RENOVACION_CONTRATO_A, FECHA_INCREMENTO_IPC,
             CREATED_BY, UPDATED_BY
         ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+        RETURNING ID_CONTRATO_A
         """,
             (
                 contrato.id_propiedad,
@@ -50,11 +51,17 @@ class RepositorioContratoArrendamientoPostgres:
             ),
         )
 
+        row = cursor.fetchone()
         conn.commit()
-        contrato.id_contrato_a = self.db.get_last_insert_id(
-            cursor, "CONTRATOS_ARRENDAMIENTOS", "ID_CONTRATO_A"
-        )
-
+        
+        if row:
+            if hasattr(row, "values"):
+                contrato.id_contrato_a = list(row.values())[0]
+            elif isinstance(row, dict):
+                contrato.id_contrato_a = list(row.values())[0]
+            else:
+                contrato.id_contrato_a = row[0]
+                
         return contrato
 
     def obtener_por_id(self, id_contrato: int) -> Optional[ContratoArrendamiento]:
@@ -227,7 +234,8 @@ class RepositorioContratoArrendamientoPostgres:
                     per_asesor.NOMBRE_COMPLETO as ASESOR,
                     arr.NOMBRE_HABITANTE as HABITANTE,
                     COALESCE(prop_per.NOMBRE_COMPLETO, 'N/A') as PROPIETARIO,
-                    COALESCE(prop_per.NUMERO_DOCUMENTO, 'N/A') as PROPIETARIO_DOC
+                    COALESCE(prop_per.NUMERO_DOCUMENTO, 'N/A') as PROPIETARIO_DOC,
+                    ca.FECHA_PAGO
                 {base_from}
                 LEFT JOIN PROPIETARIOS prop_ent ON cm.ID_PROPIETARIO = prop_ent.ID_PROPIETARIO
                 LEFT JOIN PERSONAS prop_per ON prop_ent.ID_PERSONA = prop_per.ID_PERSONA
@@ -263,13 +271,14 @@ class RepositorioContratoArrendamientoPostgres:
                     "propietario_documento": gv("PROPIETARIO_DOC"),
                     "habitante_nombre": gv("HABITANTE") or "",
                     "asesor_nombre": gv("ASESOR") or "Sin asesor",
+                    "fecha_pago": gv("FECHA_PAGO") or "",
                 })
 
             return PaginatedResult(
                 items=items, total=total, page=params.page, page_size=params.page_size
             )
 
-    def actualizar(self, contrato: ContratoArrendamiento, usuario: str) -> None:
+    def actualizar(self, contrato: ContratoArrendamiento, usuario: str) -> bool:
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
@@ -307,6 +316,7 @@ class RepositorioContratoArrendamientoPostgres:
         )
 
         conn.commit()
+        return cursor.rowcount > 0
 
     def _row_to_entity(self, row) -> ContratoArrendamiento:
         if row is None:

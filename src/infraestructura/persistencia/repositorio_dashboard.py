@@ -3,7 +3,7 @@ Repositorio PostgreSQL para Dashboard.
 Implementa consultas agregadas para métricas.
 """
 from datetime import datetime
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.dominio.interfaces.repositorio_dashboard import IRepositorioDashboard
 
