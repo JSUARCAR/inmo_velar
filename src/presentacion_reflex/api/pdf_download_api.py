@@ -1,54 +1,41 @@
 """
 Elite PDF Download API - Backend Route para descargas con nombre correcto.
 
-Esta API route sirve PDFs con el header Content-Disposition, garantizando
-que el navegador use el nombre de archivo correcto en lugar de UUIDs.
+Versión compatible con Starlette y FastAPI (Uso de .mount()).
 """
 
+import urllib.parse
 from pathlib import Path
-
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 
-# Router para PDF downloads - SIN prefijo porque se montará en /api/pdf
+# Router para PDF downloads
 pdf_router = APIRouter(tags=["PDF Downloads"])
 
 # Directorio base donde se guardan los PDFs generados
-PDF_OUTPUT_DIR = Path("documentos_generados")
-
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+PDF_OUTPUT_DIR = BASE_DIR / "documentos_generados"
 
 @pdf_router.get("/download/{filename}")
 async def download_pdf(filename: str):
-    """
-    Endpoint para descargar PDFs con nombre correcto.
-
-    El header Content-Disposition fuerza al navegador a usar el nombre
-    especificado en lugar de generar un UUID.
-
-    Args:
-        filename: Nombre del archivo PDF a descargar
-
-    Returns:
-        FileResponse con headers correctos para descarga
-    """
-    # Sanitizar filename para prevenir path traversal
-    safe_filename = Path(filename).name
-
-    # Construir path completo
+    """Endpoint para descargar PDFs con nombre correcto."""
+    decoded_filename = urllib.parse.unquote(filename)
+    print(f"\n[PDF-DOWNLOAD] Original: {filename}")
+    print(f"[PDF-DOWNLOAD] Decodificado: {decoded_filename}")
+    
+    safe_filename = Path(decoded_filename).name
     pdf_path = PDF_OUTPUT_DIR / safe_filename
+    
+    print(f"[PDF-DOWNLOAD] Ruta absoluta: {pdf_path.absolute()}")
+    print(f"[PDF-DOWNLOAD] Existe?: {pdf_path.exists()}")
 
-    # Validar que existe
     if not pdf_path.exists():
-        raise HTTPException(status_code=404, detail=f"PDF no encontrado: {safe_filename}")
+        print(f"[PDF-DOWNLOAD] Error 404: Archivo no encontrado")
+        raise HTTPException(
+            status_code=404, detail=f"PDF no encontrado: {safe_filename}"
+        )
 
-    if not pdf_path.suffix.lower() == ".pdf":
-        raise HTTPException(status_code=400, detail="Solo se permiten archivos PDF")
-
-    # Obtener tamaño del archivo para Content-Length
-    file_size = pdf_path.stat().st_size
-
-    # Retornar archivo permitiendo que FileResponse maneje el Content-Disposition
-    # Starlette/FastAPI generará automáticamente: content-disposition: attachment; filename="..."
     return FileResponse(
         path=str(pdf_path),
         media_type="application/pdf",
@@ -58,23 +45,17 @@ async def download_pdf(filename: str):
         },
     )
 
-
 @pdf_router.get("/view/{filename}")
 async def view_pdf(filename: str):
-    """
-    Endpoint para ver PDFs inline en el navegador.
-
-    Args:
-        filename: Nombre del archivo PDF a visualizar
-
-    Returns:
-        FileResponse para visualización inline
-    """
-    safe_filename = Path(filename).name
+    """Endpoint para ver PDFs inline en el navegador."""
+    decoded_filename = urllib.parse.unquote(filename)
+    safe_filename = Path(decoded_filename).name
     pdf_path = PDF_OUTPUT_DIR / safe_filename
 
     if not pdf_path.exists():
-        raise HTTPException(status_code=404, detail=f"PDF no encontrado: {safe_filename}")
+        raise HTTPException(
+            status_code=404, detail=f"PDF no encontrado: {safe_filename}"
+        )
 
     return FileResponse(
         path=str(pdf_path),
@@ -84,44 +65,40 @@ async def view_pdf(filename: str):
         },
     )
 
-
 def register_pdf_routes(app):
     """
-    Registra las rutas de PDF en la aplicación FastAPI/Starlette de Reflex.
-
-    Args:
-        app: Instancia de la app Reflex
+    Registra las rutas de PDF en la aplicación Reflex usando .mount() para compatibilidad total.
     """
-    # Obtener la instancia subyacente de Reflex (puede ser Starlette o FastAPI)
-    fastapi_app = getattr(app, "api", getattr(app, "_api", None))
+    try:
+        target_app = getattr(app, "api", getattr(app, "_api", None))
 
-    if fastapi_app:
-        # Creamos una sub-app FastAPI para poder usar routers
-        # Esto soluciona el error "Starlette object has no attribute include_router"
-        # al montar la sub-app que SÍ es FastAPI sobre la app Starlette
+        if not target_app:
+            print("[PDF-REGISTER] Error: No se pudo obtener la instancia de la app backend.")
+            return
+
+        # Crear una mini-app de FastAPI para el router
         pdf_api = FastAPI()
-
-        # Configurar CORS para permitir descargas directas desde el frontend
-        from fastapi.middleware.cors import CORSMiddleware
-
+        
+        # Habilitar CORS para esta sub-app
         pdf_api.add_middleware(
             CORSMiddleware,
-            allow_origins=["http://localhost:3000"],
+            allow_origins=["*"],
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
         )
-
+        
         pdf_api.include_router(pdf_router)
 
-        # Montamos la sub-app en /api/pdf
-        try:
-            if hasattr(fastapi_app, "mount"):
-                fastapi_app.mount("/api/pdf", pdf_api)
-                pass  # print("✅ Rutas PDF montadas exitosamente en /api/pdf") [OpSec Removed]
-            else:
-                pass  # print("❌ Error: La app backend no soporta 'mount'") [OpSec Removed]
-        except Exception:
-            pass  # print(f"❌ Error registrando rutas PDF: {e}") [OpSec Removed]
-    else:
-        pass  # print("WARNING: No se pudo obtener la instancia FastAPI de app. No se registraron rutas PDF.") [OpSec Removed]
+        # Montar la app en /api/pdf
+        # Nota: El router tiene rutas /download/{filename}, así que la URL final será /api/pdf/download/{filename}
+        if hasattr(target_app, "mount"):
+            target_app.mount("/api/pdf", pdf_api)
+            print("[PDF-REGISTER] Rutas montadas exitosamente en /api/pdf usando .mount()")
+        else:
+            print("[PDF-REGISTER] Error: La app backend no soporta '.mount()'")
+
+    except Exception as e:
+        print(f"[PDF-REGISTER] Error critico registrando rutas: {str(e)}")
+        import traceback
+        traceback.print_exc()
