@@ -63,6 +63,10 @@ class IncidentesState(DocumentosStateMixin):
     filter_prioridad: str = "Todas"
     search_text: str = ""
 
+    # Ordenamiento
+    sort_by: str = "fecha"
+    sort_order: str = "desc"
+
     # Pagination
     page: int = 1
     total_pages: int = 1
@@ -282,12 +286,25 @@ class IncidentesState(DocumentosStateMixin):
             pagina = None if es_kanban else self.page
             tamano_pagina = None if es_kanban else self.items_per_page
 
+            # Mapear sort_by de UI a BD
+            sort_by_map = {
+                "fecha": "FECHA_INCIDENTE",
+                "prioridad": "PRIORIDAD",
+                "estado": "ESTADO",
+                "costo": "COSTO_INCIDENTE",
+                "direccion": "DIRECCION_PROPIEDAD",
+                "proveedor": "NOMBRE_PROVEEDOR",
+            }
+            sort_by_bd = sort_by_map.get(self.sort_by, "FECHA_INCIDENTE")
+
             resultado = servicio.listar_con_filtros(
                 busqueda=self.search_text if self.search_text else None,
                 prioridad=prioridad,
                 estado=estado,
                 page=pagina,
                 page_size=tamano_pagina,
+                sort_by=sort_by_bd,
+                sort_order=self.sort_order,
             )
 
             resultado_objs = resultado["items"]
@@ -441,8 +458,17 @@ class IncidentesState(DocumentosStateMixin):
 
     def set_search(self, value: str):
         self.search_text = value
+        self.page = 1
+        return IncidentesState.load_incidentes
 
-    def search_incidentes(self):
+    def toggle_sort(self, column: str):
+        """Alterna el ordenamiento por columna."""
+        if self.sort_by == column:
+            self.sort_order = "asc" if self.sort_order == "desc" else "desc"
+        else:
+            self.sort_by = column
+            self.sort_order = "desc"
+        self.page = 1
         return IncidentesState.load_incidentes
 
     # --- CRUD ---

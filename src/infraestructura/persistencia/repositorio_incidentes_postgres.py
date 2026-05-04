@@ -152,6 +152,8 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         estado: Optional[str] = None,
         page: Optional[int] = None,
         page_size: Optional[int] = None,
+        sort_by: str = "FECHA_INCIDENTE",
+        sort_order: str = "desc",
     ) -> Dict[str, Any]:
         query = """
         SELECT I.*, PER_PROV.NOMBRE_COMPLETO AS NOMBRE_PROVEEDOR,
@@ -242,13 +244,28 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         cursor = self.db.get_dict_cursor(conn)
         cursor.execute(count_query, tuple(count_params))
         total_row = cursor.fetchone()
-        
+
         # Soportar clave en minúscula o mayúscula según comportamiento del entorno
         total = 0
         if total_row:
             total = int(total_row.get("total") or total_row.get("TOTAL") or 0)
 
-        query += " ORDER BY I.FECHA_INCIDENTE DESC"
+        # Whitelist de columnas permitidas para ORDER BY
+        SORT_COLUMNS = {
+            "ID_INCIDENTE": "I.ID_INCIDENTE",
+            "FECHA_INCIDENTE": "I.FECHA_INCIDENTE",
+            "PRIORIDAD": "I.PRIORIDAD",
+            "ESTADO": "I.ESTADO",
+            "COSTO_INCIDENTE": "I.COSTO_INCIDENTE",
+            "DIRECCION": "PROP.DIRECCION_PROPIEDAD",
+            "NOMBRE_PROVEEDOR": "PER_PROV.NOMBRE_COMPLETO",
+        }
+        sort_column = SORT_COLUMNS.get(sort_by, "I.FECHA_INCIDENTE")
+        sort_order_valid = (
+            sort_order.lower() if sort_order.lower() in ("asc", "desc") else "desc"
+        )
+
+        query += f" ORDER BY {sort_column} {sort_order_valid}"
 
         if page is not None and page_size is not None:
             query += " LIMIT %s OFFSET %s"

@@ -3,7 +3,9 @@ from typing import Any, Dict, List, Optional
 
 import reflex as rx
 
-from src.aplicacion.servicios.servicio_liquidacion_asesores import ServicioLiquidacionAsesores
+from src.aplicacion.servicios.servicio_liquidacion_asesores import (
+    ServicioLiquidacionAsesores,
+)
 from src.infraestructura.persistencia.database import db_manager
 from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
     RepositorioContratoArrendamientoSQLite,
@@ -52,6 +54,10 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
     filter_periodo: str = ""
     filter_asesor: str = ""
 
+    # Ordenamiento
+    sort_by: str = "periodo"
+    sort_order: str = "desc"
+
     # Opciones de filtros
     estado_options: List[str] = ["Todos", "Pendiente", "Aprobada", "Pagada", "Anulada"]
     periodo_options: List[str] = []
@@ -81,7 +87,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
     def set_form_field(self, name: str, value: Any):
         """Actualiza un campo del formulario."""
         self.form_data[name] = value
-        
+
         # ELITE DEBUG: Si cambia el asesor, cargar sus propiedades y su porcentaje de comisión
         if name == "id_asesor" and value:
             try:
@@ -92,7 +98,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         # Asignar automáticamente el porcentaje al formulario
                         pct = asesor.get("comision_porcentaje", 5.0)
                         self.form_data["porcentaje_comision"] = str(pct)
-                        print(f"[DEBUG] Autopoblado Porcentaje: {pct}% para asesor {id_str}")
+                        print(
+                            f"[DEBUG] Autopoblado Porcentaje: {pct}% para asesor {id_str}"
+                        )
                         break
 
                 # 2. Disparamos el evento de carga de propiedades en background
@@ -147,7 +155,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
 
             yield rx.toast.success("Descuento agregado correctamente")
             # Recargar detalle
-            yield LiquidacionAsesoresState.open_detail_modal(self.selected_liquidacion_id)
+            yield LiquidacionAsesoresState.open_detail_modal(
+                self.selected_liquidacion_id
+            )
 
         except Exception as e:
             async with self:
@@ -228,7 +238,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
 
                 # 1. Actualizar datos básicos (Porcentaje y Observaciones)
                 datos_actualizar = {}
-                
+
                 # Porcentaje
                 porcentaje_str = form_data.get("porcentaje_comision")
                 if porcentaje_str:
@@ -237,7 +247,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         basis_points = int(porcentaje_decimal * 100)
                         datos_actualizar["porcentaje_comision"] = basis_points
                     except ValueError:
-                        pass # Ignorar si no es número válido
+                        pass  # Ignorar si no es número válido
 
                 # Observaciones
                 observaciones = form_data.get("observaciones")
@@ -246,9 +256,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
 
                 if datos_actualizar:
                     servicio.actualizar_liquidacion(
-                        self.selected_liquidacion_id, 
-                        datos_actualizar, 
-                        usuario_sistema
+                        self.selected_liquidacion_id, datos_actualizar, usuario_sistema
                     )
 
                 # 2. Agregar nuevos descuentos
@@ -286,14 +294,18 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                     self.new_bonuses = []
                     self.selected_liquidacion_id = 0
 
-                yield rx.toast.success("Liquidación actualizada exitosamente", position="top-center")
+                yield rx.toast.success(
+                    "Liquidación actualizada exitosamente", position="top-center"
+                )
                 yield LiquidacionAsesoresState.load_liquidaciones()
 
             except Exception as e:
                 async with self:
                     self.error_message = f"Error al actualizar liquidación: {str(e)}"
                     self.is_loading = False
-                yield rx.toast.error(f"Error al actualizar: {str(e)}", position="top-center")
+                yield rx.toast.error(
+                    f"Error al actualizar: {str(e)}", position="top-center"
+                )
 
         else:
             yield LiquidacionAsesoresState.crear_liquidacion(form_data)
@@ -383,7 +395,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         {
                             "id": str(id_val),
                             "texto": nombre,
-                            "comision_porcentaje": comision if comision is not None else 5.0,
+                            "comision_porcentaje": comision
+                            if comision is not None
+                            else 5.0,
                         }
                     )
 
@@ -415,37 +429,45 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
     @rx.event(background=True)
     async def fetch_advisor_properties(self, id_asesor: int):
         """Carga las propiedades/contratos activos para visualización."""
-        print("\n" + "="*50)
+        print("\n" + "=" * 50)
         print(f"!!! [ELITE DEBUG] FETCH PROPERTIES FOR ADVISOR ID: {id_asesor} !!!")
-        print("="*50 + "\n")
+        print("=" * 50 + "\n")
         try:
             repo = RepositorioContratoArrendamientoSQLite(db_manager)
             # USAR EL MÉTODO QUE TRAE DIRECCIONES (JOIN)
             props = repo.obtener_detalle_contratos_asesor(id_asesor)
             print(f"[DEBUG] Propiedades encontradas con JOIN: {len(props)}")
-            
+
             props_formatted = []
             for p in props:
                 # El método devuelve diccionarios, no entidades
-                def gv(k): return p.get(k) or p.get(k.upper()) or p.get(k.lower())
-                
+                def gv(k):
+                    return p.get(k) or p.get(k.upper()) or p.get(k.lower())
+
                 direccion = gv("DIRECCION_PROPIEDAD") or "Dirección no disponible"
                 canon = gv("CANON_ARRENDAMIENTO") or 0
                 id_contrato = gv("ID_CONTRATO_A")
-                
-                props_formatted.append({
-                    "DIRECCION_PROPIEDAD": direccion,
-                    "CANON_ARRENDAMIENTO": canon,
-                    "CANON_ARRENDAMIENTO_VIEW": format_currency(canon),
-                    "ID_CONTRATO_A": id_contrato
-                })
-                
+
+                props_formatted.append(
+                    {
+                        "DIRECCION_PROPIEDAD": direccion,
+                        "CANON_ARRENDAMIENTO": canon,
+                        "CANON_ARRENDAMIENTO_VIEW": format_currency(canon),
+                        "ID_CONTRATO_A": id_contrato,
+                    }
+                )
+
             async with self:
                 self.advisor_properties = props_formatted
-                print(f"[DEBUG] Lista formateada enviada a UI: {len(props_formatted)} items")
+                print(
+                    f"[DEBUG] Lista formateada enviada a UI: {len(props_formatted)} items"
+                )
         except Exception as e:
-            print(f"[DEBUG] Error fetching property details for advisor {id_asesor}: {e}")
+            print(
+                f"[DEBUG] Error fetching property details for advisor {id_asesor}: {e}"
+            )
             import traceback
+
             traceback.print_exc()
             async with self:
                 self.advisor_properties = []
@@ -486,24 +508,35 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
 
             # Obtener datos paginados
             resultado = servicio.listar_liquidaciones_paginado(
-                page=self.current_page, page_size=self.page_size, filtros=filtros
+                page=self.current_page,
+                page_size=self.page_size,
+                filtros=filtros,
+                sort_by=self.sort_by,
+                sort_order=self.sort_order,
             )
 
             liquidaciones_list = [
                 {
                     "id_liquidacion": liq.id_liquidacion_asesor,
                     "periodo": liq.periodo_liquidacion,
-                    "asesor": liq.nombre_asesor if hasattr(liq, "nombre_asesor") else "N/A",
+                    "asesor": liq.nombre_asesor
+                    if hasattr(liq, "nombre_asesor")
+                    else "N/A",
                     "id_asesor": liq.id_asesor,
                     "canon_liquidado": liq.canon_arrendamiento_liquidado,
-                    "canon_liquidado_view": format_currency(liq.canon_arrendamiento_liquidado),
-                    "porcentaje": liq.porcentaje_comision / 100.0,  # Convertir a decimal
+                    "canon_liquidado_view": format_currency(
+                        liq.canon_arrendamiento_liquidado
+                    ),
+                    "porcentaje": liq.porcentaje_comision
+                    / 100.0,  # Convertir a decimal
                     "comision_bruta": liq.comision_bruta,
                     "comision_bruta_view": format_currency(liq.comision_bruta),
                     "total_descuentos": liq.total_descuentos,
                     "total_descuentos_view": format_currency(liq.total_descuentos),
                     "total_bonificaciones": getattr(liq, "total_bonificaciones", 0),
-                    "total_bonificaciones_view": format_currency(getattr(liq, "total_bonificaciones", 0)),
+                    "total_bonificaciones_view": format_currency(
+                        getattr(liq, "total_bonificaciones", 0)
+                    ),
                     "valor_neto": liq.valor_neto_asesor,
                     "valor_neto_view": format_currency(liq.valor_neto_asesor),
                     "estado": liq.estado_liquidacion,
@@ -560,6 +593,16 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
     def set_search(self, value: str):
         """Actualiza búsqueda."""
         self.search_text = value
+
+    def toggle_sort(self, column: str):
+        """Alterna el ordenamiento por columna."""
+        if self.sort_by == column:
+            self.sort_order = "asc" if self.sort_order == "desc" else "desc"
+        else:
+            self.sort_by = column
+            self.sort_order = "desc"
+        self.current_page = 1
+        return LiquidacionAsesoresState.load_liquidaciones
 
     def search_liquidaciones(self):
         """Ejecuta búsqueda."""
@@ -643,7 +686,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             id_asesor = int(id_asesor_str)
             periodo = form_data.get("periodo")
             print(f"[DEBUG] Asesor ID: {id_asesor}, Periodo: {periodo}")
-            
+
             porcentaje_str = form_data.get("porcentaje_comision", "5.0")
             try:
                 porcentaje_decimal = float(porcentaje_str)
@@ -658,11 +701,14 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
 
             # Convertir a formato esperado por el servicio (List[Dict])
             contratos = [
-                {"id": c.id_contrato_a, "canon": c.canon_arrendamiento} for c in contratos_activos
+                {"id": c.id_contrato_a, "canon": c.canon_arrendamiento}
+                for c in contratos_activos
             ]
 
             if not contratos:
-                print(f"[DEBUG] Error: Asesor {id_asesor} no tiene contratos activos para liquidar")
+                print(
+                    f"[DEBUG] Error: Asesor {id_asesor} no tiene contratos activos para liquidar"
+                )
                 async with self:
                     self.error_message = "El asesor seleccionado no tiene contratos de arrendamiento activos asociados."
                     self.is_loading = False
@@ -689,12 +735,16 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 datos_adicionales={"observaciones": observaciones},
                 usuario=usuario_sistema,
             )
-            print(f"[DEBUG] Liquidación creada exitosamente: ID {liquidacion.id_liquidacion_asesor}")
+            print(
+                f"[DEBUG] Liquidación creada exitosamente: ID {liquidacion.id_liquidacion_asesor}"
+            )
 
             # Agregar descuentos adicionales ingresados en el formulario
             for descuento in self.new_discounts:
                 try:
-                    print(f"[DEBUG] Agregando descuento adicional: {descuento['tipo']} - {descuento['valor']}")
+                    print(
+                        f"[DEBUG] Agregando descuento adicional: {descuento['tipo']} - {descuento['valor']}"
+                    )
                     servicio.agregar_descuento(
                         id_liquidacion=liquidacion.id_liquidacion_asesor,
                         tipo=descuento["tipo"],
@@ -710,7 +760,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             # Agregar bonificaciones ingresadas en el formulario
             for bonificacion in self.new_bonuses:
                 try:
-                    print(f"[DEBUG] Agregando bonificación adicional: {bonificacion['tipo']} - {bonificacion['valor']}")
+                    print(
+                        f"[DEBUG] Agregando bonificación adicional: {bonificacion['tipo']} - {bonificacion['valor']}"
+                    )
                     servicio.agregar_bonificacion(
                         id_liquidacion=liquidacion.id_liquidacion_asesor,
                         tipo=bonificacion["tipo"],
@@ -736,17 +788,22 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 self.advisor_properties = []
 
             # Recargar lista
-            yield rx.toast.success("Liquidación creada exitosamente", position="top-center")
+            yield rx.toast.success(
+                "Liquidación creada exitosamente", position="top-center"
+            )
             yield LiquidacionAsesoresState.load_liquidaciones()
 
         except Exception as e:
             print(f"[DEBUG] ERROR CRITICO en crear_liquidacion: {str(e)}")
             import traceback
+
             print(traceback.format_exc())
             async with self:
                 self.error_message = f"Error al crear liquidación: {str(e)}"
                 self.is_loading = False
-            yield rx.toast.error(f"Error al crear liquidación: {str(e)}", position="top-center")
+            yield rx.toast.error(
+                f"Error al crear liquidación: {str(e)}", position="top-center"
+            )
 
     @rx.event(background=True)
     async def open_detail_modal(self, id_liquidacion: int):
@@ -791,14 +848,20 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                     "periodo": liq_data["periodo_liquidacion"],
                     "asesor": liq_data.get("nombre_asesor", "N/A"),
                     "canon_liquidado": liq_data["canon_arrendamiento_liquidado"],
-                    "canon_liquidado_view": format_currency(liq_data["canon_arrendamiento_liquidado"]),
+                    "canon_liquidado_view": format_currency(
+                        liq_data["canon_arrendamiento_liquidado"]
+                    ),
                     "porcentaje": liq_data["porcentaje_comision"] / 100.0,
                     "comision_bruta": liq_data["comision_bruta"],
                     "comision_bruta_view": format_currency(liq_data["comision_bruta"]),
                     "total_descuentos": liq_data["total_descuentos"],
-                    "total_descuentos_view": format_currency(liq_data["total_descuentos"]),
+                    "total_descuentos_view": format_currency(
+                        liq_data["total_descuentos"]
+                    ),
                     "total_bonificaciones": liq_data.get("total_bonificaciones", 0),
-                    "total_bonificaciones_view": format_currency(liq_data.get("total_bonificaciones", 0)),
+                    "total_bonificaciones_view": format_currency(
+                        liq_data.get("total_bonificaciones", 0)
+                    ),
                     "valor_neto": liq_data["valor_neto_asesor"],
                     "valor_neto_view": format_currency(liq_data["valor_neto_asesor"]),
                     "estado": liq_data["estado_liquidacion"],
@@ -835,9 +898,11 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                             "CANON_ARRENDAMIENTO": c.get("canon_arrendamiento")
                             or c.get("canon_incluido", 0),
                             "CANON_ARRENDAMIENTO_VIEW": format_currency(
-                                c.get("canon_arrendamiento") or c.get("canon_incluido", 0)
+                                c.get("canon_arrendamiento")
+                                or c.get("canon_incluido", 0)
                             ),
-                            "ID_CONTRATO_A": c.get("id_contrato") or c.get("id_contrato_a"),
+                            "ID_CONTRATO_A": c.get("id_contrato")
+                            or c.get("id_contrato_a"),
                         }
                     )
                 self.advisor_properties = properties_list
@@ -915,7 +980,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 self.error_message = "Debe ingresar un motivo para la anulación."
             return
 
-        yield LiquidacionAsesoresState.anular_liquidacion(self.selected_annul_id, self.annul_reason)
+        yield LiquidacionAsesoresState.anular_liquidacion(
+            self.selected_annul_id, self.annul_reason
+        )
 
     @rx.event(background=True)
     async def open_bulk_modal(self):
@@ -935,7 +1002,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-        
+
         try:
             periodo = form_data.get("periodo")
             if not periodo:
@@ -946,7 +1013,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             repo_descuento = RepositorioDescuentoAsesor(db_manager)
             repo_pago = RepositorioPagoAsesor(db_manager)
             repo_contrato = RepositorioContratoArrendamientoSQLite(db_manager)
-            
+
             servicio = ServicioLiquidacionAsesores(
                 repo_liquidacion=repo_liquidacion,
                 repo_descuento=repo_descuento,
@@ -954,43 +1021,47 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             )
 
             stats = {"creadas": 0, "omitidas": 0, "errores": 0, "total": 0}
-            
+
             # Iterar sobre todos los asesores activos
             # Usamos self.asesores_options que ya tiene ID y Comision
             # Si está vacío, intentar recargar
             if not self.asesores_options:
                 await self.load_filter_options()
-            
+
             # Iterar asesores
             for asesor_opt in self.asesores_options:
                 id_asesor = int(asesor_opt["id"])
-                
+
                 # Obtener porcentaje de comisión (default 5.0 si no existe)
                 comision_pct = float(asesor_opt.get("comision_porcentaje", 5.0))
                 basis_points = int(comision_pct * 100)
-                
+
                 stats["total"] += 1
-                
+
                 try:
                     # 1. Verificar si ya tiene liquidación en este periodo
-                    existente = repo_liquidacion.obtener_por_asesor_periodo(id_asesor, periodo)
+                    existente = repo_liquidacion.obtener_por_asesor_periodo(
+                        id_asesor, periodo
+                    )
                     if existente:
                         stats["omitidas"] += 1
                         continue
-                        
+
                     # 2. Buscar contratos activos
-                    contratos_activos = repo_contrato.obtener_activos_por_asesor(id_asesor)
-                    
+                    contratos_activos = repo_contrato.obtener_activos_por_asesor(
+                        id_asesor
+                    )
+
                     if not contratos_activos:
-                        stats["omitidas"] += 1 # Sin contratos no se liquida
+                        stats["omitidas"] += 1  # Sin contratos no se liquida
                         continue
-                        
+
                     # Preparar lista de contratos
                     contratos_data = [
-                        {"id": c.id_contrato_a, "canon": c.canon_arrendamiento} 
+                        {"id": c.id_contrato_a, "canon": c.canon_arrendamiento}
                         for c in contratos_activos
                     ]
-                    
+
                     # 3. Generar liquidación
                     servicio.generar_liquidacion_multi_contrato(
                         id_asesor=id_asesor,
@@ -999,24 +1070,24 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         porcentaje_comision=basis_points,
                         total_bonificaciones=0,
                         datos_adicionales={"observaciones": "Generación Masiva"},
-                        usuario="admin" # TODO: Auth
+                        usuario="admin",  # TODO: Auth
                     )
-                    
+
                     stats["creadas"] += 1
-                    
+
                 except Exception as e:
                     stats["errores"] += 1
-                    pass # print(f"Error liquidando asesor {id_asesor}: {e}")
-            
+                    pass  # print(f"Error liquidando asesor {id_asesor}: {e}")
+
             async with self:
                 self.show_bulk_modal = False
                 self.is_loading = False
-                
+
             yield rx.toast.success(
                 f"Proceso completado. Creadas: {stats['creadas']}, Omitidas: {stats['omitidas']}, Errores: {stats['errores']}",
-                duration=5000
+                duration=5000,
             )
-            
+
             yield LiquidacionAsesoresState.load_liquidaciones()
 
         except Exception as e:
@@ -1166,14 +1237,18 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 self.show_detail_modal = False
 
             # Recargar lista
-            yield rx.toast.success("Liquidación aprobada correctamente", position="top-center")
+            yield rx.toast.success(
+                "Liquidación aprobada correctamente", position="top-center"
+            )
             yield LiquidacionAsesoresState.load_liquidaciones()
 
         except Exception as e:
             async with self:
                 self.error_message = f"Error al aprobar liquidación: {str(e)}"
                 self.is_loading = False
-            yield rx.toast.error(f"Error al aprobar liquidación: {str(e)}", position="top-center")
+            yield rx.toast.error(
+                f"Error al aprobar liquidación: {str(e)}", position="top-center"
+            )
 
     @rx.event(background=True)
     async def marcar_como_pagada(self, id_liquidacion: int):
@@ -1208,14 +1283,18 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 self.show_detail_modal = False
 
             # Recargar lista
-            yield rx.toast.success("Pago registrado correctamente", position="top-center")
+            yield rx.toast.success(
+                "Pago registrado correctamente", position="top-center"
+            )
             yield LiquidacionAsesoresState.load_liquidaciones()
 
         except Exception as e:
             async with self:
                 self.error_message = f"Error al marcar como pagada: {str(e)}"
                 self.is_loading = False
-            yield rx.toast.error(f"Error al registrar pago: {str(e)}", position="top-center")
+            yield rx.toast.error(
+                f"Error al registrar pago: {str(e)}", position="top-center"
+            )
 
     @rx.event(background=True)
     async def anular_liquidacion(self, id_liquidacion: int, motivo: str):
@@ -1243,7 +1322,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 self.show_annul_modal = False  # Close modal on success
                 self.show_detail_modal = False
 
-            yield rx.toast.success("Liquidación anulada correctamente", position="top-center")
+            yield rx.toast.success(
+                "Liquidación anulada correctamente", position="top-center"
+            )
             yield LiquidacionAsesoresState.load_liquidaciones()
 
         except Exception as e:

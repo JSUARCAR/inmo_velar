@@ -3,13 +3,17 @@ import reflex as rx
 from src.presentacion_reflex.components.incidentes.kanban_board import kanban_board
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
-from src.presentacion_reflex.state.incidentes_state import IncidentesState, IncidenteDict
+from src.presentacion_reflex.state.incidentes_state import (
+    IncidentesState,
+    IncidenteDict,
+)
 
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_input,
     neuro_button,
     neuro_select_root,
 )
+from src.presentacion_reflex.components.tablas import header_cell_sortable
 from src.presentacion_reflex import styles
 
 
@@ -76,12 +80,42 @@ def _list_view() -> rx.Component:
     return rx.table.root(
         rx.table.header(
             rx.table.row(
-                rx.table.column_header_cell("ID"),
+                header_cell_sortable(
+                    "ID",
+                    "id",
+                    IncidentesState.sort_by,
+                    IncidentesState.sort_order,
+                    IncidentesState.toggle_sort,
+                ),
                 rx.table.column_header_cell("Descripción"),
-                rx.table.column_header_cell("Propiedad"),
-                rx.table.column_header_cell("Prioridad"),
-                rx.table.column_header_cell("Estado"),
-                rx.table.column_header_cell("Fecha"),
+                header_cell_sortable(
+                    "Propiedad",
+                    "direccion",
+                    IncidentesState.sort_by,
+                    IncidentesState.sort_order,
+                    IncidentesState.toggle_sort,
+                ),
+                header_cell_sortable(
+                    "Prioridad",
+                    "prioridad",
+                    IncidentesState.sort_by,
+                    IncidentesState.sort_order,
+                    IncidentesState.toggle_sort,
+                ),
+                header_cell_sortable(
+                    "Estado",
+                    "estado",
+                    IncidentesState.sort_by,
+                    IncidentesState.sort_order,
+                    IncidentesState.toggle_sort,
+                ),
+                header_cell_sortable(
+                    "Fecha",
+                    "fecha",
+                    IncidentesState.sort_by,
+                    IncidentesState.sort_order,
+                    IncidentesState.toggle_sort,
+                ),
             )
         ),
         rx.table.body(

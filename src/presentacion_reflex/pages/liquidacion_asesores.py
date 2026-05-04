@@ -6,15 +6,30 @@ from src.presentacion_reflex.state.liquidacion_asesores_state import (
     LiquidacionAsesoresState,
 )
 from src.presentacion_reflex.state.pdf_state import PDFState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_button,
+    neuro_select_root,
+)
+from src.presentacion_reflex.components.tablas import header_cell_sortable
 from src.presentacion_reflex import styles
 
 # Importar modales
-from src.presentacion_reflex.components.liquidacion_asesores.modal_form import modal_form
-from src.presentacion_reflex.components.liquidacion_asesores.bulk_modal_form import bulk_modal_form
-from src.presentacion_reflex.components.liquidacion_asesores.detail_modal import detail_modal
-from src.presentacion_reflex.components.liquidacion_asesores.annul_modal import annul_modal
-from src.presentacion_reflex.components.liquidacion_asesores.discount_modal import discount_modal
+from src.presentacion_reflex.components.liquidacion_asesores.modal_form import (
+    modal_form,
+)
+from src.presentacion_reflex.components.liquidacion_asesores.bulk_modal_form import (
+    bulk_modal_form,
+)
+from src.presentacion_reflex.components.liquidacion_asesores.detail_modal import (
+    detail_modal,
+)
+from src.presentacion_reflex.components.liquidacion_asesores.annul_modal import (
+    annul_modal,
+)
+from src.presentacion_reflex.components.liquidacion_asesores.discount_modal import (
+    discount_modal,
+)
 
 
 def liquidacion_asesores_content() -> rx.Component:
@@ -29,7 +44,10 @@ def liquidacion_asesores_content() -> rx.Component:
                         weight="bold",
                         color=styles.TEXT_PRIMARY,
                     ),
-                    rx.text("Cálculo de comisiones y bonificaciones para el equipo comercial", size="3"),
+                    rx.text(
+                        "Cálculo de comisiones y bonificaciones para el equipo comercial",
+                        size="3",
+                    ),
                     spacing="1",
                     align="start",
                 ),
@@ -92,7 +110,9 @@ def liquidacion_asesores_content() -> rx.Component:
                 rx.cond(
                     AuthState.check_action("Liquidaciones Asesores", "LIQUIDAR"),
                     neuro_button(
-                        rx.hstack(rx.icon("calculator"), rx.text("Generar Masivamente")),
+                        rx.hstack(
+                            rx.icon("calculator"), rx.text("Generar Masivamente")
+                        ),
                         on_click=LiquidacionAsesoresState.open_bulk_modal,
                         color_scheme="blue",
                         width=rx.breakpoints(initial="100%", md="auto"),
@@ -121,13 +141,43 @@ def liquidacion_asesores_content() -> rx.Component:
                 rx.table.root(
                     rx.table.header(
                         rx.table.row(
-                            rx.table.column_header_cell("Asesor"),
-                            rx.table.column_header_cell("Período"),
-                            rx.table.column_header_cell("Estado"),
-                            rx.table.column_header_cell("Comisión Bruta"),
+                            header_cell_sortable(
+                                "Asesor",
+                                "nombre_asesor",
+                                LiquidacionAsesoresState.sort_by,
+                                LiquidacionAsesoresState.sort_order,
+                                LiquidacionAsesoresState.toggle_sort,
+                            ),
+                            header_cell_sortable(
+                                "Período",
+                                "periodo_liquidacion",
+                                LiquidacionAsesoresState.sort_by,
+                                LiquidacionAsesoresState.sort_order,
+                                LiquidacionAsesoresState.toggle_sort,
+                            ),
+                            header_cell_sortable(
+                                "Estado",
+                                "estado_liquidacion",
+                                LiquidacionAsesoresState.sort_by,
+                                LiquidacionAsesoresState.sort_order,
+                                LiquidacionAsesoresState.toggle_sort,
+                            ),
+                            header_cell_sortable(
+                                "Comisión Bruta",
+                                "comision_bruta",
+                                LiquidacionAsesoresState.sort_by,
+                                LiquidacionAsesoresState.sort_order,
+                                LiquidacionAsesoresState.toggle_sort,
+                            ),
                             rx.table.column_header_cell("Descuentos"),
                             rx.table.column_header_cell("Bonificaciones"),
-                            rx.table.column_header_cell("Neto"),
+                            header_cell_sortable(
+                                "Neto",
+                                "valor_neto_asesor",
+                                LiquidacionAsesoresState.sort_by,
+                                LiquidacionAsesoresState.sort_order,
+                                LiquidacionAsesoresState.toggle_sort,
+                            ),
                             rx.table.column_header_cell("Acciones"),
                         )
                     ),
@@ -135,27 +185,39 @@ def liquidacion_asesores_content() -> rx.Component:
                         rx.foreach(
                             LiquidacionAsesoresState.liquidaciones,
                             lambda liq: rx.table.row(
-                                rx.table.cell(liq['asesor']),
-                                rx.table.cell(liq['periodo']),
+                                rx.table.cell(liq["asesor"]),
+                                rx.table.cell(liq["periodo"]),
                                 rx.table.cell(
                                     rx.badge(
-                                        liq['estado'],
+                                        liq["estado"],
                                         variant="soft",
                                         color_scheme=rx.match(
-                                            liq['estado'],
+                                            liq["estado"],
                                             ("Pendiente", "amber"),
                                             ("Aprobada", "blue"),
                                             ("Pagada", "green"),
                                             ("Anulada", "red"),
-                                            "gray"
-                                        )
+                                            "gray",
+                                        ),
                                     )
                                 ),
-                                rx.table.cell(rx.text(liq['comision_bruta_view'], weight="bold")),
-                                rx.table.cell(rx.text(liq['total_descuentos_view'], color="red")),
-                                rx.table.cell(rx.text(liq['total_bonificaciones_view'], color="blue")),
                                 rx.table.cell(
-                                    rx.text(liq['valor_neto_view'], weight="bold", color="green")
+                                    rx.text(liq["comision_bruta_view"], weight="bold")
+                                ),
+                                rx.table.cell(
+                                    rx.text(liq["total_descuentos_view"], color="red")
+                                ),
+                                rx.table.cell(
+                                    rx.text(
+                                        liq["total_bonificaciones_view"], color="blue"
+                                    )
+                                ),
+                                rx.table.cell(
+                                    rx.text(
+                                        liq["valor_neto_view"],
+                                        weight="bold",
+                                        color="green",
+                                    )
                                 ),
                                 rx.table.cell(
                                     rx.hstack(
@@ -163,48 +225,56 @@ def liquidacion_asesores_content() -> rx.Component:
                                             rx.icon_button(
                                                 rx.icon("eye", size=16),
                                                 variant="ghost",
-                                                on_click=lambda: LiquidacionAsesoresState.open_detail_modal(
-                                                    liq['id_liquidacion']
+                                                on_click=lambda: (
+                                                    LiquidacionAsesoresState.open_detail_modal(
+                                                        liq["id_liquidacion"]
+                                                    )
                                                 ),
                                             ),
                                             content="Ver Detalles",
                                         ),
                                         rx.cond(
-                                            liq['estado'] != "Anulada",
+                                            liq["estado"] != "Anulada",
                                             rx.tooltip(
                                                 rx.icon_button(
                                                     rx.icon("file-text", size=16),
                                                     variant="ghost",
                                                     color_scheme="blue",
-                                                    on_click=lambda: PDFState.generar_liquidacion_asesor_pdf(
-                                                        liq['id_liquidacion']
+                                                    on_click=lambda: (
+                                                        PDFState.generar_liquidacion_asesor_pdf(
+                                                            liq["id_liquidacion"]
+                                                        )
                                                     ),
                                                 ),
                                                 content="Descargar PDF",
                                             ),
                                         ),
                                         rx.cond(
-                                            liq['estado'] == "Pendiente",
+                                            liq["estado"] == "Pendiente",
                                             rx.tooltip(
                                                 rx.icon_button(
                                                     rx.icon("pencil", size=16),
                                                     variant="ghost",
-                                                    on_click=lambda: LiquidacionAsesoresState.open_edit_modal(
-                                                        liq['id_liquidacion']
+                                                    on_click=lambda: (
+                                                        LiquidacionAsesoresState.open_edit_modal(
+                                                            liq["id_liquidacion"]
+                                                        )
                                                     ),
                                                 ),
                                                 content="Editar",
                                             ),
                                         ),
                                         rx.cond(
-                                            liq['estado'] == "Pendiente",
+                                            liq["estado"] == "Pendiente",
                                             rx.tooltip(
                                                 rx.icon_button(
                                                     rx.icon("check", size=18),
                                                     variant="ghost",
                                                     color="#51cf66",
-                                                    on_click=lambda: LiquidacionAsesoresState.aprobar_liquidacion(
-                                                        liq['id_liquidacion']
+                                                    on_click=lambda: (
+                                                        LiquidacionAsesoresState.aprobar_liquidacion(
+                                                            liq["id_liquidacion"]
+                                                        )
                                                     ),
                                                 ),
                                                 content="Aprobar Liquidación",
@@ -228,22 +298,37 @@ def liquidacion_asesores_content() -> rx.Component:
             rx.hstack(
                 neuro_button(
                     rx.icon("chevron-left", size=16),
-                    rx.text("Anterior", display=rx.breakpoints(initial="none", md="block")),
+                    rx.text(
+                        "Anterior", display=rx.breakpoints(initial="none", md="block")
+                    ),
                     on_click=LiquidacionAsesoresState.prev_page,
                     disabled=LiquidacionAsesoresState.current_page == 1,
                     size="3",
                 ),
                 rx.vstack(
                     rx.text(
-                        "Página ", LiquidacionAsesoresState.current_page,
+                        "Página ",
+                        LiquidacionAsesoresState.current_page,
                         size=rx.breakpoints(initial="2", md="3"),
                         weight="medium",
                         color=styles.TEXT_PRIMARY,
                     ),
                     rx.text(
-                        "Mostrando ", (LiquidacionAsesoresState.current_page - 1) * LiquidacionAsesoresState.page_size + 1, "-",
-                        rx.cond(LiquidacionAsesoresState.current_page * LiquidacionAsesoresState.page_size > LiquidacionAsesoresState.total_items, LiquidacionAsesoresState.total_items, LiquidacionAsesoresState.current_page * LiquidacionAsesoresState.page_size),
-                        " de ", LiquidacionAsesoresState.total_items,
+                        "Mostrando ",
+                        (LiquidacionAsesoresState.current_page - 1)
+                        * LiquidacionAsesoresState.page_size
+                        + 1,
+                        "-",
+                        rx.cond(
+                            LiquidacionAsesoresState.current_page
+                            * LiquidacionAsesoresState.page_size
+                            > LiquidacionAsesoresState.total_items,
+                            LiquidacionAsesoresState.total_items,
+                            LiquidacionAsesoresState.current_page
+                            * LiquidacionAsesoresState.page_size,
+                        ),
+                        " de ",
+                        LiquidacionAsesoresState.total_items,
                         size="1",
                         color=styles.TEXT_SECONDARY,
                         display=rx.breakpoints(initial="none", md="block"),
@@ -252,10 +337,13 @@ def liquidacion_asesores_content() -> rx.Component:
                     align="center",
                 ),
                 neuro_button(
-                    rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
+                    rx.text(
+                        "Siguiente", display=rx.breakpoints(initial="none", md="block")
+                    ),
                     rx.icon("chevron-right", size=16),
                     on_click=LiquidacionAsesoresState.next_page,
-                    disabled=LiquidacionAsesoresState.current_page * LiquidacionAsesoresState.page_size
+                    disabled=LiquidacionAsesoresState.current_page
+                    * LiquidacionAsesoresState.page_size
                     >= LiquidacionAsesoresState.total_items,
                     size="3",
                 ),
@@ -274,7 +362,6 @@ def liquidacion_asesores_content() -> rx.Component:
                 "margin_top": "24px",
             },
         ),
-        
         # Modales
         modal_form(),
         bulk_modal_form(
@@ -287,7 +374,6 @@ def liquidacion_asesores_content() -> rx.Component:
         detail_modal(),
         annul_modal(),
         discount_modal(),
-        
         spacing="4",
         width="100%",
         padding="2em",

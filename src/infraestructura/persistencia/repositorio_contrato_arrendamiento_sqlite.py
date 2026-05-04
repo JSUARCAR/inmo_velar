@@ -14,7 +14,9 @@ class RepositorioContratoArrendamientoSQLite:
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
 
-    def crear(self, contrato: ContratoArrendamiento, usuario: str) -> ContratoArrendamiento:
+    def crear(
+        self, contrato: ContratoArrendamiento, usuario: str
+    ) -> ContratoArrendamiento:
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
@@ -68,7 +70,9 @@ class RepositorioContratoArrendamientoSQLite:
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
-    def obtener_activo_por_propiedad(self, id_propiedad: int) -> Optional[ContratoArrendamiento]:
+    def obtener_activo_por_propiedad(
+        self, id_propiedad: int
+    ) -> Optional[ContratoArrendamiento]:
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
@@ -138,7 +142,9 @@ class RepositorioContratoArrendamientoSQLite:
         cursor = self.db.get_dict_cursor(conn)
         self.db.get_placeholder()
 
-        cursor.execute("SELECT * FROM CONTRATOS_ARRENDAMIENTOS ORDER BY ID_CONTRATO_A DESC")
+        cursor.execute(
+            "SELECT * FROM CONTRATOS_ARRENDAMIENTOS ORDER BY ID_CONTRATO_A DESC"
+        )
 
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
@@ -149,6 +155,8 @@ class RepositorioContratoArrendamientoSQLite:
         estado: Optional[str] = None,
         busqueda: Optional[str] = None,
         id_asesor: Optional[str] = None,
+        sort_by: str = "ID_CONTRATO_A",
+        sort_order: str = "desc",
     ) -> PaginatedResult:
         """Lista contratos de arrendamiento con paginación y filtros."""
         params = PaginationParams(page=page, page_size=page_size)
@@ -180,10 +188,14 @@ class RepositorioContratoArrendamientoSQLite:
                     query_params.append(estado)
 
             if busqueda:
-                cols = ["p.DIRECCION_PROPIEDAD", "per.NOMBRE_COMPLETO", "per.NUMERO_DOCUMENTO"]
+                cols = [
+                    "p.DIRECCION_PROPIEDAD",
+                    "per.NOMBRE_COMPLETO",
+                    "per.NUMERO_DOCUMENTO",
+                ]
                 cond = self.db.get_search_condition(cols)
                 conditions.append(f"({cond})")
-                
+
                 term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
                 query_params.extend([term_norm] * len(cols))
 
@@ -196,9 +208,27 @@ class RepositorioContratoArrendamientoSQLite:
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
+            # Whitelist de columnas permitidas para ORDER BY
+            SORT_COLUMNS = {
+                "ID_CONTRATO_A": "ca.ID_CONTRATO_A",
+                "FECHA_INICIO_CONTRATO_A": "ca.FECHA_INICIO_CONTRATO_A",
+                "FECHA_FIN_CONTRATO_A": "ca.FECHA_FIN_CONTRATO_A",
+                "CANON_ARRENDAMIENTO": "ca.CANON_ARRENDAMIENTO",
+                "ARRENDATARIO": "per.NOMBRE_COMPLETO",
+                "DIRECCION": "p.DIRECCION_PROPIEDAD",
+                "ASESOR": "per_asesor.NOMBRE_COMPLETO",
+                "PROPIETARIO": "prop_per.NOMBRE_COMPLETO",
+            }
+            sort_column = SORT_COLUMNS.get(sort_by, "ca.ID_CONTRATO_A")
+            sort_order_valid = (
+                sort_order.lower() if sort_order.lower() in ("asc", "desc") else "desc"
+            )
+
             # 1. Count
             count_query = f"SELECT COUNT(*) as TOTAL {base_from} {where_clause}"
-            print(f"[SQL_DEBUG_ARRENDAMIENTOS] Conteo Query: {count_query} | Params: {query_params}")
+            print(
+                f"[SQL_DEBUG_ARRENDAMIENTOS] Conteo Query: {count_query} | Params: {query_params}"
+            )
             cursor.execute(count_query, query_params)
             row = cursor.fetchone()
             total = 0
@@ -208,7 +238,7 @@ class RepositorioContratoArrendamientoSQLite:
                     total = row["TOTAL"]
                 except (KeyError, TypeError):
                     total = row.get("total") or list(row.values())[0] if row else 0
-            
+
             print(f"[SQL_DEBUG_ARRENDAMIENTOS] Total encontrado: {total}")
 
             # 2. Data
@@ -232,12 +262,14 @@ class RepositorioContratoArrendamientoSQLite:
                 LEFT JOIN PROPIETARIOS prop_ent ON cm.ID_PROPIETARIO = prop_ent.ID_PROPIETARIO
                 LEFT JOIN PERSONAS prop_per ON prop_ent.ID_PERSONA = prop_per.ID_PERSONA
                 {where_clause}
-                ORDER BY ca.ID_CONTRATO_A DESC
+                ORDER BY {sort_column} {sort_order_valid}
                 LIMIT {placeholder} OFFSET {placeholder}
             """
 
             data_params = query_params + [params.page_size, params.offset]
-            print(f"[SQL_DEBUG_ARRENDAMIENTOS] Data Query: {data_query} | Params: {data_params}")
+            print(
+                f"[SQL_DEBUG_ARRENDAMIENTOS] Data Query: {data_query} | Params: {data_params}"
+            )
             cursor.execute(data_query, data_params)
             rows = cursor.fetchall()
             print(f"[SQL_DEBUG_ARRENDAMIENTOS] Filas recuperadas: {len(rows)}")
@@ -245,25 +277,28 @@ class RepositorioContratoArrendamientoSQLite:
             items = []
             for row in rows:
                 # Helper para obtener valor insensible a mayúsculas
-                def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
-                
-                items.append({
-                    "id_contrato": gv("ID_CONTRATO_A"),
-                    "estado_contrato": gv("ESTADO_CONTRATO_A"),
-                    "valor_canon": gv("CANON_ARRENDAMIENTO"),
-                    "valor_administracion": 0,
-                    "fecha_inicio": gv("FECHA_INICIO_CONTRATO_A"),
-                    "fecha_fin": gv("FECHA_FIN_CONTRATO_A"),
-                    "propiedad_direccion": gv("DIRECCION_PROPIEDAD"),
-                    "propiedad_matricula": gv("MATRICULA_INMOBILIARIA"),
-                    "propiedad_tipo": gv("TIPO_PROPIEDAD"),
-                    "arrendatario_nombre": gv("ARRENDATARIO"),
-                    "arrendatario_documento": gv("NUMERO_DOCUMENTO"),
-                    "propietario_nombre": gv("PROPIETARIO"),
-                    "propietario_documento": gv("PROPIETARIO_DOC"),
-                    "habitante_nombre": gv("HABITANTE") or "",
-                    "asesor_nombre": gv("ASESOR") or "Sin asesor",
-                })
+                def gv(k):
+                    return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
+                items.append(
+                    {
+                        "id_contrato": gv("ID_CONTRATO_A"),
+                        "estado_contrato": gv("ESTADO_CONTRATO_A"),
+                        "valor_canon": gv("CANON_ARRENDAMIENTO"),
+                        "valor_administracion": 0,
+                        "fecha_inicio": gv("FECHA_INICIO_CONTRATO_A"),
+                        "fecha_fin": gv("FECHA_FIN_CONTRATO_A"),
+                        "propiedad_direccion": gv("DIRECCION_PROPIEDAD"),
+                        "propiedad_matricula": gv("MATRICULA_INMOBILIARIA"),
+                        "propiedad_tipo": gv("TIPO_PROPIEDAD"),
+                        "arrendatario_nombre": gv("ARRENDATARIO"),
+                        "arrendatario_documento": gv("NUMERO_DOCUMENTO"),
+                        "propietario_nombre": gv("PROPIETARIO"),
+                        "propietario_documento": gv("PROPIETARIO_DOC"),
+                        "habitante_nombre": gv("HABITANTE") or "",
+                        "asesor_nombre": gv("ASESOR") or "Sin asesor",
+                    }
+                )
 
             return PaginatedResult(
                 items=items, total=total, page=params.page, page_size=params.page_size
@@ -318,21 +353,29 @@ class RepositorioContratoArrendamientoSQLite:
             row_dict = row
 
         return ContratoArrendamiento(
-            id_contrato_a=(row_dict.get("id_contrato_a") or row_dict.get("ID_CONTRATO_A")),
+            id_contrato_a=(
+                row_dict.get("id_contrato_a") or row_dict.get("ID_CONTRATO_A")
+            ),
             id_propiedad=(row_dict.get("id_propiedad") or row_dict.get("ID_PROPIEDAD")),
-            id_arrendatario=(row_dict.get("id_arrendatario") or row_dict.get("ID_ARRENDATARIO")),
+            id_arrendatario=(
+                row_dict.get("id_arrendatario") or row_dict.get("ID_ARRENDATARIO")
+            ),
             id_codeudor=(row_dict.get("id_codeudor") or row_dict.get("ID_CODEUDOR")),
             fecha_inicio_contrato_a=(
-                row_dict.get("fecha_inicio_contrato_a") or row_dict.get("FECHA_INICIO_CONTRATO_A")
+                row_dict.get("fecha_inicio_contrato_a")
+                or row_dict.get("FECHA_INICIO_CONTRATO_A")
             ),
             fecha_fin_contrato_a=(
-                row_dict.get("fecha_fin_contrato_a") or row_dict.get("FECHA_FIN_CONTRATO_A")
+                row_dict.get("fecha_fin_contrato_a")
+                or row_dict.get("FECHA_FIN_CONTRATO_A")
             ),
             duracion_contrato_a=(
-                row_dict.get("duracion_contrato_a") or row_dict.get("DURACION_CONTRATO_A")
+                row_dict.get("duracion_contrato_a")
+                or row_dict.get("DURACION_CONTRATO_A")
             ),
             canon_arrendamiento=(
-                row_dict.get("canon_arrendamiento") or row_dict.get("CANON_ARRENDAMIENTO")
+                row_dict.get("canon_arrendamiento")
+                or row_dict.get("CANON_ARRENDAMIENTO")
             ),
             deposito=(row_dict.get("deposito") or row_dict.get("DEPOSITO")),
             fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
@@ -352,7 +395,8 @@ class RepositorioContratoArrendamientoSQLite:
                 or row_dict.get("FECHA_RENOVACION_CONTRATO_A")
             ),
             fecha_incremento_ipc=(
-                row_dict.get("fecha_incremento_ipc") or row_dict.get("FECHA_INCREMENTO_IPC")
+                row_dict.get("fecha_incremento_ipc")
+                or row_dict.get("FECHA_INCREMENTO_IPC")
             ),
             # Fecha ultimo incremento no existe en entidad según el código anterior, pero el original lo tenía?
             # Si el original lo tenía en _row_to_entity es porque debería estar.
