@@ -92,12 +92,27 @@ class RepositorioPersonaSQLite:
         fecha_fin: Optional[str] = None,
         limit: Optional[int] = None,
         offset: int = 0,
+        sort_by: str = "id_persona",
+        sort_order: str = "desc",
     ) -> List[Persona]:
-        """Obtiene personas con filtros y paginación."""
-        logger.debug(f"Ejecutando obtener_todos: filtro_rol={filtro_rol}, solo_activos={solo_activos}, busqueda={busqueda}, fecha_inicio={fecha_inicio}, fecha_fin={fecha_fin}, limit={limit}, offset={offset}")
+        """Obtiene personas con filtros, paginación y ordenamiento dinámico."""
+        logger.debug(f"Ejecutando obtener_todos: filtro_rol={filtro_rol}, sort_by={sort_by}")
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
+
+        # Mapeo de columnas (Whitelist)
+        SORT_COLUMNS = {
+            "id_persona": "p.ID_PERSONA",
+            "nombre": "p.NOMBRE_COMPLETO",
+            "documento": "p.NUMERO_DOCUMENTO",
+            "email": "p.CORREO_ELECTRONICO",
+            "estado": "p.ESTADO_REGISTRO",
+            "creado": "p.CREATED_AT"
+        }
+        
+        sort_col = SORT_COLUMNS.get(sort_by, "p.ID_PERSONA")
+        order = "ASC" if sort_order.lower() == "asc" else "DESC"
 
         query = "SELECT DISTINCT p.* FROM PERSONAS p"
         join_clause = ""
@@ -143,7 +158,7 @@ class RepositorioPersonaSQLite:
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
 
-        query += " ORDER BY p.NOMBRE_COMPLETO"
+        query += f" ORDER BY {sort_col} {order}"
 
         if limit is not None:
             query += f" LIMIT {placeholder} OFFSET {placeholder}"

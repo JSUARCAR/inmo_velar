@@ -63,6 +63,10 @@ class PropiedadesState(DocumentosStateMixin):
     is_loading: bool = False
     error_message: str = ""
 
+    # Ordenamiento
+    sort_by: str = "id_propiedad"
+    sort_order: str = "desc"
+
     # KPIs
     kpi_disponibles_total: int = 0
     kpi_disponibles_activas: int = 0
@@ -308,6 +312,8 @@ class PropiedadesState(DocumentosStateMixin):
                 filtro_municipio=filtro_mun,
                 solo_activas=solo_activas,
                 busqueda=busqueda,
+                sort_by=self.sort_by,
+                sort_order=self.sort_order,
             )
             print(
                 f"[PROPIEDADES_DEBUG] Resultado obtenido: {len(result.items)} items, Total: {result.total}"
@@ -859,3 +865,14 @@ class PropiedadesState(DocumentosStateMixin):
             yield rx.toast.error(
                 f"Error al exportar: {str(e)}", position="bottom-right"
             )
+
+    def toggle_sort(self, column: str):
+        """Cambia el criterio de ordenamiento de propiedades."""
+        if self.sort_by == column:
+            self.sort_order = "desc" if self.sort_order == "asc" else "asc"
+        else:
+            self.sort_by = column
+            self.sort_order = "desc"
+        
+        self.current_page = 1
+        return PropiedadesState.load_propiedades

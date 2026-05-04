@@ -127,20 +127,45 @@ def recaudos_toolbar() -> rx.Component:
     )
 
 
+def header_cell_sortable(label: str, column_id: str) -> rx.Component:
+    """Renderiza celda de encabezado con capacidad de ordenamiento."""
+    is_active = RecaudosState.sort_by == column_id
+    
+    return rx.table.column_header_cell(
+        rx.hstack(
+            rx.text(label, weight="bold"),
+            rx.cond(
+                is_active,
+                rx.cond(
+                    RecaudosState.sort_order == "desc",
+                    rx.icon("chevron-down", size=16),
+                    rx.icon("chevron-up", size=16),
+                ),
+                rx.icon("chevrons-up-down", size=14, opacity=0.3),
+            ),
+            spacing="2",
+            align="center",
+            cursor="pointer",
+            on_click=lambda: RecaudosState.toggle_sort(column_id),
+            _hover={"opacity": 0.8},
+        ),
+        style={"font-weight": "600"}
+    )
+
+
 def recaudos_table() -> rx.Component:
     """Tabla de recaudos."""
     return rx.table.root(
         rx.table.header(
             rx.table.row(
-                rx.table.column_header_cell("ID", style={"font-weight": "600"}),
-                rx.table.column_header_cell("Fecha Pago", style={"font-weight": "600"}),
-                rx.table.column_header_cell("Propiedad", style={"font-weight": "600"}),
-                rx.table.column_header_cell(
-                    "Arrendatario", style={"font-weight": "600"}
-                ),
-                rx.table.column_header_cell("Valor", style={"font-weight": "600"}),
+                header_cell_sortable("ID", "id_recaudo"),
+                header_cell_sortable("Fecha Pago", "fecha_pago"),
+                header_cell_sortable("Pago Contrato", "fecha_pago_contrato"),
+                header_cell_sortable("Propiedad", "direccion"),
+                header_cell_sortable("Arrendatario", "arrendatario"),
+                header_cell_sortable("Valor", "valor_total"),
                 rx.table.column_header_cell("Método", style={"font-weight": "600"}),
-                rx.table.column_header_cell("Estado", style={"font-weight": "600"}),
+                header_cell_sortable("Estado", "estado"),
                 rx.table.column_header_cell(
                     "Acciones", width="150px", style={"font-weight": "600"}
                 ),
@@ -152,6 +177,9 @@ def recaudos_table() -> rx.Component:
                 lambda rec: rx.table.row(
                     rx.table.cell(rec["id_recaudo"]),
                     rx.table.cell(rec["fecha_pago"]),
+                    rx.table.cell(
+                        rx.badge(rec["fecha_pago_contrato"], variant="surface", color_scheme="indigo")
+                    ),
                     rx.table.cell(
                         rx.vstack(
                             rx.text(rec["direccion"], size="2", weight="medium"),

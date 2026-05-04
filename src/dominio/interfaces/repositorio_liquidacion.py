@@ -19,7 +19,28 @@ class IRepositorioLiquidacion(Protocol):
     def reversar_por_propietario_y_periodo(self, id_prop: int, periodo: str, usr: str) -> int: ...
     def aprobar_por_propietario_y_periodo(self, id_propietario: int, periodo: str, usuario_sistema: str) -> int: ...
     def marcar_como_pagadas_por_propietario(self, id_propietario: int, periodo: str, fecha_pago: str, metodo_pago: str, referencia_pago: str, usuario_sistema: str) -> int: ...
-    def listar_agrupadas_por_propietario_paginado(self, page: int = 1, page_size: int = 25, estado: Optional[str] = None, periodo: Optional[str] = None, busqueda: Optional[str] = None) -> Any: ...
-    def listar_paginado(self, limit: int, offset: int, estado: Optional[str] = None, periodo: Optional[str] = None, busqueda: Optional[str] = None) -> List[Dict[str, Any]]: ...
+    def listar_agrupadas_por_propietario_paginado(
+        self,
+        page: int = 1,
+        page_size: int = 25,
+        estado: Optional[str] = None,
+        periodo: Optional[str] = None,
+        busqueda: Optional[str] = None,
+        id_asesor: Optional[int] = None,
+        sort_by: str = "periodo",
+        sort_order: str = "desc",
+    ) -> Any: ...
+
+    def listar_paginado(
+        self,
+        limit: int,
+        offset: int,
+        estado: Optional[str] = None,
+        periodo: Optional[str] = None,
+        busqueda: Optional[str] = None,
+        id_asesor: Optional[int] = None,
+        sort_by: str = "periodo",
+        sort_order: str = "desc",
+    ) -> List[Dict[str, Any]]: ...
     def contar_con_filtros(self, estado: Optional[str] = None, periodo: Optional[str] = None, busqueda: Optional[str] = None) -> int: ...
     def _row_to_entity(self, row: Any) -> Liquidacion: ...

@@ -42,16 +42,20 @@ class ServicioPropiedades:
         filtro_municipio: Optional[int] = None,
         solo_activas: bool = True,
         busqueda: Optional[str] = None,
+        sort_by: str = "id_propiedad",
+        sort_order: str = "desc",
     ) -> List[Propiedad]:
         """
-        Lista propiedades con filtros aplicados.
+        Lista propiedades con filtros y ordenamiento dinámico.
         """
         return self.repo.listar_con_filtros(
             filtro_tipo=filtro_tipo,
             filtro_disponibilidad=filtro_disponibilidad,
             filtro_municipio=filtro_municipio,
             solo_activas=solo_activas,
-            busqueda=busqueda
+            busqueda=busqueda,
+            sort_by=sort_by,
+            sort_order=sort_order,
         )
 
     @cache_manager.cached("propiedades:list_paginated", level=1, ttl=300)
@@ -64,9 +68,11 @@ class ServicioPropiedades:
         filtro_municipio: Optional[int] = None,
         solo_activas: bool = True,
         busqueda: Optional[str] = None,
+        sort_by: str = "id_propiedad",
+        sort_order: str = "desc",
     ):
         """
-        Lista propiedades con filtros y paginación.
+        Lista propiedades con filtros, paginación y ordenamiento dinámico.
         """
         from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
 
@@ -87,7 +93,9 @@ class ServicioPropiedades:
             solo_activas=solo_activas,
             busqueda=busqueda,
             limit=params.page_size,
-            offset=params.offset
+            offset=params.offset,
+            sort_by=sort_by,
+            sort_order=sort_order,
         )
 
         return PaginatedResult(
