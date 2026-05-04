@@ -43,6 +43,10 @@ class RecaudosState(DocumentosStateMixin):
     is_loading: bool = False
     error_message: str = ""
 
+    # Ordenamiento
+    sort_by: str = "fecha_pago"
+    sort_order: str = "desc"
+
     # Filtros
     search_text: str = ""
     filter_estado: str = "Todos"
@@ -133,6 +137,8 @@ class RecaudosState(DocumentosStateMixin):
             busqueda = self.search_text or None
             page = self.current_page
             page_size = self.page_size
+            sort_by = self.sort_by
+            sort_order = self.sort_order
 
         try:
             servicio = _crear_servicio()
@@ -144,6 +150,8 @@ class RecaudosState(DocumentosStateMixin):
                 busqueda=busqueda,
                 page=page,
                 page_size=page_size,
+                sort_by=sort_by,
+                sort_order=sort_order,
             )
 
             resultado = servicio.listar_paginado(filtros)
@@ -168,6 +176,17 @@ class RecaudosState(DocumentosStateMixin):
                 self.recaudos = []
                 self.total_items = 0
                 self.is_loading = False
+
+    def toggle_sort(self, column: str):
+        """Cambia el criterio de ordenamiento."""
+        if self.sort_by == column:
+            self.sort_order = "desc" if self.sort_order == "asc" else "asc"
+        else:
+            self.sort_by = column
+            self.sort_order = "desc"
+        
+        self.current_page = 1
+        return RecaudosState.load_recaudos
 
     # ==================== PAGINACIÓN ====================
 

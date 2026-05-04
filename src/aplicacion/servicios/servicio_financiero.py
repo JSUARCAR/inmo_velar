@@ -389,6 +389,8 @@ class ServicioFinanciero:
         periodo: Optional[str] = None,
         busqueda: Optional[str] = None,
         id_asesor: Optional[int] = None,
+        sort_by: str = "periodo",
+        sort_order: str = "desc",
     ):
         from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
 
@@ -397,7 +399,7 @@ class ServicioFinanciero:
             estado, periodo, busqueda, id_asesor
         )
         items = self.repo_liquidacion.listar_paginado(
-            params.page_size, params.offset, estado, periodo, busqueda, id_asesor
+            params.page_size, params.offset, estado, periodo, busqueda, id_asesor, sort_by, sort_order
         )
         return PaginatedResult(
             items=items, total=total, page=params.page, page_size=params.page_size
@@ -452,6 +454,8 @@ class ServicioFinanciero:
         periodo: Optional[str] = None,
         busqueda: Optional[str] = None,
         id_asesor: Optional[int] = None,
+        sort_by: str = "periodo",
+        sort_order: str = "desc",
     ):
         """Lista liquidaciones agrupadas por propietario (delegada a repo)."""
         return self.repo_liquidacion.listar_agrupadas_por_propietario_paginado(
@@ -461,6 +465,8 @@ class ServicioFinanciero:
             periodo=periodo,
             busqueda=busqueda,
             id_asesor=id_asesor,
+            sort_by=sort_by,
+            sort_order=sort_order,
         )
 
     def obtener_datos_liquidacion_para_pdf(self, id_liquidacion: int) -> Dict[str, Any]:

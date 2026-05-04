@@ -78,11 +78,26 @@ class RepositorioPersonaPostgres:
         fecha_fin: Optional[str] = None,
         limit: Optional[int] = None,
         offset: int = 0,
+        sort_by: str = "id_persona",
+        sort_order: str = "desc",
     ) -> List[Persona]:
-        """Obtiene personas con filtros y paginación en PostgreSQL."""
-        logger.debug(f"Ejecutando obtener_todos (Postgres): filtro_rol={filtro_rol}, solo_activos={solo_activos}")
+        """Obtiene personas con filtros, paginación y ordenamiento dinámico en PostgreSQL."""
+        logger.debug(f"Ejecutando obtener_todos (Postgres): filtro_rol={filtro_rol}, sort_by={sort_by}")
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
+
+        # Mapeo de columnas (Whitelist)
+        SORT_COLUMNS = {
+            "id_persona": "p.ID_PERSONA",
+            "nombre": "p.NOMBRE_COMPLETO",
+            "documento": "p.NUMERO_DOCUMENTO",
+            "email": "p.EMAIL",
+            "estado": "p.ESTADO_REGISTRO",
+            "creado": "p.CREATED_AT"
+        }
+        
+        sort_col = SORT_COLUMNS.get(sort_by, "p.ID_PERSONA")
+        order = "ASC" if sort_order.lower() == "asc" else "DESC"
 
         query = "SELECT DISTINCT p.* FROM PERSONAS p"
         join_clause = ""
@@ -106,7 +121,6 @@ class RepositorioPersonaPostgres:
             conditions.append("p.ESTADO_REGISTRO = TRUE")
 
         if busqueda:
-            # Uso de unaccent para PostgreSQL nativo como se sugirió
             conditions.append(
                 "(unaccent(p.NOMBRE_COMPLETO) ILIKE unaccent(%s) OR p.NUMERO_DOCUMENTO ILIKE %s)"
             )
@@ -124,7 +138,7 @@ class RepositorioPersonaPostgres:
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
 
-        query += " ORDER BY p.NOMBRE_COMPLETO"
+        query += f" ORDER BY {sort_col} {order}"
 
         if limit is not None:
             query += " LIMIT %s OFFSET %s"

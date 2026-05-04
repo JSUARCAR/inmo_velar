@@ -111,12 +111,31 @@ class RepositorioPropiedadSQLite:
         solo_activas: bool = True,
         busqueda: Optional[str] = None,
         limit: Optional[int] = None,
-        offset: int = 0
+        offset: int = 0,
+        sort_by: str = "id_propiedad",
+        sort_order: str = "desc",
     ) -> List[Propiedad]:
-        """Lista propiedades con filtros aplicados."""
+        """Lista propiedades con filtros y ordenamiento dinámico."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
+
+        # Mapeo de columnas (Whitelist)
+        SORT_COLUMNS = {
+            "id_propiedad": "p.ID_PROPIEDAD",
+            "direccion": "p.DIRECCION_PROPIEDAD",
+            "tipo": "p.TIPO_PROPIEDAD",
+            "ciudad": "p.ID_MUNICIPIO",
+            "matricula": "p.MATRICULA_INMOBILIARIA",
+            "canon_estimado": "p.CANON_ARRENDAMIENTO_ESTIMADO",
+            "valor_venta": "p.VALOR_VENTA_PROPIEDAD",
+            "disponibilidad": "p.DISPONIBILIDAD_PROPIEDAD",
+            "estado": "p.ESTADO_REGISTRO",
+            "creado": "p.CREATED_AT"
+        }
+        
+        sort_col = SORT_COLUMNS.get(sort_by, "p.ID_PROPIEDAD")
+        order = "ASC" if sort_order.lower() == "asc" else "DESC"
 
         query = """
             SELECT p.*,
@@ -159,7 +178,7 @@ class RepositorioPropiedadSQLite:
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
 
-        query += " ORDER BY p.MATRICULA_INMOBILIARIA"
+        query += f" ORDER BY {sort_col} {order}"
 
         if limit is not None:
             query += f" LIMIT {placeholder} OFFSET {placeholder}"

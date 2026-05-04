@@ -223,6 +223,8 @@ class ServicioRecaudo:
             fecha_desde=filtros.fecha_desde,
             fecha_hasta=filtros.fecha_hasta,
             busqueda=filtros.busqueda,
+            sort_by=filtros.sort_by,
+            sort_order=filtros.sort_order,
         )
 
         return ResultadoPaginado(
