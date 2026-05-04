@@ -67,6 +67,10 @@ class ContratosState(DocumentosStateMixin):
     solo_activos: bool = True
     filter_sin_arrendamiento: bool = False
 
+    # Ordenamiento
+    sort_by: str = "direccion"
+    sort_order: str = "desc"
+
     # Opciones de filtros
     tipo_options: List[str] = ["Todos", "Mandato", "Arrendamiento"]
     estado_options: List[str] = ["Todos", "Activo", "Cancelado"]
@@ -235,6 +239,50 @@ class ContratosState(DocumentosStateMixin):
     def set_search(self, value: str):
         self.search_text = value
         self.current_page = 1
+
+    def toggle_sort(self, column: str):
+        """Alterna el ordenamiento por columna."""
+        if self.sort_by == column:
+            self.sort_order = "asc" if self.sort_order == "desc" else "desc"
+        else:
+            self.sort_by = column
+            self.sort_order = "desc"
+        self.current_page = 1
+        return ContratosState.load_contratos
+
+    def _traducir_sort_by(self, sort_by: str, tipo_repo: str) -> str:
+        """Traduce clave neutra UI a clave de BD según tipo de repositorio."""
+        mapeo = {
+            "id_contrato": {
+                "mandato": "ID_CONTRATO_M",
+                "arrendamiento": "ID_CONTRATO_A",
+            },
+            "direccion": {
+                "mandato": "DIRECCION",
+                "arrendamiento": "DIRECCION",
+            },
+            "propietario_nombre": {
+                "mandato": "PROPIETARIO",
+                "arrendamiento": "PROPIETARIO",
+            },
+            "fecha_inicio": {
+                "mandato": "FECHA_INICIO_CONTRATO_M",
+                "arrendamiento": "FECHA_INICIO_CONTRATO_A",
+            },
+            "valor_canon": {
+                "mandato": "CANON_MANDATO",
+                "arrendamiento": "CANON_ARRENDAMIENTO",
+            },
+            "estado_contrato": {
+                "mandato": "ESTADO_CONTRATO_M",
+                "arrendamiento": "ESTADO_CONTRATO_A",
+            },
+            "tipo_contrato": {
+                "mandato": "ESTADO_CONTRATO_M",
+                "arrendamiento": "ESTADO_CONTRATO_A",
+            },
+        }
+        return mapeo.get(sort_by, {}).get(tipo_repo, sort_by.upper())
 
     def set_filter_tipo(self, value: str):
         self.filter_tipo = value
@@ -438,16 +486,25 @@ class ContratosState(DocumentosStateMixin):
                 else (self.filter_estado if self.filter_estado != "Todos" else None)
             )
 
+            # Traducir sort_by según el tipo de repositorio
+            sort_by_mandato = self._traducir_sort_by(self.sort_by, "mandato")
+            sort_by_arrendamiento = self._traducir_sort_by(
+                self.sort_by, "arrendamiento"
+            )
+
             kwargs_paginacion = {
                 "page": self.current_page,
                 "page_size": self.page_size,
                 "estado": estado_filtro,
                 "busqueda": self.search_text or None,
                 "id_asesor": asesor_filter,
+                "sort_by": sort_by_arrendamiento,
+                "sort_order": self.sort_order,
             }
 
             # Parámetro exclusivo para mandatos
             kwargs_mandatos = {**kwargs_paginacion}
+            kwargs_mandatos["sort_by"] = sort_by_mandato
             if self.filter_sin_arrendamiento:
                 kwargs_mandatos["sin_arrendamiento"] = True
 
@@ -977,7 +1034,7 @@ class ContratosState(DocumentosStateMixin):
             repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
             repo_p = RepositorioPropiedadPostgres(db_manager)
             repo_i = RepositorioIPCPostgres(db_manager)
-            
+
             servicio = ServicioContratos(
                 db_manager,
                 repo_mandato=repo_m,
@@ -1027,7 +1084,7 @@ class ContratosState(DocumentosStateMixin):
             repo_r = RepositorioRenovacionPostgres(db_manager)
             repo_p = RepositorioPropiedadPostgres(db_manager)
             repo_i = RepositorioIPCPostgres(db_manager)
-            
+
             servicio = ServicioContratos(
                 db_manager,
                 repo_mandato=repo_m,
