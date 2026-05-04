@@ -8,7 +8,12 @@ from src.presentacion_reflex import styles
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.proveedores_state import ProveedoresState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_button,
+    neuro_select_root,
+)
+from src.presentacion_reflex.components.tablas import header_cell_sortable
 
 
 def proveedores_content() -> rx.Component:
@@ -23,11 +28,15 @@ def proveedores_content() -> rx.Component:
                         weight="bold",
                         color=styles.TEXT_PRIMARY,
                     ),
-                    rx.text("Gestión de prestadores de servicios y mantenimientos", size="3"),
+                    rx.text(
+                        "Gestión de prestadores de servicios y mantenimientos", size="3"
+                    ),
                     rx.hstack(
                         rx.icon("users", size=18, color="var(--gray-9)"),
                         rx.text(
-                            "Total: ", ProveedoresState.total_items, " proveedores",
+                            "Total: ",
+                            ProveedoresState.total_items,
+                            " proveedores",
                             size="2",
                             weight="medium",
                             color=styles.TEXT_SECONDARY,
@@ -43,7 +52,9 @@ def proveedores_content() -> rx.Component:
                     AuthState.check_action("Proveedores", "CREAR"),
                     rx.tooltip(
                         neuro_button(
-                            rx.hstack(rx.icon("plus", size=18), rx.text("Nuevo Proveedor")),
+                            rx.hstack(
+                                rx.icon("plus", size=18), rx.text("Nuevo Proveedor")
+                            ),
                             on_click=ProveedoresState.open_modal,
                             size="3",
                         ),
@@ -113,7 +124,9 @@ def proveedores_content() -> rx.Component:
                     rx.center(
                         rx.vstack(
                             rx.icon("users-round", size=48, color="var(--gray-6)"),
-                            rx.text("No se encontraron proveedores", color="var(--gray-10)"),
+                            rx.text(
+                                "No se encontraron proveedores", color="var(--gray-10)"
+                            ),
                             spacing="2",
                         ),
                         height="300px",
@@ -123,9 +136,27 @@ def proveedores_content() -> rx.Component:
                         rx.table.root(
                             rx.table.header(
                                 rx.table.row(
-                                    rx.table.column_header_cell("Documento"),
-                                    rx.table.column_header_cell("Nombre"),
-                                    rx.table.column_header_cell("Especialidad"),
+                                    header_cell_sortable(
+                                        "Documento",
+                                        "documento",
+                                        ProveedoresState.sort_by,
+                                        ProveedoresState.sort_order,
+                                        ProveedoresState.toggle_sort,
+                                    ),
+                                    header_cell_sortable(
+                                        "Nombre",
+                                        "nombre",
+                                        ProveedoresState.sort_by,
+                                        ProveedoresState.sort_order,
+                                        ProveedoresState.toggle_sort,
+                                    ),
+                                    header_cell_sortable(
+                                        "Especialidad",
+                                        "especialidad",
+                                        ProveedoresState.sort_by,
+                                        ProveedoresState.sort_order,
+                                        ProveedoresState.toggle_sort,
+                                    ),
                                     rx.table.column_header_cell("Contacto"),
                                     rx.table.column_header_cell("Acciones"),
                                 )
@@ -137,11 +168,17 @@ def proveedores_content() -> rx.Component:
                                         rx.table.cell(p["documento"]),
                                         rx.table.cell(p["nombre"], weight="bold"),
                                         rx.table.cell(
-                                            rx.badge(p["especialidad"], color_scheme="blue")
+                                            rx.badge(
+                                                p["especialidad"], color_scheme="blue"
+                                            )
                                         ),
                                         rx.table.cell(
                                             rx.hstack(
-                                                rx.icon("phone", size=14, color="var(--gray-9)"),
+                                                rx.icon(
+                                                    "phone",
+                                                    size=14,
+                                                    color="var(--gray-9)",
+                                                ),
                                                 rx.text(p["telefono"], size="2"),
                                                 spacing="2",
                                                 align="center",
@@ -153,8 +190,10 @@ def proveedores_content() -> rx.Component:
                                                     rx.icon_button(
                                                         rx.icon("pencil", size=16),
                                                         variant="ghost",
-                                                        on_click=lambda: ProveedoresState.open_edit_modal(
-                                                            p
+                                                        on_click=lambda: (
+                                                            ProveedoresState.open_edit_modal(
+                                                                p
+                                                            )
                                                         ),
                                                     ),
                                                     content="Editar Proveedor",
@@ -164,8 +203,10 @@ def proveedores_content() -> rx.Component:
                                                         rx.icon("trash-2", size=16),
                                                         variant="ghost",
                                                         color_scheme="red",
-                                                        on_click=lambda: ProveedoresState.delete_proveedor(
-                                                            p["id_proveedor"]
+                                                        on_click=lambda: (
+                                                            ProveedoresState.delete_proveedor(
+                                                                p["id_proveedor"]
+                                                            )
                                                         ),
                                                     ),
                                                     content="Eliminar Proveedor",
@@ -191,22 +232,34 @@ def proveedores_content() -> rx.Component:
             rx.hstack(
                 neuro_button(
                     rx.icon("chevron-left", size=16),
-                    rx.text("Anterior", display=rx.breakpoints(initial="none", md="block")),
+                    rx.text(
+                        "Anterior", display=rx.breakpoints(initial="none", md="block")
+                    ),
                     on_click=ProveedoresState.prev_page,
                     disabled=ProveedoresState.current_page == 1,
                     size="3",
                 ),
                 rx.vstack(
                     rx.text(
-                        "Página ", ProveedoresState.current_page,
+                        "Página ",
+                        ProveedoresState.current_page,
                         size=rx.breakpoints(initial="2", md="3"),
                         weight="medium",
                         color=styles.TEXT_PRIMARY,
                     ),
                     rx.text(
-                        "Mostrando ", (ProveedoresState.current_page - 1) * ProveedoresState.page_size + 1, "-",
-                        rx.cond(ProveedoresState.current_page * ProveedoresState.page_size > ProveedoresState.total_items, ProveedoresState.total_items, ProveedoresState.current_page * ProveedoresState.page_size),
-                        " de ", ProveedoresState.total_items,
+                        "Mostrando ",
+                        (ProveedoresState.current_page - 1) * ProveedoresState.page_size
+                        + 1,
+                        "-",
+                        rx.cond(
+                            ProveedoresState.current_page * ProveedoresState.page_size
+                            > ProveedoresState.total_items,
+                            ProveedoresState.total_items,
+                            ProveedoresState.current_page * ProveedoresState.page_size,
+                        ),
+                        " de ",
+                        ProveedoresState.total_items,
                         size="1",
                         color=styles.TEXT_SECONDARY,
                         display=rx.breakpoints(initial="none", md="block"),
@@ -215,7 +268,9 @@ def proveedores_content() -> rx.Component:
                     align="center",
                 ),
                 neuro_button(
-                    rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
+                    rx.text(
+                        "Siguiente", display=rx.breakpoints(initial="none", md="block")
+                    ),
                     rx.icon("chevron-right", size=16),
                     on_click=ProveedoresState.next_page,
                     disabled=ProveedoresState.current_page * ProveedoresState.page_size

@@ -13,7 +13,10 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_badge,
     neuro_panel,
 )
-from src.presentacion_reflex.components.contratos.tarjeta_contrato import tarjeta_contrato
+from src.presentacion_reflex.components.tablas import header_cell_sortable
+from src.presentacion_reflex.components.contratos.tarjeta_contrato import (
+    tarjeta_contrato,
+)
 from src.presentacion_reflex.components.contratos.formulario_contrato_mandato import (
     formulario_contrato_mandato,
 )
@@ -120,14 +123,56 @@ def render_table_view() -> rx.Component:
     return rx.table.root(
         rx.table.header(
             rx.table.row(
-                rx.table.column_header_cell("Propiedad"),
-                rx.table.column_header_cell("Tipo"),
-                rx.table.column_header_cell("Estado"),
+                header_cell_sortable(
+                    "Propiedad",
+                    "direccion",
+                    ContratosState.sort_by,
+                    ContratosState.sort_order,
+                    ContratosState.toggle_sort,
+                ),
+                header_cell_sortable(
+                    "Tipo",
+                    "tipo_contrato",
+                    ContratosState.sort_by,
+                    ContratosState.sort_order,
+                    ContratosState.toggle_sort,
+                ),
+                header_cell_sortable(
+                    "Estado",
+                    "estado_contrato",
+                    ContratosState.sort_by,
+                    ContratosState.sort_order,
+                    ContratosState.toggle_sort,
+                ),
                 rx.table.column_header_cell("Cumplimiento"),
-                rx.table.column_header_cell("Propietario/Arrendatario"),
-                rx.table.column_header_cell("Valor"),
-                rx.table.column_header_cell("Fecha Pago"),
-                rx.table.column_header_cell("Fechas"),
+                header_cell_sortable(
+                    "Propietario/Arrendatario",
+                    "propietario_nombre",
+                    ContratosState.sort_by,
+                    ContratosState.sort_order,
+                    ContratosState.toggle_sort,
+                ),
+                header_cell_sortable(
+                    "Valor",
+                    "valor_canon",
+                    ContratosState.sort_by,
+                    ContratosState.sort_order,
+                    ContratosState.toggle_sort,
+                ),
+                header_cell_sortable(
+                    "Fecha Pago",
+                    "fecha_pago",
+                    ContratosState.sort_by,
+                    ContratosState.sort_order,
+                    ContratosState.toggle_sort,
+                ),
+                header_cell_sortable(
+                    "Fechas",
+                    "fecha_inicio",
+                    ContratosState.sort_by,
+                    ContratosState.sort_order,
+                    ContratosState.toggle_sort,
+                ),
                 rx.table.column_header_cell("Acciones"),
             )
         ),
@@ -268,7 +313,12 @@ def render_table_view() -> rx.Component:
                                     rx.text(f"Día {c.fecha_pago}", size="2"),
                                     spacing="0",
                                 ),
-                                rx.text("No registrada", size="1", color="var(--gray-9)", font_style="italic"),
+                                rx.text(
+                                    "No registrada",
+                                    size="1",
+                                    color="var(--gray-9)",
+                                    font_style="italic",
+                                ),
                             ),
                             content=rx.cond(
                                 c.fecha_pago != "",

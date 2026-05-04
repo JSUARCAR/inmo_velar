@@ -33,6 +33,10 @@ class ProveedoresState(rx.State):
         "Otros",
     ]
 
+    # Ordenamiento
+    sort_by: str = "nombre"
+    sort_order: str = "asc"
+
     # Paginación
     current_page: int = 1
     page_size: int = 10
@@ -109,6 +113,23 @@ class ProveedoresState(rx.State):
                 if match_text and match_spec:
                     filtered.append(p_dict)
 
+            # Ordenamiento en memoria
+            reverse_order = self.sort_order == "desc"
+            if self.sort_by == "nombre":
+                filtered.sort(key=lambda x: x["nombre"].lower(), reverse=reverse_order)
+            elif self.sort_by == "especialidad":
+                filtered.sort(
+                    key=lambda x: x["especialidad"].lower(), reverse=reverse_order
+                )
+            elif self.sort_by == "calificacion":
+                filtered.sort(
+                    key=lambda x: float(x["calificacion"] or 0), reverse=reverse_order
+                )
+            elif self.sort_by == "documento":
+                filtered.sort(
+                    key=lambda x: x["documento"].lower(), reverse=reverse_order
+                )
+
             async with self:
                 self.total_items = len(filtered)
                 # Paginación en memoria
@@ -148,6 +169,16 @@ class ProveedoresState(rx.State):
     # Setters y Helpers
     def set_search(self, value: str):
         self.search_text = value
+        self.current_page = 1
+        return ProveedoresState.load_proveedores
+
+    def toggle_sort(self, column: str):
+        """Alterna el ordenamiento por columna."""
+        if self.sort_by == column:
+            self.sort_order = "desc" if self.sort_order == "asc" else "asc"
+        else:
+            self.sort_by = column
+            self.sort_order = "asc"
         self.current_page = 1
         return ProveedoresState.load_proveedores
 
