@@ -205,17 +205,44 @@ def pagination_controls() -> rx.Component:
     )
 
 
+def header_cell_sortable(label: str, column_id: str) -> rx.Component:
+    """Renderiza celda de encabezado con capacidad de ordenamiento."""
+    is_active = LiquidacionesState.sort_by == column_id
+    
+    return rx.table.column_header_cell(
+        rx.hstack(
+            rx.text(label, weight="bold"),
+            rx.cond(
+                is_active,
+                rx.cond(
+                    LiquidacionesState.sort_order == "desc",
+                    rx.icon("chevron-down", size=16),
+                    rx.icon("chevron-up", size=16),
+                ),
+                rx.icon("chevrons-up-down", size=14, opacity=0.3),
+            ),
+            spacing="2",
+            align="center",
+            cursor="pointer",
+            on_click=lambda: LiquidacionesState.toggle_sort(column_id),
+            _hover={"opacity": 0.8},
+        ),
+        style={"font-weight": "600"}
+    )
+
+
 def liquidaciones_table() -> rx.Component:
     """Tabla de liquidaciones."""
     return rx.table.root(
         rx.table.header(
             rx.table.row(
-                rx.table.column_header_cell("ID", style={"font-weight": "600"}),
-                rx.table.column_header_cell("Período", style={"font-weight": "600"}),
-                rx.table.column_header_cell("Propiedad", style={"font-weight": "600"}),
-                rx.table.column_header_cell("Canon", style={"font-weight": "600"}),
-                rx.table.column_header_cell("Neto a Pagar", style={"font-weight": "600"}),
-                rx.table.column_header_cell("Estado", style={"font-weight": "600"}),
+                header_cell_sortable("ID", "id"),
+                header_cell_sortable("Período", "periodo"),
+                header_cell_sortable("Propiedad", "contrato"),
+                header_cell_sortable("Día Pago Mandato", "dia_pago"),
+                header_cell_sortable("Canon", "canon"),
+                header_cell_sortable("Neto a Pagar", "neto"),
+                header_cell_sortable("Estado", "estado"),
                 rx.table.column_header_cell(
                     "Acciones", width="200px", style={"font-weight": "600"}
                 ),
@@ -228,6 +255,7 @@ def liquidaciones_table() -> rx.Component:
                     rx.table.cell(liq["id"]),
                     rx.table.cell(liq["periodo"]),
                     rx.table.cell(liq["contrato"]),
+                    rx.table.cell(liq["fecha_pago_mandato"]),
                     rx.table.cell(liq["canon_view"]),
                     rx.table.cell(
                         rx.text(
@@ -336,18 +364,12 @@ def liquidaciones_table_agrupada() -> rx.Component:
         rx.table.root(
             rx.table.header(
                 rx.table.row(
-                    rx.table.column_header_cell("Período", style={"font-weight": "600"}),
-                    rx.table.column_header_cell("Propietario", style={"font-weight": "600"}),
-                    rx.table.column_header_cell(
-                        "Propiedades", text_align="center", style={"font-weight": "600"}
-                    ),
-                    rx.table.column_header_cell("Canon Total", style={"font-weight": "600"}),
-                    rx.table.column_header_cell(
-                        "Neto Total", text_align="right", style={"font-weight": "600"}
-                    ),
-                    rx.table.column_header_cell(
-                        "Estado", text_align="center", style={"font-weight": "600"}
-                    ),
+                    header_cell_sortable("Período", "periodo"),
+                    header_cell_sortable("Propietario", "propietario"),
+                    header_cell_sortable("Propiedades", "cantidad_propiedades"),
+                    header_cell_sortable("Canon Total", "canon"),
+                    header_cell_sortable("Neto Total", "neto"),
+                    header_cell_sortable("Estado", "estado"),
                     rx.table.column_header_cell(
                         "Acciones", width="200px", style={"font-weight": "600"}
                     ),
