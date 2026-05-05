@@ -99,6 +99,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             cursor = conn.cursor()
             cursor.execute(query, params)
             row = cursor.fetchone()
+            conn.commit()
             return list(row.values())[0] if row else None
 
     def actualizar(self, incidente: Incidente) -> None:
@@ -131,6 +132,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
+            conn.commit()
 
     def obtener_por_id(self, id_incidente: int) -> Optional[Incidente]:
         query = "SELECT * FROM INCIDENTES WHERE ID_INCIDENTE = %s"
@@ -299,6 +301,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, (id_incidente,))
+            conn.commit()
 
     # Cotizaciones
     def guardar_cotizacion(self, cotizacion: Cotizacion) -> int:
@@ -326,6 +329,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             cursor = conn.cursor()
             cursor.execute(query, params)
             row = cursor.fetchone()
+            conn.commit()
             return list(row.values())[0] if row else None
 
     def obtener_cotizaciones(self, id_incidente: int) -> List[Cotizacion]:
@@ -345,6 +349,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
+            conn.commit()
 
     # ==================== HISTORIAL DE INCIDENTES ====================
 
@@ -385,6 +390,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             cursor = conn.cursor()
             cursor.execute(query, params)
             row = cursor.fetchone()
+            conn.commit()
             return list(row.values())[0] if row else None
 
     def obtener_historial(self, id_incidente: int) -> List[HistorialIncidente]:

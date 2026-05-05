@@ -91,7 +91,6 @@ def register_pdf_routes(app):
         pdf_api.include_router(pdf_router)
 
         # Montar la app en /api/pdf
-        # Nota: El router tiene rutas /download/{filename}, así que la URL final será /api/pdf/download/{filename}
         if hasattr(target_app, "mount"):
             target_app.mount("/api/pdf", pdf_api)
             print("[PDF-REGISTER] Rutas montadas exitosamente en /api/pdf usando .mount()")
@@ -100,5 +99,3 @@ def register_pdf_routes(app):
 
     except Exception as e:
         print(f"[PDF-REGISTER] Error critico registrando rutas: {str(e)}")
-        import traceback
-        traceback.print_exc()
