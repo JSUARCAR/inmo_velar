@@ -3,14 +3,14 @@ from typing import List, Optional
 from src.dominio.entidades.proveedor import Proveedor
 from src.dominio.interfaces.repositorio_proveedores import RepositorioProveedores
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_proveedores_sqlite import (
-    RepositorioProveedoresSQLite,
+from src.infraestructura.persistencia.repositorio_proveedores_postgres import (
+    RepositorioProveedoresPostgres,
 )
 
 
 class ServicioProveedores:
     def __init__(self, db_manager: DatabaseManager):
-        self.repo: RepositorioProveedores = RepositorioProveedoresSQLite(db_manager)
+        self.repo: RepositorioProveedores = RepositorioProveedoresPostgres(db_manager)
 
     def listar_proveedores(self) -> List[Proveedor]:
         return self.repo.listar()

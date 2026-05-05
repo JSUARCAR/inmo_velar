@@ -77,61 +77,75 @@ def _filter_bar() -> rx.Component:
 
 
 def _list_view() -> rx.Component:
-    return rx.table.root(
-        rx.table.header(
-            rx.table.row(
-                header_cell_sortable(
-                    "ID",
-                    "id",
-                    IncidentesState.sort_by,
-                    IncidentesState.sort_order,
-                    IncidentesState.toggle_sort,
+    return rx.cond(
+        IncidentesState.is_loading,
+        rx.center(rx.spinner(size="3"), padding_y="4em"),
+        rx.cond(
+            IncidentesState.incidentes.length() > 0,
+            rx.table.root(
+                rx.table.header(
+                    rx.table.row(
+                        header_cell_sortable(
+                            "ID",
+                            "id",
+                            IncidentesState.sort_by,
+                            IncidentesState.sort_order,
+                            IncidentesState.toggle_sort,
+                        ),
+                        rx.table.column_header_cell("Descripción"),
+                        header_cell_sortable(
+                            "Propiedad",
+                            "direccion",
+                            IncidentesState.sort_by,
+                            IncidentesState.sort_order,
+                            IncidentesState.toggle_sort,
+                        ),
+                        header_cell_sortable(
+                            "Prioridad",
+                            "prioridad",
+                            IncidentesState.sort_by,
+                            IncidentesState.sort_order,
+                            IncidentesState.toggle_sort,
+                        ),
+                        header_cell_sortable(
+                            "Estado",
+                            "estado",
+                            IncidentesState.sort_by,
+                            IncidentesState.sort_order,
+                            IncidentesState.toggle_sort,
+                        ),
+                        header_cell_sortable(
+                            "Fecha",
+                            "fecha",
+                            IncidentesState.sort_by,
+                            IncidentesState.sort_order,
+                            IncidentesState.toggle_sort,
+                        ),
+                    )
                 ),
-                rx.table.column_header_cell("Descripción"),
-                header_cell_sortable(
-                    "Propiedad",
-                    "direccion",
-                    IncidentesState.sort_by,
-                    IncidentesState.sort_order,
-                    IncidentesState.toggle_sort,
+                rx.table.body(
+                    rx.foreach(
+                        IncidentesState.incidentes.to(list[IncidenteDict]),
+                        lambda item: rx.table.row(
+                            rx.table.cell(item.id),
+                            rx.table.cell(item.descripcion),
+                            rx.table.cell(item.direccion_propiedad),
+                            rx.table.cell(item.prioridad),
+                            rx.table.cell(rx.badge(item.estado, variant="soft")),
+                            rx.table.cell(item.fecha),
+                        ),
+                    )
                 ),
-                header_cell_sortable(
-                    "Prioridad",
-                    "prioridad",
-                    IncidentesState.sort_by,
-                    IncidentesState.sort_order,
-                    IncidentesState.toggle_sort,
+                width="100%",
+            ),
+            rx.center(
+                rx.vstack(
+                    rx.icon("database-x", size=24, color="var(--gray-9)"),
+                    rx.text("No hay incidentes registrados", color="gray"),
+                    padding_y="4em",
                 ),
-                header_cell_sortable(
-                    "Estado",
-                    "estado",
-                    IncidentesState.sort_by,
-                    IncidentesState.sort_order,
-                    IncidentesState.toggle_sort,
-                ),
-                header_cell_sortable(
-                    "Fecha",
-                    "fecha",
-                    IncidentesState.sort_by,
-                    IncidentesState.sort_order,
-                    IncidentesState.toggle_sort,
-                ),
-            )
+            ),
         ),
-        rx.table.body(
-            rx.foreach(
-                IncidentesState.incidentes.to(list[IncidenteDict]),
-                lambda item: rx.table.row(
-                    rx.table.cell(item.id),
-                    rx.table.cell(item.descripcion),
-                    rx.table.cell(item.id_propiedad),
-                    rx.table.cell(item.prioridad),
-                    rx.table.cell(rx.badge(item.estado, variant="soft")),
-                    rx.table.cell(item.fecha),
-                ),
-            )
-        ),
-        width="100%",
     )
 
 
@@ -152,6 +166,20 @@ def incidentes() -> rx.Component:
     return dashboard_layout(
         rx.vstack(
             rx.heading("Gestión de Incidentes", size="6", margin_bottom="1em"),
+            rx.cond(
+                IncidentesState.error_message != "",
+                rx.box(
+                    rx.hstack(
+                        rx.icon("triangle-alert", color="red"),
+                        rx.text(IncidentesState.error_message, color="red", size="2"),
+                    ),
+                    padding="3",
+                    border="1px solid red",
+                    border_radius="8px",
+                    margin_bottom="4",
+                    bg="var(--red-2)",
+                ),
+            ),
             _filter_bar(),
             rx.box(
                 rx.cond(

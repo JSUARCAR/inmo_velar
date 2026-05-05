@@ -37,4 +37,10 @@ class RepositorioAuditoriaPostgres(RepositorioAuditoria):
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
-            return cursor.fetchone()[0]
+            row = cursor.fetchone()
+            conn.commit()
+            if row:
+                if hasattr(row, "values"):
+                    return list(row.values())[0]
+                return row[0]
+            raise ValueError("No se pudo obtener el ID de auditoría insertado")

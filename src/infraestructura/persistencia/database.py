@@ -8,6 +8,7 @@ Detecta automáticamente el modo desde .env (DB_MODE).
 import os
 import sqlite3
 import threading
+import atexit
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Optional
@@ -37,7 +38,7 @@ if _database_url and _database_url.startswith("postgresql"):
 else:
     DB_MODE = os.getenv("DB_MODE", "sqlite").lower()
 
-print(f"DEBUG [database.py]: Final DB_MODE: {DB_MODE}")
+# print(f"DEBUG [database.py]: Final DB_MODE: {DB_MODE}")
 
 # Importar el módulo correcto según el modo
 if DB_MODE == "postgresql":
@@ -106,7 +107,7 @@ if DB_MODE == "postgresql":
 
         def __getattr__(self, name):
             return getattr(self._conn, name)
-            
+
         def close(self):
             if not self._is_returned and self._conn:
                 try:
@@ -121,7 +122,7 @@ if DB_MODE == "postgresql":
         def __exit__(self, exc_type, exc_val, exc_tb):
             # No retornamos aqui para permitir operaciones multiplexadas. Se hara GC en __del__
             return False
-            
+
         def __del__(self):
             if not self._is_returned and self._conn:
                 try:
@@ -181,6 +182,7 @@ class DatabaseManager:
             self.database_path = Path(config.database_path)
 
         self._connection_pool: dict[int, Any] = {}
+        atexit.register(self.shutdown)
         self._initialized = True
 
     def _configurar_postgresql(self):
@@ -188,6 +190,7 @@ class DatabaseManager:
         database_url = os.getenv("DATABASE_URL", "")
         if database_url and database_url.startswith("postgresql"):
             from urllib.parse import urlparse
+
             parsed = urlparse(database_url)
             self.pg_config = {
                 "host": parsed.hostname or "localhost",
@@ -196,7 +199,9 @@ class DatabaseManager:
                 "user": parsed.username or "postgres",
                 "password": parsed.password or "",
                 "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", 10)),
-                "application_name": os.getenv("DB_APPLICATION_NAME", "InmobiliariaVelar"),
+                "application_name": os.getenv(
+                    "DB_APPLICATION_NAME", "InmobiliariaVelar"
+                ),
             }
         else:
             self.pg_config = {
@@ -206,7 +211,9 @@ class DatabaseManager:
                 "user": os.getenv("DB_USER", "inmo_user"),
                 "password": os.getenv("DB_PASSWORD"),
                 "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", 10)),
-                "application_name": os.getenv("DB_APPLICATION_NAME", "InmobiliariaVelar"),
+                "application_name": os.getenv(
+                    "DB_APPLICATION_NAME", "InmobiliariaVelar"
+                ),
             }
 
     def _inicializar_pg_pool(self):
@@ -229,8 +236,12 @@ class DatabaseManager:
                 self._inicializar_pg_pool()
 
             conn_wrapper = _pg_conn_ctx.get()
-            
-            if conn_wrapper is None or conn_wrapper._is_returned or not self._validar_conexion(conn_wrapper):
+
+            if (
+                conn_wrapper is None
+                or conn_wrapper._is_returned
+                or not self._validar_conexion(conn_wrapper)
+            ):
                 # Limpiar la desconectada si hubo alguna
                 if conn_wrapper and not conn_wrapper._is_returned:
                     conn_wrapper.close()
@@ -240,7 +251,7 @@ class DatabaseManager:
                 except psycopg2.pool.PoolError:
                     # En caso de agotar el pool, forzar spawn de una off-pool JIT (Safety measure)
                     real_conn = psycopg2.connect(**self.pg_config)
-                
+
                 real_conn.autocommit = False
                 conn_wrapper = UpperCaseConnectionWrapper(self._pg_pool, real_conn)
                 _pg_conn_ctx.set(conn_wrapper)
@@ -274,12 +285,12 @@ class DatabaseManager:
             # Poll returns 0 (POLL_OK) if connection is active
             if real_conn.closed != 0:
                 return False
-                
+
             if real_conn.poll() != psycopg2.extensions.POLL_OK:
                 return False
             # Execute a lightweight query just to be sure
             with real_conn.cursor() as cur:
-               cur.execute("SELECT 1")
+                cur.execute("SELECT 1")
             return True
         except Exception:
             # Silent failure for validation checks
@@ -365,7 +376,9 @@ class DatabaseManager:
         cursor.execute(query, params)
         return cursor.fetchone()
 
-    def get_last_insert_id(self, cursor, table_name: str = None, id_column: str = None) -> int:
+    def get_last_insert_id(
+        self, cursor, table_name: str = None, id_column: str = None
+    ) -> int:
         """
         Obtiene el último ID insertado de manera compatible.
 
@@ -447,6 +460,21 @@ class DatabaseManager:
             conexion.close()
         self._connection_pool.clear()
 
+    def shutdown(self) -> None:
+        """Cierra todas las conexiones del pool de PostgreSQL y limpia recursos."""
+        if self.use_postgresql and self._pg_pool is not None:
+            try:
+                self._pg_pool.closeall()
+                print("DEBUG [database.py]: PostgreSQL pool cerrado exitosamente")
+            except Exception as e:
+                print(f"DEBUG [database.py]: Error cerrando pool PostgreSQL: {e}")
+            finally:
+                self._pg_pool = None
+
+        # Cerrar conexiones SQLite si existen
+        self.cerrar_todas_conexiones()
+        print("DEBUG [database.py]: DatabaseManager shutdown completado")
+
     def inicializar_base_datos(self, ruta_schema: Optional[Path] = None) -> None:
         """
         Inicializa la base de datos con el esquema.
@@ -469,7 +497,10 @@ class DatabaseManager:
         Returns:
             Diccionario con información de configuración
         """
-        info = {"mode": self.db_mode, "type": "PostgreSQL" if self.use_postgresql else "SQLite"}
+        info = {
+            "mode": self.db_mode,
+            "type": "PostgreSQL" if self.use_postgresql else "SQLite",
+        }
 
         if self.use_postgresql:
             info.update(
@@ -495,7 +526,7 @@ class DatabaseManager:
             return ""
         # Normaliza y elimina marcas de combinación (acentos/diacríticos)
         term_str = str(term)
-        nfkd_form = unicodedata.normalize('NFKD', term_str)
+        nfkd_form = unicodedata.normalize("NFKD", term_str)
         return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
 
     def get_search_condition(self, columns: list[str]) -> str:
@@ -512,7 +543,7 @@ class DatabaseManager:
             else:
                 # Usa la función python inyectada
                 conditions.append(f"unaccent_lower({col}) LIKE {placeholder}")
-        
+
         return " OR ".join(conditions)
 
 

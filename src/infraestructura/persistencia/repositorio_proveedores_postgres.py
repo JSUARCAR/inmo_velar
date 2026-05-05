@@ -96,7 +96,13 @@ class RepositorioProveedoresPostgres(RepositorioProveedores):
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
-            return cursor.fetchone()[0]
+            row = cursor.fetchone()
+            conn.commit()
+            if row:
+                if hasattr(row, "values"):
+                    return list(row.values())[0]
+                return row[0]
+            raise ValueError("No se pudo obtener el ID del proveedor insertado")
 
     def actualizar(self, proveedor: Proveedor) -> None:
         query = """
@@ -114,16 +120,19 @@ class RepositorioProveedoresPostgres(RepositorioProveedores):
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
+            conn.commit()
 
     def eliminar(self, id_proveedor: int) -> None:
         query = "UPDATE PROVEEDORES SET ESTADO_REGISTRO = FALSE WHERE ID_PROVEEDOR = %s"
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, (id_proveedor,))
+            conn.commit()
 
     def eliminar_por_persona(self, id_persona: int) -> bool:
         query = "DELETE FROM PROVEEDORES WHERE ID_PERSONA = %s"
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, (id_persona,))
+            conn.commit()
             return cursor.rowcount > 0
