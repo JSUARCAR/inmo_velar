@@ -1,6 +1,7 @@
 import pydantic
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+import asyncio
 
 import reflex as rx
 from rxconfig import config
@@ -303,8 +304,6 @@ class IncidentesState(DocumentosStateMixin):
                 estado=estado,
                 page=pagina,
                 page_size=tamano_pagina,
-                sort_by=sort_by_bd,
-                sort_order=self.sort_order,
             )
 
             resultado_objs = resultado["items"]
@@ -409,9 +408,24 @@ class IncidentesState(DocumentosStateMixin):
                 if self.total_pages < 1:
                     self.total_pages = 1
 
+            # Debug logs
+            print(f"[DEBUG] Incidentes cargados: {len(items)}")
+            print(
+                f"[DEBUG] Kanban groups: { {k: len(v) for k, v in kanban_grouped.items()} }"
+            )
+            print(f"[DEBUG] Total BD: {total_items}, Paginas: {self.total_pages}")
+
         except Exception as e:
             async with self:
                 self.error_message = f"Error al cargar incidentes: {str(e)}"
+                self.incidentes = []
+                self.incidentes_kanban = {
+                    "Reportado": [],
+                    "Cotizado": [],
+                    "Aprobado": [],
+                    "En Reparacion": [],
+                    "Finalizado": [],
+                }
         finally:
             async with self:
                 self.is_loading = False
@@ -973,11 +987,16 @@ class IncidentesState(DocumentosStateMixin):
 
             # 4. Descargar
             pdf_filename = Path(pdf_path).name
-            download_url = f"{config.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
-            fetch('{download_url}')
-              .then(res => res.blob())
+            fetch('{download_url}', {{ credentials: 'include' }})
+              .then(res => {{ 
+                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText); 
+                  const contentType = res.headers.get('content-type'); 
+                  if (contentType && contentType.includes('text/html')) throw new Error('Sesión expirada.'); 
+                  return res.blob(); 
+              }})
               .then(blob => {{
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');

@@ -15,7 +15,7 @@ from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_auditoria_sqlite import RepositorioAuditoriaSQLite
 from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
 from src.infraestructura.persistencia.repositorio_parametro_sqlite import RepositorioParametroSQLite
-from src.infraestructura.persistencia.repositorio_usuario_sqlite import RepositorioUsuarioSQLite
+from src.infraestructura.persistencia.repositorio_usuario import RepositorioUsuario
 
 
 class ServicioConfiguracion:
@@ -28,7 +28,7 @@ class ServicioConfiguracion:
 
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
-        self.repo_usuario = RepositorioUsuarioSQLite(db_manager)
+        self.repo_usuario = RepositorioUsuario(db_manager)
         self.repo_ipc = RepositorioIPCSQLite(db_manager)
         self.repo_parametro = RepositorioParametroSQLite(db_manager)
         self.repo_auditoria = RepositorioAuditoriaSQLite(db_manager)

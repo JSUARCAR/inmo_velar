@@ -1,3 +1,4 @@
+import os
 import psycopg2
 from psycopg2 import sql
 
@@ -7,7 +8,7 @@ conn = psycopg2.connect(
     port=5432,
     database="db_inmo_velar",
     user="postgres",
-    password="7323"
+    password=os.getenv('DB_PASSWORD', '7323')
 )
 
 cur = conn.cursor()

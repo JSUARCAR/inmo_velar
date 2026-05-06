@@ -30,12 +30,11 @@ async def download_document(id_documento: int, force_download: bool = False):
             media_type=documento.mime_type or "application/octet-stream",
             headers={
                 "Content-Disposition": content_disposition,
-                "Cache-Control": "public, max-age=3600",  # Cache por 1 hora para mejorar performance de imágenes
+                "Cache-Control": "public, max-age=3600",
             },
         )
 
     except Exception as e:
-        pass  # print(f"Error sirviendo documento {id_documento}: {e}") [OpSec Removed]
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -53,9 +52,7 @@ def register_document_routes(app):
 
         doc_api.add_middleware(
             CORSMiddleware,
-            allow_origins=[
-                "*"
-            ],  # Permitir todo en local para evitar problemas de CORS con imágenes
+            allow_origins=["*"],
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
@@ -66,8 +63,8 @@ def register_document_routes(app):
         try:
             if hasattr(fastapi_app, "mount"):
                 fastapi_app.mount("/api/storage", doc_api)
-                pass  # print("✅ Rutas de Documentos montadas exitosamente en /api/storage") [OpSec Removed]
+                print("[STORAGE-REGISTER] Rutas de Documentos montadas exitosamente en /api/storage")
             else:
-                pass  # print("❌ Error: La app backend no soporta 'mount'") [OpSec Removed]
-        except Exception:
-            pass  # print(f"❌ Error registrando rutas de documentos: {e}") [OpSec Removed]
+                print("[STORAGE-REGISTER] Error: La app backend no soporta 'mount'")
+        except Exception as e:
+            print(f"[STORAGE-REGISTER] Error registrando rutas de documentos: {e}")

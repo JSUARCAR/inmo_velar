@@ -1,3 +1,4 @@
+import os
 import psycopg2
 
 conn = psycopg2.connect(
@@ -5,7 +6,7 @@ conn = psycopg2.connect(
     port=5432,
     database="db_inmo_velar",
     user="inmo_user",
-    password="7323"
+    password=os.getenv('DB_PASSWORD', '7323')
 )
 
 cursor = conn.cursor()

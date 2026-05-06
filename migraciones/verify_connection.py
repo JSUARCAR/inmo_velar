@@ -1,3 +1,4 @@
+import os
 """
 Script de Verificación de Conexión a PostgreSQL
 Verifica que la migración fue exitosa y que la aplicación puede conectarse
@@ -11,7 +12,7 @@ POSTGRES_CONFIG = {
     'port': 5432,
     'database': 'db_inmo_velar',
     'user': 'inmo_user',
-    'password': '7323'
+    'password': os.getenv('DB_PASSWORD', '7323')
 }
 
 def test_connection():

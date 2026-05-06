@@ -19,7 +19,7 @@ except ImportError:
         DB_PORT = os.getenv("DB_PORT", "5432")
         DB_NAME = os.getenv("DB_NAME", "db_inmo_velar")
         DB_USER = os.getenv("DB_USER", "inmo_user")
-        DB_PASSWORD = os.getenv("DB_PASSWORD", "7323")
+        DB_PASSWORD = os.getenv("DB_PASSWORD", os.getenv('DB_PASSWORD', '7323'))
 
 
 print("Testing trigger function directly in database...")

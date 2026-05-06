@@ -25,7 +25,7 @@ POSTGRES_CONFIG = {
     'port': int(os.getenv('DB_PORT', 5432)),
     'database': os.getenv('DB_NAME', 'db_inmo_velar'),
     'user': os.getenv('DB_USER', 'inmo_user'),
-    'password': os.getenv('DB_PASSWORD', '7323'),
+    'password': os.getenv('DB_PASSWORD', os.getenv('DB_PASSWORD', '7323')),
     'connect_timeout': int(os.getenv('DB_CONNECT_TIMEOUT', 10)),
     'application_name': os.getenv('DB_APPLICATION_NAME', 'InmobiliariaVelar')
 }

@@ -1,3 +1,4 @@
+import os
 """
 Script para desbloquear el usuario admin
 """
@@ -9,7 +10,7 @@ DB_CONFIG = {
     'port': 5432,
     'database': 'db_inmo_velar',
     'user': 'inmo_user',
-    'password': '7323'
+    'password': os.getenv('DB_PASSWORD', '7323')
 }
 
 try:

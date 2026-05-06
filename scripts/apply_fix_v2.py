@@ -20,7 +20,7 @@ except ImportError:
         DB_PORT = os.getenv("DB_PORT", "5432")
         DB_NAME = os.getenv("DB_NAME", "db_inmo_velar")
         DB_USER = os.getenv("DB_USER", "inmo_user")
-        DB_PASSWORD = os.getenv("DB_PASSWORD", "7323")
+        DB_PASSWORD = os.getenv("DB_PASSWORD", os.getenv('DB_PASSWORD', '7323'))
 
 SQL_FILE = "src/infraestructura/db/migrations/fix_audit_postgres_v2.sql"
 

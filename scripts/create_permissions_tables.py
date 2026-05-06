@@ -20,7 +20,7 @@ def try_create_tables():
         {'user': 'postgres', 'password': None, 'name': 'postgres sin contraseña'},
         {'user': 'postgres', 'password': '', 'name': 'postgres con string vacío'},
         {'user': 'postgres', 'password': 'postgres', 'name': 'postgres con contraseña por defecto'},
-        {'user': 'inmo_user', 'password': '7323', 'name': 'inmo_user'}
+        {'user': 'inmo_user', 'password': os.getenv('DB_PASSWORD', '7323'), 'name': 'inmo_user'}
     ]
     
     sql_create = """

@@ -1,3 +1,4 @@
+import os
 import psycopg2
 import sys
 
@@ -6,7 +7,7 @@ DB_HOST = "localhost"
 DB_PORT = 5432
 DB_NAME = "db_inmo_velar"
 DB_USER = "inmo_user"
-DB_PASSWORD = "7323"  # From comments
+DB_PASSWORD = os.getenv('DB_PASSWORD', '7323')  # From comments
 
 def verify_local_connection():
     print(f"Attempting to connect to local PostgreSQL: {DB_USER}@{DB_HOST}:{DB_PORT}/{DB_NAME}")

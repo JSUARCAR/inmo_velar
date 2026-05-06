@@ -47,6 +47,7 @@ class RepositorioLiquidacionSQLite:
             GASTOS_SERVICIOS INTEGER DEFAULT 0,
             GASTOS_REPARACIONES INTEGER DEFAULT 0,
             PAGO_PREDIAL INTEGER DEFAULT 0,
+            SEGURO_MONTO INTEGER DEFAULT 0,
             OTROS_EGRESOS INTEGER DEFAULT 0,
             TOTAL_EGRESOS INTEGER NOT NULL,
             
@@ -1167,6 +1168,7 @@ class RepositorioLiquidacionSQLite:
                     "gastos_serv": l.get("GASTOS_SERVICIOS"),
                     "gastos_rep": l.get("GASTOS_REPARACIONES"),
                     "pago_predial": l.get("PAGO_PREDIAL"),
+                    "seguro_monto": l.get("SEGURO_MONTO", 0),
                     "otros_egr": l.get("OTROS_EGRESOS"),
                     "neto": l.get("NETO_A_PAGAR"),
                     "porcentaje_seguro": l.get("PORCENTAJE_SEGURO", 0),
@@ -1197,6 +1199,7 @@ class RepositorioLiquidacionSQLite:
             "gastos_serv": gastos_serv,
             "gastos_rep": gastos_rep,
             "pago_predial": pago_predial,
+            "seguro_monto": sum(l.get("SEGURO_MONTO", 0) for l in liquidaciones),
             "otros_egr": otros_egr,
             "observaciones": f"Estado de cuenta consolidado para {len(liquidaciones)} inmuebles.",
         }

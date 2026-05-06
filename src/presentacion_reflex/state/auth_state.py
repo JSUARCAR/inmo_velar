@@ -12,12 +12,8 @@ from src.dominio.excepciones.excepciones_base import (
 )
 from src.infraestructura.logging.logger import logger
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.persistencia.repositorio_sesion_sqlite import (
-    RepositorioSesionSQLite,
-)
-from src.infraestructura.persistencia.repositorio_usuario_sqlite import (
-    RepositorioUsuarioSQLite,
-)
+from src.infraestructura.persistencia.repositorio_sesion import RepositorioSesion
+from src.infraestructura.persistencia.repositorio_usuario import RepositorioUsuario
 
 # ─── Constante de versión para confirmar que el nuevo código se ejecuta ───────
 _AUTH_STATE_VERSION = "2026-02-25-v3-DEBUG"
@@ -114,8 +110,8 @@ class AuthState(rx.State):
 
         # Validar contra BD
         try:
-            repo_u = RepositorioUsuarioSQLite(db_manager)
-            repo_s = RepositorioSesionSQLite(db_manager)
+            repo_u = RepositorioUsuario(db_manager)
+            repo_s = RepositorioSesion(db_manager)
             servicio_auth = ServicioAutenticacion(repo_u, repo_s)
             usuario = servicio_auth.validar_sesion(self.session_token)
 
@@ -221,8 +217,8 @@ class AuthState(rx.State):
             return
 
         try:
-            repo_u = RepositorioUsuarioSQLite(db_manager)
-            repo_s = RepositorioSesionSQLite(db_manager)
+            repo_u = RepositorioUsuario(db_manager)
+            repo_s = RepositorioSesion(db_manager)
             servicio_auth = ServicioAutenticacion(repo_u, repo_s)
 
             usuario_autenticado = servicio_auth.autenticar(username, password)
