@@ -1,0 +1,40 @@
+name: Security scan — archivos prohibidos y secretos
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detectar archivos prohibidos
+        run: |
+          BLOCKED="backend.zip frontend.zip alter_db.py .git_log_temp.txt"
+          FOUND=0
+          for f in $BLOCKED; do
+            if [ -f "$f" ]; then
+              echo "::error file=$f::Archivo prohibido detectado: $f"
+              FOUND=1
+            fi
+          done
+          [ $FOUND -eq 1 ] && exit 1 || echo "Sin archivos prohibidos"
+
+      - name: Escaneo de secretos con Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verificar cobertura de .gitignore
+        run: |
+          for pattern in "*.zip" "*.bak" "temp/" ".env"; do
+            if ! grep -qF "$pattern" .gitignore; then
+              echo "::warning::Patron '$pattern' no esta en .gitignore"
+            fi
+          done

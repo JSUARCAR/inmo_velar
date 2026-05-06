@@ -1,21 +1,54 @@
-.states
-*.db
-.web
-assets/external/
-# Python
+# === ARCHIVOS TEMPORALES Y DE DIAGNOSTICO ===
+*.zip
+*.tar.gz
+*.bak
+*.tmp
+*.temp
+*.log
+*.resolved
+
+# === SCRIPTS DE DIAGNOSTICO INTERNOS ===
+scripts/diagnostico_*
+scripts/check_*
+scripts/debug_*
+temp/
+outputs/
+tasks/
+
+# === GIT INTERNALS ===
+.git_log_temp.txt
+.git_log_*
+*.git_log
+
+# === ARTEFACTOS DE BUILD ===
+backend.zip
+frontend.zip
+dist/
+build/
 __pycache__/
+*.pyc
+.web/
+
+# === SECRETS ===
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# === REFLEX ===
+.states
+assets/external/
+assets/uploaded_files/
+*.db-journal
+
+# === PYTHON ===
 *.py[cod]
 *$py.class
 *.so
 .Python
-# Reflex (Framework de migración)
-.web/
-assets/uploaded_files/
-*.db-journal
-build/
 develop-eggs/
-dist/
-downloads/
 eggs/
 .eggs/
 lib/
@@ -28,53 +61,34 @@ wheels/
 .installed.cfg
 *.egg
 
-# Entorno Virtual
+# === ENTORNO VIRTUAL ===
 venv/
 ENV/
 env/
 
-# IDEs
+# === IDEs ===
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Configuración Local
-.env
-*.local
-
-# Logs
-logs/
-*.log
-
-# Base de Datos (descomentar si no se quiere versionar)
-# *.db
-# *.db-journal
-
-# Testing
+# === TESTING ===
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
 
-# OS
+# === OS ===
 .DS_Store
 Thumbs.db
 Desktop.ini
 
-# Temporales
-temp_*
-tmp/
-*.tmp
-
-# Generados por la app
+# === GENERADOS POR LA APP ===
 documentos_generados/
 
-# Antigravity / Agent tools
+# === AGENT TOOLS ===
 agent-skills/
 skills/
-agent-skills.zip
-skills.zip
 scratch/
 nul
