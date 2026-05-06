@@ -10,7 +10,7 @@ SRC_HOST = "localhost"
 SRC_PORT = 5432
 SRC_DB = "db_inmo_velar"
 SRC_USER = "inmo_user"
-SRC_PASSWORD = "7323"
+SRC_PASSWORD = os.getenv('DB_PASSWORD', '7323')
 
 # Destination: Railway PostgreSQL
 DEST_URL = os.getenv("DATABASE_URL")

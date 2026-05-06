@@ -1,3 +1,4 @@
+import os
 """
 Script de Migración Completa: SQLite -> PostgreSQL
 Sistema de Gestión Inmobiliaria Velar SAS
@@ -33,7 +34,7 @@ POSTGRES_CONFIG = {
     'port': 5432,
     'database': 'db_inmo_velar',
     'user': 'inmo_user',
-    'password': '7323'
+    'password': os.getenv('DB_PASSWORD', '7323')
 }
 
 POSTGRES_ADMIN_CONFIG = {
@@ -41,7 +42,7 @@ POSTGRES_ADMIN_CONFIG = {
     'port': 5432,
     'database': 'postgres',  # Base de datos por defecto para crear la nueva DB
     'user': 'postgres',
-    'password': '7323'
+    'password': os.getenv('DB_PASSWORD', '7323')
 }
 
 # =====================================================
