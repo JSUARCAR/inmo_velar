@@ -19,7 +19,14 @@ if not api_url:
     if not IS_PROD:
         api_url = "http://localhost:8000"
     else:
-        api_url = "https://inmovelar-production.up.railway.app"
+        # En producción, intentar obtener el dominio de Railway
+        railway_domain = os.getenv("RAILWAY_STATIC_URL") or os.getenv("RAILWAY_PUBLIC_DOMAIN")
+        if railway_domain:
+            # Asegurarse de que el dominio tenga el protocolo
+            api_url = railway_domain if railway_domain.startswith("http") else f"https://{railway_domain}"
+        else:
+            # Fallback genérico para evitar 404 si el dominio cambia
+            api_url = "https://extraordinary-joy-production-2fd2.up.railway.app"
 
 # Railway provides DATABASE_URL automatically when a Postgres plugin is attached.
 # Compatibility: Replace 'postgres://' with 'postgresql://' for SQLAlchemy
@@ -53,6 +60,7 @@ config = rx.Config(
         "*",
         "http://localhost:3000",
         "https://inmovelar-production.up.railway.app",
+        "https://extraordinary-joy-production-2fd2.up.railway.app",
     ],
     # Desactivar plugins internos que generan advertencias no deseadas
     disable_plugins=[rx.plugins.sitemap.SitemapPlugin],

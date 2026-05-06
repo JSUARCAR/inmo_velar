@@ -78,7 +78,7 @@ class PDFState(rx.State):
             # ESTRATEGIA LITE: Fetch + Blob URL
             # Esto evita problemas de navegacin cross-origin y garantiza la descarga
             pdf_filename = Path(pdf_path).name
-            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}')
@@ -123,7 +123,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA LITE: Fetch + Blob URL
             pdf_filename = Path(pdf_path).name
-            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}')
@@ -219,7 +219,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA EXPERTA: API Backend Directa
             pdf_filename = Path(pdf_path).name
-            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             logger.info(f"[OK] Iniciando descarga con Fetch API: {download_url}")
 
@@ -299,7 +299,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA LITE: Fetch + Blob URL
             pdf_filename = Path(pdf_path).name
-            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             logger.info(f"[OK] Iniciando descarga con Fetch API: {download_url}")
 
@@ -377,7 +377,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA EXPERTA: API Backend Directa
             pdf_filename = Path(pdf_path).name
-            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             # ESTRATEGIA LITE: Fetch + Blob URL
             js_download = f"""
@@ -452,7 +452,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA LITE: Fetch + Blob URL
             pdf_filename = Path(pdf_path).name
-            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}')
@@ -550,7 +550,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA EXPERTA: API Backend Directa
             pdf_filename = Path(pdf_path).name
-            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             # ESTRATEGIA LITE: Fetch + Blob URL
             js_download = f"""
@@ -1166,7 +1166,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA LITE: Fetch + Blob URL (same as Propietarios)
             pdf_filename = Path(pdf_path).name
-            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}')
@@ -1389,7 +1389,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA LITE: Fetch + Blob URL
             pdf_filename = Path(pdf_path).name
-            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}')

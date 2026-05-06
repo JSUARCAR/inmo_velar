@@ -987,7 +987,7 @@ class IncidentesState(DocumentosStateMixin):
 
             # 4. Descargar
             pdf_filename = Path(pdf_path).name
-            download_url = f"{config.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}')
