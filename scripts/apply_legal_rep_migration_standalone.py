@@ -1,3 +1,4 @@
+import os
 
 import psycopg2
 
@@ -6,7 +7,7 @@ DB_HOST = "localhost"
 DB_PORT = "5432"
 DB_NAME = "db_inmo_velar"
 DB_USER = "postgres"
-DB_PASSWORD = "7323"
+DB_PASSWORD = os.getenv('DB_PASSWORD', '7323')
 
 def run_migration():
     print("Connecting to database...")

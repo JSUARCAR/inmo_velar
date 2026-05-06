@@ -1,3 +1,4 @@
+import os
 import psycopg2
 from psycopg2 import sql
 
@@ -7,7 +8,7 @@ DB_CONFIG = {
     'port': 5432,
     'database': 'db_inmo_velar',
     'user': 'inmo_user',
-    'password': '7323'
+    'password': os.getenv('DB_PASSWORD', '7323')
 }
 
 def vaciar_tablas():
