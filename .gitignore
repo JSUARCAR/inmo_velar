@@ -6,6 +6,9 @@
 *.temp
 *.log
 *.resolved
+*.db
+*.sqlite
+*.pdf
 
 # === SCRIPTS DE DIAGNOSTICO INTERNOS ===
 scripts/diagnostico_*
@@ -14,6 +17,8 @@ scripts/debug_*
 temp/
 outputs/
 tasks/
+migraciones/esquemas/
+migraciones/*.txt
 
 # === GIT INTERNALS ===
 .git_log_temp.txt
