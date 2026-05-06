@@ -1,5 +1,19 @@
 :{$PORT:8080}
 
+# Cabeceras de seguridad globales
+header {
+    # HSTS: 1 año, incluye subdominios y preload
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    # Previene Clickjacking
+    X-Frame-Options "DENY"
+    # Previene MIME-sniffing
+    X-Content-Type-Options "nosniff"
+    # Política de Referer estricta
+    Referrer-Policy "strict-origin-when-cross-origin"
+    # Ocultar servidor
+    -Server
+}
+
 # Reverse-proxy WebSocket + API requests to Reflex backend
 @backend {
 	path /_event

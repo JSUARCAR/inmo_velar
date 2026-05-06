@@ -40,6 +40,11 @@ app = rx.App(
         font_family="Inter",
     ),
     head_components=[
+        rx.el.meta(name="og:title", content="Inmobiliaria Velar | Gestión Profesional"),
+        rx.el.meta(name="og:description", content="Sistema integral de gestión inmobiliaria, contratos, liquidaciones y recaudos en la nube."),
+        rx.el.meta(name="og:image", content="/favicon.ico"),
+        rx.el.meta(name="og:type", content="website"),
+        rx.el.meta(name="twitter:card", content="summary_large_image"),
         rx.script(src="/matrix.js?v=5"),
     ],
     style={
