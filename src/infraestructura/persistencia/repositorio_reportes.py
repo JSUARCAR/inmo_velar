@@ -554,6 +554,7 @@ class RepositorioReportes:
                 COALESCE(l.COMISION_MONTO, 0) AS "COMISION_MONTO_ASESOR",
                 COALESCE(l.IVA_COMISION, 0) AS "IVA_COMISION",
                 COALESCE(l.IMPUESTO_4X1000, 0) AS "IMPUESTO_4X1000",
+                CAST((cm.CANON_MANDATO * COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0)) / 10000.0 AS INTEGER) AS "VALOR_SEGURO",
 
                 -- Egresos
                 COALESCE(l.GASTOS_ADMINISTRACION, 0) AS "GASTOS_ADMINISTRACION",
@@ -602,6 +603,9 @@ class RepositorioReportes:
             ) ca ON cm.ID_PROPIEDAD = ca.ID_PROPIEDAD
             LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             LEFT JOIN PERSONAS per_arr ON arr.ID_PERSONA = per_arr.ID_PERSONA
+            LEFT JOIN POLIZAS pol ON ca.ID_CONTRATO_A = pol.ID_CONTRATO AND pol.ESTADO = 'Activa'
+            LEFT JOIN SEGUROS seg ON pol.ID_SEGURO = seg.ID_SEGURO
+            LEFT JOIN SEGUROS seg_arr ON arr.ID_SEGURO = seg_arr.ID_SEGURO
             LEFT JOIN (
                 SELECT DISTINCT ON (r.ID_CONTRATO_A)
                     r.ID_RECAUDO, r.ID_CONTRATO_A, r.METODO_PAGO, r.ESTADO_RECAUDO
