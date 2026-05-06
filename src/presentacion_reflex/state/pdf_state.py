@@ -884,7 +884,7 @@ class PDFState(rx.State):
             "seguro": datos.get("seguro_monto", 0) or 0,
             "iva": datos.get("iva_comision", 0) or 0,
             "impuesto_4x1000": datos.get("impuesto_4x1000", 0) or 0,
-            "admin": datos.get("valor_administracion", 0) or 0,
+            "admin": datos.get("gastos_admin", 0) or 0,
             "servicios": datos.get("gastos_serv", 0) or 0,
             "predial": datos.get("pago_predial", 0) or 0,
             "incidente": incidentes,
@@ -968,11 +968,8 @@ class PDFState(rx.State):
             admin = prop["gastos_admin"]
             servicios = prop["gastos_serv"]
 
-            # Clculo de Seguro
-            pct_seguro = prop.get("porcentaje_seguro", 0)
-            # Sistema usa puntos bsicos (10000 = 100%). Ejemplo: 200 = 2%
-            valor_seguro = int(canon * (pct_seguro / 10000)) if pct_seguro else 0
-
+            # Clculo de Seguro (Usar valor persistido, no recalcular)
+            valor_seguro = prop.get("seguro_monto", 0) or 0
             total_seguro_global += valor_seguro
 
             # Incidentes y Otros
@@ -980,17 +977,19 @@ class PDFState(rx.State):
 
             predial = 0  # No disponible en modelo actual, default 0
 
-            # Total Fila (Neto: Canon - Egresos)
-            total_fila = canon - (
-                comision
-                + valor_seguro
-                + iva
-                + imp_4x1000
-                + admin
-                + servicios
-                + predial
-                + incidente
-            )
+            # Total Fila (Usar valor persistido si existe, si no recalcular)
+            total_fila = prop.get("neto")
+            if total_fila is None:
+                total_fila = canon - (
+                    comision
+                    + valor_seguro
+                    + iva
+                    + imp_4x1000
+                    + admin
+                    + servicios
+                    + predial
+                    + incidente
+                )
 
             detalle_propiedades.append(
                 {
@@ -1008,22 +1007,13 @@ class PDFState(rx.State):
                 }
             )
 
-        # Construir resumen (legacy support, though visual table replaces movements)
-        # Ajustamos los totales para incluir el Seguro calculado (que no viene en 'datos' DB)
+        # Construir resumen (Confiar en los totales calculados por el repositorio/dominio)
         resumen = {
             "total_ingresos": datos["total_ingresos"],
-            "total_egresos": datos["total_egresos"] + total_seguro_global,
+            "total_egresos": datos["total_egresos"],
             "honorarios": datos["comision_monto"],
-            "otros_descuentos": (
-                datos["iva_comision"]
-                + datos["impuesto_4x1000"]
-                + datos["gastos_admin"]
-                + datos["gastos_serv"]
-                + datos["gastos_rep"]
-                + datos["otros_egr"]
-                + total_seguro_global
-            ),
-            "valor_neto": datos["neto_pagar"] - total_seguro_global,
+            "otros_descuentos": (datos["total_egresos"] or 0) - (datos["comision_monto"] or 0),
+            "valor_neto": datos["neto_pagar"],
             "cuenta_bancaria": f"{datos['banco']} - {datos['tipo_cuenta']} {datos['cuenta_bancaria']}",
         }
 
