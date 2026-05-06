@@ -54,6 +54,61 @@ class PDFState(rx.State):
     last_pdf_path: str = ""
     error_message: str = ""
     success_message: str = ""
+    
+    @rx.event
+    def descargar_pdf_script(self, pdf_path: str):
+        """Script del lado del cliente para descargar el PDF."""
+        import rxconfig
+        from pathlib import Path
+        
+        filename = Path(pdf_path).name
+        # Fallback para desarrollo local si api_url no está configurado correctamente
+        api_url = rxconfig.api_url if rxconfig.api_url else "http://127.0.0.1:8000"
+        
+        logger.debug(f"[DOWNLOAD-SCRIPT] Iniciando para: {filename}")
+        logger.debug(f"[DOWNLOAD-SCRIPT] API URL: {api_url}")
+
+        # Preparar script de descarga
+
+
+        return rx.call_script(
+            f"""
+            (async () => {{
+                const filename = "{filename}";
+                const apiUrl = "{api_url}";
+                
+                console.log("[PDF] Intentando descargar:", filename, "desde:", apiUrl);
+                
+                try {{
+                    const downloadUrl = `${{apiUrl}}/api/pdf/download/${{filename}}`;
+                    const res = await fetch(downloadUrl, {{
+                        credentials: 'include'
+                    }});
+                    
+                    if (!res.ok) {{
+                        const errorText = await res.text();
+                        console.error("[PDF] Error en descarga:", res.status, errorText);
+                        alert(`Error al descargar PDF (${{res.status}}): ${{errorText}}`);
+                        return;
+                    }}
+                    
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    console.log("[PDF] Descarga iniciada exitosamente");
+                }} catch (err) {{
+                    console.error("[PDF] Error critico en script de descarga:", err);
+                    alert("Error crítico al procesar la descarga del PDF. Revise la consola.");
+                }}
+            }})();
+            """
+        )
 
     # ========================================================================
     # EVENT HANDLERS - DOCUMENTOS LEGACY
@@ -77,28 +132,7 @@ class PDFState(rx.State):
 
             # ESTRATEGIA LITE: Fetch + Blob URL
             # Esto evita problemas de navegacin cross-origin y garantiza la descarga
-            pdf_filename = Path(pdf_path).name
-            download_url = f"/api/pdf/download/{pdf_filename}"
-
-            js_download = f"""
-            fetch('{download_url}')
-              .then(res => {{
-                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
-                  return res.blob();
-              }})
-              .then(blob => {{
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = '{pdf_filename}';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-              }})
-              .catch(err => console.error('Download error:', err));
-            """
-            return rx.call_script(js_download)
+            return self.descargar_pdf_script(pdf_path)
 
         except Exception as e:
             self.error_message = f"Error generando comprobante: {str(e)}"
@@ -122,28 +156,7 @@ class PDFState(rx.State):
             self.success_message = f"Estado de cuenta generado: {Path(pdf_path).name}"
 
             # ESTRATEGIA LITE: Fetch + Blob URL
-            pdf_filename = Path(pdf_path).name
-            download_url = f"/api/pdf/download/{pdf_filename}"
-
-            js_download = f"""
-            fetch('{download_url}')
-              .then(res => {{
-                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
-                  return res.blob();
-              }})
-              .then(blob => {{
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = '{pdf_filename}';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-              }})
-              .catch(err => console.error('Download error:', err));
-            """
-            return rx.call_script(js_download)
+            return self.descargar_pdf_script(pdf_path)
 
         except Exception as e:
             self.error_message = f"Error generando estado de cuenta: {str(e)}"
@@ -174,6 +187,7 @@ class PDFState(rx.State):
                 contrato_id, es_borrador
             )
 
+    @rx.event
     def generar_contrato_arrendamiento_elite(
         self, contrato_id: int, es_borrador: bool = False
     ):
@@ -218,30 +232,7 @@ class PDFState(rx.State):
             yield rx.toast.success(self.success_message)
 
             # ESTRATEGIA EXPERTA: API Backend Directa
-            pdf_filename = Path(pdf_path).name
-            download_url = f"/api/pdf/download/{pdf_filename}"
-
-            logger.info(f"[OK] Iniciando descarga con Fetch API: {download_url}")
-
-            js_download = f"""
-            fetch('{download_url}')
-              .then(res => {{
-                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
-                  return res.blob();
-              }})
-              .then(blob => {{
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = '{pdf_filename}';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-              }})
-              .catch(err => console.error('Download error:', err));
-            """
-            yield rx.call_script(js_download)
+            yield type(self).descargar_pdf_script(pdf_path)
 
         except Exception as e:
             logger.error("[ERROR] ERROR EN GENERACIN DE CONTRATO")
@@ -255,6 +246,7 @@ class PDFState(rx.State):
             self.generating = False
             logger.info("=" * 80)
 
+    @rx.event
     def generar_contrato_mandato_elite(
         self, contrato_id: int, es_borrador: bool = False
     ):
@@ -298,30 +290,7 @@ class PDFState(rx.State):
             yield rx.toast.success(self.success_message)
 
             # ESTRATEGIA LITE: Fetch + Blob URL
-            pdf_filename = Path(pdf_path).name
-            download_url = f"/api/pdf/download/{pdf_filename}"
-
-            logger.info(f"[OK] Iniciando descarga con Fetch API: {download_url}")
-
-            js_download = f"""
-            fetch('{download_url}')
-              .then(res => {{
-                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
-                  return res.blob();
-              }})
-              .then(blob => {{
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = '{pdf_filename}';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-              }})
-              .catch(err => console.error('Download error:', err));
-            """
-            yield rx.call_script(js_download)
+            yield type(self).descargar_pdf_script(pdf_path)
 
         except Exception as e:
             logger.error("[ERROR] ERROR EN GENERACIN DE CONTRATO MANDATO")
@@ -335,6 +304,7 @@ class PDFState(rx.State):
             self.generating = False
             logger.info("=" * 80)
 
+    @rx.event
     def generar_certificado_paz_y_salvo(
         self, contrato_id: int, beneficiario_nombre: str
     ):
@@ -376,29 +346,7 @@ class PDFState(rx.State):
             yield rx.toast.success("Certificado de paz y salvo generado")
 
             # ESTRATEGIA EXPERTA: API Backend Directa
-            pdf_filename = Path(pdf_path).name
-            download_url = f"/api/pdf/download/{pdf_filename}"
-
-            # ESTRATEGIA LITE: Fetch + Blob URL
-            js_download = f"""
-            fetch('{download_url}')
-              .then(res => {{
-                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
-                  return res.blob();
-              }})
-              .then(blob => {{
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = '{pdf_filename}';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-              }})
-              .catch(err => console.error('Download error:', err));
-            """
-            yield rx.call_script(js_download)
+            yield type(self).descargar_pdf_script(pdf_path)
 
         except Exception as e:
             logger.error("[ERROR] ERROR EN GENERACIN DE CERTIFICADO PAZ Y SALVO")
@@ -410,15 +358,16 @@ class PDFState(rx.State):
         finally:
             self.generating = False
 
+    @rx.event
     def generar_liquidacion_pdf(self, id_liquidacion: int):
         """
-        Genera PDF de liquidacin individual con datos reales de la base de datos.
+        Genera PDF de liquidación individual usando el servicio Élite (ReportLab).
 
         Args:
-            id_liquidacion: ID de la liquidacin
+            id_liquidacion: ID de la liquidación
         """
         logger.info("=" * 80)
-        logger.info("[MONEY] INICIANDO GENERACIN DE PDF LIQUIDACIN")
+        logger.info("[MONEY] INICIANDO GENERACIN DE PDF LIQUIDACIN ELITE")
         logger.info(f"Liquidacin ID: {id_liquidacion}")
         logger.info(f"Timestamp: {datetime.now()}")
 
@@ -428,19 +377,13 @@ class PDFState(rx.State):
             logger.debug("[DATA] Paso 1: Obteniendo datos de liquidacin desde BD...")
             datos = self._get_datos_liquidacion(id_liquidacion)
             logger.debug(f"[OK] Datos obtenidos: {list(datos.keys())}")
-            logger.debug(f"  - Propietario: {datos.get('propietario')}")
-            logger.debug(f"  - Propiedad: {datos.get('propiedad')}")
-            logger.debug(f"  - Perodo: {datos.get('periodo')}")
-            logger.debug(f"  - Neto: ${datos.get('neto_pagar'):,}")
 
-            logger.debug("[PDF] Paso 2: Generando PDF con servicio legacy...")
-            # Use legacy PDF service directly
-            from src.infraestructura.servicios.servicio_documentos_pdf import (
-                ServicioDocumentosPDF,
-            )
+            # Transformar a formato Élite
+            logger.debug("[TRANSFORM] Paso 2: Transformando datos a formato Élite...")
+            datos_pdf = self._transform_individual_to_pdf_format(datos)
 
-            pdf_service = ServicioDocumentosPDF()
-            pdf_path = get_pdf_service().generar_estado_cuenta(datos)
+            logger.debug("[PDF] Paso 3: Generando PDF con facade (Elite mode)...")
+            pdf_path = get_pdf_service().generar_estado_cuenta_elite(datos_pdf)
             logger.debug(f"[OK] PDF generado en: {pdf_path}")
 
             self.last_pdf_path = pdf_path
@@ -448,31 +391,10 @@ class PDFState(rx.State):
             logger.info("[OK] LIQUIDACIN PDF GENERADO EXITOSAMENTE")
             logger.info(f"Path: {pdf_path}")
 
-            yield rx.toast.success("PDF de liquidacin generado exitosamente")
+            yield rx.toast.success("Estado de cuenta generado exitosamente (Modo Élite)")
 
-            # ESTRATEGIA LITE: Fetch + Blob URL
-            pdf_filename = Path(pdf_path).name
-            download_url = f"/api/pdf/download/{pdf_filename}"
-
-            js_download = f"""
-            fetch('{download_url}')
-              .then(res => {{
-                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
-                  return res.blob();
-              }})
-              .then(blob => {{
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = '{pdf_filename}';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-              }})
-              .catch(err => console.error('Download error:', err));
-            """
-            yield rx.call_script(js_download)
+            # ESTRATEGIA EXPERTA: API Backend Directa
+            yield type(self).descargar_pdf_script(pdf_path)
 
         except Exception as e:
             logger.error("[ERROR] ERROR EN GENERACIN DE PDF LIQUIDACIN")
@@ -485,6 +407,7 @@ class PDFState(rx.State):
             self.generating = False
             logger.info("=" * 80)
 
+    @rx.event
     def generar_estado_cuenta_elite(
         self,
         propietario_id: int = None,
@@ -549,29 +472,7 @@ class PDFState(rx.State):
             yield rx.toast.success("Estado de cuenta lite generado")
 
             # ESTRATEGIA EXPERTA: API Backend Directa
-            pdf_filename = Path(pdf_path).name
-            download_url = f"/api/pdf/download/{pdf_filename}"
-
-            # ESTRATEGIA LITE: Fetch + Blob URL
-            js_download = f"""
-            fetch('{download_url}')
-              .then(res => {{
-                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText);
-                  return res.blob();
-              }})
-              .then(blob => {{
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = '{pdf_filename}';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-              }})
-              .catch(err => console.error('Download error:', err));
-            """
-            yield rx.call_script(js_download)
+            yield type(self).descargar_pdf_script(pdf_path)
 
         except Exception as e:
             logger.error("[ERROR] ERROR EN GENERACIN DE ESTADO DE CUENTA")
@@ -947,6 +848,73 @@ class PDFState(rx.State):
 
         return datos
 
+    def _transform_individual_to_pdf_format(
+        self, datos: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Transforma datos de una liquidación individual al formato esperado por el generador Élite.
+        """
+        # 1. Propietario
+        propietario = {
+            "nombre": datos.get("propietario", "N/A"),
+            "documento": datos.get("documento", "N/A"),
+            "telefono": datos.get("telefono", "N/A"),
+            "email": datos.get("email", "N/A"),
+        }
+
+        # 2. Inmueble
+        inmueble = {
+            "direccion": datos.get("propiedad", "N/A"),
+            "tipo": datos.get("tipo_propiedad", "Propiedad"),
+            "canon": datos.get("canon", 0),
+        }
+
+        # 3. Detalle (Fila única)
+        prop_id = datos.get("id_contrato", 1)
+        
+        # Calcular incidentes (agrupados)
+        gastos_rep = datos.get("gastos_rep", 0) or 0
+        otros_egr = datos.get("otros_egr", 0) or 0
+        incidentes = gastos_rep + otros_egr
+
+        detalle = {
+            "id": prop_id,
+            "canon": datos.get("canon", 0) or 0,
+            "comision": datos.get("comision_monto", 0) or 0,
+            "seguro": datos.get("seguro_monto", 0) or 0,
+            "iva": datos.get("iva_comision", 0) or 0,
+            "impuesto_4x1000": datos.get("impuesto_4x1000", 0) or 0,
+            "admin": datos.get("valor_administracion", 0) or 0,
+            "servicios": datos.get("gastos_serv", 0) or 0,
+            "predial": datos.get("pago_predial", 0) or 0,
+            "incidente": incidentes,
+            "total": datos.get("neto_pagar", 0) or 0,
+        }
+
+        # 4. Resumen
+        resumen = {
+            "total_ingresos": datos.get("total_ingresos", 0) or 0,
+            "total_egresos": datos.get("total_egresos", 0) or 0,
+            "honorarios": datos.get("comision_monto", 0) or 0,
+            "otros_descuentos": (datos.get("total_egresos", 0) or 0) - (datos.get("comision_monto", 0) or 0),
+            "valor_neto": datos.get("neto_pagar", 0) or 0,
+            "cuenta_bancaria": f"{datos.get('banco', 'N/A')} - {datos.get('tipo_cuenta', '')} {datos.get('numero_cuenta', '')}"
+        }
+
+        # 5. Formato Final
+        return {
+            "estado_id": datos.get("id"),
+            "periodo": datos.get("periodo"),
+            "fecha_generacion": datos.get("fecha_generacion"),
+            "propietario": propietario,
+            "inmueble": inmueble,
+            "lista_propiedades": [{"id": prop_id, "direccion": inmueble["direccion"]}],
+            "detalle_propiedades": [detalle],
+            "resumen": resumen,
+            "empresa": datos.get("empresa", {}),
+            "modo": "individual",
+        }
+
     def _transform_consolidated_to_pdf_format(
         self, datos: Dict[str, Any]
     ) -> Dict[str, Any]:
@@ -1075,8 +1043,10 @@ class PDFState(rx.State):
                 f"Estado de cuenta consolidado - {datos['cantidad_propiedades']} propiedades",
                 datos.get("observaciones", ""),
             ],
+            "modo": "consolidado",
         }
 
+    @rx.event
     def generar_liquidacion_asesor_pdf(self, id_liquidacion_asesor: int):
         """
         Genera PDF de liquidacin de asesor (Cuenta de Cobro).
@@ -1165,25 +1135,7 @@ class PDFState(rx.State):
             yield rx.toast.success("PDF de liquidacin de asesor generado")
 
             # ESTRATEGIA LITE: Fetch + Blob URL (same as Propietarios)
-            pdf_filename = Path(pdf_path).name
-            download_url = f"/api/pdf/download/{pdf_filename}"
-
-            js_download = f"""
-            fetch('{download_url}')
-              .then(res => res.blob())
-              .then(blob => {{
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = '{pdf_filename}';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-              }})
-              .catch(err => console.error('Download error:', err));
-            """
-            yield rx.call_script(js_download)
+            yield type(self).descargar_pdf_script(pdf_path)
 
         except Exception as e:
             logger.error("[ERROR] ERROR EN GENERACIN DE PDF LIQUIDACIN ASESOR")
@@ -1196,6 +1148,7 @@ class PDFState(rx.State):
             self.generating = False
             logger.info("=" * 80)
 
+    @rx.event
     def generar_recibo_pago_pdf(self, id_recaudo: int):
         """
         Genera PDF de recibo de pago para un recaudo.
@@ -1388,25 +1341,7 @@ class PDFState(rx.State):
             yield rx.toast.success("Recibo de pago generado")
 
             # ESTRATEGIA LITE: Fetch + Blob URL
-            pdf_filename = Path(pdf_path).name
-            download_url = f"/api/pdf/download/{pdf_filename}"
-
-            js_download = f"""
-            fetch('{download_url}')
-              .then(res => res.blob())
-              .then(blob => {{
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = '{pdf_filename}';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-              }})
-              .catch(err => console.error('Download error:', err));
-            """
-            yield rx.call_script(js_download)
+            yield type(self).descargar_pdf_script(pdf_path)
 
         except Exception as e:
             logger.error("[ERROR] ERROR EN GENERACIN DE PDF RECIBO DE PAGO")

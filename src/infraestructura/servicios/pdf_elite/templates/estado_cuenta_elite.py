@@ -67,6 +67,13 @@ class EstadoCuentaElite(BaseDocumentTemplate):
         # Configurar Header/Footer con Membrete
         self.set_header_footer(self._header_footer_with_features, self._header_footer_with_features)
 
+        # Determinar título dinámico según el modo
+        modo = data.get("modo", "consolidado")
+        if modo == "individual":
+            self.document_title = "ESTADO DE CUENTA - LIQUIDACIÓN"
+        else:
+            self.document_title = "ESTADO DE CUENTA - PROPIETARIO"
+
         # Habilitar QR de verificación
         self.enable_verification_qr("estado", data["estado_id"])
 
@@ -289,7 +296,11 @@ class EstadoCuentaElite(BaseDocumentTemplate):
         if "detalle_propiedades" not in data:
             return
 
-        self.add_heading("DETALLE POR PROPIEDAD", level=3)
+        # Título dinámico para el detalle
+        if data.get("modo") == "individual":
+            self.add_heading("DETALLE FINANCIERO", level=3)
+        else:
+            self.add_heading("DETALLE POR PROPIEDAD", level=3)
 
         detalles = data["detalle_propiedades"]
 

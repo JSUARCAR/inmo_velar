@@ -554,7 +554,14 @@ class RepositorioReportes:
                 COALESCE(l.COMISION_MONTO, 0) AS "COMISION_MONTO_ASESOR",
                 COALESCE(l.IVA_COMISION, 0) AS "IVA_COMISION",
                 COALESCE(l.IMPUESTO_4X1000, 0) AS "IMPUESTO_4X1000",
-                CAST((cm.CANON_MANDATO * COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0)) / 10000.0 AS INTEGER) AS "VALOR_SEGURO",
+                CAST(
+                    CASE 
+                        WHEN COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0) > 100 THEN
+                            (cm.CANON_MANDATO * (COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0) / 100.0)) / 100.0
+                        ELSE
+                            (cm.CANON_MANDATO * COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0)) / 100.0
+                    END AS INTEGER
+                ) AS "VALOR_SEGURO",
 
                 -- Egresos
                 COALESCE(l.GASTOS_ADMINISTRACION, 0) AS "GASTOS_ADMINISTRACION",

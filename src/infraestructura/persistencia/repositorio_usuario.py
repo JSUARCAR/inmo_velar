@@ -1,6 +1,7 @@
 """
-Repositorio SQLite para Usuario.
+Repositorio para Usuario.
 Implementa mapeo 1:1 estricto con tabla USUARIOS.
+Soporta SQLite y PostgreSQL dinámicamente.
 """
 
 from datetime import datetime
@@ -10,9 +11,9 @@ from src.dominio.entidades.usuario import Usuario
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
-class RepositorioUsuarioSQLite:
+class RepositorioUsuario:
     """
-    Repositorio SQLite para la entidad Usuario.
+    Repositorio para la entidad Usuario.
     Garantiza mapeo 1:1 con tabla USUARIOS.
     """
 
@@ -20,15 +21,7 @@ class RepositorioUsuarioSQLite:
         self.db = db_manager
 
     def _to_boolean(self, value) -> bool:
-        """
-        Convierte valores a boolean de manera segura para PostgreSQL.
-
-        Args:
-            value: Valor a convertir (puede ser int, bool, None)
-
-        Returns:
-            bool: Valor convertido a boolean
-        """
+        """Convierte valores a boolean de manera segura."""
         if isinstance(value, bool):
             return value
         if isinstance(value, int):
@@ -39,30 +32,29 @@ class RepositorioUsuarioSQLite:
 
     def _row_to_entity(self, row) -> Usuario:
         """Convierte una fila SQL a entidad Usuario."""
-        # Manejar tanto sqlite3.Row como dict (PostgreSQL)
         if row is None:
             return None
 
         # Convertir a dict si es necesario
-        if hasattr(row, "keys"):  # sqlite3.Row o psycopg2.extras.RealDictRow
+        if hasattr(row, "keys"):
             row_dict = dict(row)
         else:
             row_dict = row
 
-        # Obtener estado_usuario y convertir a boolean
-        estado_raw = row_dict.get("estado_usuario") or row_dict.get("ESTADO_USUARIO")
+        # Normalizar nombres de columnas a minúsculas
+        row_dict = {k.lower(): v for k, v in row_dict.items()}
 
         return Usuario(
-            id_usuario=row_dict.get("id_usuario") or row_dict.get("ID_USUARIO"),
-            nombre_usuario=row_dict.get("nombre_usuario") or row_dict.get("NOMBRE_USUARIO"),
-            contrasena_hash=row_dict.get("contrasena_hash") or row_dict.get("CONTRASENA_HASH"),
-            rol=row_dict.get("rol") or row_dict.get("ROL"),
-            estado_usuario=self._to_boolean(estado_raw),
-            ultimo_acceso=row_dict.get("ultimo_acceso") or row_dict.get("ULTIMO_ACCESO"),
-            fecha_creacion=row_dict.get("fecha_creacion") or row_dict.get("FECHA_CREACION"),
-            created_by=row_dict.get("created_by") or row_dict.get("CREATED_BY"),
-            updated_at=row_dict.get("updated_at") or row_dict.get("UPDATED_AT"),
-            updated_by=row_dict.get("updated_by") or row_dict.get("UPDATED_BY"),
+            id_usuario=row_dict.get("id_usuario"),
+            nombre_usuario=row_dict.get("nombre_usuario"),
+            contrasena_hash=row_dict.get("contrasena_hash"),
+            rol=row_dict.get("rol"),
+            estado_usuario=self._to_boolean(row_dict.get("estado_usuario")),
+            ultimo_acceso=row_dict.get("ultimo_acceso"),
+            fecha_creacion=row_dict.get("fecha_creacion"),
+            created_by=row_dict.get("created_by"),
+            updated_at=row_dict.get("updated_at"),
+            updated_by=row_dict.get("updated_by"),
         )
 
     def obtener_por_id(self, id_usuario: int) -> Optional[Usuario]:
@@ -100,22 +92,14 @@ class RepositorioUsuarioSQLite:
 
     def crear(self, usuario: Usuario, usuario_sistema: str) -> Usuario:
         """
-        Crea un nuevo usuario en la BD.
-
-        Args:
-            usuario: Entidad Usuario a crear
-            usuario_sistema: Usuario que ejecuta la operación (para auditoría)
-
-        Returns:
-            Usuario con ID asignado
+        Crea un nuevo usuario en la BD usando RETURNING para PostgreSQL.
         """
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
 
         try:
-            cursor.execute(
-                f"""
+            query = f"""
                 INSERT INTO USUARIOS (
                     NOMBRE_USUARIO,
                     CONTRASENA_HASH,
@@ -125,33 +109,47 @@ class RepositorioUsuarioSQLite:
                     FECHA_CREACION,
                     CREATED_BY
                 ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-                """,
-                (
+            """
+            
+            # ELITE: Uso de RETURNING para PostgreSQL según reglas del usuario
+            if self.db.use_postgresql:
+                query += " RETURNING ID_USUARIO"
+                cursor.execute(query, (
                     usuario.nombre_usuario,
                     usuario.contrasena_hash,
                     usuario.rol,
-                    self._to_boolean(usuario.estado_usuario),
+                    usuario.estado_usuario,
                     usuario.ultimo_acceso,
                     usuario.fecha_creacion or datetime.now().isoformat(),
                     usuario_sistema,
-                ),
-            )
+                ))
+                row = cursor.fetchone()
+                # El cursor de DBManager ya wrappea dicts
+                if isinstance(row, dict):
+                    usuario.id_usuario = list(row.values())[0]
+                else:
+                    usuario.id_usuario = row[0]
+            else:
+                # SQLite fallback
+                cursor.execute(query, (
+                    usuario.nombre_usuario,
+                    usuario.contrasena_hash,
+                    usuario.rol,
+                    1 if usuario.estado_usuario else 0,
+                    usuario.ultimo_acceso,
+                    usuario.fecha_creacion or datetime.now().isoformat(),
+                    usuario_sistema,
+                ))
+                usuario.id_usuario = cursor.lastrowid
 
             conn.commit()
-            usuario.id_usuario = self.db.get_last_insert_id(cursor, "USUARIOS", "ID_USUARIO")
-
             return usuario
         except Exception as e:
             conn.rollback()
             raise e
 
     def actualizar(self, usuario: Usuario, usuario_sistema: str) -> bool:
-        """
-        Actualiza un usuario existente.
-
-        Returns:
-            True si se actualizó, False si no existe
-        """
+        """Actualiza un usuario existente."""
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
@@ -173,7 +171,7 @@ class RepositorioUsuarioSQLite:
                     usuario.nombre_usuario,
                     usuario.contrasena_hash,
                     usuario.rol,
-                    self._to_boolean(usuario.estado_usuario),
+                    usuario.estado_usuario if self.db.use_postgresql else (1 if usuario.estado_usuario else 0),
                     usuario.ultimo_acceso,
                     datetime.now().isoformat(),
                     usuario_sistema,
@@ -188,18 +186,12 @@ class RepositorioUsuarioSQLite:
             raise e
 
     def eliminar(self, id_usuario: int) -> bool:
-        """
-        Elimina un usuario (soft delete: marca como inactivo).
-
-        Returns:
-            True si se eliminó, False si no existe
-        """
+        """Elimina un usuario (soft delete)."""
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
 
         try:
-            # Usar FALSE para PostgreSQL compatibility
             cursor.execute(
                 f"UPDATE USUARIOS SET ESTADO_USUARIO = {placeholder} WHERE ID_USUARIO = {placeholder}",
                 (False, id_usuario),

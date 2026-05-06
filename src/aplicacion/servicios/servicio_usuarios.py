@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 from src.aplicacion.servicios.servicio_autenticacion import ServicioAutenticacion
 from src.dominio.entidades.usuario import Usuario
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_usuario_sqlite import RepositorioUsuarioSQLite
+from src.infraestructura.persistencia.repositorio_usuario import RepositorioUsuario
 
 
 class ServicioUsuarios:
@@ -15,16 +15,16 @@ class ServicioUsuarios:
         self, db_manager: DatabaseManager, auth_service: Optional[ServicioAutenticacion] = None
     ):
         self.db = db_manager
-        self.repo = RepositorioUsuarioSQLite(db_manager)
+        self.repo = RepositorioUsuario(db_manager)
 
         if auth_service:
             self.auth_service = auth_service
         else:
-            from src.infraestructura.persistencia.repositorio_sesion_sqlite import (
-                RepositorioSesionSQLite,
+            from src.infraestructura.persistencia.repositorio_sesion import (
+                RepositorioSesion,
             )
 
-            repo_sesion = RepositorioSesionSQLite(db_manager)
+            repo_sesion = RepositorioSesion(db_manager)
             self.auth_service = ServicioAutenticacion(self.repo, repo_sesion)
 
     def listar_usuarios(self) -> List[Usuario]:

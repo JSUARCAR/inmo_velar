@@ -987,11 +987,16 @@ class IncidentesState(DocumentosStateMixin):
 
             # 4. Descargar
             pdf_filename = Path(pdf_path).name
-            download_url = f"/api/pdf/download/{pdf_filename}"
+            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
-            fetch('{download_url}')
-              .then(res => res.blob())
+            fetch('{download_url}', {{ credentials: 'include' }})
+              .then(res => {{ 
+                  if (!res.ok) throw new Error('Error en descarga: ' + res.statusText); 
+                  const contentType = res.headers.get('content-type'); 
+                  if (contentType && contentType.includes('text/html')) throw new Error('Sesión expirada.'); 
+                  return res.blob(); 
+              }})
               .then(blob => {{
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
