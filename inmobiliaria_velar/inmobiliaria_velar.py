@@ -41,7 +41,10 @@ app = rx.App(
     ),
     head_components=[
         rx.el.meta(name="og:title", content="Inmobiliaria Velar | Gestión Profesional"),
-        rx.el.meta(name="og:description", content="Sistema integral de gestión inmobiliaria, contratos, liquidaciones y recaudos en la nube."),
+        rx.el.meta(
+            name="og:description",
+            content="Sistema integral de gestión inmobiliaria, contratos, liquidaciones y recaudos en la nube.",
+        ),
         rx.el.meta(name="og:image", content="/favicon.ico"),
         rx.el.meta(name="og:type", content="website"),
         rx.el.meta(name="twitter:card", content="summary_large_image"),
@@ -129,6 +132,11 @@ class SecurityHeadersMiddleware:
 
 # Registrar el middleware en la app subyacente de Starlette/FastAPI
 app._api.add_middleware(SecurityHeadersMiddleware)
+
+# Middleware de Idempotencia para API REST (Idempotency-Key header)
+from src.presentacion_reflex.api.idempotency_middleware import IdempotencyMiddleware
+
+app._api.add_middleware(IdempotencyMiddleware)
 
 # Registrar API routes para descargas de PDF con nombres correctos
 from src.presentacion_reflex.api.pdf_download_api import register_pdf_routes

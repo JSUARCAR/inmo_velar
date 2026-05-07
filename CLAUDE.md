@@ -1218,6 +1218,49 @@ def sanitize_output(text: str) -> str:
 
 ---
 
+## 🧠 Skills Registry
+
+Skills son paquetes de instrucciones especializadas que extienden las capacidades del agente. Se cargan **on-demand** vía el tool `skill` — no están en contexto permanente. Esta sección es un índice para saber cuándo invocar cada skill.
+
+| Skill | Descripción | Cuándo Usar |
+|---|---|---|
+| `api-and-interface-design` | Diseño de APIs estables y contratos entre módulos | Crear endpoints REST/GraphQL, definir boundaries entre frontend y backend, diseñar interfaces públicas |
+| `browser-testing-with-devtools` | Testing visual con Chrome DevTools MCP | Debugging UI, análisis de red y consola, profiling de rendimiento, verificación visual |
+| `ci-cd-and-automation` | Automatización de pipelines CI/CD | Setup de GitHub Actions, quality gates, despliegue automatizado, debugging de CI |
+| `code-review-and-quality` | Code review multi-eje (correctitud, legibilidad, arquitectura, seguridad, performance) | Antes de mergear cualquier PR, después de implementar una feature, al evaluar código de otro agente |
+| `code-simplification` | Simplificación quirúrgica de código sin cambiar comportamiento | Refactoring post-feature, reducción de complejidad ciclomática, eliminación de dead code |
+| `context-engineering` | Optimización del contexto del agente para máxima calidad de output | Iniciar sesión nueva, cambiar de tarea mayor, calidad del output degradada |
+| `debugging-and-error-recovery` | Debugging sistemático con triage estructurado | Tests fallando, builds rotos, bugs en producción, comportamiento inesperado |
+| `deprecation-and-migration` | Deprecación y migración segura de sistemas legacy | Reemplazar APIs viejas, consolidar implementaciones duplicadas, sunset de features |
+| `documentation-and-adrs` | ADRs y documentación de decisiones arquitectónicas | Decisiones técnicas significativas, cambios de API pública, onboarding de nuevos miembros |
+| `frontend-ui-engineering` | UI de calidad profesional con accesibilidad y diseño system | Componentes nuevos, layouts responsive, estados vacío/error/carga, evitar "AI aesthetic" |
+| `idea-refine` | Refinamiento de ideas mediante pensamiento divergente/convergente | Ideas vagas, brainstorming estructurado, stress-test de conceptos, definición de MVP |
+| `incremental-implementation` | Implementación en slices verticales delgados | Features multi-archivo, cambios > 100 líneas, refactoring que toca varios módulos |
+| `performance-optimization` | Optimización basada en medición (no guessing) | Core Web Vitals, N+1 queries, bundle size, crawling lento, TTFB alto |
+| `planning-and-task-breakdown` | Descomposición de trabajo en tareas ordenadas con acceptance criteria | Features grandes, estimación de scope, trabajo en paralelo multi-agente |
+| `security-and-hardening` | Hardening contra OWASP Top 10 y manejo seguro de datos | Auth, validación de input, almacenamiento de datos sensibles, integraciones externas |
+| `shipping-and-launch` | Preparación de lanzamiento a producción con rollout gradual | Deploy a producción, pre-launch checklist, monitoreo post-deploy, rollback plan |
+| `source-driven-development` | Implementación basada en documentación oficial (no memoria) | Uso de frameworks/librerías donde la corrección importa, código boilerplate |
+| `spec-driven-development` | Especificación escrita antes de codificar | Nuevos proyectos, features con requerimientos ambiguos, cambios multi-módulo |
+| `test-driven-development` | TDD: test rojo → código verde → refactor | Lógica nueva con requirements claros, bug fixes con regression test |
+
+### Ciclo de Vida del Desarrollo
+
+El flujo recomendado para features nuevas sigue esta secuencia de skills:
+
+```
+DEFINE ──→ PLAN ──→ BUILD ──→ VERIFY ──→ REVIEW ──→ SHIP
+  │          │        │          │          │         │
+  ▼          ▼        ▼          ▼          ▼         ▼
+ spec     planning  incremental  debug    code-    shipping
+-driven   + task    + TDD       + browser review  + launch
+          breakdown             testing  + quality
+```
+
+Cada flecha representa invocar la skill correspondiente vía `skill` tool. No implementar manualmente lo que una skill puede resolver.
+
+---
+
 ## 🤝 Comunicación con Claude
 
 Cuando solicites ayuda, proporciona:
