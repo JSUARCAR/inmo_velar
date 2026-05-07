@@ -25,6 +25,10 @@ from src.infraestructura.repositorios.repositorio_pago_asesor import (
 from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
 
+from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempotencia
+from src.aplicacion.decorators.idempotent import idempotent
+
+
 class ServicioLiquidacionAsesores:
     """
     Servicio de aplicación para gestión de liquidaciones de asesores.
@@ -42,6 +46,7 @@ class ServicioLiquidacionAsesores:
         servicio_pdf: Optional[ServicioDocumentosPDF] = None,
         repo_asesor=None,
         repo_persona=None,
+        repo_idempotencia: Optional[IRepositorioIdempotencia] = None,
     ):
         self.repo_liquidacion = repo_liquidacion
         self.repo_descuento = repo_descuento
@@ -52,6 +57,7 @@ class ServicioLiquidacionAsesores:
         self.servicio_pdf = servicio_pdf
         self.repo_asesor = repo_asesor
         self.repo_persona = repo_persona
+        self.repo_idempotencia = repo_idempotencia
 
     def _invalidar_caches(self):
         """Invalidates related caches to ensure fresh data on lists and metrics."""
@@ -161,6 +167,7 @@ class ServicioLiquidacionAsesores:
 
     # ==================== Métodos de Liquidación ====================
 
+    @idempotent(key_prefix="liq_asesores:generar")
     def generar_liquidacion(
         self,
         id_contrato: int,
@@ -170,26 +177,10 @@ class ServicioLiquidacionAsesores:
         porcentaje_comision: int,
         datos_adicionales: Optional[Dict[str, Any]] = None,
         usuario: str = "SYSTEM",
+        idempotency_key: Optional[str] = None,
     ) -> LiquidacionAsesor:
         """
         Genera una nueva liquidación de comisión para un asesor (LEGACY - Un solo contrato).
-        NOTA: Este método se mantiene por compatibilidad. Para nueva funcionalidad
-        usar generar_liquidacion_multi_contrato().
-
-        Args:
-            id_contrato: ID del contrato de arrendamiento
-            id_asesor: ID del asesor
-            periodo: Período de liquidación (YYYY-MM)
-            canon_arrendamiento: Canon del mes
-            porcentaje_comision: Porcentaje de comisión (0-10000, representa 0.00%-100.00%)
-            datos_adicionales: Dict opcional con observaciones, etc.
-            usuario: Usuario que genera la liquidación
-
-        Returns:
-            LiquidacionAsesor creada
-
-        Raises:
-            ValueError: Si ya existe liquidación para ese contrato+período
         """
         # Validar que no exista liquidación duplicada
         existente = self.repo_liquidacion.obtener_por_contrato_periodo(
@@ -223,8 +214,27 @@ class ServicioLiquidacionAsesores:
         )
 
         # Guardar en BD
-        return self.repo_liquidacion.crear(liquidacion, usuario)
+        resultado = self.repo_liquidacion.crear(liquidacion, usuario)
 
+        # Auditoría Elite
+        if self.repo_idempotencia and idempotency_key:
+            try:
+                self.repo_idempotencia.registrar_evento(
+                    entidad_tipo="LiquidacionAsesor",
+                    entidad_id=resultado.id_liquidacion_asesor,
+                    tipo_evento="CREATED",
+                    idempotency_key=f"liq_asesores:generar:{idempotency_key}"
+                    if not idempotency_key.startswith("liq_asesores")
+                    else idempotency_key,
+                    payload=self._liquidacion_to_dict(resultado),
+                    usuario_id=1,  # Default a admin si no se puede resolver
+                )
+            except Exception:
+                pass
+
+        return resultado
+
+    @idempotent(key_prefix="liq_asesores:generar_multi")
     def generar_liquidacion_multi_contrato(
         self,
         id_asesor: int,
@@ -234,6 +244,7 @@ class ServicioLiquidacionAsesores:
         total_bonificaciones: int = 0,
         datos_adicionales: Optional[Dict[str, Any]] = None,
         usuario: str = "SYSTEM",
+        idempotency_key: Optional[str] = None,
     ) -> LiquidacionAsesor:
         """
         Genera una nueva liquidación de comisión para un asesor con múltiples contratos.
@@ -316,6 +327,22 @@ class ServicioLiquidacionAsesores:
             print(f"[SERVICE] ERROR al asociar contratos: {e}")
             # Considerar si revertir la liquidación creada o dejarla así
             raise
+
+        # Auditoría Elite
+        if self.repo_idempotencia and idempotency_key:
+            try:
+                self.repo_idempotencia.registrar_evento(
+                    entidad_tipo="LiquidacionAsesor",
+                    entidad_id=liquidacion_creada.id_liquidacion_asesor,
+                    tipo_evento="CREATED_MULTI",
+                    idempotency_key=f"liq_asesores:generar_multi:{idempotency_key}"
+                    if not idempotency_key.startswith("liq_asesores")
+                    else idempotency_key,
+                    payload=self._liquidacion_to_dict(liquidacion_creada),
+                    usuario_id=1,
+                )
+            except Exception:
+                pass
 
         self._invalidar_caches()
         print("[SERVICE] Proceso de generación completado exitosamente")
@@ -699,6 +726,7 @@ class ServicioLiquidacionAsesores:
         self._invalidar_caches()
         return result
 
+    @idempotent(key_prefix="liquidacion:registrar_pago")
     def registrar_pago(
         self, id_pago: int, fecha_pago: str, comprobante: str, usuario: str
     ) -> PagoAsesor:

@@ -1,7 +1,6 @@
 import pydantic
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-import asyncio
 
 import reflex as rx
 from rxconfig import config
@@ -155,9 +154,9 @@ class IncidentesState(DocumentosStateMixin):
     # --- DETAILS MODAL & QUOTING ---
     details_modal_open: bool = False
     selected_incidente: Dict[str, Any] = {}
-    cotizaciones: List[
-        Dict[str, Any]
-    ] = []  # Lista de cotizaciones del incidente seleccionado
+    cotizaciones: List[Dict[str, Any]] = (
+        []
+    )  # Lista de cotizaciones del incidente seleccionado
 
     show_quote_form: bool = False
 
@@ -242,8 +241,6 @@ class IncidentesState(DocumentosStateMixin):
     async def load_propiedades(self):
         """Carga lista de propiedades para el select."""
         try:
-            # TODO: Usar repositorio o servicio adecuado
-            # Por simplicidad query directa o servicio propiedades si disponible
             from src.aplicacion.servicios.servicio_propiedades import (
                 ServicioPropiedades,
             )
@@ -253,9 +250,7 @@ class IncidentesState(DocumentosStateMixin):
 
             repo_prop = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioPropiedades(repo_prop)
-            props = (
-                servicio.listar_propiedades()
-            )  # Limit removed as not supported by service
+            props = servicio.listar_propiedades()
 
             options = [
                 {"id": str(p.id_propiedad), "texto": p.direccion_propiedad}
@@ -263,12 +258,12 @@ class IncidentesState(DocumentosStateMixin):
             ]
             async with self:
                 self.propiedades_options = options
-        except Exception:
-            pass  # print(f"Error cargando propiedades: {e}") [OpSec Removed]
+        except Exception as e:
+            print(f"Error cargando propiedades: {e}")
 
     @rx.event(background=True)
     async def load_incidentes(self):
-        """Carga lista de incidentes y actualiza vistas."""
+        """Carga lista de incidentes y actualiza vistas optimizadamente."""
         async with self:
             self.is_loading = True
             self.error_message = ""
@@ -282,21 +277,10 @@ class IncidentesState(DocumentosStateMixin):
             )
             estado = self.filter_estado if self.filter_estado != "Todos" else None
 
-            # Kanban carga TODOS los incidentes; Lista mantiene paginación
+            # Kanban carga con un tope razonable; Lista mantiene paginación
             es_kanban = self.view_mode == "kanban"
             pagina = None if es_kanban else self.page
-            tamano_pagina = None if es_kanban else self.items_per_page
-
-            # Mapear sort_by de UI a BD
-            sort_by_map = {
-                "fecha": "FECHA_INCIDENTE",
-                "prioridad": "PRIORIDAD",
-                "estado": "ESTADO",
-                "costo": "COSTO_INCIDENTE",
-                "direccion": "DIRECCION_PROPIEDAD",
-                "proveedor": "NOMBRE_PROVEEDOR",
-            }
-            sort_by_bd = sort_by_map.get(self.sort_by, "FECHA_INCIDENTE")
+            tamano_pagina = 100 if es_kanban else self.items_per_page
 
             resultado = servicio.listar_con_filtros(
                 busqueda=self.search_text if self.search_text else None,
@@ -309,60 +293,18 @@ class IncidentesState(DocumentosStateMixin):
             resultado_objs = resultado["items"]
             total_items = resultado["total"]
 
-            # Cargar propiedades para mapeo de direcciones
-            from src.aplicacion.servicios.servicio_propiedades import (
-                ServicioPropiedades,
-            )
-            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
-                RepositorioPropiedadPostgres,
-            )
-
-            repo_prop = RepositorioPropiedadPostgres(db_manager)
-            servicio_props = ServicioPropiedades(repo_prop)
-            props = servicio_props.listar_propiedades()
-            props_map = {p.id_propiedad: p.direccion_propiedad for p in props}
-
-            # Serializar
+            # Serializar (SIN N+1: La data de relaciones ya viene en el objeto Incidente)
             items = []
             kanban_grouped = {k: [] for k in self.kanban_columns.keys()}
 
-            # Obtener nombres de relaciones para cada propiedad
-            from src.aplicacion.servicios.servicio_incidentes import (
-                ServicioIncidentes as ServicioIncidentesModule,
-            )
-
-            servicio_inc = ServicioIncidentesModule(db_manager)
-
             for inc in resultado_objs:
-                # Obtener dirección completa sin truncar
-                direccion = props_map.get(inc.id_propiedad, f"#{inc.id_propiedad}")
-
-                # Obtener nombres de relaciones
-                datos_propietario = servicio_inc.obtener_datos_propietario_incidente(
-                    inc.id_contrato_m, inc.id_propiedad
-                ) or ("", "")
-                datos_inquilino = servicio_inc.obtener_datos_inquilino_incidente(
-                    inc.id_propiedad
-                ) or ("", "")
-                datos_habitante = servicio_inc.obtener_datos_habitante_incidente(
-                    inc.id_propiedad
-                ) or ("", "")
-
-                nombre_propietario = datos_propietario[0]
-                telefono_propietario = datos_propietario[1]
-                nombre_inquilino = datos_inquilino[0]
-                telefono_inquilino = datos_inquilino[1]
-                nombre_habitante = datos_habitante[0]
-                telefono_habitante = datos_habitante[1]
-
+                # Formatear fechas
                 fecha_arreglo_str = None
                 if inc.fecha_arreglo:
                     if hasattr(inc.fecha_arreglo, "strftime"):
                         fecha_arreglo_str = inc.fecha_arreglo.strftime("%Y-%m-%d")
                     elif isinstance(inc.fecha_arreglo, str):
                         fecha_arreglo_str = inc.fecha_arreglo.split(" ")[0]
-
-                cotizaciones_list = inc.cotizaciones_resumen or []
 
                 item = {
                     "id": inc.id_incidente,
@@ -375,19 +317,20 @@ class IncidentesState(DocumentosStateMixin):
                         else str(inc.fecha_incidente)[:10]
                     ),
                     "id_propiedad": inc.id_propiedad,
-                    "direccion_propiedad": direccion,
+                    "direccion_propiedad": inc.direccion_propiedad
+                    or f"#{inc.id_propiedad}",
                     "id_proveedor": inc.id_proveedor_asignado,
                     "origen": inc.origen_reporte or "Inquilino",
-                    "nombre_propietario": nombre_propietario,
-                    "nombre_inquilino": nombre_inquilino,
-                    "nombre_habitante": nombre_habitante,
-                    "telefono_propietario": telefono_propietario,
-                    "telefono_inquilino": telefono_inquilino,
-                    "telefono_habitante": telefono_habitante,
+                    "nombre_propietario": inc.nombre_propietario or "N/D",
+                    "nombre_inquilino": inc.nombre_inquilino or "N/D",
+                    "nombre_habitante": inc.nombre_habitante or "N/D",
+                    "telefono_propietario": inc.telefono_propietario or "",
+                    "telefono_inquilino": inc.telefono_inquilino or "",
+                    "telefono_habitante": inc.telefono_habitante or "",
                     "costo_incidente": inc.costo_incidente,
                     "fecha_arreglo": fecha_arreglo_str,
                     "nombre_proveedor": inc.nombre_proveedor,
-                    "cotizaciones_resumen": cotizaciones_list,
+                    "cotizaciones_resumen": inc.cotizaciones_resumen or [],
                 }
                 incidente_dict_obj = IncidenteDict(**item)
                 items.append(incidente_dict_obj)
@@ -408,24 +351,11 @@ class IncidentesState(DocumentosStateMixin):
                 if self.total_pages < 1:
                     self.total_pages = 1
 
-            # Debug logs
-            print(f"[DEBUG] Incidentes cargados: {len(items)}")
-            print(
-                f"[DEBUG] Kanban groups: { {k: len(v) for k, v in kanban_grouped.items()} }"
-            )
-            print(f"[DEBUG] Total BD: {total_items}, Paginas: {self.total_pages}")
-
         except Exception as e:
+            print(f"Error critico en load_incidentes: {e}")
             async with self:
                 self.error_message = f"Error al cargar incidentes: {str(e)}"
                 self.incidentes = []
-                self.incidentes_kanban = {
-                    "Reportado": [],
-                    "Cotizado": [],
-                    "Aprobado": [],
-                    "En Reparacion": [],
-                    "Finalizado": [],
-                }
         finally:
             async with self:
                 self.is_loading = False
@@ -987,7 +917,7 @@ class IncidentesState(DocumentosStateMixin):
 
             # 4. Descargar
             pdf_filename = Path(pdf_path).name
-            download_url = f"{rxconfig.api_url}/api/pdf/download/{pdf_filename}"
+            download_url = f"{config.api_url}/api/pdf/download/{pdf_filename}"
 
             js_download = f"""
             fetch('{download_url}', {{ credentials: 'include' }})

@@ -7,6 +7,7 @@ Responsabilidades:
 - Delegación de operaciones CRUD al ServicioRecaudo
 - Formateo de datos para la vista
 """
+
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -17,17 +18,22 @@ from src.dominio.interfaces.repositorio_recaudo import FiltrosRecaudo
 from src.aplicacion.servicios.servicio_recaudo import ServicioRecaudo
 from src.infraestructura.persistencia.database import db_manager
 from src.infraestructura.persistencia.repositorio_recaudo import RepositorioRecaudo
+from src.infraestructura.persistencia.repositorio_idempotencia_postgres import (
+    RepositorioIdempotenciaPostgres,
+)
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
+from src.presentacion_reflex.state.idempotency_mixin import IdempotencyStateMixin
 from src.presentacion_reflex.utils.formatters import format_currency
 
 
 def _crear_servicio() -> ServicioRecaudo:
-    """Factory para inyectar el servicio de recaudos."""
+    """Factory para inyectar el servicio de recaudos con soporte de idempotencia."""
     repo = RepositorioRecaudo(db_manager)
-    return ServicioRecaudo(repo, db_manager)
+    repo_idem = RepositorioIdempotenciaPostgres()
+    return ServicioRecaudo(repo, db_manager, repo_idem)
 
 
-class RecaudosState(DocumentosStateMixin):
+class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
     """Estado centralizado para gestión de recaudos (pagos de arrendatarios).
     Toda la lógica de negocio se delega al Servicio de Aplicación.
     """
@@ -129,7 +135,7 @@ class RecaudosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-            
+
             # Leer estado dentro del contexto para seguridad de StateProxy
             estado_val = self.filter_estado
             fecha_desde = self.filter_fecha_desde or None
@@ -184,7 +190,7 @@ class RecaudosState(DocumentosStateMixin):
         else:
             self.sort_by = column
             self.sort_order = "desc"
-        
+
         self.current_page = 1
         return RecaudosState.load_recaudos
 
@@ -307,7 +313,7 @@ class RecaudosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-            
+
             # Copiar opciones para procesar fuera del contexto
             opts = self.contratos_options.copy()
 
@@ -326,7 +332,9 @@ class RecaudosState(DocumentosStateMixin):
             # Solo permitir editar pendientes
             if not recaudo.estado_recaudo.puede_editarse():
                 async with self:
-                    self.error_message = "Solo se pueden editar recaudos en estado 'Pendiente'"
+                    self.error_message = (
+                        "Solo se pueden editar recaudos en estado 'Pendiente'"
+                    )
                     self.is_loading = False
                 return
 
@@ -435,8 +443,7 @@ class RecaudosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-            
-            # Leer datos necesarios del estado dentro del contexto para seguridad de StateProxy
+
             st_form_data = self.form_data.copy()
             st_contratos_options = self.contratos_options.copy()
 
@@ -444,8 +451,9 @@ class RecaudosState(DocumentosStateMixin):
             servicio = _crear_servicio()
             usuario = await self._get_usuario_actual()
 
-            # Validaciones y parsing de ID Contrato
-            id_contrato = form_data.get("id_contrato_a") or st_form_data.get("id_contrato_a")
+            id_contrato = form_data.get("id_contrato_a") or st_form_data.get(
+                "id_contrato_a"
+            )
 
             if not id_contrato:
                 async with self:
@@ -453,11 +461,9 @@ class RecaudosState(DocumentosStateMixin):
                     self.is_loading = False
                 return
 
-            # Si viene el texto descriptivo, extraer el ID
             if isinstance(id_contrato, str) and not id_contrato.isdigit():
                 contrato_opt = next(
-                    (c for c in st_contratos_options if c["texto"] == id_contrato),
-                    None
+                    (c for c in st_contratos_options if c["texto"] == id_contrato), None
                 )
                 if contrato_opt:
                     id_contrato = contrato_opt["id"]
@@ -475,14 +481,18 @@ class RecaudosState(DocumentosStateMixin):
                 return
 
             metodo_pago = form_data.get("metodo_pago", "")
-            if metodo_pago != MetodoPago.EFECTIVO.value and not form_data.get("referencia_bancaria", "").strip():
+            if (
+                metodo_pago != MetodoPago.EFECTIVO.value
+                and not form_data.get("referencia_bancaria", "").strip()
+            ):
                 async with self:
-                    self.error_message = "La referencia bancaria es obligatoria para pagos electrónicos"
+                    self.error_message = (
+                        "La referencia bancaria es obligatoria para pagos electrónicos"
+                    )
                     self.is_loading = False
                 return
 
             if form_data.get("id_recaudo"):
-                # Editar: usar repositorio directo (mantiene compatibilidad)
                 from src.dominio.entidades.recaudo import Recaudo
 
                 recaudo = Recaudo(
@@ -491,7 +501,8 @@ class RecaudosState(DocumentosStateMixin):
                     fecha_pago=form_data["fecha_pago"],
                     valor_total=valor_total,
                     metodo_pago=MetodoPago(metodo_pago),
-                    referencia_bancaria=form_data.get("referencia_bancaria", "").strip() or None,
+                    referencia_bancaria=form_data.get("referencia_bancaria", "").strip()
+                    or None,
                     estado_recaudo=EstadoRecaudo.PENDIENTE,
                     observaciones=form_data.get("observaciones", "").strip() or None,
                     created_by=usuario,
@@ -499,7 +510,6 @@ class RecaudosState(DocumentosStateMixin):
                 repo = RepositorioRecaudo(db_manager)
                 repo.actualizar(recaudo, usuario)
             else:
-                # Crear: usar servicio con comando tipado
                 from src.aplicacion.esquemas.recaudo import ComandoRegistrarPago
                 from datetime import date
 
@@ -508,12 +518,17 @@ class RecaudosState(DocumentosStateMixin):
                     fecha_pago=date.fromisoformat(form_data["fecha_pago"]),
                     valor_total=valor_total,
                     metodo_pago=MetodoPago(metodo_pago),
-                    referencia_bancaria=form_data.get("referencia_bancaria", "").strip() or None,
+                    referencia_bancaria=form_data.get("referencia_bancaria", "").strip()
+                    or None,
                     tipo_concepto=form_data.get("tipo_concepto", "Canon"),
                     periodo=form_data.get("periodo", datetime.now().strftime("%Y-%m")),
                     observaciones=form_data.get("observaciones", "").strip() or None,
                 )
-                servicio.registrar_pago(comando, usuario)
+                idem_key = self.generate_idempotency_key(
+                    "recaudo:registrar", comando.__dict__
+                )
+                self.start_idempotent_request(idem_key)
+                servicio.registrar_pago(comando, usuario, idempotency_key=idem_key)
 
             async with self:
                 self.show_form_modal = False
@@ -530,6 +545,7 @@ class RecaudosState(DocumentosStateMixin):
         finally:
             async with self:
                 self.is_loading = False
+                self.end_idempotent_request()
 
     # ==================== ACCIONES DE ESTADO ====================
 
@@ -543,9 +559,7 @@ class RecaudosState(DocumentosStateMixin):
         try:
             servicio = _crear_servicio()
             usuario = await self._get_usuario_actual()
-            resultado = servicio.aplicar_pago(
-                id_recaudo, usuario
-            )
+            resultado = servicio.aplicar_pago(id_recaudo, usuario)
 
             if resultado.exito:
                 yield rx.toast.success(resultado.mensaje)
@@ -571,9 +585,7 @@ class RecaudosState(DocumentosStateMixin):
         try:
             servicio = _crear_servicio()
             usuario = await self._get_usuario_actual()
-            resultado = servicio.reversar_pago(
-                id_recaudo, usuario
-            )
+            resultado = servicio.reversar_pago(id_recaudo, usuario)
 
             if resultado.exito:
                 yield rx.toast.warning(resultado.mensaje)
@@ -599,9 +611,7 @@ class RecaudosState(DocumentosStateMixin):
         try:
             servicio = _crear_servicio()
             usuario = await self._get_usuario_actual()
-            resultado = servicio.eliminar_pago(
-                id_recaudo, usuario
-            )
+            resultado = servicio.eliminar_pago(id_recaudo, usuario)
 
             if not resultado.exito:
                 async with self:

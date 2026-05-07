@@ -10,6 +10,8 @@ from src.dominio.repositorios.interfaces import (
     RepositorioPropiedad,
     RepositorioRenovacion,
 )
+from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempotencia
+from src.aplicacion.decorators.idempotent import idempotent
 from src.infraestructura.cache.cache_manager import cache_manager
 
 
@@ -26,12 +28,14 @@ class ServicioContratoArrendamiento:
         repo_renovacion: RepositorioRenovacion,
         repo_ipc: RepositorioIPC,
         repo_mandato: RepositorioContratoMandato,
+        repo_idempotencia: Optional[IRepositorioIdempotencia] = None,
     ):
         self.repo_arriendo = repo_arriendo
         self.repo_propiedad = repo_propiedad
         self.repo_renovacion = repo_renovacion
         self.repo_ipc = repo_ipc
         self.repo_mandato = repo_mandato
+        self.repo_idempotencia = repo_idempotencia
 
     # =========================================================================
     # HELPERS UI / DROPDOWNS
@@ -49,6 +53,7 @@ class ServicioContratoArrendamiento:
             for row in rows
         ]
 
+    @idempotent(key_prefix="arriendo:crear")
     @cache_manager.invalidates("arriendos:list_paginated")
     def crear_arrendamiento(
         self, datos: Dict, usuario_sistema: str
@@ -170,6 +175,7 @@ class ServicioContratoArrendamiento:
             "aplica_ipc": aplica_ipc,
         }
 
+    @idempotent(key_prefix="arriendo:renovar")
     @cache_manager.invalidates("arriendos:list_paginated")
     def renovar_arrendamiento(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
@@ -267,6 +273,7 @@ class ServicioContratoArrendamiento:
         incremento = canon_actual * (porcentaje / 100)
         return int(canon_actual + incremento), porcentaje
 
+    @idempotent(key_prefix="arriendo:terminar")
     @cache_manager.invalidates("arriendos:list_paginated")
     def terminar_arrendamiento(
         self, id_contrato: int, motivo: str, usuario_sistema: str

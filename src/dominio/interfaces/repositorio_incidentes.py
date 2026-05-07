@@ -50,3 +50,14 @@ class RepositorioIncidentes(Protocol):
     def guardar_historial(self, historial) -> int: ...
 
     def obtener_historial(self, id_incidente: int) -> List: ...
+
+    def guardar_auditoria(
+        self,
+        tabla: str,
+        id_registro: int,
+        tipo_operacion: str,
+        valor_anterior: str,
+        valor_nuevo: str,
+        usuario: str,
+        motivo: str,
+    ) -> None: ...

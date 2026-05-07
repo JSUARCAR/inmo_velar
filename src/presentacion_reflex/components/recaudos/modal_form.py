@@ -340,11 +340,16 @@ def modal_recaudo() -> rx.Component:
                             rx.cond(
                                 RecaudosState.is_loading,
                                 rx.spinner(size="1"),
-                                "Guardar Pago",
+                                rx.cond(
+                                    RecaudosState.is_processing_idempotent,
+                                    "Procesando...",
+                                    "Guardar Pago",
+                                ),
                             ),
                             type="submit",
                             size="2",
-                            disabled=RecaudosState.is_loading,
+                            disabled=RecaudosState.is_loading
+                            | RecaudosState.is_processing_idempotent,
                         ),
                         spacing="3",
                         justify="end",

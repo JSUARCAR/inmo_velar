@@ -7,6 +7,8 @@ from datetime import date
 from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.saldo_favor import SaldoFavor
+from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempotencia
+from src.aplicacion.decorators.idempotent import idempotent
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.repositorios.repositorio_saldo_favor import (
     RepositorioSaldoFavor,
@@ -21,10 +23,16 @@ class ServicioSaldosFavor:
     saldos a favor de propietarios y asesores.
     """
 
-    def __init__(self, db_manager: DatabaseManager):
+    def __init__(
+        self,
+        db_manager: DatabaseManager,
+        repo_idempotencia: Optional[IRepositorioIdempotencia] = None,
+    ):
         self.db_manager = db_manager
         self.repositorio = RepositorioSaldoFavor(db_manager)
+        self.repo_idempotencia = repo_idempotencia
 
+    @idempotent(key_prefix="saldos:registrar")
     def registrar_saldo(
         self,
         tipo_beneficiario: str,
@@ -62,7 +70,9 @@ class ServicioSaldosFavor:
 
         # Crear entidad según tipo
         saldo = SaldoFavor(
-            id_propietario=id_beneficiario if tipo_beneficiario == "Propietario" else None,
+            id_propietario=id_beneficiario
+            if tipo_beneficiario == "Propietario"
+            else None,
             id_asesor=id_beneficiario if tipo_beneficiario == "Asesor" else None,
             tipo_beneficiario=tipo_beneficiario,
             valor_saldo=valor,
@@ -74,6 +84,7 @@ class ServicioSaldosFavor:
 
         return self.repositorio.crear(saldo, usuario)
 
+    @idempotent(key_prefix="saldos:aplicar")
     def aplicar_saldo(
         self, id_saldo: int, observacion: Optional[str] = None, usuario: str = "sistema"
     ) -> SaldoFavor:
@@ -177,7 +188,9 @@ class ServicioSaldosFavor:
             Diccionario con total pendiente y lista de saldos
         """
         saldos = self.repositorio.listar_por_propietario(id_propietario)
-        total_pendiente = self.repositorio.obtener_total_pendiente_propietario(id_propietario)
+        total_pendiente = self.repositorio.obtener_total_pendiente_propietario(
+            id_propietario
+        )
 
         return {
             "id_propietario": id_propietario,
@@ -288,6 +301,8 @@ class ServicioSaldosFavor:
             raise ValueError(f"No se encontró el saldo con ID {id_saldo}")
 
         if saldo.esta_resuelto:
-            raise ValueError(f"No se puede eliminar un saldo que ya fue {saldo.estado.lower()}")
+            raise ValueError(
+                f"No se puede eliminar un saldo que ya fue {saldo.estado.lower()}"
+            )
 
         return self.repositorio.eliminar(id_saldo)

@@ -6,8 +6,11 @@ Centraliza toda la lógica que antes estaba dispersa entre el State Reflex
 y el ServicioFinanciero, siguiendo Clean Architecture.
 """
 
+import logging
 from datetime import datetime, date
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from src.dominio.constantes.recaudo import MetodoPago, EstadoRecaudo, TipoConcepto
 from src.dominio.entidades.recaudo import Recaudo
@@ -17,6 +20,8 @@ from src.dominio.interfaces.repositorio_recaudo import (
     FiltrosRecaudo,
     ResultadoPaginado,
 )
+from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempotencia
+from src.aplicacion.decorators.idempotent import idempotent
 from src.aplicacion.esquemas.recaudo import (
     ComandoRegistrarPago,
     RecaudoDTO,
@@ -40,25 +45,30 @@ class ServicioRecaudo:
         self,
         repo_recaudo: IRepositorioRecaudo,
         db_manager: DatabaseManager,
+        repo_idempotencia: Optional[IRepositorioIdempotencia] = None,
     ) -> None:
         self.repo = repo_recaudo
         self.db = db_manager
+        self.repo_idempotencia = repo_idempotencia
 
     # ==================== REGISTRO ====================
 
-    def registrar_pago(self, comando: ComandoRegistrarPago, usuario: str) -> Recaudo:
+    @idempotent(key_prefix="recaudo:registrar")
+    def registrar_pago(
+        self,
+        comando: ComandoRegistrarPago,
+        usuario: str,
+        idempotency_key: Optional[str] = None,
+        _idempotency_full_key: Optional[str] = None,
+    ) -> Recaudo:
         """
         Registra un nuevo pago.
 
         Args:
             comando: Datos validados del pago a registrar
             usuario: Usuario que realiza la operación
-
-        Returns:
-            Entidad Recaudo creada con ID asignado
-
-        Raises:
-            ValueError: Si los datos son inválidos
+            idempotency_key: Clave opcional de idempotencia para la operación
+            _idempotency_full_key: Inyectado por @idempotent (no usar directamente)
         """
         recaudo = Recaudo(
             id_recaudo=None,
@@ -79,7 +89,32 @@ class ServicioRecaudo:
             valor=comando.valor_total,
         )
 
-        return self.repo.crear(recaudo, [concepto], usuario)
+        resultado = self.repo.crear(recaudo, [concepto], usuario)
+
+        if self.repo_idempotencia and _idempotency_full_key:
+            try:
+                u_id = usuario_id = 1
+                user_data = self.db.execute_query_one(
+                    "SELECT id_usuario FROM usuarios WHERE nombre_usuario = %s",
+                    (usuario,),
+                )
+                if user_data:
+                    u_id = user_data.get("ID_USUARIO", 1)
+
+                self.repo_idempotencia.registrar_evento(
+                    entidad_tipo="Recaudo",
+                    entidad_id=resultado.id_recaudo,
+                    tipo_evento="CREATED",
+                    idempotency_key=_idempotency_full_key,
+                    payload=resultado.__dict__
+                    if hasattr(resultado, "__dict__")
+                    else {"id": resultado.id_recaudo},
+                    usuario_id=u_id,
+                )
+            except Exception as e:
+                logger.error(f"Error al registrar evento de idempotencia: {e}")
+
+        return resultado
 
     # ==================== CAMBIOS DE ESTADO ====================
 
