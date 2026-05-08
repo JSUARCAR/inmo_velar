@@ -37,6 +37,8 @@ from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
 from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
     RepositorioRenovacionPostgres,
 )
+from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempotencia
+from src.aplicacion.decorators.idempotent import idempotent
 
 
 class ServicioContratos:
@@ -50,6 +52,7 @@ class ServicioContratos:
         repo_ipc: RepositorioIPCPostgres,
         repo_arrendatario: RepositorioArrendatarioPostgres,
         repo_codeudor: RepositorioCodeudorPostgres,
+        repo_idempotencia: Optional[IRepositorioIdempotencia] = None,
     ):
         self.db = db_manager
         self.repo_mandato = repo_mandato
@@ -57,6 +60,7 @@ class ServicioContratos:
         self.repo_propiedad = repo_propiedad
         self.repo_renovacion = repo_renovacion
         self.repo_ipc = repo_ipc
+        self.repo_idempotencia = repo_idempotencia
 
         # Servicios especializados (SRP)
         self.servicio_mandato = ServicioContratoMandato(
@@ -281,6 +285,7 @@ class ServicioContratos:
     # GESTIÓN DE MANDATOS
     # =========================================================================
 
+    @idempotent(key_prefix="contrato:crear_mandato")
     def crear_mandato(self, datos: Dict, usuario_sistema: str) -> ContratoMandato:
         return self.servicio_mandato.crear_mandato(datos, usuario_sistema)
 
@@ -378,6 +383,7 @@ class ServicioContratos:
     # GESTIÓN DE ARRENDAMIENTOS
     # =========================================================================
 
+    @idempotent(key_prefix="contrato:crear_arriendo")
     def crear_arrendamiento(
         self, datos: Dict, usuario_sistema: str
     ) -> ContratoArrendamiento:
@@ -404,6 +410,7 @@ class ServicioContratos:
             id_contrato, datos, usuario_sistema
         )
 
+    @idempotent(key_prefix="contrato:renovar_arriendo")
     @cache_manager.invalidates("arriendos:list_paginated")
     def renovar_arrendamiento(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
@@ -412,6 +419,7 @@ class ServicioContratos:
             id_contrato, usuario_sistema, nueva_fecha_fin
         )
 
+    @idempotent(key_prefix="contrato:renovar_mandato")
     @cache_manager.invalidates("mandatos:list_paginated")
     def renovar_mandato(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
@@ -432,6 +440,7 @@ class ServicioContratos:
         else:
             return self.servicio_mandato.calcular_proyeccion_renovacion(id_contrato)
 
+    @idempotent(key_prefix="contrato:terminar_arriendo")
     @cache_manager.invalidates("arriendos:list_paginated")
     def terminar_arrendamiento(
         self, id_contrato: int, motivo: str, usuario_sistema: str
@@ -440,6 +449,7 @@ class ServicioContratos:
             id_contrato, motivo, usuario_sistema
         )
 
+    @idempotent(key_prefix="contrato:terminar_mandato")
     @cache_manager.invalidates("mandatos:list_paginated")
     def terminar_mandato(
         self, id_contrato: int, motivo: str, usuario_sistema: str

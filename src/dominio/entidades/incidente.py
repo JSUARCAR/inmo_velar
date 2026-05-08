@@ -19,7 +19,9 @@ class Incidente:
     quien_arregla: Optional[str] = None
     aprobado_por: Optional[str] = None
     fecha_arreglo: Optional[datetime] = None
-    estado: str = "Reportado"  # Reportado, En Revision, Cotizado, Aprobado, En Reparacion, Finalizado, Cancelado
+    estado: str = (
+        "Reportado"  # Reportado, En Revision, Cotizado, Aprobado, En Reparacion, Finalizado, Cancelado
+    )
     dias_sin_resolver: int = 0
     motivo_cancelacion: Optional[str] = None
     created_at: datetime = field(default_factory=datetime.now)
@@ -31,6 +33,14 @@ class Incidente:
     direccion_propiedad: Optional[str] = None
     nombre_proveedor: Optional[str] = None
     cotizaciones_resumen: Optional[list] = field(default_factory=list)
+
+    # Datos adicionales de relaciones (Optimizacion N+1)
+    nombre_propietario: Optional[str] = None
+    telefono_propietario: Optional[str] = None
+    nombre_inquilino: Optional[str] = None
+    telefono_inquilino: Optional[str] = None
+    nombre_habitante: Optional[str] = None
+    telefono_habitante: Optional[str] = None
 
     def avanzar_estado(self, nuevo_estado: str, usuario: str) -> "Incidente":
         """

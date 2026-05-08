@@ -29,6 +29,7 @@ class DocumentosStateMixin(rx.State):
     # Tipos requeridos (se llena según la entidad/estado)
     tipos_documento_requeridos: List[str] = []
 
+    @rx.event
     async def handle_upload(self, files: List[rx.UploadFile]):
         """
         Maneja la subida de archivos genérica.
@@ -99,6 +100,7 @@ class DocumentosStateMixin(rx.State):
                 for d in docs
             ]
 
+    @rx.event
     def eliminar_documento(self, id_documento: int):
         """Elimina un documento."""
         try:

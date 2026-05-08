@@ -98,7 +98,7 @@ def document_manager_elite(
                 "Subir Documentos",
                 on_click=state_class.handle_upload(
                     rx.upload_files(
-                        upload_id=f"upload_manager_{state_class.__name__}",
+                        upload_id=f"upload_manager_{state_class.__name__}"
                     )
                 ),
                 loading=state_class.is_uploading,

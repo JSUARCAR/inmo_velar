@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -46,8 +45,15 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             created_by=row.get("CREATED_BY"),
             updated_at=row.get("UPDATED_AT", datetime.now()),
             updated_by=row.get("UPDATED_BY"),
+            direccion_propiedad=row.get("DIRECCION_PROPIEDAD"),
             nombre_proveedor=row.get("NOMBRE_PROVEEDOR"),
             cotizaciones_resumen=cotizaciones_list,
+            nombre_propietario=row.get("NOMBRE_PROPIETARIO"),
+            telefono_propietario=row.get("TELEFONO_PROPIETARIO"),
+            nombre_inquilino=row.get("NOMBRE_INQUILINO"),
+            telefono_inquilino=row.get("TELEFONO_INQUILINO"),
+            nombre_habitante=row.get("NOMBRE_HABITANTE"),
+            telefono_habitante=row.get("TELEFONO_HABITANTE"),
         )
 
     def _mapear_cotizacion(self, row: dict) -> Optional[Cotizacion]:
@@ -135,30 +141,16 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             conn.commit()
 
     def obtener_por_id(self, id_incidente: int) -> Optional[Incidente]:
-        query = "SELECT * FROM INCIDENTES WHERE ID_INCIDENTE = %s"
-        conn = self.db.obtener_conexion()
-        cursor = self.db.get_dict_cursor(conn)
-        cursor.execute(query, (id_incidente,))
-        row = cursor.fetchone()
-        return self._mapear_incidente(row) if row else None
-
-    def listar_con_filtros(
-        self,
-        busqueda: Optional[str] = None,
-        id_propiedad: Optional[int] = None,
-        prioridad: Optional[str] = None,
-        fecha_desde: Optional[str] = None,
-        fecha_hasta: Optional[str] = None,
-        id_proveedor: Optional[int] = None,
-        dias_min: Optional[int] = None,
-        estado: Optional[str] = None,
-        page: Optional[int] = None,
-        page_size: Optional[int] = None,
-        sort_by: str = "FECHA_INCIDENTE",
-        sort_order: str = "desc",
-    ) -> Dict[str, Any]:
         query = """
-        SELECT I.*, PER_PROV.NOMBRE_COMPLETO AS NOMBRE_PROVEEDOR,
+        SELECT I.*, 
+            PER_PROV.NOMBRE_COMPLETO AS NOMBRE_PROVEEDOR,
+            PROP.DIRECCION_PROPIEDAD AS DIRECCION_PROPIEDAD,
+            PER_PROP.NOMBRE_COMPLETO AS NOMBRE_PROPIETARIO,
+            PER_PROP.TELEFONO_PRINCIPAL AS TELEFONO_PROPIETARIO,
+            PER_INQ.NOMBRE_COMPLETO AS NOMBRE_INQUILINO,
+            PER_INQ.TELEFONO_PRINCIPAL AS TELEFONO_INQUILINO,
+            PER_HAB.NOMBRE_COMPLETO AS NOMBRE_HABITANTE,
+            PER_HAB.TELEFONO_PRINCIPAL AS TELEFONO_HABITANTE,
             COALESCE(
                 (SELECT JSON_AGG(
                     JSON_BUILD_OBJECT(
@@ -173,53 +165,125 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         FROM INCIDENTES I
         LEFT JOIN PROVEEDORES PR ON I.ID_PROVEEDOR_ASIGNADO = PR.ID_PROVEEDOR
         LEFT JOIN PERSONAS PER_PROV ON PR.ID_PERSONA = PER_PROV.ID_PERSONA
+        LEFT JOIN PROPIEDADES PROP ON I.ID_PROPIEDAD = PROP.ID_PROPIEDAD
+        LEFT JOIN CONTRATOS_MANDATOS CM ON (I.ID_CONTRATO_M = CM.ID_CONTRATO_M OR I.ID_PROPIEDAD = CM.ID_PROPIEDAD)
+        LEFT JOIN PROPIETARIOS P ON CM.ID_PROPIETARIO = P.ID_PROPIETARIO
+        LEFT JOIN PERSONAS PER_PROP ON P.ID_PERSONA = PER_PROP.ID_PERSONA
+        LEFT JOIN CONTRATOS_ARRENDAMIENTOS CA ON I.ID_PROPIEDAD = CA.ID_PROPIEDAD AND CA.ESTADO_CONTRATO_A = 'Activo'
+        LEFT JOIN ARRENDATARIOS ARR ON CA.ID_ARRENDATARIO = ARR.ID_ARRENDATARIO
+        LEFT JOIN PERSONAS PER_INQ ON ARR.ID_PERSONA = PER_INQ.ID_PERSONA
+        LEFT JOIN PERSONAS PER_HAB ON PER_INQ.ID_PERSONA = PER_HAB.ID_PERSONA
+        WHERE I.ID_INCIDENTE = %s
+        query += " GROUP BY I.ID_INCIDENTE, PER_PROV.ID_PERSONA, PROP.ID_PROPIEDAD, PER_PROP.ID_PERSONA, PER_INQ.ID_PERSONA, PER_HAB.ID_PERSONA"
+
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        cursor.execute(query, (id_incidente,))
+        row = cursor.fetchone()
+        return self._mapear_incidente(row) if row else None
+
+    def listar_con_filtros(
+        self,
+        busqueda: Optional[str] = None,
+        id_propiedad: Optional[int] = None,
+        prioridad: Optional[int] = None,
+        fecha_desde: Optional[str] = None,
+        fecha_hasta: Optional[str] = None,
+        id_proveedor: Optional[int] = None,
+        dias_min: Optional[int] = None,
+        estado: Optional[str] = None,
+        page: Optional[int] = None,
+        page_size: Optional[int] = None,
+        sort_by: str = "FECHA_INCIDENTE",
+        sort_order: str = "desc",
+    ) -> Dict[str, Any]:
+        query = """
+        SELECT I.*, 
+            PER_PROV.NOMBRE_COMPLETO AS NOMBRE_PROVEEDOR,
+            PROP.DIRECCION_PROPIEDAD AS DIRECCION_PROPIEDAD,
+            -- Datos Propietario
+            PER_PROP.NOMBRE_COMPLETO AS NOMBRE_PROPIETARIO,
+            PER_PROP.TELEFONO_PRINCIPAL AS TELEFONO_PROPIETARIO,
+            -- Datos Inquilino (Contrato Activo)
+            PER_INQ.NOMBRE_COMPLETO AS NOMBRE_INQUILINO,
+            PER_INQ.TELEFONO_PRINCIPAL AS TELEFONO_INQUILINO,
+            -- Datos Habitante (Si aplica)
+            PER_HAB.NOMBRE_COMPLETO AS NOMBRE_HABITANTE,
+            PER_HAB.TELEFONO_PRINCIPAL AS TELEFONO_HABITANTE,
+            -- Resumen Cotizaciones
+            COALESCE(
+                (SELECT JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                        'id_cotizacion', C.ID_COTIZACION,
+                        'id_proveedor', C.ID_PROVEEDOR,
+                        'valor_total', C.VALOR_TOTAL,
+                        'estado', C.ESTADO_COTIZACION
+                    ) ORDER BY C.FECHA_COTIZACION DESC
+                ) FROM COTIZACIONES C WHERE C.ID_INCIDENTE = I.ID_INCIDENTE
+                ), '[]'::json
+            ) AS COTIZACIONES_JSON
+        FROM INCIDENTES I
+        LEFT JOIN PROVEEDORES PR ON I.ID_PROVEEDOR_ASIGNADO = PR.ID_PROVEEDOR
+        LEFT JOIN PERSONAS PER_PROV ON PR.ID_PERSONA = PER_PROV.ID_PERSONA
+        LEFT JOIN PROPIEDADES PROP ON I.ID_PROPIEDAD = PROP.ID_PROPIEDAD
+        -- Join Propietario (via Mandato o Propiedad)
+        LEFT JOIN CONTRATOS_MANDATOS CM ON (I.ID_CONTRATO_M = CM.ID_CONTRATO_M OR I.ID_PROPIEDAD = CM.ID_PROPIEDAD)
+        LEFT JOIN PROPIETARIOS P ON CM.ID_PROPIETARIO = P.ID_PROPIETARIO
+        LEFT JOIN PERSONAS PER_PROP ON P.ID_PERSONA = PER_PROP.ID_PERSONA
+        -- Join Inquilino (Contrato Activo)
+        LEFT JOIN CONTRATOS_ARRENDAMIENTOS CA ON I.ID_PROPIEDAD = CA.ID_PROPIEDAD AND CA.ESTADO_CONTRATO_A = 'Activo'
+        LEFT JOIN ARRENDATARIOS ARR ON CA.ID_ARRENDATARIO = ARR.ID_ARRENDATARIO
+        LEFT JOIN PERSONAS PER_INQ ON ARR.ID_PERSONA = PER_INQ.ID_PERSONA
+        -- Join Habitante (Persona que ocupa segun propiedad_horizontal o similar, simplificado a Inquilino si no hay)
+        LEFT JOIN PERSONAS PER_HAB ON PER_INQ.ID_PERSONA = PER_HAB.ID_PERSONA
         WHERE 1=1"""
         params = []
 
         if busqueda:
-            query += " AND (DESCRIPCION_INCIDENTE ILIKE %s OR CAST(ID_INCIDENTE AS TEXT) = %s)"
-            params.extend([f"%{busqueda}%", busqueda])
+            query += " AND (I.DESCRIPCION_INCIDENTE ILIKE %s OR CAST(I.ID_INCIDENTE AS TEXT) = %s OR PROP.DIRECCION_PROPIEDAD ILIKE %s)"
+            params.extend([f"%{busqueda}%", busqueda, f"%{busqueda}%"])
 
         if id_propiedad:
-            query += " AND ID_PROPIEDAD = %s"
+            query += " AND I.ID_PROPIEDAD = %s"
             params.append(id_propiedad)
 
         if prioridad:
-            query += " AND PRIORIDAD = %s"
+            query += " AND I.PRIORIDAD = %s"
             params.append(prioridad)
 
         if estado:
-            query += " AND ESTADO = %s"
+            query += " AND I.ESTADO = %s"
             params.append(estado)
 
         if id_proveedor:
-            query += " AND ID_PROVEEDOR_ASIGNADO = %s"
+            query += " AND I.ID_PROVEEDOR_ASIGNADO = %s"
             params.append(id_proveedor)
 
         if dias_min is not None:
-            query += " AND DIAS_SIN_RESOLVER >= %s"
+            query += " AND I.DIAS_SIN_RESOLVER >= %s"
             params.append(dias_min)
 
         if fecha_desde:
-            query += " AND FECHA_INCIDENTE >= %s"
+            query += " AND I.FECHA_INCIDENTE >= %s"
             params.append(fecha_desde)
 
         if fecha_hasta:
-            query += " AND FECHA_INCIDENTE <= %s"
+            query += " AND I.FECHA_INCIDENTE <= %s"
             params.append(fecha_hasta)
 
-        # Count query independiente — evita romper con el SELECT complejo
+        # Count query independiente con JOINS minimos
         count_query = """
-        SELECT COUNT(*) AS total
+        SELECT COUNT(DISTINCT I.ID_INCIDENTE) AS total
         FROM INCIDENTES I
-        LEFT JOIN PROVEEDORES PR ON I.ID_PROVEEDOR_ASIGNADO = PR.ID_PROVEEDOR
+        LEFT JOIN PROPIEDADES PROP ON I.ID_PROPIEDAD = PROP.ID_PROPIEDAD
         WHERE 1=1"""
 
         # Re-aplicar los mismos filtros al count_query
         count_params = []
         if busqueda:
-            count_query += " AND (I.DESCRIPCION_INCIDENTE ILIKE %s OR CAST(I.ID_INCIDENTE AS TEXT) = %s)"
-            count_params.extend([f"%{busqueda}%", busqueda])
+            count_query += " AND (I.DESCRIPCION_INCIDENTE ILIKE %s OR CAST(I.ID_INCIDENTE AS TEXT) = %s OR PROP.DIRECCION_PROPIEDAD ILIKE %s)"
+            count_params.extend([f"%{busqueda}%", busqueda, f"%{busqueda}%"])
         if id_propiedad:
             count_query += " AND I.ID_PROPIEDAD = %s"
             count_params.append(id_propiedad)
@@ -266,6 +330,8 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         sort_order_valid = (
             sort_order.lower() if sort_order.lower() in ("asc", "desc") else "desc"
         )
+
+        query += " GROUP BY I.ID_INCIDENTE, PER_PROV.ID_PERSONA, PROP.ID_PROPIEDAD, PER_PROP.ID_PERSONA, PER_INQ.ID_PERSONA, PER_HAB.ID_PERSONA"
 
         query += f" ORDER BY {sort_column} {sort_order_valid}"
 
@@ -403,3 +469,32 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         cursor = self.db.get_dict_cursor(conn)
         cursor.execute(query, (id_incidente,))
         return [self._mapear_historial(row) for row in cursor.fetchall()]
+
+    def guardar_auditoria(
+        self,
+        tabla: str,
+        id_registro: int,
+        tipo_operacion: str,
+        valor_anterior: str,
+        valor_nuevo: str,
+        usuario: str,
+        motivo: str,
+    ) -> None:
+        query = """
+            INSERT INTO AUDITORIA_CAMBIOS 
+            (TABLA, ID_REGISTRO, TIPO_OPERACION, VALOR_ANTERIOR, VALOR_NUEVO, USUARIO, MOTIVO_CAMBIO)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        params = (
+            tabla,
+            id_registro,
+            tipo_operacion,
+            valor_anterior,
+            valor_nuevo,
+            usuario,
+            motivo,
+        )
+        with self.db.obtener_conexion() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            conn.commit()
