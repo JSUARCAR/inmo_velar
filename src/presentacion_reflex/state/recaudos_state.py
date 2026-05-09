@@ -328,12 +328,20 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                 return
 
             recaudo = detalle["recaudo"]
+            conceptos = detalle["conceptos"]
 
-            # Solo permitir editar pendientes
+            # Extraer tipo y periodo del primer concepto si existe
+            tipo_concepto = "Canon"
+            periodo = recaudo.fecha_pago[:7] if recaudo.fecha_pago else ""
+            if conceptos:
+                tipo_concepto = conceptos[0].tipo_concepto.value
+                periodo = conceptos[0].periodo
+
+            # Solo permitir editar pendientes o vencidos
             if not recaudo.estado_recaudo.puede_editarse():
                 async with self:
                     self.error_message = (
-                        "Solo se pueden editar recaudos en estado 'Pendiente'"
+                        "Solo se pueden editar recaudos en estado 'Pendiente' o 'Vencido'"
                     )
                     self.is_loading = False
                 return
@@ -358,8 +366,8 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                     "metodo_pago": recaudo.metodo_pago.value,
                     "referencia_bancaria": recaudo.referencia_bancaria or "",
                     "observaciones": recaudo.observaciones or "",
-                    "tipo_concepto": "Canon",
-                    "periodo": recaudo.fecha_pago[:7] if recaudo.fecha_pago else "",
+                    "tipo_concepto": tipo_concepto,
+                    "periodo": periodo,
                 }
                 self.is_editing = True
                 self.show_form_modal = True
@@ -493,22 +501,24 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                 return
 
             if form_data.get("id_recaudo"):
-                from src.dominio.entidades.recaudo import Recaudo
-
-                recaudo = Recaudo(
-                    id_recaudo=int(form_data.get("id_recaudo")),
-                    id_contrato_a=int(id_contrato),
-                    fecha_pago=form_data["fecha_pago"],
+                comando = ComandoActualizarPago(
+                    fecha_pago=date.fromisoformat(form_data["fecha_pago"]),
                     valor_total=valor_total,
                     metodo_pago=MetodoPago(metodo_pago),
                     referencia_bancaria=form_data.get("referencia_bancaria", "").strip()
                     or None,
-                    estado_recaudo=EstadoRecaudo.PENDIENTE,
+                    tipo_concepto=form_data.get("tipo_concepto", "Canon"),
+                    periodo=form_data.get("periodo", datetime.now().strftime("%Y-%m")),
                     observaciones=form_data.get("observaciones", "").strip() or None,
-                    created_by=usuario,
                 )
-                repo = RepositorioRecaudo(db_manager)
-                repo.actualizar(recaudo, usuario)
+                resultado = servicio.actualizar_pago(
+                    int(form_data.get("id_recaudo")), comando, usuario
+                )
+                if not resultado.exito:
+                    async with self:
+                        self.error_message = resultado.mensaje
+                        self.is_loading = False
+                    return
             else:
                 from src.aplicacion.esquemas.recaudo import ComandoRegistrarPago
                 from datetime import date

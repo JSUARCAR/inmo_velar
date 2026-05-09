@@ -39,6 +39,33 @@ class ComandoRegistrarPago(BaseModel):
         return v
 
 
+class ComandoActualizarPago(BaseModel):
+    """Comando para actualizar un pago existente."""
+    fecha_pago: date = Field(description="Fecha del pago en formato ISO")
+    valor_total: int = Field(gt=0, description="Valor total del pago en pesos")
+    metodo_pago: MetodoPago = Field(description="Método de pago utilizado")
+    referencia_bancaria: Optional[str] = Field(
+        default=None, description="Referencia bancaria (obligatoria si no es efectivo)"
+    )
+    tipo_concepto: TipoConcepto = Field(
+        default=TipoConcepto.CANON, description="Tipo de concepto del pago"
+    )
+    periodo: str = Field(
+        pattern=r"^\d{4}-\d{2}$", description="Período en formato YYYY-MM"
+    )
+    observaciones: Optional[str] = Field(
+        default=None, description="Observaciones opcionales"
+    )
+
+    @field_validator("referencia_bancaria")
+    @classmethod
+    def validar_referencia(cls, v: Optional[str], info) -> Optional[str]:
+        """Valida que la referencia no esté vacía si se proporciona."""
+        if v is not None and not v.strip():
+            return None
+        return v
+
+
 class ComandoGenerarMasivo(BaseModel):
     """Comando para generación masiva de pagos."""
     periodo: str = Field(

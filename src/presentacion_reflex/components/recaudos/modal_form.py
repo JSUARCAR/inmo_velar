@@ -124,22 +124,14 @@ def modal_recaudo() -> rx.Component:
             ),
             # Formulario
             rx.form.root(
+                # Campos ocultos reales vía HTML para evitar renderizado de wrappers de Reflex
+                rx.html(
+                    f'<input type="hidden" name="id_recaudo" value="{RecaudosState.form_data["id_recaudo"]}">'
+                ),
+                rx.html(
+                    f'<input type="hidden" name="id_contrato_a" value="{RecaudosState.form_data["id_contrato_a"]}">'
+                ),
                 rx.vstack(
-                    # ID Recaudo (Oculto para edición)
-                    rx.cond(
-                        RecaudosState.is_editing,
-                        rx.input(
-                            type="hidden",
-                            name="id_recaudo",
-                            value=RecaudosState.form_data["id_recaudo"],
-                        ),
-                    ),
-                    # ID Contrato (Oculto siempre para rx.form)
-                    rx.input(
-                        type="hidden",
-                        name="id_contrato_a",
-                        value=RecaudosState.form_data["id_contrato_a"],
-                    ),
                     # Contrato (solo en creación, visualmente)
                     rx.cond(
                         ~RecaudosState.is_editing,
@@ -153,6 +145,30 @@ def modal_recaudo() -> rx.Component:
                             RecaudosState.set_contrato_search,
                             RecaudosState.toggle_contrato_menu,
                             RecaudosState.select_contrato,
+                        ),
+                        # En edición, mostrar como texto informativo
+                        rx.vstack(
+                            rx.text(
+                                "Contrato",
+                                size="2",
+                                weight="bold",
+                                color=styles.TEXT_PRIMARY,
+                            ),
+                            rx.box(
+                                rx.text(
+                                    RecaudosState.contrato_selected_label,
+                                    size="2",
+                                    color=styles.TEXT_SECONDARY,
+                                ),
+                                padding="3",
+                                width="100%",
+                                border_radius="12px",
+                                background=styles.BG_HOVER,
+                                border=f"1px solid {styles.BORDER_DEFAULT}",
+                                style={"box_shadow": styles.NEU_INSET},
+                            ),
+                            width="100%",
+                            spacing="1",
                         ),
                     ),
                     # Fecha de Pago

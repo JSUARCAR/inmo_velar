@@ -4,8 +4,11 @@ Implementa persistencia para pagos recibidos de inquilinos.
 Compatible con PostgreSQL (Producción) y SQLite (Desarrollo).
 """
 
+import logging
 from datetime import datetime
 from typing import List, Optional, Any, Dict
+
+logger = logging.getLogger(__name__)
 
 from src.dominio.entidades.recaudo import Recaudo
 from src.dominio.entidades.recaudo_concepto import RecaudoConcepto
@@ -304,37 +307,76 @@ class RepositorioRecaudo:
 
         conn.commit()
 
-    def actualizar(self, recaudo: Recaudo, usuario_sistema: str) -> None:
-        """Actualiza un recaudo existente."""
+    def actualizar(
+        self,
+        recaudo: Recaudo,
+        usuario_sistema: str,
+        conceptos: Optional[List[RecaudoConcepto]] = None,
+    ) -> None:
+        """Actualiza un recaudo existente y sus conceptos."""
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(
-            f"""
-            UPDATE RECAUDOS SET
-                FECHA_PAGO = {placeholder},
-                VALOR_TOTAL = {placeholder},
-                METODO_PAGO = {placeholder},
-                REFERENCIA_BANCARIA = {placeholder},
-                OBSERVACIONES = {placeholder},
-                UPDATED_AT = {placeholder},
-                UPDATED_BY = {placeholder}
-            WHERE ID_RECAUDO = {placeholder}
-        """,
-            (
-                recaudo.fecha_pago,
-                recaudo.valor_total,
-                recaudo.metodo_pago,
-                recaudo.referencia_bancaria,
-                recaudo.observaciones,
-                datetime.now().isoformat(),
-                usuario_sistema,
-                recaudo.id_recaudo,
-            ),
-        )
+        try:
+            # 1. Actualizar el recaudo principal
+            cursor.execute(
+                f"""
+                UPDATE RECAUDOS SET
+                    FECHA_PAGO = {placeholder},
+                    VALOR_TOTAL = {placeholder},
+                    METODO_PAGO = {placeholder},
+                    REFERENCIA_BANCARIA = {placeholder},
+                    OBSERVACIONES = {placeholder},
+                    UPDATED_AT = {placeholder},
+                    UPDATED_BY = {placeholder}
+                WHERE ID_RECAUDO = {placeholder}
+            """,
+                (
+                    recaudo.fecha_pago,
+                    recaudo.valor_total,
+                    recaudo.metodo_pago,
+                    recaudo.referencia_bancaria,
+                    recaudo.observaciones,
+                    datetime.now().isoformat(),
+                    usuario_sistema,
+                    recaudo.id_recaudo,
+                ),
+            )
 
-        conn.commit()
+            # 2. Actualizar conceptos si se proporcionan
+            if conceptos is not None:
+                # Eliminar conceptos anteriores
+                cursor.execute(
+                    f"DELETE FROM RECAUDO_CONCEPTOS WHERE ID_RECAUDO = {placeholder}",
+                    (recaudo.id_recaudo,),
+                )
+
+                # Insertar nuevos conceptos
+                for concepto in conceptos:
+                    cursor.execute(
+                        f"""
+                        INSERT INTO RECAUDO_CONCEPTOS (
+                            ID_RECAUDO, TIPO_CONCEPTO, PERIODO, VALOR, 
+                            CREATED_AT
+                        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                    """,
+                        (
+                            recaudo.id_recaudo,
+                            concepto.tipo_concepto,
+                            concepto.periodo,
+                            concepto.valor,
+                            datetime.now().isoformat(),
+                        ),
+                    )
+
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Error al actualizar recaudo: {e}")
+            raise e
+        finally:
+            cursor.close()
 
     def contar_con_filtros(
         self,

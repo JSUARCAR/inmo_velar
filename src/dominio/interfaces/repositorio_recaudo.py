@@ -98,8 +98,13 @@ class IRepositorioRecaudo(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def actualizar(self, recaudo: Recaudo, usuario_sistema: str) -> None:
-        """Actualiza un recaudo existente."""
+    def actualizar(
+        self,
+        recaudo: Recaudo,
+        usuario_sistema: str,
+        conceptos: Optional[List[RecaudoConcepto]] = None,
+    ) -> None:
+        """Actualiza un recaudo existente y sus conceptos."""
         raise NotImplementedError
 
     @abstractmethod

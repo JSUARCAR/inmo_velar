@@ -43,8 +43,8 @@ class EstadoRecaudo(str, Enum):
         return [e.value for e in cls]
 
     def puede_editarse(self) -> bool:
-        """Solo los recaudos Pendientes pueden editarse."""
-        return self == EstadoRecaudo.PENDIENTE
+        """Solo los recaudos Pendientes y Vencidos pueden editarse."""
+        return self in (EstadoRecaudo.PENDIENTE, EstadoRecaudo.VENCIDO)
 
     def puede_aplicarse(self) -> bool:
         """Solo los recaudos Pendientes y Vencidos pueden aplicarse."""

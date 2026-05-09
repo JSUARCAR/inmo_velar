@@ -24,6 +24,7 @@ from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempote
 from src.aplicacion.decorators.idempotent import idempotent
 from src.aplicacion.esquemas.recaudo import (
     ComandoRegistrarPago,
+    ComandoActualizarPago,
     RecaudoDTO,
     RecaudoDetalleDTO,
     ConceptoDTO,
@@ -228,6 +229,71 @@ class ServicioRecaudo:
             id_recaudo=id_recaudo,
         )
 
+    # ==================== ACTUALIZACIÓN ====================
+
+    def actualizar_pago(
+        self, id_recaudo: int, comando: ComandoActualizarPago, usuario: str
+    ) -> ResultadoOperacion:
+        """
+        Actualiza un pago existente.
+
+        Args:
+            id_recaudo: ID del recaudo a actualizar
+            comando: Datos validados para la actualización
+            usuario: Usuario que realiza la operación
+        """
+        recaudo_existente = self.repo.obtener_por_id(id_recaudo)
+
+        if not recaudo_existente:
+            return ResultadoOperacion(
+                exito=False,
+                mensaje=f"Recaudo {id_recaudo} no encontrado",
+            )
+
+        if not recaudo_existente.estado_recaudo.puede_editarse():
+            return ResultadoOperacion(
+                exito=False,
+                mensaje=(
+                    f"No se puede editar el recaudo en estado {recaudo_existente.estado_recaudo.value}"
+                ),
+            )
+
+        # Actualizar campos de la entidad principal preservando el estado original
+        recaudo_actualizado = Recaudo(
+            id_recaudo=id_recaudo,
+            id_contrato_a=recaudo_existente.id_contrato_a,
+            fecha_pago=comando.fecha_pago.isoformat(),
+            valor_total=comando.valor_total,
+            metodo_pago=comando.metodo_pago,
+            referencia_bancaria=comando.referencia_bancaria,
+            estado_recaudo=recaudo_existente.estado_recaudo, # Preservar estado (Pendiente o Vencido)
+            observaciones=comando.observaciones,
+            created_by=recaudo_existente.created_by,
+            created_at=recaudo_existente.created_at,
+        )
+
+        # Preparar el nuevo concepto único
+        concepto = RecaudoConcepto(
+            id_recaudo=id_recaudo,
+            tipo_concepto=comando.tipo_concepto,
+            periodo=comando.periodo,
+            valor=comando.valor_total,
+        )
+
+        try:
+            self.repo.actualizar(recaudo_actualizado, usuario, [concepto])
+            return ResultadoOperacion(
+                exito=True,
+                mensaje=f"Pago #{id_recaudo} actualizado exitosamente",
+                id_recaudo=id_recaudo,
+            )
+        except Exception as e:
+            logger.error(f"Error al actualizar pago #{id_recaudo}: {e}")
+            return ResultadoOperacion(
+                exito=False,
+                mensaje=f"Error interno al actualizar: {str(e)}",
+            )
+
     # ==================== CONSULTAS ====================
 
     def listar_paginado(
@@ -377,7 +443,7 @@ class ServicioRecaudo:
         """
         ahora = datetime.now()
         periodo_bd = ahora.strftime("%Y-%m")
-        fecha_hoy = ahora.date().isoformat()
+        fecha_hoy = ahora.date()
 
         meses_espanol = [
             "enero",

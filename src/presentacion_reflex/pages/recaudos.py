@@ -233,9 +233,9 @@ def recaudos_table() -> rx.Component:
                                 ),
                                 content="Ver detalle",
                             ),
-                            # Aplicar Pago (solo Pendientes)
+                            # Aplicar Pago (Pendientes o Vencidos)
                             rx.cond(
-                                (rec["estado"] == "Pendiente")
+                                ((rec["estado"] == "Pendiente") | (rec["estado"] == "Vencido"))
                                 & AuthState.check_action("Recaudos", "APLICAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -269,9 +269,9 @@ def recaudos_table() -> rx.Component:
                                 ),
                                 rx.box(),
                             ),
-                            # Editar (solo Pendientes)
+                            # Editar (Pendientes o Vencidos)
                             rx.cond(
-                                (rec["estado"] == "Pendiente")
+                                ((rec["estado"] == "Pendiente") | (rec["estado"] == "Vencido"))
                                 & AuthState.check_action("Recaudos", "EDITAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -287,9 +287,9 @@ def recaudos_table() -> rx.Component:
                                 ),
                                 rx.box(),
                             ),
-                            # Eliminar (solo Pendientes)
+                            # Eliminar (Pendientes o Vencidos)
                             rx.cond(
-                                (rec["estado"] == "Pendiente")
+                                ((rec["estado"] == "Pendiente") | (rec["estado"] == "Vencido"))
                                 & AuthState.check_action("Recaudos", "ELIMINAR"),
                                 rx.tooltip(
                                     rx.icon_button(
