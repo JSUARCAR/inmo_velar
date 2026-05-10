@@ -913,3 +913,70 @@ class ServicioDocumentosPDF:
                         pass
 
         return str(zip_path.absolute())
+
+    def generar_lote_recibos_recaudo_zip(
+        self,
+        lista_datos: List[Dict[str, Any]],
+        facade: Any,
+        filename_prefix: str = "lote_recibos_recaudo",
+    ) -> str:
+        """Genera un lote de recibos de recaudo élite y los comprime en un ZIP.
+
+        Utiliza ThreadPoolExecutor para generar los PDFs en paralelo.
+        Delega la renderización individual a ServicioPDFFacade.generar_recibo_recaudo_elite.
+
+        Args:
+            lista_datos: Lista de diccionarios con datos formateados para generar_recibo_recaudo_elite.
+            facade: Instancia de ServicioPDFFacade para renderizar cada recibo.
+            filename_prefix: Prefijo para el archivo ZIP.
+
+        Returns:
+            Ruta absoluta del archivo ZIP generado.
+        """
+        import zipfile
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        zip_filename = f"{filename_prefix}_{datetime.now().strftime('%Y%m%d%H%M%S')}.zip"
+        zip_path = self.output_dir / zip_filename
+
+        generated_files: List[Path] = []
+
+        def _generate_one(datos_pdf: Dict[str, Any]) -> Optional[str]:
+            """Worker para generar un recibo individual (thread-safe)."""
+            try:
+                path = facade.generar_recibo_recaudo_elite(datos_pdf)
+                return path
+            except Exception as e:
+                logger.error(
+                    f"Error generando recibo para recaudo ID {datos_pdf.get('id')}: {e}"
+                )
+                return None
+
+        # Ejecutar en paralelo (I/O bound, cada hilo crea su propia instancia FPDF)
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_id = {
+                executor.submit(_generate_one, d): d.get("id") for d in lista_datos
+            }
+
+            for future in as_completed(future_to_id):
+                path = future.result()
+                if path:
+                    generated_files.append(Path(path))
+
+        if not generated_files:
+            raise ValueError("No se pudo generar ningún recibo de recaudo PDF")
+
+        # Crear ZIP con compresión
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            for file_path in generated_files:
+                if file_path.exists():
+                    zf.write(file_path, arcname=file_path.name)
+                    try:
+                        file_path.unlink()
+                    except Exception:
+                        pass
+
+        logger.info(
+            f"ZIP generado con {len(generated_files)} recibos en: {zip_path}"
+        )
+        return str(zip_path.absolute())

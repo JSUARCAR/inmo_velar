@@ -16,6 +16,7 @@ from src.infraestructura.persistencia.repositorio_municipio_sqlite import (
 
 # Integración Fase 3: CacheManager
 from src.infraestructura.cache.cache_manager import cache_manager
+from src.infraestructura.persistencia.database import db_manager
 
 
 class ServicioPropiedades:
@@ -24,7 +25,14 @@ class ServicioPropiedades:
     Implementa lógica de negocio para CRUD con filtros avanzados.
     """
 
-    TIPOS_PROPIEDAD = ["Casa", "Apartamento", "Local Comercial", "Bodega", "Oficina", "Lote"]
+    TIPOS_PROPIEDAD = [
+        "Casa",
+        "Apartamento",
+        "Local Comercial",
+        "Bodega",
+        "Oficina",
+        "Lote",
+    ]
 
     def __init__(
         self,
@@ -83,7 +91,7 @@ class ServicioPropiedades:
             filtro_disponibilidad=filtro_disponibilidad,
             filtro_municipio=filtro_municipio,
             solo_activas=solo_activas,
-            busqueda=busqueda
+            busqueda=busqueda,
         )
 
         items = self.repo.listar_con_filtros(
@@ -110,7 +118,9 @@ class ServicioPropiedades:
         """Busca una propiedad por su matrícula inmobiliaria."""
         return self.repo.obtener_por_matricula(matricula)
 
-    def crear_propiedad(self, datos: Dict, usuario_sistema: str = "sistema") -> Propiedad:
+    def crear_propiedad(
+        self, datos: Dict, usuario_sistema: str = "sistema"
+    ) -> Propiedad:
         """Crea una nueva propiedad."""
         if self.repo.obtener_por_matricula(datos["matricula_inmobiliaria"]):
             raise ValueError(
@@ -135,7 +145,9 @@ class ServicioPropiedades:
 
         # Validar URL del link (si viene con http/https)
         link_pago = datos.get("link_pago_administracion")
-        if link_pago and not (link_pago.startswith(("http://", "https://")) or link_pago == ""):
+        if link_pago and not (
+            link_pago.startswith(("http://", "https://")) or link_pago == ""
+        ):
             datos["link_pago_administracion"] = f"https://{link_pago}"
 
         propiedad = Propiedad(
@@ -164,7 +176,9 @@ class ServicioPropiedades:
             link_pago_administracion=datos.get("link_pago_administracion"),
             cuota_extra_ordinaria=datos.get("cuota_extra_ordinaria"),
             observaciones_admin_ph=datos.get("observaciones_admin_ph"),
-            fecha_ingreso_propiedad=datos.get("fecha_ingreso_propiedad", datetime.now().date().isoformat()),
+            fecha_ingreso_propiedad=datos.get(
+                "fecha_ingreso_propiedad", datetime.now().date().isoformat()
+            ),
             created_at=datetime.now().isoformat(),
             created_by=usuario_sistema,
         )
@@ -181,7 +195,10 @@ class ServicioPropiedades:
         if not propiedad:
             raise ValueError(f"No existe propiedad con ID {id_propiedad}")
 
-        if "tipo_propiedad" in datos and datos["tipo_propiedad"] not in self.TIPOS_PROPIEDAD:
+        if (
+            "tipo_propiedad" in datos
+            and datos["tipo_propiedad"] not in self.TIPOS_PROPIEDAD
+        ):
             raise ValueError(
                 f"Tipo de propiedad inválido. Debe ser uno de: {', '.join(self.TIPOS_PROPIEDAD)}"
             )
@@ -199,8 +216,13 @@ class ServicioPropiedades:
 
         # Validar URL del link (si viene con http/https)
         link_pago = datos.get("link_pago_administracion")
-        if link_pago and not (link_pago.startswith(("http://", "https://")) or link_pago == ""):
+        if link_pago and not (
+            link_pago.startswith(("http://", "https://")) or link_pago == ""
+        ):
             datos["link_pago_administracion"] = f"https://{link_pago}"
+
+        # Capturar canon anterior antes de aplicar cambios
+        old_canon = propiedad.canon_arrendamiento_estimado
 
         # Actualizar campos
         for k, v in datos.items():
@@ -213,10 +235,89 @@ class ServicioPropiedades:
         self.repo.actualizar(propiedad, usuario_sistema)
         cache_manager.invalidate("propiedades")
 
+        # =========================================================================
+        # Sincronización en cascada: si el canon estimado cambió, propagar a
+        # contratos activos (mandato y arrendamiento) y registrar historial.
+        # =========================================================================
+        nuevo_canon = propiedad.canon_arrendamiento_estimado
+        if old_canon is not None and old_canon != nuevo_canon:
+            try:
+                with db_manager.obtener_conexion() as conn:
+                    cursor = conn.cursor()
+
+                    # 1. Obtener canon actual del arrendamiento activo (antes del cambio)
+                    cursor.execute(
+                        """
+                        SELECT ID_CONTRATO_A, CANON_ARRENDAMIENTO
+                        FROM CONTRATOS_ARRENDAMIENTOS
+                        WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'Activo'
+                        """,
+                        (id_propiedad,),
+                    )
+                    row = cursor.fetchone()
+                    id_contrato_a = row[0] if row else None
+                    canon_anterior_arriendo = row[1] if row else None
+
+                    # 2. Actualizar Mandato activo
+                    cursor.execute(
+                        """
+                        UPDATE CONTRATOS_MANDATOS
+                        SET CANON_MANDATO = %s,
+                            UPDATED_AT = CURRENT_TIMESTAMP,
+                            UPDATED_BY = %s
+                        WHERE ID_PROPIEDAD = %s
+                        AND ESTADO_CONTRATO_M = 'Activo'
+                        """,
+                        (nuevo_canon, usuario_sistema, id_propiedad),
+                    )
+
+                    # 3. Actualizar Arrendamiento activo
+                    cursor.execute(
+                        """
+                        UPDATE CONTRATOS_ARRENDAMIENTOS
+                        SET CANON_ARRENDAMIENTO = %s,
+                            UPDATED_AT = CURRENT_TIMESTAMP,
+                            UPDATED_BY = %s
+                        WHERE ID_PROPIEDAD = %s
+                        AND ESTADO_CONTRATO_A = 'Activo'
+                        """,
+                        (nuevo_canon, usuario_sistema, id_propiedad),
+                    )
+
+                    # 4. Registrar historial (solo si existe arrendamiento activo)
+                    if (
+                        id_contrato_a is not None
+                        and canon_anterior_arriendo is not None
+                    ):
+                        cursor.execute(
+                            """
+                            INSERT INTO IPC_INCREMENT_HISTORY
+                                (ID_CONTRATO_A, FECHA_APLICACION, PORCENTAJE_IPC,
+                                 CANON_ANTERIOR, CANON_NUEVO, OBSERVACIONES, CREATED_BY)
+                            VALUES (%s, CURRENT_DATE, 0, %s, %s, %s, %s)
+                            """,
+                            (
+                                id_contrato_a,
+                                canon_anterior_arriendo,
+                                nuevo_canon,
+                                "Ajuste manual desde módulo Propiedad",
+                                usuario_sistema,
+                            ),
+                        )
+
+                    conn.commit()
+            except Exception:
+                import traceback
+
+                traceback.print_exc()
+
         return propiedad
 
     def cambiar_disponibilidad(
-        self, id_propiedad: int, nueva_disponibilidad: int, usuario_sistema: str = "sistema"
+        self,
+        id_propiedad: int,
+        nueva_disponibilidad: int,
+        usuario_sistema: str = "sistema",
     ) -> bool:
         """Cambia la disponibilidad de una propiedad."""
         propiedad = self.repo.obtener_por_id(id_propiedad)
@@ -253,7 +354,9 @@ class ServicioPropiedades:
             cache_manager.invalidate("propiedades")
         return result
 
-    def activar_propiedad(self, id_propiedad: int, usuario_sistema: str = "sistema") -> bool:
+    def activar_propiedad(
+        self, id_propiedad: int, usuario_sistema: str = "sistema"
+    ) -> bool:
         """Reactiva una propiedad inactiva."""
         propiedad = self.repo.obtener_por_id(id_propiedad)
         if not propiedad:
@@ -283,7 +386,7 @@ class ServicioPropiedades:
             filtro_disponibilidad=filtro_disponibilidad,
             filtro_municipio=filtro_municipio,
             solo_activas=solo_activas,
-            busqueda=busqueda
+            busqueda=busqueda,
         )
 
         output = io.StringIO()
@@ -291,8 +394,17 @@ class ServicioPropiedades:
 
         writer.writerow(
             [
-                "Matrícula", "Tipo", "Municipio ID", "Dirección", "Canon",
-                "Area (m2)", "Habitaciones", "Baños", "Parqueaderos", "Estrato", "Disponibilidad",
+                "Matrícula",
+                "Tipo",
+                "Municipio ID",
+                "Dirección",
+                "Canon",
+                "Area (m2)",
+                "Habitaciones",
+                "Baños",
+                "Parqueaderos",
+                "Estrato",
+                "Disponibilidad",
             ]
         )
 
@@ -324,7 +436,9 @@ class ServicioPropiedades:
             self.repo_municipio = RepositorioMunicipioSQLite(db_manager)
 
         municipios = self.repo_municipio.listar_todos()
-        return [{"id": m.id_municipio, "nombre": m.nombre_municipio} for m in municipios]
+        return [
+            {"id": m.id_municipio, "nombre": m.nombre_municipio} for m in municipios
+        ]
 
     def obtener_tipos_propiedad(self) -> List[str]:
         """Retorna los tipos de propiedad permitidos."""

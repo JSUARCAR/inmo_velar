@@ -109,6 +109,19 @@ def recaudos_toolbar() -> rx.Component:
                 on_click=RecaudosState.load_recaudos,
                 size="3",
             ),
+            # Botón Exportar Recibos ZIP
+            rx.cond(
+                AuthState.check_action("Recaudos", "CREAR"),
+                rx.tooltip(
+                    neuro_button(
+                        rx.icon("file-archive"),
+                        on_click=RecaudosState.abrir_modal_exportar_recibos,
+                        size="3",
+                        loading=RecaudosState.exportando_recibos,
+                    ),
+                    content="Exportar recibos del período como ZIP",
+                ),
+            ),
             gap="3",
             align="center",
             flex_wrap="wrap",
@@ -233,9 +246,9 @@ def recaudos_table() -> rx.Component:
                                 ),
                                 content="Ver detalle",
                             ),
-                            # Aplicar Pago (solo Pendientes)
+                            # Aplicar Pago (Pendientes o Vencidos)
                             rx.cond(
-                                (rec["estado"] == "Pendiente")
+                                ((rec["estado"] == "Pendiente") | (rec["estado"] == "Vencido"))
                                 & AuthState.check_action("Recaudos", "APLICAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -269,9 +282,9 @@ def recaudos_table() -> rx.Component:
                                 ),
                                 rx.box(),
                             ),
-                            # Editar (solo Pendientes)
+                            # Editar (Pendientes o Vencidos)
                             rx.cond(
-                                (rec["estado"] == "Pendiente")
+                                ((rec["estado"] == "Pendiente") | (rec["estado"] == "Vencido"))
                                 & AuthState.check_action("Recaudos", "EDITAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -287,9 +300,9 @@ def recaudos_table() -> rx.Component:
                                 ),
                                 rx.box(),
                             ),
-                            # Eliminar (solo Pendientes)
+                            # Eliminar (Pendientes o Vencidos)
                             rx.cond(
-                                (rec["estado"] == "Pendiente")
+                                ((rec["estado"] == "Pendiente") | (rec["estado"] == "Vencido"))
                                 & AuthState.check_action("Recaudos", "ELIMINAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -386,6 +399,73 @@ def pagination_controls() -> rx.Component:
     )
 
 
+
+def modal_exportar_recibos_periodo() -> rx.Component:
+    """Modal para seleccionar período y exportar recibos de recaudo como ZIP."""
+    return rx.dialog.root(
+        rx.dialog.content(
+            rx.dialog.title(
+                rx.hstack(
+                    rx.icon("file-archive", size=20, color="#667eea"),
+                    rx.text("Exportar Recibos de Recaudo"),
+                    spacing="2",
+                    align="center",
+                ),
+            ),
+            rx.dialog.description(
+                "Seleccione el período contable para generar y descargar "
+                "todos los recibos de recaudo en un archivo ZIP.",
+                size="2",
+                color="gray",
+            ),
+            rx.separator(margin_y="12px"),
+            rx.vstack(
+                rx.text("Período", size="2", weight="medium"),
+                neuro_input(
+                    type="month",
+                    value=RecaudosState.periodo_exportar_recibos,
+                    on_change=RecaudosState.set_periodo_exportar,
+                    width="100%",
+                    size="3",
+                ),
+                rx.text(
+                    "Se generarán los recibos PDF individuales y se empaquetarán en un ZIP.",
+                    size="1",
+                    color="gray",
+                ),
+                spacing="2",
+                width="100%",
+            ),
+            rx.separator(margin_y="12px"),
+            rx.flex(
+                rx.dialog.close(
+                    neuro_button(
+                        rx.text("Cancelar"),
+                        variant="soft",
+                        color_scheme="gray",
+                        on_click=RecaudosState.cerrar_modal_exportar_recibos,
+                    ),
+                ),
+                neuro_button(
+                    rx.hstack(
+                        rx.icon("download", size=16),
+                        rx.text("Generar y Descargar ZIP"),
+                    ),
+                    on_click=RecaudosState.exportar_recibos_zip,
+                    loading=RecaudosState.exportando_recibos,
+                    color_scheme="indigo",
+                ),
+                spacing="3",
+                justify="end",
+                width="100%",
+            ),
+            max_width="450px",
+        ),
+        open=RecaudosState.mostrar_modal_exportar_recibos,
+        on_open_change=RecaudosState.set_mostrar_modal_exportar_recibos,
+    )
+
+
 def recaudos_page() -> rx.Component:
     """Página principal de recaudos."""
     return rx.vstack(
@@ -439,6 +519,8 @@ def recaudos_page() -> rx.Component:
         modal_recaudo(),
         # Modal de detalle
         modal_detalle_recaudo(),
+        # Modal exportación masiva recibos
+        modal_exportar_recibos_periodo(),
         width="100%",
         spacing="4",
         padding="2em",

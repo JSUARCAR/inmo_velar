@@ -98,8 +98,13 @@ class IRepositorioRecaudo(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def actualizar(self, recaudo: Recaudo, usuario_sistema: str) -> None:
-        """Actualiza un recaudo existente."""
+    def actualizar(
+        self,
+        recaudo: Recaudo,
+        usuario_sistema: str,
+        conceptos: Optional[List[RecaudoConcepto]] = None,
+    ) -> None:
+        """Actualiza un recaudo existente y sus conceptos."""
         raise NotImplementedError
 
     @abstractmethod
@@ -133,4 +138,16 @@ class IRepositorioRecaudo(ABC):
         usuario_sistema: str,
     ) -> int:
         """Crea múltiples recaudos en una transacción."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def obtener_recaudos_por_periodo(self, periodo: str) -> List[Dict[str, Any]]:
+        """Obtiene recaudos con datos completos (propiedad, arrendatario, conceptos) por período.
+
+        Args:
+            periodo: Período en formato YYYY-MM.
+
+        Returns:
+            Lista de diccionarios con datos enriquecidos para generación de PDFs.
+        """
         raise NotImplementedError

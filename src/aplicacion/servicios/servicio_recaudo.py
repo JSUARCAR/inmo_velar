@@ -24,6 +24,7 @@ from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempote
 from src.aplicacion.decorators.idempotent import idempotent
 from src.aplicacion.esquemas.recaudo import (
     ComandoRegistrarPago,
+    ComandoActualizarPago,
     RecaudoDTO,
     RecaudoDetalleDTO,
     ConceptoDTO,
@@ -228,6 +229,71 @@ class ServicioRecaudo:
             id_recaudo=id_recaudo,
         )
 
+    # ==================== ACTUALIZACIÓN ====================
+
+    def actualizar_pago(
+        self, id_recaudo: int, comando: ComandoActualizarPago, usuario: str
+    ) -> ResultadoOperacion:
+        """
+        Actualiza un pago existente.
+
+        Args:
+            id_recaudo: ID del recaudo a actualizar
+            comando: Datos validados para la actualización
+            usuario: Usuario que realiza la operación
+        """
+        recaudo_existente = self.repo.obtener_por_id(id_recaudo)
+
+        if not recaudo_existente:
+            return ResultadoOperacion(
+                exito=False,
+                mensaje=f"Recaudo {id_recaudo} no encontrado",
+            )
+
+        if not recaudo_existente.estado_recaudo.puede_editarse():
+            return ResultadoOperacion(
+                exito=False,
+                mensaje=(
+                    f"No se puede editar el recaudo en estado {recaudo_existente.estado_recaudo.value}"
+                ),
+            )
+
+        # Actualizar campos de la entidad principal preservando el estado original
+        recaudo_actualizado = Recaudo(
+            id_recaudo=id_recaudo,
+            id_contrato_a=recaudo_existente.id_contrato_a,
+            fecha_pago=comando.fecha_pago.isoformat(),
+            valor_total=comando.valor_total,
+            metodo_pago=comando.metodo_pago,
+            referencia_bancaria=comando.referencia_bancaria,
+            estado_recaudo=recaudo_existente.estado_recaudo, # Preservar estado (Pendiente o Vencido)
+            observaciones=comando.observaciones,
+            created_by=recaudo_existente.created_by,
+            created_at=recaudo_existente.created_at,
+        )
+
+        # Preparar el nuevo concepto único
+        concepto = RecaudoConcepto(
+            id_recaudo=id_recaudo,
+            tipo_concepto=comando.tipo_concepto,
+            periodo=comando.periodo,
+            valor=comando.valor_total,
+        )
+
+        try:
+            self.repo.actualizar(recaudo_actualizado, usuario, [concepto])
+            return ResultadoOperacion(
+                exito=True,
+                mensaje=f"Pago #{id_recaudo} actualizado exitosamente",
+                id_recaudo=id_recaudo,
+            )
+        except Exception as e:
+            logger.error(f"Error al actualizar pago #{id_recaudo}: {e}")
+            return ResultadoOperacion(
+                exito=False,
+                mensaje=f"Error interno al actualizar: {str(e)}",
+            )
+
     # ==================== CONSULTAS ====================
 
     def listar_paginado(
@@ -377,7 +443,7 @@ class ServicioRecaudo:
         """
         ahora = datetime.now()
         periodo_bd = ahora.strftime("%Y-%m")
-        fecha_hoy = ahora.date().isoformat()
+        fecha_hoy = ahora.date()
 
         meses_espanol = [
             "enero",
@@ -482,3 +548,136 @@ class ServicioRecaudo:
             omitidos_por_duplicidad=omitidos,
             periodo=periodo_bd,
         )
+
+    # ==================== EXPORTACIÓN MASIVA PDF ====================
+
+    def generar_recibos_masivos_pdf(self, periodo: str) -> str:
+        """Genera todos los recibos de recaudo de un período como archivo ZIP.
+
+        Orquesta:
+        1. Consulta al repositorio para obtener recaudos enriquecidos.
+        2. Transformación de datos al formato PDF élite.
+        3. Delegación a la facade para generación paralela y empaquetado ZIP.
+
+        Args:
+            periodo: Período en formato YYYY-MM.
+
+        Returns:
+            Ruta absoluta del archivo ZIP generado.
+
+        Raises:
+            ValueError: Si no hay recaudos en el período.
+        """
+        import re
+
+        if not re.match(r"^\d{4}-\d{2}$", periodo):
+            raise ValueError(f"Formato de período inválido: {periodo}. Use YYYY-MM.")
+
+        logger.info(f"Iniciando generación masiva de recibos para período: {periodo}")
+
+        # 1. Obtener datos enriquecidos del repositorio
+        recaudos = self.repo.obtener_recaudos_por_periodo(periodo)
+
+        if not recaudos:
+            raise ValueError(f"No se encontraron recaudos para el período {periodo}")
+
+        logger.info(f"Se encontraron {len(recaudos)} recaudos en el período {periodo}")
+
+        # 2. Inyectar datos de empresa (logo)
+        config_empresa = None
+        try:
+            from src.aplicacion.servicios.servicio_configuracion import (
+                ServicioConfiguracion,
+            )
+
+            servicio_config = ServicioConfiguracion(self.db)
+            config_empresa = servicio_config.obtener_configuracion_empresa()
+        except Exception as e:
+            logger.warning(f"No se pudo cargar configuración de empresa: {e}")
+
+        # 3. Transformar datos al formato PDF élite (misma estructura que PDFState)
+        lista_datos_pdf = []
+        for rec in recaudos:
+            # Extraer período del primer concepto (o usar el proporcionado)
+            periodo_concepto = periodo
+            if rec.get("conceptos"):
+                periodo_concepto = rec["conceptos"][0].get("periodo", periodo)
+
+            datos_pdf = {
+                # IDs y período
+                "id": rec["id_recaudo"],
+                "periodo": periodo_concepto,
+                "fecha_generacion": rec["fecha_pago"],
+                "estado": rec["estado_recaudo"],
+                # Propietario (flat strings para compatibilidad con template)
+                "propietario": "Inmobiliaria Velar",
+                "documento": "N/A",
+                "direccion_propietario": "N/A",
+                # Propiedad
+                "propiedad": rec["direccion_propiedad"],
+                "matricula": rec["matricula_inmobiliaria"],
+                "municipio": rec["municipio"].upper(),
+                "departamento": rec["departamento"].upper(),
+                # Arrendatario
+                "arrendatario": rec["nombre_arrendatario"],
+                "arrendatario_doc": rec["documento_arrendatario"],
+                "email": rec["email_arrendatario"],
+                "telefono": rec["telefono_arrendatario"],
+                # Financiero
+                "valor_total": rec["valor_total"],
+                "canon": rec["valor_total"],
+                "otros_ingresos": 0,
+                "total_ingresos": rec["valor_total"],
+                # Egresos
+                "comision_pct": 0,
+                "comision_monto": 0,
+                "iva_comision": 0,
+                "impuesto_4x1000": 0,
+                "gastos_admin": 0,
+                "gastos_serv": 0,
+                "gastos_rep": 0,
+                "otros_egr": 0,
+                "total_egresos": 0,
+                # Neto
+                "neto_pagar": rec["valor_total"],
+                # Pago
+                "fecha_pago": rec["fecha_pago"],
+                "metodo_pago": rec["metodo_pago"] or "N/A",
+                "referencia_pago": rec["referencia_bancaria"] or "N/A",
+                # Bancario
+                "cuenta_bancaria": "No aplica",
+                "tipo_cuenta": rec["metodo_pago"],
+                "banco": "Caja General",
+                # Observaciones
+                "observaciones": f"Arrendatario: {rec['nombre_arrendatario']} ({rec['documento_arrendatario']}). {rec['observaciones']}".strip(),
+                # Auditoría
+                "created_at": datetime.now().isoformat(),
+                "created_by": "Sistema",
+            }
+
+            # Inyectar empresa si disponible
+            if config_empresa:
+                datos_pdf["empresa"] = {
+                    "nombre": config_empresa.nombre_empresa,
+                    "nit": config_empresa.nit,
+                    "direccion": config_empresa.direccion,
+                    "telefono": config_empresa.telefono,
+                    "email": config_empresa.email,
+                    "logo_base64": config_empresa.logo_base64,
+                    "website": config_empresa.website,
+                }
+                datos_pdf["logo_base64"] = config_empresa.logo_base64
+
+            lista_datos_pdf.append(datos_pdf)
+
+        # 4. Generar ZIP con la facade
+        from src.infraestructura.servicios.servicio_pdf_facade import ServicioPDFFacade
+
+        facade = ServicioPDFFacade()
+        zip_path = facade.generar_lote_recibos_recaudo_zip(
+            lista_datos=lista_datos_pdf,
+            filename_prefix=f"recibos_recaudo_{periodo}",
+        )
+
+        logger.info(f"ZIP generado exitosamente: {zip_path}")
+        return zip_path

@@ -4,8 +4,11 @@ Implementa persistencia para pagos recibidos de inquilinos.
 Compatible con PostgreSQL (Producción) y SQLite (Desarrollo).
 """
 
+import logging
 from datetime import datetime
 from typing import List, Optional, Any, Dict
+
+logger = logging.getLogger(__name__)
 
 from src.dominio.entidades.recaudo import Recaudo
 from src.dominio.entidades.recaudo_concepto import RecaudoConcepto
@@ -304,37 +307,76 @@ class RepositorioRecaudo:
 
         conn.commit()
 
-    def actualizar(self, recaudo: Recaudo, usuario_sistema: str) -> None:
-        """Actualiza un recaudo existente."""
+    def actualizar(
+        self,
+        recaudo: Recaudo,
+        usuario_sistema: str,
+        conceptos: Optional[List[RecaudoConcepto]] = None,
+    ) -> None:
+        """Actualiza un recaudo existente y sus conceptos."""
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(
-            f"""
-            UPDATE RECAUDOS SET
-                FECHA_PAGO = {placeholder},
-                VALOR_TOTAL = {placeholder},
-                METODO_PAGO = {placeholder},
-                REFERENCIA_BANCARIA = {placeholder},
-                OBSERVACIONES = {placeholder},
-                UPDATED_AT = {placeholder},
-                UPDATED_BY = {placeholder}
-            WHERE ID_RECAUDO = {placeholder}
-        """,
-            (
-                recaudo.fecha_pago,
-                recaudo.valor_total,
-                recaudo.metodo_pago,
-                recaudo.referencia_bancaria,
-                recaudo.observaciones,
-                datetime.now().isoformat(),
-                usuario_sistema,
-                recaudo.id_recaudo,
-            ),
-        )
+        try:
+            # 1. Actualizar el recaudo principal
+            cursor.execute(
+                f"""
+                UPDATE RECAUDOS SET
+                    FECHA_PAGO = {placeholder},
+                    VALOR_TOTAL = {placeholder},
+                    METODO_PAGO = {placeholder},
+                    REFERENCIA_BANCARIA = {placeholder},
+                    OBSERVACIONES = {placeholder},
+                    UPDATED_AT = {placeholder},
+                    UPDATED_BY = {placeholder}
+                WHERE ID_RECAUDO = {placeholder}
+            """,
+                (
+                    recaudo.fecha_pago,
+                    recaudo.valor_total,
+                    recaudo.metodo_pago,
+                    recaudo.referencia_bancaria,
+                    recaudo.observaciones,
+                    datetime.now().isoformat(),
+                    usuario_sistema,
+                    recaudo.id_recaudo,
+                ),
+            )
 
-        conn.commit()
+            # 2. Actualizar conceptos si se proporcionan
+            if conceptos is not None:
+                # Eliminar conceptos anteriores
+                cursor.execute(
+                    f"DELETE FROM RECAUDO_CONCEPTOS WHERE ID_RECAUDO = {placeholder}",
+                    (recaudo.id_recaudo,),
+                )
+
+                # Insertar nuevos conceptos
+                for concepto in conceptos:
+                    cursor.execute(
+                        f"""
+                        INSERT INTO RECAUDO_CONCEPTOS (
+                            ID_RECAUDO, TIPO_CONCEPTO, PERIODO, VALOR, 
+                            CREATED_AT
+                        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                    """,
+                        (
+                            recaudo.id_recaudo,
+                            concepto.tipo_concepto,
+                            concepto.periodo,
+                            concepto.valor,
+                            datetime.now().isoformat(),
+                        ),
+                    )
+
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"Error al actualizar recaudo: {e}")
+            raise e
+        finally:
+            cursor.close()
 
     def contar_con_filtros(
         self,
@@ -596,3 +638,93 @@ class RepositorioRecaudo:
             }
             for row in rows
         ]
+
+    def obtener_recaudos_por_periodo(self, periodo: str) -> List[Dict[str, Any]]:
+        """Obtiene recaudos con datos enriquecidos por período para generación masiva de PDFs.
+
+        Args:
+            periodo: Período en formato YYYY-MM.
+
+        Returns:
+            Lista de diccionarios con datos completos (recaudo + propiedad + arrendatario + conceptos).
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        # Query principal: recaudos con JOINs enriquecidos
+        query = f"""
+            SELECT DISTINCT
+                r.ID_RECAUDO,
+                r.ID_CONTRATO_A,
+                r.FECHA_PAGO,
+                r.VALOR_TOTAL,
+                r.METODO_PAGO,
+                r.REFERENCIA_BANCARIA,
+                r.ESTADO_RECAUDO,
+                r.OBSERVACIONES,
+                p.DIRECCION_PROPIEDAD,
+                p.MATRICULA_INMOBILIARIA,
+                m.NOMBRE_MUNICIPIO AS MUNICIPIO,
+                m.DEPARTAMENTO,
+                per.NOMBRE_COMPLETO AS NOMBRE_ARRENDATARIO,
+                per.NUMERO_DOCUMENTO AS DOCUMENTO_ARRENDATARIO,
+                per.CORREO_ELECTRONICO AS EMAIL_ARRENDATARIO,
+                per.TELEFONO_PRINCIPAL AS TELEFONO_ARRENDATARIO
+            FROM RECAUDOS r
+            INNER JOIN RECAUDO_CONCEPTOS rc ON r.ID_RECAUDO = rc.ID_RECAUDO
+            INNER JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
+            INNER JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+            LEFT JOIN MUNICIPIOS m ON p.ID_MUNICIPIO = m.ID_MUNICIPIO
+            INNER JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+            INNER JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+            WHERE rc.PERIODO = {placeholder}
+            ORDER BY r.ID_RECAUDO
+        """
+
+        cursor.execute(query, (periodo,))
+        recaudos_rows = cursor.fetchall()
+
+        resultados: List[Dict[str, Any]] = []
+
+        for row in recaudos_rows:
+            id_recaudo = row["ID_RECAUDO"]
+
+            # Obtener conceptos para este recaudo
+            query_conceptos = f"""
+                SELECT TIPO_CONCEPTO, VALOR, PERIODO
+                FROM RECAUDO_CONCEPTOS
+                WHERE ID_RECAUDO = {placeholder}
+                ORDER BY TIPO_CONCEPTO
+            """
+            cursor.execute(query_conceptos, (id_recaudo,))
+            conceptos_rows = cursor.fetchall()
+
+            resultados.append({
+                "id_recaudo": row["ID_RECAUDO"],
+                "id_contrato_a": row["ID_CONTRATO_A"],
+                "fecha_pago": row["FECHA_PAGO"],
+                "valor_total": row["VALOR_TOTAL"],
+                "metodo_pago": row["METODO_PAGO"],
+                "referencia_bancaria": row.get("REFERENCIA_BANCARIA") or "",
+                "estado_recaudo": row["ESTADO_RECAUDO"],
+                "observaciones": row.get("OBSERVACIONES") or "",
+                "direccion_propiedad": row["DIRECCION_PROPIEDAD"],
+                "matricula_inmobiliaria": row.get("MATRICULA_INMOBILIARIA") or "Sin matrícula",
+                "municipio": row.get("MUNICIPIO", "Armenia"),
+                "departamento": row.get("DEPARTAMENTO", "Quindío"),
+                "nombre_arrendatario": row["NOMBRE_ARRENDATARIO"],
+                "documento_arrendatario": row["DOCUMENTO_ARRENDATARIO"],
+                "email_arrendatario": row.get("EMAIL_ARRENDATARIO") or "No registrado",
+                "telefono_arrendatario": row.get("TELEFONO_ARRENDATARIO") or "No registrado",
+                "conceptos": [
+                    {
+                        "tipo_concepto": c["TIPO_CONCEPTO"],
+                        "valor": c["VALOR"],
+                        "periodo": c["PERIODO"],
+                    }
+                    for c in conceptos_rows
+                ],
+            })
+
+        return resultados
