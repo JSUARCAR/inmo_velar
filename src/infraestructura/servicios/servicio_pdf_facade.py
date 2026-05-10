@@ -10,7 +10,7 @@ Fecha: 2026-01-18
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 # Setup logger
 logger = logging.getLogger("PDFElite")
@@ -342,6 +342,32 @@ class ServicioPDFFacade:
             raise ValueError("Error generando informe de recaudos")
 
         return str(path)
+
+    def generar_lote_recibos_recaudo_zip(
+        self, lista_datos: List[Dict[str, Any]], filename_prefix: str = "lote_recibos_recaudo"
+    ) -> str:
+        """Genera un lote de recibos de recaudo élite y los comprime en un archivo ZIP.
+
+        Args:
+            lista_datos: Lista de diccionarios con datos formateados para recibo recaudo élite.
+            filename_prefix: Prefijo para el archivo ZIP de salida.
+
+        Returns:
+            Ruta absoluta del archivo ZIP generado.
+        """
+        if not self.elite_enabled:
+            raise ValueError("Características élite no habilitadas")
+
+        logger.debug(
+            "🔧 SERVICE LAYER: Facade method called - generar_lote_recibos_recaudo_zip"
+        )
+        logger.debug(f"📦 Total recibos a generar: {len(lista_datos)}")
+
+        return self._doc_service.generar_lote_recibos_recaudo_zip(
+            lista_datos=lista_datos,
+            facade=self,
+            filename_prefix=filename_prefix,
+        )
 
     # ========================================================================
     # MÉTODOS DE MIGRACIÓN

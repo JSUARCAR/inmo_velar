@@ -638,3 +638,93 @@ class RepositorioRecaudo:
             }
             for row in rows
         ]
+
+    def obtener_recaudos_por_periodo(self, periodo: str) -> List[Dict[str, Any]]:
+        """Obtiene recaudos con datos enriquecidos por período para generación masiva de PDFs.
+
+        Args:
+            periodo: Período en formato YYYY-MM.
+
+        Returns:
+            Lista de diccionarios con datos completos (recaudo + propiedad + arrendatario + conceptos).
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        # Query principal: recaudos con JOINs enriquecidos
+        query = f"""
+            SELECT DISTINCT
+                r.ID_RECAUDO,
+                r.ID_CONTRATO_A,
+                r.FECHA_PAGO,
+                r.VALOR_TOTAL,
+                r.METODO_PAGO,
+                r.REFERENCIA_BANCARIA,
+                r.ESTADO_RECAUDO,
+                r.OBSERVACIONES,
+                p.DIRECCION_PROPIEDAD,
+                p.MATRICULA_INMOBILIARIA,
+                m.NOMBRE_MUNICIPIO AS MUNICIPIO,
+                m.DEPARTAMENTO,
+                per.NOMBRE_COMPLETO AS NOMBRE_ARRENDATARIO,
+                per.NUMERO_DOCUMENTO AS DOCUMENTO_ARRENDATARIO,
+                per.CORREO_ELECTRONICO AS EMAIL_ARRENDATARIO,
+                per.TELEFONO_PRINCIPAL AS TELEFONO_ARRENDATARIO
+            FROM RECAUDOS r
+            INNER JOIN RECAUDO_CONCEPTOS rc ON r.ID_RECAUDO = rc.ID_RECAUDO
+            INNER JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
+            INNER JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+            LEFT JOIN MUNICIPIOS m ON p.ID_MUNICIPIO = m.ID_MUNICIPIO
+            INNER JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+            INNER JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+            WHERE rc.PERIODO = {placeholder}
+            ORDER BY r.ID_RECAUDO
+        """
+
+        cursor.execute(query, (periodo,))
+        recaudos_rows = cursor.fetchall()
+
+        resultados: List[Dict[str, Any]] = []
+
+        for row in recaudos_rows:
+            id_recaudo = row["ID_RECAUDO"]
+
+            # Obtener conceptos para este recaudo
+            query_conceptos = f"""
+                SELECT TIPO_CONCEPTO, VALOR, PERIODO
+                FROM RECAUDO_CONCEPTOS
+                WHERE ID_RECAUDO = {placeholder}
+                ORDER BY TIPO_CONCEPTO
+            """
+            cursor.execute(query_conceptos, (id_recaudo,))
+            conceptos_rows = cursor.fetchall()
+
+            resultados.append({
+                "id_recaudo": row["ID_RECAUDO"],
+                "id_contrato_a": row["ID_CONTRATO_A"],
+                "fecha_pago": row["FECHA_PAGO"],
+                "valor_total": row["VALOR_TOTAL"],
+                "metodo_pago": row["METODO_PAGO"],
+                "referencia_bancaria": row.get("REFERENCIA_BANCARIA") or "",
+                "estado_recaudo": row["ESTADO_RECAUDO"],
+                "observaciones": row.get("OBSERVACIONES") or "",
+                "direccion_propiedad": row["DIRECCION_PROPIEDAD"],
+                "matricula_inmobiliaria": row.get("MATRICULA_INMOBILIARIA") or "Sin matrícula",
+                "municipio": row.get("MUNICIPIO", "Armenia"),
+                "departamento": row.get("DEPARTAMENTO", "Quindío"),
+                "nombre_arrendatario": row["NOMBRE_ARRENDATARIO"],
+                "documento_arrendatario": row["DOCUMENTO_ARRENDATARIO"],
+                "email_arrendatario": row.get("EMAIL_ARRENDATARIO") or "No registrado",
+                "telefono_arrendatario": row.get("TELEFONO_ARRENDATARIO") or "No registrado",
+                "conceptos": [
+                    {
+                        "tipo_concepto": c["TIPO_CONCEPTO"],
+                        "valor": c["VALOR"],
+                        "periodo": c["PERIODO"],
+                    }
+                    for c in conceptos_rows
+                ],
+            })
+
+        return resultados

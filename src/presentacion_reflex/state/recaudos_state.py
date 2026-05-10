@@ -49,6 +49,11 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
     is_loading: bool = False
     error_message: str = ""
 
+    # Modal exportación masiva recibos
+    mostrar_modal_exportar_recibos: bool = False
+    periodo_exportar_recibos: str = ""
+    exportando_recibos: bool = False
+
     # Ordenamiento
     sort_by: str = "fecha_pago"
     sort_order: str = "desc"
@@ -671,3 +676,60 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             async with self:
                 self.error_message = f"Error al generar pagos masivos: {str(e)}"
                 self.is_loading = False
+
+    # ==================== EXPORTACIÓN MASIVA RECIBOS PDF ====================
+
+    @rx.event
+    def abrir_modal_exportar_recibos(self):
+        """Abre el modal de selección de período para exportar recibos."""
+        from datetime import datetime as dt
+
+        self.periodo_exportar_recibos = dt.now().strftime("%Y-%m")
+        self.mostrar_modal_exportar_recibos = True
+
+    @rx.event
+    def cerrar_modal_exportar_recibos(self):
+        """Cierra el modal de exportación."""
+        self.mostrar_modal_exportar_recibos = False
+        self.periodo_exportar_recibos = ""
+
+    @rx.event
+    def set_periodo_exportar(self, valor: str):
+        """Actualiza el período de exportación seleccionado."""
+        self.periodo_exportar_recibos = valor
+
+    @rx.event(background=True)
+    async def exportar_recibos_zip(self):
+        """Genera el ZIP de recibos del período seleccionado y dispara la descarga."""
+        async with self:
+            periodo = self.periodo_exportar_recibos
+            if not periodo:
+                self.error_message = "Seleccione un período válido"
+                return
+            self.exportando_recibos = True
+            self.error_message = ""
+            self.mostrar_modal_exportar_recibos = False
+
+        try:
+            servicio = _crear_servicio()
+            zip_path = servicio.generar_recibos_masivos_pdf(periodo)
+
+            async with self:
+                self.exportando_recibos = False
+
+            yield rx.toast.success(
+                f"ZIP de recibos generado para {periodo}"
+            )
+
+            # Disparar descarga usando el script compartido de PDFState
+            from src.presentacion_reflex.state.pdf_state import PDFState
+            yield PDFState.descargar_pdf_script(zip_path)
+
+        except ValueError as ve:
+            async with self:
+                self.exportando_recibos = False
+            yield rx.toast.warning(str(ve))
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al exportar recibos: {str(e)}"
+                self.exportando_recibos = False
