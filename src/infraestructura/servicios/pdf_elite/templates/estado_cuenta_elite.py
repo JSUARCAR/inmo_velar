@@ -251,22 +251,20 @@ class EstadoCuentaElite(BaseDocumentTemplate):
 
         detalles = data["detalle_propiedades"]
 
-        # Headers de la tabla detallada
-        headers = ["ID", "CANON", "COMISIÓN", "SEGURO", "IVA", "4X1000", "ADMIN", "SERV", "PREDIAL", "OTRO", "NETO"]
+        # Headers de la tabla detallada (Eliminados SEGURO y 4X1000)
+        headers = ["ID", "CANON", "COMISIÓN", "IVA", "ADMIN", "SERV", "PREDIAL", "OTRO", "NETO"]
 
         # Convertir a filas
         rows = []
         
         # Totales columnas
-        t_canon = t_comision = t_seguro = t_iva = t_4x1000 = t_admin = t_serv = t_predial = t_otro = t_total = 0
+        t_canon = t_comision = t_iva = t_admin = t_serv = t_predial = t_otro = t_total = 0
 
         for d in detalles:
             # Acumular
             t_canon += d["canon"]
             t_comision += d["comision"]
-            t_seguro += d["seguro"]
             t_iva += d["iva"]
-            t_4x1000 += d["impuesto_4x1000"]
             t_admin += d["admin"]
             t_serv += d["servicios"]
             t_predial += d["predial"]
@@ -278,9 +276,7 @@ class EstadoCuentaElite(BaseDocumentTemplate):
                 str(d["id"]),
                 f"${d['canon']:,.0f}",
                 f"${d['comision']:,.0f}",
-                f"${d['seguro']:,.0f}",
                 f"${d['iva']:,.0f}",
-                f"${d['impuesto_4x1000']:,.0f}",
                 f"${d['admin']:,.0f}",
                 f"${d['servicios']:,.0f}",
                 f"${d['predial']:,.0f}",
@@ -293,9 +289,7 @@ class EstadoCuentaElite(BaseDocumentTemplate):
             "TOTAL",
             f"${t_canon:,.0f}",
             f"${t_comision:,.0f}",
-            f"${t_seguro:,.0f}",
             f"${t_iva:,.0f}",
-            f"${t_4x1000:,.0f}",
             f"${t_admin:,.0f}",
             f"${t_serv:,.0f}",
             f"${t_predial:,.0f}",
@@ -303,13 +297,12 @@ class EstadoCuentaElite(BaseDocumentTemplate):
             f"${t_total:,.0f}"
         ])
 
-        # Crear tabla (Puede requerir ajuste de fuente por el ancho)
-        # AdvancedTable auto-ajusta, pero con tantas columnas es mejor letra pequeña
+        # Crear tabla
         table = AdvancedTable.create_data_table(
             headers, 
             rows, 
             zebra_stripe=True,
-            font_size=6  # Fuente reducida para encajar 11 columnas
+            font_size=7  # Se aumenta ligeramente la fuente al haber menos columnas
         )
         # Hack de estilo si AdvancedTable lo permite, si no confiamos en auto-fit
         
@@ -352,15 +345,10 @@ class EstadoCuentaElite(BaseDocumentTemplate):
 
     def _add_notas(self, data: Dict[str, Any]) -> None:
         """Agrega notas y observaciones"""
-        '''if "notas" in data and data["notas"]:
-            self.add_heading("OBSERVACIONES", level=2)
-
-            notas = data["notas"]
-            if isinstance(notas, list):
-                for nota in notas:
-                    self.add_paragraph(f"• {nota}", style_name="Small")
-            else:
-                self.add_paragraph(notas, style_name="Small")'''
+        if "observaciones" in data and data["observaciones"]:
+            self.add_spacer(0.1)
+            self.add_heading("OBSERVACIONES", level=3)
+            self.add_paragraph(data["observaciones"], style_name="Small")
 
         # Pie legal
         self.add_legal_footer_text(

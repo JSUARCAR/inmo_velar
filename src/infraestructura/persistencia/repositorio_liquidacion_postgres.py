@@ -1210,6 +1210,14 @@ class RepositorioLiquidacionPostgres:
                 }
             )
 
+        # 4. Consolidar observaciones
+        lista_obs = [l.get("OBSERVACIONES") for l in liquidaciones if l.get("OBSERVACIONES")]
+        observaciones_final = ""
+        if lista_obs:
+            observaciones_final = " | ".join(lista_obs)
+        else:
+            observaciones_final = f"Estado de cuenta consolidado para {len(liquidaciones)} inmuebles."
+
         return {
             "propietario": propietario["NOMBRE_COMPLETO"],
             "documento": propietario["NUMERO_DOCUMENTO"],
@@ -1236,7 +1244,7 @@ class RepositorioLiquidacionPostgres:
             "pago_predial": pago_predial,
             "seguro_monto": sum(l.get("SEGURO_MONTO", 0) for l in liquidaciones),
             "otros_egr": otros_egr,
-            "observaciones": f"Estado de cuenta consolidado para {len(liquidaciones)} inmuebles.",
+            "observaciones": observaciones_final,
         }
 
     def marcar_como_pagadas_por_propietario(

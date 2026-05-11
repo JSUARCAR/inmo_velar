@@ -160,10 +160,10 @@ class ServicioFinanciero:
             )
 
         iva_comision = int(comision_monto * (iva_val / 10000.0))
-        impuesto_4x1000 = int(total_ingresos * (imp_4x1000_val / 1000.0))
+        impuesto_4x1000 = 0 # Eliminado por política Elite
+        seguro_monto = 0 # Eliminado por política Elite
 
-        # Cálculo del Seguro y Administración: obtener desde Propiedad
-        seguro_monto = 0
+        # Obtención de Valor Administración desde Propiedad
         valor_admin_propiedad = 0
         try:
             from src.infraestructura.persistencia.database import db_manager
@@ -185,33 +185,9 @@ class ServicioFinanciero:
                 row_prop = cursor.fetchone()
 
                 if row_prop:
-                    id_propiedad = row_prop["ID_PROPIEDAD"]
                     valor_admin_propiedad = row_prop["VALOR_ADMINISTRACION"] or 0
-
-                    # Buscar seguro: Póliza activa → Seguro del arrendatario
-                    query_seguro = f"""
-                    SELECT COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0) as PCT_SEGURO
-                    FROM PROPIEDADES p
-                    LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON p.ID_PROPIEDAD = ca.ID_PROPIEDAD AND ca.ESTADO_CONTRATO_A = 'Activo'
-                    LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
-                    LEFT JOIN POLIZAS pol ON ca.ID_CONTRATO_A = pol.ID_CONTRATO AND pol.ESTADO = 'Activa'
-                    LEFT JOIN SEGUROS seg ON pol.ID_SEGURO = seg.ID_SEGURO
-                    LEFT JOIN SEGUROS seg_arr ON arr.ID_SEGURO = seg_arr.ID_SEGURO
-                    WHERE p.ID_PROPIEDAD = {placeholder}
-                    LIMIT 1
-                    """
-                    cursor.execute(query_seguro, (id_propiedad,))
-                    row_seguro = cursor.fetchone()
-
-                    if row_seguro:
-                        pct_seguro = row_seguro["PCT_SEGURO"] or 0
-                        # Normalizar: si viene en base 100+ (ej: 200 → 2.0%)
-                        if pct_seguro > 100:
-                            pct_seguro = pct_seguro / 100
-                        if pct_seguro > 0:
-                            seguro_monto = int(canon_bruto * pct_seguro / 100)
         except Exception:
-            seguro_monto = 0
+            valor_admin_propiedad = 0
 
         liquidacion = Liquidacion(
             id_contrato_m=id_contrato_m,
@@ -570,6 +546,7 @@ class ServicioFinanciero:
             "lista_propiedades": lista_propiedades,
             "detalle_propiedades": detalle_propiedades,
             "resumen": resumen,
+            "observaciones": datos.get("observaciones"), # Propagación vital
             "empresa": datos.get("empresa", {}),
             "modo": "consolidado"
         }
@@ -677,22 +654,8 @@ class ServicioFinanciero:
             liquidacion.canon_bruto + liquidacion.otros_ingresos
         )
 
-        # 2. Comisión (Si cambia el ingreso, podría cambiar la base? Normalmente es sobre canon)
-        # Pero si la comisión es fija sobre canon, no cambia.
-        # Si la lógica de negocio dice que otros ingresos comisionan, habría que ajustar.
-        # Asumiremos la lógica original: Comisión sobre CANON.
-        # Sin embargo, el TOTAL INGRESOS afecta el 4x1000.
-
-        # Recalcular 4x1000
-        imp_4x1000_val = 4
-        if self.servicio_config:
-            imp_4x1000_val = self.servicio_config.obtener_valor_parametro(
-                "IMPUESTO_4X1000", 4
-            )
-
-        liquidacion.impuesto_4x1000 = int(
-            liquidacion.total_ingresos * (imp_4x1000_val / 1000.0)
-        )
+        # 2. Impuesto 4x1000 (Forzado a 0 por política Elite)
+        liquidacion.impuesto_4x1000 = 0
 
         # El método repository.actualizar llamará a calcular_totales() para sumar egresos y neto
         self.repo_liquidacion.actualizar(liquidacion, usuario_sistema)

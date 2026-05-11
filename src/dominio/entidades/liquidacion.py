@@ -85,17 +85,19 @@ class Liquidacion:
 
     def calcular_totales(self):
         """Calcula automáticamente los totales y el neto a pagar"""
+        # Forzar a 0 deducciones eliminadas por política elite
+        self.impuesto_4x1000 = 0
+        self.seguro_monto = 0
+
         self.total_ingresos = self.canon_bruto + self.otros_ingresos
 
         self.total_egresos = (
             self.comision_monto
             + self.iva_comision
-            + self.impuesto_4x1000
             + self.gastos_administracion
             + self.gastos_servicios
             + self.gastos_reparaciones
             + (self.pago_predial or 0)
-            + (self.seguro_monto or 0)
             + (self.otros_egresos or 0)
         )
 

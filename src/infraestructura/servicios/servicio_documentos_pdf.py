@@ -394,33 +394,10 @@ class ServicioDocumentosPDF:
         pdf.cell(140, 7, "IVA Comisión (19%)", border=1)
         pdf.cell(50, 7, f"${iva_comision:,}", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
 
-        # 3. GMF
-        pdf.cell(140, 7, "Gravamen Financiero (4x1000)", border=1)
-        pdf.cell(50, 7, f"${datos['impuesto_4x1000']:,}", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
-
         # Inicializar acumulador de egresos recalculado
-        total_egresos_calc = comision_monto + iva_comision + datos["impuesto_4x1000"]
+        total_egresos_calc = comision_monto + iva_comision
 
-        # 4. Seguro (Calculado: Canon * Pct_Seguro)
-        pct_seguro = datos.get("seguro_pct") or 0
-        valor_seguro = 0
-        
-        # Normalizar porcentaje si viene en formato base 100 (ej: 200 -> 2.0) o base 1000
-        if pct_seguro > 100:
-            pct_seguro = pct_seguro / 100
-            
-        if pct_seguro > 0:
-            valor_seguro = int(datos["canon"] * pct_seguro / 100)
-            pdf.cell(140, 7, f"Seguro ({pct_seguro}%)", border=1)
-            pdf.cell(50, 7, f"${valor_seguro:,}", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
-        else:
-            # Mostrar fila vacía si se pide explícitamente "ver el seguro" aunque sea 0
-            pdf.cell(140, 7, "Seguro", border=1)
-            pdf.cell(50, 7, "$ -", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
-        
-        total_egresos_calc += valor_seguro
-
-        # 5. Administración del Conjunto
+        # 3. Administración del Conjunto
         val_admin = datos.get("valor_administracion") or 0
         pdf.cell(140, 7, "Administración del Conjunto", border=1)
         valor_str = f"${val_admin:,}" if val_admin > 0 else "$ -"
@@ -428,28 +405,28 @@ class ServicioDocumentosPDF:
 
         total_egresos_calc += val_admin
 
-        # 6. Servicios Públicos
+        # 4. Servicios Públicos
         val_serv = datos.get("gastos_serv") or 0
         pdf.cell(140, 7, "Servicios Públicos", border=1)
         valor_str = f"${val_serv:,}" if val_serv > 0 else "$ -"
         pdf.cell(50, 7, valor_str, border=1, align="R", new_x="LMARGIN", new_y="NEXT")
         total_egresos_calc += val_serv
 
-        # 7. Pago Predial
+        # 5. Pago Predial
         val_predial = datos.get("pago_predial") or 0
         pdf.cell(140, 7, "Pago Predial", border=1)
         valor_str = f"${val_predial:,}" if val_predial > 0 else "$ -"
         pdf.cell(50, 7, valor_str, border=1, align="R", new_x="LMARGIN", new_y="NEXT")
         total_egresos_calc += val_predial
 
-        # 8. Incidentes
+        # 6. Incidentes
         val_rep = datos.get("gastos_rep") or 0
         pdf.cell(140, 7, "Incidentes", border=1)
         valor_str = f"${val_rep:,}" if val_rep > 0 else "$ -"
         pdf.cell(50, 7, valor_str, border=1, align="R", new_x="LMARGIN", new_y="NEXT")
         total_egresos_calc += val_rep
         
-        # 9. Otros Egresos
+        # 7. Otros Egresos
         val_otros = datos.get("otros_egr") or 0
         pdf.cell(140, 7, "Otros Egresos", border=1)
         valor_str = f"${val_otros:,}" if val_otros > 0 else "$ -"
@@ -492,7 +469,17 @@ class ServicioDocumentosPDF:
             new_y="NEXT",
         )
 
-        pdf.ln(10)
+        pdf.ln(5)
+
+        # --- Observaciones ---
+        if datos.get("observaciones"):
+            pdf.set_font("helvetica", "B", 10)
+            pdf.cell(0, 7, "OBSERVACIONES:", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("helvetica", "", 9)
+            pdf.multi_cell(0, 6, datos["observaciones"], border=1)
+            pdf.ln(5)
+
+        pdf.ln(5)
 
         # --- Información de Transferencia (si aplica) ---
         if datos["estado"] == "Pagada":

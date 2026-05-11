@@ -911,6 +911,7 @@ class PDFState(rx.State):
             "lista_propiedades": [{"id": prop_id, "direccion": inmueble["direccion"]}],
             "detalle_propiedades": [detalle],
             "resumen": resumen,
+            "observaciones": datos.get("observaciones"), # Propagación vital
             "empresa": datos.get("empresa", {}),
             "modo": "individual",
         }
@@ -1029,9 +1030,9 @@ class PDFState(rx.State):
             "detalle_propiedades": detalle_propiedades,
             "resumen": resumen,
             "empresa": datos.get("empresa", {}),
+            "observaciones": datos.get("observaciones"), # Usar la nueva clave unificada
             "notas": [
                 f"Estado de cuenta consolidado - {datos['cantidad_propiedades']} propiedades",
-                datos.get("observaciones", ""),
             ],
             "modo": "consolidado",
         }
