@@ -52,7 +52,7 @@ class RepositorioLiquidacionAsesor:
         )
 
         try:
-            with self.db_manager.obtener_conexion() as conn:
+            with self.db_manager.transaccion() as conn:
                 cursor = conn.cursor()
                 cursor.execute(query, params)
                 # Fetch ID from RETURNING clause
@@ -114,7 +114,7 @@ class RepositorioLiquidacionAsesor:
             liquidacion.id_liquidacion_asesor,
         )
 
-        with self.db_manager.obtener_conexion() as conn:
+        with self.db_manager.transaccion() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params)
             if cursor.rowcount == 0:
@@ -434,7 +434,7 @@ class RepositorioLiquidacionAsesor:
             ) VALUES ({ph}, {ph}, {ph}, {ph})
         """
 
-        with self.db_manager.obtener_conexion() as conn:
+        with self.db_manager.transaccion() as conn:
             cursor = conn.cursor()
             for id_contrato, canon in contratos_ids_canones:
                 cursor.execute(query, (id_liquidacion, id_contrato, canon, usuario))

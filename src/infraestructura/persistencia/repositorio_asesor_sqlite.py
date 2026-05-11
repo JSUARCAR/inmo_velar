@@ -40,10 +40,13 @@ class RepositorioAsesorSQLite:
                 row_dict.get("comision_porcentaje_venta")
                 or row_dict.get("COMISION_PORCENTAJE_VENTA")
             ),
-            fecha_ingreso=(row_dict.get("fecha_ingreso") or row_dict.get("FECHA_INGRESO")),
+            fecha_ingreso=(
+                row_dict.get("fecha_ingreso") or row_dict.get("FECHA_INGRESO")
+            ),
             estado=(row_dict.get("estado") or row_dict.get("ESTADO")),
             motivo_inactivacion=(
-                row_dict.get("motivo_inactivacion") or row_dict.get("MOTIVO_INACTIVACION")
+                row_dict.get("motivo_inactivacion")
+                or row_dict.get("MOTIVO_INACTIVACION")
             ),
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
@@ -57,7 +60,9 @@ class RepositorioAsesorSQLite:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(f"SELECT * FROM ASESORES WHERE ID_ASESOR = {placeholder}", (id_asesor,))
+        cursor.execute(
+            f"SELECT * FROM ASESORES WHERE ID_ASESOR = {placeholder}", (id_asesor,)
+        )
 
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
@@ -68,7 +73,9 @@ class RepositorioAsesorSQLite:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(f"SELECT * FROM ASESORES WHERE ID_PERSONA = {placeholder}", (id_persona,))
+        cursor.execute(
+            f"SELECT * FROM ASESORES WHERE ID_PERSONA = {placeholder}", (id_persona,)
+        )
 
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
@@ -79,15 +86,13 @@ class RepositorioAsesorSQLite:
         cursor = self.db.get_dict_cursor(conn)
         self.db.get_placeholder()
 
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT a.*, p.NOMBRE_COMPLETO, p.NUMERO_DOCUMENTO
             FROM ASESORES a
             JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA
-            WHERE a.ESTADO = 1 
+            WHERE a.ESTADO = TRUE 
             ORDER BY p.NOMBRE_COMPLETO
-        """
-        )
+        """)
 
         asesores = []
         for row in cursor.fetchall():
@@ -108,14 +113,12 @@ class RepositorioAsesorSQLite:
         cursor = self.db.get_dict_cursor(conn)
         self.db.get_placeholder()
 
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT a.*, p.NOMBRE_COMPLETO, p.NUMERO_DOCUMENTO
             FROM ASESORES a
             JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA
             ORDER BY p.NOMBRE_COMPLETO
-        """
-        )
+        """)
 
         asesores = []
         for row in cursor.fetchall():
@@ -148,6 +151,7 @@ class RepositorioAsesorSQLite:
                     CREATED_AT,
                     CREATED_BY
                 ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                RETURNING ID_ASESOR
                 """,
             (
                 asesor.id_persona,
@@ -161,8 +165,13 @@ class RepositorioAsesorSQLite:
             ),
         )
 
+        row = cursor.fetchone()
+        if hasattr(row, "get"):
+            asesor.id_asesor = row.get("id_asesor") or row.get("ID_ASESOR")
+        elif row:
+            asesor.id_asesor = row[0]
+
         conn.commit()
-        asesor.id_asesor = self.db.get_last_insert_id(cursor, "ASESORES", "ID_ASESOR")
 
         return asesor
 
@@ -201,6 +210,8 @@ class RepositorioAsesorSQLite:
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(f"DELETE FROM ASESORES WHERE ID_PERSONA = {placeholder}", (id_persona,))
+        cursor.execute(
+            f"DELETE FROM ASESORES WHERE ID_PERSONA = {placeholder}", (id_persona,)
+        )
         conn.commit()
         return cursor.rowcount > 0

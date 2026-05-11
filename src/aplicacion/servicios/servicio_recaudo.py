@@ -28,6 +28,8 @@ from src.aplicacion.esquemas.recaudo import (
     RecaudoDTO,
     RecaudoDetalleDTO,
     ConceptoDTO,
+    EmpresaDTO,
+    RecaudoMapper,
     ResultadoGeneracionMasiva,
     ResultadoOperacion,
 )
@@ -298,7 +300,7 @@ class ServicioRecaudo:
 
     def listar_paginado(
         self, filtros: FiltrosRecaudo
-    ) -> ResultadoPaginado[Dict[str, Any]]:
+    ) -> ResultadoPaginado[RecaudoDTO]:
         """
         Lista recaudos con filtros y paginación.
 
@@ -306,7 +308,7 @@ class ServicioRecaudo:
             filtros: Filtros tipados para la consulta
 
         Returns:
-            ResultadoPaginado con los items y metadata
+            ResultadoPaginado con los items DTO y metadata
         """
         estado_str = filtros.estado.value if filtros.estado else None
 
@@ -317,7 +319,7 @@ class ServicioRecaudo:
             busqueda=filtros.busqueda,
         )
 
-        items = self.repo.listar_paginado(
+        rows = self.repo.listar_paginado(
             limit=filtros.page_size,
             offset=filtros.offset,
             estado=estado_str,
@@ -328,6 +330,8 @@ class ServicioRecaudo:
             sort_order=filtros.sort_order,
         )
 
+        items = [RecaudoMapper.map_to_dto(row) for row in rows]
+
         return ResultadoPaginado(
             items=items,
             total=total,
@@ -335,7 +339,7 @@ class ServicioRecaudo:
             page_size=filtros.page_size,
         )
 
-    def obtener_detalle(self, id_recaudo: int) -> Optional[Dict[str, Any]]:
+    def obtener_detalle(self, id_recaudo: int) -> Optional[RecaudoDetalleDTO]:
         """
         Obtiene el detalle completo de un recaudo.
 
@@ -343,18 +347,43 @@ class ServicioRecaudo:
             id_recaudo: ID del recaudo
 
         Returns:
-            Dict con datos del recaudo, contrato y conceptos, o None
+            RecaudoDetalleDTO con datos del recaudo y conceptos, o None
         """
         recaudo = self.repo.obtener_por_id(id_recaudo)
         if not recaudo:
             return None
 
-        conceptos = self.repo.obtener_conceptos_por_recaudo(id_recaudo)
+        conceptos_entities = self.repo.obtener_conceptos_por_recaudo(id_recaudo)
+        
+        info_contrato = self.obtener_info_contrato(recaudo.id_contrato_a)
 
-        return {
-            "recaudo": recaudo,
-            "conceptos": conceptos,
-        }
+        conceptos_dto = [
+            ConceptoDTO(
+                tipo=c.tipo_concepto,
+                periodo=c.periodo,
+                valor=c.valor,
+                valor_view=format_currency(c.valor),
+            )
+            for c in conceptos_entities
+        ]
+
+        return RecaudoDetalleDTO(
+            id_recaudo=recaudo.id_recaudo or 0,
+            id_contrato=recaudo.id_contrato_a,
+            direccion=info_contrato.get("direccion", ""),
+            matricula=info_contrato.get("matricula", ""),
+            arrendatario=info_contrato.get("arrendatario", ""),
+            fecha_pago=recaudo.fecha_pago,
+            valor_total=recaudo.valor_total,
+            valor_total_view=format_currency(recaudo.valor_total),
+            metodo_pago=recaudo.metodo_pago.value if hasattr(recaudo.metodo_pago, "value") else str(recaudo.metodo_pago),
+            referencia=recaudo.referencia_bancaria or "",
+            estado=recaudo.estado_recaudo.value if hasattr(recaudo.estado_recaudo, "value") else str(recaudo.estado_recaudo),
+            observaciones=recaudo.observaciones or "",
+            created_at=recaudo.created_at or "",
+            created_by=recaudo.created_by or "",
+            conceptos=conceptos_dto,
+        )
 
     def obtener_contratos_activos(self) -> List[Dict[str, Any]]:
         """
@@ -556,7 +585,7 @@ class ServicioRecaudo:
 
         Orquesta:
         1. Consulta al repositorio para obtener recaudos enriquecidos.
-        2. Transformación de datos al formato PDF élite.
+        2. Transformación de datos al formato PDF élite mediante Mapper.
         3. Delegación a la facade para generación paralela y empaquetado ZIP.
 
         Args:
@@ -584,91 +613,34 @@ class ServicioRecaudo:
         logger.info(f"Se encontraron {len(recaudos)} recaudos en el período {periodo}")
 
         # 2. Inyectar datos de empresa (logo)
-        config_empresa = None
+        empresa_dto = None
         try:
             from src.aplicacion.servicios.servicio_configuracion import (
                 ServicioConfiguracion,
             )
 
             servicio_config = ServicioConfiguracion(self.db)
-            config_empresa = servicio_config.obtener_configuracion_empresa()
+            config_emp = servicio_config.obtener_configuracion_empresa()
+            if config_emp:
+                empresa_dto = EmpresaDTO(
+                    nombre=config_emp.nombre_empresa,
+                    nit=config_emp.nit,
+                    direccion=config_emp.direccion,
+                    telefono=config_emp.telefono,
+                    email=config_emp.email,
+                    logo_base64=config_emp.logo_base64,
+                    website=config_emp.website,
+                )
         except Exception as e:
             logger.warning(f"No se pudo cargar configuración de empresa: {e}")
 
-        # 3. Transformar datos al formato PDF élite (misma estructura que PDFState)
-        lista_datos_pdf = []
-        for rec in recaudos:
-            # Extraer período del primer concepto (o usar el proporcionado)
-            periodo_concepto = periodo
-            if rec.get("conceptos"):
-                periodo_concepto = rec["conceptos"][0].get("periodo", periodo)
-
-            datos_pdf = {
-                # IDs y período
-                "id": rec["id_recaudo"],
-                "periodo": periodo_concepto,
-                "fecha_generacion": rec["fecha_pago"],
-                "estado": rec["estado_recaudo"],
-                # Propietario (flat strings para compatibilidad con template)
-                "propietario": "Inmobiliaria Velar",
-                "documento": "N/A",
-                "direccion_propietario": "N/A",
-                # Propiedad
-                "propiedad": rec["direccion_propiedad"],
-                "matricula": rec["matricula_inmobiliaria"],
-                "municipio": rec["municipio"].upper(),
-                "departamento": rec["departamento"].upper(),
-                # Arrendatario
-                "arrendatario": rec["nombre_arrendatario"],
-                "arrendatario_doc": rec["documento_arrendatario"],
-                "email": rec["email_arrendatario"],
-                "telefono": rec["telefono_arrendatario"],
-                # Financiero
-                "valor_total": rec["valor_total"],
-                "canon": rec["valor_total"],
-                "otros_ingresos": 0,
-                "total_ingresos": rec["valor_total"],
-                # Egresos
-                "comision_pct": 0,
-                "comision_monto": 0,
-                "iva_comision": 0,
-                "impuesto_4x1000": 0,
-                "gastos_admin": 0,
-                "gastos_serv": 0,
-                "gastos_rep": 0,
-                "otros_egr": 0,
-                "total_egresos": 0,
-                # Neto
-                "neto_pagar": rec["valor_total"],
-                # Pago
-                "fecha_pago": rec["fecha_pago"],
-                "metodo_pago": rec["metodo_pago"] or "N/A",
-                "referencia_pago": rec["referencia_bancaria"] or "N/A",
-                # Bancario
-                "cuenta_bancaria": "No aplica",
-                "tipo_cuenta": rec["metodo_pago"],
-                "banco": "Caja General",
-                # Observaciones
-                "observaciones": f"Arrendatario: {rec['nombre_arrendatario']} ({rec['documento_arrendatario']}). {rec['observaciones']}".strip(),
-                # Auditoría
-                "created_at": datetime.now().isoformat(),
-                "created_by": "Sistema",
-            }
-
-            # Inyectar empresa si disponible
-            if config_empresa:
-                datos_pdf["empresa"] = {
-                    "nombre": config_empresa.nombre_empresa,
-                    "nit": config_empresa.nit,
-                    "direccion": config_empresa.direccion,
-                    "telefono": config_empresa.telefono,
-                    "email": config_empresa.email,
-                    "logo_base64": config_empresa.logo_base64,
-                    "website": config_empresa.website,
-                }
-                datos_pdf["logo_base64"] = config_empresa.logo_base64
-
-            lista_datos_pdf.append(datos_pdf)
+        # 3. Transformar datos al formato PDF élite mediante Mapper
+        lista_datos_pdf = [
+            RecaudoMapper.map_to_pdf_dto(
+                rec, empresa=empresa_dto, periodo_fallback=periodo
+            ).model_dump()
+            for rec in recaudos
+        ]
 
         # 4. Generar ZIP con la facade
         from src.infraestructura.servicios.servicio_pdf_facade import ServicioPDFFacade

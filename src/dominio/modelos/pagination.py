@@ -37,8 +37,8 @@ class PaginationParams:
             raise ValueError("page debe ser >= 1")
         if self.page_size < 1:
             raise ValueError("page_size debe ser >= 1")
-        if self.page_size > 100:
-            raise ValueError("page_size debe ser <= 100")
+        if self.page_size > 1000:
+            raise ValueError("page_size debe ser <= 1000")
 
     @property
     def offset(self) -> int:

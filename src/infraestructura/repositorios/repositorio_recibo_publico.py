@@ -29,6 +29,7 @@ class RepositorioReciboPublico:
                 FECHA_DESDE, FECHA_HASTA, DIAS_FACTURADOS,
                 CREATED_BY, UPDATED_BY
             ) VALUES ({self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder}, {self.placeholder})
+            RETURNING ID_RECIBO_PUBLICO
         """
 
         params = (
@@ -48,10 +49,11 @@ class RepositorioReciboPublico:
         )
 
         try:
-            with self.db_manager.obtener_conexion() as conn:
-                cursor = conn.cursor()
+            with self.db_manager.transaccion() as cursor:
                 cursor.execute(query, params)
-                recibo.id_recibo_publico = cursor.lastrowid
+                row = cursor.fetchone()
+                if row:
+                    recibo.id_recibo_publico = row["ID_RECIBO_PUBLICO"] if isinstance(row, dict) else row[0]
                 return recibo
         except sqlite3.IntegrityError as e:
             if "UNIQUE constraint failed" in str(e):
@@ -102,8 +104,7 @@ class RepositorioReciboPublico:
             recibo.id_recibo_publico,
         )
 
-        with self.db_manager.obtener_conexion() as conn:
-            cursor = conn.cursor()
+        with self.db_manager.transaccion() as cursor:
             cursor.execute(query, params)
             if cursor.rowcount == 0:
                 raise ValueError(f"No se encontró el recibo con ID {recibo.id_recibo_publico}")
@@ -296,8 +297,7 @@ class RepositorioReciboPublico:
         """
         query = f"DELETE FROM RECIBOS_PUBLICOS WHERE ID_RECIBO_PUBLICO = {self.placeholder}"
 
-        with self.db_manager.obtener_conexion() as conn:
-            cursor = conn.cursor()
+        with self.db_manager.transaccion() as cursor:
             cursor.execute(query, (id_recibo,))
             return cursor.rowcount > 0
 

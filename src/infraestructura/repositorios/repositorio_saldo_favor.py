@@ -36,6 +36,7 @@ class RepositorioSaldoFavor:
                 ESTADO, FECHA_RESOLUCION, OBSERVACIONES,
                 CREATED_BY, UPDATED_BY
             ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+            RETURNING ID_SALDO_FAVOR
         """
 
         params = (
@@ -52,10 +53,11 @@ class RepositorioSaldoFavor:
             usuario,
         )
 
-        with self.db_manager.obtener_conexion() as conn:
-            cursor = conn.cursor()
+        with self.db_manager.transaccion() as cursor:
             cursor.execute(query, params)
-            saldo.id_saldo_favor = cursor.lastrowid
+            row = cursor.fetchone()
+            if row:
+                saldo.id_saldo_favor = row["ID_SALDO_FAVOR"] if isinstance(row, dict) else row[0]
             return saldo
 
     def actualizar(self, saldo: SaldoFavor, usuario: str) -> SaldoFavor:

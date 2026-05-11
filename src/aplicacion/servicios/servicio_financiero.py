@@ -3,9 +3,12 @@ Servicio de Aplicación: Gestión Financiera
 Coordina la lógica de negocio para recaudos y liquidaciones.
 """
 
+import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from dateutil.relativedelta import relativedelta
+
+logger = logging.getLogger(__name__)
 
 from src.dominio.entidades.liquidacion import Liquidacion
 from src.dominio.entidades.recaudo import Recaudo
@@ -495,6 +498,135 @@ class ServicioFinanciero:
         return self.repo_liquidacion.obtener_consolidado_propietario(
             id_propietario, periodo
         )
+
+    def mapear_consolidado_a_pdf_elite(self, datos: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Mapea los datos crudos del consolidado al formato estructurado que espera el template Elite.
+        Resuelve el error de validación de campos faltantes (estado_id, inmueble, etc).
+        """
+        # 1. Construir objeto propietario (nested)
+        propietario = {
+            "nombre": datos["propietario"],
+            "documento": datos["documento"],
+            "telefono": datos.get("telefono", "N/A"),
+            "email": datos.get("email", "N/A"),
+        }
+
+        # 2. Usar primera propiedad como inmueble principal (para el header del PDF)
+        propiedades = datos.get("propiedades", [])
+        if propiedades:
+            primera_prop = propiedades[0]
+            inmueble = {
+                "direccion": primera_prop["direccion"],
+                "tipo": "Propiedad",
+                "canon": primera_prop["canon"],
+            }
+        else:
+            inmueble = {"direccion": "N/A", "tipo": "Propiedad", "canon": 0}
+
+        # 3. Formatear detalle de propiedades (lista de filas para la tabla detallada)
+        detalle_propiedades = []
+        lista_propiedades = []
+        
+        for idx, prop in enumerate(propiedades, 1):
+            prop_id = prop.get("id", idx)
+            lista_propiedades.append({"id": prop_id, "direccion": prop["direccion"]})
+            
+            detalle_propiedades.append({
+                "id": prop_id,
+                "canon": prop.get("canon", 0) or 0,
+                "comision": prop.get("comision_monto", 0) or 0,
+                "seguro": prop.get("seguro_monto", 0) or 0,
+                "iva": prop.get("iva_comision", 0) or 0,
+                "impuesto_4x1000": prop.get("impuesto_4x1000", 0) or 0,
+                "admin": prop.get("gastos_admin", 0) or 0,
+                "servicios": prop.get("gastos_serv", 0) or 0,
+                "predial": prop.get("pago_predial", 0) or 0,
+                "incidente": (prop.get("gastos_rep", 0) or 0) + (prop.get("otros_egr", 0) or 0),
+                "total": prop.get("neto", 0) or 0
+            })
+
+        # 4. Construir resumen financiero consolidado
+        resumen = {
+            "total_ingresos": datos.get("total_ingresos", 0) or 0,
+            "total_egresos": datos.get("total_egresos", 0) or 0,
+            "honorarios": datos.get("comision_monto", 0) or 0,
+            "otros_descuentos": (datos.get("total_egresos", 0) or 0) - (datos.get("comision_monto", 0) or 0),
+            "valor_neto": datos.get("neto_pagar", 0) or 0,
+            "cuenta_bancaria": f"{datos.get('banco', 'N/A')} - {datos.get('tipo_cuenta', 'N/A')} {datos.get('cuenta_bancaria', 'N/A')}",
+            "fecha_pago": datos.get("fecha_pago", ""),
+        }
+
+        # 5. Formato final compatible con EstadoCuentaElite
+        # Generar un ID numérico para el documento
+        estado_id = abs(hash(f"{datos['propietario']}-{datos['periodo']}")) % 1000000
+
+        return {
+            "estado_id": estado_id,
+            "propietario": propietario,
+            "inmueble": inmueble,
+            "periodo": datos["periodo"],
+            "fecha_generacion": datos.get("fecha_generacion") or datetime.now().strftime("%Y-%m-%d"),
+            "lista_propiedades": lista_propiedades,
+            "detalle_propiedades": detalle_propiedades,
+            "resumen": resumen,
+            "empresa": datos.get("empresa", {}),
+            "modo": "consolidado"
+        }
+
+    def exportar_estados_cuenta_periodo_zip(self, periodo: str) -> str:
+        """
+        Genera un lote de estados de cuenta consolidados por propietario para un periodo.
+        Utiliza el motor Élite y devuelve la ruta al archivo ZIP.
+        """
+        logger.info(f"Iniciando exportación masiva de estados de cuenta para el periodo: {periodo}")
+        
+        # 1. Obtener lista de propietarios que tienen liquidaciones en este periodo
+        resultado_agrupado = self.listar_liquidaciones_propietarios_paginado(
+            page=1,
+            page_size=1000, 
+            periodo=periodo,
+            estado="Todos"
+        )
+        
+        propietarios = resultado_agrupado.items
+        if not propietarios:
+            raise ValueError(f"No se encontraron liquidaciones para exportar en el periodo {periodo}")
+            
+        logger.debug(f"Se encontraron {len(propietarios)} propietarios para procesar.")
+        
+        # 2. Preparar lista de datos para el motor PDF Elite
+        lista_datos_pdf = []
+        for prop in propietarios:
+            try:
+                id_propietario = prop["id_propietario"]
+                # Obtener el consolidado completo desde el repo
+                datos_raw = self.obtener_datos_consolidados_para_pdf(id_propietario, periodo)
+                
+                if datos_raw:
+                    # MAPEO CRÍTICO: Transformar formato legacy a Elite estructurado
+                    datos_elite = self.mapear_consolidado_a_pdf_elite(datos_raw)
+                    lista_datos_pdf.append(datos_elite)
+            except Exception as e:
+                logger.error(f"Error preparando datos para propietario {prop.get('propietario')}: {e}")
+                
+        if not lista_datos_pdf:
+            raise ValueError("No se pudieron preparar datos para ninguna liquidación en este periodo.")
+            
+        # 3. Delegar al Facade para generación masiva con motor Elite
+        from src.infraestructura.servicios.servicio_pdf_facade import ServicioPDFFacade
+        # Si self.pdf_service es la Facade, la usamos. Si no, instanciamos una localmente.
+        facade = self.pdf_service
+        if not isinstance(facade, ServicioPDFFacade):
+             facade = ServicioPDFFacade()
+             
+        zip_path = facade.generar_lote_liquidaciones_elite_zip(
+            lista_datos=lista_datos_pdf,
+            filename_prefix=f"estados_cuenta_{periodo.replace('-', '_')}"
+        )
+        
+        logger.info(f"Exportación masiva completada exitosamente: {zip_path}")
+        return zip_path
 
     def actualizar_liquidacion(
         self,

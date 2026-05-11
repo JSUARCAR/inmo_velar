@@ -9,6 +9,7 @@ Fecha: 2026-01-18
 """
 
 import logging
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -21,7 +22,6 @@ from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocume
 from .pdf_elite.core.config import config
 from .pdf_elite.templates.certificado_template import CertificadoTemplate
 
-# Importar nuevos templates élite
 # Importar nuevos templates élite
 from .pdf_elite.templates.contrato_template import ContratoArrendamientoElite
 from .pdf_elite.templates.contrato_template_local import (
@@ -71,15 +71,6 @@ class ServicioPDFFacade:
         # Configuración
         self.elite_enabled = elite_enabled
         self.output_dir = Path(output_dir) if output_dir else config.output_dir
-
-        # Generadores élite (lazy initialization)
-        self._contrato_gen: Optional[ContratoArrendamientoElite] = None
-        self._contrato_local_gen: Optional[ContratoLocalElite] = None
-        self._contrato_mandato_gen: Optional[ContratoMandatoElite] = None
-        self._certificado_gen: Optional[CertificadoTemplate] = None
-        self._estado_cuenta_gen: Optional[EstadoCuentaElite] = None
-        self._recibo_recaudo_gen: Optional[ReciboRecaudoElite] = None
-        self._informe_recaudos_gen: Optional[InformeRecaudosElite] = None
 
     # ========================================================================
     # MÉTODOS LEGACY (100% COMPATIBILIDAD)
@@ -176,34 +167,21 @@ class ServicioPDFFacade:
         logger.debug(f"📋 Contract Type: {tipo_contrato}")
         logger.debug(f"🏠 Property Type: {tipo_propiedad}")
 
-        generator = None
-
-        # Lógica de selección de plantilla
-        # Lógica de selección de plantilla
+        # Lógica de selección de plantilla - Instanciación local para Thread-Safety
         if tipo_contrato.upper() == "MANDATO":
-            # Safety check for hot-reload scenarios using getattr
-            if not getattr(self, "_contrato_mandato_gen", None):
-                self._contrato_mandato_gen = ContratoMandatoElite(self.output_dir)
-            generator = self._contrato_mandato_gen
-
+            generator = ContratoMandatoElite(self.output_dir)
         elif tipo_contrato == "Arrendamiento":
             if tipo_propiedad == "Local Comercial":
-                if not getattr(self, "_contrato_local_gen", None):
-                    self._contrato_local_gen = ContratoLocalElite(self.output_dir)
-                generator = self._contrato_local_gen
+                generator = ContratoLocalElite(self.output_dir)
             else:
                 # Default Arrendamiento (Vivienda/Otros)
-                if not getattr(self, "_contrato_gen", None):
-                    self._contrato_gen = ContratoArrendamientoElite(self.output_dir)
-                generator = self._contrato_gen
+                generator = ContratoArrendamientoElite(self.output_dir)
         else:
             # Fallback a Arrendamiento estándar si no coincide nada
             logger.warning(
                 f"⚠️ Tipo de contrato desconocido: {tipo_contrato}. Usando estándar."
             )
-            if not self._contrato_gen:
-                self._contrato_gen = ContratoArrendamientoElite(self.output_dir)
-            generator = self._contrato_gen
+            generator = ContratoArrendamientoElite(self.output_dir)
 
         # Agregar estado si es borrador
         if usar_borrador:
@@ -242,10 +220,8 @@ class ServicioPDFFacade:
         logger.debug(f"📦 Data keys received: {list(datos.keys())}")
         logger.debug(f"🏅 Certificate type: {datos.get('tipo', 'unknown')}")
 
-        if not self._certificado_gen:
-            self._certificado_gen = CertificadoTemplate(self.output_dir)
-
-        path = self._certificado_gen.generate_safe(datos)
+        generator = CertificadoTemplate(self.output_dir)
+        path = generator.generate_safe(datos)
 
         if not path:
             raise ValueError("Error generando certificado élite")
@@ -277,10 +253,8 @@ class ServicioPDFFacade:
         logger.debug(f"📦 Data keys received: {list(datos.keys())}")
         logger.debug(f"📊 Movements count: {len(datos.get('movimientos', []))}")
 
-        if not self._estado_cuenta_gen:
-            self._estado_cuenta_gen = EstadoCuentaElite(self.output_dir)
-
-        path = self._estado_cuenta_gen.generate_safe(datos)
+        generator = EstadoCuentaElite(self.output_dir)
+        path = generator.generate_safe(datos)
 
         if not path:
             raise ValueError("Error generando estado de cuenta élite")
@@ -305,10 +279,8 @@ class ServicioPDFFacade:
         )
         logger.debug(f"📦 Data keys received: {list(datos.keys())}")
 
-        if not getattr(self, "_recibo_recaudo_gen", None):
-            self._recibo_recaudo_gen = ReciboRecaudoElite(self.output_dir)
-
-        path = self._recibo_recaudo_gen.generate_safe(datos)
+        generator = ReciboRecaudoElite(self.output_dir)
+        path = generator.generate_safe(datos)
 
         if not path:
             raise ValueError("Error generando recibo de recaudo élite")
@@ -333,10 +305,8 @@ class ServicioPDFFacade:
         )
         logger.debug(f"📦 Data keys received: {list(datos.keys())}")
 
-        if not getattr(self, "_informe_recaudos_gen", None):
-            self._informe_recaudos_gen = InformeRecaudosElite(self.output_dir)
-
-        path = self._informe_recaudos_gen.generate_safe(datos)
+        generator = InformeRecaudosElite(self.output_dir)
+        path = generator.generate_safe(datos)
 
         if not path:
             raise ValueError("Error generando informe de recaudos")
@@ -363,11 +333,79 @@ class ServicioPDFFacade:
         )
         logger.debug(f"📦 Total recibos a generar: {len(lista_datos)}")
 
-        return self._doc_service.generar_lote_recibos_recaudo_zip(
+        return self.legacy_service.generar_lote_recibos_recaudo_zip(
             lista_datos=lista_datos,
             facade=self,
             filename_prefix=filename_prefix,
         )
+
+    def generar_lote_liquidaciones_elite_zip(
+        self, lista_datos: List[Dict[str, Any]], filename_prefix: str = "lote_liquidaciones_periodo"
+    ) -> str:
+        """Genera un lote de estados de cuenta élite (liquidaciones) y los comprime en un archivo ZIP.
+
+        Args:
+            lista_datos: Lista de diccionarios con datos formateados para estado de cuenta élite.
+            filename_prefix: Prefijo para el archivo ZIP de salida.
+
+        Returns:
+            Ruta absoluta del archivo ZIP generado.
+        """
+        if not self.elite_enabled:
+            raise ValueError("Características élite no habilitadas")
+
+        logger.debug(
+            "🔧 SERVICE LAYER: Facade method called - generar_lote_liquidaciones_elite_zip"
+        )
+        logger.debug(f"📦 Total liquidaciones a generar: {len(lista_datos)}")
+
+        # Reutilizamos la lógica de compresión del servicio legacy pero pasando el método elite
+        import zipfile
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        zip_filename = f"{filename_prefix}_{datetime.now().strftime('%Y%m%d%H%M%S')}.zip"
+        zip_path = self.output_dir / zip_filename
+
+        generated_files: List[Path] = []
+
+        def _generate_one(datos_pdf: Dict[str, Any]) -> Optional[str]:
+            """Worker para generar una liquidación individual (thread-safe)."""
+            try:
+                # IMPORTANTE: Usamos el generador ELITE
+                path = self.generar_estado_cuenta_elite(datos_pdf)
+                return path
+            except Exception as e:
+                logger.error(
+                    f"Error generando liquidación PDF para ID {datos_pdf.get('id')}: {e}"
+                )
+                return None
+
+        # Ejecutar en paralelo (I/O bound)
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_id = {
+                executor.submit(_generate_one, d): d.get("id") for d in lista_datos
+            }
+
+            for future in as_completed(future_to_id):
+                path = future.result()
+                if path:
+                    generated_files.append(Path(path))
+
+        if not generated_files:
+            raise ValueError("No se pudo generar ninguna liquidación PDF para el lote")
+
+        # Crear ZIP
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            for file_path in generated_files:
+                if file_path.exists():
+                    zf.write(file_path, arcname=file_path.name)
+                    try:
+                        file_path.unlink()
+                    except Exception:
+                        pass
+
+        logger.info(f"ZIP de liquidaciones generado con {len(generated_files)} archivos en: {zip_path}")
+        return str(zip_path.absolute())
 
     # ========================================================================
     # MÉTODOS DE MIGRACIÓN

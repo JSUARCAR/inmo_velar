@@ -1,5 +1,5 @@
 """
-Repositorio SQLite para Liquidación.
+Repositorio Postgres para Liquidación.
 Implementa persistencia para estados de cuenta del propietario.
 """
 
@@ -10,8 +10,8 @@ from src.dominio.entidades.liquidacion import Liquidacion
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
-class RepositorioLiquidacionSQLite:
-    """Repositorio SQLite para la entidad Liquidacion."""
+class RepositorioLiquidacionPostgres:
+    """Repositorio Postgres para la entidad Liquidacion."""
 
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager

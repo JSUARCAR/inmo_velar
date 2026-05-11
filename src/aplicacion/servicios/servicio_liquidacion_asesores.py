@@ -52,7 +52,7 @@ class ServicioLiquidacionAsesores:
         self.repo_descuento = repo_descuento
         self.repo_pago = repo_pago
         self.repo_bonificacion = repo_bonificacion
-        self.repo_contrato = repo_contrato_arrendamiento
+        self.repo_contrato_arrendamiento = repo_contrato_arrendamiento
         self.repo_propiedad = repo_propiedad
         self.servicio_pdf = servicio_pdf
         self.repo_asesor = repo_asesor
@@ -315,17 +315,11 @@ class ServicioLiquidacionAsesores:
         contratos_unicos = {c["id"]: c for c in contratos_lista}.values()
         contratos_tuplas = [(c["id"], c.get("canon", 0)) for c in contratos_unicos]
 
-        print(
-            f"[SERVICE] Asociando {len(contratos_tuplas)} contratos a la liquidación {liquidacion_creada.id_liquidacion_asesor}..."
-        )
         try:
             self.repo_liquidacion.guardar_contratos_liquidacion(
                 liquidacion_creada.id_liquidacion_asesor, contratos_tuplas, usuario
             )
-            print("[SERVICE] Contratos asociados exitosamente")
         except Exception as e:
-            print(f"[SERVICE] ERROR al asociar contratos: {e}")
-            # Considerar si revertir la liquidación creada o dejarla así
             raise
 
         # Auditoría Elite
@@ -1050,6 +1044,93 @@ class ServicioLiquidacionAsesores:
                     resultados[estado_row] = total_row
 
             return resultados
+
+    def obtener_contratos_activos_asesor(self, id_asesor: int) -> List[Dict]:
+        """
+        Obtiene los contratos activos de un asesor.
+        Delegado al repositorio de contratos.
+        """
+        if not self.repo_contrato_arrendamiento:
+            return []
+
+        # Usar el método que devuelve detalles formateados (JOIN con Propiedades)
+        props = self.repo_contrato_arrendamiento.obtener_detalle_contratos_asesor(
+            id_asesor
+        )
+
+        # Normalizar claves para la UI
+        formatted = []
+        for p in props:
+            def gv(k):
+                return p.get(k) or p.get(k.upper()) or p.get(k.lower())
+
+            formatted.append(
+                {
+                    "id_contrato": gv("ID_CONTRATO_A"),
+                    "canon": gv("CANON_ARRENDAMIENTO"),
+                    "direccion": gv("DIRECCION_PROPIEDAD"),
+                }
+            )
+        return formatted
+
+    def generar_liquidaciones_masivas_optimizado(
+        self, periodo: str, usuario: str
+    ) -> Dict[str, int]:
+        """
+        Genera liquidaciones para todos los asesores activos en un período.
+        OPTIMIZACIÓN ÉLITE: Resuelve N+1 queries.
+        """
+        if not self.repo_asesor or not self.repo_contrato_arrendamiento:
+            raise ValueError("Repositorios necesarios no configurados")
+
+        stats = {"creadas": 0, "omitidas": 0, "errores": 0, "total": 0}
+
+        # 1. Obtener todos los asesores activos
+        asesores = self.repo_asesor.listar_activos()
+        stats["total"] = len(asesores)
+
+        # 2. Obtener TODOS los contratos activos agrupados (1 sola query)
+        contratos_agrupados = (
+            self.repo_contrato_arrendamiento.obtener_activos_todos_agrupados()
+        )
+
+        for asesor in asesores:
+            try:
+                # Verificar si ya existe liquidación
+                if self.repo_liquidacion.obtener_por_asesor_periodo(
+                    asesor.id_asesor, periodo
+                ):
+                    stats["omitidas"] += 1
+                    continue
+
+                # Obtener contratos del diccionario en memoria (O(1))
+                contratos_asesor = contratos_agrupados.get(asesor.id_asesor, [])
+                if not contratos_asesor:
+                    stats["omitidas"] += 1
+                    continue
+
+                # Preparar datos
+                contratos_lista = [
+                    {"id": c.id_contrato_a, "canon": c.canon_arrendamiento}
+                    for c in contratos_asesor
+                ]
+                pct = int((asesor.comision_porcentaje_arriendo or 5.0) * 100)
+
+                # Generar
+                self.generar_liquidacion_multi_contrato(
+                    id_asesor=asesor.id_asesor,
+                    periodo=periodo,
+                    contratos_lista=contratos_lista,
+                    porcentaje_comision=pct,
+                    total_bonificaciones=0,
+                    datos_adicionales={"observaciones": "Generación Masiva Optimizada"},
+                    usuario=usuario,
+                )
+                stats["creadas"] += 1
+            except Exception:
+                stats["errores"] += 1
+
+        return stats
 
     def obtener_detalle_completo(self, id_liquidacion: int) -> Dict[str, Any]:
         """

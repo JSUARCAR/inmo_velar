@@ -77,8 +77,19 @@ class EstadoCuentaElite(BaseDocumentTemplate):
         # Habilitar QR de verificación
         self.enable_verification_qr("estado", data["estado_id"])
 
-        # Crear documento
-        filename = self._generate_filename("estado_cuenta", data["estado_id"])
+        # Determinar descriptor para el nombre de archivo (Dirección de la propiedad)
+        descriptor = "consolidado"
+        if data.get("inmueble") and data["inmueble"].get("direccion"):
+            descriptor = data["inmueble"]["direccion"]
+        elif data.get("propiedad"): # Fallback por si acaso
+            descriptor = data["propiedad"]
+
+        # Crear documento con nomenclatura personalizada: estado_cuenta_[DIRECCION]_[DDMMAAAAHHMMSS]
+        filename = self._generate_filename(
+            prefix="estado_cuenta", 
+            descriptor=descriptor,
+            timestamp_format="%d%m%Y%H%M%S"
+        )
         self.create_document(filename, self.document_title)
 
         # Construir contenido

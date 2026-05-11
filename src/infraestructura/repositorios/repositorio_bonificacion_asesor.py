@@ -32,8 +32,7 @@ class RepositorioBonificacionAsesor:
             usuario,
         )
 
-        with self.db_manager.obtener_conexion() as conn:
-            cursor = self.db_manager.get_dict_cursor(conn)
+        with self.db_manager.transaccion() as cursor:
             cursor.execute(query, params)
             row = cursor.fetchone()
             
@@ -78,8 +77,7 @@ class RepositorioBonificacionAsesor:
         ph = self.db_manager.get_placeholder()
         query = f"DELETE FROM BONIFICACIONES_ASESORES WHERE ID_BONIFICACION_ASESOR = {ph}"
 
-        with self.db_manager.obtener_conexion() as conn:
-            cursor = conn.cursor()
+        with self.db_manager.transaccion() as cursor:
             cursor.execute(query, (id_bonificacion,))
             return cursor.rowcount > 0
 

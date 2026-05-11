@@ -28,7 +28,8 @@ class RepositorioDescuentoAsesor:
             DescuentoAsesor con ID asignado
         """
         # One-line hardcoded query
-        query = "INSERT INTO DESCUENTOS_ASESORES (ID_LIQUIDACION_ASESOR, TIPO_DESCUENTO, DESCRIPCION_DESCUENTO, VALOR_DESCUENTO, CREATED_BY) VALUES (%s, %s, %s, %s, %s) RETURNING ID_DESCUENTO_ASESOR"
+        ph = self.db_manager.get_placeholder() if hasattr(self.db_manager, "get_placeholder") else "?"
+        query = f"INSERT INTO DESCUENTOS_ASESORES (ID_LIQUIDACION_ASESOR, TIPO_DESCUENTO, DESCRIPCION_DESCUENTO, VALOR_DESCUENTO, CREATED_BY) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}) RETURNING ID_DESCUENTO_ASESOR"
 
         params = (
             descuento.id_liquidacion_asesor,
@@ -38,8 +39,7 @@ class RepositorioDescuentoAsesor:
             usuario,
         )
 
-        with self.db_manager.obtener_conexion() as conn:
-            cursor = conn.cursor()
+        with self.db_manager.transaccion() as cursor:
             cursor.execute(query, params)
             # Fetch ID from RETURNING clause
             row = cursor.fetchone()
@@ -150,8 +150,7 @@ class RepositorioDescuentoAsesor:
         )
         query = f"DELETE FROM DESCUENTOS_ASESORES WHERE ID_DESCUENTO_ASESOR = {ph}"
 
-        with self.db_manager.obtener_conexion() as conn:
-            cursor = conn.cursor()
+        with self.db_manager.transaccion() as cursor:
             cursor.execute(query, (id_descuento,))
             return cursor.rowcount > 0
 

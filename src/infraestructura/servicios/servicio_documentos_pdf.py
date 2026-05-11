@@ -6,9 +6,12 @@ Utiliza fpdf2 para crear comprobantes de recaudo y estados de cuenta.
 import base64
 import tempfile
 import os
+import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from fpdf import FPDF
 

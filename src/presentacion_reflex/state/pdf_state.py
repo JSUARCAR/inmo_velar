@@ -788,8 +788,8 @@ class PDFState(rx.State):
         from src.infraestructura.persistencia.repositorio_recaudo import (
             RepositorioRecaudo,
         )
-        from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
-            RepositorioLiquidacionSQLite,
+        from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
+            RepositorioLiquidacionPostgres,
         )
         from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
             RepositorioPropiedadPostgres,
@@ -806,7 +806,7 @@ class PDFState(rx.State):
 
         # Instanciar dependencias
         repo_recaudo = RepositorioRecaudo(db_manager)
-        repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+        repo_liquidacion = RepositorioLiquidacionPostgres(db_manager)
         repo_propiedad = RepositorioPropiedadPostgres(db_manager)
         repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
         repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
@@ -1365,8 +1365,8 @@ class PDFState(rx.State):
         from src.infraestructura.persistencia.repositorio_recaudo import (
             RepositorioRecaudo,
         )
-        from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
-            RepositorioLiquidacionSQLite,
+        from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
+            RepositorioLiquidacionPostgres,
         )
         from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
             RepositorioPropiedadPostgres,
@@ -1383,7 +1383,7 @@ class PDFState(rx.State):
 
         # Instanciar dependencias
         repo_recaudo = RepositorioRecaudo(db_manager)
-        repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+        repo_liquidacion = RepositorioLiquidacionPostgres(db_manager)
         repo_propiedad = RepositorioPropiedadPostgres(db_manager)
         repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
         repo_mandato = RepositorioContratoMandatoPostgres(db_manager)

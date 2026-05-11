@@ -14,6 +14,7 @@ from src.presentacion_reflex.components.liquidaciones import (
     liquidacion_edit_form,
     payment_form,
     reverse_confirm_dialog,
+    modal_exportar_liquidaciones_periodo,
 )
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
@@ -58,6 +59,18 @@ def render_estado_recaudo_badge(estado_recaudo: rx.Var) -> rx.Component:
 def liquidaciones_toolbar() -> rx.Component:
     """Barra de herramientas con filtros y búsqueda con diseño neumórfico."""
     return rx.flex(
+        # Botón Exportar Lote Periodo ZIP
+        rx.cond(
+            AuthState.check_action("Liquidaciones", "CREAR"),
+            rx.tooltip(
+                neuro_button(
+                    rx.icon("file-archive", size=20),
+                    on_click=LiquidacionesState.open_export_modal,
+                    loading=LiquidacionesState.exportando_periodo,
+                ),
+                content="Exportar Periodo (ZIP)",
+            ),
+        ),
         # Toggle Vista Agrupada
         rx.flex(
             rx.switch(
@@ -612,6 +625,7 @@ def liquidaciones_page() -> rx.Component:
         ),
         cancel_modal(),
         reverse_confirm_dialog(),
+        modal_exportar_liquidaciones_periodo(),
         width="100%",
         spacing="4",
         padding="2em",

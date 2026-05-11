@@ -534,8 +534,8 @@ class ContratosState(DocumentosStateMixin):
                 total = res_m.total + res_a.total
 
             # Cargar cumplimiento (Excepción temporal SQLite hasta migrar liquidaciones/recaudos)
-            from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
-                RepositorioLiquidacionSQLite,
+            from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
+                RepositorioLiquidacionPostgres,
             )
             from src.infraestructura.persistencia.repositorio_recaudo import (
                 RepositorioRecaudo,
@@ -544,7 +544,7 @@ class ContratosState(DocumentosStateMixin):
                 obtener_periodo_actual,
             )
 
-            repo_liq = RepositorioLiquidacionSQLite(db_manager)
+            repo_liq = RepositorioLiquidacionPostgres(db_manager)
             repo_recaudo = RepositorioRecaudo(db_manager)
             periodo = obtener_periodo_actual()
 

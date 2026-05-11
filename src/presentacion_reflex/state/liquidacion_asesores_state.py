@@ -7,6 +7,9 @@ from src.aplicacion.servicios.servicio_liquidacion_asesores import (
     ServicioLiquidacionAsesores,
 )
 from src.infraestructura.persistencia.database import db_manager
+from src.infraestructura.persistencia.repositorio_asesor_sqlite import (
+    RepositorioAsesorSQLite,
+)
 from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
     RepositorioContratoArrendamientoSQLite,
 )
@@ -22,6 +25,7 @@ from src.infraestructura.repositorios.repositorio_liquidacion_asesor import (
 from src.infraestructura.repositorios.repositorio_pago_asesor import (
     RepositorioPagoAsesor,
 )
+from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 
 
@@ -84,11 +88,20 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
     descuentos_actuales: List[Dict[str, Any]] = []
     bonificaciones_actuales: List[Dict[str, Any]] = []
 
+    # Helper items (temporary) - for create/edit mode
+    existing_discounts: List[Dict[str, Any]] = []
+    existing_bonuses: List[Dict[str, Any]] = []
+    new_discounts: List[Dict[str, Any]] = []
+    new_bonuses: List[Dict[str, Any]] = []
+    temp_discount: Dict[str, Any] = {"tipo": "Otros", "descripcion": "", "valor": ""}
+    temp_bonus: Dict[str, Any] = {"tipo": "Bono", "descripcion": "", "valor": ""}
+    advisor_properties: List[Dict[str, Any]] = []
+
     def set_form_field(self, name: str, value: Any):
         """Actualiza un campo del formulario."""
         self.form_data[name] = value
 
-        # ELITE DEBUG: Si cambia el asesor, cargar sus propiedades y su porcentaje de comisión
+        # Si cambia el asesor, cargar sus propiedades y su porcentaje de comisión
         if name == "id_asesor" and value:
             try:
                 # 1. Buscar el porcentaje de comisión del asesor seleccionado
@@ -98,15 +111,12 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         # Asignar automáticamente el porcentaje al formulario
                         pct = asesor.get("comision_porcentaje", 5.0)
                         self.form_data["porcentaje_comision"] = str(pct)
-                        print(
-                            f"[DEBUG] Autopoblado Porcentaje: {pct}% para asesor {id_str}"
-                        )
                         break
 
                 # 2. Disparamos el evento de carga de propiedades en background
                 return LiquidacionAsesoresState.fetch_advisor_properties(int(value))
-            except Exception as e:
-                print(f"[DEBUG] Error en set_form_field reactivo: {e}")
+            except Exception:
+                pass
 
     def set_discount_field(self, name: str, value: Any):
         """Actualiza un campo del formulario de descuento."""
@@ -124,11 +134,12 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
+            auth_state = await self.get_state(AuthState)
+            usuario = auth_state.user_nombre
 
         try:
             repo_descuento = RepositorioDescuentoAsesor(db_manager)
             servicio = ServicioLiquidacionAsesores(None, repo_descuento, None)
-            usuario = "admin"  # TODO
 
             tipo = form_data.get("tipo")
             descripcion = form_data.get("descripcion")
@@ -154,7 +165,6 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 self.is_loading = False
 
             yield rx.toast.success("Descuento agregado correctamente")
-            # Recargar detalle
             yield LiquidacionAsesoresState.open_detail_modal(
                 self.selected_liquidacion_id
             )
@@ -164,10 +174,6 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 self.error_message = f"Error al guardar descuento: {e}"
                 self.is_loading = False
 
-    # Enhanced Form Data
-    advisor_properties: List[Dict[str, Any]] = []
-
-    # Helper methods for form handling
     def set_temp_bonus_field(self, name: str, value: Any):
         self.temp_bonus[name] = value
 
@@ -204,142 +210,72 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
 
     @rx.event(background=True)
     async def eliminar_descuento(self, id_descuento: int):
-        # TODO: Implementar eliminacion real si es existente
-        pass
+        """Elimina un descuento guardado en la base de datos."""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+            auth_state = await self.get_state(AuthState)
+            usuario = auth_state.user_nombre
+
+        try:
+            repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
+            repo_descuento = RepositorioDescuentoAsesor(db_manager)
+            servicio = ServicioLiquidacionAsesores(
+                repo_liquidacion=repo_liquidacion,
+                repo_descuento=repo_descuento,
+                repo_pago=RepositorioPagoAsesor(db_manager),
+            )
+            
+            servicio.eliminar_descuento(id_descuento, usuario)
+            
+            yield rx.toast.success("Descuento eliminado")
+            # Recargar el modal
+            yield LiquidacionAsesoresState.open_edit_modal(self.selected_liquidacion_id)
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al eliminar descuento: {e}"
+                self.is_loading = False
 
     @rx.event(background=True)
     async def eliminar_bonificacion(self, id_bonificacion: int):
-        # TODO: Implementar eliminacion real si es existente
-        pass
+        """Elimina una bonificación guardada en la base de datos."""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+            auth_state = await self.get_state(AuthState)
+            usuario = auth_state.user_nombre
 
-    @rx.event(background=True)
-    async def handle_save_form(self, form_data: Dict):
-        """Unified handler for saving form (create or edit)."""
-        if self.selected_liquidacion_id > 0:
-            # Lógica de Edición
+        try:
+            repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
+            repo_bonificacion = RepositorioBonificacionAsesor(db_manager)
+            servicio = ServicioLiquidacionAsesores(
+                repo_liquidacion=repo_liquidacion,
+                repo_descuento=RepositorioDescuentoAsesor(db_manager),
+                repo_pago=RepositorioPagoAsesor(db_manager),
+                repo_bonificacion=repo_bonificacion,
+            )
+            
+            servicio.eliminar_bonificacion(id_bonificacion, usuario)
+            
+            yield rx.toast.success("Bonificación eliminada")
+            # Recargar el modal
+            yield LiquidacionAsesoresState.open_edit_modal(self.selected_liquidacion_id)
+        except Exception as e:
             async with self:
-                self.is_loading = True
-                self.error_message = ""
-
-            try:
-                repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
-                repo_descuento = RepositorioDescuentoAsesor(db_manager)
-                repo_pago = RepositorioPagoAsesor(db_manager)
-                repo_bonificacion = RepositorioBonificacionAsesor(db_manager)
-
-                servicio = ServicioLiquidacionAsesores(
-                    repo_liquidacion=repo_liquidacion,
-                    repo_descuento=repo_descuento,
-                    repo_pago=repo_pago,
-                    repo_bonificacion=repo_bonificacion,
-                )
-
-                usuario_sistema = "admin"  # TODO: Obtener de AuthState
-
-                # 1. Actualizar datos básicos (Porcentaje y Observaciones)
-                datos_actualizar = {}
-
-                # Porcentaje
-                porcentaje_str = form_data.get("porcentaje_comision")
-                if porcentaje_str:
-                    try:
-                        porcentaje_decimal = float(porcentaje_str)
-                        basis_points = int(porcentaje_decimal * 100)
-                        datos_actualizar["porcentaje_comision"] = basis_points
-                    except ValueError:
-                        pass  # Ignorar si no es número válido
-
-                # Observaciones
-                observaciones = form_data.get("observaciones")
-                if observaciones is not None:
-                    datos_actualizar["observaciones_liquidacion"] = observaciones
-
-                if datos_actualizar:
-                    servicio.actualizar_liquidacion(
-                        self.selected_liquidacion_id, datos_actualizar, usuario_sistema
-                    )
-
-                # 2. Agregar nuevos descuentos
-                for descuento in self.new_discounts:
-                    try:
-                        servicio.agregar_descuento(
-                            id_liquidacion=self.selected_liquidacion_id,
-                            tipo=descuento["tipo"],
-                            descripcion=descuento["descripcion"],
-                            valor=int(descuento["valor"]),
-                            usuario=usuario_sistema,
-                        )
-                    except Exception as e:
-                        print(f"Error agregando descuento {descuento}: {e}")
-                        # No interrumpimos, intentamos los demás
-
-                # 3. Agregar nuevas bonificaciones
-                for bonificacion in self.new_bonuses:
-                    try:
-                        servicio.agregar_bonificacion(
-                            id_liquidacion=self.selected_liquidacion_id,
-                            tipo=bonificacion["tipo"],
-                            descripcion=bonificacion["descripcion"],
-                            valor=int(bonificacion["valor"]),
-                            usuario=usuario_sistema,
-                        )
-                    except Exception as e:
-                        print(f"Error agregando bonificacion {bonificacion}: {e}")
-
-                async with self:
-                    self.show_form_modal = False
-                    self.is_loading = False
-                    self.form_data = {}
-                    self.new_discounts = []
-                    self.new_bonuses = []
-                    self.selected_liquidacion_id = 0
-
-                yield rx.toast.success(
-                    "Liquidación actualizada exitosamente", position="top-center"
-                )
-                yield LiquidacionAsesoresState.load_liquidaciones()
-
-            except Exception as e:
-                async with self:
-                    self.error_message = f"Error al actualizar liquidación: {str(e)}"
-                    self.is_loading = False
-                yield rx.toast.error(
-                    f"Error al actualizar: {str(e)}", position="top-center"
-                )
-
-        else:
-            yield LiquidacionAsesoresState.crear_liquidacion(form_data)
-
-    # Existing items (saved in DB) - for edit mode
-    existing_discounts: List[Dict[str, Any]] = []
-    existing_bonuses: List[Dict[str, Any]] = []
-
-    # New items (temporary) - for create/edit mode
-    new_discounts: List[Dict[str, Any]] = []
-    new_bonuses: List[Dict[str, Any]] = []
-    temp_discount: Dict[str, Any] = {"tipo": "Otros", "descripcion": "", "valor": ""}
-    temp_bonus: Dict[str, Any] = {"tipo": "Bono", "descripcion": "", "valor": ""}
+                self.error_message = f"Error al eliminar bonificación: {e}"
+                self.is_loading = False
 
     @rx.event(background=True)
     async def on_load(self):
         """Carga inicial al montar la página."""
-        try:
-            with open("debug_on_load.log", "w") as f:
-                f.write("on_load started\n")
-        except:
-            pass
-
         async with self:
             self.is_loading = True
 
         try:
-            # Cargar opciones de filtros
             yield LiquidacionAsesoresState.load_filter_options()
-            # Cargar liquidaciones
             yield LiquidacionAsesoresState.load_liquidaciones()
-        except Exception as e:
-            with open("debug_on_load_error.log", "w") as f:
-                f.write(f"Error in on_load: {str(e)}\n")
+        except Exception:
+            pass
         finally:
             async with self:
                 self.is_loading = False
@@ -348,127 +284,73 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
     async def load_filter_options(self):
         """Carga opciones para filtros (asesores, períodos)."""
         try:
-            with open("debug_filter_start.log", "w") as f:
-                f.write("load_filter_options started\n")
-        except:
-            pass
+            repo_asesor = RepositorioAsesorSQLite(db_manager)
+            asesores_entidades = repo_asesor.listar_activos()
 
-        try:
-            # Cargar asesores que tienen contratos de mandato activos
-            query_asesores = """
-            SELECT DISTINCT
-                a.ID_ASESOR,
-                p.NOMBRE_COMPLETO,
-                a.COMISION_PORCENTAJE_ARRIENDO
-            FROM ASESORES a
-            INNER JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA
-            -- LEFT JOIN to include advisors without active mandates
-            LEFT JOIN CONTRATOS_MANDATOS cm ON a.ID_ASESOR = cm.ID_ASESOR
-            WHERE a.ESTADO = TRUE
-            ORDER BY p.NOMBRE_COMPLETO
-            """
+            asesores = []
+            for a in asesores_entidades:
+                asesores.append(
+                    {
+                        "id": str(a.id_asesor),
+                        "texto": a.nombre_completo,
+                        "comision_porcentaje": a.comision_porcentaje_arriendo
+                        if a.comision_porcentaje_arriendo is not None
+                        else 5.0,
+                    }
+                )
 
-            with db_manager.obtener_conexion() as conn:
-                cursor = db_manager.get_dict_cursor(conn)
-                cursor.execute(query_asesores)
-                rows_asesores = cursor.fetchall()
+            asesores_select = [a["texto"] for a in asesores]
 
-                asesores = []
-                for row in rows_asesores:
-                    # Handle both dict-like and tuple rows
-                    if (
-                        isinstance(row, (dict, object))
-                        and hasattr(row, "__getitem__")
-                        and not isinstance(row, tuple)
-                    ):
-                        # Dict-like access
-                        id_val = row["ID_ASESOR"]
-                        nombre = row["NOMBRE_COMPLETO"]
-                        comision = row["COMISION_PORCENTAJE_ARRIENDO"]
-                    else:
-                        # Tuple access (assume order: ID, NOMBRE, COMISION)
-                        id_val = row[0]
-                        nombre = row[1]
-                        comision = row[2]
+            from datetime import datetime
 
-                    asesores.append(
-                        {
-                            "id": str(id_val),
-                            "texto": nombre,
-                            "comision_porcentaje": comision
-                            if comision is not None
-                            else 5.0,
-                        }
-                    )
+            from dateutil.relativedelta import relativedelta
 
-                # Create select options as "texto" only
-                asesores_select = [a["texto"] for a in asesores]
-
-                # Cargar últimos 24 períodos (2 años)
-                from datetime import datetime
-
-                from dateutil.relativedelta import relativedelta
-
-                periodos = []
-                fecha_actual = datetime.now()
-                for i in range(24):
-                    fecha = fecha_actual - relativedelta(months=i)
-                    periodos.append(fecha.strftime("%Y-%m"))
+            periodos = []
+            fecha_actual = datetime.now()
+            for i in range(24):
+                fecha = fecha_actual - relativedelta(months=i)
+                periodos.append(fecha.strftime("%Y-%m"))
 
             async with self:
                 self.asesores_options = asesores
                 self.asesores_select_options = asesores_select
                 self.periodo_options = periodos
-
         except Exception as e:
-            with open("debug_filter_error.log", "w") as f:
-                f.write(f"Error in load_filter_options: {str(e)}\n")
             async with self:
                 self.error_message = f"Error al cargar filtros: {str(e)}"
 
     @rx.event(background=True)
     async def fetch_advisor_properties(self, id_asesor: int):
         """Carga las propiedades/contratos activos para visualización."""
-        print("\n" + "=" * 50)
-        print(f"!!! [ELITE DEBUG] FETCH PROPERTIES FOR ADVISOR ID: {id_asesor} !!!")
-        print("=" * 50 + "\n")
         try:
-            repo = RepositorioContratoArrendamientoSQLite(db_manager)
-            # USAR EL MÉTODO QUE TRAE DIRECCIONES (JOIN)
-            props = repo.obtener_detalle_contratos_asesor(id_asesor)
-            print(f"[DEBUG] Propiedades encontradas con JOIN: {len(props)}")
+            repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
+            repo_descuento = RepositorioDescuentoAsesor(db_manager)
+            repo_pago = RepositorioPagoAsesor(db_manager)
+            repo_contrato = RepositorioContratoArrendamientoSQLite(db_manager)
+
+            servicio = ServicioLiquidacionAsesores(
+                repo_liquidacion=repo_liquidacion,
+                repo_descuento=repo_descuento,
+                repo_pago=repo_pago,
+                repo_contrato_arrendamiento=repo_contrato,
+            )
+
+            props = servicio.obtener_contratos_activos_asesor(id_asesor)
 
             props_formatted = []
             for p in props:
-                # El método devuelve diccionarios, no entidades
-                def gv(k):
-                    return p.get(k) or p.get(k.upper()) or p.get(k.lower())
-
-                direccion = gv("DIRECCION_PROPIEDAD") or "Dirección no disponible"
-                canon = gv("CANON_ARRENDAMIENTO") or 0
-                id_contrato = gv("ID_CONTRATO_A")
-
                 props_formatted.append(
                     {
-                        "DIRECCION_PROPIEDAD": direccion,
-                        "CANON_ARRENDAMIENTO": canon,
-                        "CANON_ARRENDAMIENTO_VIEW": format_currency(canon),
-                        "ID_CONTRATO_A": id_contrato,
+                        "DIRECCION_PROPIEDAD": p["direccion"],
+                        "CANON_ARRENDAMIENTO": p["canon"],
+                        "CANON_ARRENDAMIENTO_VIEW": format_currency(p["canon"]),
+                        "ID_CONTRATO_A": p["id_contrato"],
                     }
                 )
 
             async with self:
                 self.advisor_properties = props_formatted
-                print(
-                    f"[DEBUG] Lista formateada enviada a UI: {len(props_formatted)} items"
-                )
-        except Exception as e:
-            print(
-                f"[DEBUG] Error fetching property details for advisor {id_asesor}: {e}"
-            )
-            import traceback
-
-            traceback.print_exc()
+        except Exception:
             async with self:
                 self.advisor_properties = []
 
@@ -480,7 +362,6 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            # Inicializar servicio
             repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
             repo_descuento = RepositorioDescuentoAsesor(db_manager)
             repo_pago = RepositorioPagoAsesor(db_manager)
@@ -491,14 +372,12 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 repo_pago=repo_pago,
             )
 
-            # Construir filtros
             filtros = {}
             if self.filter_estado and self.filter_estado != "Todos":
                 filtros["estado"] = self.filter_estado
             if self.filter_periodo:
                 filtros["periodo"] = self.filter_periodo
             if self.filter_asesor:
-                # Buscar ID del asesor seleccionado
                 for asesor in self.asesores_options:
                     if asesor["texto"] == self.filter_asesor:
                         filtros["id_asesor"] = int(asesor["id"])
@@ -506,7 +385,6 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             if self.search_text:
                 filtros["search"] = self.search_text
 
-            # Obtener datos paginados
             resultado = servicio.listar_liquidaciones_paginado(
                 page=self.current_page,
                 page_size=self.page_size,
@@ -527,8 +405,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                     "canon_liquidado_view": format_currency(
                         liq.canon_arrendamiento_liquidado
                     ),
-                    "porcentaje": liq.porcentaje_comision
-                    / 100.0,  # Convertir a decimal
+                    "porcentaje": liq.porcentaje_comision / 100.0,
                     "comision_bruta": liq.comision_bruta,
                     "comision_bruta_view": format_currency(liq.comision_bruta),
                     "total_descuentos": liq.total_descuentos,
@@ -551,7 +428,6 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 self.liquidaciones = liquidaciones_list
                 self.total_items = resultado["total"]
                 self.is_loading = False
-
         except Exception as e:
             async with self:
                 self.error_message = f"Error al cargar liquidaciones: {str(e)}"
@@ -567,35 +443,27 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             self.filter_estado = "Todos"
             self.filter_periodo = ""
             self.filter_asesor = ""
-
         yield LiquidacionAsesoresState.load_liquidaciones
 
-    # Paginación
     def next_page(self):
-        """Avanza a la siguiente página."""
         if self.current_page * self.page_size < self.total_items:
             self.current_page += 1
             return LiquidacionAsesoresState.load_liquidaciones
 
     def prev_page(self):
-        """Retrocede a la página anterior."""
         if self.current_page > 1:
             self.current_page -= 1
             return LiquidacionAsesoresState.load_liquidaciones
 
     def set_page_size(self, size: str):
-        """Cambia el tamaño de página."""
         self.page_size = int(size)
         self.current_page = 1
         return LiquidacionAsesoresState.load_liquidaciones
 
-    # Búsqueda y Filtros
     def set_search(self, value: str):
-        """Actualiza búsqueda."""
         self.search_text = value
 
     def toggle_sort(self, column: str):
-        """Alterna el ordenamiento por columna."""
         if self.sort_by == column:
             self.sort_order = "asc" if self.sort_order == "desc" else "desc"
         else:
@@ -605,34 +473,28 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
         return LiquidacionAsesoresState.load_liquidaciones
 
     def search_liquidaciones(self):
-        """Ejecuta búsqueda."""
         self.current_page = 1
         return LiquidacionAsesoresState.load_liquidaciones
 
     def handle_search_key_down(self, key: str):
-        """Maneja Enter en búsqueda."""
         if key == "Enter":
             return self.search_liquidaciones()
 
     def set_filter_estado(self, value: str):
-        """Cambia filtro de estado."""
         self.filter_estado = value
         self.current_page = 1
         return LiquidacionAsesoresState.load_liquidaciones
 
     def set_filter_periodo(self, value: str):
-        """Cambia filtro de período."""
         self.filter_periodo = value
         self.current_page = 1
         return LiquidacionAsesoresState.load_liquidaciones
 
     def set_filter_asesor(self, value: str):
-        """Cambia filtro de asesor."""
         self.filter_asesor = value
         self.current_page = 1
         return LiquidacionAsesoresState.load_liquidaciones
 
-    # Modal CRUD
     def open_create_modal(self):
         """Abre modal para crear nueva liquidación."""
         self.selected_liquidacion_id = 0
@@ -646,7 +508,6 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             "observaciones": "",
         }
         self.advisor_properties = []
-        self.advisor_properties = []
         self.new_discounts = []
         self.new_bonuses = []
         self.temp_discount = {"tipo": "Otros", "descripcion": "", "valor": ""}
@@ -654,30 +515,118 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
         self.error_message = ""
 
     @rx.event(background=True)
+    async def handle_save_form(self, form_data: Dict):
+        """Unified handler for saving form (create or edit)."""
+        async with self:
+            auth_state = await self.get_state(AuthState)
+            usuario_sistema = auth_state.user_nombre
+
+        if self.selected_liquidacion_id > 0:
+            async with self:
+                self.is_loading = True
+                self.error_message = ""
+
+            try:
+                repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
+                repo_descuento = RepositorioDescuentoAsesor(db_manager)
+                repo_pago = RepositorioPagoAsesor(db_manager)
+                repo_bonificacion = RepositorioBonificacionAsesor(db_manager)
+
+                servicio = ServicioLiquidacionAsesores(
+                    repo_liquidacion=repo_liquidacion,
+                    repo_descuento=repo_descuento,
+                    repo_pago=repo_pago,
+                    repo_bonificacion=repo_bonificacion,
+                )
+
+                datos_actualizar = {}
+                porcentaje_str = form_data.get("porcentaje_comision")
+                if porcentaje_str:
+                    try:
+                        porcentaje_decimal = float(porcentaje_str)
+                        basis_points = int(porcentaje_decimal * 100)
+                        datos_actualizar["porcentaje_comision"] = basis_points
+                    except ValueError:
+                        pass
+
+                observaciones = form_data.get("observaciones")
+                if observaciones is not None:
+                    datos_actualizar["observaciones_liquidacion"] = observaciones
+
+                if datos_actualizar:
+                    servicio.actualizar_liquidacion(
+                        self.selected_liquidacion_id, datos_actualizar, usuario_sistema
+                    )
+
+                for descuento in self.new_discounts:
+                    try:
+                        servicio.agregar_descuento(
+                            id_liquidacion=self.selected_liquidacion_id,
+                            tipo=descuento["tipo"],
+                            descripcion=descuento["descripcion"],
+                            valor=int(descuento["valor"]),
+                            usuario=usuario_sistema,
+                        )
+                    except Exception:
+                        pass
+
+                for bonificacion in self.new_bonuses:
+                    try:
+                        servicio.agregar_bonificacion(
+                            id_liquidacion=self.selected_liquidacion_id,
+                            tipo=bonificacion["tipo"],
+                            descripcion=bonificacion["descripcion"],
+                            valor=int(bonificacion["valor"]),
+                            usuario=usuario_sistema,
+                        )
+                    except Exception:
+                        pass
+
+                async with self:
+                    self.show_form_modal = False
+                    self.is_loading = False
+                    self.form_data = {}
+                    self.new_discounts = []
+                    self.new_bonuses = []
+                    self.selected_liquidacion_id = 0
+
+                yield rx.toast.success("Liquidación actualizada exitosamente")
+                yield LiquidacionAsesoresState.load_liquidaciones()
+
+            except Exception as e:
+                async with self:
+                    self.error_message = f"Error al actualizar liquidación: {str(e)}"
+                    self.is_loading = False
+                yield rx.toast.error(f"Error al actualizar: {str(e)}")
+        else:
+            yield LiquidacionAsesoresState.crear_liquidacion(form_data)
+
+    @rx.event(background=True)
     async def crear_liquidacion(self, form_data: Dict):
         """Crea una nueva liquidación."""
-        print(f"\n[DEBUG] Iniciando crear_liquidacion con form_data: {form_data}")
         async with self:
             self.is_loading = True
             self.error_message = ""
+            auth_state = await self.get_state(AuthState)
+            usuario_sistema = auth_state.user_nombre
 
         try:
             repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
             repo_descuento = RepositorioDescuentoAsesor(db_manager)
             repo_pago = RepositorioPagoAsesor(db_manager)
             repo_bonificacion = RepositorioBonificacionAsesor(db_manager)
+            repo_contrato = RepositorioContratoArrendamientoSQLite(db_manager)
 
             servicio = ServicioLiquidacionAsesores(
                 repo_liquidacion=repo_liquidacion,
                 repo_descuento=repo_descuento,
                 repo_pago=repo_pago,
                 repo_bonificacion=repo_bonificacion,
+                repo_contrato_arrendamiento=repo_contrato,
             )
 
-            # Validar y convertir datos
             id_asesor_str = form_data.get("id_asesor")
             if not id_asesor_str:
-                print("[DEBUG] Error: No se seleccionó asesor")
                 async with self:
                     self.error_message = "Debe seleccionar un asesor"
                     self.is_loading = False
@@ -685,47 +634,29 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
 
             id_asesor = int(id_asesor_str)
             periodo = form_data.get("periodo")
-            print(f"[DEBUG] Asesor ID: {id_asesor}, Periodo: {periodo}")
-
             porcentaje_str = form_data.get("porcentaje_comision", "5.0")
             try:
                 porcentaje_decimal = float(porcentaje_str)
             except ValueError:
-                print(f"[DEBUG] Error en porcentaje: {porcentaje_str}, usando 5.0")
                 porcentaje_decimal = 5.0
 
-            # ELITE LOGIC: Obtener contratos activos del asesor automáticamente
-            repo_contrato = RepositorioContratoArrendamientoSQLite(db_manager)
-            contratos_activos = repo_contrato.obtener_activos_por_asesor(id_asesor)
-            print(f"[DEBUG] Contratos activos encontrados: {len(contratos_activos)}")
-
-            # Convertir a formato esperado por el servicio (List[Dict])
+            # Desacoplado: usar el servicio para obtener contratos
+            contratos_activos = servicio.obtener_contratos_activos_asesor(id_asesor)
             contratos = [
-                {"id": c.id_contrato_a, "canon": c.canon_arrendamiento}
+                {"id": c["id_contrato"], "canon": c["canon"]}
                 for c in contratos_activos
             ]
 
             if not contratos:
-                print(
-                    f"[DEBUG] Error: Asesor {id_asesor} no tiene contratos activos para liquidar"
-                )
                 async with self:
-                    self.error_message = "El asesor seleccionado no tiene contratos de arrendamiento activos asociados."
+                    self.error_message = "El asesor seleccionado no tiene contratos activos."
                     self.is_loading = False
                 return
 
-            usuario_sistema = "admin"  # TODO: Obtener de AuthState
-
             observaciones = form_data.get("observaciones", "")
-            # Servicio espera basis points (ej: 8% -> 800)
             pct_basis_points = int(porcentaje_decimal * 100)
-
-            # Calcular Total Bonificaciones
             total_bonificaciones = sum(int(b.get("valor", 0)) for b in self.new_bonuses)
-            print(f"[DEBUG] Total bonificaciones iniciales: {total_bonificaciones}")
 
-            # 4. Crear liquidación con descuentos
-            print(f"[DEBUG] Llamando generar_liquidacion_multi_contrato...")
             liquidacion = servicio.generar_liquidacion_multi_contrato(
                 id_asesor=id_asesor,
                 periodo=periodo,
@@ -735,16 +666,9 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 datos_adicionales={"observaciones": observaciones},
                 usuario=usuario_sistema,
             )
-            print(
-                f"[DEBUG] Liquidación creada exitosamente: ID {liquidacion.id_liquidacion_asesor}"
-            )
 
-            # Agregar descuentos adicionales ingresados en el formulario
             for descuento in self.new_discounts:
                 try:
-                    print(
-                        f"[DEBUG] Agregando descuento adicional: {descuento['tipo']} - {descuento['valor']}"
-                    )
                     servicio.agregar_descuento(
                         id_liquidacion=liquidacion.id_liquidacion_asesor,
                         tipo=descuento["tipo"],
@@ -752,17 +676,11 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         valor=int(descuento["valor"]),
                         usuario=usuario_sistema,
                     )
-                except Exception as e:
-                    print(f"[DEBUG] Error agregando descuento {descuento}: {e}")
-                    async with self:
-                        self.error_message = f"Se creó la liquidación pero falló al agregar descuento '{descuento['tipo']}': {str(e)}"
+                except Exception:
+                    pass
 
-            # Agregar bonificaciones ingresadas en el formulario
             for bonificacion in self.new_bonuses:
                 try:
-                    print(
-                        f"[DEBUG] Agregando bonificación adicional: {bonificacion['tipo']} - {bonificacion['valor']}"
-                    )
                     servicio.agregar_bonificacion(
                         id_liquidacion=liquidacion.id_liquidacion_asesor,
                         tipo=bonificacion["tipo"],
@@ -770,40 +688,25 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         valor=int(bonificacion["valor"]),
                         usuario=usuario_sistema,
                     )
-                except Exception as e:
-                    print(f"[DEBUG] Error agregando bonificacion {bonificacion}: {e}")
+                except Exception:
+                    pass
 
             async with self:
                 self.show_form_modal = False
                 self.is_loading = False
-                self.form_data = {
-                    "id_asesor": "",
-                    "periodo": datetime.now().strftime("%Y-%m"),
-                    "contratos": [],
-                    "porcentaje_comision": "5.0",
-                    "observaciones": "",
-                }
+                self.form_data = {}
                 self.new_discounts = []
                 self.new_bonuses = []
                 self.advisor_properties = []
 
-            # Recargar lista
-            yield rx.toast.success(
-                "Liquidación creada exitosamente", position="top-center"
-            )
+            yield rx.toast.success("Liquidación creada exitosamente")
             yield LiquidacionAsesoresState.load_liquidaciones()
 
         except Exception as e:
-            print(f"[DEBUG] ERROR CRITICO en crear_liquidacion: {str(e)}")
-            import traceback
-
-            print(traceback.format_exc())
             async with self:
                 self.error_message = f"Error al crear liquidación: {str(e)}"
                 self.is_loading = False
-            yield rx.toast.error(
-                f"Error al crear liquidación: {str(e)}", position="top-center"
-            )
+            yield rx.toast.error(f"Error al crear liquidación: {str(e)}")
 
     @rx.event(background=True)
     async def open_detail_modal(self, id_liquidacion: int):
@@ -811,8 +714,6 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-
-            # Contexto Documental
             self.current_entidad_tipo = "LIQUIDACION_ASESOR"
             self.current_entidad_id = str(id_liquidacion)
             self.cargar_documentos()
@@ -828,19 +729,17 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 repo_pago=repo_pago,
             )
 
-            liquidacion = servicio.obtener_detalle_completo(id_liquidacion)
-            descuentos = liquidacion.get("descuentos", [])
-            bonificaciones = liquidacion.get("bonificaciones", [])
-            contratos_data = liquidacion.get("contratos", [])
-
-            if not liquidacion or "liquidacion" not in liquidacion:
+            detalles = servicio.obtener_detalle_completo(id_liquidacion)
+            if not detalles or "liquidacion" not in detalles:
                 async with self:
                     self.error_message = "Liquidación no encontrada"
                     self.is_loading = False
                 return
 
-            # Extraer datos de la liquidación
-            liq_data = liquidacion["liquidacion"]
+            liq_data = detalles["liquidacion"]
+            descuentos = detalles.get("descuentos", [])
+            bonificaciones = detalles.get("bonificaciones", [])
+            contratos_data = detalles.get("contratos", [])
 
             async with self:
                 self.liquidacion_actual = {
@@ -888,24 +787,20 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                     for b in bonificaciones
                 ]
 
-                # Cargar propiedades para el detalle
-                properties_list = []
-                for c in contratos_data:
-                    properties_list.append(
-                        {
-                            "DIRECCION_PROPIEDAD": c.get("direccion_propiedad")
-                            or c.get("direccion", "N/A"),
-                            "CANON_ARRENDAMIENTO": c.get("canon_arrendamiento")
-                            or c.get("canon_incluido", 0),
-                            "CANON_ARRENDAMIENTO_VIEW": format_currency(
-                                c.get("canon_arrendamiento")
-                                or c.get("canon_incluido", 0)
-                            ),
-                            "ID_CONTRATO_A": c.get("id_contrato")
-                            or c.get("id_contrato_a"),
-                        }
-                    )
-                self.advisor_properties = properties_list
+                self.advisor_properties = [
+                    {
+                        "DIRECCION_PROPIEDAD": c.get("direccion_propiedad")
+                        or c.get("direccion", "N/A"),
+                        "CANON_ARRENDAMIENTO": c.get("canon_arrendamiento")
+                        or c.get("canon_incluido", 0),
+                        "CANON_ARRENDAMIENTO_VIEW": format_currency(
+                            c.get("canon_arrendamiento") or c.get("canon_incluido", 0)
+                        ),
+                        "ID_CONTRATO_A": c.get("id_contrato")
+                        or c.get("id_contrato_a"),
+                    }
+                    for c in contratos_data
+                ]
 
                 self.show_detail_modal = True
                 self.show_form_modal = False
@@ -916,38 +811,10 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 self.is_loading = False
 
     def close_modal(self):
-        """Cierra todos los modales."""
         self.show_form_modal = False
         self.show_detail_modal = False
         self.show_discount_modal = False
         self.liquidacion_actual = None
-        self.descuentos_actuales = []
-        self.bonificaciones_actuales = []
-        self.form_data = {}
-        self.discount_form = {}
-        self.error_message = ""
-        # Clear edit modal lists
-        self.existing_discounts = []
-        self.existing_bonuses = []
-        self.new_discounts = []
-        self.new_bonuses = []
-        self.selected_liquidacion_id = 0
-
-    def set_show_form_modal(self, value: bool):
-        self.show_form_modal = value
-
-    def set_show_detail_modal(self, value: bool):
-        self.show_detail_modal = value
-
-    def set_show_discount_modal(self, value: bool):
-        self.show_discount_modal = value
-
-    def set_show_bulk_modal(self, value: bool):
-        self.show_bulk_modal = value
-
-    def close_form_modal(self):
-        """Cierra el modal de formulario."""
-        self.show_form_modal = False
         self.form_data = {}
         self.error_message = ""
         self.existing_discounts = []
@@ -955,46 +822,6 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
         self.new_discounts = []
         self.new_bonuses = []
         self.selected_liquidacion_id = 0
-
-    def open_annul_modal(self, id_liquidacion: int):
-        """Abre el modal de anulación."""
-        self.selected_annul_id = id_liquidacion
-        self.annul_reason = ""
-        self.show_annul_modal = True
-
-    def close_annul_modal(self):
-        """Cierra el modal de anulación."""
-        self.show_annul_modal = False
-        self.annul_reason = ""
-        self.selected_annul_id = 0
-
-    def set_annul_reason(self, value: str):
-        """Actualiza el motivo de anulación."""
-        self.annul_reason = value
-
-    @rx.event(background=True)
-    async def confirm_annulment(self):
-        """Confirma la anulación y llama al servicio."""
-        if not self.annul_reason.strip():
-            async with self:
-                self.error_message = "Debe ingresar un motivo para la anulación."
-            return
-
-        yield LiquidacionAsesoresState.anular_liquidacion(
-            self.selected_annul_id, self.annul_reason
-        )
-
-    @rx.event(background=True)
-    async def open_bulk_modal(self):
-        """Abre el modal de generación masiva."""
-        async with self:
-            self.show_bulk_modal = True
-            self.form_data["periodo"] = datetime.now().strftime("%Y-%m")
-            self.error_message = ""
-
-    def close_bulk_modal(self):
-        """Cierra el modal de generación masiva."""
-        self.show_bulk_modal = False
 
     @rx.event(background=True)
     async def generar_liquidacion_masiva(self, form_data: Dict):
@@ -1002,6 +829,8 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
+            auth_state = await self.get_state(AuthState)
+            usuario_sistema = auth_state.user_nombre
 
         try:
             periodo = form_data.get("periodo")
@@ -1013,71 +842,20 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             repo_descuento = RepositorioDescuentoAsesor(db_manager)
             repo_pago = RepositorioPagoAsesor(db_manager)
             repo_contrato = RepositorioContratoArrendamientoSQLite(db_manager)
+            repo_asesor = RepositorioAsesorSQLite(db_manager)
 
             servicio = ServicioLiquidacionAsesores(
                 repo_liquidacion=repo_liquidacion,
                 repo_descuento=repo_descuento,
                 repo_pago=repo_pago,
+                repo_contrato_arrendamiento=repo_contrato,
+                repo_asesor=repo_asesor,
             )
 
-            stats = {"creadas": 0, "omitidas": 0, "errores": 0, "total": 0}
-
-            # Iterar sobre todos los asesores activos
-            # Usamos self.asesores_options que ya tiene ID y Comision
-            # Si está vacío, intentar recargar
-            if not self.asesores_options:
-                await self.load_filter_options()
-
-            # Iterar asesores
-            for asesor_opt in self.asesores_options:
-                id_asesor = int(asesor_opt["id"])
-
-                # Obtener porcentaje de comisión (default 5.0 si no existe)
-                comision_pct = float(asesor_opt.get("comision_porcentaje", 5.0))
-                basis_points = int(comision_pct * 100)
-
-                stats["total"] += 1
-
-                try:
-                    # 1. Verificar si ya tiene liquidación en este periodo
-                    existente = repo_liquidacion.obtener_por_asesor_periodo(
-                        id_asesor, periodo
-                    )
-                    if existente:
-                        stats["omitidas"] += 1
-                        continue
-
-                    # 2. Buscar contratos activos
-                    contratos_activos = repo_contrato.obtener_activos_por_asesor(
-                        id_asesor
-                    )
-
-                    if not contratos_activos:
-                        stats["omitidas"] += 1  # Sin contratos no se liquida
-                        continue
-
-                    # Preparar lista de contratos
-                    contratos_data = [
-                        {"id": c.id_contrato_a, "canon": c.canon_arrendamiento}
-                        for c in contratos_activos
-                    ]
-
-                    # 3. Generar liquidación
-                    servicio.generar_liquidacion_multi_contrato(
-                        id_asesor=id_asesor,
-                        periodo=periodo,
-                        contratos_lista=contratos_data,
-                        porcentaje_comision=basis_points,
-                        total_bonificaciones=0,
-                        datos_adicionales={"observaciones": "Generación Masiva"},
-                        usuario="admin",  # TODO: Auth
-                    )
-
-                    stats["creadas"] += 1
-
-                except Exception as e:
-                    stats["errores"] += 1
-                    pass  # print(f"Error liquidando asesor {id_asesor}: {e}")
+            # LLAMADA OPTIMIZADA (Fase 3)
+            stats = servicio.generar_liquidaciones_masivas_optimizado(
+                periodo=periodo, usuario=usuario_sistema
+            )
 
             async with self:
                 self.show_bulk_modal = False
@@ -1097,27 +875,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             yield rx.toast.error(f"Error crítico: {str(e)}")
 
     @rx.event(background=True)
-    async def open_create_modal(self):
-        """Abre el modal para crear una nueva liquidación."""
-        async with self:
-            # Reset all form data
-            self.form_data = {
-                "id_asesor": "",
-                "periodo": "",
-                "porcentaje_comision": "",
-                "observaciones": "",
-            }
-            self.selected_liquidacion_id = 0
-            self.existing_discounts = []
-            self.existing_bonuses = []
-            self.new_discounts = []
-            self.new_bonuses = []
-            self.advisor_properties = []
-            self.show_form_modal = True
-
-    @rx.event(background=True)
     async def open_edit_modal(self, id_liquidacion: int):
-        """Abre el modal para editar una liquidación existente."""
         async with self:
             self.is_loading = True
             self.error_message = ""
@@ -1126,7 +884,6 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
             repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
             repo_descuento = RepositorioDescuentoAsesor(db_manager)
             repo_pago = RepositorioPagoAsesor(db_manager)
-            RepositorioContratoArrendamientoSQLite(db_manager)
 
             servicio = ServicioLiquidacionAsesores(
                 repo_liquidacion=repo_liquidacion,
@@ -1134,46 +891,31 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 repo_pago=repo_pago,
             )
 
-            # Obtener detalles completos
             detalles = servicio.obtener_detalle_completo(id_liquidacion)
-
             if not detalles or "liquidacion" not in detalles:
                 raise ValueError("No se encontró la liquidación")
 
             liq = detalles["liquidacion"]
-
-            # Cargar propiedades del asesor (usando los datos ya traídos por el servicio)
-            # Esto evita llamadas redundantes y errores de métodos inexistentes
             contratos_data = detalles.get("contratos", [])
-            properties_list = []
 
-            # El servicio devuelve lista de dicts con info de contrato y propiedad
-            for c in contratos_data:
-                properties_list.append(
+            async with self:
+                self.advisor_properties = [
                     {
                         "DIRECCION_PROPIEDAD": c.get("direccion_propiedad")
                         or c.get("direccion", "N/A"),
                         "CANON_ARRENDAMIENTO": c.get("canon_arrendamiento")
                         or c.get("canon_incluido", 0),
-                        "ID_CONTRATO_A": c.get("id_contrato") or c.get("id_contrato_a"),
+                        "ID_CONTRATO_A": c.get("id_contrato")
+                        or c.get("id_contrato_a"),
                     }
-                )
-
-            async with self:
-                self.advisor_properties = properties_list
-
-            async with self:
-                # Poblar form_data con datos de la liquidación
+                    for c in contratos_data
+                ]
                 self.form_data = {
                     "id_asesor": str(liq["id_asesor"]),
                     "periodo": liq["periodo_liquidacion"],
                     "porcentaje_comision": str(liq["porcentaje_comision"]),
                     "observaciones": liq["observaciones_liquidacion"] or "",
                 }
-
-                # Separar descuentos GUARDADOS de los nuevos
-                # Mapeamos las claves para coincidir con lo que espera el frontend (modal_form.py)
-                raw_discounts = detalles.get("descuentos", [])
                 self.existing_discounts = [
                     {
                         "id_descuento": d.get("id_descuento_asesor"),
@@ -1182,10 +924,8 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         "valor": d.get("valor_descuento"),
                         "valor_view": format_currency(d.get("valor_descuento")),
                     }
-                    for d in raw_discounts
+                    for d in detalles.get("descuentos", [])
                 ]
-
-                raw_bonuses = detalles.get("bonificaciones", [])
                 self.existing_bonuses = [
                     {
                         "id_bonificacion": b.get("id_bonificacion_asesor"),
@@ -1194,82 +934,56 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                         "valor": b.get("valor_bonificacion"),
                         "valor_view": format_currency(b.get("valor_bonificacion")),
                     }
-                    for b in raw_bonuses
+                    for b in detalles.get("bonificaciones", [])
                 ]
-
-                # Limpiar listas temporales
                 self.new_discounts = []
                 self.new_bonuses = []
-
                 self.selected_liquidacion_id = id_liquidacion
                 self.is_loading = False
                 self.show_form_modal = True
-
         except Exception as e:
             async with self:
                 self.error_message = f"Error al cargar liquidación: {str(e)}"
                 self.is_loading = False
 
-    # State Machine Transitions
     @rx.event(background=True)
     async def aprobar_liquidacion(self, id_liquidacion: int):
-        """Aprueba una liquidación (Pendiente → Aprobada)."""
         async with self:
             self.is_loading = True
             self.error_message = ""
+            auth_state = await self.get_state(AuthState)
+            usuario_sistema = auth_state.user_nombre
 
         try:
             repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
-            repo_descuento = RepositorioDescuentoAsesor(db_manager)
-            repo_pago = RepositorioPagoAsesor(db_manager)
-
-            servicio = ServicioLiquidacionAsesores(
-                repo_liquidacion=repo_liquidacion,
-                repo_descuento=repo_descuento,
-                repo_pago=repo_pago,
-            )
-
-            usuario_sistema = "admin"  # TODO: Obtener de AuthState
+            servicio = ServicioLiquidacionAsesores(repo_liquidacion=repo_liquidacion)
             servicio.aprobar_liquidacion(id_liquidacion, usuario_sistema)
 
             async with self:
                 self.is_loading = False
                 self.show_detail_modal = False
-
-            # Recargar lista
-            yield rx.toast.success(
-                "Liquidación aprobada correctamente", position="top-center"
-            )
+            yield rx.toast.success("Liquidación aprobada correctamente")
             yield LiquidacionAsesoresState.load_liquidaciones()
-
         except Exception as e:
             async with self:
-                self.error_message = f"Error al aprobar liquidación: {str(e)}"
+                self.error_message = f"Error al aprobar: {str(e)}"
                 self.is_loading = False
-            yield rx.toast.error(
-                f"Error al aprobar liquidación: {str(e)}", position="top-center"
-            )
+            yield rx.toast.error(f"Error: {str(e)}")
 
     @rx.event(background=True)
     async def marcar_como_pagada(self, id_liquidacion: int):
-        """Marca liquidación como pagada (Aprobada → Pagada)."""
         async with self:
             self.is_loading = True
             self.error_message = ""
+            auth_state = await self.get_state(AuthState)
+            usuario_sistema = auth_state.user_nombre
 
         try:
             repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
-            repo_descuento = RepositorioDescuentoAsesor(db_manager)
             repo_pago = RepositorioPagoAsesor(db_manager)
-
             servicio = ServicioLiquidacionAsesores(
-                repo_liquidacion=repo_liquidacion,
-                repo_descuento=repo_descuento,
-                repo_pago=repo_pago,
+                repo_liquidacion=repo_liquidacion, repo_pago=repo_pago
             )
-
-            usuario_sistema = "admin"  # TODO: Obtener de AuthState
-            # Registrar pago
             servicio.registrar_pago(
                 id_liquidacion=id_liquidacion,
                 metodo_pago="Transferencia",
@@ -1277,58 +991,53 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
                 fecha_pago=datetime.now().strftime("%Y-%m-%d"),
                 usuario=usuario_sistema,
             )
-
             async with self:
                 self.is_loading = False
                 self.show_detail_modal = False
-
-            # Recargar lista
-            yield rx.toast.success(
-                "Pago registrado correctamente", position="top-center"
-            )
+            yield rx.toast.success("Pago registrado correctamente")
             yield LiquidacionAsesoresState.load_liquidaciones()
-
         except Exception as e:
             async with self:
-                self.error_message = f"Error al marcar como pagada: {str(e)}"
+                self.error_message = f"Error al registrar pago: {str(e)}"
                 self.is_loading = False
-            yield rx.toast.error(
-                f"Error al registrar pago: {str(e)}", position="top-center"
-            )
+            yield rx.toast.error(f"Error: {str(e)}")
 
     @rx.event(background=True)
     async def anular_liquidacion(self, id_liquidacion: int, motivo: str):
-        """Anula una liquidación."""
         async with self:
             self.is_loading = True
             self.error_message = ""
+            auth_state = await self.get_state(AuthState)
+            usuario_sistema = auth_state.user_nombre
 
         try:
             repo_liquidacion = RepositorioLiquidacionAsesor(db_manager)
-            repo_descuento = RepositorioDescuentoAsesor(db_manager)
-            repo_pago = RepositorioPagoAsesor(db_manager)
-
-            servicio = ServicioLiquidacionAsesores(
-                repo_liquidacion=repo_liquidacion,
-                repo_descuento=repo_descuento,
-                repo_pago=repo_pago,
-            )
-
-            usuario_sistema = "admin"
+            servicio = ServicioLiquidacionAsesores(repo_liquidacion=repo_liquidacion)
             servicio.anular_liquidacion(id_liquidacion, motivo, usuario_sistema)
-
             async with self:
                 self.is_loading = False
-                self.show_annul_modal = False  # Close modal on success
+                self.show_annul_modal = False
                 self.show_detail_modal = False
-
-            yield rx.toast.success(
-                "Liquidación anulada correctamente", position="top-center"
-            )
+            yield rx.toast.success("Liquidación anulada correctamente")
             yield LiquidacionAsesoresState.load_liquidaciones()
-
         except Exception as e:
             async with self:
                 self.error_message = f"Error al anular: {str(e)}"
                 self.is_loading = False
-            yield rx.toast.error(f"Error al anular: {str(e)}", position="top-center")
+            yield rx.toast.error(f"Error: {str(e)}")
+
+    def set_show_form_modal(self, value: bool): self.show_form_modal = value
+    def set_show_detail_modal(self, value: bool): self.show_detail_modal = value
+    def set_show_discount_modal(self, value: bool): self.show_discount_modal = value
+    def set_show_bulk_modal(self, value: bool): self.show_bulk_modal = value
+    def close_form_modal(self): self.close_modal()
+    def open_annul_modal(self, id_liq: int): self.selected_annul_id = id_liq; self.annul_reason = ""; self.show_annul_modal = True
+    def close_annul_modal(self): self.show_annul_modal = False; self.annul_reason = ""; self.selected_annul_id = 0
+    def set_annul_reason(self, value: str): self.annul_reason = value
+    
+    def confirm_annulment(self):
+        if self.selected_annul_id:
+            return LiquidacionAsesoresState.anular_liquidacion(self.selected_annul_id, self.annul_reason)
+
+    def open_bulk_modal(self): self.show_bulk_modal = True; self.form_data["periodo"] = datetime.now().strftime("%Y-%m"); self.error_message = ""
+    def close_bulk_modal(self): self.show_bulk_modal = False
