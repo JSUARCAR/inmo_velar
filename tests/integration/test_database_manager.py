@@ -23,6 +23,7 @@ class TestDatabaseManager:
         """
         self.database_path = Path(database_path)
         self._connection = None
+        self.use_postgresql = False
     
     def obtener_conexion(self) -> sqlite3.Connection:
         """
@@ -40,6 +41,20 @@ class TestDatabaseManager:
             self._connection.execute("PRAGMA foreign_keys = ON")
         
         return self._connection
+
+    def get_dict_cursor(self, conexion=None):
+        """Mock de get_dict_cursor para tests."""
+        if conexion is None:
+            conexion = self.obtener_conexion()
+        return conexion.cursor()
+
+    def get_placeholder(self) -> str:
+        """Retorna el placeholder de SQLite."""
+        return "?"
+    
+    def get_last_insert_id(self, cursor, tabla: str, pk_columna: str) -> int:
+        """Mock de get_last_insert_id para tests."""
+        return cursor.lastrowid
     
     @contextmanager
     def transaccion(self):

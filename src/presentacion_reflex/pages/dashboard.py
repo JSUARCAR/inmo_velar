@@ -201,16 +201,26 @@ def dashboard_page() -> rx.Component:
                                     ),
                                     kpi_card(
                                         "Recibos Pend.",
-                                        DashboardState.recaudo_porcentaje_view,
+                                        DashboardState.recibos_cantidad_view,
                                         "receipt",
                                         styles.TEXT_SECONDARY,
-                                        f"{DashboardState.recibos_cantidad_view} unds",
+                                        f"En mora/proximos",
                                         variant="compact",
+                                    ),
+                                    kpi_card(
+                                        "Alertas Activas",
+                                        DashboardState.alertas_pendientes.to(str),
+                                        "bell-ring",
+                                        styles.BRAND_PRIMARY,
+                                        "Requieren atención",
+                                        variant="compact",
+                                        href="/alertas"
                                     ),
                                     grid_template_columns=rx.breakpoints(
                                         initial="1fr",
                                         md="repeat(2, 1fr)",
                                         lg="repeat(3, 1fr)",
+                                        xl="repeat(4, 1fr)",
                                     ),
                                     gap="4",
                                     width="100%",

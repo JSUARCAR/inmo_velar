@@ -15,6 +15,7 @@ def kpi_card(
     es_critico: bool = False,
     variant: str = "standard",  # standard, elite, compact
     hover_content: rx.Component = None,
+    href: str = None,
 ) -> rx.Component:
     """
     Tarjeta KPI reutilizable.
@@ -200,6 +201,15 @@ def kpi_card(
                 "box_shadow": styles.NEU_MODAL_SHADOW,
             },
             style=styles.NEU_PANEL_STYLE,
+        )
+
+    # Wrap with link if href is provided
+    if href:
+        card_component = rx.link(
+            card_component,
+            href=href,
+            underline="none",
+            width="100%",
         )
 
     if hover_content is not None:

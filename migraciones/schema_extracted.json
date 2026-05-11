@@ -2061,7 +2061,7 @@
       "foreign_keys": []
     },
     "LIQUIDACIONES": {
-      "create_sql": "CREATE TABLE LIQUIDACIONES (\n                ID_LIQUIDACION INTEGER PRIMARY KEY AUTOINCREMENT,\n                ID_CONTRATO_M INTEGER NOT NULL,\n                PERIODO TEXT NOT NULL,\n                FECHA_GENERACION TEXT NOT NULL,\n                \n                -- Ingresos\n                CANON_BRUTO INTEGER NOT NULL,\n                OTROS_INGRESOS INTEGER DEFAULT 0,\n                TOTAL_INGRESOS INTEGER NOT NULL,\n                \n                -- Egresos\n                COMISION_PORCENTAJE INTEGER NOT NULL,\n                COMISION_MONTO INTEGER NOT NULL,\n                IVA_COMISION INTEGER NOT NULL,\n                IMPUESTO_4X1000 INTEGER NOT NULL,\n                GASTOS_ADMINISTRACION INTEGER DEFAULT 0,\n                GASTOS_SERVICIOS INTEGER DEFAULT 0,\n                GASTOS_REPARACIONES INTEGER DEFAULT 0,\n                OTROS_EGRESOS INTEGER DEFAULT 0,\n                TOTAL_EGRESOS INTEGER NOT NULL,\n                \n                -- Resultado\n                NETO_A_PAGAR INTEGER NOT NULL,\n                \n                -- Estado\n                ESTADO_LIQUIDACION TEXT DEFAULT 'En Proceso' CHECK(ESTADO_LIQUIDACION IN ('En Proceso', 'Aprobada', 'Pagada', 'Cancelada')),\n                \n                -- Pago\n                FECHA_PAGO TEXT,\n                METODO_PAGO TEXT,\n                REFERENCIA_PAGO TEXT,\n                \n                -- Notas\n                OBSERVACIONES TEXT,\n                MOTIVO_CANCELACION TEXT,\n                \n                -- Auditoría de Estado\n                APROBADA_POR TEXT,\n                APROBADA_EN TEXT,\n                PAGADA_POR TEXT,\n                PAGADA_EN TEXT,\n                \n                CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n                CREATED_BY TEXT,\n                UPDATED_AT TEXT,\n                UPDATED_BY TEXT,\n                \n                FOREIGN KEY (ID_CONTRATO_M) REFERENCES CONTRATOS_MANDATOS(ID_CONTRATO_M),\n                UNIQUE(ID_CONTRATO_M, PERIODO)\n            )",
+      "create_sql": "CREATE TABLE LIQUIDACIONES (\n                ID_LIQUIDACION INTEGER PRIMARY KEY AUTOINCREMENT,\n                ID_CONTRATO_M INTEGER NOT NULL,\n                PERIODO TEXT NOT NULL,\n                FECHA_GENERACION TEXT NOT NULL,\n                \n                -- Ingresos\n                CANON_BRUTO INTEGER NOT NULL,\n                OTROS_INGRESOS INTEGER DEFAULT 0,\n                TOTAL_INGRESOS INTEGER NOT NULL,\n                \n                -- Egresos\n                COMISION_PORCENTAJE INTEGER NOT NULL,\n                COMISION_MONTO INTEGER NOT NULL,\n                IVA_COMISION INTEGER NOT NULL,\n                IMPUESTO_4X1000 INTEGER NOT NULL,\n                GASTOS_ADMINISTRACION INTEGER DEFAULT 0,\n                GASTOS_SERVICIOS INTEGER DEFAULT 0,\n                GASTOS_REPARACIONES INTEGER DEFAULT 0,\n                OTROS_EGRESOS INTEGER DEFAULT 0,\n                TOTAL_EGRESOS INTEGER NOT NULL,\n                \n                -- Resultado\n                NETO_A_PAGAR INTEGER NOT NULL,\n                \n                -- Estado\n                ESTADO_LIQUIDACION TEXT DEFAULT 'En Proceso' CHECK(ESTADO_LIQUIDACION IN ('En Proceso', 'Aprobada', 'Pagada', 'Cancelada')),\n                \n                -- Pago\n                FECHA_PAGO TEXT,\n                METODO_PAGO TEXT,\n                REFERENCIA_PAGO TEXT,\n                \n                -- Notas\n                OBSERVACIONES TEXT,\n                MOTIVO_CANCELACION TEXT,\n                \n                -- Auditoría de Estado\n                APROBADA_POR TEXT,\n                APROBADA_EN TEXT,\n                PAGADA_POR TEXT,\n                PAGADA_EN TEXT,\n                \n                CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),\n                CREATED_BY TEXT,\n                UPDATED_AT TEXT,\n                UPDATED_BY TEXT, SEGURO_MONTO INTEGER DEFAULT 0,\n                \n                FOREIGN KEY (ID_CONTRATO_M) REFERENCES CONTRATOS_MANDATOS(ID_CONTRATO_M),\n                UNIQUE(ID_CONTRATO_M, PERIODO)\n            )",
       "columns": [
         {
           "cid": 0,
@@ -2309,6 +2309,14 @@
           "type": "TEXT",
           "not_null": 0,
           "default_value": null,
+          "pk": 0
+        },
+        {
+          "cid": 31,
+          "name": "SEGURO_MONTO",
+          "type": "INTEGER",
+          "not_null": 0,
+          "default_value": "0",
           "pk": 0
         }
       ],

@@ -143,16 +143,40 @@ def person_card(persona: dict) -> rx.Component:
                     ),
                     rx.cond(
                         AuthState.check_action("Personas", "ELIMINAR"),
-                        rx.tooltip(
-                            neuro_button(
-                                rx.icon("trash_2", size=16),
-                                size="1",
-                                style={
-                                    "min_width": "32px", "height": "32px",
-                                    "padding": "0", "color": "var(--red-9)",
-                                },
+                        rx.cond(
+                            persona["estado"] == "Activo",
+                            rx.tooltip(
+                                neuro_button(
+                                    rx.icon("trash_2", size=16),
+                                    on_click=lambda: PersonasState.toggle_estado_persona(
+                                        persona["id"], persona["estado"]
+                                    ),
+                                    size="1",
+                                    style={
+                                        "min_width": "32px",
+                                        "height": "32px",
+                                        "padding": "0",
+                                        "color": "var(--red-9)",
+                                    },
+                                ),
+                                content="Desactivar persona",
                             ),
-                            content="Eliminar persona",
+                            rx.tooltip(
+                                neuro_button(
+                                    rx.icon("refresh_cw", size=16),
+                                    on_click=lambda: PersonasState.toggle_estado_persona(
+                                        persona["id"], persona["estado"]
+                                    ),
+                                    size="1",
+                                    style={
+                                        "min_width": "32px",
+                                        "height": "32px",
+                                        "padding": "0",
+                                        "color": "var(--green-9)",
+                                    },
+                                ),
+                                content="Reactivar persona",
+                            ),
                         ),
                     ),
                     spacing="3",

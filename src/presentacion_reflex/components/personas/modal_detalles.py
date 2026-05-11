@@ -5,6 +5,7 @@ Visualiza información consolidada por roles con diseño Editorial (Claude).
 
 import reflex as rx
 from src.presentacion_reflex.state.personas_state import PersonasState
+from src.presentacion_reflex.components.neuro_elements import neuro_badge
 from src.presentacion_reflex import styles
 
 def item_detalle(etiqueta: str, valor: str, icono: str = None) -> rx.Component:
@@ -61,6 +62,16 @@ def titulo_seccion(titulo: str, icono: str) -> rx.Component:
         margin_bottom="0.5rem",
         width="100%",
     )
+
+def render_audit_log(log: dict) -> rx.Component:
+    """Renderiza una fila del log de auditoría."""
+    return rx.table.row(
+        rx.table.cell(rx.text(log["fecha"].to(str)[:16], size="1")),
+        rx.table.cell(rx.text(log["usuario"].to(str), size="1", weight="bold")),
+        rx.table.cell(neuro_badge(log["accion"].to(str), color_scheme="gray")),
+        rx.table.cell(rx.text(log["detalle"].to(str), size="1", color=styles.TEXT_SECONDARY)),
+    )
+
 
 def modal_detalles() -> rx.Component:
     """Modal principal de detalles de persona con diseño editorial Claude."""
@@ -228,6 +239,41 @@ def modal_detalles() -> rx.Component:
         )
     )
 
+    # Pestaña Historial (Auditoría)
+    pestana_historial = contenedor_contenido_pestana(
+        titulo_seccion("Trazabilidad de Cambios", "history"),
+        rx.cond(
+            PersonasState.audit_logs,
+            rx.table.root(
+                rx.table.header(
+                    rx.table.row(
+                        rx.table.column_header_cell("Fecha"),
+                        rx.table.column_header_cell("Usuario"),
+                        rx.table.column_header_cell("Acción"),
+                        rx.table.column_header_cell("Detalle"),
+                    )
+                ),
+                rx.table.body(
+                    rx.foreach(
+                        PersonasState.audit_logs,
+                        render_audit_log
+                    )
+                ),
+                width="100%",
+                variant="surface",
+            ),
+            rx.center(
+                rx.vstack(
+                    rx.icon("info", size=32, color=styles.TEXT_TERTIARY),
+                    rx.text("No hay registros históricos para esta persona", color=styles.TEXT_TERTIARY),
+                    spacing="2",
+                ),
+                padding="3rem",
+                width="100%",
+            )
+        )
+    )
+
     return rx.dialog.root(
         rx.dialog.content(
             # Header del Modal
@@ -291,6 +337,7 @@ def modal_detalles() -> rx.Component:
                             PersonasState.detail_proveedor, 
                             rx.tabs.trigger("Profesional", value="otros")
                         ),
+                        rx.tabs.trigger("Historial", value="historial"),
                         justify_content="start",
                         box_shadow=styles.SHADOW_INSET,
                         border_radius="10px",
@@ -302,6 +349,7 @@ def modal_detalles() -> rx.Component:
                     rx.tabs.content(pestana_arrendatario, value="arrendatario"),
                     rx.tabs.content(pestana_codeudor, value="codeudor"),
                     rx.tabs.content(pestana_otros, value="otros"),
+                    rx.tabs.content(pestana_historial, value="historial"),
                     default_value="general",
                     width="100%",
                 ),

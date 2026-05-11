@@ -129,104 +129,51 @@ class ContratoMandatoElite(BaseDocumentTemplate):
         
     def _format_fecha_es(self, fecha_str: str) -> str:
         """Convierte fecha YYYY-MM-DD a formato texto español"""
-        if not fecha_str or str(fecha_str).strip().upper() in ['N/A', 'NONE', '']:
+        if not fecha_str or str(fecha_str).strip().upper() in ["N/A", "NONE", ""]:
             return str(fecha_str)
         try:
             from datetime import datetime
-            dt = datetime.strptime(str(fecha_str), '%Y-%m-%d')
+
+            dt = datetime.strptime(str(fecha_str), "%Y-%m-%d")
             meses = {
-                1: "enero", 2: "febrero", 3: "marzo", 4: "abril", 5: "mayo", 6: "junio",
-                7: "julio", 8: "agosto", 9: "septiembre", 10: "octubre", 11: "noviembre", 12: "diciembre"
+                1: "enero",
+                2: "febrero",
+                3: "marzo",
+                4: "abril",
+                5: "mayo",
+                6: "junio",
+                7: "julio",
+                8: "agosto",
+                9: "septiembre",
+                10: "octubre",
+                11: "noviembre",
+                12: "diciembre",
             }
             mes_nombre = meses.get(dt.month, "")
             return f"{dt.day} de {mes_nombre} de {dt.year}"
         except:
             return str(fecha_str)
 
-    def _header_footer_with_features(self, canvas_obj, doc):
-        """
-        Override completo para evitar el header por defecto de la empresa (INMOBILIARIA VELAR SAS...)
-        que se solapa con el título.
-        """
-        # 0. Dibujar MEMBRETE (Fondo completo)
-        current_dir = Path(__file__).parent
-        membrete_path = current_dir / "VELAR INMOBILIARIA_membrete_modificada.png"
-        
-        try:
-            if membrete_path.exists():
-                # Dibujar imagen cubriendo toda la página
-                page_width, page_height = doc.pagesize
-                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask=None, preserveAspectRatio=False)
-        except Exception as e:
-            # Fallo silencioso o log mínimo para no romper generación
-            print(f"Advertencia: No se pudo cargar fondo {membrete_path}: {e}")
-
-        # 1. Agregar marca de agua si aplica (logic from Base)
-        if self.watermark_text:
-            from ..components.watermarks import Watermark
-            Watermark.add_text_watermark(
-                canvas_obj,
-                text=self.watermark_text,
-                opacity=self.watermark_opacity,
-                position=self.watermark_style,
-            )
-            
-        # 2. Footer simple (Página X)
-        canvas_obj.saveState()
-        
-        # Página y Timestamp
-        page_num = canvas_obj.getPageNumber()
-        canvas_obj.setFont('Helvetica', 8)
-        canvas_obj.setFillColor(colors.gray)
-        
-        center_x = doc.pagesize[0] / 2
-        
-        # Centrado Página (más abajo que la dirección)
-        canvas_obj.drawCentredString(center_x, 20, f"Página {page_num}")
-        
-        # 4. Textos Verticales en Márgenes
-        canvas_obj.setFont('Helvetica', 8)
-        canvas_obj.setFillColor(colors.lightgrey) # Color tenue para no distraer
-        
-        from datetime import datetime
-        dt_str = datetime.now().strftime('%Y-%m-%d %H:%M')
-        
-        # Margen Izquierdo (Vertical)
-        canvas_obj.saveState()
-        canvas_obj.translate(50, 250) # Ajustar posición X,Y
-        canvas_obj.rotate(90)
-        canvas_obj.drawString(0, 0, "Impreso por Inmobiliaria Velar SAS - NIT 901.703.515 - Correo: inmobiliariavelarsasaxm@gmail.com")
-        canvas_obj.restoreState()
-        
-        # Margen Derecho (Vertical)
-        canvas_obj.saveState()
-        canvas_obj.translate(doc.pagesize[0] - 50, 250)
-        canvas_obj.rotate(90)
-        canvas_obj.drawString(0, 0, f"Generado: {dt_str}")
-        canvas_obj.restoreState()
-        
-        canvas_obj.restoreState()
-
     def validate_data(self, data: Dict[str, Any]) -> bool:
         """Validación estricta para nueva plantilla de Mandato"""
         # 1. Campos base
         required_base = ["contrato_id", "fecha", "inmueble", "condiciones", "mandante"]
-        
+
         is_valid, missing = DataValidator.validate_required_fields(data, required_base)
         if not is_valid:
             raise ValueError(f"Faltan campos principales: {', '.join(missing)}")
-            
+
         # 2. Sub-estructuras
         self._require_fields(data["mandante"], "nombre", "documento", "telefono", "email")
-        
+
         # Inmueble exige matricula
         self._require_fields(data["inmueble"], "direccion")
-        
+
         # Validar montos (comisión)
         if not DataValidator.validate_money_amount(data["condiciones"].get("comision", 0)):
-             # Nota: En mandato podría ser 0 o porcentaje, pero validamos que sea numérico válido
-             pass
-             
+            # Nota: En mandato podría ser 0 o porcentaje, pero validamos que sea numérico válido
+            pass
+
         return True
 
     def generate(self, data: Dict[str, Any]) -> Path:

@@ -28,9 +28,9 @@ class RepositorioContratoArrendamientoPostgres:
             FECHA_INICIO_CONTRATO_A, FECHA_FIN_CONTRATO_A, DURACION_CONTRATO_A,
             CANON_ARRENDAMIENTO, DEPOSITO, FECHA_PAGO,
             ESTADO_CONTRATO_A, ALERTA_VENCIMIENTO_CONTRATO_A, ALERTA_IPC,
-            FECHA_RENOVACION_CONTRATO_A, FECHA_INCREMENTO_IPC,
+            FECHA_RENOVACION_CONTRATO_A, FECHA_INCREMENTO_IPC, FECHA_ULTIMO_INCREMENTO_IPC,
             CREATED_BY, UPDATED_BY
-        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
         RETURNING ID_CONTRATO_A
         """,
             (
@@ -48,6 +48,7 @@ class RepositorioContratoArrendamientoPostgres:
                 contrato.alerta_ipc,
                 contrato.fecha_renovacion_contrato_a,
                 contrato.fecha_incremento_ipc,
+                contrato.fecha_ultimo_incremento_ipc,
                 usuario,
                 usuario,
             ),
@@ -321,8 +322,14 @@ class RepositorioContratoArrendamientoPostgres:
         cursor.execute(
             f"""
         UPDATE CONTRATOS_ARRENDAMIENTOS SET
+            ID_PROPIEDAD = {placeholder},
+            ID_ARRENDATARIO = {placeholder},
+            ID_CODEUDOR = {placeholder},
+            FECHA_INICIO_CONTRATO_A = {placeholder},
             FECHA_FIN_CONTRATO_A = {placeholder},
+            DURACION_CONTRATO_A = {placeholder},
             CANON_ARRENDAMIENTO = {placeholder},
+            DEPOSITO = {placeholder},
             FECHA_PAGO = {placeholder},
             ESTADO_CONTRATO_A = {placeholder},
             MOTIVO_CANCELACION = {placeholder},
@@ -330,13 +337,20 @@ class RepositorioContratoArrendamientoPostgres:
             ALERTA_IPC = {placeholder},
             FECHA_RENOVACION_CONTRATO_A = {placeholder},
             FECHA_INCREMENTO_IPC = {placeholder},
+            FECHA_ULTIMO_INCREMENTO_IPC = {placeholder},
             UPDATED_AT = {placeholder},
             UPDATED_BY = {placeholder}
         WHERE ID_CONTRATO_A = {placeholder}
         """,
             (
+                contrato.id_propiedad,
+                contrato.id_arrendatario,
+                contrato.id_codeudor,
+                contrato.fecha_inicio_contrato_a,
                 contrato.fecha_fin_contrato_a,
+                contrato.duracion_contrato_a,
                 contrato.canon_arrendamiento,
+                contrato.deposito,
                 contrato.fecha_pago,
                 contrato.estado_contrato_a,
                 contrato.motivo_cancelacion,
@@ -344,7 +358,8 @@ class RepositorioContratoArrendamientoPostgres:
                 contrato.alerta_ipc,
                 contrato.fecha_renovacion_contrato_a,
                 contrato.fecha_incremento_ipc,
-                datetime.now().isoformat(),  # updated_at fix (script used hardcoded datetime Postgres function?)
+                contrato.fecha_ultimo_incremento_ipc,
+                datetime.now().isoformat(),
                 usuario,
                 contrato.id_contrato_a,
             ),

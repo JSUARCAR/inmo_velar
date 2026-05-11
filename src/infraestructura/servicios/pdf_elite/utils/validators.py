@@ -9,6 +9,7 @@ Fecha: 2026-01-18
 
 import re
 from datetime import date, datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 
@@ -239,6 +240,29 @@ class DataValidator:
             return True
         except (ValueError, TypeError):
             return False
+
+    @staticmethod
+    def validate_asset_path(asset_path: Any) -> Optional[Path]:
+        """
+        Valida que un asset (imagen, fuente) exista y sea accesible.
+
+        Args:
+            asset_path: Ruta al archivo del asset.
+
+        Returns:
+            Path absoluto si existe, None si no.
+        """
+        if not asset_path:
+            return None
+
+        try:
+            path_obj = Path(asset_path)
+            if path_obj.exists() and path_obj.is_file():
+                return path_obj.absolute()
+        except Exception:
+            pass
+
+        return None
 
 
 __all__ = ["DataValidator"]

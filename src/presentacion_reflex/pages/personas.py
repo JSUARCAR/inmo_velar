@@ -7,7 +7,7 @@ from src.presentacion_reflex.components.personas.modal_detalles import modal_det
 from src.presentacion_reflex.components.personas.person_card import person_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.personas_state import PersonasState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_spinner, neuro_badge
+from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_spinner, neuro_badge, neuro_switch
 from src.presentacion_reflex import styles
 
 
@@ -230,6 +230,35 @@ def personas_page() -> rx.Component:
                             on_change=PersonasState.set_fecha_fin,
                             size="3",
                             width=["100%", "100%", "auto"],
+                        ),
+                        # --- New Filter Toggles ---
+                        rx.hstack(
+                            rx.hstack(
+                                rx.text("Inactivos", size="2", color=styles.TEXT_SECONDARY),
+                                neuro_switch(
+                                    checked=PersonasState.mostrar_inactivos,
+                                    on_change=PersonasState.toggle_mostrar_inactivos,
+                                    color_scheme="ruby",
+                                ),
+                                align="center",
+                                spacing="2",
+                            ),
+                            rx.hstack(
+                                rx.text("Sin contrato", size="2", color=styles.TEXT_SECONDARY),
+                                neuro_switch(
+                                    checked=PersonasState.filtro_sin_contrato,
+                                    on_change=PersonasState.toggle_filtro_sin_contrato,
+                                    color_scheme="teal",
+                                ),
+                                rx.tooltip(
+                                    rx.icon("info", size=14, color="gray"),
+                                    content="Excluye proveedores con rol único",
+                                ),
+                                align="center",
+                                spacing="2",
+                            ),
+                            spacing="4",
+                            padding_x="2",
                         ),
                         # View toggle button
                         rx.hstack(
@@ -477,17 +506,38 @@ def personas_page() -> rx.Component:
                                                             AuthState.check_action(
                                                                 "Personas", "ELIMINAR"
                                                             ),
-                                                            rx.tooltip(
-                                                                rx.icon_button(
-                                                                    rx.icon("trash_2", size=16),
-                                                                    variant="ghost",
-                                                                    color_scheme="red",
-                                                                    size="2",
-                                                                    _hover={
-                                                                        "background": "var(--red-3)",
-                                                                    },
+                                                            rx.cond(
+                                                                p["estado"] == "Activo",
+                                                                rx.tooltip(
+                                                                    rx.icon_button(
+                                                                        rx.icon("trash_2", size=16),
+                                                                        variant="ghost",
+                                                                        color_scheme="red",
+                                                                        size="2",
+                                                                        on_click=lambda: PersonasState.toggle_estado_persona(
+                                                                            p["id"], p["estado"]
+                                                                        ),
+                                                                        _hover={
+                                                                            "background": "var(--red-3)",
+                                                                        },
+                                                                    ),
+                                                                    content="Desactivar persona",
                                                                 ),
-                                                                content="Eliminar persona",
+                                                                rx.tooltip(
+                                                                    rx.icon_button(
+                                                                        rx.icon("refresh_cw", size=16),
+                                                                        variant="ghost",
+                                                                        color_scheme="green",
+                                                                        size="2",
+                                                                        on_click=lambda: PersonasState.toggle_estado_persona(
+                                                                            p["id"], p["estado"]
+                                                                        ),
+                                                                        _hover={
+                                                                            "background": "var(--green-3)",
+                                                                        },
+                                                                    ),
+                                                                    content="Reactivar persona",
+                                                                ),
                                                             ),
                                                         ),
                                                         spacing="3",

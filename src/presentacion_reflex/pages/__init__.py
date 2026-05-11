@@ -19,6 +19,7 @@ from . import (
     recibos,
     seguros,
     usuarios,
+    alertas,
 )
 from .auditoria import auditoria_page
 from .saldos_favor import saldos_page

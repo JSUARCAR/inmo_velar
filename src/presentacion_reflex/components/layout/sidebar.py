@@ -172,6 +172,13 @@ def sidebar_items() -> rx.Component:
                 "Panel de control general con métricas estratégicas y KPIs operativos.",
                 module_name="Dashboard",
             ),
+            sidebar_item(
+                "Alertas Tempranas",
+                "bell_ring",
+                "/alertas",
+                "Gestión proactiva de vencimientos de contratos, recibos y eventos críticos.",
+                module_name="Dashboard", # Reutilizamos Dashboard por ahora para visibilidad compartida
+            ),
         ),
         # Sección Gestión
         sidebar_section(

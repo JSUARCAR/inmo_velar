@@ -779,7 +779,7 @@ class RepositorioLiquidacionSQLite:
             "propietario": "per.NOMBRE_COMPLETO",
             "cantidad_propiedades": "CANTIDAD_PROPIEDADES",
             "canon": "TOTAL_CANON_BRUTO",
-            "neto": "NETO_TOTAL"
+            "neto": "NETO_TOTAL",
         }
 
         sort_col = SORT_COLUMNS.get(sort_by, "l.PERIODO")
@@ -816,6 +816,9 @@ class RepositorioLiquidacionSQLite:
                 JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
                 JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
                 JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+                LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON cm.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'Activo'
+                LEFT JOIN RECAUDOS rrec ON rrec.ID_CONTRATO_A = ca_rec.ID_CONTRATO_A
+                LEFT JOIN RECAUDO_CONCEPTOS rconc ON rconc.ID_RECAUDO = rrec.ID_RECAUDO AND rconc.PERIODO = l.PERIODO
             """
 
             conditions = []
@@ -900,6 +903,37 @@ class RepositorioLiquidacionSQLite:
                 else:
                     estado_consolidado = "Mixto"
 
+                # Determinar estado_recaudo consolidado del propietario
+                cursor.execute(
+                    f"""
+                    SELECT rrec.ESTADO_RECAUDO, COUNT(*) as CNT
+                    FROM LIQUIDACIONES l
+                    JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+                    LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON cm.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'Activo'
+                    LEFT JOIN RECAUDOS rrec ON rrec.ID_CONTRATO_A = ca_rec.ID_CONTRATO_A
+                    LEFT JOIN RECAUDO_CONCEPTOS rconc ON rconc.ID_RECAUDO = rrec.ID_RECAUDO AND rconc.PERIODO = l.PERIODO
+                    WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder}
+                    GROUP BY rrec.ESTADO_RECAUDO
+                """,
+                    (row["ID_PROPIETARIO"], row["PERIODO"]),
+                )
+                recaudo_estados = {
+                    e["ESTADO_RECAUDO"]: e["CNT"] for e in cursor.fetchall()
+                }
+                if recaudo_estados.get("Pendiente", 0) > 0:
+                    estado_recaudo_consolidado = "Pendiente"
+                elif recaudo_estados.get("Vencido", 0) > 0:
+                    estado_recaudo_consolidado = "Vencido"
+                elif (
+                    recaudo_estados.get("Aplicado", 0) > 0
+                    and sum(recaudo_estados.values()) >= row["CANTIDAD_PROPIEDADES"]
+                ):
+                    estado_recaudo_consolidado = "Aplicado"
+                elif recaudo_estados.get("Reversado", 0) > 0:
+                    estado_recaudo_consolidado = "Reversado"
+                else:
+                    estado_recaudo_consolidado = "Sin Recaudo"
+
                 items.append(
                     {
                         "id_propietario": row["ID_PROPIETARIO"],
@@ -912,6 +946,7 @@ class RepositorioLiquidacionSQLite:
                         "total_ingresos": row["TOTAL_INGRESOS"],
                         "total_egresos": row["TOTAL_EGRESOS"],
                         "estado": estado_consolidado,
+                        "estado_recaudo": estado_recaudo_consolidado,
                     }
                 )
 
@@ -1284,12 +1319,13 @@ class RepositorioLiquidacionSQLite:
             "canon": "l.CANON_BRUTO",
             "neto": "l.NETO_A_PAGAR",
             "contrato": "p.DIRECCION_PROPIEDAD",
-            "dia_pago": "cm.FECHA_PAGO"
+            "dia_pago": "cm.FECHA_PAGO",
+            "estado_recaudo": "rrec.ESTADO_RECAUDO",
         }
 
         sort_col_raw = SORT_COLUMNS.get(sort_by, "l.PERIODO")
         order = "ASC" if sort_order.lower() == "asc" else "DESC"
-        
+
         # Tratamiento especial para dia_pago (cast numérico)
         if sort_by == "dia_pago":
             if self.db.use_postgresql:
@@ -1305,6 +1341,9 @@ class RepositorioLiquidacionSQLite:
             JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
             JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
             JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+            LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON p.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'Activo'
+            LEFT JOIN RECAUDOS rrec ON rrec.ID_CONTRATO_A = ca_rec.ID_CONTRATO_A
+            LEFT JOIN RECAUDO_CONCEPTOS rconc ON rconc.ID_RECAUDO = rrec.ID_RECAUDO AND rconc.PERIODO = l.PERIODO
         """
 
         conditions = []
@@ -1343,7 +1382,8 @@ class RepositorioLiquidacionSQLite:
                 l.OTROS_INGRESOS, l.COMISION_MONTO, l.IVA_COMISION, l.IMPUESTO_4X1000,
                 l.GASTOS_ADMINISTRACION, l.GASTOS_SERVICIOS, l.GASTOS_REPARACIONES, 
                 l.PAGO_PREDIAL, l.OTROS_EGRESOS, l.NETO_A_PAGAR,
-                p.DIRECCION_PROPIEDAD, cm.FECHA_PAGO
+                p.DIRECCION_PROPIEDAD, cm.FECHA_PAGO,
+                rrec.ESTADO_RECAUDO
             {base_from} {where_clause}
             ORDER BY {sort_col} {order}, l.ID_LIQUIDACION DESC
             LIMIT {placeholder} OFFSET {placeholder}
@@ -1362,6 +1402,7 @@ class RepositorioLiquidacionSQLite:
                     "neto": row["NETO_A_PAGAR"],
                     "contrato": row["DIRECCION_PROPIEDAD"],
                     "fecha_pago_mandato": row["FECHA_PAGO"],
+                    "estado_recaudo": row.get("ESTADO_RECAUDO") or "Sin Recaudo",
                 }
             )
         return items

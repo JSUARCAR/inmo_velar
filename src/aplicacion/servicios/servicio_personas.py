@@ -65,10 +65,13 @@ class PersonaConRoles:
         return self.persona.estado_registro == 1
 
 
+from src.dominio.interfaces.repositorio_auditoria import RepositorioAuditoria
+
+
 class ServicioPersonas:
     """
     Servicio de aplicación para gestión integral de Personas y Roles.
-    Implementa lógica de negocio para CRUD multi-rol.
+    Implementa lógica de negocio para CRUD multi-rol y auditoría.
     """
 
     def __init__(
@@ -78,7 +81,8 @@ class ServicioPersonas:
         repo_propietario: IRepositorioPropietario,
         repo_arrendatario: IRepositorioArrendatario,
         repo_codeudor: IRepositorioCodeudor,
-        repo_proveedor: RepositorioProveedores
+        repo_proveedor: RepositorioProveedores,
+        repo_auditoria: Optional[RepositorioAuditoria] = None
     ):
         self.repo_persona = repo_persona
         self.repo_asesor = repo_asesor
@@ -86,21 +90,24 @@ class ServicioPersonas:
         self.repo_arrendatario = repo_arrendatario
         self.repo_codeudor = repo_codeudor
         self.repo_proveedor = repo_proveedor
+        self.repo_auditoria = repo_auditoria
 
     @cache_manager.cached("personas:list", level=1)
     def listar_personas(
         self,
         filtro_rol: Optional[str] = None,
         solo_activos: bool = True,
+        sin_contrato: bool = False,
         busqueda: Optional[str] = None,
     ) -> List[PersonaConRoles]:
         """
         Lista personas con sus roles asignados.
         """
-        logger.debug(f"Listando personas: filtro_rol={filtro_rol}, solo_activos={solo_activos}, busqueda={busqueda}")
+        logger.debug(f"Listando personas: filtro_rol={filtro_rol}, solo_activos={solo_activos}, sin_contrato={sin_contrato}, busqueda={busqueda}")
         personas = self.repo_persona.obtener_todos(
             filtro_rol=filtro_rol,
             solo_activos=solo_activos,
+            sin_contrato=sin_contrato,
             busqueda=busqueda
         )
 
@@ -118,6 +125,8 @@ class ServicioPersonas:
         page_size: int = 25,
         filtro_rol: Optional[str] = None,
         solo_activos: bool = True,
+        solo_inactivos: bool = False,
+        sin_contrato: bool = False,
         busqueda: Optional[str] = None,
         fecha_inicio: Optional[str] = None,
         fecha_fin: Optional[str] = None,
@@ -125,7 +134,7 @@ class ServicioPersonas:
         sort_order: str = "desc",
     ):
         """Lista personas con paginación, filtros y ordenamiento dinámico."""
-        logger.debug(f"Listando personas paginado: page={page}, sort_by={sort_by}")
+        logger.debug(f"Listando personas paginado: page={page}, sin_contrato={sin_contrato}, sort_by={sort_by}")
         from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
 
         params = PaginationParams(page=page, page_size=page_size)
@@ -133,6 +142,8 @@ class ServicioPersonas:
         total = self.repo_persona.contar_todos(
             filtro_rol=filtro_rol,
             solo_activos=solo_activos,
+            solo_inactivos=solo_inactivos,
+            sin_contrato=sin_contrato,
             busqueda=busqueda,
             fecha_inicio=fecha_inicio,
             fecha_fin=fecha_fin
@@ -141,6 +152,8 @@ class ServicioPersonas:
         personas = self.repo_persona.obtener_todos(
             filtro_rol=filtro_rol,
             solo_activos=solo_activos,
+            solo_inactivos=solo_inactivos,
+            sin_contrato=sin_contrato,
             busqueda=busqueda,
             fecha_inicio=fecha_inicio,
             fecha_fin=fecha_fin,
@@ -162,31 +175,44 @@ class ServicioPersonas:
             items=items, total=total, page=params.page, page_size=params.page_size
         )
 
-    @cache_manager.cached("personas_kpis", level=1, ttl=300)
-    def obtener_conteos_por_rol(self, solo_activos: bool = True) -> dict[str, int]:
+    @cache_manager.cached("personas:kpis", level=1, ttl=300)
+    def obtener_conteos_por_rol(
+        self,
+        solo_activos: bool = True,
+        solo_inactivos: bool = False,
+        sin_contrato: bool = False
+    ) -> dict[str, int]:
         """Obtiene un diccionario con el total de personas por cada rol."""
-        logger.debug(f"Obteniendo KPIs de conteos por rol: solo_activos={solo_activos}")
-        return self.repo_persona.obtener_conteos_por_rol(solo_activos=solo_activos)
+        logger.debug(f"Obteniendo KPIs de conteos por rol: solo_activos={solo_activos}, solo_inactivos={solo_inactivos}, sin_contrato={sin_contrato}")
+        return self.repo_persona.obtener_conteos_por_rol(
+            solo_activos=solo_activos,
+            solo_inactivos=solo_inactivos,
+            sin_contrato=sin_contrato
+        )
 
     def exportar_personas_csv(
         self,
         filtro_rol: Optional[str] = None,
         solo_activos: bool = True,
+        sin_contrato: bool = False,
         busqueda: Optional[str] = None,
         fecha_inicio: Optional[str] = None,
         fecha_fin: Optional[str] = None,
     ) -> str:
         """Genera un CSV con las personas filtradas."""
-        logger.debug(f"Exportando personas a CSV: filtro_rol={filtro_rol}, solo_activos={solo_activos}, busqueda={busqueda}, fecha_inicio={fecha_inicio}, fecha_fin={fecha_fin}")
+        logger.debug(f"Exportando personas a CSV: filtro_rol={filtro_rol}, solo_activos={solo_activos}, sin_contrato={sin_contrato}, busqueda={busqueda}, fecha_inicio={fecha_inicio}, fecha_fin={fecha_fin}")
         import csv
         import io
 
         personas = self.repo_persona.obtener_todos(
             filtro_rol=filtro_rol,
             solo_activos=solo_activos,
+            sin_contrato=sin_contrato,
             busqueda=busqueda,
             fecha_inicio=fecha_inicio,
-            fecha_fin=fecha_fin
+            fecha_fin=fecha_fin,
+            sort_by="nombre_completo",
+            sort_order="asc"
         )
 
         output = io.StringIO()
@@ -463,6 +489,18 @@ class ServicioPersonas:
             return 
 
         self._asignar_rol_interno(id_persona, nombre_rol, datos_extra or {}, usuario_sistema)
+        
+        # Auditoría
+        self._auditar_accion(
+            id_persona, 
+            "ESTADO_CHANGE", 
+            f"Rol '{nombre_rol}' asignado", 
+            None, 
+            nombre_rol, 
+            usuario_sistema
+        )
+        
+        cache_manager.invalidate("personas")
 
     def actualizar_datos_rol(
         self, id_persona: int, nombre_rol: str, datos_extra: Dict, usuario_sistema: str = "sistema"
@@ -540,8 +578,20 @@ class ServicioPersonas:
                 prov.observaciones = datos_extra["observaciones"]
             prov.updated_at = datetime.now().isoformat()
             self.repo_proveedor.actualizar(prov)
+        
+        # Auditoría simplificada para actualización de datos de rol
+        self._auditar_accion(
+            id_persona, 
+            "UPDATE", 
+            f"Datos del rol '{nombre_rol}' actualizados", 
+            None, 
+            str(datos_extra), 
+            usuario_sistema
+        )
+        
+        cache_manager.invalidate("personas")
 
-    def remover_rol(self, id_persona: int, nombre_rol: str) -> None:
+    def remover_rol(self, id_persona: int, nombre_rol: str, usuario_sistema: str = "sistema") -> None:
         """Remueve un rol de una persona."""
         logger.debug(f"Removiendo rol de persona: id_persona={id_persona}, nombre_rol={nombre_rol}")
         datos_roles = self._obtener_datos_roles_persona(id_persona)
@@ -558,6 +608,18 @@ class ServicioPersonas:
             self.repo_asesor.eliminar_por_persona(id_persona)
         elif nombre_rol == "Proveedor":
             self.repo_proveedor.eliminar_por_persona(id_persona)
+        
+        # Auditoría
+        self._auditar_accion(
+            id_persona, 
+            "ESTADO_CHANGE", 
+            f"Rol '{nombre_rol}' removido", 
+            nombre_rol, 
+            None, 
+            usuario_sistema
+        )
+        
+        cache_manager.invalidate("personas")
 
     def desactivar_persona(
         self,
@@ -569,6 +631,9 @@ class ServicioPersonas:
         logger.debug(f"Desactivando persona: id_persona={id_persona}, motivo={motivo}, usuario_sistema={usuario_sistema}")
         result = self.repo_persona.inactivar(id_persona, motivo, usuario_sistema)
         if result:
+            self._auditar_accion(
+                id_persona, "ESTADO_CHANGE", "Persona inactivada", "Activo", "Inactivo", usuario_sistema, motivo
+            )
             cache_manager.invalidate("personas")
         return result
 
@@ -583,6 +648,9 @@ class ServicioPersonas:
         persona.motivo_inactivacion = None
         result = self.repo_persona.actualizar(persona, usuario_sistema)
         if result:
+            self._auditar_accion(
+                id_persona, "ESTADO_CHANGE", "Persona reactivada", "Inactivo", "Activo", usuario_sistema
+            )
             cache_manager.invalidate("personas")
         return result
 
@@ -597,6 +665,33 @@ class ServicioPersonas:
         return PersonaConRoles(persona=persona, datos_roles=datos_roles)
 
     # --- Métodos Privados ---
+
+    def _auditar_accion(
+        self, 
+        id_persona: int, 
+        operacion: str, 
+        motivo: str, 
+        anterior: Optional[str] = None, 
+        nuevo: Optional[str] = None,
+        usuario: str = "sistema",
+        motivo_extra: Optional[str] = None
+    ):
+        """Registra una acción en la tabla de auditoría."""
+        if not self.repo_auditoria:
+            return
+            
+        try:
+            self.repo_auditoria.guardar_cambio(
+                tabla="PERSONAS",
+                id_registro=id_persona,
+                tipo_operacion=operacion,
+                valor_anterior=anterior,
+                valor_nuevo=nuevo,
+                usuario=usuario,
+                motivo_cambio=motivo_extra or motivo
+            )
+        except Exception as e:
+            logger.warning(f"No se pudo registrar auditoría: {e}")
 
     def _obtener_datos_roles_persona(self, id_persona: int) -> Dict[str, Any]:
         """Obtiene entidades asignadas a una persona."""

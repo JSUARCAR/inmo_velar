@@ -206,6 +206,27 @@ def bell_icon() -> rx.Component:
                         scrollbars="vertical",
                         style={"height": "320px", "max-height": "400px"},
                     ),
+                    # FOOTER: Link to Alerts Dashboard
+                    rx.box(
+                        rx.link(
+                            rx.hstack(
+                                rx.text("Ver todas las alertas", weight="medium"),
+                                rx.icon("chevron_right", size=16),
+                                justify="center",
+                                align="center",
+                                width="100%",
+                            ),
+                            href="/alertas",
+                            on_click=AlertasState.close_list,
+                            underline="none",
+                            color=styles.BRAND_PRIMARY,
+                        ),
+                        padding="3",
+                        border_top="1px solid #e5e7eb",
+                        bg="#f9fafb",
+                        width="100%",
+                        _hover={"bg": "#f3f4f6"},
+                    ),
                     gap="0",
                     width="340px",
                     bg="white",

@@ -78,7 +78,7 @@ def modal_renovacion_contrato() -> rx.Component:
                                         color="var(--green-11)",
                                     ),
                                     rx.cond(
-                                        ContratosState.renewal_proyeccion.contains("aplica_ipc") & (ContratosState.renewal_proyeccion["aplica_ipc"] == True),
+                                        ContratosState.renewal_proyeccion.contains("aplica_ipc") & ContratosState.renewal_proyeccion["aplica_ipc"].to(bool),
                                         neuro_badge(f"{ContratosState.renewal_proyeccion['porcentaje_ipc'].to(str)}% IPC", color_scheme="cyan", size="1"),
                                     ),
                                 ),

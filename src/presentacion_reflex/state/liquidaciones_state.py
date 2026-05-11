@@ -26,6 +26,7 @@ class LiquidacionDict(pydantic.BaseModel):
     neto_view: str
     cantidad_propiedades: Optional[int]
     fecha_pago_mandato: Optional[str] = None
+    estado_recaudo: str = "Sin Recaudo"
 
 
 class LiquidacionesState(DocumentosStateMixin):
@@ -344,7 +345,7 @@ class LiquidacionesState(DocumentosStateMixin):
         else:
             self.sort_by = column
             self.sort_order = "desc"
-        
+
         self.current_page = 1
         return LiquidacionesState.load_liquidaciones
 

@@ -29,7 +29,22 @@ def crear_contrato_mandato_form_view(
 
     db_manager = DatabaseManager()
     servicio_contratos = ServicioContratos(db_manager)
-    servicio_personas = ServicioPersonas(db_manager)
+    
+    from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
+    from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
+    from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
+    from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
+    from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
+    from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
+
+    servicio_personas = ServicioPersonas(
+        repo_persona=RepositorioPersonaSQLite(db_manager),
+        repo_asesor=RepositorioAsesorSQLite(db_manager),
+        repo_propietario=RepositorioPropietarioSQLite(db_manager),
+        repo_arrendatario=RepositorioArrendatarioSQLite(db_manager),
+        repo_codeudor=RepositorioCodeudorSQLite(db_manager),
+        repo_proveedor=RepositorioProveedoresSQLite(db_manager)
+    )
 
     # Cargar datos para dropdowns
     propiedades = servicio_contratos.obtener_propiedades_sin_mandato_activo()

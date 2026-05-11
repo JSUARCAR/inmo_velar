@@ -79,6 +79,8 @@ def db_manager(tmp_path):
                 OBSERVACIONES_PROPIETARIO TEXT,
                 ESTADO_PROPIETARIO INTEGER DEFAULT 1,
                 FECHA_INGRESO_PROPIETARIO TEXT,
+                CONSIGNATARIO TEXT,
+                DOCUMENTO_CONSIGNATARIO TEXT,
                 MOTIVO_INACTIVACION TEXT,
                 CREATED_AT TEXT,
                 CREATED_BY TEXT,
@@ -97,6 +99,8 @@ def db_manager(tmp_path):
                 CODIGO_APROBACION_SEGURO TEXT,
                 ID_SEGURO INTEGER,
                 FECHA_INGRESO_ARRENDATARIO TEXT,
+                NOMBRE_HABITANTE TEXT,
+                TELEFONO_HABITANTE TEXT,
                 ESTADO_ARRENDATARIO INTEGER DEFAULT 1,
                 MOTIVO_INACTIVACION TEXT,
                 ESTADO_REGISTRO INTEGER DEFAULT 1,
@@ -129,6 +133,7 @@ def db_manager(tmp_path):
                 ID_PROVEEDOR INTEGER PRIMARY KEY AUTOINCREMENT,
                 ID_PERSONA INTEGER NOT NULL,
                 ESPECIALIDAD TEXT,
+                CALIFICACION INTEGER DEFAULT 0,
                 OBSERVACIONES TEXT,
                 ESTADO_REGISTRO INTEGER DEFAULT 1,
                 CREATED_AT TEXT,
@@ -151,8 +156,22 @@ def db_manager(tmp_path):
 
 @pytest.fixture
 def servicio(db_manager):
-    """Crea una instancia del servicio."""
-    return ServicioPersonas(db_manager)
+    """Crea una instancia del servicio con todos sus repositorios."""
+    from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
+    from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
+    from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
+    from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
+    from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
+    from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
+
+    return ServicioPersonas(
+        repo_persona=RepositorioPersonaSQLite(db_manager),
+        repo_asesor=RepositorioAsesorSQLite(db_manager),
+        repo_propietario=RepositorioPropietarioSQLite(db_manager),
+        repo_arrendatario=RepositorioArrendatarioSQLite(db_manager),
+        repo_codeudor=RepositorioCodeudorSQLite(db_manager),
+        repo_proveedor=RepositorioProveedoresSQLite(db_manager)
+    )
 
 
 class TestServicioPersonas:
