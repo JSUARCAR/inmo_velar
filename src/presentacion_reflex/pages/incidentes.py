@@ -140,7 +140,7 @@ def _list_view() -> rx.Component:
             ),
             rx.center(
                 rx.vstack(
-                    rx.icon("database-x", size=24, color="var(--gray-9)"),
+                    rx.icon("database", size=24, color="var(--gray-9)"),
                     rx.text("No hay incidentes registrados", color="gray"),
                     padding_y="4em",
                 ),

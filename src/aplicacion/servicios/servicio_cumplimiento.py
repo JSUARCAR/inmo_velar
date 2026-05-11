@@ -17,8 +17,8 @@ from src.dominio.value_objects.estado_cumplimiento import (
     obtener_periodo_actual,
 )
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
-    RepositorioLiquidacionSQLite,
+from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
+    RepositorioLiquidacionPostgres,
 )
 from src.infraestructura.persistencia.repositorio_recaudo import RepositorioRecaudo
 
@@ -36,7 +36,7 @@ class ServicioCumplimiento:
 
     def __init__(self, db_manager=None):
         self.db = db_manager or db_manager
-        self.repo_liquidacion = RepositorioLiquidacionSQLite(self.db)
+        self.repo_liquidacion = RepositorioLiquidacionPostgres(self.db)
         self.repo_recaudo = RepositorioRecaudo(self.db)
         self.dias_gracia = DIAS_GRACIA_DEFAULT
 

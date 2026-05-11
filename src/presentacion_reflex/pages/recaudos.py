@@ -462,7 +462,11 @@ def modal_exportar_recibos_periodo() -> rx.Component:
             max_width="450px",
         ),
         open=RecaudosState.mostrar_modal_exportar_recibos,
-        on_open_change=RecaudosState.set_mostrar_modal_exportar_recibos,
+        on_open_change=lambda open: rx.cond(
+            open,
+            RecaudosState.abrir_modal_exportar_recibos,
+            RecaudosState.cerrar_modal_exportar_recibos,
+        ),
     )
 
 

@@ -60,8 +60,7 @@ class RepositorioPagoAsesor:
         )
 
         try:
-            with self.db_manager.obtener_conexion() as conn:
-                cursor = self.db_manager.get_dict_cursor(conn)
+            with self.db_manager.transaccion() as cursor:
                 cursor.execute(query, params)
                 row = cursor.fetchone()
                 if row:
@@ -121,8 +120,7 @@ class RepositorioPagoAsesor:
             pago.id_pago_asesor,
         )
 
-        with self.db_manager.obtener_conexion() as conn:
-            cursor = conn.cursor()
+        with self.db_manager.transaccion() as cursor:
             cursor.execute(query, params)
             if cursor.rowcount == 0:
                 raise ValueError(f"No se encontró el pago con ID {pago.id_pago_asesor}")

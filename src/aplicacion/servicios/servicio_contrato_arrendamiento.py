@@ -108,11 +108,34 @@ class ServicioContratoArrendamiento:
                 f"No existe el contrato de arrendamiento con ID {id_contrato}"
             )
 
+        # Actualización de llaves foráneas y datos básicos
+        arriendo.id_propiedad = datos.get("id_propiedad", arriendo.id_propiedad)
+        arriendo.id_arrendatario = datos.get("id_arrendatario", arriendo.id_arrendatario)
+        arriendo.id_codeudor = datos.get("id_codeudor", arriendo.id_codeudor)
+
+        # Actualización de fechas y duración
+        arriendo.fecha_inicio_contrato_a = datos.get(
+            "fecha_inicio", arriendo.fecha_inicio_contrato_a
+        )
         arriendo.fecha_fin_contrato_a = datos.get(
             "fecha_fin", arriendo.fecha_fin_contrato_a
         )
+        arriendo.duracion_contrato_a = datos.get(
+            "duracion_meses", arriendo.duracion_contrato_a
+        )
+
+        # Condiciones económicas
         arriendo.canon_arrendamiento = datos.get("canon", arriendo.canon_arrendamiento)
+        arriendo.deposito = datos.get("deposito", arriendo.deposito)
         arriendo.fecha_pago = datos.get("fecha_pago", arriendo.fecha_pago)
+
+        # Estado y Alertas
+        arriendo.estado_contrato_a = datos.get("estado", arriendo.estado_contrato_a)
+        arriendo.alerta_vencimiento_contrato_a = datos.get(
+            "alerta_vencimiento", arriendo.alerta_vencimiento_contrato_a
+        )
+        arriendo.alerta_ipc = datos.get("alerta_ipc", arriendo.alerta_ipc)
+
         arriendo.updated_by = usuario_sistema
         arriendo.updated_at = datetime.now().isoformat()
 

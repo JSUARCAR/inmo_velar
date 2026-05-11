@@ -2,8 +2,8 @@
 
 ## Sistema Velar - Core de Gestión Inmobiliaria
 
-> **Versión:** 1.0.0 Élite
-> **Última actualización:** 2026-03-03
+> **Versión:** 1.0.1 Élite
+> **Última actualización:** 2026-05-10
 > **Arquitectura:** Clean Architecture + Domain-Driven Design
 > **Framework:** Reflex (Python Full-Stack) + PostgreSQL
 > **Plataforma:** Railway (Cloud-Native)
@@ -12,9 +12,14 @@
 
 ## 📋 Contexto Tecnológico
 
-### Migración Completada
+### Actualizaciones Recientes (Hitos)
 
-El proyecto ha migrado exitosamente de **Flet/SQLite** a **Reflex/PostgreSQL**. Esta consolidación tecnológica es definitiva:
+| Fecha | Hito | Impacto |
+|-------|------|---------|
+| 2026-05-10 | Dashboard Alertas Tempranas | Implementación de motor proactivo de detección de vencimientos con persistencia en DB y vista de gestión. |
+| 2026-05-10 | Modernización PDF Elite | Arquitectura BaseDocTemplate, validación de assets y soporte multi-página dinámico. |
+| 2026-05-10 | Filtros Avanzados Personas | Implementación de toggles 'Inactivos' y 'Sin Contrato' con lógica SQL recursiva y KPIs dinámicos. |
+
 
 | Aspecto | Anterior | Actual | Estado |
 |---------|----------|--------|--------|

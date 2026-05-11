@@ -34,7 +34,21 @@ class PersonasListView(ft.Container):
 
         # Servicios
         self.db_manager = DatabaseManager()
-        self.servicio = ServicioPersonas(self.db_manager)
+        from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
+        from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
+        from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
+        from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
+        from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
+        from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
+
+        self.servicio = ServicioPersonas(
+            repo_persona=RepositorioPersonaSQLite(self.db_manager),
+            repo_asesor=RepositorioAsesorSQLite(self.db_manager),
+            repo_propietario=RepositorioPropietarioSQLite(self.db_manager),
+            repo_arrendatario=RepositorioArrendatarioSQLite(self.db_manager),
+            repo_codeudor=RepositorioCodeudorSQLite(self.db_manager),
+            repo_proveedor=RepositorioProveedoresSQLite(self.db_manager)
+        )
 
         # Estado
         self.personas: List[PersonaConRoles] = []

@@ -14,11 +14,16 @@ from src.presentacion_reflex.components.liquidaciones import (
     liquidacion_edit_form,
     payment_form,
     reverse_confirm_dialog,
+    modal_exportar_liquidaciones_periodo,
 )
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 from src.presentacion_reflex.state.pdf_state import PDFState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_button,
+    neuro_select_root,
+)
 from src.presentacion_reflex import styles
 
 
@@ -39,9 +44,33 @@ def render_estado_badge(estado: rx.Var) -> rx.Component:
     )
 
 
+def render_estado_recaudo_badge(estado_recaudo: rx.Var) -> rx.Component:
+    """Renderiza badge con color según estado del recaudo."""
+    return rx.match(
+        estado_recaudo,
+        ("Aplicado", rx.badge("Aplicado", color_scheme="green", variant="soft")),
+        ("Pendiente", rx.badge("Pendiente", color_scheme="yellow", variant="soft")),
+        ("Vencido", rx.badge("Vencido", color_scheme="orange", variant="soft")),
+        ("Reversado", rx.badge("Reversado", color_scheme="red", variant="soft")),
+        rx.badge("Sin Recaudo", color_scheme="gray", variant="soft"),
+    )
+
+
 def liquidaciones_toolbar() -> rx.Component:
     """Barra de herramientas con filtros y búsqueda con diseño neumórfico."""
     return rx.flex(
+        # Botón Exportar Lote Periodo ZIP
+        rx.cond(
+            AuthState.check_action("Liquidaciones", "CREAR"),
+            rx.tooltip(
+                neuro_button(
+                    rx.icon("file-archive", size=20),
+                    on_click=LiquidacionesState.open_export_modal,
+                    loading=LiquidacionesState.exportando_periodo,
+                ),
+                content="Exportar Periodo (ZIP)",
+            ),
+        ),
         # Toggle Vista Agrupada
         rx.flex(
             rx.switch(
@@ -51,7 +80,9 @@ def liquidaciones_toolbar() -> rx.Component:
             ),
             rx.text(
                 rx.cond(
-                    LiquidacionesState.vista_agrupada, "Vista Por Propietario", "Vista Individual"
+                    LiquidacionesState.vista_agrupada,
+                    "Vista Por Propietario",
+                    "Vista Individual",
                 ),
                 weight="medium",
                 size="2",
@@ -164,15 +195,25 @@ def pagination_controls() -> rx.Component:
             ),
             rx.vstack(
                 rx.text(
-                    "Página ", LiquidacionesState.current_page,
+                    "Página ",
+                    LiquidacionesState.current_page,
                     size=rx.breakpoints(initial="2", md="3"),
                     weight="medium",
                     color=styles.TEXT_PRIMARY,
                 ),
                 rx.text(
-                    "Mostrando ", (LiquidacionesState.current_page - 1) * LiquidacionesState.page_size + 1, "-",
-                    rx.cond(LiquidacionesState.current_page * LiquidacionesState.page_size > LiquidacionesState.total_items, LiquidacionesState.total_items, LiquidacionesState.current_page * LiquidacionesState.page_size),
-                    " de ", LiquidacionesState.total_items,
+                    "Mostrando ",
+                    (LiquidacionesState.current_page - 1) * LiquidacionesState.page_size
+                    + 1,
+                    "-",
+                    rx.cond(
+                        LiquidacionesState.current_page * LiquidacionesState.page_size
+                        > LiquidacionesState.total_items,
+                        LiquidacionesState.total_items,
+                        LiquidacionesState.current_page * LiquidacionesState.page_size,
+                    ),
+                    " de ",
+                    LiquidacionesState.total_items,
                     size="1",
                     color=styles.TEXT_SECONDARY,
                     display=rx.breakpoints(initial="none", md="block"),
@@ -181,7 +222,9 @@ def pagination_controls() -> rx.Component:
                 align="center",
             ),
             neuro_button(
-                rx.text("Siguiente", display=rx.breakpoints(initial="none", md="block")),
+                rx.text(
+                    "Siguiente", display=rx.breakpoints(initial="none", md="block")
+                ),
                 rx.icon("chevron-right", size=16),
                 on_click=LiquidacionesState.next_page,
                 disabled=LiquidacionesState.current_page * LiquidacionesState.page_size
@@ -208,7 +251,7 @@ def pagination_controls() -> rx.Component:
 def header_cell_sortable(label: str, column_id: str) -> rx.Component:
     """Renderiza celda de encabezado con capacidad de ordenamiento."""
     is_active = LiquidacionesState.sort_by == column_id
-    
+
     return rx.table.column_header_cell(
         rx.hstack(
             rx.text(label, weight="bold"),
@@ -227,7 +270,7 @@ def header_cell_sortable(label: str, column_id: str) -> rx.Component:
             on_click=lambda: LiquidacionesState.toggle_sort(column_id),
             _hover={"opacity": 0.8},
         ),
-        style={"font-weight": "600"}
+        style={"font-weight": "600"},
     )
 
 
@@ -242,6 +285,7 @@ def liquidaciones_table() -> rx.Component:
                 header_cell_sortable("Día Pago Mandato", "dia_pago"),
                 header_cell_sortable("Canon", "canon"),
                 header_cell_sortable("Neto a Pagar", "neto"),
+                header_cell_sortable("Estado Recaudo", "estado_recaudo"),
                 header_cell_sortable("Estado", "estado"),
                 rx.table.column_header_cell(
                     "Acciones", width="200px", style={"font-weight": "600"}
@@ -264,6 +308,7 @@ def liquidaciones_table() -> rx.Component:
                             color="green",
                         )
                     ),
+                    rx.table.cell(render_estado_recaudo_badge(liq["estado_recaudo"])),
                     rx.table.cell(render_estado_badge(liq["estado"])),
                     rx.table.cell(
                         rx.hstack(
@@ -271,8 +316,8 @@ def liquidaciones_table() -> rx.Component:
                             rx.tooltip(
                                 rx.icon_button(
                                     rx.icon("eye", size=18),
-                                    on_click=lambda: LiquidacionesState.open_detail_modal(
-                                        liq["id"]
+                                    on_click=lambda: (
+                                        LiquidacionesState.open_detail_modal(liq["id"])
                                     ),
                                     size="2",
                                     variant="ghost",
@@ -283,8 +328,10 @@ def liquidaciones_table() -> rx.Component:
                             rx.tooltip(
                                 rx.icon_button(
                                     rx.icon("file-spreadsheet", size=18),
-                                    on_click=lambda: PDFState.generar_estado_cuenta_elite(
-                                        liquidacion_id=liq["id"]
+                                    on_click=lambda: (
+                                        PDFState.generar_estado_cuenta_elite(
+                                            liquidacion_id=liq["id"]
+                                        )
                                     ),
                                     size="2",
                                     variant="ghost",
@@ -300,8 +347,10 @@ def liquidaciones_table() -> rx.Component:
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("pencil", size=18),
-                                        on_click=lambda: LiquidacionesState.open_edit_modal(
-                                            liq["id"]
+                                        on_click=lambda: (
+                                            LiquidacionesState.open_edit_modal(
+                                                liq["id"]
+                                            )
                                         ),
                                         size="2",
                                         variant="ghost",
@@ -318,8 +367,10 @@ def liquidaciones_table() -> rx.Component:
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("thumbs-up", size=18),
-                                        on_click=lambda: LiquidacionesState.aprobar_liquidacion(
-                                            liq["id"]
+                                        on_click=lambda: (
+                                            LiquidacionesState.aprobar_liquidacion(
+                                                liq["id"]
+                                            )
                                         ),
                                         size="2",
                                         variant="ghost",
@@ -336,8 +387,10 @@ def liquidaciones_table() -> rx.Component:
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("dollar-sign", size=18),
-                                        on_click=lambda: LiquidacionesState.open_payment_modal(
-                                            liq["id"]
+                                        on_click=lambda: (
+                                            LiquidacionesState.open_payment_modal(
+                                                liq["id"]
+                                            )
                                         ),
                                         size="2",
                                         variant="ghost",
@@ -369,6 +422,9 @@ def liquidaciones_table_agrupada() -> rx.Component:
                     header_cell_sortable("Propiedades", "cantidad_propiedades"),
                     header_cell_sortable("Canon Total", "canon"),
                     header_cell_sortable("Neto Total", "neto"),
+                    rx.table.column_header_cell(
+                        "Estado Recaudo", style={"font-weight": "600"}
+                    ),
                     header_cell_sortable("Estado", "estado"),
                     rx.table.column_header_cell(
                         "Acciones", width="200px", style={"font-weight": "600"}
@@ -401,15 +457,23 @@ def liquidaciones_table_agrupada() -> rx.Component:
                             ),
                             text_align="right",
                         ),
-                        rx.table.cell(render_estado_badge(liq["estado"]), text_align="center"),
+                        rx.table.cell(
+                            render_estado_recaudo_badge(liq["estado_recaudo"]),
+                            text_align="center",
+                        ),
+                        rx.table.cell(
+                            render_estado_badge(liq["estado"]), text_align="center"
+                        ),
                         rx.table.cell(
                             rx.hstack(
                                 # Ver Detalle Consolidado
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("eye", size=18),
-                                        on_click=lambda: LiquidacionesState.open_detail_consolidated(
-                                            liq["id_propietario"], liq["periodo"]
+                                        on_click=lambda: (
+                                            LiquidacionesState.open_detail_consolidated(
+                                                liq["id_propietario"], liq["periodo"]
+                                            )
                                         ),
                                         size="2",
                                         variant="ghost",
@@ -420,9 +484,11 @@ def liquidaciones_table_agrupada() -> rx.Component:
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("file-spreadsheet", size=18),
-                                        on_click=lambda: PDFState.generar_estado_cuenta_elite(
-                                            propietario_id=liq["id_propietario"],
-                                            periodo=liq["periodo"],
+                                        on_click=lambda: (
+                                            PDFState.generar_estado_cuenta_elite(
+                                                propietario_id=liq["id_propietario"],
+                                                periodo=liq["periodo"],
+                                            )
                                         ),
                                         size="2",
                                         variant="ghost",
@@ -434,12 +500,17 @@ def liquidaciones_table_agrupada() -> rx.Component:
                                 # Aprobar Todas (solo En Proceso)
                                 rx.cond(
                                     (liq["estado"] == "En Proceso")
-                                    & AuthState.check_action("Liquidaciones", "APROBAR"),
+                                    & AuthState.check_action(
+                                        "Liquidaciones", "APROBAR"
+                                    ),
                                     rx.tooltip(
                                         rx.icon_button(
                                             rx.icon("thumbs-up", size=18),
-                                            on_click=lambda: LiquidacionesState.aprobar_liquidacion_masiva(
-                                                liq["id_propietario"], liq["periodo"]
+                                            on_click=lambda: (
+                                                LiquidacionesState.aprobar_liquidacion_masiva(
+                                                    liq["id_propietario"],
+                                                    liq["periodo"],
+                                                )
                                             ),
                                             size="2",
                                             variant="ghost",
@@ -456,8 +527,11 @@ def liquidaciones_table_agrupada() -> rx.Component:
                                     rx.tooltip(
                                         rx.icon_button(
                                             rx.icon("dollar-sign", size=18),
-                                            on_click=lambda: LiquidacionesState.open_payment_modal_bulk(
-                                                liq["id_propietario"], liq["periodo"]
+                                            on_click=lambda: (
+                                                LiquidacionesState.open_payment_modal_bulk(
+                                                    liq["id_propietario"],
+                                                    liq["periodo"],
+                                                )
                                             ),
                                             size="2",
                                             variant="ghost",
@@ -551,6 +625,7 @@ def liquidaciones_page() -> rx.Component:
         ),
         cancel_modal(),
         reverse_confirm_dialog(),
+        modal_exportar_liquidaciones_periodo(),
         width="100%",
         spacing="4",
         padding="2em",

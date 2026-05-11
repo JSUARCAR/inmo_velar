@@ -38,7 +38,7 @@ async def download_pdf(filename: str):
 
     return FileResponse(
         path=str(pdf_path),
-        media_type="application/pdf",
+        media_type=None,  # FastAPI detectará automáticamente application/pdf o application/zip
         filename=safe_filename,
         headers={
             "Cache-Control": "no-cache, no-store, must-revalidate",

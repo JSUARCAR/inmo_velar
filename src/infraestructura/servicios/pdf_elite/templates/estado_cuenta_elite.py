@@ -77,8 +77,19 @@ class EstadoCuentaElite(BaseDocumentTemplate):
         # Habilitar QR de verificación
         self.enable_verification_qr("estado", data["estado_id"])
 
-        # Crear documento
-        filename = self._generate_filename("estado_cuenta", data["estado_id"])
+        # Determinar descriptor para el nombre de archivo (Dirección de la propiedad)
+        descriptor = "consolidado"
+        if data.get("inmueble") and data["inmueble"].get("direccion"):
+            descriptor = data["inmueble"]["direccion"]
+        elif data.get("propiedad"): # Fallback por si acaso
+            descriptor = data["propiedad"]
+
+        # Crear documento con nomenclatura personalizada: estado_cuenta_[DIRECCION]_[DDMMAAAAHHMMSS]
+        filename = self._generate_filename(
+            prefix="estado_cuenta", 
+            descriptor=descriptor,
+            timestamp_format="%d%m%Y%H%M%S"
+        )
         self.create_document(filename, self.document_title)
 
         # Construir contenido
@@ -90,70 +101,6 @@ class EstadoCuentaElite(BaseDocumentTemplate):
 
         # Construir PDF
         return self.build()
-
-    def _header_footer_with_features(self, canvas_obj, doc):
-        """
-        Header y footer con Membrete (Imagen de fondo)
-        """
-        # 0. Dibujar MEMBRETE (Fondo completo)
-        current_dir = Path(__file__).parent
-        membrete_path = current_dir / "VELAR INMOBILIARIA_membrete_modificada.png"
-        
-        try:
-            if membrete_path.exists():
-                # Dibujar imagen cubriendo toda la página
-                page_width, page_height = doc.pagesize
-                # máscara desactivada para evitar errores en acrobat
-                canvas_obj.drawImage(str(membrete_path), 0, 0, width=page_width, height=page_height, mask=None, preserveAspectRatio=False)
-        except Exception as e:
-            # Fallo silencioso o log mínimo para no romper generación
-            print(f"Advertencia: No se pudo cargar fondo {membrete_path}: {e}")
-
-        # 1. Agregar marca de agua si aplica (logic from Base)
-        if self.watermark_text:
-            from ..components.watermarks import Watermark
-            Watermark.add_text_watermark(
-                canvas_obj,
-                text=self.watermark_text,
-                opacity=self.watermark_opacity,
-                position=self.watermark_style,
-            )
-            
-        # 2. Footer simple (SOLO Página)
-        canvas_obj.saveState()
-        
-        # Página y Timestamp
-        page_num = canvas_obj.getPageNumber()
-        canvas_obj.setFont('Helvetica', 8)
-        canvas_obj.setFillColor(colors.gray)
-        
-        center_x = doc.pagesize[0] / 2
-        
-        # Centrado Página (más abajo que la dirección)
-        canvas_obj.drawCentredString(center_x, 20, f"Página {page_num}")
-        
-        # 4. Textos Verticales en Márgenes
-        canvas_obj.setFont('Helvetica', 8)
-        canvas_obj.setFillColor(colors.lightgrey) # Color tenue para no distraer
-        
-        from datetime import datetime
-        dt_str = datetime.now().strftime('%Y-%m-%d %H:%M')
-        
-        # Margen Izquierdo (Vertical)
-        canvas_obj.saveState()
-        canvas_obj.translate(30, 250) # Ajustar posición X,Y
-        canvas_obj.rotate(90)
-        canvas_obj.drawString(0, 0, "Impreso por Inmobiliaria Velar SAS - NIT 901.703.515 - Correo: inmobiliariavelarsasaxm@gmail.com")
-        canvas_obj.restoreState()
-        
-        # Margen Derecho (Vertical)
-        canvas_obj.saveState()
-        canvas_obj.translate(doc.pagesize[0] - 30, 250)
-        canvas_obj.rotate(90)
-        canvas_obj.drawString(0, 0, f"Generado: {dt_str}")
-        canvas_obj.restoreState()
-        
-        canvas_obj.restoreState()
 
     def _add_informacion_consolidada(self, data: Dict[str, Any]) -> None:
         """
@@ -304,22 +251,20 @@ class EstadoCuentaElite(BaseDocumentTemplate):
 
         detalles = data["detalle_propiedades"]
 
-        # Headers de la tabla detallada
-        headers = ["ID", "CANON", "COMISIÓN", "SEGURO", "IVA", "4X1000", "ADMIN", "SERV", "PREDIAL", "OTRO", "NETO"]
+        # Headers de la tabla detallada (Eliminados SEGURO y 4X1000)
+        headers = ["ID", "CANON", "COMISIÓN", "IVA", "ADMIN", "SERV", "PREDIAL", "OTRO", "NETO"]
 
         # Convertir a filas
         rows = []
         
         # Totales columnas
-        t_canon = t_comision = t_seguro = t_iva = t_4x1000 = t_admin = t_serv = t_predial = t_otro = t_total = 0
+        t_canon = t_comision = t_iva = t_admin = t_serv = t_predial = t_otro = t_total = 0
 
         for d in detalles:
             # Acumular
             t_canon += d["canon"]
             t_comision += d["comision"]
-            t_seguro += d["seguro"]
             t_iva += d["iva"]
-            t_4x1000 += d["impuesto_4x1000"]
             t_admin += d["admin"]
             t_serv += d["servicios"]
             t_predial += d["predial"]
@@ -331,9 +276,7 @@ class EstadoCuentaElite(BaseDocumentTemplate):
                 str(d["id"]),
                 f"${d['canon']:,.0f}",
                 f"${d['comision']:,.0f}",
-                f"${d['seguro']:,.0f}",
                 f"${d['iva']:,.0f}",
-                f"${d['impuesto_4x1000']:,.0f}",
                 f"${d['admin']:,.0f}",
                 f"${d['servicios']:,.0f}",
                 f"${d['predial']:,.0f}",
@@ -346,9 +289,7 @@ class EstadoCuentaElite(BaseDocumentTemplate):
             "TOTAL",
             f"${t_canon:,.0f}",
             f"${t_comision:,.0f}",
-            f"${t_seguro:,.0f}",
             f"${t_iva:,.0f}",
-            f"${t_4x1000:,.0f}",
             f"${t_admin:,.0f}",
             f"${t_serv:,.0f}",
             f"${t_predial:,.0f}",
@@ -356,13 +297,12 @@ class EstadoCuentaElite(BaseDocumentTemplate):
             f"${t_total:,.0f}"
         ])
 
-        # Crear tabla (Puede requerir ajuste de fuente por el ancho)
-        # AdvancedTable auto-ajusta, pero con tantas columnas es mejor letra pequeña
+        # Crear tabla
         table = AdvancedTable.create_data_table(
             headers, 
             rows, 
             zebra_stripe=True,
-            font_size=6  # Fuente reducida para encajar 11 columnas
+            font_size=7  # Se aumenta ligeramente la fuente al haber menos columnas
         )
         # Hack de estilo si AdvancedTable lo permite, si no confiamos en auto-fit
         
@@ -405,15 +345,10 @@ class EstadoCuentaElite(BaseDocumentTemplate):
 
     def _add_notas(self, data: Dict[str, Any]) -> None:
         """Agrega notas y observaciones"""
-        '''if "notas" in data and data["notas"]:
-            self.add_heading("OBSERVACIONES", level=2)
-
-            notas = data["notas"]
-            if isinstance(notas, list):
-                for nota in notas:
-                    self.add_paragraph(f"• {nota}", style_name="Small")
-            else:
-                self.add_paragraph(notas, style_name="Small")'''
+        if "observaciones" in data and data["observaciones"]:
+            self.add_spacer(0.1)
+            self.add_heading("OBSERVACIONES", level=3)
+            self.add_paragraph(data["observaciones"], style_name="Small")
 
         # Pie legal
         self.add_legal_footer_text(

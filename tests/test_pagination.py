@@ -67,8 +67,8 @@ class TestPaginationParams:
     
     def test_validation_page_size_max(self):
         """Test validación de tamaño máximo."""
-        with pytest.raises(ValueError, match="page_size debe ser <= 100"):
-            PaginationParams(page_size=101)
+        with pytest.raises(ValueError, match="page_size debe ser <= 1000"):
+            PaginationParams(page_size=1001)
     
     def test_to_dict(self):
         """Test serialización a dict."""

@@ -109,6 +109,39 @@ class RepositorioContratoArrendamientoSQLite:
 
         return [self._row_to_entity(row) for row in rows]
 
+    def obtener_activos_todos_agrupados(self) -> Dict[int, List[ContratoArrendamiento]]:
+        """
+        Obtiene TODOS los contratos activos de TODOS los asesores,
+        agrupados por ID_ASESOR en un diccionario.
+        OPTIMIZACIÓN ÉLITE: Resuelve el problema N+1 queries.
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+
+        query = """
+            SELECT ca.*, cm.ID_ASESOR
+            FROM CONTRATOS_ARRENDAMIENTOS ca
+            JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
+            WHERE ca.ESTADO_CONTRATO_A = 'Activo'
+              AND cm.ESTADO_CONTRATO_M = 'Activo'
+              AND cm.ID_ASESOR IS NOT NULL
+        """
+
+        cursor.execute(query)
+        rows = cursor.fetchall()
+
+        agrupados = {}
+        for row in rows:
+            # Extraer id_asesor de la fila (ya sea dict o tuple)
+            id_asesor = row.get("ID_ASESOR") or row.get("id_asesor")
+            
+            entidad = self._row_to_entity(row)
+            if id_asesor not in agrupados:
+                agrupados[id_asesor] = []
+            agrupados[id_asesor].append(entidad)
+
+        return agrupados
+
     def obtener_detalle_contratos_asesor(self, id_asesor: int) -> List[dict]:
         """
         Obtiene detalles de contratos activos (incluyendo dirección) para UI.

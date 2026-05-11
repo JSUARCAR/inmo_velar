@@ -49,7 +49,15 @@ class ReciboRecaudoElite(BaseDocumentTemplate):
         # Configurar Header/Footer con Membrete
         self.set_header_footer(self._header_footer_with_features, self._header_footer_with_features)
         
-        filename = self._generate_filename("recibo_pago", data["id"])
+        # Determinar descriptor para el nombre de archivo (Dirección de la propiedad)
+        descriptor = data.get("propiedad", str(data["id"]))
+
+        # Crear documento con nomenclatura personalizada: recibo_recaudo_[DIRECCION]_[DDMMAAAAHHMMSS]
+        filename = self._generate_filename(
+            prefix="recibo_recaudo", 
+            descriptor=descriptor,
+            timestamp_format="%d%m%Y%H%M%S"
+        )
         self.create_document(filename, self.document_title)
 
         # Ajuste de márgenes para maximizar espacio

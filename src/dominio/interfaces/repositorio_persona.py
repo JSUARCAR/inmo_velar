@@ -26,6 +26,8 @@ class IRepositorioPersona(Protocol):
         self,
         filtro_rol: Optional[str] = None,
         solo_activos: bool = True,
+        solo_inactivos: bool = False,
+        sin_contrato: bool = False,
         busqueda: Optional[str] = None,
         fecha_inicio: Optional[str] = None,
         fecha_fin: Optional[str] = None,
@@ -41,6 +43,8 @@ class IRepositorioPersona(Protocol):
         self,
         filtro_rol: Optional[str] = None,
         solo_activos: bool = True,
+        solo_inactivos: bool = False,
+        sin_contrato: bool = False,
         busqueda: Optional[str] = None,
         fecha_inicio: Optional[str] = None,
         fecha_fin: Optional[str] = None
@@ -48,7 +52,12 @@ class IRepositorioPersona(Protocol):
         """Cuenta total de personas con filtros."""
         ...
 
-    def obtener_conteos_por_rol(self, solo_activos: bool = True) -> dict[str, int]:
+    def obtener_conteos_por_rol(
+        self,
+        solo_activos: bool = True,
+        solo_inactivos: bool = False,
+        sin_contrato: bool = False
+    ) -> dict[str, int]:
         """Obtiene un diccionario con el total global de personas por rol."""
         ...
 

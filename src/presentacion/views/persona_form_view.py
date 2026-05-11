@@ -31,7 +31,21 @@ def crear_persona_form_view(
 
     # Servicios
     db_manager = DatabaseManager()
-    servicio = ServicioPersonas(db_manager)
+    from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
+    from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
+    from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
+    from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
+    from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
+    from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
+
+    servicio = ServicioPersonas(
+        repo_persona=RepositorioPersonaSQLite(db_manager),
+        repo_asesor=RepositorioAsesorSQLite(db_manager),
+        repo_propietario=RepositorioPropietarioSQLite(db_manager),
+        repo_arrendatario=RepositorioArrendatarioSQLite(db_manager),
+        repo_codeudor=RepositorioCodeudorSQLite(db_manager),
+        repo_proveedor=RepositorioProveedoresSQLite(db_manager)
+    )
     from src.aplicacion.servicios.servicio_proveedores import ServicioProveedores
 
     servicio_proveedores = ServicioProveedores(db_manager)

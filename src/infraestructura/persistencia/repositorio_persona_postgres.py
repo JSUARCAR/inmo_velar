@@ -73,6 +73,8 @@ class RepositorioPersonaPostgres:
         self,
         filtro_rol: Optional[str] = None,
         solo_activos: bool = True,
+        solo_inactivos: bool = False,
+        sin_contrato: bool = False,
         busqueda: Optional[str] = None,
         fecha_inicio: Optional[str] = None,
         fecha_fin: Optional[str] = None,
@@ -82,7 +84,7 @@ class RepositorioPersonaPostgres:
         sort_order: str = "desc",
     ) -> List[Persona]:
         """Obtiene personas con filtros, paginación y ordenamiento dinámico en PostgreSQL."""
-        logger.debug(f"Ejecutando obtener_todos (Postgres): filtro_rol={filtro_rol}, sort_by={sort_by}")
+        logger.debug(f"Ejecutando obtener_todos (Postgres): filtro_rol={filtro_rol}, sin_contrato={sin_contrato}, sort_by={sort_by}")
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
@@ -91,7 +93,7 @@ class RepositorioPersonaPostgres:
             "id_persona": "p.ID_PERSONA",
             "nombre": "p.NOMBRE_COMPLETO",
             "documento": "p.NUMERO_DOCUMENTO",
-            "email": "p.EMAIL",
+            "email": "p.CORREO_ELECTRONICO",
             "estado": "p.ESTADO_REGISTRO",
             "creado": "p.CREATED_AT"
         }
@@ -119,6 +121,25 @@ class RepositorioPersonaPostgres:
 
         if solo_activos:
             conditions.append("p.ESTADO_REGISTRO = TRUE")
+        elif solo_inactivos:
+            conditions.append("p.ESTADO_REGISTRO = FALSE")
+
+        if sin_contrato:
+            conditions.append(
+                "("
+                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA) "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA) "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO WHERE arr.ID_PERSONA = p.ID_PERSONA) "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR WHERE cod.ID_PERSONA = p.ID_PERSONA) "
+                "AND ("
+                "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM ARRENDATARIOS ar_r WHERE ar_r.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM CODEUDORES co_r WHERE co_r.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM ASESORES as_r WHERE as_r.ID_PERSONA = p.ID_PERSONA)"
+                ")"
+                ")"
+            )
 
         if busqueda:
             conditions.append(
@@ -151,11 +172,14 @@ class RepositorioPersonaPostgres:
         self,
         filtro_rol: Optional[str] = None,
         solo_activos: bool = True,
+        solo_inactivos: bool = False,
+        sin_contrato: bool = False,
         busqueda: Optional[str] = None,
         fecha_inicio: Optional[str] = None,
         fecha_fin: Optional[str] = None,
     ) -> int:
         """Cuenta total de personas con filtros en PostgreSQL."""
+        logger.debug(f"Ejecutando contar_todos (Postgres): filtro_rol={filtro_rol}, sin_contrato={sin_contrato}")
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
@@ -179,6 +203,25 @@ class RepositorioPersonaPostgres:
 
         if solo_activos:
             conditions.append("p.ESTADO_REGISTRO = TRUE")
+        elif solo_inactivos:
+            conditions.append("p.ESTADO_REGISTRO = FALSE")
+
+        if sin_contrato:
+            conditions.append(
+                "("
+                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA) "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA) "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO WHERE arr.ID_PERSONA = p.ID_PERSONA) "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR WHERE cod.ID_PERSONA = p.ID_PERSONA) "
+                "AND ("
+                "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM ARRENDATARIOS ar_r WHERE ar_r.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM CODEUDORES co_r WHERE co_r.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM ASESORES as_r WHERE as_r.ID_PERSONA = p.ID_PERSONA)"
+                ")"
+                ")"
+            )
 
         if busqueda:
             conditions.append(
@@ -323,20 +366,48 @@ class RepositorioPersonaPostgres:
         cursor.execute(query, (f"%{termino_busqueda}%", limite))
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
-    def obtener_conteos_por_rol(self, solo_activos: bool = True) -> dict[str, int]:
+    def obtener_conteos_por_rol(
+        self,
+        solo_activos: bool = True,
+        solo_inactivos: bool = False,
+        sin_contrato: bool = False
+    ) -> dict[str, int]:
         """Obtiene el número total de personas que tienen cada rol."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
-        condition = "WHERE p.ESTADO_REGISTRO = TRUE" if solo_activos else ""
+        conditions = []
+        if solo_activos:
+            conditions.append("p.ESTADO_REGISTRO = TRUE")
+        elif solo_inactivos:
+            conditions.append("p.ESTADO_REGISTRO = FALSE")
+        
+        if sin_contrato:
+            conditions.append(
+                "("
+                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA) "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA) "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO WHERE arr.ID_PERSONA = p.ID_PERSONA) "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR WHERE cod.ID_PERSONA = p.ID_PERSONA) "
+                "AND ("
+                "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM ARRENDATARIOS ar_r WHERE ar_r.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM CODEUDORES co_r WHERE co_r.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM ASESORES as_r WHERE as_r.ID_PERSONA = p.ID_PERSONA)"
+                ")"
+                ")"
+            )
+
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
         query = f"""
         SELECT 
-            (SELECT COUNT(pr.ID_PERSONA) FROM PROPIETARIOS pr INNER JOIN PERSONAS p ON p.ID_PERSONA = pr.ID_PERSONA {condition}) as total_propietarios,
-            (SELECT COUNT(ar.ID_PERSONA) FROM ARRENDATARIOS ar INNER JOIN PERSONAS p ON p.ID_PERSONA = ar.ID_PERSONA {condition}) as total_arrendatarios,
-            (SELECT COUNT(co.ID_PERSONA) FROM CODEUDORES co INNER JOIN PERSONAS p ON p.ID_PERSONA = co.ID_PERSONA {condition}) as total_codeudores,
-            (SELECT COUNT(ase.ID_PERSONA) FROM ASESORES ase INNER JOIN PERSONAS p ON p.ID_PERSONA = ase.ID_PERSONA {condition}) as total_asesores,
-            (SELECT COUNT(prov.ID_PERSONA) FROM PROVEEDORES prov INNER JOIN PERSONAS p ON p.ID_PERSONA = prov.ID_PERSONA {condition}) as total_proveedores
+            (SELECT COUNT(pr.ID_PERSONA) FROM PROPIETARIOS pr INNER JOIN PERSONAS p ON p.ID_PERSONA = pr.ID_PERSONA {where_clause}) as total_propietarios,
+            (SELECT COUNT(ar.ID_PERSONA) FROM ARRENDATARIOS ar INNER JOIN PERSONAS p ON p.ID_PERSONA = ar.ID_PERSONA {where_clause}) as total_arrendatarios,
+            (SELECT COUNT(co.ID_PERSONA) FROM CODEUDORES co INNER JOIN PERSONAS p ON p.ID_PERSONA = co.ID_PERSONA {where_clause}) as total_codeudores,
+            (SELECT COUNT(ase.ID_PERSONA) FROM ASESORES ase INNER JOIN PERSONAS p ON p.ID_PERSONA = ase.ID_PERSONA {where_clause}) as total_asesores,
+            (SELECT COUNT(prov.ID_PERSONA) FROM PROVEEDORES prov INNER JOIN PERSONAS p ON p.ID_PERSONA = prov.ID_PERSONA {where_clause}) as total_proveedores
         """
         
         cursor.execute(query)

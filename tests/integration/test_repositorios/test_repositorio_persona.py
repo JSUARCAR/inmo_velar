@@ -151,7 +151,7 @@ class TestRepositorioPersona:
         repositorio.inactivar(persona3_creada.id_persona, "Test", "TEST_USER")
         
         # Listar activos
-        activos = repositorio.listar_activos()
+        activos = repositorio.obtener_todos(solo_activos=True)
         
         assert len(activos) == 2
         assert all(p.estado_registro == 1 for p in activos)
@@ -205,7 +205,7 @@ class TestRepositorioPersona:
         assert persona_verificada.motivo_inactivacion == "Duplicado"
         
         # Verificar que no aparece en listado de activos
-        activos = repositorio.listar_activos()
+        activos = repositorio.obtener_todos(solo_activos=True)
         assert not any(p.id_persona == persona_creada.id_persona for p in activos)
     
     def test_documento_unico(self, repositorio, db_manager):

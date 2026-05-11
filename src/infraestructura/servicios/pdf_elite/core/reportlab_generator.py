@@ -18,10 +18,12 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas as pdf_canvas
 from reportlab.platypus import (
+    BaseDocTemplate,
+    Frame,
     Image,
     PageBreak,
+    PageTemplate,
     Paragraph,
-    SimpleDocTemplate,
     Spacer,
     Table,
     TableStyle,
@@ -42,7 +44,7 @@ class ReportLabGenerator(BasePDFGenerator):
         pagesize: Tamaño de página (A4 o Letter)
         styles: Diccionario de estilos de párrafo personalizados
         story: Lista de elementos (flowables) del documento
-        doc: Objeto SimpleDocTemplate de ReportLab
+        doc: Objeto BaseDocTemplate de ReportLab
 
     Example:
         >>> gen = ReportLabGenerator()
@@ -71,7 +73,7 @@ class ReportLabGenerator(BasePDFGenerator):
         self.story: List = []
 
         # Documento
-        self.doc: Optional[SimpleDocTemplate] = None
+        self.doc: Optional[BaseDocTemplate] = None
 
         # Callbacks para header/footer
         self._on_first_page: Optional[Callable] = None
@@ -83,7 +85,7 @@ class ReportLabGenerator(BasePDFGenerator):
 
     def create_document(
         self, filename: str, title: str = "Documento", author: str = None
-    ) -> SimpleDocTemplate:
+    ) -> BaseDocTemplate:
         """
         Crea un nuevo documento PDF
 
@@ -93,7 +95,7 @@ class ReportLabGenerator(BasePDFGenerator):
             author: Autor del documento (default: nombre empresa)
 
         Returns:
-            Objeto SimpleDocTemplate configurado
+            Objeto BaseDocTemplate configurado
         """
         output_path = self._get_output_path(filename)
 
@@ -111,7 +113,7 @@ class ReportLabGenerator(BasePDFGenerator):
         self.add_metadata("author", author or config.empresa_nombre)
 
         # Crear documento
-        self.doc = SimpleDocTemplate(
+        self.doc = BaseDocTemplate(
             str(output_path),
             pagesize=self.pagesize,
             topMargin=config.margins_top,
@@ -396,7 +398,7 @@ class ReportLabGenerator(BasePDFGenerator):
 
     def build(self) -> Path:
         """
-        Construye el documento PDF final
+        Construye el documento PDF final utilizando PageTemplates y Frames.
 
         Returns:
             Path del archivo generado
@@ -411,31 +413,56 @@ class ReportLabGenerator(BasePDFGenerator):
         if not self._on_first_page:
             self.set_header_footer()
 
+        # Definir el Frame principal (Área de contenido)
+        # Calculamos dimensiones restando márgenes
+        frame_width = self.pagesize[0] - self.doc.leftMargin - self.doc.rightMargin
+        frame_height = self.pagesize[1] - self.doc.topMargin - self.doc.bottomMargin
+
+        main_frame = Frame(
+            self.doc.leftMargin,
+            self.doc.bottomMargin,
+            frame_width,
+            frame_height,
+            id="normal",
+            showBoundary=0,
+        )
+
+        # Crear Wrapper para compatibilidad con onFirstPage / onLaterPages
+        def page_wrapper(canvas_obj, doc_obj):
+            if doc_obj.page == 1:
+                self._on_first_page(canvas_obj, doc_obj)
+            else:
+                self._on_later_pages(canvas_obj, doc_obj)
+
+        # Crear Template de Página base
+        template = PageTemplate(id="BaseTemplate", frames=[main_frame], onPage=page_wrapper)
+
+        # Agregar template al documento
+        self.doc.addPageTemplates([template])
+
         # Log build process
         import logging
 
         logger = logging.getLogger("PDFElite")
-        logger.debug("🏗️  CORE: Building PDF document...")
+        logger.debug("🏗️  CORE: Building PDF document with BaseDocTemplate...")
         logger.debug(f"📊 Story elements: {len(self.story)}")
         logger.debug(f"📄 Output file: {self.doc.filename}")
 
         # Construir PDF
-        self.doc.build(
-            self.story, onFirstPage=self._on_first_page, onLaterPages=self._on_later_pages
-        )
+        self.doc.build(self.story)
 
         output_path = Path(self.doc.filename)
         self._generated_file = output_path
 
         return output_path
 
-    def _default_header_footer(self, canvas_obj: pdf_canvas.Canvas, doc: SimpleDocTemplate) -> None:
+    def _default_header_footer(self, canvas_obj: pdf_canvas.Canvas, doc: BaseDocTemplate) -> None:
         """
         Header y footer por defecto
 
         Args:
             canvas_obj: Objeto canvas de ReportLab
-            doc: Documento SimpleDocTemplate
+            doc: Documento BaseDocTemplate
         """
         canvas_obj.saveState()
 
@@ -443,7 +470,7 @@ class ReportLabGenerator(BasePDFGenerator):
         # Nombre de la empresa
         canvas_obj.setFont(Fonts.MAIN_BOLD, Fonts.SIZE_BODY)
         canvas_obj.setFillColorRGB(*Colors.PRIMARY)
-        canvas_obj.drawString(inch, doc.height + doc.topMargin - 0.3 * inch, config.empresa_nombre)
+        canvas_obj.drawString(inch, doc.pagesize[1] - 0.5 * inch, config.empresa_nombre)
 
         # Información de contacto
         canvas_obj.setFont(Fonts.MAIN, Fonts.SIZE_TINY)
@@ -451,16 +478,16 @@ class ReportLabGenerator(BasePDFGenerator):
         info_text = (
             f"{config.empresa_nit} | " f"{config.empresa_telefono} | " f"{config.empresa_email}"
         )
-        canvas_obj.drawString(inch, doc.height + doc.topMargin - 0.5 * inch, info_text)
+        canvas_obj.drawString(inch, doc.pagesize[1] - 0.7 * inch, info_text)
 
         # Línea separadora
         canvas_obj.setStrokeColorRGB(*Colors.PRIMARY)
         canvas_obj.setLineWidth(2)
         canvas_obj.line(
             inch,
-            doc.height + doc.topMargin - 0.6 * inch,
-            doc.width + doc.leftMargin - inch,
-            doc.height + doc.topMargin - 0.6 * inch,
+            doc.pagesize[1] - 0.8 * inch,
+            doc.pagesize[0] - inch,
+            doc.pagesize[1] - 0.8 * inch,
         )
 
         # === FOOTER ===
@@ -468,11 +495,11 @@ class ReportLabGenerator(BasePDFGenerator):
         canvas_obj.setFont(Fonts.MAIN, Fonts.SIZE_TINY)
         canvas_obj.setFillColorRGB(*Colors.GRAY_MEDIUM)
         page_text = f"Página {doc.page}"
-        canvas_obj.drawCentredString(doc.width / 2 + doc.leftMargin, 0.5 * inch, page_text)
+        canvas_obj.drawCentredString(doc.pagesize[0] / 2, 0.5 * inch, page_text)
 
         # Fecha de generación
         date_text = f"Generado: {datetime.now().strftime('%Y-%m-%d %H:%M')}"
-        canvas_obj.drawRightString(doc.width + doc.leftMargin - inch, 0.5 * inch, date_text)
+        canvas_obj.drawRightString(doc.pagesize[0] - inch, 0.5 * inch, date_text)
 
         canvas_obj.restoreState()
 

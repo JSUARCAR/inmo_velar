@@ -212,22 +212,29 @@ class BasePDFGenerator(ABC):
     # MÉTODOS PROTEGIDOS (Para uso interno y de subclases)
     # ========================================================================
 
-    def _generate_filename(self, prefix: str, doc_id: Any, extension: str = "pdf") -> str:
+    def _generate_filename(
+        self, 
+        prefix: str, 
+        descriptor: Any, 
+        extension: str = "pdf",
+        timestamp_format: str = "%Y%m%d%H%M%S"
+    ) -> str:
         """
         Genera un nombre de archivo estandarizado
 
-        Formato: {prefix}_{doc_id}_{timestamp}.{extension}
+        Formato: {prefix}_{descriptor}_{timestamp}.{extension}
 
         Args:
             prefix: Prefijo del archivo (ej: "contrato", "recibo")
-            doc_id: Identificador del documento
+            descriptor: Descriptor o ID del documento (ej: dirección, ID)
             extension: Extensión del archivo (default: "pdf")
+            timestamp_format: Formato de la marca de tiempo (default: YYYYMMDDHHMMSS)
 
         Returns:
             Nombre de archivo generado
         """
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        filename = f"{prefix}_{doc_id}_{timestamp}.{extension}"
+        timestamp = datetime.now().strftime(timestamp_format)
+        filename = f"{prefix}_{descriptor}_{timestamp}.{extension}"
 
         # Sanitizar nombre de archivo (remover caracteres inválidos)
         filename = self._sanitize_filename(filename)

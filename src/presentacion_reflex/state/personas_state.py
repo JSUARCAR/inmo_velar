@@ -48,6 +48,8 @@ class PersonasState(rx.State):
     # --- Filtros ---
     search_query: str = ""
     filtro_rol: str = "Todos"
+    mostrar_inactivos: bool = False
+    filtro_sin_contrato: bool = False
     fecha_inicio: str = ""
     fecha_fin: str = ""
 
@@ -66,6 +68,7 @@ class PersonasState(rx.State):
     # --- Details Modal State ---
     show_details_modal: bool = False
     current_persona_details: Dict[str, Any] = {}
+    audit_logs: List[Dict[str, Any]] = []
     is_loading_details: bool = False
 
     @rx.var
@@ -214,8 +217,9 @@ class PersonasState(rx.State):
 
     def load_personas(self):
         """Carga la lista de personas aplicando filtros y paginación."""
-        logger.debug(f"Ejecutando load_personas: page={self.page}, filtro_rol={self.filtro_rol}, search={self.search_query}, fecha_inicio={self.fecha_inicio}, fecha_fin={self.fecha_fin}")
+        logger.debug(f"Ejecutando load_personas: page={self.page}, filtro_rol={self.filtro_rol}, inactivos={self.mostrar_inactivos}, sin_contrato={self.filtro_sin_contrato}")
         self.is_loading = True
+        yield
         try:
             if db_manager.use_postgresql:
                 from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
@@ -224,6 +228,7 @@ class PersonasState(rx.State):
                 from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
                 from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
                 from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+                from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
 
                 repo_persona = RepositorioPersonaPostgres(db_manager)
                 repo_propietario = RepositorioPropietarioPostgres(db_manager)
@@ -231,6 +236,7 @@ class PersonasState(rx.State):
                 repo_codeudor = RepositorioCodeudorPostgres(db_manager)
                 repo_asesor = RepositorioAsesorPostgres(db_manager)
                 repo_proveedor = RepositorioProveedoresPostgres(db_manager)
+                repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
             else:
                 from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
                 from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
@@ -238,6 +244,7 @@ class PersonasState(rx.State):
                 from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
                 from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
                 from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
+                from src.infraestructura.persistencia.repositorio_auditoria_sqlite import RepositorioAuditoriaSQLite
 
                 repo_persona = RepositorioPersonaSQLite(db_manager)
                 repo_propietario = RepositorioPropietarioSQLite(db_manager)
@@ -245,6 +252,7 @@ class PersonasState(rx.State):
                 repo_codeudor = RepositorioCodeudorSQLite(db_manager)
                 repo_asesor = RepositorioAsesorSQLite(db_manager)
                 repo_proveedor = RepositorioProveedoresSQLite(db_manager)
+                repo_auditoria = RepositorioAuditoriaSQLite(db_manager)
 
             servicio = ServicioPersonas(
                 repo_persona=repo_persona,
@@ -253,6 +261,7 @@ class PersonasState(rx.State):
                 repo_codeudor=repo_codeudor,
                 repo_asesor=repo_asesor,
                 repo_proveedor=repo_proveedor,
+                repo_auditoria=repo_auditoria
             )
 
             # Mapear filtro "Todos" a None
@@ -263,6 +272,9 @@ class PersonasState(rx.State):
                 page=self.page,
                 page_size=self.page_size,
                 filtro_rol=rol_filter,
+                solo_activos=not self.mostrar_inactivos,
+                solo_inactivos=self.mostrar_inactivos,
+                sin_contrato=self.filtro_sin_contrato,
                 busqueda=self.search_query if self.search_query else None,
                 fecha_inicio=self.fecha_inicio if self.fecha_inicio else None,
                 fecha_fin=self.fecha_fin if self.fecha_fin else None,
@@ -273,7 +285,11 @@ class PersonasState(rx.State):
             self.total_items = resultado.total
             
             # Cargar KPIs
-            conteos = servicio.obtener_conteos_por_rol(solo_activos=True)
+            conteos = servicio.obtener_conteos_por_rol(
+                solo_activos=not self.mostrar_inactivos,
+                solo_inactivos=self.mostrar_inactivos,
+                sin_contrato=self.filtro_sin_contrato
+            )
             self.kpi_propietarios = conteos.get("Propietario", 0)
             self.kpi_arrendatarios = conteos.get("Arrendatario", 0)
             self.kpi_codeudores = conteos.get("Codeudor", 0)
@@ -309,6 +325,20 @@ class PersonasState(rx.State):
             self.personas = []
         finally:
             self.is_loading = False
+
+    def toggle_mostrar_inactivos(self, checked: bool):
+        """Alterna el filtro de mostrar personas inactivas."""
+        logger.debug(f"Ejecutando toggle_mostrar_inactivos: {checked}")
+        self.mostrar_inactivos = checked
+        self.page = 1
+        return PersonasState.load_personas
+
+    def toggle_filtro_sin_contrato(self, checked: bool):
+        """Alterna el filtro de personas sin contrato."""
+        logger.debug(f"Ejecutando toggle_filtro_sin_contrato: {checked}")
+        self.filtro_sin_contrato = checked
+        self.page = 1
+        return PersonasState.load_personas
 
     def set_search(self, query: str):
         """Actualiza el texto de búsqueda SIN disparar recarga inmediata.
@@ -359,6 +389,7 @@ class PersonasState(rx.State):
                 from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
                 from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
                 from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+                from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
 
                 repo_persona = RepositorioPersonaPostgres(db_manager)
                 repo_propietario = RepositorioPropietarioPostgres(db_manager)
@@ -366,6 +397,7 @@ class PersonasState(rx.State):
                 repo_codeudor = RepositorioCodeudorPostgres(db_manager)
                 repo_asesor = RepositorioAsesorPostgres(db_manager)
                 repo_proveedor = RepositorioProveedoresPostgres(db_manager)
+                repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
             else:
                 from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
                 from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
@@ -373,6 +405,7 @@ class PersonasState(rx.State):
                 from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
                 from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
                 from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
+                from src.infraestructura.persistencia.repositorio_auditoria_sqlite import RepositorioAuditoriaSQLite
 
                 repo_persona = RepositorioPersonaSQLite(db_manager)
                 repo_propietario = RepositorioPropietarioSQLite(db_manager)
@@ -380,6 +413,7 @@ class PersonasState(rx.State):
                 repo_codeudor = RepositorioCodeudorSQLite(db_manager)
                 repo_asesor = RepositorioAsesorSQLite(db_manager)
                 repo_proveedor = RepositorioProveedoresSQLite(db_manager)
+                repo_auditoria = RepositorioAuditoriaSQLite(db_manager)
 
             servicio = ServicioPersonas(
                 repo_persona=repo_persona,
@@ -388,6 +422,7 @@ class PersonasState(rx.State):
                 repo_codeudor=repo_codeudor,
                 repo_asesor=repo_asesor,
                 repo_proveedor=repo_proveedor,
+                repo_auditoria=repo_auditoria
             )
             rol_filter = self.filtro_rol if self.filtro_rol != "Todos" else None
 
@@ -396,6 +431,9 @@ class PersonasState(rx.State):
             # Obtener datos CSV
             csv_data = servicio.exportar_personas_csv(
                 filtro_rol=rol_filter,
+                solo_activos=not self.mostrar_inactivos,
+                solo_inactivos=self.mostrar_inactivos,
+                sin_contrato=self.filtro_sin_contrato,
                 busqueda=self.search_query if self.search_query else None,
                 fecha_inicio=self.fecha_inicio if self.fecha_inicio else None,
                 fecha_fin=self.fecha_fin if self.fecha_fin else None,
@@ -615,6 +653,7 @@ class PersonasState(rx.State):
                 from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
                 from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
                 from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+                from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
 
                 repo_persona = RepositorioPersonaPostgres(db_manager)
                 repo_propietario = RepositorioPropietarioPostgres(db_manager)
@@ -622,6 +661,7 @@ class PersonasState(rx.State):
                 repo_codeudor = RepositorioCodeudorPostgres(db_manager)
                 repo_asesor = RepositorioAsesorPostgres(db_manager)
                 repo_proveedor = RepositorioProveedoresPostgres(db_manager)
+                repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
             else:
                 from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
                 from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
@@ -629,6 +669,7 @@ class PersonasState(rx.State):
                 from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
                 from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
                 from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
+                from src.infraestructura.persistencia.repositorio_auditoria_sqlite import RepositorioAuditoriaSQLite
 
                 repo_persona = RepositorioPersonaSQLite(db_manager)
                 repo_propietario = RepositorioPropietarioSQLite(db_manager)
@@ -636,6 +677,7 @@ class PersonasState(rx.State):
                 repo_codeudor = RepositorioCodeudorSQLite(db_manager)
                 repo_asesor = RepositorioAsesorSQLite(db_manager)
                 repo_proveedor = RepositorioProveedoresSQLite(db_manager)
+                repo_auditoria = RepositorioAuditoriaSQLite(db_manager)
 
             servicio = ServicioPersonas(
                 repo_persona=repo_persona,
@@ -644,6 +686,7 @@ class PersonasState(rx.State):
                 repo_codeudor=repo_codeudor,
                 repo_asesor=repo_asesor,
                 repo_proveedor=repo_proveedor,
+                repo_auditoria=repo_auditoria
             )
             persona_completa = servicio.obtener_persona_completa(self.current_persona_id)
 
@@ -770,6 +813,7 @@ class PersonasState(rx.State):
                 from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
                 from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
                 from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+                from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
 
                 repo_persona = RepositorioPersonaPostgres(db_manager)
                 repo_propietario = RepositorioPropietarioPostgres(db_manager)
@@ -777,6 +821,7 @@ class PersonasState(rx.State):
                 repo_codeudor = RepositorioCodeudorPostgres(db_manager)
                 repo_asesor = RepositorioAsesorPostgres(db_manager)
                 repo_proveedor = RepositorioProveedoresPostgres(db_manager)
+                repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
             else:
                 from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
                 from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
@@ -784,6 +829,7 @@ class PersonasState(rx.State):
                 from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
                 from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
                 from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
+                from src.infraestructura.persistencia.repositorio_auditoria_sqlite import RepositorioAuditoriaSQLite
 
                 repo_persona = RepositorioPersonaSQLite(db_manager)
                 repo_propietario = RepositorioPropietarioSQLite(db_manager)
@@ -791,6 +837,7 @@ class PersonasState(rx.State):
                 repo_codeudor = RepositorioCodeudorSQLite(db_manager)
                 repo_asesor = RepositorioAsesorSQLite(db_manager)
                 repo_proveedor = RepositorioProveedoresSQLite(db_manager)
+                repo_auditoria = RepositorioAuditoriaSQLite(db_manager)
 
             servicio = ServicioPersonas(
                 repo_persona=repo_persona,
@@ -799,12 +846,26 @@ class PersonasState(rx.State):
                 repo_codeudor=repo_codeudor,
                 repo_asesor=repo_asesor,
                 repo_proveedor=repo_proveedor,
+                repo_auditoria=repo_auditoria
             )
             
             detalles = servicio.obtener_detalles_completos(persona["id"])
             
+            # Recuperar Auditoría (Optimizado: Consulta directa por ID de registro)
+            logs = repo_auditoria.obtener_por_registro("PERSONAS", persona["id"], limit=50)
+            persona_logs = [
+                {
+                    "fecha": log.fecha_cambio,
+                    "usuario": log.usuario,
+                    "accion": log.accion,
+                    "detalle": log.motivo_cambio or log.campo or "Sin detalle",
+                }
+                for log in logs
+            ]
+            
             async with self:
                 self.current_persona_details = detalles
+                self.audit_logs = persona_logs
                 
         except Exception as e:
             logger.error(f"Error cargando detalles: {e}")
@@ -913,6 +974,7 @@ class PersonasState(rx.State):
                 from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
                 from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
                 from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+                from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
 
                 repo_persona = RepositorioPersonaPostgres(db_manager)
                 repo_propietario = RepositorioPropietarioPostgres(db_manager)
@@ -920,6 +982,7 @@ class PersonasState(rx.State):
                 repo_codeudor = RepositorioCodeudorPostgres(db_manager)
                 repo_asesor = RepositorioAsesorPostgres(db_manager)
                 repo_proveedor = RepositorioProveedoresPostgres(db_manager)
+                repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
             else:
                 from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
                 from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
@@ -927,6 +990,7 @@ class PersonasState(rx.State):
                 from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
                 from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
                 from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
+                from src.infraestructura.persistencia.repositorio_auditoria_sqlite import RepositorioAuditoriaSQLite
 
                 repo_persona = RepositorioPersonaSQLite(db_manager)
                 repo_propietario = RepositorioPropietarioSQLite(db_manager)
@@ -934,6 +998,7 @@ class PersonasState(rx.State):
                 repo_codeudor = RepositorioCodeudorSQLite(db_manager)
                 repo_asesor = RepositorioAsesorSQLite(db_manager)
                 repo_proveedor = RepositorioProveedoresSQLite(db_manager)
+                repo_auditoria = RepositorioAuditoriaSQLite(db_manager)
 
             servicio = ServicioPersonas(
                 repo_persona=repo_persona,
@@ -942,6 +1007,7 @@ class PersonasState(rx.State):
                 repo_codeudor=repo_codeudor,
                 repo_asesor=repo_asesor,
                 repo_proveedor=repo_proveedor,
+                repo_auditoria=repo_auditoria
             )
             success_message = ""
 
@@ -1081,3 +1147,62 @@ class PersonasState(rx.State):
         
         self.page = 1
         return PersonasState.load_personas
+
+    @rx.event(background=True)
+    async def toggle_estado_persona(self, id_persona: int, estado_actual: str):
+        """Orquesta la activación/desactivación de una persona (Soft Delete)."""
+        async with self:
+            self.is_loading = True
+        try:
+            from src.aplicacion.servicios.servicio_personas import ServicioPersonas
+            from src.infraestructura.persistencia.database import db_manager
+            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+
+            # Instanciar servicios y repositorios (Postgres preferido según protocolo)
+
+            repo_persona = RepositorioPersonaPostgres(db_manager)
+            repo_propietario = RepositorioPropietarioPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
+            repo_asesor = RepositorioAsesorPostgres(db_manager)
+            repo_proveedor = RepositorioProveedoresPostgres(db_manager)
+            repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
+
+            servicio = ServicioPersonas(
+                repo_persona=repo_persona,
+                repo_propietario=repo_propietario,
+                repo_arrendatario=repo_arrendatario,
+                repo_codeudor=repo_codeudor,
+                repo_asesor=repo_asesor,
+                repo_proveedor=repo_proveedor,
+                repo_auditoria=repo_auditoria
+            )
+            
+            # Lógica de transición
+            if estado_actual == "Activo":
+                exito = servicio.desactivar_persona(id_persona, motivo="Desactivado desde UI", usuario_sistema="admin")
+                msg = "Persona desactivada exitosamente"
+            else:
+                exito = servicio.activar_persona(id_persona, usuario_sistema="admin")
+                msg = "Persona reactivada exitosamente"
+                
+            if exito:
+                yield rx.toast.success(msg)
+                # Desencadenar recarga de datos
+                yield PersonasState.load_personas
+            else:
+                yield rx.toast.error("No se pudo completar la operación en la base de datos.")
+                
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            yield rx.toast.error(f"Error en el sistema: {str(e)}")
+        finally:
+            async with self:
+                self.is_loading = False

@@ -9,14 +9,30 @@ from src.dominio.interfaces.repositorio_dashboard import IRepositorioDashboard
 from src.infraestructura.cache.cache_manager import cache_manager
 
 
+from src.dominio.interfaces.repositorio_alerta import IRepositorioAlerta
+
+
 class ServicioDashboard:
     """
     Servicio de aplicacion para metricas del dashboard.
     Consolida datos de multiples tablas y vistas.
     """
 
-    def __init__(self, repo_dashboard: IRepositorioDashboard):
+    def __init__(
+        self, 
+        repo_dashboard: IRepositorioDashboard,
+        repo_alerta: Optional[IRepositorioAlerta] = None
+    ):
         self.repo = repo_dashboard
+        self.repo_alerta = repo_alerta
+
+    @cache_manager.cached("dashboard:alertas_conteo", level=1, ttl=60)
+    def obtener_conteo_alertas_pendientes(self) -> int:
+        """Obtiene el total de alertas en estado Pendiente o En Proceso."""
+        if not self.repo_alerta:
+            return 0
+        return self.repo_alerta.contar_todas(estado="Pendiente") + \
+               self.repo_alerta.contar_todas(estado="En Proceso")
 
     @cache_manager.cached("dashboard:cartera_mora", level=1, ttl=60)
     def obtener_cartera_mora(self) -> Dict:

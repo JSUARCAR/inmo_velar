@@ -169,11 +169,15 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
 
             # Formatear items para la vista
             formatted_list = []
-            for row in resultado.items:
-                new_item = dict(row) if not isinstance(row, dict) else row.copy()
-                new_item["valor_total_view"] = format_currency(
-                    new_item.get("valor_total") or new_item.get("VALOR_TOTAL") or 0
-                )
+            for item in resultado.items:
+                # Convertir DTO a dict para manipulaciones locales en la vista si es necesario
+                # Reflex serializa Pydantic v2 automáticamente, pero model_dump garantiza compatibilidad
+                new_item = item.model_dump() if hasattr(item, "model_dump") else dict(item)
+                
+                # Asegurar que los campos de vista existan (calculados en el mapper o aquí)
+                if not new_item.get("valor_total_view"):
+                    new_item["valor_total_view"] = format_currency(new_item.get("valor_total", 0))
+                
                 formatted_list.append(new_item)
 
             async with self:
@@ -332,18 +336,8 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                     self.is_loading = False
                 return
 
-            recaudo = detalle["recaudo"]
-            conceptos = detalle["conceptos"]
-
-            # Extraer tipo y periodo del primer concepto si existe
-            tipo_concepto = "Canon"
-            periodo = recaudo.fecha_pago[:7] if recaudo.fecha_pago else ""
-            if conceptos:
-                tipo_concepto = conceptos[0].tipo_concepto.value
-                periodo = conceptos[0].periodo
-
-            # Solo permitir editar pendientes o vencidos
-            if not recaudo.estado_recaudo.puede_editarse():
+            # Solo permitir editar pendientes o vencidos (comparar con valores string del DTO)
+            if detalle.estado not in ["Pendiente", "Vencido"]:
                 async with self:
                     self.error_message = (
                         "Solo se pueden editar recaudos en estado 'Pendiente' o 'Vencido'"
@@ -354,9 +348,16 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             # Buscar el label del contrato para el combobox
             selected_label = ""
             for option in opts:
-                if str(option["id"]) == str(recaudo.id_contrato_a):
+                if str(option["id"]) == str(detalle.id_contrato):
                     selected_label = option["texto"]
                     break
+
+            # Extraer tipo y periodo del primer concepto si existe
+            tipo_concepto = "Canon"
+            periodo = detalle.fecha_pago[:7] if detalle.fecha_pago else ""
+            if detalle.conceptos:
+                tipo_concepto = detalle.conceptos[0].tipo
+                periodo = detalle.conceptos[0].periodo
 
             async with self:
                 self.contrato_search = ""
@@ -365,12 +366,12 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
 
                 self.form_data = {
                     "id_recaudo": str(id_recaudo),
-                    "id_contrato_a": str(recaudo.id_contrato_a),
-                    "fecha_pago": recaudo.fecha_pago,
-                    "valor_total": str(recaudo.valor_total),
-                    "metodo_pago": recaudo.metodo_pago.value,
-                    "referencia_bancaria": recaudo.referencia_bancaria or "",
-                    "observaciones": recaudo.observaciones or "",
+                    "id_contrato_a": str(detalle.id_contrato),
+                    "fecha_pago": detalle.fecha_pago,
+                    "valor_total": str(detalle.valor_total),
+                    "metodo_pago": detalle.metodo_pago,
+                    "referencia_bancaria": detalle.referencia,
+                    "observaciones": detalle.observaciones,
                     "tipo_concepto": tipo_concepto,
                     "periodo": periodo,
                 }
@@ -405,41 +406,8 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                     self.is_loading = False
                 return
 
-            recaudo = detalle["recaudo"]
-            conceptos = detalle["conceptos"]
-
-            # Obtener info del contrato vía servicio
-            info_contrato = servicio.obtener_info_contrato(recaudo.id_contrato_a)
-            direccion = info_contrato["direccion"]
-            matricula = info_contrato["matricula"]
-            arrendatario = info_contrato["arrendatario"]
-
             async with self:
-                self.recaudo_actual = {
-                    "id_recaudo": recaudo.id_recaudo,
-                    "id_contrato": recaudo.id_contrato_a,
-                    "direccion": direccion,
-                    "matricula": matricula,
-                    "arrendatario": arrendatario,
-                    "fecha_pago": recaudo.fecha_pago,
-                    "valor_total": recaudo.valor_total,
-                    "valor_total_view": format_currency(recaudo.valor_total),
-                    "metodo_pago": recaudo.metodo_pago.value,
-                    "referencia": recaudo.referencia_bancaria or "",
-                    "estado": recaudo.estado_recaudo.value,
-                    "observaciones": recaudo.observaciones or "Sin observaciones",
-                    "created_at": recaudo.created_at or "",
-                    "created_by": recaudo.created_by or "",
-                    "conceptos": [
-                        {
-                            "tipo": c.tipo_concepto.value,
-                            "periodo": c.periodo,
-                            "valor": c.valor,
-                            "valor_view": format_currency(c.valor),
-                        }
-                        for c in conceptos
-                    ],
-                }
+                self.recaudo_actual = detalle.model_dump()
                 self.show_detail_modal = True
                 self.show_form_modal = False
                 self.is_loading = False

@@ -788,8 +788,8 @@ class PDFState(rx.State):
         from src.infraestructura.persistencia.repositorio_recaudo import (
             RepositorioRecaudo,
         )
-        from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
-            RepositorioLiquidacionSQLite,
+        from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
+            RepositorioLiquidacionPostgres,
         )
         from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
             RepositorioPropiedadPostgres,
@@ -806,7 +806,7 @@ class PDFState(rx.State):
 
         # Instanciar dependencias
         repo_recaudo = RepositorioRecaudo(db_manager)
-        repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+        repo_liquidacion = RepositorioLiquidacionPostgres(db_manager)
         repo_propiedad = RepositorioPropiedadPostgres(db_manager)
         repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
         repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
@@ -911,6 +911,7 @@ class PDFState(rx.State):
             "lista_propiedades": [{"id": prop_id, "direccion": inmueble["direccion"]}],
             "detalle_propiedades": [detalle],
             "resumen": resumen,
+            "observaciones": datos.get("observaciones"), # Propagación vital
             "empresa": datos.get("empresa", {}),
             "modo": "individual",
         }
@@ -1029,9 +1030,9 @@ class PDFState(rx.State):
             "detalle_propiedades": detalle_propiedades,
             "resumen": resumen,
             "empresa": datos.get("empresa", {}),
+            "observaciones": datos.get("observaciones"), # Usar la nueva clave unificada
             "notas": [
                 f"Estado de cuenta consolidado - {datos['cantidad_propiedades']} propiedades",
-                datos.get("observaciones", ""),
             ],
             "modo": "consolidado",
         }
@@ -1365,8 +1366,8 @@ class PDFState(rx.State):
         from src.infraestructura.persistencia.repositorio_recaudo import (
             RepositorioRecaudo,
         )
-        from src.infraestructura.persistencia.repositorio_liquidacion_sqlite import (
-            RepositorioLiquidacionSQLite,
+        from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
+            RepositorioLiquidacionPostgres,
         )
         from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
             RepositorioPropiedadPostgres,
@@ -1383,7 +1384,7 @@ class PDFState(rx.State):
 
         # Instanciar dependencias
         repo_recaudo = RepositorioRecaudo(db_manager)
-        repo_liquidacion = RepositorioLiquidacionSQLite(db_manager)
+        repo_liquidacion = RepositorioLiquidacionPostgres(db_manager)
         repo_propiedad = RepositorioPropiedadPostgres(db_manager)
         repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
         repo_mandato = RepositorioContratoMandatoPostgres(db_manager)

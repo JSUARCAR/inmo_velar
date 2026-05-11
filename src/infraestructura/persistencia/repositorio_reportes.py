@@ -553,17 +553,8 @@ class RepositorioReportes:
                 COALESCE(l.COMISION_PORCENTAJE, 0) AS "COMISION_PORCENTAJE_ASESOR",
                 COALESCE(l.COMISION_MONTO, 0) AS "COMISION_MONTO_ASESOR",
                 COALESCE(l.IVA_COMISION, 0) AS "IVA_COMISION",
-                COALESCE(l.IMPUESTO_4X1000, 0) AS "IMPUESTO_4X1000",
-                CAST(
-                    CASE 
-                        WHEN COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0) > 100 THEN
-                            (cm.CANON_MANDATO * (COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0) / 100.0)) / 100.0
-                        ELSE
-                            (cm.CANON_MANDATO * COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0)) / 100.0
-                    END AS INTEGER
-                ) AS "VALOR_SEGURO",
 
-                -- Egresos
+                -- Egresos (Recalculados sin Seguro ni 4x1000)
                 COALESCE(l.GASTOS_ADMINISTRACION, 0) AS "GASTOS_ADMINISTRACION",
                 CASE WHEN l.GASTOS_ADMINISTRACION > 0 AND l.ESTADO_LIQUIDACION = 'Pagada'
                      THEN 'Pagado'
@@ -574,10 +565,23 @@ class RepositorioReportes:
                 COALESCE(l.GASTOS_REPARACIONES, 0) AS "GASTOS_REPARACIONES",
                 COALESCE(l.PAGO_PREDIAL, 0) AS "PAGO_PREDIAL",
                 COALESCE(l.OTROS_EGRESOS, 0) AS "OTROS_EGRESOS",
-                COALESCE(l.TOTAL_EGRESOS, 0) AS "TOTAL_EGRESOS",
+                (COALESCE(l.COMISION_MONTO, 0) + 
+                 COALESCE(l.IVA_COMISION, 0) + 
+                 COALESCE(l.GASTOS_ADMINISTRACION, 0) + 
+                 COALESCE(l.GASTOS_SERVICIOS, 0) + 
+                 COALESCE(l.GASTOS_REPARACIONES, 0) + 
+                 COALESCE(l.PAGO_PREDIAL, 0) + 
+                 COALESCE(l.OTROS_EGRESOS, 0)) AS "TOTAL_EGRESOS",
 
-                -- Resultado Financiero
-                COALESCE(l.NETO_A_PAGAR, 0) AS "NETO_A_PAGAR",
+                -- Resultado Financiero (Recalculado)
+                (COALESCE(l.TOTAL_INGRESOS, 0) - 
+                 (COALESCE(l.COMISION_MONTO, 0) + 
+                  COALESCE(l.IVA_COMISION, 0) + 
+                  COALESCE(l.GASTOS_ADMINISTRACION, 0) + 
+                  COALESCE(l.GASTOS_SERVICIOS, 0) + 
+                  COALESCE(l.GASTOS_REPARACIONES, 0) + 
+                  COALESCE(l.PAGO_PREDIAL, 0) + 
+                  COALESCE(l.OTROS_EGRESOS, 0))) AS "NETO_A_PAGAR",
 
                 -- Estado y Fechas
                 COALESCE(l.ESTADO_LIQUIDACION, 'Sin Liquidar') AS "ESTADO_LIQUIDACION",

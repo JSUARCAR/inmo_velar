@@ -4,6 +4,7 @@ Exports de componentes de liquidaciones
 
 from .bulk_liquidacion_form import bulk_liquidacion_form
 from .cancel_modal import cancel_modal
+from .export_modal import modal_exportar_liquidaciones_periodo
 from .liquidacion_create_form import liquidacion_create_form
 from .liquidacion_detail_modal import liquidacion_detail_modal
 from .liquidacion_edit_form import liquidacion_edit_form
@@ -18,4 +19,5 @@ __all__ = [
     "bulk_liquidacion_form",
     "cancel_modal",
     "reverse_confirm_dialog",
+    "modal_exportar_liquidaciones_periodo",
 ]

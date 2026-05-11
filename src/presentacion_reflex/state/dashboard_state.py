@@ -12,6 +12,9 @@ from src.infraestructura.persistencia.repositorio_dashboard import RepositorioDa
 from src.presentacion_reflex.utils.formatters import format_currency, format_number
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 def _serialize_decimals(obj: Any) -> Any:
     """Convierte tipos incompatibles (Decimal, date, datetime) a tipos serializables por Reflex JSON."""
     if isinstance(obj, decimal.Decimal):
@@ -67,6 +70,8 @@ class DashboardState(rx.State):
 
     recibos_data: Dict[str, Any] = {"cantidad": 0, "monto_total": 0}
 
+    alertas_pendientes: int = 0
+
     # Datos de gráficos
     vencimiento_data: Dict[str, Any] = {"vence_30_dias": 0, "vence_60_dias": 0, "vence_90_dias": 0}
     vencimientos_lista: List[Dict[str, Any]] = []
@@ -84,19 +89,19 @@ class DashboardState(rx.State):
         import time
         run_id = int(time.time() * 1000) % 1000000  # ms timestamp mod 1M
         self._load_run_id = run_id
-        print(f"[DASH_DEBUG] DashboardState.on_load CALLED | run_id={run_id}", file=sys.stderr, flush=True)
+        logger.debug(f"DashboardState.on_load CALLED | run_id={run_id}")
         # Inicializar fecha solo si es la primera vez (valor = 0 indica "no inicializado")
         if self.selected_month == 0 or self.selected_year == 0:
             now = datetime.now()
             self.selected_month = now.month
             self.selected_year = now.year
         self.load_advisor_options()
-        print(f"[DASH_DEBUG] on_load → yield load_dashboard_data | run_id={run_id}", file=sys.stderr, flush=True)
+        logger.debug(f"on_load → yield load_dashboard_data | run_id={run_id}")
         yield DashboardState.load_dashboard_data
 
     def load_advisor_options(self):
         """Carga la lista de asesores para el dropdown."""
-        print("[DASH_DEBUG] load_advisor_options START", file=sys.stderr, flush=True)
+        logger.debug("load_advisor_options START")
         try:
             repo_asesores = RepositorioAsesorPostgres(db_manager)
             asesores = repo_asesores.listar_todos()
@@ -107,11 +112,9 @@ class DashboardState(rx.State):
                 }
                 for a in asesores
             ]
-            print(f"[DASH_DEBUG] load_advisor_options OK | count={len(self.advisor_options)}", file=sys.stderr, flush=True)
+            logger.debug(f"load_advisor_options OK | count={len(self.advisor_options)}")
         except Exception as e:
-            import traceback
-            print(f"[DASH_DEBUG] load_advisor_options ERROR: {e}", file=sys.stderr, flush=True)
-            traceback.print_exc(file=sys.stderr)
+            logger.error(f"load_advisor_options ERROR: {e}", exc_info=True)
             self.advisor_options = []
 
     def load_dashboard_data(self):
@@ -121,8 +124,7 @@ class DashboardState(rx.State):
         que el estado se entrega siempre al WebSocket activo del cliente actual.
         Esto elimina el 'Warning: disconnected client' de los background tasks en F5.
         """
-        import traceback
-        print(f"[DASH_DEBUG] load_dashboard_data START (sync) | run_id={self._load_run_id}", file=sys.stderr, flush=True)
+        logger.debug(f"load_dashboard_data START (sync) | run_id={self._load_run_id}")
 
         self.is_loading = True
         self.error_message = ""
@@ -132,67 +134,67 @@ class DashboardState(rx.State):
             mes = self.selected_month
             anio = self.selected_year
             id_asesor = self.selected_advisor_id
-            print(f"[DASH_DEBUG] filtros | mes={mes} anio={anio} asesor={id_asesor}", file=sys.stderr, flush=True)
+            logger.debug(f"filtros | mes={mes} anio={anio} asesor={id_asesor}")
 
             repo_dashboard = RepositorioDashboard(db_manager)
-            servicio = ServicioDashboard(repo_dashboard=repo_dashboard)
-            print("[DASH_DEBUG] servicio instanciado OK", file=sys.stderr, flush=True)
+            
+            # Instanciar Repo de Alertas para el servicio de Dashboard
+            if db_manager.use_postgresql:
+                from src.infraestructura.persistencia.repositorio_alerta_postgres import RepositorioAlertaPostgres
+                repo_alerta = RepositorioAlertaPostgres(db_manager)
+            else:
+                from src.infraestructura.persistencia.repositorio_alerta_sqlite import RepositorioAlertaSQLite
+                repo_alerta = RepositorioAlertaSQLite(db_manager)
 
-            print("[DASH_DEBUG] obteniendo flujo_caja_mes...", file=sys.stderr, flush=True)
+            servicio = ServicioDashboard(repo_dashboard=repo_dashboard, repo_alerta=repo_alerta)
+            logger.debug("Servicio Dashboard instanciado OK")
+
+            logger.debug("Obteniendo conteo alertas...")
+            conteo_alertas = servicio.obtener_conteo_alertas_pendientes()
+            
+            logger.debug("Obteniendo flujo_caja_mes...")
             datos_flujo = servicio.obtener_flujo_caja_mes(mes=mes, anio=anio, id_asesor=id_asesor)
-            print(f"[DASH_DEBUG] flujo_caja_mes OK | {datos_flujo}", file=sys.stderr, flush=True)
 
-            print("[DASH_DEBUG] obteniendo tasa_ocupacion...", file=sys.stderr, flush=True)
+            logger.debug("Obteniendo tasa_ocupacion...")
             datos_ocupacion = servicio.obtener_tasa_ocupacion(id_asesor=id_asesor)
-            print(f"[DASH_DEBUG] tasa_ocupacion OK | {datos_ocupacion}", file=sys.stderr, flush=True)
 
-            print("[DASH_DEBUG] obteniendo contratos_activos...", file=sys.stderr, flush=True)
+            logger.debug("Obteniendo contratos_activos...")
             contratos_activos = servicio.obtener_total_contratos_activos(id_asesor=id_asesor)
-            print(f"[DASH_DEBUG] contratos_activos OK | {contratos_activos}", file=sys.stderr, flush=True)
 
-            print("[DASH_DEBUG] obteniendo comisiones_pendientes...", file=sys.stderr, flush=True)
+            logger.debug("Obteniendo comisiones_pendientes...")
             datos_comisiones = servicio.obtener_comisiones_pendientes(id_asesor=id_asesor)
-            print("[DASH_DEBUG] comisiones OK", file=sys.stderr, flush=True)
 
-            print("[DASH_DEBUG] obteniendo cartera_mora...", file=sys.stderr, flush=True)
+            logger.debug("Obteniendo cartera_mora...")
             datos_mora = servicio.obtener_cartera_mora()
-            print("[DASH_DEBUG] mora OK", file=sys.stderr, flush=True)
 
-            print("[DASH_DEBUG] obteniendo contratos_por_vencer...", file=sys.stderr, flush=True)
+            logger.debug("Obteniendo contratos_por_vencer...")
             datos_vencimiento = servicio.obtener_contratos_por_vencer()
             datos_vencimiento_lista = servicio.obtener_contratos_proximos_vencer(90)
-            print("[DASH_DEBUG] vencimientos OK", file=sys.stderr, flush=True)
 
-            print("[DASH_DEBUG] obteniendo metricas_incidentes...", file=sys.stderr, flush=True)
+            logger.debug("Obteniendo metricas_incidentes...")
             datos_incidentes = servicio.obtener_metricas_incidentes()
-            print("[DASH_DEBUG] incidentes OK", file=sys.stderr, flush=True)
 
-            print("[DASH_DEBUG] obteniendo evolucion_recaudo...", file=sys.stderr, flush=True)
+            logger.debug("Obteniendo evolucion_recaudo...")
             datos_evolucion = servicio.obtener_evolucion_recaudo(mes_fin=mes, anio_fin=anio)
-            print("[DASH_DEBUG] evolucion OK", file=sys.stderr, flush=True)
 
-            print("[DASH_DEBUG] obteniendo recibos_vencidos...", file=sys.stderr, flush=True)
+            logger.debug("Obteniendo recibos_vencidos...")
             datos_recibos = servicio.obtener_recibos_vencidos_resumen()
-            print("[DASH_DEBUG] recibos OK", file=sys.stderr, flush=True)
 
-            print("[DASH_DEBUG] obteniendo propiedades_tipo...", file=sys.stderr, flush=True)
+            logger.debug("Obteniendo propiedades_tipo...")
             datos_propiedades_tipo = servicio.obtener_propiedades_por_tipo(id_asesor=id_asesor)
-            print("[DASH_DEBUG] propiedades_tipo OK", file=sys.stderr, flush=True)
 
-            print("[DASH_DEBUG] obteniendo metricas_expertas...", file=sys.stderr, flush=True)
+            logger.debug("Obteniendo metricas_expertas...")
             datos_kpi_financiero = servicio.obtener_metricas_expertas(id_asesor=id_asesor)
-            print("[DASH_DEBUG] metricas_expertas OK", file=sys.stderr, flush=True)
 
             if not id_asesor:
-                print("[DASH_DEBUG] obteniendo top_asesores y tunel...", file=sys.stderr, flush=True)
+                logger.debug("Obteniendo top_asesores y tunel...")
                 datos_top_asesores = servicio.obtener_top_asesores_revenue()
                 datos_tunel = servicio.obtener_tunel_vencimientos()
-                print("[DASH_DEBUG] top_asesores y tunel OK", file=sys.stderr, flush=True)
             else:
                 datos_top_asesores = []
                 datos_tunel = []
 
-            print("[DASH_DEBUG] todos los datos obtenidos, actualizando estado...", file=sys.stderr, flush=True)
+            logger.debug("Actualizando estado del dashboard...")
 
             # Actualizar estado sanitizando tipos para evitar crash en Reflex JSON serializer
             self.mora_data = _serialize_decimals(datos_mora)
@@ -209,13 +211,13 @@ class DashboardState(rx.State):
             self.kpi_financiero = _serialize_decimals(datos_kpi_financiero)
             self.top_asesores_data = _serialize_decimals(datos_top_asesores)
             self.tunel_vencimientos_data = _serialize_decimals(datos_tunel)
+            self.alertas_pendientes = _serialize_decimals(conteo_alertas)
             self.is_loading = False
 
-            print("[DASH_DEBUG] load_dashboard_data COMPLETO OK (sync generator)", file=sys.stderr, flush=True)
+            logger.info("load_dashboard_data COMPLETO OK")
 
         except Exception as e:
-            print(f"[DASH_DEBUG] load_dashboard_data ERROR: {type(e).__name__}: {e}", file=sys.stderr, flush=True)
-            traceback.print_exc(file=sys.stderr)
+            logger.error(f"load_dashboard_data ERROR: {type(e).__name__}: {e}", exc_info=True)
             self.error_message = f"Error al cargar datos: {type(e).__name__}: {str(e)}"
             self.is_loading = False
 

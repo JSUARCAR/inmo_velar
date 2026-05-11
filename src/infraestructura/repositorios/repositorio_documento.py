@@ -62,6 +62,7 @@ class RepositorioDocumento:
             ENTIDAD_TIPO, ENTIDAD_ID, NOMBRE_ARCHIVO, EXTENSION, MIME_TYPE, 
             DESCRIPCION, CONTENIDO, VERSION, ES_VIGENTE, CREATED_BY
         ) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})
+        RETURNING ID
         """
         params = (
             documento.entidad_tipo,
@@ -77,12 +78,12 @@ class RepositorioDocumento:
         )
 
         try:
-            conn = self.db.obtener_conexion()
-            cursor = conn.cursor()
-            cursor.execute(sql, params)
-            documento.id = cursor.lastrowid
-            conn.commit()
-            return documento
+            with self.db.transaccion() as cursor:
+                cursor.execute(sql, params)
+                row = cursor.fetchone()
+                if row:
+                    documento.id = row["ID"] if isinstance(row, dict) else row[0]
+                return documento
         except sqlite3.Error:
             pass  # print(f"Error al crear documento: {e}") [OpSec Removed]
             raise
@@ -143,11 +144,9 @@ class RepositorioDocumento:
         WHERE ENTIDAD_TIPO = {ph} AND CAST(ENTIDAD_ID AS VARCHAR) = {ph} AND NOMBRE_ARCHIVO = {ph} AND ES_VIGENTE = {ph}
         """
         try:
-            conn = self.db.obtener_conexion()
-            cursor = conn.cursor()
-            # Set to '0' where is '1'
-            cursor.execute(sql, ("0", entidad_tipo, str(entidad_id), nombre_archivo, "1"))
-            conn.commit()
+            with self.db.transaccion() as cursor:
+                # Set to '0' where is '1'
+                cursor.execute(sql, ("0", entidad_tipo, str(entidad_id), nombre_archivo, "1"))
         except sqlite3.Error:
             pass  # print(f"Error al anular versiones anteriores: {e}") [OpSec Removed]
             raise
@@ -186,11 +185,9 @@ class RepositorioDocumento:
         ph = self.db.get_placeholder()
         sql = f"UPDATE DOCUMENTOS SET ES_VIGENTE = {ph} WHERE ID = {ph}"
         try:
-            conn = self.db.obtener_conexion()
-            cursor = conn.cursor()
-            # Set to '0'
-            cursor.execute(sql, ("0", id_documento))
-            conn.commit()
+            with self.db.transaccion() as cursor:
+                # Set to '0'
+                cursor.execute(sql, ("0", id_documento))
         except sqlite3.Error:
             pass  # print(f"Error al eliminar documento: {e}") [OpSec Removed]
             raise
