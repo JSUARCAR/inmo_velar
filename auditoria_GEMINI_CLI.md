@@ -1,5 +1,23 @@
 # Auditoría de Sesiones - Gemini CLI
 
+## Sesión: 2026-05-11 - Diagnóstico y Estabilización (Incidentes)
+
+### Objetivo
+Resolver error de sintaxis SQL en cotizaciones y eliminar deuda técnica de SQLite en el módulo de Incidentes.
+
+### Cambios Realizados
+- **Infraestructura**: 
+    - Corregido error de sintaxis en `RepositorioIncidentesPostgres.obtener_por_id` donde una línea de Python estaba dentro de un string SQL.
+- **Aplicación**: 
+    - Refactorizado `ServicioIncidentes` para eliminar dependencias de `RepositorioOrdenTrabajoSQLite`, `RepositorioPropiedadSQLite` y `RepositorioProveedoresSQLite`.
+    - Migrados todos los repositorios secundarios a sus versiones `Postgres`.
+- **Higiene**: Eliminadas importaciones obsoletas y centralizada la lógica en PostgreSQL.
+
+### Estado del Sistema
+- **Funcionalidad**: ✅ Operativa y Corregida (Incidentes)
+- **Calidad de Código**: ✅ Eliminación de Deuda Técnica (SQLite -> Postgres)
+- **Cobertura**: ✅ Validación de sintaxis y flujo de cotizaciones corregido.
+
 ## Sesión: 2026-05-10 - Implementación de Filtros Avanzados (Personas)
 
 ### Objetivo

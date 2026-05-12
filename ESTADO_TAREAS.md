@@ -2,6 +2,21 @@
 
 ## 🚀 Hitos Recientes Completados
 
+### [2026-05-11] Refactorización Élite: Módulo Liquidación de Asesores
+
+- [X] Ingeniería inversa y purga total de SQL crudo en la capa de Aplicación.
+- [X] Repositorios consolidados como **PostgreSQL Native** (eliminación de placeholders dinámicos).
+- [X] Erradicación de fallas silenciosas (`except Exception: pass`) con logging proactivo.
+- [X] Desacoplamiento de la UI (Reflex) eliminando dependencias de infraestructura legacy.
+- [X] Validación exitosa de sintaxis y calidad de código con Ruff.
+
+### [2026-05-11] Diagnóstico y Estabilización Módulo de Incidentes
+
+- [X] Corrección de error crítico de sintaxis SQL en `RepositorioIncidentesPostgres`.
+- [X] Eliminación de deuda técnica de SQLite en `ServicioIncidentes`.
+- [X] Consolidación de repositorios hacia PostgreSQL (Proveedores, Propiedades, Orden de Trabajo).
+- [X] Validación de integridad de datos en el detalle de incidentes.
+
 ### [2026-05-10] Trazabilidad y Auditoría de Roles
 
 - [X] Implementación de motor de auditoría unificado (Postgres/SQLite).
@@ -38,4 +53,4 @@
 
 ---
 
-*Última actualización: 2026-05-10*
+*Última actualización: 2026-05-11*

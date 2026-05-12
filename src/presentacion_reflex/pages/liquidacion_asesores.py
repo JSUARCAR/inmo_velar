@@ -51,6 +51,17 @@ def liquidacion_asesores_content() -> rx.Component:
                     spacing="1",
                     align="start",
                 ),
+                rx.cond(
+                    LiquidacionAsesoresState.error_message != "",
+                    rx.callout(
+                        LiquidacionAsesoresState.error_message,
+                        icon="alert-circle",
+                        color_scheme="red",
+                        role="alert",
+                        width="100%",
+                        margin_bottom="1rem",
+                    ),
+                ),
                 rx.hstack(
                     neuro_button(
                         rx.hstack(rx.icon("refresh-cw", size=18), rx.text("Recargar")),
@@ -225,9 +236,9 @@ def liquidacion_asesores_content() -> rx.Component:
                                             rx.icon_button(
                                                 rx.icon("eye", size=16),
                                                 variant="ghost",
-                                                on_click=lambda: (
+                                                on_click=lambda liq_id=liq["id_liquidacion"]: (
                                                     LiquidacionAsesoresState.open_detail_modal(
-                                                        liq["id_liquidacion"]
+                                                        liq_id
                                                     )
                                                 ),
                                             ),
@@ -240,9 +251,9 @@ def liquidacion_asesores_content() -> rx.Component:
                                                     rx.icon("file-text", size=16),
                                                     variant="ghost",
                                                     color_scheme="blue",
-                                                    on_click=lambda: (
+                                                    on_click=lambda liq_id=liq["id_liquidacion"]: (
                                                         PDFState.generar_liquidacion_asesor_pdf(
-                                                            liq["id_liquidacion"]
+                                                            liq_id
                                                         )
                                                     ),
                                                 ),
@@ -255,9 +266,9 @@ def liquidacion_asesores_content() -> rx.Component:
                                                 rx.icon_button(
                                                     rx.icon("pencil", size=16),
                                                     variant="ghost",
-                                                    on_click=lambda: (
+                                                    on_click=lambda liq_id=liq["id_liquidacion"]: (
                                                         LiquidacionAsesoresState.open_edit_modal(
-                                                            liq["id_liquidacion"]
+                                                            liq_id
                                                         )
                                                     ),
                                                 ),
@@ -271,9 +282,9 @@ def liquidacion_asesores_content() -> rx.Component:
                                                     rx.icon("check", size=18),
                                                     variant="ghost",
                                                     color="#51cf66",
-                                                    on_click=lambda: (
+                                                    on_click=lambda liq_id=liq["id_liquidacion"]: (
                                                         LiquidacionAsesoresState.aprobar_liquidacion(
-                                                            liq["id_liquidacion"]
+                                                            liq_id
                                                         )
                                                     ),
                                                 ),

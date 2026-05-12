@@ -212,7 +212,7 @@ def detail_modal() -> rx.Component:
                                                         == "Pendiente",
                                                         rx.icon_button(
                                                             rx.icon("trash-2", size=16),
-                                                            on_click=lambda _, id_desc=d[
+                                                            on_click=lambda id_desc=d[
                                                                 "id_descuento"
                                                             ]: LiquidacionAsesoresState.eliminar_descuento(
                                                                 id_desc

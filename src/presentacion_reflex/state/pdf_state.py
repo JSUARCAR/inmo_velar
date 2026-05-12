@@ -1061,14 +1061,11 @@ class PDFState(rx.State):
                 ServicioLiquidacionAsesores,
             )
             from src.infraestructura.persistencia.database import db_manager
-            from src.infraestructura.persistencia.repositorio_asesor_sqlite import (
-                RepositorioAsesorSQLite,
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import (
+                RepositorioAsesorPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-                RepositorioContratoArrendamientoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_persona_sqlite import (
-                RepositorioPersonaSQLite,
+            from src.infraestructura.persistencia.repositorio_persona_postgres import (
+                RepositorioPersonaPostgres,
             )
             from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
                 RepositorioPropiedadPostgres,
@@ -1096,8 +1093,8 @@ class PDFState(rx.State):
             repo_bonificacion = RepositorioBonificacionAsesor(db_manager)
             repo_contrato = RepositorioContratoArrendamientoPostgres(db_manager)
             repo_propiedad = RepositorioPropiedadPostgres(db_manager)
-            repo_asesor = RepositorioAsesorSQLite(db_manager)
-            repo_persona = RepositorioPersonaSQLite(db_manager)
+            repo_asesor = RepositorioAsesorPostgres(db_manager)
+            repo_persona = RepositorioPersonaPostgres(db_manager)
             servicio_pdf = ServicioDocumentosPDF()
 
             # Initialize service with all dependencies for PDF generation

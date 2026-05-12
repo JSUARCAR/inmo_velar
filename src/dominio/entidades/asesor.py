@@ -45,3 +45,6 @@ class Asesor:
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
+
+    # Campo adicional (JOIN con PERSONAS)
+    nombre_completo: Optional[str] = None

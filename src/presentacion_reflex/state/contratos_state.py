@@ -136,10 +136,39 @@ class ContratosState(DocumentosStateMixin):
     # --- Computed Filtered Options ---
     @rx.var
     def filtered_propiedades_options(self) -> List[List[str]]:
+        """Opciones de propiedades filtradas por búsqueda y modo de modal (creación vs edición)."""
         s = self.propiedad_search.lower()
+        options = []
+
+        # Selección de base de opciones según el modo del modal
+        if self.modal_mode == "crear_arrendamiento":
+            options = self.propiedades_arriendo_select_options
+        elif self.modal_mode == "editar_arrendamiento":
+            # Incluir disponibles + la propiedad actual del contrato que se edita
+            options = list(self.propiedades_arriendo_select_options)
+            current_id = self.form_data.get("id_propiedad")
+            if current_id and not any(opt[1] == str(current_id) for opt in options):
+                for opt in self.propiedades_select_options:
+                    if opt[1] == str(current_id):
+                        options.append(opt)
+                        break
+        elif self.modal_mode == "crear_mandato":
+            options = self.propiedades_mandato_libre_select_options
+        elif self.modal_mode == "editar_mandato":
+            # Incluir propiedades sin mandato + la propiedad actual del contrato
+            options = list(self.propiedades_mandato_libre_select_options)
+            current_id = self.form_data.get("id_propiedad")
+            if current_id and not any(opt[1] == str(current_id) for opt in options):
+                for opt in self.propiedades_select_options:
+                    if opt[1] == str(current_id):
+                        options.append(opt)
+                        break
+        else:
+            options = self.propiedades_select_options
+
         if not s:
-            return self.propiedades_select_options
-        return [opt for opt in self.propiedades_select_options if s in opt[0].lower()]
+            return options
+        return [opt for opt in options if s in opt[0].lower()]
 
     @rx.var
     def filtered_propietarios_options(self) -> List[List[str]]:

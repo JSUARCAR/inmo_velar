@@ -1,6 +1,11 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_select_root,
+    neuro_input,
+    neuro_button,
+)
 from src.presentacion_reflex import styles
 
 
@@ -31,19 +36,16 @@ def modal_form() -> rx.Component:
                             # Asesor
                             rx.box(
                                 rx.text("Asesor", size="2", weight="bold", margin_bottom="1"),
-                                rx.select.root(
-                                    rx.select.trigger(placeholder="Seleccione un asesor", style=styles.NEU_SELECT_STYLE),
-                                    rx.select.content(
-                                        rx.foreach(
-                                            LiquidacionAsesoresState.asesores_options,
-                                            lambda asesor: rx.select.item(
-                                                asesor["texto"], value=asesor["id"]
-                                            ),
-                                        )
+                                neuro_select_root(
+                                    rx.foreach(
+                                        LiquidacionAsesoresState.asesores_options,
+                                        lambda asesor: rx.select.item(
+                                            asesor["texto"], value=asesor["id"]
+                                        ),
                                     ),
                                     name="id_asesor",
                                     required=True,
-                                    width="100%",
+                                    placeholder="Seleccione un asesor",
                                     value=LiquidacionAsesoresState.form_data["id_asesor"],
                                     on_change=lambda val: LiquidacionAsesoresState.set_form_field(
                                         "id_asesor", val
@@ -399,7 +401,7 @@ def modal_form() -> rx.Component:
                                                 rx.table.cell(
                                                     rx.button(
                                                         rx.icon("trash", size=16),
-                                                        on_click=lambda _, id_d=d[
+                                                        on_click=lambda id_d=d[
                                                             "id_descuento"
                                                         ]: LiquidacionAsesoresState.eliminar_descuento(
                                                             id_d
