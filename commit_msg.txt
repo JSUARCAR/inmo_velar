@@ -1,7 +1,0 @@
-feat(recaudos): Extrae lógica de formateo y añade script de limpieza de BD
-
-- Introduce el módulo `formatters.py` en la capa de aplicación con funciones puras (`format_currency`, `format_number`) para estandarizar la presentación de divisas sin acoplamiento a la UI.
-- Importa `format_currency` en `servicio_recaudo.py` para el manejo seguro de los montos al presentarlos.
-- Crea el script `vaciar_recaudos.py` en `scripts/` para proveer un mecanismo seguro y controlado de vaciado de la tabla `recaudos` en PostgreSQL, validando registros previamente para prevenir pérdidas accidentales de datos en desarrollo.
-
-Estas utilidades mejoran la cohesión de la capa de aplicación y fortalecen las herramientas de mantenimiento del sistema.

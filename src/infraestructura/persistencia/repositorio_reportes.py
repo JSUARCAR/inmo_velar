@@ -41,12 +41,14 @@ class RepositorioReportes:
                 rows = cursor.fetchall()
                 
                 # Extraer el total_count de la primera fila si existen resultados
-                total = rows[0].get("_total_count", 0) if rows else 0
+                total = 0
+                if rows:
+                    total = rows[0].get("_total_count", rows[0].get("_TOTAL_COUNT", 0))
                 
-                # Limpiar la columna auxiliar de los resultados
+                # Limpiar la columna auxiliar de los resultados de forma segura (case-insensitive)
                 for row in rows:
-                    if "_total_count" in row:
-                        del row["_total_count"]
+                    row.pop("_total_count", None)
+                    row.pop("_TOTAL_COUNT", None)
             finally:
                 cursor.close()
 
