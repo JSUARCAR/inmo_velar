@@ -1,44 +1,32 @@
 """
-Repositorio SQLite para entidad PagoAsesor.
-Implementa operaciones CRUD y consultas especializadas.
+Repositorio PostgreSQL para entidad PagoAsesor.
+Implementa operaciones CRUD bajo estándares Élite.
 """
 
-import sqlite3
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from src.dominio.entidades.pago_asesor import PagoAsesor
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
 class RepositorioPagoAsesor:
-    """Repositorio para gestión de pagos a asesores"""
+    """Repositorio para gestión de pagos a asesores en PostgreSQL"""
 
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
 
     def crear(self, pago: PagoAsesor, usuario: str) -> PagoAsesor:
         """
-        Crea un nuevo pago.
-
-        Args:
-            pago: Entidad PagoAsesor a crear
-            usuario: Usuario que crea el pago
-
-        Returns:
-            PagoAsesor con ID asignado
-
-        Raises:
-            ValueError: Si viola constraint UNIQUE en referencia_pago
+        Crea un nuevo pago con PostgreSQL Native.
         """
-        ph = self.db_manager.get_placeholder()
-        query = f"""
+        query = """
             INSERT INTO PAGOS_ASESORES (
                 ID_LIQUIDACION_ASESOR, ID_ASESOR, VALOR_PAGO, FECHA_PAGO,
                 FECHA_PROGRAMADA, MEDIO_PAGO, REFERENCIA_PAGO, ESTADO_PAGO,
                 MOTIVO_RECHAZO, COMPROBANTE_PAGO, OBSERVACIONES_PAGO,
                 FECHA_CONFIRMACION, CREATED_BY, UPDATED_BY
-            ) VALUES ({ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph}, {ph})
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING ID_PAGO_ASESOR
         """
 
@@ -64,7 +52,7 @@ class RepositorioPagoAsesor:
                 cursor.execute(query, params)
                 row = cursor.fetchone()
                 if row:
-                    if hasattr(row, "keys") or isinstance(row, dict):
+                    if hasattr(row, "get") or isinstance(row, dict):
                         pago.id_pago_asesor = row.get("ID_PAGO_ASESOR") or row.get("id_pago_asesor")
                     else:
                         pago.id_pago_asesor = row[0]
@@ -72,39 +60,20 @@ class RepositorioPagoAsesor:
                 pago.created_by = usuario
                 pago.updated_by = usuario
                 return pago
-        except sqlite3.IntegrityError as e:
-            if "UNIQUE constraint failed" in str(e):
+        except Exception as e:
+            if "unique" in str(e).lower():
                 raise ValueError(f"Ya existe un pago con la referencia {pago.referencia_pago}")
             raise
 
     def actualizar(self, pago: PagoAsesor, usuario: str) -> PagoAsesor:
-        """
-        Actualiza un pago existente.
-
-        Args:
-            pago: Entidad PagoAsesor con datos actualizados
-            usuario: Usuario que actualiza
-
-        Returns:
-            PagoAsesor actualizado
-
-        Raises:
-            ValueError: Si el pago no existe
-        """
-        ph = self.db_manager.get_placeholder()
-        query = f"""
+        """Actualiza un pago existente."""
+        query = """
             UPDATE PAGOS_ASESORES SET
-                FECHA_PAGO = {ph},
-                MEDIO_PAGO = {ph},
-                REFERENCIA_PAGO = {ph},
-                ESTADO_PAGO = {ph},
-                MOTIVO_RECHAZO = {ph},
-                COMPROBANTE_PAGO = {ph},
-                OBSERVACIONES_PAGO = {ph},
-                FECHA_CONFIRMACION = {ph},
-                UPDATED_AT = CURRENT_TIMESTAMP,
-                UPDATED_BY = {ph}
-            WHERE ID_PAGO_ASESOR = {ph}
+                FECHA_PAGO = %s, MEDIO_PAGO = %s, REFERENCIA_PAGO = %s,
+                ESTADO_PAGO = %s, MOTIVO_RECHAZO = %s, COMPROBANTE_PAGO = %s,
+                OBSERVACIONES_PAGO = %s, FECHA_CONFIRMACION = %s,
+                UPDATED_AT = CURRENT_TIMESTAMP, UPDATED_BY = %s
+            WHERE ID_PAGO_ASESOR = %s
         """
 
         params = (
@@ -130,44 +99,18 @@ class RepositorioPagoAsesor:
         return pago
 
     def obtener_por_id(self, id_pago: int) -> Optional[PagoAsesor]:
-        """
-        Obtiene un pago por su ID.
-
-        Args:
-            id_pago: ID del pago
-
-        Returns:
-            PagoAsesor o None si no existe
-        """
-        ph = self.db_manager.get_placeholder()
-        query = f"""
-            SELECT * FROM PAGOS_ASESORES
-            WHERE ID_PAGO_ASESOR = {ph}
-        """
+        """Obtiene un pago por su ID."""
+        query = "SELECT * FROM PAGOS_ASESORES WHERE ID_PAGO_ASESOR = %s"
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_pago,))
             row = cursor.fetchone()
-
             return self._row_to_entity(row) if row else None
 
     def listar_por_liquidacion(self, id_liquidacion: int) -> List[PagoAsesor]:
-        """
-        Lista todos los pagos de una liquidación.
-
-        Args:
-            id_liquidacion: ID de la liquidación
-
-        Returns:
-            Lista de PagoAsesor
-        """
-        ph = self.db_manager.get_placeholder()
-        query = f"""
-            SELECT * FROM PAGOS_ASESORES
-            WHERE ID_LIQUIDACION_ASESOR = {ph}
-            ORDER BY FECHA_PROGRAMADA DESC
-        """
+        """Lista todos los pagos de una liquidación."""
+        query = "SELECT * FROM PAGOS_ASESORES WHERE ID_LIQUIDACION_ASESOR = %s ORDER BY FECHA_PROGRAMADA DESC"
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
@@ -176,21 +119,8 @@ class RepositorioPagoAsesor:
             return [self._row_to_entity(row) for row in rows]
 
     def listar_por_estado(self, estado: str) -> List[PagoAsesor]:
-        """
-        Lista pagos por estado.
-
-        Args:
-            estado: Estado a filtrar (Pendiente, Programado, Pagado, etc.)
-
-        Returns:
-            Lista de PagoAsesor
-        """
-        ph = self.db_manager.get_placeholder()
-        query = f"""
-            SELECT * FROM PAGOS_ASESORES
-            WHERE ESTADO_PAGO = {ph}
-            ORDER BY FECHA_PROGRAMADA ASC
-        """
+        """Lista pagos por estado."""
+        query = "SELECT * FROM PAGOS_ASESORES WHERE ESTADO_PAGO = %s ORDER BY FECHA_PROGRAMADA ASC"
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
@@ -199,17 +129,8 @@ class RepositorioPagoAsesor:
             return [self._row_to_entity(row) for row in rows]
 
     def listar_pendientes(self) -> List[PagoAsesor]:
-        """
-        Lista pagos pendientes o programados.
-
-        Returns:
-            Lista de PagoAsesor pendientes/programados
-        """
-        query = """
-            SELECT * FROM PAGOS_ASESORES
-            WHERE ESTADO_PAGO IN ('Pendiente', 'Programado')
-            ORDER BY FECHA_PROGRAMADA ASC
-        """
+        """Lista pagos pendientes o programados."""
+        query = "SELECT * FROM PAGOS_ASESORES WHERE ESTADO_PAGO IN ('Pendiente', 'Programado') ORDER BY FECHA_PROGRAMADA ASC"
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
@@ -218,54 +139,34 @@ class RepositorioPagoAsesor:
             return [self._row_to_entity(row) for row in rows]
 
     def obtener_por_referencia(self, referencia: str) -> Optional[PagoAsesor]:
-        """
-        Obtiene un pago por su referencia (validación UNIQUE).
-
-        Args:
-            referencia: Referencia del pago
-
-        Returns:
-            PagoAsesor o None si no existe
-        """
-        ph = self.db_manager.get_placeholder()
-        query = f"""
-            SELECT * FROM PAGOS_ASESORES
-            WHERE REFERENCIA_PAGO = {ph}
-        """
+        """Obtiene un pago por su referencia."""
+        query = "SELECT * FROM PAGOS_ASESORES WHERE REFERENCIA_PAGO = %s"
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (referencia,))
             row = cursor.fetchone()
-
             return self._row_to_entity(row) if row else None
 
-    def _row_to_entity(self, row: sqlite3.Row) -> PagoAsesor:
-        """
-        Convierte una fila de BD a entidad PagoAsesor.
-
-        Args:
-            row: Fila de SQLite
-
-        Returns:
-            PagoAsesor
-        """
+    def _row_to_entity(self, row: Dict[str, Any]) -> PagoAsesor:
+        """Helper para mapeo de fila a entidad."""
+        def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
         return PagoAsesor(
-            id_pago_asesor=row["ID_PAGO_ASESOR"],
-            id_liquidacion_asesor=row["ID_LIQUIDACION_ASESOR"],
-            id_asesor=row["ID_ASESOR"],
-            valor_pago=row["VALOR_PAGO"],
-            fecha_pago=row["FECHA_PAGO"],
-            fecha_programada=row["FECHA_PROGRAMADA"],
-            medio_pago=row["MEDIO_PAGO"],
-            referencia_pago=row["REFERENCIA_PAGO"],
-            estado_pago=row["ESTADO_PAGO"],
-            motivo_rechazo=row["MOTIVO_RECHAZO"],
-            comprobante_pago=row["COMPROBANTE_PAGO"],
-            observaciones_pago=row["OBSERVACIONES_PAGO"],
-            fecha_confirmacion=row["FECHA_CONFIRMACION"],
-            created_at=row["CREATED_AT"],
-            created_by=row["CREATED_BY"],
-            updated_at=row["UPDATED_AT"],
-            updated_by=row["UPDATED_BY"],
+            id_pago_asesor=gv("ID_PAGO_ASESOR"),
+            id_liquidacion_asesor=gv("ID_LIQUIDACION_ASESOR"),
+            id_asesor=gv("ID_ASESOR"),
+            valor_pago=gv("VALOR_PAGO"),
+            fecha_pago=gv("FECHA_PAGO"),
+            fecha_programada=gv("FECHA_PROGRAMADA"),
+            medio_pago=gv("MEDIO_PAGO"),
+            referencia_pago=gv("REFERENCIA_PAGO"),
+            estado_pago=gv("ESTADO_PAGO"),
+            motivo_rechazo=gv("MOTIVO_RECHAZO"),
+            comprobante_pago=gv("COMPROBANTE_PAGO"),
+            observaciones_pago=gv("OBSERVACIONES_PAGO"),
+            fecha_confirmacion=gv("FECHA_CONFIRMACION"),
+            created_at=gv("CREATED_AT"),
+            created_by=gv("CREATED_BY"),
+            updated_at=gv("UPDATED_AT"),
+            updated_by=gv("UPDATED_BY"),
         )

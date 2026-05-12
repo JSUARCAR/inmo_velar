@@ -1,26 +1,29 @@
-import sqlite3
-from typing import List, Optional
+"""
+Repositorio PostgreSQL para entidad BonificacionAsesor.
+Implementa operaciones CRUD bajo estándares Élite.
+"""
+
+from typing import List, Optional, Dict, Any
 
 from src.dominio.entidades.bonificacion_asesor import BonificacionAsesor
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
 class RepositorioBonificacionAsesor:
-    """Repositorio para gestión de bonificaciones de asesores"""
+    """Repositorio para gestión de bonificaciones de asesores en PostgreSQL"""
 
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
 
     def crear(self, bonificacion: BonificacionAsesor, usuario: str) -> BonificacionAsesor:
         """
-        Crea una nueva bonificación.
+        Crea una nueva bonificación con PostgreSQL Native.
         """
-        ph = self.db_manager.get_placeholder()
-        query = f"""
+        query = """
             INSERT INTO BONIFICACIONES_ASESORES (
                 ID_LIQUIDACION_ASESOR, TIPO_BONIFICACION, DESCRIPCION_BONIFICACION,
                 VALOR_BONIFICACION, CREATED_BY
-            ) VALUES ({ph}, {ph}, {ph}, {ph}, {ph})
+            ) VALUES (%s, %s, %s, %s, %s)
             RETURNING ID_BONIFICACION_ASESOR, FECHA_REGISTRO
         """
 
@@ -37,7 +40,6 @@ class RepositorioBonificacionAsesor:
             row = cursor.fetchone()
             
             if row:
-                # Acceso robusto a columnas (soporta dict, Row o tuple via helper)
                 def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
                 
                 if hasattr(row, "get") or isinstance(row, dict):
@@ -52,8 +54,7 @@ class RepositorioBonificacionAsesor:
 
     def obtener_por_id(self, id_bonificacion: int) -> Optional[BonificacionAsesor]:
         """Obtiene una bonificación por ID."""
-        ph = self.db_manager.get_placeholder()
-        query = f"SELECT * FROM BONIFICACIONES_ASESORES WHERE ID_BONIFICACION_ASESOR = {ph}"
+        query = "SELECT * FROM BONIFICACIONES_ASESORES WHERE ID_BONIFICACION_ASESOR = %s"
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
@@ -63,8 +64,7 @@ class RepositorioBonificacionAsesor:
 
     def listar_por_liquidacion(self, id_liquidacion: int) -> List[BonificacionAsesor]:
         """Lista bonificaciones de una liquidación."""
-        ph = self.db_manager.get_placeholder()
-        query = f"SELECT * FROM BONIFICACIONES_ASESORES WHERE ID_LIQUIDACION_ASESOR = {ph} ORDER BY FECHA_REGISTRO DESC"
+        query = "SELECT * FROM BONIFICACIONES_ASESORES WHERE ID_LIQUIDACION_ASESOR = %s ORDER BY FECHA_REGISTRO DESC"
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
@@ -74,8 +74,7 @@ class RepositorioBonificacionAsesor:
 
     def eliminar(self, id_bonificacion: int) -> bool:
         """Elimina una bonificación."""
-        ph = self.db_manager.get_placeholder()
-        query = f"DELETE FROM BONIFICACIONES_ASESORES WHERE ID_BONIFICACION_ASESOR = {ph}"
+        query = "DELETE FROM BONIFICACIONES_ASESORES WHERE ID_BONIFICACION_ASESOR = %s"
 
         with self.db_manager.transaccion() as cursor:
             cursor.execute(query, (id_bonificacion,))
@@ -83,30 +82,27 @@ class RepositorioBonificacionAsesor:
 
     def calcular_total_bonificaciones(self, id_liquidacion: int) -> int:
         """Calcula el valor total de bonificaciones para una liquidación."""
-        ph = self.db_manager.get_placeholder()
-        query = f"SELECT SUM(VALOR_BONIFICACION) as total FROM BONIFICACIONES_ASESORES WHERE ID_LIQUIDACION_ASESOR = {ph}"
+        query = "SELECT SUM(VALOR_BONIFICACION) as total FROM BONIFICACIONES_ASESORES WHERE ID_LIQUIDACION_ASESOR = %s"
 
         with self.db_manager.obtener_conexion() as conn:
-            cursor = conn.cursor()
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_liquidacion,))
             row = cursor.fetchone()
             if not row:
                 return 0
 
-            # Handle potential dict cursor (real dict or upper case)
-            if hasattr(row, "get"):
-                val = row.get("total") or row.get("TOTAL")
-                return val if val else 0
-            # Handle tuple cursor
-            return row[0] if row[0] else 0
+            val = row.get("total") or row.get("TOTAL")
+            return int(val) if val else 0
 
-    def _row_to_entity(self, row: sqlite3.Row) -> BonificacionAsesor:
+    def _row_to_entity(self, row: Dict[str, Any]) -> BonificacionAsesor:
+        """Helper para mapeo de fila a entidad."""
+        def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
         return BonificacionAsesor(
-            id_bonificacion_asesor=row["ID_BONIFICACION_ASESOR"],
-            id_liquidacion_asesor=row["ID_LIQUIDACION_ASESOR"],
-            tipo_bonificacion=row["TIPO_BONIFICACION"],
-            descripcion_bonificacion=row["DESCRIPCION_BONIFICACION"],
-            valor_bonificacion=row["VALOR_BONIFICACION"],
-            fecha_registro=row["FECHA_REGISTRO"],
-            created_by=row["CREATED_BY"],
+            id_bonificacion_asesor=gv("ID_BONIFICACION_ASESOR"),
+            id_liquidacion_asesor=gv("ID_LIQUIDACION_ASESOR"),
+            tipo_bonificacion=gv("TIPO_BONIFICACION"),
+            descripcion_bonificacion=gv("DESCRIPCION_BONIFICACION"),
+            valor_bonificacion=gv("VALOR_BONIFICACION"),
+            fecha_registro=gv("FECHA_REGISTRO"),
+            created_by=gv("CREATED_BY"),
         )

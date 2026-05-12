@@ -26,7 +26,7 @@ class LiquidacionAsesor:
 
     # Identificación
     id_liquidacion_asesor: Optional[int] = None
-    id_contrato_a: int = 0  # FK a CONTRATOS_ARRENDAMIENTOS_OLD
+    id_contrato_a: Optional[int] = None  # FK a CONTRATOS_ARRENDAMIENTOS_OLD (Opcional para multi-contrato)
     id_asesor: int = 0  # FK a ASESORES
 
     # Período y Cálculo
