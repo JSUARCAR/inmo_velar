@@ -33,6 +33,7 @@ from src.aplicacion.esquemas.recaudo import (
     ResultadoGeneracionMasiva,
     ResultadoOperacion,
 )
+from src.aplicacion.utils.formatters import format_currency
 from src.infraestructura.persistencia.database import DatabaseManager
 
 
