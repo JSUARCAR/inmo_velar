@@ -49,6 +49,11 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
     is_loading: bool = False
     error_message: str = ""
 
+    # ==================== IDEMPOTENCIA ====================
+    # Declaración explícita para que Reflex registre las variables usadas por IdempotencyStateMixin
+    current_request_key: str = ""
+    is_processing_idempotent: bool = False
+
     # Modal exportación masiva recibos
     mostrar_modal_exportar_recibos: bool = False
     periodo_exportar_recibos: str = ""
@@ -473,6 +478,9 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                     self.is_loading = False
                 return
 
+            from src.aplicacion.esquemas.recaudo import ComandoRegistrarPago, ComandoActualizarPago
+            from datetime import date
+
             if form_data.get("id_recaudo"):
                 comando = ComandoActualizarPago(
                     fecha_pago=date.fromisoformat(form_data["fecha_pago"]),
@@ -493,9 +501,6 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                         self.is_loading = False
                     return
             else:
-                from src.aplicacion.esquemas.recaudo import ComandoRegistrarPago
-                from datetime import date
-
                 comando = ComandoRegistrarPago(
                     id_contrato_a=int(id_contrato),
                     fecha_pago=date.fromisoformat(form_data["fecha_pago"]),

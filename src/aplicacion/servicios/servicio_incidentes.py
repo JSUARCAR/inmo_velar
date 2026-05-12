@@ -11,14 +11,14 @@ from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
     RepositorioIncidentesPostgres,
 )
-from src.infraestructura.persistencia.repositorio_orden_trabajo_sqlite import (
-    RepositorioOrdenTrabajoSQLite,
+from src.infraestructura.persistencia.repositorio_orden_trabajo_postgres import (
+    RepositorioOrdenTrabajoPostgres,
 )
-from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-    RepositorioPropiedadSQLite,
+from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+    RepositorioPropiedadPostgres,
 )
-from src.infraestructura.persistencia.repositorio_proveedores_sqlite import (
-    RepositorioProveedoresSQLite,
+from src.infraestructura.persistencia.repositorio_proveedores_postgres import (
+    RepositorioProveedoresPostgres,
 )
 
 
@@ -38,9 +38,9 @@ class ServicioIncidentes:
             if repo_incidentes
             else RepositorioIncidentesPostgres(db_manager)
         )
-        self.repo_proveedores = RepositorioProveedoresSQLite(db_manager)
-        self.repo_propiedades = RepositorioPropiedadSQLite(db_manager)
-        self.repo_ordenes = RepositorioOrdenTrabajoSQLite(db_manager)
+        self.repo_proveedores = RepositorioProveedoresPostgres(db_manager)
+        self.repo_propiedades = RepositorioPropiedadPostgres(db_manager)
+        self.repo_ordenes = RepositorioOrdenTrabajoPostgres(db_manager)
         self.repo_idempotencia = repo_idempotencia
 
     @idempotent(key_prefix="incidentes:reportar")

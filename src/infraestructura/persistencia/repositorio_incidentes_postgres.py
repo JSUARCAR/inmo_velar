@@ -174,9 +174,9 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         LEFT JOIN PERSONAS PER_INQ ON ARR.ID_PERSONA = PER_INQ.ID_PERSONA
         LEFT JOIN PERSONAS PER_HAB ON PER_INQ.ID_PERSONA = PER_HAB.ID_PERSONA
         WHERE I.ID_INCIDENTE = %s
+        """
         query += " GROUP BY I.ID_INCIDENTE, PER_PROV.ID_PERSONA, PROP.ID_PROPIEDAD, PER_PROP.ID_PERSONA, PER_INQ.ID_PERSONA, PER_HAB.ID_PERSONA"
 
-        """
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         cursor.execute(query, (id_incidente,))

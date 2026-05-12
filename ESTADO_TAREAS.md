@@ -2,6 +2,13 @@
 
 ## 🚀 Hitos Recientes Completados
 
+### [2026-05-11] Diagnóstico y Estabilización Módulo de Incidentes
+
+- [X] Corrección de error crítico de sintaxis SQL en `RepositorioIncidentesPostgres`.
+- [X] Eliminación de deuda técnica de SQLite en `ServicioIncidentes`.
+- [X] Consolidación de repositorios hacia PostgreSQL (Proveedores, Propiedades, Orden de Trabajo).
+- [X] Validación de integridad de datos en el detalle de incidentes.
+
 ### [2026-05-10] Trazabilidad y Auditoría de Roles
 
 - [X] Implementación de motor de auditoría unificado (Postgres/SQLite).
@@ -38,4 +45,4 @@
 
 ---
 
-*Última actualización: 2026-05-10*
+*Última actualización: 2026-05-11*
