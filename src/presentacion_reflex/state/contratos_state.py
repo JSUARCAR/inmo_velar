@@ -64,7 +64,6 @@ class ContratosState(DocumentosStateMixin):
     filter_propiedad_id: str = ""
     filter_persona_id: str = ""
     filter_asesor_id: str = "todos"
-    solo_activos: bool = True
     filter_sin_arrendamiento: bool = False
 
     # Ordenamiento
@@ -73,7 +72,7 @@ class ContratosState(DocumentosStateMixin):
 
     # Opciones de filtros
     tipo_options: List[str] = ["Todos", "Mandato", "Arrendamiento"]
-    estado_options: List[str] = ["Todos", "Activo", "Cancelado"]
+    estado_options: List[str] = ["Todos", "Activo", "Finalizado", "Cancelado", "Legal"]
     propiedades_options: List[Dict[str, Any]] = []
     personas_options: List[Dict[str, Any]] = []
 
@@ -510,9 +509,7 @@ class ContratosState(DocumentosStateMixin):
                 else None
             )
             estado_filtro = (
-                "Activo"
-                if self.solo_activos
-                else (self.filter_estado if self.filter_estado != "Todos" else None)
+                self.filter_estado if self.filter_estado != "Todos" else None
             )
 
             # Traducir sort_by según el tipo de repositorio
@@ -920,9 +917,7 @@ class ContratosState(DocumentosStateMixin):
             )
 
             estado_filtro = (
-                "Activo"
-                if self.solo_activos
-                else (self.filter_estado if self.filter_estado != "Todos" else None)
+                self.filter_estado if self.filter_estado != "Todos" else None
             )
 
             csv_data = servicio.exportar_contratos_csv(

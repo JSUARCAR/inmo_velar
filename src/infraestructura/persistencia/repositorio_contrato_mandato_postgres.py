@@ -143,13 +143,8 @@ class RepositorioContratoMandatoPostgres:
             query_params = []
 
             if estado and estado != "Todos":
-                if estado == "Activo":
-                    conditions.append("cm.ESTADO_CONTRATO_M = 'Activo'")
-                elif estado == "Cancelado":
-                    conditions.append("cm.ESTADO_CONTRATO_M != 'Activo'")
-                else:
-                    conditions.append(f"cm.ESTADO_CONTRATO_M = {placeholder}")
-                    query_params.append(estado)
+                conditions.append(f"cm.ESTADO_CONTRATO_M = {placeholder}")
+                query_params.append(estado)
 
             if busqueda:
                 cols = [

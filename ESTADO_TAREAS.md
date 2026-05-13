@@ -2,6 +2,13 @@
 
 ## 🚀 Hitos Recientes Completados
 
+### [2026-05-12] Automatización de Contratos: Sincronización de Fechas
+
+- [X] Ingeniería inversa del módulo de contratos para detectar vacíos de automatización.
+- [X] Implementación de trigger PostgreSQL `trg_sync_fechas_mandato` para sincronización bi-direccional inducida (Arrendamiento -> Mandato).
+- [X] Validación empírica exitosa de la sincronización automática de fechas de inicio y fin.
+- [X] Garantía de integridad de datos mediante lógica de servidor (PostgreSQL Native).
+
 ### [2026-05-11] Refactorización Élite: Módulo Liquidación de Asesores
 
 - [X] Ingeniería inversa y purga total de SQL crudo en la capa de Aplicación.
@@ -53,4 +60,4 @@
 
 ---
 
-*Última actualización: 2026-05-11*
+*Última actualización: 2026-05-12*
