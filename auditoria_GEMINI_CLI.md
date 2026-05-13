@@ -1,5 +1,20 @@
 # Auditoría de Sesiones - Gemini CLI
 
+## Sesión: 2026-05-12 - Automatización de Fechas de Contratos
+
+### Objetivo
+Validar e implementar la sincronización automática de fechas entre contratos de mandato y arrendamiento para garantizar la integridad operativa.
+
+### Cambios Realizados
+- **Ingeniería Inversa**: Identificado vacío en la sincronización de fechas (solo existía para el canon).
+- **Base de Datos (PostgreSQL Native)**: 
+    - Creado Trigger `trg_sync_fechas_mandato` y función PL/pgSQL `fn_sync_fechas_mandato`.
+    - Implementada sincronización bi-direccional inducida: al crear o actualizar un arrendamiento activo, el mandato asociado actualiza automáticamente sus fechas de inicio y fin.
+- **Validación**: 
+    - Creado script de aplicación idempotente `apply_trigger_fechas.py`.
+    - Creado script de validación empírica `verify_trigger_fechas.py` con pruebas de actualización y rollback.
+- **Resultados**: ✅ Sincronización exitosa confirmada mediante logs de base de datos.
+
 ## Sesión: 2026-05-11 - Diagnóstico y Estabilización (Incidentes)
 
 ### Objetivo

@@ -255,8 +255,8 @@ class ServicioPropiedades:
                         (id_propiedad,),
                     )
                     row = cursor.fetchone()
-                    id_contrato_a = row[0] if row else None
-                    canon_anterior_arriendo = row[1] if row else None
+                    id_contrato_a = row.get("ID_CONTRATO_A") if row else None
+                    canon_anterior_arriendo = row.get("CANON_ARRENDAMIENTO") if row else None
 
                     # 2. Actualizar Mandato activo
                     cursor.execute(
