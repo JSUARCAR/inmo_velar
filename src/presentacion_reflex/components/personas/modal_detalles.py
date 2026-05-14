@@ -96,16 +96,14 @@ def modal_detalles() -> rx.Component:
     pestana_propietario = rx.cond(
         PersonasState.detail_propietario,
         contenedor_contenido_pestana(
-            titulo_seccion("Información Financiera", "banknote"),
-            rx.grid(
-                item_detalle("Banco", PersonasState.detail_propietario["banco"].to(str), "building_2"),
-                item_detalle("Número de Cuenta", PersonasState.detail_propietario["cuenta"].to(str), "credit_card"),
-                item_detalle("Tipo de Cuenta", PersonasState.detail_propietario["tipo_cuenta"].to(str), "info"),
-                item_detalle("Consignatario", PersonasState.detail_propietario["consignatario"].to(str), "user_check"),
-                columns="2",
-                spacing="4",
-                width="100%",
+            titulo_seccion("Información de Propietario", "user_check"),
+            rx.text(
+                "La información bancaria y de consignatario ahora se gestiona directamente dentro de cada Contrato de Mandato.",
+                size="2",
+                color=styles.TEXT_SECONDARY,
+                font_style="italic",
             ),
+            item_detalle("Observaciones", PersonasState.detail_propietario["observaciones"].to(str), "message_square"),
             titulo_seccion("Propiedades Asociadas", "home"),
             rx.table.root(
                 rx.table.header(

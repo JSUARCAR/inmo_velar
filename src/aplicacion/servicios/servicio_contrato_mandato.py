@@ -69,6 +69,12 @@ class ServicioContratoMandato:
             estado_contrato_m="Activo",
             alerta_vencimiento_contrato_m=True,
             fecha_pago=datos.get("fecha_pago"),
+            # Campos bancarios migrados
+            banco_propietario=datos.get("banco_propietario"),
+            numero_cuenta_propietario=datos.get("numero_cuenta_propietario"),
+            tipo_cuenta=datos.get("tipo_cuenta"),
+            consignatario=datos.get("consignatario"),
+            documento_consignatario=datos.get("documento_consignatario"),
         )
 
         return self.repo_mandato.crear(contrato, usuario_sistema)
@@ -103,6 +109,18 @@ class ServicioContratoMandato:
             "comision_porcentaje", mandato.comision_porcentaje_contrato_m
         )
         mandato.fecha_pago = datos.get("fecha_pago", mandato.fecha_pago)
+
+        # Actualizar campos bancarios
+        if "banco_propietario" in datos:
+            mandato.banco_propietario = datos["banco_propietario"]
+        if "numero_cuenta_propietario" in datos:
+            mandato.numero_cuenta_propietario = datos["numero_cuenta_propietario"]
+        if "tipo_cuenta" in datos:
+            mandato.tipo_cuenta = datos["tipo_cuenta"]
+        if "consignatario" in datos:
+            mandato.consignatario = datos["consignatario"]
+        if "documento_consignatario" in datos:
+            mandato.documento_consignatario = datos["documento_consignatario"]
 
         mandato.updated_by = usuario_sistema
         mandato.updated_at = datetime.now().isoformat()

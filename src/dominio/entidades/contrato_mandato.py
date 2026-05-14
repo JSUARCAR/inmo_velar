@@ -44,6 +44,13 @@ class ContratoMandato:
     fecha_renovacion_contrato_m: Optional[str] = None
     fecha_pago: Optional[str] = None  # Fecha pago propietario
 
+    # Datos Bancarios y Consignatario (Migrados de Propietario)
+    banco_propietario: Optional[str] = None
+    numero_cuenta_propietario: Optional[str] = None
+    tipo_cuenta: Optional[str] = None  # Ahorros, Corriente
+    consignatario: Optional[str] = None
+    documento_consignatario: Optional[str] = None
+
     # Auditoría
     created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
     created_by: Optional[str] = None

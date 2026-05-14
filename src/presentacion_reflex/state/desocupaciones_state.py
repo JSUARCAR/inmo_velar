@@ -54,6 +54,10 @@ class DesocupacionesState(DocumentosStateMixin):
         "tareas_total": 0,
     }
 
+    # Contexto de Usuario (RBAC)
+    current_user: str = "admin"
+    current_user_role: str = "Administrador"  # Opciones: "Administrador", "Asesor"
+
     # Form Data
     id_desocupacion_seleccionada: Optional[int] = None
     form_create_data: Dict[str, Any] = {
@@ -352,9 +356,13 @@ class DesocupacionesState(DocumentosStateMixin):
             servicio = ServicioDesocupaciones(db_manager)
 
             # Nota: Ahora permitimos finalizar aunque haya tareas pendientes (Forzado)
-            # El servicio se encargará de autocompletarlas.
+            # pero el servicio validará el ROL del usuario.
 
-            servicio.finalizar_desocupacion(self.id_desocupacion_seleccionada, "admin")
+            servicio.finalizar_desocupacion(
+                self.id_desocupacion_seleccionada, 
+                self.current_user,
+                self.current_user_role
+            )
 
             async with self:
                 self.modal_confirm_finalize_open = False
@@ -364,6 +372,10 @@ class DesocupacionesState(DocumentosStateMixin):
             )
             yield DesocupacionesState.load_desocupaciones()
 
+        except PermissionError as e:
+            yield rx.toast.error(str(e))
+            async with self:
+                self.error_message = str(e)
         except Exception as e:
             yield rx.toast.error(f"Error al finalizar: {str(e)}")
             async with self:

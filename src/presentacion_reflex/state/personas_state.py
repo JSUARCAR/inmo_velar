@@ -620,8 +620,6 @@ class PersonasState(rx.State):
             "numero_documento": "",
             "telefono_principal": "",
             "tipo_documento": "CC",
-            "consignatario": "",
-            "documento_consignatario": "",
             "nombre_habitante": "",
             "telefono_habitante": "",
         }
@@ -725,12 +723,7 @@ class PersonasState(rx.State):
                 prop = datos_roles["Propietario"]
                 self.form_data.update(
                     {
-                        "banco_propietario": prop.banco_propietario or "",
-                        "numero_cuenta_propietario": prop.numero_cuenta_propietario or "",
-                        "tipo_cuenta": prop.tipo_cuenta or "",
                         "observaciones_propietario": prop.observaciones_propietario or "",
-                        "consignatario": prop.consignatario or "",
-                        "documento_consignatario": prop.documento_consignatario or "",
                     }
                 )
 
@@ -1017,12 +1010,7 @@ class PersonasState(rx.State):
                 datos_rol = {}
                 if rol == "Propietario":
                     datos_rol = {
-                        "banco_propietario": form_data.get("banco_propietario", ""),
-                        "numero_cuenta_propietario": form_data.get("numero_cuenta_propietario", ""),
-                        "tipo_cuenta": form_data.get("tipo_cuenta", ""),
                         "observaciones_propietario": form_data.get("observaciones_propietario", ""),
-                        "consignatario": form_data.get("consignatario", ""),
-                        "documento_consignatario": form_data.get("documento_consignatario", ""),
                     }
                 elif rol == "Arrendatario":
                     datos_rol = {

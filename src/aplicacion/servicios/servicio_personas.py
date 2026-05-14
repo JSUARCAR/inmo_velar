@@ -316,11 +316,8 @@ class ServicioPersonas:
                     })
 
             resultado["detalles_roles"]["Propietario"] = {
-                "banco": propietario.banco_propietario,
-                "cuenta": propietario.numero_cuenta_propietario,
-                "tipo_cuenta": propietario.tipo_cuenta,
-                "consignatario": propietario.consignatario,
-                "documento_consignatario": propietario.documento_consignatario,
+                "observaciones": propietario.observaciones_propietario,
+                "fecha_ingreso": propietario.fecha_ingreso_propietario,
                 "propiedades_activas": propiedades
             }
 
@@ -537,18 +534,8 @@ class ServicioPersonas:
             prop = entidad_rol
             if "fecha_inicio_propietario" in datos_extra:
                 prop.fecha_ingreso_propietario = datos_extra["fecha_inicio_propietario"]
-            if "banco_propietario" in datos_extra:
-                prop.banco_propietario = datos_extra["banco_propietario"]
-            if "numero_cuenta_propietario" in datos_extra:
-                prop.numero_cuenta_propietario = datos_extra["numero_cuenta_propietario"]
-            if "tipo_cuenta" in datos_extra:
-                prop.tipo_cuenta = datos_extra["tipo_cuenta"]
             if "observaciones_propietario" in datos_extra:
                 prop.observaciones_propietario = datos_extra["observaciones_propietario"]
-            if "consignatario" in datos_extra:
-                prop.consignatario = datos_extra["consignatario"]
-            if "documento_consignatario" in datos_extra:
-                prop.documento_consignatario = datos_extra["documento_consignatario"]
             prop.updated_at = datetime.now().isoformat()
             prop.updated_by = usuario_sistema
             self.repo_propietario.actualizar(prop, usuario_sistema)
@@ -719,12 +706,7 @@ class ServicioPersonas:
             propietario = Propietario(
                 id_persona=id_persona,
                 fecha_ingreso_propietario=fecha_inicio,
-                banco_propietario=datos_extra.get("banco_propietario"),
-                numero_cuenta_propietario=datos_extra.get("numero_cuenta_propietario"),
-                tipo_cuenta=datos_extra.get("tipo_cuenta"),
                 observaciones_propietario=datos_extra.get("observaciones_propietario"),
-                consignatario=datos_extra.get("consignatario"),
-                documento_consignatario=datos_extra.get("documento_consignatario"),
                 created_at=created_at,
                 created_by=usuario_sistema,
             )

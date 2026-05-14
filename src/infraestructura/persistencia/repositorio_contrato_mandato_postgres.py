@@ -27,8 +27,10 @@ class RepositorioContratoMandatoPostgres:
             CANON_MANDATO, COMISION_PORCENTAJE_CONTRATO_M, IVA_CONTRATO_M,
             ESTADO_CONTRATO_M, ALERTA_VENCIMIENTO_CONTRATO_M, FECHA_RENOVACION_CONTRATO_M,
             FECHA_PAGO,
+            BANCO_PROPIETARIO, NUMERO_CUENTA_PROPIETARIO, TIPO_CUENTA,
+            CONSIGNATARIO, DOCUMENTO_CONSIGNATARIO,
             CREATED_BY, UPDATED_BY
-        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
         RETURNING ID_CONTRATO_M
         """,
             (
@@ -45,6 +47,11 @@ class RepositorioContratoMandatoPostgres:
                 contrato.alerta_vencimiento_contrato_m,
                 contrato.fecha_renovacion_contrato_m,
                 contrato.fecha_pago,
+                contrato.banco_propietario,
+                contrato.numero_cuenta_propietario,
+                contrato.tipo_cuenta,
+                contrato.consignatario,
+                contrato.documento_consignatario,
                 usuario,
                 usuario,
             ),
@@ -286,6 +293,11 @@ class RepositorioContratoMandatoPostgres:
             ALERTA_VENCIMIENTO_CONTRATO_M = {placeholder},
             FECHA_RENOVACION_CONTRATO_M = {placeholder},
             FECHA_PAGO = {placeholder},
+            BANCO_PROPIETARIO = {placeholder},
+            NUMERO_CUENTA_PROPIETARIO = {placeholder},
+            TIPO_CUENTA = {placeholder},
+            CONSIGNATARIO = {placeholder},
+            DOCUMENTO_CONSIGNATARIO = {placeholder},
             UPDATED_AT = {placeholder},
             UPDATED_BY = {placeholder}
         WHERE ID_CONTRATO_M = {placeholder}
@@ -305,6 +317,11 @@ class RepositorioContratoMandatoPostgres:
                 contrato.alerta_vencimiento_contrato_m,
                 contrato.fecha_renovacion_contrato_m,
                 contrato.fecha_pago,
+                contrato.banco_propietario,
+                contrato.numero_cuenta_propietario,
+                contrato.tipo_cuenta,
+                contrato.consignatario,
+                contrato.documento_consignatario,
                 datetime.now().replace(microsecond=0).isoformat(),
                 usuario,
                 contrato.id_contrato_m,
@@ -372,6 +389,11 @@ class RepositorioContratoMandatoPostgres:
                 or row_dict.get("FECHA_RENOVACION_CONTRATO_M")
             ),
             fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
+            banco_propietario=(row_dict.get("banco_propietario") or row_dict.get("BANCO_PROPIETARIO")),
+            numero_cuenta_propietario=(row_dict.get("numero_cuenta_propietario") or row_dict.get("NUMERO_CUENTA_PROPIETARIO")),
+            tipo_cuenta=(row_dict.get("tipo_cuenta") or row_dict.get("TIPO_CUENTA")),
+            consignatario=(row_dict.get("consignatario") or row_dict.get("CONSIGNATARIO")),
+            documento_consignatario=(row_dict.get("documento_consignatario") or row_dict.get("DOCUMENTO_CONSIGNATARIO")),
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),

@@ -4,7 +4,7 @@ Implementa mapeo 1:1 estricto con tabla PROPIETARIOS.
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 import logging
 
 from src.dominio.entidades.propietario import Propietario
@@ -18,24 +18,17 @@ class RepositorioPropietarioPostgres:
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
 
-    def _row_to_entity(self, row) -> Propietario:
-        """Convierte una fila SQL a entidad Propietario."""
-        if row is None:
+    def _row_to_entity(self, row_dict: Dict[str, Any]) -> Propietario:
+        """Mapea una fila de la BD a una entidad Propietario."""
+        if not row_dict:
             return None
-
-        row_dict = dict(row)
-
+            
         return Propietario(
             id_propietario=row_dict.get("ID_PROPIETARIO"),
             id_persona=row_dict.get("ID_PERSONA"),
-            banco_propietario=row_dict.get("BANCO_PROPIETARIO"),
-            numero_cuenta_propietario=row_dict.get("NUMERO_CUENTA_PROPIETARIO"),
-            tipo_cuenta=row_dict.get("TIPO_CUENTA"),
             observaciones_propietario=row_dict.get("OBSERVACIONES_PROPIETARIO"),
             estado_propietario=row_dict.get("ESTADO_PROPIETARIO"),
             fecha_ingreso_propietario=row_dict.get("FECHA_INGRESO_PROPIETARIO"),
-            consignatario=row_dict.get("CONSIGNATARIO"),
-            documento_consignatario=row_dict.get("DOCUMENTO_CONSIGNATARIO"),
             motivo_inactivacion=row_dict.get("MOTIVO_INACTIVACION"),
             created_at=row_dict.get("CREATED_AT"),
             created_by=row_dict.get("CREATED_BY"),
@@ -86,29 +79,19 @@ class RepositorioPropietarioPostgres:
             """
             INSERT INTO PROPIETARIOS (
                 ID_PERSONA,
-                BANCO_PROPIETARIO,
-                NUMERO_CUENTA_PROPIETARIO,
-                TIPO_CUENTA,
                 OBSERVACIONES_PROPIETARIO,
                 ESTADO_PROPIETARIO,
                 FECHA_INGRESO_PROPIETARIO,
-                CONSIGNATARIO,
-                DOCUMENTO_CONSIGNATARIO,
                 CREATED_AT,
                 CREATED_BY
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ) VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING ID_PROPIETARIO
             """,
             (
                 propietario.id_persona,
-                propietario.banco_propietario,
-                propietario.numero_cuenta_propietario,
-                propietario.tipo_cuenta,
                 propietario.observaciones_propietario,
                 bool(propietario.estado_propietario) if propietario.estado_propietario is not None else True,
                 propietario.fecha_ingreso_propietario or datetime.now().isoformat(),
-                propietario.consignatario,
-                propietario.documento_consignatario,
                 datetime.now().isoformat(),
                 usuario_sistema,
             ),
@@ -132,24 +115,14 @@ class RepositorioPropietarioPostgres:
         cursor.execute(
             """
             UPDATE PROPIETARIOS SET
-                BANCO_PROPIETARIO = %s,
-                NUMERO_CUENTA_PROPIETARIO = %s,
-                TIPO_CUENTA = %s,
                 OBSERVACIONES_PROPIETARIO = %s,
-                CONSIGNATARIO = %s,
-                DOCUMENTO_CONSIGNATARIO = %s,
                 ESTADO_PROPIETARIO = %s,
                 UPDATED_AT = %s,
                 UPDATED_BY = %s
             WHERE ID_PROPIETARIO = %s
             """,
             (
-                propietario.banco_propietario,
-                propietario.numero_cuenta_propietario,
-                propietario.tipo_cuenta,
                 propietario.observaciones_propietario,
-                propietario.consignatario,
-                propietario.documento_consignatario,
                 bool(propietario.estado_propietario) if propietario.estado_propietario is not None else True,
                 datetime.now().isoformat(),
                 usuario_sistema,

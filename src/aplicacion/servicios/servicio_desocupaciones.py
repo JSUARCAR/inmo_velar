@@ -8,10 +8,22 @@ from typing import List, Optional
 
 from src.dominio.entidades.desocupacion import Desocupacion, TareaDesocupacion
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_desocupacion_sqlite import (
-    RepositorioDesocupacionSQLite,
+from src.infraestructura.persistencia.repositorio_desocupacion_postgres import (
+    RepositorioDesocupacionPostgres,
 )
 from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+
+# Plantilla de tareas por defecto para desocupación
+TAREAS_POR_DEFECTO = [
+    "Inspección de la propiedad",
+    "Verificación de servicios públicos cancelados",
+    "Revisión de inventario de muebles/electrodomésticos",
+    "Evaluación de daños y reparaciones necesarias",
+    "Cálculo de descuentos/devoluciones del depósito",
+    "Entrega de llaves",
+    "Firma de acta de entrega",
+    "Liquidación final de cuentas",
+]
 
 
 class ServicioDesocupaciones:
@@ -19,7 +31,7 @@ class ServicioDesocupaciones:
 
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
-        self.repo = RepositorioDesocupacionSQLite(db_manager)
+        self.repo = RepositorioDesocupacionPostgres(db_manager)
         self.repo_propiedad = RepositorioPropiedadSQLite(db_manager)
 
     def iniciar_desocupacion(
@@ -95,7 +107,7 @@ class ServicioDesocupaciones:
             created_by=usuario,
         )
 
-        return self.repo.crear(desocupacion)
+        return self.repo.crear(desocupacion, tareas=TAREAS_POR_DEFECTO)
 
     def listar_desocupaciones(self, estado: Optional[str] = None) -> List[Desocupacion]:
         """
@@ -177,10 +189,14 @@ class ServicioDesocupaciones:
             "puede_finalizar": completadas == total,
         }
 
-    def finalizar_desocupacion(self, id_desocupacion: int, usuario: str):
+    def finalizar_desocupacion(self, id_desocupacion: int, usuario: str, rol_usuario: str = "Asesor"):
         """
         Finaliza una desocupación (marca como Completada y actualiza estados relacionados).
         Si hay tareas pendientes, las marca como completadas automáticamente (Forzar Finalización).
+
+        Regla de Seguridad (RBAC):
+        - Si el progreso es 100%, cualquier rol puede finalizar.
+        - Si el progreso es < 100%, solo el rol 'Administrador' puede forzar la finalización.
 
         Realiza las siguientes acciones (Transacción Atómica):
         1. Autocompleta tareas pendientes.
@@ -191,8 +207,10 @@ class ServicioDesocupaciones:
         Args:
             id_desocupacion: ID de la desocupación a finalizar
             usuario: Usuario que finaliza
+            rol_usuario: Rol del usuario para validación de seguridad
 
         Raises:
+            PermissionError: Si un no-administrador intenta forzar finalización
             ValueError: Si la desocupación no está en estado válido
         """
         # Obtener desocupación
@@ -200,13 +218,23 @@ class ServicioDesocupaciones:
         if not desocupacion:
             raise ValueError(f"Desocupación {id_desocupacion} no encontrada")
 
+        # Validar progreso para seguridad
+        progreso = self.calcular_progreso(id_desocupacion)
+        es_forzada = not progreso["puede_finalizar"]
+
+        if es_forzada and rol_usuario != "Administrador":
+            raise PermissionError(
+                f"Acceso Denegado: Solo un Administrador puede forzar la finalización "
+                f"de una desocupación con {progreso['total'] - progreso['completadas']} tareas pendientes."
+            )
+
         # Permitir reintentar si está 'Completada' pero el contrato sigue Activo (Corrección de estado inconsistente)
-        # Esto es útil para recuperar fallos previos como el reportado por el usuario.
         if desocupacion.estado not in ["En Proceso", "Completada"]:
             raise ValueError(f"Estado inválido para finalizar: {desocupacion.estado}")
 
         fecha_real = datetime.now().date().isoformat()
         timestamp = datetime.now().isoformat()
+        mensaje_autocompletado = f"Autocompletada por Finalización Forzada - Autorizado por {usuario} ({rol_usuario})" if es_forzada else "Completada"
 
         try:
             with self.db_manager.obtener_conexion() as conn:
@@ -214,19 +242,18 @@ class ServicioDesocupaciones:
                 placeholder = self.db_manager.get_placeholder()
 
                 # 1. Autocompletar tareas pendientes
-                # (Lo hacemos directo en SQL para incluirlo en la transacción)
                 update_tareas_query = f"""
                     UPDATE TAREAS_DESOCUPACION
                     SET COMPLETADA = 1,
                         FECHA_COMPLETADA = {placeholder},
                         RESPONSABLE = {placeholder},
                         OBSERVACIONES = CASE 
-                            WHEN OBSERVACIONES IS NULL OR OBSERVACIONES = '' THEN 'Autocompletada por Finalización Forzada'
+                            WHEN OBSERVACIONES IS NULL OR OBSERVACIONES = '' THEN {placeholder}
                             ELSE OBSERVACIONES
                         END
                     WHERE ID_DESOCUPACION = {placeholder} AND COMPLETADA = 0
                 """
-                cursor.execute(update_tareas_query, (timestamp, usuario, id_desocupacion))
+                cursor.execute(update_tareas_query, (timestamp, usuario, mensaje_autocompletado, id_desocupacion))
 
                 # 2. Actualizar desocupación a Completada
                 update_desoc_query = f"""

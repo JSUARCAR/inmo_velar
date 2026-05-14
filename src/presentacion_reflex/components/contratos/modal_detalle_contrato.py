@@ -181,6 +181,25 @@ def modal_detalle_contrato() -> rx.Component:
                     spacing="4",
                     width="100%",
                 ),
+                # Información de Pago (solo para Mandato)
+                rx.cond(
+                    ContratosState.contrato_detalle["tipo"] == "Mandato",
+                    rx.vstack(
+                        section_divider("Información de Pago"),
+                        rx.grid(
+                            detail_field("Banco", ContratosState.contrato_detalle["banco_propietario"].to(str)),
+                            detail_field("Cuenta", ContratosState.contrato_detalle["numero_cuenta_propietario"].to(str)),
+                            detail_field("Tipo", ContratosState.contrato_detalle["tipo_cuenta"].to(str)),
+                            detail_field("Consignatario", ContratosState.contrato_detalle["consignatario"].to(str)),
+                            detail_field("Doc. Consignatario", ContratosState.contrato_detalle["documento_consignatario"].to(str)),
+                            columns="2",
+                            spacing="4",
+                            width="100%",
+                        ),
+                        width="100%",
+                    ),
+                    rx.box(),
+                ),
                 # Codeudor (solo para Arrendamiento)
                 rx.cond(
                     ContratosState.contrato_detalle["tipo"] == "Arrendamiento",

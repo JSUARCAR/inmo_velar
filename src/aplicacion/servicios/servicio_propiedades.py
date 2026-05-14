@@ -118,6 +118,19 @@ class ServicioPropiedades:
         """Busca una propiedad por su matrícula inmobiliaria."""
         return self.repo.obtener_por_matricula(matricula)
 
+    def obtener_kpis(
+        self,
+        filtro_tipo: Optional[str] = None,
+        filtro_municipio: Optional[int] = None,
+        busqueda: Optional[str] = None
+    ) -> dict:
+        """Obtiene las métricas KPIs de propiedades con filtros aplicados."""
+        return self.repo.obtener_kpis(
+            filtro_tipo=filtro_tipo,
+            filtro_municipio=filtro_municipio,
+            busqueda=busqueda
+        )
+
     def crear_propiedad(
         self, datos: Dict, usuario_sistema: str = "sistema"
     ) -> Propiedad:

@@ -1012,7 +1012,7 @@ class RepositorioLiquidacionPostgres:
             l.*,
             cm.ID_CONTRATO_M, cm.FECHA_INICIO_CONTRATO_M, cm.COMISION_PORCENTAJE_CONTRATO_M,
             p.DIRECCION_PROPIEDAD, p.MATRICULA_INMOBILIARIA, p.TIPO_PROPIEDAD, p.AREA_M2, p.VALOR_ADMINISTRACION,
-            prop.BANCO_PROPIETARIO, prop.NUMERO_CUENTA_PROPIETARIO, prop.TIPO_CUENTA,
+            cm.BANCO_PROPIETARIO, cm.NUMERO_CUENTA_PROPIETARIO, cm.TIPO_CUENTA,
             per_prop.NOMBRE_COMPLETO as NOMBRE_PROPIETARIO,
             per_prop.NUMERO_DOCUMENTO as DOCUMENTO_PROPIETARIO,
             per_prop.TELEFONO_PRINCIPAL as TELEFONO_PROPIETARIO,
@@ -1124,11 +1124,10 @@ class RepositorioLiquidacionPostgres:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        # 1. Obtener datos del propietario
+        # 1. Obtener datos del propietario (Campos bancarios removidos de PROPIETARIOS)
         query_prop = f"""
         SELECT 
             prop.ID_PROPIETARIO,
-            prop.BANCO_PROPIETARIO, prop.NUMERO_CUENTA_PROPIETARIO, prop.TIPO_CUENTA,
             per.NOMBRE_COMPLETO, per.NUMERO_DOCUMENTO, per.TELEFONO_PRINCIPAL, per.CORREO_ELECTRONICO
         FROM PROPIETARIOS prop
         JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
@@ -1142,12 +1141,14 @@ class RepositorioLiquidacionPostgres:
 
         propietario = dict(propietario)
 
-        # 2. Obtener liquidaciones
+        # 2. Obtener liquidaciones con datos bancarios del contrato
         query_liqs = f"""
         SELECT 
             l.*,
             p.ID_PROPIEDAD,
             p.DIRECCION_PROPIEDAD,
+            cm.BANCO_PROPIETARIO, cm.NUMERO_CUENTA_PROPIETARIO, cm.TIPO_CUENTA,
+            cm.CONSIGNATARIO, cm.DOCUMENTO_CONSIGNATARIO,
             COALESCE(seg.PORCENTAJE_SEGURO, seg_arr.PORCENTAJE_SEGURO, 0) as PORCENTAJE_SEGURO
         FROM LIQUIDACIONES l
         JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
@@ -1173,21 +1174,29 @@ class RepositorioLiquidacionPostgres:
             return None
 
         # 3. Calcular totales consolidados
-        total_ingresos = sum(l.get("TOTAL_INGRESOS", 0) for l in liquidaciones)
-        total_egresos = sum(l.get("TOTAL_EGRESOS", 0) for l in liquidaciones)
-        neto_pagar = sum(l.get("NETO_A_PAGAR", 0) for l in liquidaciones)
+        total_ingresos = sum(l.get("TOTAL_INGRESOS", 0) or 0 for l in liquidaciones)
+        total_egresos = sum(l.get("TOTAL_EGRESOS", 0) or 0 for l in liquidaciones)
+        neto_pagar = sum(l.get("NETO_A_PAGAR", 0) or 0 for l in liquidaciones)
 
-        comision_total = sum(l.get("COMISION_MONTO", 0) for l in liquidaciones)
-        iva_total = sum(l.get("IVA_COMISION", 0) for l in liquidaciones)
-        impuesto_total = sum(l.get("IMPUESTO_4X1000", 0) for l in liquidaciones)
+        comision_total = sum(l.get("COMISION_MONTO", 0) or 0 for l in liquidaciones)
+        iva_total = sum(l.get("IVA_COMISION", 0) or 0 for l in liquidaciones)
+        impuesto_total = sum(l.get("IMPUESTO_4X1000", 0) or 0 for l in liquidaciones)
 
-        gastos_admin = sum(l.get("GASTOS_ADMINISTRACION", 0) for l in liquidaciones)
-        gastos_serv = sum(l.get("GASTOS_SERVICIOS", 0) for l in liquidaciones)
-        gastos_rep = sum(l.get("GASTOS_REPARACIONES", 0) for l in liquidaciones)
-        pago_predial = sum(l.get("PAGO_PREDIAL", 0) for l in liquidaciones)
-        otros_egr = sum(l.get("OTROS_EGRESOS", 0) for l in liquidaciones)
+        gastos_admin = sum(l.get("GASTOS_ADMINISTRACION", 0) or 0 for l in liquidaciones)
+        gastos_serv = sum(l.get("GASTOS_SERVICIOS", 0) or 0 for l in liquidaciones)
+        gastos_rep = sum(l.get("GASTOS_REPARACIONES", 0) or 0 for l in liquidaciones)
+        pago_predial = sum(l.get("PAGO_PREDIAL", 0) or 0 for l in liquidaciones)
+        otros_egr = sum(l.get("OTROS_EGRESOS", 0) or 0 for l in liquidaciones)
 
-        # 4. Formatear lista de propiedades
+        # 4. Datos bancarios (extraídos del primer contrato del periodo)
+        primera_liq = liquidaciones[0]
+        banco = primera_liq.get("BANCO_PROPIETARIO") or "N/A"
+        num_cta = primera_liq.get("NUMERO_CUENTA_PROPIETARIO") or "N/A"
+        tipo_cta = primera_liq.get("TIPO_CUENTA") or "N/A"
+        consignatario = primera_liq.get("CONSIGNATARIO") or ""
+        doc_consignatario = primera_liq.get("DOCUMENTO_CONSIGNATARIO") or ""
+
+        # 5. Formatear lista de propiedades
         propiedades_formateadas = []
         for l in liquidaciones:
             propiedades_formateadas.append(
@@ -1210,7 +1219,7 @@ class RepositorioLiquidacionPostgres:
                 }
             )
 
-        # 4. Consolidar observaciones
+        # 6. Consolidar observaciones
         lista_obs = [l.get("OBSERVACIONES") for l in liquidaciones if l.get("OBSERVACIONES")]
         observaciones_final = ""
         if lista_obs:
@@ -1223,14 +1232,14 @@ class RepositorioLiquidacionPostgres:
             "documento": propietario["NUMERO_DOCUMENTO"],
             "telefono": propietario.get("TELEFONO_PRINCIPAL", "N/A"),
             "email": propietario.get("CORREO_ELECTRONICO", "N/A"),
-            "banco": propietario.get("BANCO_PROPIETARIO", "N/A"),
-            "tipo_cuenta": propietario.get("TIPO_CUENTA", "N/A"),
-            "cuenta_bancaria": propietario.get("NUMERO_CUENTA_PROPIETARIO", "N/A"),
+            "banco": banco,
+            "tipo_cuenta": tipo_cta,
+            "cuenta_bancaria": num_cta,
+            "consignatario": consignatario,
+            "documento_consignatario": doc_consignatario,
             "periodo": periodo,
             "cantidad_propiedades": len(liquidaciones),
-            "fecha_generacion": liquidaciones[0].get(
-                "FECHA_GENERACION"
-            ),  # Usamos la primera
+            "fecha_generacion": liquidaciones[0].get("FECHA_GENERACION"),
             "propiedades": propiedades_formateadas,
             "total_ingresos": total_ingresos,
             "total_egresos": total_egresos,
@@ -1242,7 +1251,7 @@ class RepositorioLiquidacionPostgres:
             "gastos_serv": gastos_serv,
             "gastos_rep": gastos_rep,
             "pago_predial": pago_predial,
-            "seguro_monto": sum(l.get("SEGURO_MONTO", 0) for l in liquidaciones),
+            "seguro_monto": sum(l.get("SEGURO_MONTO", 0) or 0 for l in liquidaciones),
             "otros_egr": otros_egr,
             "observaciones": observaciones_final,
         }

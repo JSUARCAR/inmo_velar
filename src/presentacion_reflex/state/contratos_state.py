@@ -626,7 +626,6 @@ class ContratosState(DocumentosStateMixin):
                 return label
         return ""
 
-    # Modal CRUD Handlers
     def open_create_mandato_modal(self):
         self.modal_mode = "crear_mandato"
         self.editing_id = None
@@ -636,6 +635,11 @@ class ContratosState(DocumentosStateMixin):
             "id_asesor": "",
             "comision_porcentaje": 10,
             "iva_porcentaje": 19,
+            "banco_propietario": "",
+            "numero_cuenta_propietario": "",
+            "tipo_cuenta": "Ahorros",
+            "consignatario": "",
+            "documento_consignatario": "",
         }
         self.propiedad_selected_label = ""
         self.propietario_selected_label = ""
@@ -712,6 +716,11 @@ class ContratosState(DocumentosStateMixin):
                             "fecha_pago": c.fecha_pago or "",
                             "comision_porcentaje": comision,
                             "iva_porcentaje": iva,
+                            "banco_propietario": c.banco_propietario or "",
+                            "numero_cuenta_propietario": c.numero_cuenta_propietario or "",
+                            "tipo_cuenta": c.tipo_cuenta or "Ahorros",
+                            "consignatario": c.consignatario or "",
+                            "documento_consignatario": c.documento_consignatario or "",
                         }
                         # Rehidratación de etiquetas
                         self.propiedad_selected_label = self._get_label_by_id(
@@ -814,6 +823,11 @@ class ContratosState(DocumentosStateMixin):
                     ),
                     "duracion_meses": int(full_data.get("duracion_meses") or 12),
                     "fecha_pago": full_data.get("fecha_pago", ""),
+                    "banco_propietario": full_data.get("banco_propietario", ""),
+                    "numero_cuenta_propietario": full_data.get("numero_cuenta_propietario", ""),
+                    "tipo_cuenta": full_data.get("tipo_cuenta", "Ahorros"),
+                    "consignatario": full_data.get("consignatario", ""),
+                    "documento_consignatario": full_data.get("documento_consignatario", ""),
                 }
                 if self.modal_mode == "crear_mandato":
                     servicio.crear_mandato(datos, usuario)

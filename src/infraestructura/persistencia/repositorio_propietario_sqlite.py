@@ -39,14 +39,6 @@ class RepositorioPropietarioSQLite:
         return Propietario(
             id_propietario=(row_dict.get("id_propietario") or row_dict.get("ID_PROPIETARIO")),
             id_persona=(row_dict.get("id_persona") or row_dict.get("ID_PERSONA")),
-            banco_propietario=(
-                row_dict.get("banco_propietario") or row_dict.get("BANCO_PROPIETARIO")
-            ),
-            numero_cuenta_propietario=(
-                row_dict.get("numero_cuenta_propietario")
-                or row_dict.get("NUMERO_CUENTA_PROPIETARIO")
-            ),
-            tipo_cuenta=(row_dict.get("tipo_cuenta") or row_dict.get("TIPO_CUENTA")),
             observaciones_propietario=(
                 row_dict.get("observaciones_propietario")
                 or row_dict.get("OBSERVACIONES_PROPIETARIO")
@@ -57,13 +49,6 @@ class RepositorioPropietarioSQLite:
             fecha_ingreso_propietario=(
                 row_dict.get("fecha_ingreso_propietario")
                 or row_dict.get("FECHA_INGRESO_PROPIETARIO")
-            ),
-            consignatario=(
-                row_dict.get("consignatario") or row_dict.get("CONSIGNATARIO")
-            ),
-            documento_consignatario=(
-                row_dict.get("documento_consignatario")
-                or row_dict.get("DOCUMENTO_CONSIGNATARIO")
             ),
             motivo_inactivacion=(
                 row_dict.get("motivo_inactivacion") or row_dict.get("MOTIVO_INACTIVACION")
@@ -120,23 +105,15 @@ class RepositorioPropietarioSQLite:
                 f"""
                 INSERT INTO PROPIETARIOS (
                     ID_PERSONA,
-                    BANCO_PROPIETARIO,
-                    NUMERO_CUENTA_PROPIETARIO,
-                    TIPO_CUENTA,
                     OBSERVACIONES_PROPIETARIO,
                     ESTADO_PROPIETARIO,
                     FECHA_INGRESO_PROPIETARIO,
-                    CONSIGNATARIO,
-                    DOCUMENTO_CONSIGNATARIO,
                     CREATED_AT,
                     CREATED_BY
-                ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+                ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
                 """,
                 (
                     propietario.id_persona,
-                    propietario.banco_propietario,
-                    propietario.numero_cuenta_propietario,
-                    propietario.tipo_cuenta,
                     propietario.observaciones_propietario,
                     (
                         bool(propietario.estado_propietario)
@@ -144,8 +121,6 @@ class RepositorioPropietarioSQLite:
                         else True
                     ),
                     propietario.fecha_ingreso_propietario or datetime.now().isoformat(),
-                    propietario.consignatario,
-                    propietario.documento_consignatario,
                     datetime.now().isoformat(),
                     usuario_sistema,
                 ),
@@ -167,24 +142,14 @@ class RepositorioPropietarioSQLite:
             cursor.execute(
                 f"""
                 UPDATE PROPIETARIOS SET
-                    BANCO_PROPIETARIO = {placeholder},
-                    NUMERO_CUENTA_PROPIETARIO = {placeholder},
-                    TIPO_CUENTA = {placeholder},
                     OBSERVACIONES_PROPIETARIO = {placeholder},
-                    CONSIGNATARIO = {placeholder},
-                    DOCUMENTO_CONSIGNATARIO = {placeholder},
                     ESTADO_PROPIETARIO = {placeholder},
                     UPDATED_AT = {placeholder},
                     UPDATED_BY = {placeholder}
                 WHERE ID_PROPIETARIO = {placeholder}
                 """,
                 (
-                    propietario.banco_propietario,
-                    propietario.numero_cuenta_propietario,
-                    propietario.tipo_cuenta,
                     propietario.observaciones_propietario,
-                    propietario.consignatario,
-                    propietario.documento_consignatario,
                     (
                         bool(propietario.estado_propietario)
                         if propietario.estado_propietario is not None
