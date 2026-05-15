@@ -34,6 +34,7 @@ class PropiedadDict(pydantic.BaseModel):
     agua_tooltip: str
     codigo_gas: str
     gas_tooltip: str
+    observaciones_admin_ph: str
     imagen_id: Optional[int]
     estado_registro: int
 
@@ -341,6 +342,7 @@ class PropiedadesState(DocumentosStateMixin):
                     agua_tooltip=f"Agua: {getattr(p, 'codigo_agua', '') or 'N/A'}",
                     codigo_gas=getattr(p, "codigo_gas", "") or "",
                     gas_tooltip=f"Gas: {getattr(p, 'codigo_gas', '') or 'N/A'}",
+                    observaciones_admin_ph=getattr(p, "observaciones_admin_ph", "") or "",
                     imagen_id=getattr(p, "imagen_principal_id", None),
                     estado_registro=getattr(p, "estado_registro", 1) or 0,
                 )
@@ -458,7 +460,8 @@ class PropiedadesState(DocumentosStateMixin):
             "link_pago_administracion": "",  # URL vacío
             "cuota_extra_ordinaria": "0",  # Sin cuota extra por defecto
             "observaciones_admin_ph": "",
-        }
+            }
+
         self.show_modal = True
         self.error_message = ""
         self.reset_wizard()

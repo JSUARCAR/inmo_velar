@@ -500,18 +500,38 @@ class RepositorioReportes:
     ) -> Tuple[List[Dict[str, Any]], int]:
         """
         Reporte consolidado unificado de información financiera y contractual.
-        Cambiado: TABLA BASE es CONTRATOS_MANDATOS para mostrar TODOS los contratos,
-        sin importar si tienen liquidación o no.
-        Consolida: Propietario, Arrendatario, Contrato, Recaudos, Liquidaciones.
+        ESTRATEGIA ÉLITE: Vinculación histórica por ID_PROPIEDAD para evitar pérdida de datos por renovaciones.
+        SANITIZACIÓN: Uso de CHR(10)/CHR(13) para limpiar saltos de línea que rompen el CSV.
         """
-        query = """
+        # Preparar filtros de liquidación dinámicos para el JOIN interno
+        liq_filter_clauses = []
+        liq_params = []
+        
+        if fecha_pago_inicio:
+            liq_filter_clauses.append("l_inner.FECHA_PAGO >= %s")
+            liq_params.append(fecha_pago_inicio)
+        if fecha_pago_fin:
+            liq_filter_clauses.append("l_inner.FECHA_PAGO <= %s")
+            liq_params.append(fecha_pago_fin)
+        if periodo_inicio:
+            liq_filter_clauses.append("l_inner.PERIODO >= %s")
+            liq_params.append(periodo_inicio)
+        if periodo_fin:
+            liq_filter_clauses.append("l_inner.PERIODO <= %s")
+            liq_params.append(periodo_fin)
+            
+        liq_where = ""
+        if liq_filter_clauses:
+            liq_where = " WHERE " + " AND ".join(liq_filter_clauses)
+
+        query = f"""
             SELECT
-                -- IDs para relaciones
+                -- 1. Claves e IDs
                 cm.ID_CONTRATO_M AS "ID_CONTRATO_M",
                 p.ID_PROPIEDAD AS "ID_PROPIEDAD",
                 COALESCE(l.ID_LIQUIDACION, 0) AS "ID_LIQUIDACION",
 
-                -- Información del Propietario
+                -- 2. Información del Propietario
                 per_prop.TIPO_DOCUMENTO AS "TIPO_DOCUMENTO_PROPIETARIO",
                 per_prop.NUMERO_DOCUMENTO AS "NUMERO_DOCUMENTO_PROPIETARIO",
                 per_prop.NOMBRE_COMPLETO AS "NOMBRE_COMPLETO_PROPIETARIO",
@@ -521,48 +541,46 @@ class RepositorioReportes:
                 COALESCE(cm.CONSIGNATARIO, '') AS "CONSIGNATARIO_PROPIETARIO",
                 COALESCE(cm.DOCUMENTO_CONSIGNATARIO, '') AS "DOCUMENTO_CONSIGNATARIO_PROPIETARIO",
 
-                -- Información del Arrendatario
-                per_arr.TIPO_DOCUMENTO AS "TIPO_DOCUMENTO_ARRENDATARIO",
-                per_arr.NUMERO_DOCUMENTO AS "NUMERO_DOCUMENTO_ARRENDATARIO",
-                per_arr.NOMBRE_COMPLETO AS "NOMBRE_COMPLETO_ARRENDATARIO",
-
-                -- Información del Contrato
+                -- 3. Información del Inmueble (Sanitizada para CSV)
+                REPLACE(REPLACE(p.DIRECCION_PROPIEDAD, CHR(10), ' '), CHR(13), '') AS "DIRECCION_PROPIEDAD",
+                cm.ESTADO_CONTRATO_M AS "ESTADO_CONTRATO",
                 cm.FECHA_INICIO_CONTRATO_M AS "FECHA_INICIO_CONTRATO",
                 cm.FECHA_FIN_CONTRATO_M AS "FECHA_FIN_CONTRATO",
-                cm.ESTADO_CONTRATO_M AS "ESTADO_CONTRATO",
-                cm.CANON_MANDATO AS "CANON_MANDATO",
                 cm.FECHA_PAGO AS "FECHA_PAGO_CONTRATO",
-                p.DIRECCION_PROPIEDAD AS "DIRECCION_PROPIEDAD",
-                p.MATRICULA_INMOBILIARIA AS "MATRICULA_INMOBILIARIA",
+                cm.CANON_MANDATO AS "CANON_MANDATO",
 
-                -- Información del Contrato de Arriendo (si existe)
-                COALESCE(ca.ID_CONTRATO_A, 0) AS "ID_CONTRATO_ARRIENDO",
-                COALESCE(ca.ESTADO_CONTRATO_A, 'N/A') AS "ESTADO_ARRIENDO",
-
-                -- Información de Recaudos (del recaudo relacionado a la liquidación)
-                COALESCE(r.METODO_PAGO, '') AS "METODO_PAGO_RECAUDOS",
-                COALESCE(r.ESTADO_RECAUDO, '') AS "ESTADO_RECAUDO",
-                COALESCE(l.PERIODO, '') AS "PERIODO_FACTURADO",
-
-                -- Información Comercial
-                per_ase.NOMBRE_COMPLETO AS "NOMBRE_ASESOR",
-
-                -- Ingresos (Liquidaciones) - ahora manejan NULL
-                COALESCE(l.OTROS_INGRESOS, 0) AS "OTROS_INGRESOS",
-                COALESCE(l.TOTAL_INGRESOS, 0) AS "TOTAL_INGRESOS",
-
-                -- Comisiones
-                COALESCE(l.COMISION_PORCENTAJE, 0) AS "COMISION_PORCENTAJE_ASESOR",
-                COALESCE(l.COMISION_MONTO, 0) AS "COMISION_MONTO_ASESOR",
-                COALESCE(l.IVA_COMISION, 0) AS "IVA_COMISION",
-
-                -- Egresos (Recalculados sin Seguro ni 4x1000)
-                COALESCE(l.GASTOS_ADMINISTRACION, 0) AS "GASTOS_ADMINISTRACION",
+                -- 4. Información de la Propiedad Horizontal
+                COALESCE(p.VALOR_ADMINISTRACION, 0)          AS "VALOR_ADMIN_PROPIEDAD_BASE",
+                p.FECHA_PAGO_ADMINISTRACION                  AS "DIA_PAGO_ADMIN",
+                COALESCE(p.LINK_PAGO_ADMINISTRACION, '')     AS "LINK_PAGO_ADMIN",
+                COALESCE(p.CUOTA_EXTRA_ORDINARIA, 0)         AS "CUOTA_EXTRA",
+                REPLACE(REPLACE(COALESCE(p.OBSERVACIONES_ADMIN_PH, ''), CHR(10), ' '), CHR(13), '') AS "OBSERVACIONES_ADMIN_PH",
                 CASE WHEN l.GASTOS_ADMINISTRACION > 0 AND l.ESTADO_LIQUIDACION = 'Pagada'
                      THEN 'Pagado'
                      WHEN l.GASTOS_ADMINISTRACION > 0 THEN 'Pendiente'
                      ELSE 'N/A'
                 END AS "ESTADO_PAGO_ADMINISTRACION",
+
+                -- 5. Información del Arrendatario
+                COALESCE(ca.ESTADO_CONTRATO_A, 'N/A') AS "ESTADO_ARRIENDO",
+                per_arr.NUMERO_DOCUMENTO AS "NUMERO_DOCUMENTO_ARRENDATARIO",
+                per_arr.NOMBRE_COMPLETO AS "NOMBRE_COMPLETO_ARRENDATARIO",
+                COALESCE(arr.NOMBRE_HABITANTE, '') AS "NOMBRE_COMPLETO_HABITANTE",
+
+                -- 6. Recaudos y Gestión Comercial
+                COALESCE(r.METODO_PAGO, 'N/A') AS "METODO_PAGO_RECAUDOS",
+                COALESCE(l.PERIODO, 'N/A') AS "PERIODO_FACTURADO",
+                COALESCE(per_ase.NOMBRE_COMPLETO, 'No asignado') AS "NOMBRE_ASESOR",
+
+                -- 7. Composición Financiera (Ingresos)
+                COALESCE(l.OTROS_INGRESOS, 0) AS "OTROS_INGRESOS",
+                COALESCE(l.TOTAL_INGRESOS, 0) AS "TOTAL_INGRESOS",
+
+                -- 8. Composición Financiera (Egresos y Retenciones)
+                COALESCE(l.COMISION_PORCENTAJE, 0) AS "COMISION_PORCENTAJE_ASESOR",
+                COALESCE(l.COMISION_MONTO, 0) AS "COMISION_MONTO_ASESOR",
+                COALESCE(l.IVA_COMISION, 0) AS "IVA_COMISION",
+                COALESCE(l.GASTOS_ADMINISTRACION, 0) AS "GASTOS_ADMINISTRACION",
                 COALESCE(l.GASTOS_SERVICIOS, 0) AS "GASTOS_SERVICIOS",
                 COALESCE(l.GASTOS_REPARACIONES, 0) AS "GASTOS_REPARACIONES",
                 COALESCE(l.PAGO_PREDIAL, 0) AS "PAGO_PREDIAL",
@@ -575,7 +593,7 @@ class RepositorioReportes:
                  COALESCE(l.PAGO_PREDIAL, 0) + 
                  COALESCE(l.OTROS_EGRESOS, 0)) AS "TOTAL_EGRESOS",
 
-                -- Resultado Financiero (Recalculado)
+                -- 9. Cierre Financiero (Liquidación)
                 (COALESCE(l.TOTAL_INGRESOS, 0) - 
                  (COALESCE(l.COMISION_MONTO, 0) + 
                   COALESCE(l.IVA_COMISION, 0) + 
@@ -584,24 +602,27 @@ class RepositorioReportes:
                   COALESCE(l.GASTOS_REPARACIONES, 0) + 
                   COALESCE(l.PAGO_PREDIAL, 0) + 
                   COALESCE(l.OTROS_EGRESOS, 0))) AS "NETO_A_PAGAR",
-
-                -- Estado y Fechas
                 COALESCE(l.ESTADO_LIQUIDACION, 'Sin Liquidar') AS "ESTADO_LIQUIDACION",
                 l.FECHA_PAGO AS "FECHA_PAGO",
                 l.PERIODO AS "PERIODO",
-                l.FECHA_GENERACION AS "FECHA_GENERACION",
+                COALESCE(r.ESTADO_RECAUDO, 'N/A') AS "ESTADO_RECAUDO"
 
-                -- Administración de Propiedad (datos maestros desde PROPIEDADES)
-                COALESCE(p.VALOR_ADMINISTRACION, 0)          AS "VALOR_ADMIN_PROPIEDAD_BASE",
-                p.FECHA_PAGO_ADMINISTRACION                  AS "DIA_PAGO_ADMIN",
-                COALESCE(p.LINK_PAGO_ADMINISTRACION, '')     AS "LINK_PAGO_ADMIN"
             FROM CONTRATOS_MANDATOS cm
             LEFT JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
             LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
             LEFT JOIN PERSONAS per_prop ON prop.ID_PERSONA = per_prop.ID_PERSONA
             LEFT JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR
             LEFT JOIN PERSONAS per_ase ON a.ID_PERSONA = per_ase.ID_PERSONA
-            LEFT JOIN liquidaciones l ON cm.ID_CONTRATO_M = l.ID_CONTRATO_M
+            
+            -- JOIN Liquidaciones histórico vinculado por propiedad para sobrevivir a renovaciones
+            LEFT JOIN (
+                SELECT l_inner.*, cm_inner.ID_PROPIEDAD 
+                FROM liquidaciones l_inner
+                JOIN CONTRATOS_MANDATOS cm_inner ON l_inner.ID_CONTRATO_M = cm_inner.ID_CONTRATO_M
+                {liq_where}
+            ) l ON p.ID_PROPIEDAD = l.ID_PROPIEDAD
+            
+            -- JOIN Arrendamientos flexibilizado (Inquilino actual)
             LEFT JOIN (
                 SELECT DISTINCT ON (ca_inner.ID_PROPIEDAD)
                     ca_inner.ID_CONTRATO_A,
@@ -610,33 +631,33 @@ class RepositorioReportes:
                     ca_inner.ESTADO_CONTRATO_A,
                     ca_inner.FECHA_INICIO_CONTRATO_A
                 FROM CONTRATOS_ARRENDAMIENTOS ca_inner
-                ORDER BY ca_inner.ID_PROPIEDAD,
-                         CASE WHEN ca_inner.ESTADO_CONTRATO_A = 'Activo' THEN 0 ELSE 1 END,
-                         ca_inner.FECHA_INICIO_CONTRATO_A DESC
-            ) ca ON cm.ID_PROPIEDAD = ca.ID_PROPIEDAD
+                WHERE ca_inner.ESTADO_CONTRATO_A IN ('Activo', 'En Mora', 'Renovado')
+                ORDER BY ca_inner.ID_PROPIEDAD, ca_inner.FECHA_INICIO_CONTRATO_A DESC
+            ) ca ON p.ID_PROPIEDAD = ca.ID_PROPIEDAD
+            
             LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             LEFT JOIN PERSONAS per_arr ON arr.ID_PERSONA = per_arr.ID_PERSONA
-            LEFT JOIN POLIZAS pol ON ca.ID_CONTRATO_A = pol.ID_CONTRATO AND pol.ESTADO = 'Activa'
-            LEFT JOIN SEGUROS seg ON pol.ID_SEGURO = seg.ID_SEGURO
-            LEFT JOIN SEGUROS seg_arr ON arr.ID_SEGURO = seg_arr.ID_SEGURO
+            
+            -- JOIN Recaudos histórico sincronizado por propiedad y periodo financiero
             LEFT JOIN (
-                SELECT DISTINCT ON (r.ID_CONTRATO_A)
-                    r.ID_RECAUDO, r.ID_CONTRATO_A, r.METODO_PAGO, r.ESTADO_RECAUDO
-                FROM RECAUDOS r
-                WHERE r.ESTADO_RECAUDO = 'Aplicado'
-                ORDER BY r.ID_CONTRATO_A, r.FECHA_PAGO DESC, r.ID_RECAUDO DESC
-            ) r ON ca.ID_CONTRATO_A = r.ID_CONTRATO_A
+                SELECT DISTINCT ON (ca_inner2.ID_PROPIEDAD, rc_inner.PERIODO)
+                    r_inner.ID_RECAUDO, r_inner.METODO_PAGO, r_inner.ESTADO_RECAUDO, r_inner.FECHA_PAGO, rc_inner.PERIODO, ca_inner2.ID_PROPIEDAD
+                FROM RECAUDOS r_inner
+                JOIN RECAUDO_CONCEPTOS rc_inner ON r_inner.ID_RECAUDO = rc_inner.ID_RECAUDO
+                JOIN CONTRATOS_ARRENDAMIENTOS ca_inner2 ON r_inner.ID_CONTRATO_A = ca_inner2.ID_CONTRATO_A
+                ORDER BY ca_inner2.ID_PROPIEDAD, rc_inner.PERIODO, r_inner.FECHA_PAGO DESC, r_inner.ID_RECAUDO DESC
+            ) r ON p.ID_PROPIEDAD = r.ID_PROPIEDAD AND l.PERIODO = r.PERIODO
         """
 
         conditions = []
-        params = []
+        # Parámetros: primero los de liquidación (inyectados en el FROM), luego los de conditions
+        params = list(liq_params)
 
-        # Filtro: Estado del Contrato
-        if estado_contrato and estado_contrato != "Todos":
-            conditions.append("cm.ESTADO_CONTRATO_M = %s")
-            params.append(estado_contrato)
+        # REGLA FUNCIONAL: Mandato Activo + Arrendamiento Activo/Mora
+        conditions.append("cm.ESTADO_CONTRATO_M = 'Activo'")
+        conditions.append("ca.ID_CONTRATO_A IS NOT NULL")
 
-        # Filtro: Estado de Liquidación - ahora incluye "Sin Liquidar"
+        # Filtro: Estado de Liquidación (ahora filtrado sobre el resultado del JOIN)
         if estado_liquidacion and estado_liquidacion != "Todos":
             if estado_liquidacion == "Sin Liquidar":
                 conditions.append("l.ID_LIQUIDACION IS NULL")
@@ -649,43 +670,13 @@ class RepositorioReportes:
             conditions.append("cm.ID_ASESOR = %s")
             params.append(asesor_id)
 
-        # Filtro: Propietario (búsqueda por nombre o documento)
+        # Filtro: Propietario
         if propietario_buscar:
             conditions.append("""(
                 per_prop.NOMBRE_COMPLETO ILIKE %s OR
                 per_prop.NUMERO_DOCUMENTO ILIKE %s
             )""")
             params.extend([f"%{propietario_buscar}%", f"%{propietario_buscar}%"])
-
-        # Filtro: Rango de fechas de pago (FECHA_PAGO) - solo aplica si hay liquidación
-        if fecha_pago_inicio:
-            conditions.append("""(
-                l.FECHA_PAGO >= %s OR 
-                l.ID_LIQUIDACION IS NULL
-            )""")
-            params.append(fecha_pago_inicio)
-
-        if fecha_pago_fin:
-            conditions.append("""(
-                l.FECHA_PAGO <= %s OR 
-                l.ID_LIQUIDACION IS NULL
-            )""")
-            params.append(fecha_pago_fin)
-
-        # Filtro: Período facturado - solo aplica si hay liquidación
-        if periodo_inicio:
-            conditions.append("""(
-                l.PERIODO >= %s OR 
-                l.ID_LIQUIDACION IS NULL
-            )""")
-            params.append(periodo_inicio)
-
-        if periodo_fin:
-            conditions.append("""(
-                l.PERIODO <= %s OR 
-                l.ID_LIQUIDACION IS NULL
-            )""")
-            params.append(periodo_fin)
 
         # Búsqueda general
         if busqueda:
@@ -702,7 +693,7 @@ class RepositorioReportes:
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
 
-        # Order by: primero contratos con liquidaciones recientes, luego por fecha inicio contrato
+        # Order by
         query += " ORDER BY l.FECHA_PAGO DESC NULLS LAST, cm.FECHA_INICIO_CONTRATO_M DESC, cm.ID_CONTRATO_M DESC"
 
         return self._ejecutar_query_paginada(query, params, page, limit)

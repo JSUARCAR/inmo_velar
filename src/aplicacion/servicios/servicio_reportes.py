@@ -1,12 +1,14 @@
 from typing import List, Dict, Any, Tuple, Optional
 from src.infraestructura.persistencia.repositorio_reportes import RepositorioReportes
 
-# Constante de módulo: headers del Reporte Financiero Consolidado (37 columnas)
+# Constante de módulo: headers del Reporte Financiero Consolidado (46 columnas)
 # Actualizar aquí si se agregan columnas al SELECT en repositorio_reportes.py
 HEADERS_REPORTE_CONSOLIDADO: List[str] = [
+    # 1. Claves e IDs
     "ID_CONTRATO_M",
     "ID_PROPIEDAD",
     "ID_LIQUIDACION",
+    # 2. Información del Propietario (Datos desde Contrato Mandato)
     "TIPO_DOCUMENTO_PROPIETARIO",
     "NUMERO_DOCUMENTO_PROPIETARIO",
     "NOMBRE_COMPLETO_PROPIETARIO",
@@ -15,43 +17,48 @@ HEADERS_REPORTE_CONSOLIDADO: List[str] = [
     "TIPO_CUENTA_PROPIETARIO",
     "CONSIGNATARIO_PROPIETARIO",
     "DOCUMENTO_CONSIGNATARIO_PROPIETARIO",
-    "TIPO_DOCUMENTO_ARRENDATARIO",
-    "NUMERO_DOCUMENTO_ARRENDATARIO",
-    "NOMBRE_COMPLETO_ARRENDATARIO",
+    # 3. Información del Inmueble y el Mandato
+    "DIRECCION_PROPIEDAD",
+    "ESTADO_CONTRATO",
     "FECHA_INICIO_CONTRATO",
     "FECHA_FIN_CONTRATO",
-    "ESTADO_CONTRATO",
-    "CANON_MANDATO",
     "FECHA_PAGO_CONTRATO",
-    "DIRECCION_PROPIEDAD",
-    "MATRICULA_INMOBILIARIA",
-    "ID_CONTRATO_ARRIENDO",
+    "CANON_MANDATO",
+    # 4. Información de la Propiedad Horizontal
+    "VALOR_ADMIN_PROPIEDAD_BASE",
+    "DIA_PAGO_ADMIN",
+    "LINK_PAGO_ADMIN",
+    "CUOTA_EXTRA",
+    "OBSERVACIONES_ADMIN_PH",
+    "ESTADO_PAGO_ADMINISTRACION",
+    # 5. Información del Arrendatario y su Contrato
     "ESTADO_ARRIENDO",
+    "NUMERO_DOCUMENTO_ARRENDATARIO",
+    "NOMBRE_COMPLETO_ARRENDATARIO",
+    "NOMBRE_COMPLETO_HABITANTE",
+    # 6. Recaudos y Gestión Comercial
     "METODO_PAGO_RECAUDOS",
-    "ESTADO_RECAUDO",
     "PERIODO_FACTURADO",
     "NOMBRE_ASESOR",
+    # 7. Composición Financiera (Ingresos)
     "OTROS_INGRESOS",
     "TOTAL_INGRESOS",
+    # 8. Composición Financiera (Egresos y Retenciones)
     "COMISION_PORCENTAJE_ASESOR",
     "COMISION_MONTO_ASESOR",
     "IVA_COMISION",
     "GASTOS_ADMINISTRACION",
-    "ESTADO_PAGO_ADMINISTRACION",
     "GASTOS_SERVICIOS",
     "GASTOS_REPARACIONES",
     "PAGO_PREDIAL",
     "OTROS_EGRESOS",
     "TOTAL_EGRESOS",
+    # 9. Cierre Financiero (Liquidación)
     "NETO_A_PAGAR",
     "ESTADO_LIQUIDACION",
     "FECHA_PAGO",
     "PERIODO",
-    "FECHA_GENERACION",
-    # Administración de Propiedad (datos maestros desde PROPIEDADES)
-    "VALOR_ADMIN_PROPIEDAD_BASE",  # COALESCE(p.VALOR_ADMINISTRACION, 0)
-    "DIA_PAGO_ADMIN",              # p.FECHA_PAGO_ADMINISTRACION (entero: día del mes 1-28)
-    "LINK_PAGO_ADMIN",             # COALESCE(p.LINK_PAGO_ADMINISTRACION, '')
+    "ESTADO_RECAUDO",
 ]
 
 
