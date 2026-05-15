@@ -375,12 +375,6 @@ def crear_persona_form_view(
             if prop:
                 if prop.fecha_ingreso_propietario:
                     txt_fecha_inicio_prop.value = prop.fecha_ingreso_propietario
-                if prop.banco_propietario:
-                    txt_banco_prop.value = prop.banco_propietario
-                if prop.numero_cuenta_propietario:
-                    txt_cuenta_prop.value = prop.numero_cuenta_propietario
-                if prop.tipo_cuenta:
-                    drp_tipo_cuenta_prop.value = prop.tipo_cuenta
                 if prop.observaciones_propietario:
                     txt_observaciones_prop.value = prop.observaciones_propietario
 
@@ -531,9 +525,6 @@ def crear_persona_form_view(
         if "Propietario" in roles_seleccionados:
             datos_extras["Propietario"] = {
                 "fecha_inicio_propietario": txt_fecha_inicio_prop.value,
-                "banco_propietario": txt_banco_prop.value,
-                "numero_cuenta_propietario": txt_cuenta_prop.value,
-                "tipo_cuenta": drp_tipo_cuenta_prop.value,
                 "observaciones_propietario": txt_observaciones_prop.value,
             }
 

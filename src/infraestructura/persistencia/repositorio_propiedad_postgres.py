@@ -264,6 +264,72 @@ class RepositorioPropiedadPostgres:
                         pass
         return 0
 
+    def obtener_kpis(
+        self,
+        filtro_tipo: Optional[str] = None,
+        filtro_municipio: Optional[int] = None,
+        busqueda: Optional[str] = None
+    ) -> dict:
+        """Calcula métricas KPIs de propiedades con filtros aplicados."""
+        with self.db.obtener_conexion() as conn:
+            cursor = self.db.get_dict_cursor(conn)
+            placeholder = self.db.get_placeholder()
+
+            query = """
+            SELECT 
+                COUNT(*) as total_general,
+                SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD IS TRUE THEN 1 ELSE 0 END) as disponibles_total,
+                SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD IS TRUE AND ESTADO_REGISTRO IS TRUE THEN 1 ELSE 0 END) as disponibles_activas,
+                SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD IS TRUE AND ESTADO_REGISTRO IS FALSE THEN 1 ELSE 0 END) as disponibles_inactivas,
+                SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD IS NOT TRUE THEN 1 ELSE 0 END) as ocupadas_total,
+                SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD IS NOT TRUE AND ESTADO_REGISTRO IS TRUE THEN 1 ELSE 0 END) as ocupadas_activas,
+                SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD IS NOT TRUE AND ESTADO_REGISTRO IS FALSE THEN 1 ELSE 0 END) as ocupadas_inactivas
+            FROM PROPIEDADES p
+            """
+            
+            conditions = []
+            params = []
+
+            if filtro_tipo and filtro_tipo != "Todos":
+                conditions.append(f"p.TIPO_PROPIEDAD = {placeholder}")
+                params.append(filtro_tipo)
+
+            if filtro_municipio:
+                conditions.append(f"p.ID_MUNICIPIO = {placeholder}")
+                params.append(filtro_municipio)
+
+            if busqueda:
+                cols = ["p.MATRICULA_INMOBILIARIA", "p.DIRECCION_PROPIEDAD"]
+                cond = self.db.get_search_condition(cols)
+                conditions.append(f"({cond})")
+                term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
+                params.extend([term_norm] * len(cols))
+
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+
+            cursor.execute(query, params)
+            row = cursor.fetchone()
+
+            def _get_val(r, key):
+                if not r:
+                    return 0
+                v = r.get(key) or r.get(key.upper()) or r.get(key.lower())
+                return int(v) if v is not None else 0
+
+            return {
+                "disponibles": {
+                    "total": _get_val(row, "disponibles_total"),
+                    "activas": _get_val(row, "disponibles_activas"),
+                    "inactivas": _get_val(row, "disponibles_inactivas"),
+                },
+                "ocupadas": {
+                    "total": _get_val(row, "ocupadas_total"),
+                    "activas": _get_val(row, "ocupadas_activas"),
+                    "inactivas": _get_val(row, "ocupadas_inactivas"),
+                }
+            }
+
     def listar_sin_mandato(self) -> List[dict]:
         """Retorna propiedades que no tienen mandato activo."""
         query = """

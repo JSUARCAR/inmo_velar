@@ -34,6 +34,7 @@ class PropiedadDict(pydantic.BaseModel):
     agua_tooltip: str
     codigo_gas: str
     gas_tooltip: str
+    observaciones_admin_ph: str
     imagen_id: Optional[int]
     estado_registro: int
 
@@ -195,45 +196,40 @@ class PropiedadesState(DocumentosStateMixin):
 
     @rx.event(background=True)
     async def load_kpis(self):
-        """Carga los contadores KPI directos desde la BD."""
+        """Carga los contadores KPI centralizados desde el servicio."""
+        # Preparar filtros
+        tipo = None if self.filter_tipo == "Todos" else self.filter_tipo
+        municipio = None if self.filter_municipio == "0" else int(self.filter_municipio)
+        busqueda = self.search_text.strip() if self.search_text else None
 
-        conditions = []
-        params = []
+        from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+            RepositorioPropiedadPostgres,
+        )
 
-        if self.filter_tipo and self.filter_tipo != "Todos":
-            conditions.append("TIPO_PROPIEDAD = %s")
-            params.append(self.filter_tipo)
+        repo = RepositorioPropiedadPostgres(db_manager)
+        servicio = ServicioPropiedades(repo_propiedad=repo)
 
-        if self.filter_municipio and self.filter_municipio != "0":
-            conditions.append("ID_MUNICIPIO = %s")
-            params.append(self.filter_municipio)
-
-        if self.search_text:
-            search_where = (
-                "(DIRECCION_PROPIEDAD LIKE %s OR MATRICULA_INMOBILIARIA LIKE %s)"
+        try:
+            kpis = servicio.obtener_kpis(
+                filtro_tipo=tipo,
+                filtro_municipio=municipio,
+                busqueda=busqueda
             )
-            conditions.append(search_where)
-            term_norm = f"%{self.search_text.strip().lower()}%"
-            params.extend([term_norm, term_norm])
 
-        where_clause = "WHERE " + " AND ".join(conditions) if conditions else ""
+            async with self:
+                # Disponibles
+                disp = kpis.get("disponibles", {})
+                self.kpi_disponibles_total = disp.get("total", 0)
+                self.kpi_disponibles_activas = disp.get("activas", 0)
+                self.kpi_disponibles_inactivas = disp.get("inactivas", 0)
 
-        query_general = f"""
-        SELECT 
-            DISPONIBILIDAD_PROPIEDAD as disponibilidad,
-            COUNT(*) as total,
-            SUM(CASE WHEN ESTADO_REGISTRO = TRUE THEN 1 ELSE 0 END) as activas,
-            SUM(CASE WHEN ESTADO_REGISTRO = FALSE THEN 1 ELSE 0 END) as inactivas
-        FROM PROPIEDADES
-        {where_clause}
-        GROUP BY DISPONIBILIDAD_PROPIEDAD
-        """
-
-        with db_manager.obtener_conexion() as conn:
-            cursor = db_manager.get_dict_cursor(conn)
-            cursor.execute(query_general, params)
-            rows = cursor.fetchall()
-
+                # Ocupadas
+                ocup = kpis.get("ocupadas", {})
+                self.kpi_ocupadas_total = ocup.get("total", 0)
+                self.kpi_ocupadas_activas = ocup.get("activas", 0)
+                self.kpi_ocupadas_inactivas = ocup.get("inactivas", 0)
+        except Exception as e:
+            print(f"[PROPIEDADES_KPI_ERROR] Error cargando KPIs: {str(e)}")
             async with self:
                 self.kpi_disponibles_total = 0
                 self.kpi_disponibles_activas = 0
@@ -241,29 +237,6 @@ class PropiedadesState(DocumentosStateMixin):
                 self.kpi_ocupadas_total = 0
                 self.kpi_ocupadas_activas = 0
                 self.kpi_ocupadas_inactivas = 0
-
-                for row in rows:
-                    disp = row.get("DISPONIBILIDAD") or row.get("disponibilidad")
-                    if disp in (1, True, "1", "true", "True"):
-                        self.kpi_disponibles_total = (
-                            row.get("TOTAL", row.get("total", 0)) or 0
-                        )
-                        self.kpi_disponibles_activas = (
-                            row.get("ACTIVAS", row.get("activas", 0)) or 0
-                        )
-                        self.kpi_disponibles_inactivas = (
-                            row.get("INACTIVAS", row.get("inactivas", 0)) or 0
-                        )
-                    else:
-                        self.kpi_ocupadas_total = (
-                            row.get("TOTAL", row.get("total", 0)) or 0
-                        )
-                        self.kpi_ocupadas_activas = (
-                            row.get("ACTIVAS", row.get("activas", 0)) or 0
-                        )
-                        self.kpi_ocupadas_inactivas = (
-                            row.get("INACTIVAS", row.get("inactivas", 0)) or 0
-                        )
 
     @rx.event(background=True)
     async def load_propiedades(self):
@@ -369,6 +342,7 @@ class PropiedadesState(DocumentosStateMixin):
                     agua_tooltip=f"Agua: {getattr(p, 'codigo_agua', '') or 'N/A'}",
                     codigo_gas=getattr(p, "codigo_gas", "") or "",
                     gas_tooltip=f"Gas: {getattr(p, 'codigo_gas', '') or 'N/A'}",
+                    observaciones_admin_ph=getattr(p, "observaciones_admin_ph", "") or "",
                     imagen_id=getattr(p, "imagen_principal_id", None),
                     estado_registro=getattr(p, "estado_registro", 1) or 0,
                 )
@@ -486,7 +460,8 @@ class PropiedadesState(DocumentosStateMixin):
             "link_pago_administracion": "",  # URL vacío
             "cuota_extra_ordinaria": "0",  # Sin cuota extra por defecto
             "observaciones_admin_ph": "",
-        }
+            }
+
         self.show_modal = True
         self.error_message = ""
         self.reset_wizard()

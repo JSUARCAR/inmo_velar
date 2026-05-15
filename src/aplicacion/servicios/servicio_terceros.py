@@ -68,9 +68,6 @@ class ServicioTerceros:
         if "PROPIETARIO" in roles:
             propietario = Propietario(
                 id_persona=persona_creada.id_persona,
-                banco_propietario=kwargs.get("banco"),
-                numero_cuenta_propietario=kwargs.get("numero_cuenta"),
-                tipo_cuenta=kwargs.get("tipo_cuenta"),
             )
             resultado["roles"]["propietario"] = self.repo_propietario.crear(
                 propietario, usuario_sistema

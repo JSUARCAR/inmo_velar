@@ -483,7 +483,7 @@ class ServicioContratos:
         incremento = canon_actual * (porcentaje / 100)
         nuevo_canon = int(canon_actual + incremento)
 
-        # Regla de negocio habitual: Redondear a miles?
+        # Regla de negocio habitual: Redondear a miles%s
         # Por ahora exacto (entero).
         return nuevo_canon, porcentaje
 
@@ -553,7 +553,7 @@ class ServicioContratos:
           AND ca.FECHA_FIN_CONTRATO_A <= {placeholder}
         ORDER BY ca.FECHA_FIN_CONTRATO_A ASC
         """
-        # Note: Using '?' for simplicity here, but should use self.db.get_placeholder() if strictly following pattern.
+        # Note: Using '%s' for simplicity here, but should use self.db.get_placeholder() if strictly following pattern.
         # Given this is likely SQLite/Postgres hybrid, let's stick to get_placeholder if possible or adjust.
         # However, replace_file_content is static text. I'll use logic inside.
 
@@ -748,7 +748,7 @@ class ServicioContratos:
                     per.NUMERO_DOCUMENTO as documento_propietario
                 FROM CONTRATOS_MANDATOS cm
                 JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
-                JOIN PROPIETARIOS prop ON cm.ID_PROPIEDAD = prop.ID_PROPIEDAD -- Correction: ID_PROPIETARIO usually linked via mandate or prop? Mandato structure: cm.ID_PROPIETARIO
+                JOIN PROPIETARIOS prop ON cm.ID_PROPIEDAD = prop.ID_PROPIEDAD -- Correction: ID_PROPIETARIO usually linked via mandate or prop%s Mandato structure: cm.ID_PROPIETARIO
                 JOIN PROPIETARIOS prop_correct ON cm.ID_PROPIETARIO = prop_correct.ID_PROPIETARIO
                 JOIN PERSONAS per ON prop_correct.ID_PERSONA = per.ID_PERSONA
             """
@@ -885,11 +885,11 @@ class ServicioContratos:
                 per.NUMERO_DOCUMENTO,
                 per.TELEFONO_PRINCIPAL as TELEFONO,
                 per.CORREO_ELECTRONICO as EMAIL,
-                prop.BANCO_PROPIETARIO,
-                prop.NUMERO_CUENTA_PROPIETARIO,
-                prop.TIPO_CUENTA,
-                prop.CONSIGNATARIO,
-                prop.DOCUMENTO_CONSIGNATARIO,
+                cm.BANCO_PROPIETARIO,
+                cm.NUMERO_CUENTA_PROPIETARIO,
+                cm.TIPO_CUENTA,
+                cm.CONSIGNATARIO,
+                cm.DOCUMENTO_CONSIGNATARIO,
                 m.NOMBRE_MUNICIPIO,
                 m.DEPARTAMENTO,
                 ases.NOMBRE_COMPLETO as ASESOR
@@ -1242,7 +1242,7 @@ class ServicioContratos:
                 # Calcular qué aniversario es
                 datetime.strptime(a[1], "%Y-%m-%d")
                 datetime.now()  # Aprox, para el mensaje
-                # Aniversario numero?
+                # Aniversario numero%s
                 # Si hoy es 2024, inicia 2023 -> 1er aniversario.
                 # Mensaje genérico es seguro.
                 self._crear_alerta(
@@ -1261,8 +1261,8 @@ class ServicioContratos:
         # Verificar si ya existe alerta pendiente del mismo tipo para la entidad hoy
         check_query = """
         SELECT ID_ALERTAS FROM ALERTAS 
-        WHERE TIPO_ALERTA = ? AND ID_ENTIDAD_RELACIONADA = ? 
-          AND TIPO_ENTIDAD = ? AND ESTADO_ALERTA = 'Pendiente'
+        WHERE TIPO_ALERTA = %s AND ID_ENTIDAD_RELACIONADA = %s 
+          AND TIPO_ENTIDAD = %s AND ESTADO_ALERTA = 'Pendiente'
           AND date(FECHA_GENERACION_ALERTA) = date('now')
         """
         cursor = conn.cursor()
@@ -1274,7 +1274,7 @@ class ServicioContratos:
         INSERT INTO ALERTAS (
             TIPO_ALERTA, DESCRIPCION_ALERTA, PRIORIDAD, 
             ID_ENTIDAD_RELACIONADA, TIPO_ENTIDAD, CREATED_BY
-        ) VALUES (?, ?, 'Alta', ?, ?, ?)
+        ) VALUES (%s, %s, 'Alta', %s, %s, %s)
         """
         cursor.execute(
             insert_query, (tipo, descripcion, id_entidad, tipo_entidad, usuario)
@@ -1303,7 +1303,12 @@ class ServicioContratos:
             CONTRATOS_MANDATOS.COMISION_PORCENTAJE_CONTRATO_M,
             CONTRATOS_MANDATOS.ESTADO_CONTRATO_M,
             CONTRATOS_MANDATOS.CREATED_AT,
-            CONTRATOS_MANDATOS.CREATED_BY
+            CONTRATOS_MANDATOS.CREATED_BY,
+            CONTRATOS_MANDATOS.BANCO_PROPIETARIO,
+            CONTRATOS_MANDATOS.NUMERO_CUENTA_PROPIETARIO,
+            CONTRATOS_MANDATOS.TIPO_CUENTA,
+            CONTRATOS_MANDATOS.CONSIGNATARIO,
+            CONTRATOS_MANDATOS.DOCUMENTO_CONSIGNATARIO
         FROM CONTRATOS_MANDATOS
         JOIN PROPIEDADES ON CONTRATOS_MANDATOS.ID_PROPIEDAD = PROPIEDADES.ID_PROPIEDAD
         JOIN PROPIETARIOS ON CONTRATOS_MANDATOS.ID_PROPIETARIO = PROPIETARIOS.ID_PROPIETARIO
@@ -1333,6 +1338,11 @@ class ServicioContratos:
                     "comision": row["comision_porcentaje_contrato_m"],
                     "estado": row["estado_contrato_m"],
                     "created_by": row["created_by"],
+                    "banco_propietario": row["banco_propietario"],
+                    "numero_cuenta_propietario": row["numero_cuenta_propietario"],
+                    "tipo_cuenta": row["tipo_cuenta"],
+                    "consignatario": row["consignatario"],
+                    "documento_consignatario": row["documento_consignatario"],
                     "id_view": str(row["id_contrato_m"]),
                     "canon_view": f"${row['canon_mandato']:,}".replace(",", "."),
                     "comision_view": f"{row['comision_porcentaje_contrato_m'] / 100.0:.2f}%"
