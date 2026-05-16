@@ -500,39 +500,57 @@ class ServicioLiquidacionAsesores:
         }
 
     def generar_liquidaciones_masivas_optimizado(self, periodo: str, usuario: str) -> Dict[str, int]:
-        """Generación masiva optimizada."""
+        """
+        Generación masiva optimizada bajo el estándar de Atomicidad Élite.
+        Toda la operación se ejecuta en una única transacción global.
+        """
         if not self.repo_asesor or not self.repo_contrato_arrendamiento:
             raise ValueError("Repositorios necesarios no configurados")
 
         stats = {"creadas": 0, "omitidas": 0, "errores": 0, "total": 0}
-        asesores = self.repo_asesor.listar_activos()
-        stats["total"] = len(asesores)
-        contratos_agrupados = self.repo_contrato_arrendamiento.obtener_activos_todos_agrupados()
+        
+        try:
+            asesores = self.repo_asesor.listar_activos()
+            stats["total"] = len(asesores)
+            contratos_agrupados = self.repo_contrato_arrendamiento.obtener_activos_todos_agrupados()
 
-        for asesor in asesores:
-            try:
-                if self.repo_liquidacion.obtener_por_asesor_periodo(asesor.id_asesor, periodo):
-                    stats["omitidas"] += 1
-                    continue
+            # Envolver todo el procesamiento en una transacción única
+            with self.repo_liquidacion.db_manager.transaccion() as conn:
+                for asesor in asesores:
+                    try:
+                        # Verificar si ya existe liquidación para este asesor en este periodo
+                        # Nota: Se usa el repositorio que ya conoce la conexión/transacción activa
+                        if self.repo_liquidacion.obtener_por_asesor_periodo(asesor.id_asesor, periodo):
+                            stats["omitidas"] += 1
+                            continue
 
-                contratos_asesor = contratos_agrupados.get(asesor.id_asesor, [])
-                if not contratos_asesor:
-                    stats["omitidas"] += 1
-                    continue
+                        contratos_asesor = contratos_agrupados.get(asesor.id_asesor, [])
+                        if not contratos_asesor:
+                            stats["omitidas"] += 1
+                            continue
 
-                self.generar_liquidacion_multi_contrato(
-                    id_asesor=asesor.id_asesor,
-                    periodo=periodo,
-                    contratos_lista=[{"id": c.id_contrato_a, "canon": c.canon_arrendamiento} for c in contratos_asesor],
-                    porcentaje_comision=int((asesor.comision_porcentaje_arriendo or 5.0) * 100),
-                    usuario=usuario,
-                )
-                stats["creadas"] += 1
-            except Exception as e:
-                logger.error(f"Error en liquidación masiva para asesor {asesor.id_asesor}: {e}")
-                stats["errores"] += 1
+                        # Generar liquidación multi-contrato (se ejecutará dentro del cursor actual)
+                        self.generar_liquidacion_multi_contrato(
+                            id_asesor=asesor.id_asesor,
+                            periodo=periodo,
+                            contratos_lista=[{"id": c.id_contrato_a, "canon": c.canon_arrendamiento} for c in contratos_asesor],
+                            porcentaje_comision=int((asesor.comision_porcentaje_arriendo or 5.0) * 100),
+                            usuario=usuario,
+                        )
+                        stats["creadas"] += 1
+                    except Exception as e:
+                        logger.error(f"Error procesando asesor {asesor.id_asesor} en batch: {e}")
+                        # En un masivo atómico, cualquier error interno debería abortar el batch completo
+                        # o registrarlo si se decide que la atomicidad es por asesor. 
+                        # Según el plan, la atomicidad es GLOBAL por corrida.
+                        raise Exception(f"Fallo crítico en procesamiento masivo (Asesor {asesor.id_asesor}): {e}")
 
-        return stats
+            self._invalidar_caches()
+            return stats
+
+        except Exception as e:
+            logger.error(f"FALLO GLOBAL en generación masiva de liquidaciones: {e}")
+            raise
 
     def _liquidacion_to_dict(self, liq: LiquidacionAsesor) -> Dict[str, Any]:
         return {

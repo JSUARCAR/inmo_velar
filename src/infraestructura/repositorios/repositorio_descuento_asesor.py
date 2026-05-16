@@ -35,7 +35,8 @@ class RepositorioDescuentoAsesor:
             usuario,
         )
 
-        with self.db_manager.transaccion() as cursor:
+        with self.db_manager.transaccion() as conn:
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, params)
             row = cursor.fetchone()
             if row:
@@ -84,7 +85,8 @@ class RepositorioDescuentoAsesor:
         """Elimina un descuento."""
         query = "DELETE FROM DESCUENTOS_ASESORES WHERE ID_DESCUENTO_ASESOR = %s"
 
-        with self.db_manager.transaccion() as cursor:
+        with self.db_manager.transaccion() as conn:
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_descuento,))
             return cursor.rowcount > 0
 

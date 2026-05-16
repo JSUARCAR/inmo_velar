@@ -2,6 +2,7 @@ import reflex as rx
 
 from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
 from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
+from src.presentacion_reflex.state.liquidacion_asesores.form_state import LiquidacionFormState
 from src.presentacion_reflex.state.pdf_state import PDFState
 
 
@@ -12,7 +13,7 @@ def detail_modal() -> rx.Component:
             rx.dialog.title("Detalles de Liquidación", size="5"),
             rx.scroll_area(
                 rx.cond(
-                    LiquidacionAsesoresState.liquidacion_actual,
+                    LiquidacionFormState.liquidacion_actual,
                     rx.flex(
                         # Info Básica
                         rx.card(
@@ -20,7 +21,7 @@ def detail_modal() -> rx.Component:
                                 rx.box(
                                     rx.text("Asesor", size="1", color="gray", weight="bold"),
                                     rx.text(
-                                        LiquidacionAsesoresState.liquidacion_actual["asesor"],
+                                        LiquidacionFormState.liquidacion_actual["asesor"],
                                         size="3",
                                         weight="medium",
                                     ),
@@ -28,7 +29,7 @@ def detail_modal() -> rx.Component:
                                 rx.box(
                                     rx.text("Período", size="1", color="gray", weight="bold"),
                                     rx.text(
-                                        LiquidacionAsesoresState.liquidacion_actual["periodo"],
+                                        LiquidacionFormState.liquidacion_actual["periodo"],
                                         size="3",
                                         weight="medium",
                                     ),
@@ -36,10 +37,10 @@ def detail_modal() -> rx.Component:
                                 rx.box(
                                     rx.text("Estado", size="1", color="gray", weight="bold"),
                                     rx.badge(
-                                        LiquidacionAsesoresState.liquidacion_actual["estado"],
+                                        LiquidacionFormState.liquidacion_actual["estado"],
                                         size="2",
                                         color_scheme=rx.match(
-                                            LiquidacionAsesoresState.liquidacion_actual["estado"],
+                                            LiquidacionFormState.liquidacion_actual["estado"],
                                             ("Pendiente", "yellow"),
                                             ("Aprobada", "blue"),
                                             ("Pagada", "green"),
@@ -59,7 +60,7 @@ def detail_modal() -> rx.Component:
                             rx.card(
                                 rx.text("Canon Liquidado", size="1", color="gray"),
                                 rx.text(
-                                    LiquidacionAsesoresState.liquidacion_actual[
+                                    LiquidacionFormState.liquidacion_actual[
                                         "canon_liquidado_view"
                                     ],
                                     size="4",
@@ -69,7 +70,7 @@ def detail_modal() -> rx.Component:
                             rx.card(
                                 rx.text("Comisión Bruta", size="1", color="gray"),
                                 rx.text(
-                                    LiquidacionAsesoresState.liquidacion_actual[
+                                    LiquidacionFormState.liquidacion_actual[
                                         "comision_bruta_view"
                                     ],
                                     size="4",
@@ -80,7 +81,7 @@ def detail_modal() -> rx.Component:
                             rx.card(
                                 rx.text("Descuentos", size="1", color="gray"),
                                 rx.text(
-                                    LiquidacionAsesoresState.liquidacion_actual[
+                                    LiquidacionFormState.liquidacion_actual[
                                         "total_descuentos_view"
                                     ],
                                     size="4",
@@ -91,7 +92,7 @@ def detail_modal() -> rx.Component:
                             rx.card(
                                 rx.text("Bonificaciones", size="1", color="gray"),
                                 rx.text(
-                                    LiquidacionAsesoresState.liquidacion_actual[
+                                    LiquidacionFormState.liquidacion_actual[
                                         "total_bonificaciones_view"
                                     ],
                                     size="4",
@@ -102,7 +103,7 @@ def detail_modal() -> rx.Component:
                             rx.card(
                                 rx.text("Valor Neto", size="1", color="gray"),
                                 rx.text(
-                                    LiquidacionAsesoresState.liquidacion_actual[
+                                    LiquidacionFormState.liquidacion_actual[
                                         "valor_neto_view"
                                     ],
                                     size="5",
@@ -119,10 +120,10 @@ def detail_modal() -> rx.Component:
                         rx.box(
                             rx.heading("Propiedades a Liquidar", size="3", margin_bottom="2"),
                             rx.cond(
-                                LiquidacionAsesoresState.advisor_properties.length() > 0,
+                                LiquidacionFormState.advisor_properties.length() > 0,
                                 rx.grid(
                                     rx.foreach(
-                                        LiquidacionAsesoresState.advisor_properties,
+                                        LiquidacionFormState.advisor_properties,
                                         lambda p: rx.card(
                                             rx.flex(
                                                 rx.box(
@@ -177,8 +178,8 @@ def detail_modal() -> rx.Component:
                             rx.heading("Descuentos  y Bonificaciones", size="3", margin_bottom="2"),
                             rx.cond(
                                 (
-                                    LiquidacionAsesoresState.descuentos_actuales.length()
-                                    + LiquidacionAsesoresState.bonificaciones_actuales.length()
+                                    LiquidacionFormState.descuentos_actuales.length()
+                                    + LiquidacionFormState.bonificaciones_actuales.length()
                                 )
                                 > 0,
                                 rx.table.root(
@@ -194,7 +195,7 @@ def detail_modal() -> rx.Component:
                                     rx.table.body(
                                         # Descuentos
                                         rx.foreach(
-                                            LiquidacionAsesoresState.descuentos_actuales,
+                                            LiquidacionFormState.descuentos_actuales,
                                             lambda d: rx.table.row(
                                                 rx.table.cell(
                                                     rx.badge(
@@ -206,7 +207,7 @@ def detail_modal() -> rx.Component:
                                                 rx.table.cell(d["valor_view"], color="red"),
                                                 rx.table.cell(
                                                     rx.cond(
-                                                        LiquidacionAsesoresState.liquidacion_actual[
+                                                        LiquidacionFormState.liquidacion_actual[
                                                             "estado"
                                                         ]
                                                         == "Pendiente",
@@ -214,7 +215,7 @@ def detail_modal() -> rx.Component:
                                                             rx.icon("trash-2", size=16),
                                                             on_click=lambda id_desc=d[
                                                                 "id_descuento"
-                                                            ]: LiquidacionAsesoresState.eliminar_descuento(
+                                                            ]: LiquidacionFormState.eliminar_descuento(
                                                                 id_desc
                                                             ),
                                                             size="1",
@@ -228,7 +229,7 @@ def detail_modal() -> rx.Component:
                                         ),
                                         # Bonificaciones
                                         rx.foreach(
-                                            LiquidacionAsesoresState.bonificaciones_actuales,
+                                            LiquidacionFormState.bonificaciones_actuales,
                                             lambda b: rx.table.row(
                                                 rx.table.cell(
                                                     rx.badge(
@@ -282,49 +283,49 @@ def detail_modal() -> rx.Component:
             rx.flex(
                 rx.hstack(
                     rx.cond(
-                        LiquidacionAsesoresState.liquidacion_actual["estado"] != "Anulada",
+                        LiquidacionFormState.liquidacion_actual["estado"] != "Anulada",
                         rx.button(
                             rx.icon("file-text"),
                             "Descargar PDF",
                             color_scheme="blue",
                             on_click=lambda: PDFState.generar_liquidacion_asesor_pdf(
-                                LiquidacionAsesoresState.liquidacion_actual["id_liquidacion"]
+                                LiquidacionFormState.liquidacion_actual["id_liquidacion"]
                             ),
                             loading=PDFState.generating,
                         ),
                     ),
                     rx.cond(
-                        LiquidacionAsesoresState.liquidacion_actual["estado"] == "Pendiente",
+                        LiquidacionFormState.liquidacion_actual["estado"] == "Pendiente",
                         rx.button(
                             rx.icon("circle_check"),
                             "Aprobar",
                             color_scheme="green",
-                            on_click=lambda: LiquidacionAsesoresState.aprobar_liquidacion(
-                                LiquidacionAsesoresState.liquidacion_actual["id_liquidacion"]
+                            on_click=lambda: LiquidacionFormState.aprobar_liquidacion(
+                                LiquidacionFormState.liquidacion_actual["id_liquidacion"]
                             ),
                         ),
                     ),
                     rx.cond(
-                        LiquidacionAsesoresState.liquidacion_actual["estado"] == "Aprobada",
+                        LiquidacionFormState.liquidacion_actual["estado"] == "Aprobada",
                         rx.button(
                             rx.icon("banknote"),
                             "Marcar Pagada",
                             color_scheme="blue",
-                            on_click=lambda: LiquidacionAsesoresState.marcar_como_pagada(
-                                LiquidacionAsesoresState.liquidacion_actual["id_liquidacion"]
+                            on_click=lambda: LiquidacionFormState.marcar_como_pagada(
+                                LiquidacionFormState.liquidacion_actual["id_liquidacion"]
                             ),
                         ),
                     ),
                     rx.cond(
-                        (LiquidacionAsesoresState.liquidacion_actual["estado"] != "Pagada") & 
-                        (LiquidacionAsesoresState.liquidacion_actual["estado"] != "Anulada"),
+                        (LiquidacionFormState.liquidacion_actual["estado"] != "Pagada") & 
+                        (LiquidacionFormState.liquidacion_actual["estado"] != "Anulada"),
                         rx.button(
                             rx.icon("circle_x"),
                             "Anular",
                             color_scheme="red",
                             variant="soft",
-                            on_click=lambda: LiquidacionAsesoresState.open_annul_modal(
-                                LiquidacionAsesoresState.liquidacion_actual["id_liquidacion"]
+                            on_click=lambda: LiquidacionFormState.open_annul_modal(
+                                LiquidacionFormState.liquidacion_actual["id_liquidacion"]
                             ),
                         ),
                     ),
@@ -336,6 +337,6 @@ def detail_modal() -> rx.Component:
                 width="100%",
             ),
         ),
-        open=LiquidacionAsesoresState.show_detail_modal,
-        on_open_change=LiquidacionAsesoresState.set_show_detail_modal,
+        open=LiquidacionFormState.show_detail_modal,
+        on_open_change=LiquidacionFormState.set_show_detail_modal,
     )

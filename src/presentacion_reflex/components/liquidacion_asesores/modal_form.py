@@ -1,6 +1,9 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
+from src.presentacion_reflex.state.liquidacion_asesores.filtros_state import LiquidacionFiltrosState
+from src.presentacion_reflex.state.liquidacion_asesores.form_state import LiquidacionFormState
+from src.presentacion_reflex.state.liquidacion_asesores.grid_state import LiquidacionGridState
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_select_root,
     neuro_input,
@@ -15,14 +18,14 @@ def modal_form() -> rx.Component:
         rx.dialog.content(
             rx.dialog.title(
                 rx.cond(
-                    LiquidacionAsesoresState.selected_liquidacion_id > 0,
+                    LiquidacionFormState.selected_liquidacion_id > 0,
                     "Editar Liquidación",
                     "Nueva Liquidación de Asesor",
                 )
             ),
             rx.dialog.description(
                 rx.cond(
-                    LiquidacionAsesoresState.selected_liquidacion_id > 0,
+                    LiquidacionFormState.selected_liquidacion_id > 0,
                     "Modifique los detalles de la liquidación existente.",
                     "Complete los datos para generar una nueva liquidación de comisiones.",
                 )
@@ -38,7 +41,7 @@ def modal_form() -> rx.Component:
                                 rx.text("Asesor", size="2", weight="bold", margin_bottom="1"),
                                 neuro_select_root(
                                     rx.foreach(
-                                        LiquidacionAsesoresState.asesores_options,
+                                        LiquidacionFiltrosState.asesores_options,
                                         lambda asesor: rx.select.item(
                                             asesor["texto"], value=asesor["id"]
                                         ),
@@ -46,11 +49,11 @@ def modal_form() -> rx.Component:
                                     name="id_asesor",
                                     required=True,
                                     placeholder="Seleccione un asesor",
-                                    value=LiquidacionAsesoresState.form_data["id_asesor"],
-                                    on_change=lambda val: LiquidacionAsesoresState.set_form_field(
+                                    value=LiquidacionFormState.form_data["id_asesor"],
+                                    on_change=lambda val: LiquidacionFormState.set_form_field(
                                         "id_asesor", val
                                     ),
-                                    disabled=LiquidacionAsesoresState.selected_liquidacion_id > 0,
+                                    disabled=LiquidacionFormState.selected_liquidacion_id > 0,
                                 ),
                                 width="100%",
                             ),
@@ -65,11 +68,11 @@ def modal_form() -> rx.Component:
                                     placeholder="YYYY-MM",
                                     required=True,
                                     width="100%",
-                                    value=LiquidacionAsesoresState.form_data["periodo"],
-                                    on_change=lambda val: LiquidacionAsesoresState.set_form_field(
+                                    value=LiquidacionFormState.form_data["periodo"],
+                                    on_change=lambda val: LiquidacionFormState.set_form_field(
                                         "periodo", val
                                     ),
-                                    read_only=LiquidacionAsesoresState.selected_liquidacion_id > 0,
+                                    read_only=LiquidacionFormState.selected_liquidacion_id > 0,
                                     style=styles.NEU_INPUT_STYLE,
                                 ),
                                 width="100%",
@@ -91,8 +94,8 @@ def modal_form() -> rx.Component:
                                     min="0",
                                     max="100",
                                     width="100%",
-                                    value=LiquidacionAsesoresState.form_data["porcentaje_comision"],
-                                    on_change=lambda val: LiquidacionAsesoresState.set_form_field(
+                                    value=LiquidacionFormState.form_data["porcentaje_comision"],
+                                    on_change=lambda val: LiquidacionFormState.set_form_field(
                                         "porcentaje_comision", val
                                     ),
                                     style=styles.NEU_INPUT_STYLE,
@@ -111,9 +114,9 @@ def modal_form() -> rx.Component:
                             rx.scroll_area(
                                 rx.flex(
                                     rx.cond(
-                                        LiquidacionAsesoresState.advisor_properties.length() > 0,
+                                        LiquidacionFormState.advisor_properties.length() > 0,
                                         rx.foreach(
-                                            LiquidacionAsesoresState.advisor_properties,
+                                            LiquidacionFormState.advisor_properties,
                                             lambda prop: rx.card(
                                                 rx.flex(
                                                     rx.text(
@@ -180,16 +183,16 @@ def modal_form() -> rx.Component:
                                         rx.select.item("Otros", value="Otros"),
                                     )
                                 ),
-                                value=LiquidacionAsesoresState.temp_bonus["tipo"],
-                                on_change=lambda val: LiquidacionAsesoresState.set_temp_bonus_field(
+                                value=LiquidacionFormState.temp_bonus["tipo"],
+                                on_change=lambda val: LiquidacionFormState.set_temp_bonus_field(
                                     "tipo", val
                                 ),
                                 width="100%",
                             ),
                             rx.input(
                                 placeholder="Descripción",
-                                value=LiquidacionAsesoresState.temp_bonus["descripcion"],
-                                on_change=lambda val: LiquidacionAsesoresState.set_temp_bonus_field(
+                                value=LiquidacionFormState.temp_bonus["descripcion"],
+                                on_change=lambda val: LiquidacionFormState.set_temp_bonus_field(
                                     "descripcion", val
                                 ),
                                 width="100%",
@@ -197,8 +200,8 @@ def modal_form() -> rx.Component:
                             rx.input(
                                 placeholder="Valor (+)",
                                 type="number",
-                                value=LiquidacionAsesoresState.temp_bonus["valor"],
-                                on_change=lambda val: LiquidacionAsesoresState.set_temp_bonus_field(
+                                value=LiquidacionFormState.temp_bonus["valor"],
+                                on_change=lambda val: LiquidacionFormState.set_temp_bonus_field(
                                     "valor", val
                                 ),
                                 width="100%",
@@ -206,7 +209,7 @@ def modal_form() -> rx.Component:
                             rx.button(
                                 rx.icon("plus"),
                                 "Agregar",
-                                on_click=LiquidacionAsesoresState.add_temp_bonus,
+                                on_click=LiquidacionFormState.add_temp_bonus,
                                 type="button",
                                 variant="soft",
                                 color_scheme="green",
@@ -217,8 +220,8 @@ def modal_form() -> rx.Component:
                         ),
                         # List of existing bonuses (saved in DB) - only in EDIT mode
                         rx.cond(
-                            (LiquidacionAsesoresState.selected_liquidacion_id > 0)
-                            & (LiquidacionAsesoresState.existing_bonuses.length() > 0),
+                            (LiquidacionFormState.selected_liquidacion_id > 0)
+                            & (LiquidacionFormState.existing_bonuses.length() > 0),
                             rx.box(
                                 rx.text(
                                     "Bonificaciones Guardadas:",
@@ -237,7 +240,7 @@ def modal_form() -> rx.Component:
                                     ),
                                     rx.table.body(
                                         rx.foreach(
-                                            LiquidacionAsesoresState.existing_bonuses,
+                                            LiquidacionFormState.existing_bonuses,
                                             lambda b: rx.table.row(
                                                 rx.table.cell(b["tipo"]),
                                                 rx.table.cell(b["descripcion"]),
@@ -249,10 +252,8 @@ def modal_form() -> rx.Component:
                                                 rx.table.cell(
                                                     rx.button(
                                                         rx.icon("trash", size=16),
-                                                        on_click=lambda _, id_b=b[
-                                                            "id_bonificacion"
-                                                        ]: LiquidacionAsesoresState.eliminar_bonificacion(
-                                                            id_b
+                                                        on_click=lambda: LiquidacionFormState.eliminar_bonificacion(
+                                                            b["id_bonificacion"]
                                                         ),
                                                         variant="ghost",
                                                         color_scheme="red",
@@ -270,7 +271,7 @@ def modal_form() -> rx.Component:
                         ),
                         # List of new bonuses (temporary - not yet saved)
                         rx.cond(
-                            LiquidacionAsesoresState.new_bonuses.length() > 0,
+                            LiquidacionFormState.new_bonuses.length() > 0,
                             rx.box(
                                 # rx.text("Bonificaciones Nuevas (Por Guardar):", size="1", weight="bold", margin_bottom="1"),
                                 rx.table.root(
@@ -284,7 +285,7 @@ def modal_form() -> rx.Component:
                                     ),
                                     rx.table.body(
                                         rx.foreach(
-                                            LiquidacionAsesoresState.new_bonuses,
+                                            LiquidacionFormState.new_bonuses,
                                             lambda b: rx.table.row(
                                                 rx.table.cell(b["tipo"]),
                                                 rx.table.cell(b["descripcion"]),
@@ -297,8 +298,8 @@ def modal_form() -> rx.Component:
                                                 rx.table.cell(
                                                     rx.button(
                                                         rx.icon("trash", size=16),
-                                                        on_click=lambda _, item=b: LiquidacionAsesoresState.remove_temp_bonus(
-                                                            item
+                                                        on_click=lambda: LiquidacionFormState.remove_temp_bonus(
+                                                            b
                                                         ),
                                                         variant="ghost",
                                                         color_scheme="red",
@@ -337,16 +338,16 @@ def modal_form() -> rx.Component:
                                         rx.select.item("Préstamo", value="Préstamo"),
                                     )
                                 ),
-                                value=LiquidacionAsesoresState.temp_discount["tipo"],
-                                on_change=lambda val: LiquidacionAsesoresState.set_temp_discount_field(
+                                value=LiquidacionFormState.temp_discount["tipo"],
+                                on_change=lambda val: LiquidacionFormState.set_temp_discount_field(
                                     "tipo", val
                                 ),
                                 width="100%",
                             ),
                             rx.input(
                                 placeholder="Descripción",
-                                value=LiquidacionAsesoresState.temp_discount["descripcion"],
-                                on_change=lambda val: LiquidacionAsesoresState.set_temp_discount_field(
+                                value=LiquidacionFormState.temp_discount["descripcion"],
+                                on_change=lambda val: LiquidacionFormState.set_temp_discount_field(
                                     "descripcion", val
                                 ),
                                 width="100%",
@@ -354,8 +355,8 @@ def modal_form() -> rx.Component:
                             rx.input(
                                 placeholder="Valor",
                                 type="number",
-                                value=LiquidacionAsesoresState.temp_discount["valor"],
-                                on_change=lambda val: LiquidacionAsesoresState.set_temp_discount_field(
+                                value=LiquidacionFormState.temp_discount["valor"],
+                                on_change=lambda val: LiquidacionFormState.set_temp_discount_field(
                                     "valor", val
                                 ),
                                 width="100%",
@@ -363,7 +364,7 @@ def modal_form() -> rx.Component:
                             rx.button(
                                 rx.icon("plus"),
                                 "Agregar",
-                                on_click=LiquidacionAsesoresState.add_temp_discount,
+                                on_click=LiquidacionFormState.add_temp_discount,
                                 type="button",
                                 variant="soft",
                             ),
@@ -373,8 +374,8 @@ def modal_form() -> rx.Component:
                         ),
                         # List of existing discounts (saved in DB) - only in EDIT mode
                         rx.cond(
-                            (LiquidacionAsesoresState.selected_liquidacion_id > 0)
-                            & (LiquidacionAsesoresState.existing_discounts.length() > 0),
+                            (LiquidacionFormState.selected_liquidacion_id > 0)
+                            & (LiquidacionFormState.existing_discounts.length() > 0),
                             rx.box(
                                 rx.text(
                                     "Descuentos Guardados:",
@@ -393,7 +394,7 @@ def modal_form() -> rx.Component:
                                     ),
                                     rx.table.body(
                                         rx.foreach(
-                                            LiquidacionAsesoresState.existing_discounts,
+                                            LiquidacionFormState.existing_discounts,
                                             lambda d: rx.table.row(
                                                 rx.table.cell(d["tipo"]),
                                                 rx.table.cell(d["descripcion"]),
@@ -401,10 +402,8 @@ def modal_form() -> rx.Component:
                                                 rx.table.cell(
                                                     rx.button(
                                                         rx.icon("trash", size=16),
-                                                        on_click=lambda id_d=d[
-                                                            "id_descuento"
-                                                        ]: LiquidacionAsesoresState.eliminar_descuento(
-                                                            id_d
+                                                        on_click=lambda: LiquidacionFormState.eliminar_descuento(
+                                                            d["id_descuento"]
                                                         ),
                                                         variant="ghost",
                                                         color_scheme="red",
@@ -422,7 +421,7 @@ def modal_form() -> rx.Component:
                         ),
                         # List of new discounts (temporary - not yet saved)
                         rx.cond(
-                            LiquidacionAsesoresState.new_discounts.length() > 0,
+                            LiquidacionFormState.new_discounts.length() > 0,
                             rx.box(
                                 rx.text(
                                     "Descuentos Nuevos (Por Guardar):",
@@ -441,7 +440,7 @@ def modal_form() -> rx.Component:
                                     ),
                                     rx.table.body(
                                         rx.foreach(
-                                            LiquidacionAsesoresState.new_discounts,
+                                            LiquidacionFormState.new_discounts,
                                             lambda d: rx.table.row(
                                                 rx.table.cell(d["tipo"]),
                                                 rx.table.cell(d["descripcion"]),
@@ -449,8 +448,8 @@ def modal_form() -> rx.Component:
                                                 rx.table.cell(
                                                     rx.button(
                                                         rx.icon("trash", size=16),
-                                                        on_click=lambda _, item=d: LiquidacionAsesoresState.remove_temp_discount(
-                                                            item
+                                                        on_click=lambda: LiquidacionFormState.remove_temp_discount(
+                                                            d
                                                         ),
                                                         variant="ghost",
                                                         color_scheme="red",
@@ -479,8 +478,8 @@ def modal_form() -> rx.Component:
                             name="observaciones",
                             placeholder="Observaciones opcionales...",
                             width="100%",
-                            value=LiquidacionAsesoresState.form_data["observaciones"],
-                            on_change=lambda val: LiquidacionAsesoresState.set_form_field(
+                            value=LiquidacionFormState.form_data["observaciones"],
+                            on_change=lambda val: LiquidacionFormState.set_form_field(
                                 "observaciones", val
                             ),
                         ),
@@ -496,29 +495,29 @@ def modal_form() -> rx.Component:
                             variant="soft",
                             color_scheme="gray",
                             type="button",
-                            on_click=LiquidacionAsesoresState.close_form_modal,
+                            on_click=LiquidacionFormState.close_modal,
                         )
                     ),
                     rx.button(
                         rx.cond(
-                            LiquidacionAsesoresState.selected_liquidacion_id > 0,
+                            LiquidacionFormState.selected_liquidacion_id > 0,
                             "Guardar Cambios",
                             "Generar Liquidación",
                         ),
                         type="submit",
-                        loading=LiquidacionAsesoresState.is_loading,
+                        loading=LiquidacionGridState.is_loading,
                     ),
                     spacing="3",
                     justify="end",
                     margin_top="4",
                 ),
-                on_submit=LiquidacionAsesoresState.handle_save_form,
+                on_submit=LiquidacionFormState.handle_save_form,
             ),
             # Error Message
             rx.cond(
-                LiquidacionAsesoresState.error_message != "",
+                LiquidacionFormState.error_message != "",
                 rx.callout(
-                    LiquidacionAsesoresState.error_message,
+                    LiquidacionFormState.error_message,
                     icon="triangle_alert",
                     color_scheme="red",
                     role="alert",
@@ -527,6 +526,6 @@ def modal_form() -> rx.Component:
             ),
             max_width="800px",
         ),
-        open=LiquidacionAsesoresState.show_form_modal,
-        on_open_change=LiquidacionAsesoresState.set_show_form_modal,
+        open=LiquidacionFormState.show_form_modal,
+        on_open_change=LiquidacionFormState.set_show_form_modal,
     )

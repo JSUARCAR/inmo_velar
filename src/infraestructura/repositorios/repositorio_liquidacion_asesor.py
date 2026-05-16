@@ -49,7 +49,8 @@ class RepositorioLiquidacionAsesor:
         )
 
         try:
-            with self.db_manager.transaccion() as cursor:
+            with self.db_manager.transaccion() as conn:
+                cursor = self.db_manager.get_dict_cursor(conn)
                 cursor.execute(query, params)
                 row = cursor.fetchone()
                 if row:
@@ -101,7 +102,8 @@ class RepositorioLiquidacionAsesor:
             liquidacion.id_liquidacion_asesor,
         )
 
-        with self.db_manager.transaccion() as cursor:
+        with self.db_manager.transaccion() as conn:
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, params)
             if cursor.rowcount == 0:
                 raise ValueError(
@@ -332,7 +334,8 @@ class RepositorioLiquidacionAsesor:
                 ID_LIQUIDACION_ASESOR, ID_CONTRATO_A, CANON_INCLUIDO, CREATED_BY
             ) VALUES (%s, %s, %s, %s)
         """
-        with self.db_manager.transaccion() as cursor:
+        with self.db_manager.transaccion() as conn:
+            cursor = self.db_manager.get_dict_cursor(conn)
             for id_contrato, canon in contratos_ids_canones:
                 cursor.execute(query, (id_liquidacion, id_contrato, canon, usuario))
 
@@ -369,12 +372,12 @@ class RepositorioLiquidacionAsesor:
             id_contrato_a=gv("ID_CONTRATO_A"),
             id_asesor=gv("ID_ASESOR"),
             periodo_liquidacion=gv("PERIODO_LIQUIDACION"),
-            canon_arrendamiento_liquidado=gv("CANON_ARRENDAMIENTO_LIQUIDADO"),
-            porcentaje_comision=gv("PORCENTAJE_COMISION"),
-            comision_bruta=gv("COMISION_BRUTA"),
-            total_descuentos=gv("TOTAL_DESCUENTOS"),
+            canon_arrendamiento_liquidado=gv("CANON_ARRENDAMIENTO_LIQUIDADO") or 0,
+            porcentaje_comision=gv("PORCENTAJE_COMISION") or 0,
+            comision_bruta=gv("COMISION_BRUTA") or 0,
+            total_descuentos=gv("TOTAL_DESCUENTOS") or 0,
             total_bonificaciones=gv("TOTAL_BONIFICACIONES") or 0,
-            valor_neto_asesor=gv("VALOR_NETO_ASESOR"),
+            valor_neto_asesor=gv("VALOR_NETO_ASESOR") or 0,
             estado_liquidacion=gv("ESTADO_LIQUIDACION"),
             fecha_creacion=gv("FECHA_CREACION"),
             fecha_aprobacion=gv("FECHA_APROBACION"),

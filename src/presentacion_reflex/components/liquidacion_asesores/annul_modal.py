@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
+from src.presentacion_reflex.state.liquidacion_asesores.form_state import LiquidacionFormState
 
 
 def annul_modal() -> rx.Component:
@@ -14,8 +15,8 @@ def annul_modal() -> rx.Component:
                 rx.text("Motivo de anulación:", size="2", mb="1", weight="bold"),
                 rx.text_area(
                     placeholder="Ingrese el motivo de la anulación...",
-                    value=LiquidacionAsesoresState.annul_reason,
-                    on_change=LiquidacionAsesoresState.set_annul_reason,
+                    value=LiquidacionFormState.annul_reason,
+                    on_change=LiquidacionFormState.set_annul_reason,
                 ),
                 direction="column",
                 spacing="3",
@@ -26,13 +27,16 @@ def annul_modal() -> rx.Component:
                         "Cancelar",
                         color_scheme="gray",
                         variant="soft",
-                        on_click=LiquidacionAsesoresState.close_annul_modal,
+                        on_click=LiquidacionFormState.close_modal,
                     ),
                 ),
                 rx.button(
                     "Anular Liquidación",
                     color_scheme="red",
-                    on_click=LiquidacionAsesoresState.confirm_annulment,
+                    on_click=lambda: LiquidacionFormState.anular_liquidacion(
+                        LiquidacionFormState.selected_liquidacion_id,
+                        LiquidacionFormState.annul_reason
+                    ),
                 ),
                 spacing="3",
                 mt="4",
@@ -40,6 +44,6 @@ def annul_modal() -> rx.Component:
             ),
             max_width="450px",
         ),
-        open=LiquidacionAsesoresState.show_annul_modal,
-        on_open_change=LiquidacionAsesoresState.close_annul_modal,
+        open=LiquidacionFormState.show_annul_modal,
+        on_open_change=LiquidacionFormState.set_show_annul_modal,
     )

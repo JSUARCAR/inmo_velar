@@ -1,6 +1,8 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
+from src.presentacion_reflex.state.liquidacion_asesores.form_state import LiquidacionFormState
+from src.presentacion_reflex.state.liquidacion_asesores.grid_state import LiquidacionGridState
 
 
 def discount_modal() -> rx.Component:
@@ -20,8 +22,8 @@ def discount_modal() -> rx.Component:
                             placeholder="Seleccione tipo",
                             required=True,
                             width="100%",
-                            value=LiquidacionAsesoresState.discount_form["tipo"],
-                            on_change=lambda val: LiquidacionAsesoresState.set_discount_field(
+                            value=LiquidacionFormState.discount_form["tipo"],
+                            on_change=lambda val: LiquidacionFormState.set_discount_field(
                                 "tipo", val
                             ),
                         ),
@@ -35,8 +37,8 @@ def discount_modal() -> rx.Component:
                             placeholder="Ej: Anticipo de comisión",
                             required=True,
                             width="100%",
-                            value=LiquidacionAsesoresState.discount_form["descripcion"],
-                            on_change=lambda val: LiquidacionAsesoresState.set_discount_field(
+                            value=LiquidacionFormState.discount_form["descripcion"],
+                            on_change=lambda val: LiquidacionFormState.set_discount_field(
                                 "descripcion", val
                             ),
                         ),
@@ -52,8 +54,8 @@ def discount_modal() -> rx.Component:
                             type="number",
                             min="0",
                             width="100%",
-                            value=LiquidacionAsesoresState.discount_form["valor"],
-                            on_change=lambda val: LiquidacionAsesoresState.set_discount_field(
+                            value=LiquidacionFormState.discount_form["valor"],
+                            on_change=lambda val: LiquidacionFormState.set_discount_field(
                                 "valor", val
                             ),
                         ),
@@ -70,25 +72,25 @@ def discount_modal() -> rx.Component:
                             variant="soft",
                             color_scheme="gray",
                             type="button",
-                            on_click=LiquidacionAsesoresState.close_discount_modal,
+                            on_click=LiquidacionFormState.close_modal,
                         )
                     ),
                     rx.button(
                         "Guardar Descuento",
                         type="submit",
-                        loading=LiquidacionAsesoresState.is_loading,
+                        loading=LiquidacionGridState.is_loading,
                     ),
                     spacing="3",
                     justify="end",
                     margin_top="4",
                 ),
-                on_submit=LiquidacionAsesoresState.save_descuento,
+                on_submit=LiquidacionFormState.save_descuento,
             ),
             # Error Message
             rx.cond(
-                LiquidacionAsesoresState.error_message != "",
+                LiquidacionFormState.error_message != "",
                 rx.callout(
-                    LiquidacionAsesoresState.error_message,
+                    LiquidacionFormState.error_message,
                     icon="triangle_alert",
                     color_scheme="red",
                     role="alert",
@@ -96,6 +98,6 @@ def discount_modal() -> rx.Component:
                 ),
             ),
         ),
-        open=LiquidacionAsesoresState.show_discount_modal,
-        on_open_change=LiquidacionAsesoresState.set_show_discount_modal,
+        open=LiquidacionFormState.show_discount_modal,
+        on_open_change=LiquidacionFormState.set_show_discount_modal,
     )

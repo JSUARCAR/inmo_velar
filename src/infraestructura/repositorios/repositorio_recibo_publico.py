@@ -49,7 +49,8 @@ class RepositorioReciboPublico:
         )
 
         try:
-            with self.db_manager.transaccion() as cursor:
+            with self.db_manager.transaccion() as conn:
+                cursor = self.db_manager.get_dict_cursor(conn)
                 cursor.execute(query, params)
                 row = cursor.fetchone()
                 if row:
@@ -104,7 +105,8 @@ class RepositorioReciboPublico:
             recibo.id_recibo_publico,
         )
 
-        with self.db_manager.transaccion() as cursor:
+        with self.db_manager.transaccion() as conn:
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, params)
             if cursor.rowcount == 0:
                 raise ValueError(f"No se encontró el recibo con ID {recibo.id_recibo_publico}")
@@ -297,7 +299,8 @@ class RepositorioReciboPublico:
         """
         query = f"DELETE FROM RECIBOS_PUBLICOS WHERE ID_RECIBO_PUBLICO = {self.placeholder}"
 
-        with self.db_manager.transaccion() as cursor:
+        with self.db_manager.transaccion() as conn:
+            cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_recibo,))
             return cursor.rowcount > 0
 

@@ -2,9 +2,10 @@ import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
-from src.presentacion_reflex.state.liquidacion_asesores_state import (
-    LiquidacionAsesoresState,
-)
+from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
+from src.presentacion_reflex.state.liquidacion_asesores.filtros_state import LiquidacionFiltrosState
+from src.presentacion_reflex.state.liquidacion_asesores.grid_state import LiquidacionGridState
+from src.presentacion_reflex.state.liquidacion_asesores.form_state import LiquidacionFormState
 from src.presentacion_reflex.state.pdf_state import PDFState
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_input,
@@ -52,10 +53,21 @@ def liquidacion_asesores_content() -> rx.Component:
                     align="start",
                 ),
                 rx.cond(
-                    LiquidacionAsesoresState.error_message != "",
+                    LiquidacionGridState.error_message != "",
                     rx.callout(
-                        LiquidacionAsesoresState.error_message,
+                        LiquidacionGridState.error_message,
                         icon="alert-circle",
+                        color_scheme="red",
+                        role="alert",
+                        width="100%",
+                        margin_bottom="1rem",
+                    ),
+                ),
+                rx.cond(
+                    LiquidacionFormState.error_message != "",
+                    rx.callout(
+                        LiquidacionFormState.error_message,
+                        icon="triangle-alert",
                         color_scheme="red",
                         role="alert",
                         width="100%",
@@ -65,14 +77,14 @@ def liquidacion_asesores_content() -> rx.Component:
                 rx.hstack(
                     neuro_button(
                         rx.hstack(rx.icon("refresh-cw", size=18), rx.text("Recargar")),
-                        on_click=LiquidacionAsesoresState.load_liquidaciones,
+                        on_click=LiquidacionGridState.load_liquidaciones,
                         size="3",
                     ),
                     rx.cond(
                         AuthState.check_action("Liquidaciones Asesores", "LIQUIDAR"),
                         neuro_button(
                             rx.hstack(rx.icon("plus"), rx.text("Nueva Liquidación")),
-                            on_click=LiquidacionAsesoresState.open_create_modal,
+                            on_click=LiquidacionFormState.open_create_modal,
                             color_scheme="green",
                             size="3",
                         ),
@@ -103,18 +115,18 @@ def liquidacion_asesores_content() -> rx.Component:
                 neuro_input(
                     rx.input.slot(rx.icon("search", size=18)),
                     placeholder="Buscar asesor o contrato...",
-                    value=LiquidacionAsesoresState.search_text,
-                    on_change=LiquidacionAsesoresState.set_search,
+                    value=LiquidacionFiltrosState.search_text,
+                    on_change=LiquidacionFiltrosState.set_search,
                     width=rx.breakpoints(initial="100%", md="350px"),
                     size="3",
                 ),
                 neuro_select_root(
                     rx.foreach(
-                        LiquidacionAsesoresState.periodo_options,
+                        LiquidacionFiltrosState.periodo_options,
                         lambda opt: rx.select.item(opt, value=opt),
                     ),
-                    value=LiquidacionAsesoresState.filter_periodo,
-                    on_change=LiquidacionAsesoresState.set_filter_periodo,
+                    value=LiquidacionFiltrosState.filter_periodo,
+                    on_change=LiquidacionFiltrosState.set_filter_periodo,
                     placeholder="Período",
                     width=rx.breakpoints(initial="100%", md="150px"),
                 ),
@@ -124,7 +136,7 @@ def liquidacion_asesores_content() -> rx.Component:
                         rx.hstack(
                             rx.icon("calculator"), rx.text("Generar Masivamente")
                         ),
-                        on_click=LiquidacionAsesoresState.open_bulk_modal,
+                        on_click=LiquidacionFormState.open_bulk_modal,
                         color_scheme="blue",
                         width=rx.breakpoints(initial="100%", md="auto"),
                     ),
@@ -146,7 +158,7 @@ def liquidacion_asesores_content() -> rx.Component:
         ),
         # Table
         rx.cond(
-            LiquidacionAsesoresState.is_loading,
+            LiquidacionGridState.is_loading,
             rx.center(rx.spinner(size="3"), height="300px", width="100%"),
             rx.card(
                 rx.table.root(
@@ -155,46 +167,46 @@ def liquidacion_asesores_content() -> rx.Component:
                             header_cell_sortable(
                                 "Asesor",
                                 "nombre_asesor",
-                                LiquidacionAsesoresState.sort_by,
-                                LiquidacionAsesoresState.sort_order,
-                                LiquidacionAsesoresState.toggle_sort,
+                                LiquidacionGridState.sort_by,
+                                LiquidacionGridState.sort_order,
+                                LiquidacionGridState.toggle_sort,
                             ),
                             header_cell_sortable(
                                 "Período",
                                 "periodo_liquidacion",
-                                LiquidacionAsesoresState.sort_by,
-                                LiquidacionAsesoresState.sort_order,
-                                LiquidacionAsesoresState.toggle_sort,
+                                LiquidacionGridState.sort_by,
+                                LiquidacionGridState.sort_order,
+                                LiquidacionGridState.toggle_sort,
                             ),
                             header_cell_sortable(
                                 "Estado",
                                 "estado_liquidacion",
-                                LiquidacionAsesoresState.sort_by,
-                                LiquidacionAsesoresState.sort_order,
-                                LiquidacionAsesoresState.toggle_sort,
+                                LiquidacionGridState.sort_by,
+                                LiquidacionGridState.sort_order,
+                                LiquidacionGridState.toggle_sort,
                             ),
                             header_cell_sortable(
                                 "Comisión Bruta",
                                 "comision_bruta",
-                                LiquidacionAsesoresState.sort_by,
-                                LiquidacionAsesoresState.sort_order,
-                                LiquidacionAsesoresState.toggle_sort,
+                                LiquidacionGridState.sort_by,
+                                LiquidacionGridState.sort_order,
+                                LiquidacionGridState.toggle_sort,
                             ),
                             rx.table.column_header_cell("Descuentos"),
                             rx.table.column_header_cell("Bonificaciones"),
                             header_cell_sortable(
                                 "Neto",
                                 "valor_neto_asesor",
-                                LiquidacionAsesoresState.sort_by,
-                                LiquidacionAsesoresState.sort_order,
-                                LiquidacionAsesoresState.toggle_sort,
+                                LiquidacionGridState.sort_by,
+                                LiquidacionGridState.sort_order,
+                                LiquidacionGridState.toggle_sort,
                             ),
                             rx.table.column_header_cell("Acciones"),
                         )
                     ),
                     rx.table.body(
                         rx.foreach(
-                            LiquidacionAsesoresState.liquidaciones,
+                            LiquidacionGridState.liquidaciones,
                             lambda liq: rx.table.row(
                                 rx.table.cell(liq["asesor"]),
                                 rx.table.cell(liq["periodo"]),
@@ -236,9 +248,9 @@ def liquidacion_asesores_content() -> rx.Component:
                                             rx.icon_button(
                                                 rx.icon("eye", size=16),
                                                 variant="ghost",
-                                                on_click=lambda liq_id=liq["id_liquidacion"]: (
+                                                on_click=lambda: (
                                                     LiquidacionAsesoresState.open_detail_modal(
-                                                        liq_id
+                                                        liq["id_liquidacion"]
                                                     )
                                                 ),
                                             ),
@@ -251,9 +263,9 @@ def liquidacion_asesores_content() -> rx.Component:
                                                     rx.icon("file-text", size=16),
                                                     variant="ghost",
                                                     color_scheme="blue",
-                                                    on_click=lambda liq_id=liq["id_liquidacion"]: (
+                                                    on_click=lambda: (
                                                         PDFState.generar_liquidacion_asesor_pdf(
-                                                            liq_id
+                                                            liq["id_liquidacion"]
                                                         )
                                                     ),
                                                 ),
@@ -266,9 +278,9 @@ def liquidacion_asesores_content() -> rx.Component:
                                                 rx.icon_button(
                                                     rx.icon("pencil", size=16),
                                                     variant="ghost",
-                                                    on_click=lambda liq_id=liq["id_liquidacion"]: (
-                                                        LiquidacionAsesoresState.open_edit_modal(
-                                                            liq_id
+                                                    on_click=lambda: (
+                                                        LiquidacionFormState.open_edit_modal(
+                                                            liq["id_liquidacion"]
                                                         )
                                                     ),
                                                 ),
@@ -282,9 +294,9 @@ def liquidacion_asesores_content() -> rx.Component:
                                                     rx.icon("check", size=18),
                                                     variant="ghost",
                                                     color="#51cf66",
-                                                    on_click=lambda liq_id=liq["id_liquidacion"]: (
-                                                        LiquidacionAsesoresState.aprobar_liquidacion(
-                                                            liq_id
+                                                    on_click=lambda: (
+                                                        LiquidacionFormState.aprobar_liquidacion(
+                                                            liq["id_liquidacion"]
                                                         )
                                                     ),
                                                 ),
@@ -312,34 +324,34 @@ def liquidacion_asesores_content() -> rx.Component:
                     rx.text(
                         "Anterior", display=rx.breakpoints(initial="none", md="block")
                     ),
-                    on_click=LiquidacionAsesoresState.prev_page,
-                    disabled=LiquidacionAsesoresState.current_page == 1,
+                    on_click=LiquidacionGridState.prev_page,
+                    disabled=LiquidacionGridState.current_page == 1,
                     size="3",
                 ),
                 rx.vstack(
                     rx.text(
                         "Página ",
-                        LiquidacionAsesoresState.current_page,
+                        LiquidacionGridState.current_page,
                         size=rx.breakpoints(initial="2", md="3"),
                         weight="medium",
                         color=styles.TEXT_PRIMARY,
                     ),
                     rx.text(
                         "Mostrando ",
-                        (LiquidacionAsesoresState.current_page - 1)
-                        * LiquidacionAsesoresState.page_size
+                        (LiquidacionGridState.current_page - 1)
+                        * LiquidacionGridState.page_size
                         + 1,
                         "-",
                         rx.cond(
-                            LiquidacionAsesoresState.current_page
-                            * LiquidacionAsesoresState.page_size
-                            > LiquidacionAsesoresState.total_items,
-                            LiquidacionAsesoresState.total_items,
-                            LiquidacionAsesoresState.current_page
-                            * LiquidacionAsesoresState.page_size,
+                            LiquidacionGridState.current_page
+                            * LiquidacionGridState.page_size
+                            > LiquidacionGridState.total_items,
+                            LiquidacionGridState.total_items,
+                            LiquidacionGridState.current_page
+                            * LiquidacionGridState.page_size,
                         ),
                         " de ",
-                        LiquidacionAsesoresState.total_items,
+                        LiquidacionGridState.total_items,
                         size="1",
                         color=styles.TEXT_SECONDARY,
                         display=rx.breakpoints(initial="none", md="block"),
@@ -352,10 +364,10 @@ def liquidacion_asesores_content() -> rx.Component:
                         "Siguiente", display=rx.breakpoints(initial="none", md="block")
                     ),
                     rx.icon("chevron-right", size=16),
-                    on_click=LiquidacionAsesoresState.next_page,
-                    disabled=LiquidacionAsesoresState.current_page
-                    * LiquidacionAsesoresState.page_size
-                    >= LiquidacionAsesoresState.total_items,
+                    on_click=LiquidacionGridState.next_page,
+                    disabled=LiquidacionGridState.current_page
+                    * LiquidacionGridState.page_size
+                    >= LiquidacionGridState.total_items,
                     size="3",
                 ),
                 justify="center",
@@ -376,11 +388,11 @@ def liquidacion_asesores_content() -> rx.Component:
         # Modales
         modal_form(),
         bulk_modal_form(
-            is_open=LiquidacionAsesoresState.show_bulk_modal,
-            on_open_change=LiquidacionAsesoresState.set_show_bulk_modal,
-            form_data=LiquidacionAsesoresState.form_data,
-            on_submit=LiquidacionAsesoresState.generar_liquidacion_masiva,
-            is_loading=LiquidacionAsesoresState.is_loading,
+            is_open=LiquidacionFormState.show_bulk_modal,
+            on_open_change=LiquidacionFormState.set_show_bulk_modal,
+            form_data=LiquidacionFormState.form_data,
+            on_submit=LiquidacionFormState.generar_liquidacion_masiva,
+            is_loading=LiquidacionGridState.is_loading,
         ),
         detail_modal(),
         annul_modal(),

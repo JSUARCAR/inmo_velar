@@ -78,7 +78,8 @@ class RepositorioDocumento:
         )
 
         try:
-            with self.db.transaccion() as cursor:
+            with self.db.transaccion() as conn:
+                cursor = self.db.get_dict_cursor(conn)
                 cursor.execute(sql, params)
                 row = cursor.fetchone()
                 if row:
@@ -144,7 +145,8 @@ class RepositorioDocumento:
         WHERE ENTIDAD_TIPO = {ph} AND CAST(ENTIDAD_ID AS VARCHAR) = {ph} AND NOMBRE_ARCHIVO = {ph} AND ES_VIGENTE = {ph}
         """
         try:
-            with self.db.transaccion() as cursor:
+            with self.db.transaccion() as conn:
+                cursor = self.db.get_dict_cursor(conn)
                 # Set to '0' where is '1'
                 cursor.execute(sql, ("0", entidad_tipo, str(entidad_id), nombre_archivo, "1"))
         except sqlite3.Error:
@@ -185,7 +187,8 @@ class RepositorioDocumento:
         ph = self.db.get_placeholder()
         sql = f"UPDATE DOCUMENTOS SET ES_VIGENTE = {ph} WHERE ID = {ph}"
         try:
-            with self.db.transaccion() as cursor:
+            with self.db.transaccion() as conn:
+                cursor = self.db.get_dict_cursor(conn)
                 # Set to '0'
                 cursor.execute(sql, ("0", id_documento))
         except sqlite3.Error:
