@@ -98,3 +98,6 @@ agent-skills/
 skills/
 scratch/
 nul
+alter_db.py
+*.zip
+.git_log_temp.txt
