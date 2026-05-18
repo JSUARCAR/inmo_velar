@@ -46,6 +46,16 @@ class ContratoArrendamiento:
     fecha_incremento_ipc: Optional[str] = None
     fecha_ultimo_incremento_ipc: Optional[str] = None
 
+    # Datos de Seguros (Automatización LIQ-AUTO-001)
+    id_seguro: Optional[int] = None
+    nombre_seguro: Optional[str] = None
+    porcentaje_seguro: int = 0  # Escala 10,000
+
+    # Campos Extendidos (JOINs con Mandatos/Propiedades)
+    comision_porcentaje_contrato_m: int = 0
+    id_contrato_m: int = 0
+    direccion_propiedad: str = "Sin Dirección"
+
     # Auditoría
     created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
     created_by: Optional[str] = None

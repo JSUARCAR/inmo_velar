@@ -85,6 +85,12 @@ class ServicioReportes:
         except ValueError:
             return None
 
+    def _extraer_headers_seguro(self, data: List[Dict[str, Any]], fallback: List[str] = []) -> List[str]:
+        """Extrae las llaves del primer registro de forma segura (Blindaje Élite)."""
+        if data and len(data) > 0 and hasattr(data[0], "keys"):
+            return list(data[0].keys())
+        return fallback
+
     async def obtener_datos_reporte(
         self,
         report_id: str,
@@ -117,11 +123,11 @@ class ServicioReportes:
                 page=pagina,
                 limit=limite,
             )
-            headers = list(data[0].keys()) if data else [
+            headers = self._extraer_headers_seguro(data, [
                 "ID_PERSONA", "TIPO_DOCUMENTO", "NUMERO_DOCUMENTO",
                 "NOMBRE_COMPLETO", "TELEFONO_PRINCIPAL",
                 "CORREO_ELECTRONICO", "DIRECCION_PRINCIPAL", "ESTADO_REGISTRO",
-            ]
+            ])
             return data, headers, total
 
         if report_id == "propiedades":
@@ -134,12 +140,12 @@ class ServicioReportes:
                 page=pagina,
                 limit=limite,
             )
-            headers = list(data[0].keys()) if data else [
+            headers = self._extraer_headers_seguro(data, [
                 "ID_PROPIEDAD", "MATRICULA_INMOBILIARIA", "DIRECCION_PROPIEDAD",
                 "TIPO_PROPIEDAD", "AREA_M2", "HABITACIONES", "ESTRATO",
                 "VALOR_ADMINISTRACION", "CANON_ARRENDAMIENTO_ESTIMADO",
                 "DISPONIBILIDAD_PROPIEDAD", "ESTADO_REGISTRO",
-            ]
+            ])
             return data, headers, total
 
         # 2. Reportes de Roles (Paginación Real en DB)
@@ -200,16 +206,25 @@ class ServicioReportes:
             data, total = self.repo_reportes.obtener_reporte_incidentes_enriquecido(
                 estado=estado, busqueda=busqueda, page=pagina, limit=limite
             )
-            headers = list(data[0].keys()) if data else []
+            headers = self._extraer_headers_seguro(data)
             return data, headers, total
 
-        # 5. Reporte Liquidaciones (Paginación Real en DB)
+        # 5. Reporte Liquidaciones (Propietarios)
         if report_id == "liquidaciones":
             asesor_id = self._parsear_asesor_id(filtros.get("asesor_id"))
             data, total = self.repo_reportes.obtener_reporte_liquidaciones(
                 asesor_id=asesor_id, busqueda=busqueda, page=pagina, limit=limite
             )
-            headers = list(data[0].keys()) if data else []
+            headers = self._extraer_headers_seguro(data)
+            return data, headers, total
+
+        # 5.1 Reporte Liquidación Asesores (Especializado)
+        if report_id == "liquidacion_asesores":
+            asesor_id = self._parsear_asesor_id(filtros.get("asesor_id"))
+            data, total = self.repo_reportes.obtener_reporte_liquidaciones_asesores(
+                asesor_id=asesor_id, busqueda=busqueda, page=pagina, limit=limite
+            )
+            headers = self._extraer_headers_seguro(data)
             return data, headers, total
 
         # 6. Reporte Consolidado (Información financiera y contractual unificada)
@@ -229,15 +244,15 @@ class ServicioReportes:
                 limit=limite,
             )
             # Extraer headers dinámicamente si hay datos para evitar desincronización con el repositorio
-            headers = list(data[0].keys()) if data else HEADERS_REPORTE_CONSOLIDADO
+            headers = self._extraer_headers_seguro(data, HEADERS_REPORTE_CONSOLIDADO)
             return data, headers, total
 
         # 7. Reportes Genéricos (Paginación Real en DB)
         table_map = {
+            "personas_raw": "PERSONAS",
             "contratos_mandato": "CONTRATOS_MANDATOS",
             "contratos_arrendamiento": "CONTRATOS_ARRENDAMIENTOS",
             "proveedores": "PROVEEDORES",
-            "liquidacion_asesores": "LIQUIDACIONES_ASESORES",
             "desocupaciones": "DESOCUPACIONES",
             "seguros": "SEGUROS",
             "recibos_publicos": "RECIBOS_PUBLICOS",
@@ -247,7 +262,7 @@ class ServicioReportes:
             data, total = self.repo_reportes.obtener_reporte_generico(
                 tabla=table_map[report_id], busqueda=busqueda, page=pagina, limit=limite
             )
-            headers = list(data[0].keys()) if data else []
+            headers = self._extraer_headers_seguro(data)
             return data, headers, total
 
         return [], [], 0
@@ -262,9 +277,10 @@ class ServicioReportes:
         return {k: v for k, v in d.items() if not k.startswith("_")}
 
     def _definir_headers_roles(self, data: List[Dict]) -> List[str]:
-        """Ordena los headers para reportes de roles para mejor legibilidad."""
-        if not data:
+        """Ordena los headers para reportes de roles para mejor legibilidad (Blindaje Élite)."""
+        if not data or len(data) == 0:
             return []
+            
         priority = [
             "tipo_documento",
             "numero_documento",
@@ -272,7 +288,13 @@ class ServicioReportes:
             "telefono_principal",
             "correo_electronico",
         ]
-        all_keys = list(data[0].keys())
+        
+        # Acceso seguro al primer registro
+        first_row = data[0]
+        if not hasattr(first_row, "keys"):
+            return []
+            
+        all_keys = list(first_row.keys())
         headers = []
 
         # Encontrar nombres exactos (respetando case-sensitivity del driver)

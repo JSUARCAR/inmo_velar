@@ -40,6 +40,7 @@ class LiquidacionAsesor:
 
     # Estado y Flujo
     estado_liquidacion: str = "Pendiente"  # Pendiente, Aprobada, Pagada, Anulada
+    modo_comision: str = "ASESOR"  # ASESOR o CONTRATO_MANDATO
     fecha_creacion: Optional[str] = None
     fecha_aprobacion: Optional[str] = None
     usuario_creador: Optional[str] = None
@@ -152,6 +153,20 @@ class LiquidacionAsesor:
             Comisión bruta calculada
         """
         return int((canon * porcentaje) / 10000)
+
+    @staticmethod
+    def calcular_4x1000(canon: int) -> int:
+        """
+        Calcula el Gravamen a los Movimientos Financieros (4x1000) sobre el canon.
+        """
+        return int(canon * 4 / 1000)
+
+    @staticmethod
+    def calcular_valor_seguro(canon: int, porcentaje_10000: int) -> int:
+        """
+        Calcula el valor del seguro basado en el canon y el porcentaje (escala 10,000).
+        """
+        return int((canon * porcentaje_10000) / 10000)
 
     def calcular_valor_neto(self, total_descuentos: int, total_bonificaciones: int = 0) -> int:
         """

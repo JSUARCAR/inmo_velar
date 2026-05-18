@@ -1,0 +1,248 @@
+{
+    "q1": [],
+    "q2": [
+        {
+            "id_asesor": 11,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 11,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 11,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 8,
+            "comision_asesor": 10,
+            "comision_contrato": 1200,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 11,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 11,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 11,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 9,
+            "comision_asesor": 12,
+            "comision_contrato": 1000,
+            "diferencia": 200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 11,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 11,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 8,
+            "comision_asesor": 10,
+            "comision_contrato": 1200,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 11,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 11,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 8,
+            "comision_asesor": 10,
+            "comision_contrato": 1200,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 9,
+            "comision_asesor": 12,
+            "comision_contrato": 1000,
+            "diferencia": 200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 11,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 12,
+            "comision_asesor": 8,
+            "comision_contrato": 1000,
+            "diferencia": -200
+        },
+        {
+            "id_asesor": 9,
+            "comision_asesor": 12,
+            "comision_contrato": 1000,
+            "diferencia": 200
+        }
+    ],
+    "q3": [],
+    "q4": [
+        {
+            "periodo_liquidacion": "2026-05",
+            "total": 4,
+            "min_pct": 800,
+            "max_pct": 1200
+        },
+        {
+            "periodo_liquidacion": "2026-06",
+            "total": 4,
+            "min_pct": 800,
+            "max_pct": 1200
+        }
+    ]
+}

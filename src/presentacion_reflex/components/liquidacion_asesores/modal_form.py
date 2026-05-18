@@ -77,79 +77,79 @@ def modal_form() -> rx.Component:
                                 ),
                                 width="100%",
                             ),
-                            # Porcentaje
-                            rx.box(
-                                rx.text(
-                                    "Porcentaje Comisión (%)",
-                                    size="2",
-                                    weight="bold",
-                                    margin_bottom="1",
-                                ),
-                                rx.input(
-                                    name="porcentaje_comision",
-                                    placeholder="Ej: 5.0",
-                                    required=True,
-                                    type="number",
-                                    step="0.1",
-                                    min="0",
-                                    max="100",
-                                    width="100%",
-                                    value=LiquidacionFormState.form_data["porcentaje_comision"],
-                                    on_change=lambda val: LiquidacionFormState.set_form_field(
-                                        "porcentaje_comision", val
-                                    ),
-                                    style=styles.NEU_INPUT_STYLE,
-                                ),
+                            # Callout informativo de comisión (En lugar de input)
+                            rx.callout(
+                                "La comisión se calcula automáticamente del % de cada Contrato de Mandato.",
+                                icon="info",
+                                color_scheme="blue",
                                 width="100%",
                             ),
                             direction="column",
                             spacing="4",
                             width="100%",
                         ),
-                        # Right Column: Properties List
+                        # Right Column: Properties List (Table Format)
                         rx.box(
                             rx.text(
                                 "Propiedades a Liquidar", size="2", weight="bold", margin_bottom="2"
                             ),
                             rx.scroll_area(
-                                rx.flex(
-                                    rx.cond(
-                                        LiquidacionFormState.advisor_properties.length() > 0,
-                                        rx.foreach(
-                                            LiquidacionFormState.advisor_properties,
-                                            lambda prop: rx.card(
-                                                rx.flex(
-                                                    rx.text(
-                                                        prop["DIRECCION_PROPIEDAD"],
-                                                        size="1",
-                                                        weight="bold",
-                                                    ),
-                                                    rx.text(
-                                                        "Canon: ",
-                                                        prop["CANON_ARRENDAMIENTO_VIEW"],
-                                                        size="1",
-                                                        color="gray",
-                                                    ),
-                                                    direction="column",
-                                                    spacing="1",
+                                rx.cond(
+                                    LiquidacionFormState.advisor_properties.length() > 0,
+                                    rx.table.root(
+                                        rx.table.header(
+                                            rx.table.row(
+                                                rx.table.column_header_cell("Dirección"),
+                                                rx.table.column_header_cell("Canon"),
+                                                rx.table.column_header_cell("% Com."),
+                                                rx.table.column_header_cell("Comisión"),
+                                            )
+                                        ),
+                                        rx.table.body(
+                                            rx.foreach(
+                                                LiquidacionFormState.advisor_properties,
+                                                lambda prop: rx.table.row(
+                                                    rx.table.cell(prop["DIRECCION_PROPIEDAD"], size="1"),
+                                                    rx.table.cell(prop["CANON_ARRENDAMIENTO_VIEW"], size="1"),
+                                                    rx.table.cell(prop["COMISION_PORCENTAJE_VIEW"], size="1", color="blue"),
+                                                    rx.table.cell(prop["COMISION_MONTO_VIEW"], size="1", weight="bold"),
                                                 ),
-                                                padding="2",
-                                                variant="classic",
-                                            ),
+                                            )
                                         ),
-                                        rx.text(
-                                            "No hay propiedades activas o no se ha seleccionado asesor.",
-                                            size="1",
-                                            color="gray",
-                                            style={"fontStyle": "italic"},
-                                        ),
+                                        variant="surface",
+                                        size="1",
                                     ),
-                                    direction="column",
-                                    spacing="2",
+                                    rx.text(
+                                        "No hay propiedades activas o no se ha seleccionado asesor.",
+                                        size="1",
+                                        color="gray",
+                                        style={"fontStyle": "italic"},
+                                    ),
                                 ),
                                 type="always",
                                 scrollbars="vertical",
-                                style={"height": "200px"},
+                                style={"height": "250px"},
+                            ),
+                            # Resumen de Previsualización (LIQ-AUTO-001)
+                            rx.cond(
+                                LiquidacionFormState.advisor_properties.length() > 0,
+                                rx.flex(
+                                    rx.badge(
+                                        rx.icon("calculator", size=14),
+                                        f"Prev. 4x1000: {LiquidacionFormState.preview_4x1000}",
+                                        color_scheme="orange",
+                                        variant="surface",
+                                    ),
+                                    rx.badge(
+                                        rx.icon("shield-check", size=14),
+                                        f"Prev. Seguros: {LiquidacionFormState.preview_seguros_total}",
+                                        color_scheme="red",
+                                        variant="surface",
+                                    ),
+                                    spacing="2",
+                                    margin_top="2",
+                                    justify="end",
+                                ),
                             ),
                             padding="3",
                             background_color="var(--gray-2)",

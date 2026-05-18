@@ -40,15 +40,21 @@ class RepositorioReportes:
                 cursor.execute(paginated_query, paginated_params)
                 rows = cursor.fetchall()
                 
-                # Extraer el total_count de la primera fila si existen resultados
+                # Extraer el total_count de la primera fila si existen resultados (Blindaje Élite)
                 total = 0
-                if rows:
-                    total = rows[0].get("_total_count", rows[0].get("_TOTAL_COUNT", 0))
+                if rows is not None and len(rows) > 0:
+                    first_row = rows[0]
+                    if hasattr(first_row, "get"):
+                        total = (first_row.get("_total_count") or 
+                                 first_row.get("_TOTAL_COUNT") or 
+                                 0)
                 
-                # Limpiar la columna auxiliar de los resultados de forma segura (case-insensitive)
-                for row in rows:
-                    row.pop("_total_count", None)
-                    row.pop("_TOTAL_COUNT", None)
+                # Limpiar la columna auxiliar de los resultados de forma segura
+                if rows:
+                    for row in rows:
+                        if hasattr(row, "pop"):
+                            row.pop("_total_count", None)
+                            row.pop("_TOTAL_COUNT", None)
             finally:
                 cursor.close()
 
@@ -250,8 +256,8 @@ class RepositorioReportes:
                 per_ase.NOMBRE_COMPLETO AS "Nombre_Asesor",
                 l.PERIODO, l.FECHA_GENERACION, l.CANON_BRUTO, l.OTROS_INGRESOS,
                 l.TOTAL_INGRESOS, l.COMISION_PORCENTAJE, l.COMISION_MONTO,
-                l.IVA_COMISION, l.IMPUESTO_4X1000, l.GASTOS_ADMINISTRACION,
-                l.GASTOS_SERVICIOS, l.GASTOS_REPARACIONES, l.PAGO_PREDIAL,
+                l.IVA_COMISION, l.IMPUESTO_4X1000, l.SEGURO_MONTO as "Seguro_Arrendamiento",
+                l.GASTOS_ADMINISTRACION, l.GASTOS_SERVICIOS, l.GASTOS_REPARACIONES, l.PAGO_PREDIAL,
                 l.OTROS_EGRESOS, l.TOTAL_EGRESOS, l.NETO_A_PAGAR,
                 l.ESTADO_LIQUIDACION, l.FECHA_PAGO, l.METODO_PAGO,
                 l.REFERENCIA_PAGO, l.OBSERVACIONES
@@ -281,6 +287,56 @@ class RepositorioReportes:
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
+
+        return self._ejecutar_query_paginada(query, params, page, limit)
+
+    def obtener_reporte_liquidaciones_asesores(
+        self,
+        asesor_id: Optional[int] = None,
+        busqueda: Optional[str] = None,
+        page: int = 1,
+        limit: int = 20,
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        """Reporte especializado de liquidaciones de asesores con pivoteo de descuentos sistémicos."""
+        query = """
+            SELECT 
+                la.ID_LIQUIDACION_ASESOR AS "ID",
+                p.NOMBRE_COMPLETO AS "Nombre_Asesor",
+                la.PERIODO_LIQUIDACION AS "Periodo",
+                la.CANON_ARRENDAMIENTO_LIQUIDADO AS "Canon_Liquidado",
+                la.PORCENTAJE_COMISION AS "%%_Comision",
+                la.COMISION_BRUTA AS "Comision_Bruta",
+                COALESCE(la.TOTAL_BONIFICACIONES, 0) AS "Bonificaciones",
+                la.TOTAL_DESCUENTOS AS "Total_Descuentos",
+                (SELECT COALESCE(SUM(VALOR_DESCUENTO), 0) FROM DESCUENTOS_ASESORES WHERE ID_LIQUIDACION_ASESOR = la.ID_LIQUIDACION_ASESOR AND DESCRIPCION_DESCUENTO ILIKE '%%4x1000%%') AS "Descuento_4x1000",
+                (SELECT COALESCE(SUM(VALOR_DESCUENTO), 0) FROM DESCUENTOS_ASESORES WHERE ID_LIQUIDACION_ASESOR = la.ID_LIQUIDACION_ASESOR AND DESCRIPCION_DESCUENTO ILIKE '%%Seguro%%') AS "Descuento_Seguro",
+                la.VALOR_NETO_ASESOR AS "Neto_Asesor",
+                la.ESTADO_LIQUIDACION AS "Estado",
+                la.FECHA_CREACION AS "Fecha_Creacion",
+                la.USUARIO_CREADOR AS "Usuario"
+            FROM LIQUIDACIONES_ASESORES la
+            JOIN ASESORES a ON la.ID_ASESOR = a.ID_ASESOR
+            JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA
+        """
+        conditions = []
+        params = []
+
+        if asesor_id:
+            conditions.append("la.ID_ASESOR = %s")
+            params.append(asesor_id)
+
+        if busqueda:
+            conditions.append("""(
+                p.NOMBRE_COMPLETO ILIKE %s OR 
+                la.PERIODO_LIQUIDACION ILIKE %s OR
+                CAST(la.ID_LIQUIDACION_ASESOR AS TEXT) ILIKE %s
+            )""")
+            params.extend([f"%{busqueda}%"] * 3)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+        
+        query += " ORDER BY la.ID_LIQUIDACION_ASESOR DESC"
 
         return self._ejecutar_query_paginada(query, params, page, limit)
 

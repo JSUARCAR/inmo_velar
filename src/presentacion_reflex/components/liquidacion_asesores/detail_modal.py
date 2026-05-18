@@ -118,50 +118,32 @@ def detail_modal() -> rx.Component:
                         ),
                         # Properties Section
                         rx.box(
-                            rx.heading("Propiedades a Liquidar", size="3", margin_bottom="2"),
+                            rx.heading("Propiedades Liquidadas", size="3", margin_bottom="2"),
                             rx.cond(
                                 LiquidacionFormState.advisor_properties.length() > 0,
-                                rx.grid(
-                                    rx.foreach(
-                                        LiquidacionFormState.advisor_properties,
-                                        lambda p: rx.card(
-                                            rx.flex(
-                                                rx.box(
-                                                    rx.text(
-                                                        "Propiedad",
-                                                        size="1",
-                                                        color="gray",
-                                                        weight="bold",
-                                                    ),
-                                                    rx.text(
-                                                        p["DIRECCION_PROPIEDAD"],
-                                                        size="2",
-                                                        weight="medium",
-                                                    ),
-                                                ),
-                                                rx.box(
-                                                    rx.text(
-                                                        "Canon",
-                                                        size="1",
-                                                        color="gray",
-                                                        weight="bold",
-                                                    ),
-                                                    rx.text(
-                                                        p["CANON_ARRENDAMIENTO_VIEW"],
-                                                        size="2",
-                                                        weight="medium",
-                                                        color="blue",
-                                                    ),
-                                                ),
-                                                justify="between",
-                                                align="center",
-                                            ),
-                                            size="2",
-                                        ),
+                                rx.table.root(
+                                    rx.table.header(
+                                        rx.table.row(
+                                            rx.table.column_header_cell("Propiedad"),
+                                            rx.table.column_header_cell("Canon"),
+                                            rx.table.column_header_cell("% Com."),
+                                            rx.table.column_header_cell("Comisión"),
+                                        )
                                     ),
-                                    columns="2",
-                                    spacing="2",
+                                    rx.table.body(
+                                        rx.foreach(
+                                            LiquidacionFormState.advisor_properties,
+                                            lambda p: rx.table.row(
+                                                rx.table.cell(p["DIRECCION_PROPIEDAD"], size="1"),
+                                                rx.table.cell(p["CANON_ARRENDAMIENTO_VIEW"], size="1"),
+                                                rx.table.cell(p["COMISION_PORCENTAJE_VIEW"], size="1", color="blue"),
+                                                rx.table.cell(p["COMISION_MONTO_VIEW"], size="1", weight="bold"),
+                                            ),
+                                        )
+                                    ),
+                                    variant="surface",
                                     width="100%",
+                                    size="1",
                                 ),
                                 rx.text(
                                     "No hay propiedades asociadas",
