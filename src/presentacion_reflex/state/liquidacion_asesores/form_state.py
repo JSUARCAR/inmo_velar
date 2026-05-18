@@ -31,6 +31,24 @@ class LiquidacionFormState(rx.State):
     show_discount_modal: bool = False
     show_annul_modal: bool = False
     show_bulk_modal: bool = False
+
+    def set_show_form_modal(self, value: bool):
+        self.show_form_modal = value
+
+    def set_show_detail_modal(self, value: bool):
+        self.show_detail_modal = value
+
+    def set_show_discount_modal(self, value: bool):
+        self.show_discount_modal = value
+
+    def set_show_annul_modal(self, value: bool):
+        self.show_annul_modal = value
+
+    def set_show_bulk_modal(self, value: bool):
+        self.show_bulk_modal = value
+
+    def set_annul_reason(self, value: str):
+        self.annul_reason = value
     
     selected_liquidacion_id: int = 0
     form_data: Dict[str, Any] = {}

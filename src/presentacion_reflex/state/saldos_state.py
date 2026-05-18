@@ -36,6 +36,9 @@ class SaldosState(rx.State):
     # Form Modal State
     show_create_modal: bool = False
 
+    def set_show_create_modal(self, value: bool):
+        self.show_create_modal = value
+
     # Form Fields
     form_tipo_beneficiario: str = "Propietario"
     form_id_beneficiario: int = 0
