@@ -132,9 +132,6 @@ class SaldosState(rx.State):
     def set_form_observaciones(self, value: str):
         self.form_observaciones = value
 
-    def set_show_create_modal(self, value: bool):
-        self.show_create_modal = value
-
     def set_form_tipo_beneficiario(self, value: str):
         self.form_tipo_beneficiario = value
 

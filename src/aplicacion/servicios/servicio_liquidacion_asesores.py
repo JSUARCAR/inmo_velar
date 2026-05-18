@@ -555,12 +555,43 @@ class ServicioLiquidacionAsesores:
 
         contratos_asociados = self.repo_liquidacion.obtener_contratos_de_liquidacion(id_liquidacion)
 
+        # --- SOPORTE LEGACY ÉLITE ---
+        # Si es una liquidación de contrato único (legacy), cargamos datos extra para el PDF
+        contrato_legacy = None
+        propiedad_legacy = None
+        if liquidacion.id_contrato_a and self.repo_contrato_arrendamiento:
+            try:
+                contrato_legacy = self.repo_contrato_arrendamiento.obtener_por_id(liquidacion.id_contrato_a)
+                if contrato_legacy and self.repo_propiedad:
+                    propiedad_legacy = self.repo_propiedad.obtener_por_id(contrato_legacy.id_propiedad)
+            except Exception as e:
+                logger.warning(f"Error cargando datos legacy para liquidación {id_liquidacion}: {e}")
+
         return {
             "liquidacion": self._liquidacion_to_dict(liquidacion),
             "contratos": contratos_asociados,
             "descuentos": [self._descuento_to_dict(d) for d in descuentos],
             "bonificaciones": bonificaciones,
             "pagos": [self._pago_to_dict(p) for p in pagos],
+            "contrato": self._contrato_to_dict(contrato_legacy) if contrato_legacy else None,
+            "propiedad": self._propiedad_to_dict(propiedad_legacy) if propiedad_legacy else None,
+        }
+
+    def _contrato_to_dict(self, contrato: Any) -> Dict[str, Any]:
+        """Serializa contrato a dict para PDF."""
+        return {
+            "id_contrato_a": contrato.id_contrato_a,
+            "id_propiedad": contrato.id_propiedad,
+            "canon_arrendamiento": contrato.canon_arrendamiento,
+            "estado_contrato_a": contrato.estado_contrato_a,
+        }
+
+    def _propiedad_to_dict(self, propiedad: Any) -> Dict[str, Any]:
+        """Serializa propiedad a dict para PDF."""
+        return {
+            "id_propiedad": propiedad.id_propiedad,
+            "direccion_propiedad": propiedad.direccion_propiedad,
+            "matricula_inmobiliaria": propiedad.matricula_inmobiliaria,
         }
 
     def generar_liquidaciones_masivas_optimizado(self, periodo: str, usuario: str) -> Dict[str, int]:

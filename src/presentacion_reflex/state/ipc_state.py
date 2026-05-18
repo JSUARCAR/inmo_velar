@@ -80,9 +80,6 @@ class IPCState(rx.State):
     def close_modal(self):
         self.show_modal = False
 
-    def set_show_modal(self, value: bool):
-        self.show_modal = value
-
     @rx.event(background=True)
     async def save_ipc(self):
         """Guarda o actualiza IPC."""

@@ -456,12 +456,6 @@ class IncidentesState(DocumentosStateMixin):
     def set_responsable_pago(self, value: str):
         self.form_data["responsable_pago"] = value
 
-    def set_modal_open(self, value: bool):
-        self.modal_open = value
-
-    def set_details_modal_open(self, value: bool):
-        self.details_modal_open = value
-
     # --- DETAILS & QUOTING ACTIONS ---
 
     @rx.event(background=True)

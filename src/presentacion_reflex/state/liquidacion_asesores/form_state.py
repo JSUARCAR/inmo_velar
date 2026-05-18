@@ -468,18 +468,10 @@ class LiquidacionFormState(rx.State):
             async with self:
                 self.error_message = str(e)
 
-    def set_show_form_modal(self, value: bool): self.show_form_modal = value
-    def set_show_detail_modal(self, value: bool): self.show_detail_modal = value
-    def set_show_discount_modal(self, value: bool): self.show_discount_modal = value
-    def set_show_annul_modal(self, value: bool): self.show_annul_modal = value
-    def set_annul_reason(self, value: str): self.annul_reason = value
     def open_annul_modal(self, id_liq: int):
         self.selected_liquidacion_id = id_liq
         self.annul_reason = ""
         self.show_annul_modal = True
-
-    def set_show_bulk_modal(self, value: bool): 
-        self.show_bulk_modal = value
 
     def open_bulk_modal(self):
         self.show_bulk_modal = True

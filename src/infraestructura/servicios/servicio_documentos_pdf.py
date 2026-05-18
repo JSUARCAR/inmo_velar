@@ -573,24 +573,23 @@ class ServicioDocumentosPDF:
             contratos = [
                 {
                     "id_contrato": datos["id_contrato_legacy"],
-                    "direccion": datos.get("direccion_legacy", "N/A"),
-                    "canon_incluido": datos.get("canon_legacy", 0),
+                    "direccion": datos.get("direccion_legacy") or "N/A",
+                    "canon_incluido": datos.get("canon_legacy") or 0,
                 }
             ]
 
         for c in contratos:
-            canon = c.get("canon_incluido", 0)
+            canon = c.get("canon_incluido") or 0
             # Usar % y monto del contrato si vienen en los datos, si no estimar (legacy)
             pct_val = c.get("comision_porcentaje_contrato")
             if pct_val is not None:
                 pct_str = f"{pct_val / 100.0:.1f}%"
-                com_ind = c.get("comision_monto_contrato", 0)
+                com_ind = c.get("comision_monto_contrato") or 0
             else:
                 # Fallback legacy: el porcentaje viene en datos['porcentaje_comision'] en escala 100
                 # o en datos['porcentaje_real'] que es float.
-                # Verificamos escala.
                 base_pct = datos.get("porcentaje_comision") or 0
-                if base_pct > 100: # Escala 10000
+                if base_pct > 100: # Escala 10000 (bps)
                      pct_str = f"{base_pct / 100.0:.1f}%"
                      com_ind = int(canon * base_pct / 10000)
                 else: # Escala 100
@@ -598,7 +597,8 @@ class ServicioDocumentosPDF:
                      com_ind = int(canon * base_pct / 100)
 
             pdf.cell(20, 6, f"#{c.get('id_contrato')}", border=1)
-            pdf.cell(90, 6, str(c.get("direccion"))[:45], border=1)
+            direccion = str(c.get("direccion") or "N/A")
+            pdf.cell(90, 6, direccion[:45], border=1)
             pdf.cell(25, 6, f"${canon:,}", border=1, align="R")
             pdf.cell(25, 6, pct_str, border=1, align="C")
             pdf.cell(30, 6, f"${com_ind:,}", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
