@@ -495,12 +495,33 @@ class ReportesState(rx.State):
         except Exception as e:
             return rx.window_alert(f"Error generando CSV: {str(e)}")
 
-    def _sanitize_value(self, value: Any) -> str:
-        """Limpia el valor para exportación CSV (elimina saltos de linea)."""
+    def _sanitize_value(self, value: Any, key: str = "", is_export: bool = False) -> str:
+        """Limpia el valor para exportación CSV y previene eliminación de ceros iniciales en Excel.
+
+        Args:
+            value: Valor a sanitizar.
+            key: Nombre de la columna/campo.
+            is_export: Indica si la sanitización es para una exportación real a archivo.
+        """
         if value is None:
             return ""
+
         # Convertir a string y eliminar saltos de línea
-        return str(value).replace("\n", " ").replace("\r", "").strip()
+        str_val = str(value).replace("\n", " ").replace("\r", "").strip()
+
+        # Prevenir que Excel elimine los ceros iniciales en cuentas bancarias y documentos
+        # Se usa el formato ="valor" que Excel interpreta como texto literal.
+        if is_export and key in [
+            "NUMERO_CUENTA_PROPIETARIO", 
+            "NUMERO_DOCUMENTO_PROPIETARIO", 
+            "NUMERO_DOCUMENTO_ARRENDATARIO",
+            "NUMERO_DOCUMENTO",
+            "DOCUMENTO_CONSIGNATARIO_PROPIETARIO"
+        ]:
+            if str_val and (str_val.startswith("0") or str_val.isdigit()):
+                return f'="{str_val}"'
+
+        return str_val
 
     async def _fetch_data(self, report_id: str, page: int, limit: int, filtros: dict, is_export: bool):
         """
@@ -518,14 +539,16 @@ class ReportesState(rx.State):
                 es_exportacion=is_export,
             )
 
-            # Sanitización final para UI
+            # Sanitización final para UI/Export
             clean_data = []
             for row in data:
-                clean_row = {k: self._sanitize_value(v) for k, v in row.items()}
+                clean_row = {k: self._sanitize_value(v, k, is_export) for k, v in row.items()}
                 clean_data.append(clean_row)
 
             return clean_data, headers, total
 
         except Exception as e:
+            import traceback
             print(f"Error en _fetch_data: {e}")
+            traceback.print_exc()
             raise e

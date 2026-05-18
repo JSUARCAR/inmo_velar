@@ -25,9 +25,9 @@ class RepositorioLiquidacionAsesor:
                 ID_CONTRATO_A, ID_ASESOR, PERIODO_LIQUIDACION, 
                 CANON_ARRENDAMIENTO_LIQUIDADO, PORCENTAJE_COMISION, COMISION_BRUTA, 
                 TOTAL_DESCUENTOS, TOTAL_BONIFICACIONES, VALOR_NETO_ASESOR, 
-                ESTADO_LIQUIDACION, OBSERVACIONES_LIQUIDACION, USUARIO_CREADOR, 
-                CREATED_BY, UPDATED_BY
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
+                ESTADO_LIQUIDACION, MODO_COMISION, OBSERVACIONES_LIQUIDACION, 
+                USUARIO_CREADOR, CREATED_BY, UPDATED_BY
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
             RETURNING ID_LIQUIDACION_ASESOR
         """
 
@@ -42,6 +42,7 @@ class RepositorioLiquidacionAsesor:
             liquidacion.total_bonificaciones,
             liquidacion.valor_neto_asesor,
             liquidacion.estado_liquidacion,
+            liquidacion.modo_comision,
             liquidacion.observaciones_liquidacion,
             usuario,
             usuario,
@@ -328,41 +329,69 @@ class RepositorioLiquidacionAsesor:
     def guardar_contratos_liquidacion(
         self, id_liquidacion: int, contratos_ids_canones: List[Tuple], usuario: str
     ):
-        """Guarda contratos asociados en tabla intermedia."""
+        """
+        Guarda contratos asociados en tabla intermedia con desglose de comisión.
+        contratos_ids_canones: List[Tuple(id, canon, pct, comision)]
+        """
         query = """
             INSERT INTO LIQUIDACIONES_CONTRATOS (
-                ID_LIQUIDACION_ASESOR, ID_CONTRATO_A, CANON_INCLUIDO, CREATED_BY
-            ) VALUES (%s, %s, %s, %s)
+                ID_LIQUIDACION_ASESOR, ID_CONTRATO_A, CANON_INCLUIDO, 
+                COMISION_PORCENTAJE_CONTRATO, COMISION_MONTO_CONTRATO, CREATED_BY
+            ) VALUES (%s, %s, %s, %s, %s, %s)
         """
         with self.db_manager.transaccion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
-            for id_contrato, canon in contratos_ids_canones:
-                cursor.execute(query, (id_liquidacion, id_contrato, canon, usuario))
+            for id_contrato, canon, pct, comision in contratos_ids_canones:
+                cursor.execute(query, (id_liquidacion, id_contrato, canon, pct, comision, usuario))
 
     def obtener_contratos_de_liquidacion(self, id_liquidacion: int) -> List[Dict]:
-        """Obtiene lista de contratos asociados."""
+        """
+        Obtiene lista de contratos asociados con desglose de comisión.
+        Implementa FALLBACK ÉLITE: Si la comisión histórica es 0, intenta obtenerla del Mandato actual.
+        """
         query = """
-            SELECT lc.ID_CONTRATO_A, lc.CANON_INCLUIDO, ca.CANON_ARRENDAMIENTO, 
-                   p.DIRECCION_PROPIEDAD, per.NOMBRE_COMPLETO as ARRENDATARIO
+            SELECT lc.ID_CONTRATO_A, lc.CANON_INCLUIDO, 
+                   lc.COMISION_PORCENTAJE_CONTRATO, lc.COMISION_MONTO_CONTRATO,
+                   ca.CANON_ARRENDAMIENTO, 
+                   p.DIRECCION_PROPIEDAD, per.NOMBRE_COMPLETO as ARRENDATARIO,
+                   cm.COMISION_PORCENTAJE_CONTRATO_M as PCT_MANDATO_ACTUAL
             FROM LIQUIDACIONES_CONTRATOS lc 
             JOIN CONTRATOS_ARRENDAMIENTOS ca ON lc.ID_CONTRATO_A = ca.ID_CONTRATO_A 
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD 
             JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO 
             JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA 
+            LEFT JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'Activo'
             WHERE lc.ID_LIQUIDACION_ASESOR = %s
         """
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_liquidacion,))
             rows = cursor.fetchall()
-            return [
-                {
-                    "id_contrato": row.get("id_contrato_a") or row.get("ID_CONTRATO_A"),
-                    "canon_incluido": row.get("canon_incluido") or row.get("CANON_INCLUIDO"),
-                    "direccion": row.get("direccion_propiedad") or row.get("DIRECCION_PROPIEDAD"),
-                    "arrendatario": row.get("arrendatario") or row.get("ARRENDATARIO"),
-                } for row in rows
-            ]
+            
+            result = []
+            for row in rows:
+                def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+                
+                # Lógica de Fallback
+                pct_db = gv("COMISION_PORCENTAJE_CONTRATO") or 0
+                monto_db = gv("COMISION_MONTO_CONTRATO") or 0
+                
+                if pct_db == 0:
+                    pct_final = gv("PCT_MANDATO_ACTUAL") or 0
+                    monto_final = int(gv("CANON_INCLUIDO") * pct_final / 10000)
+                else:
+                    pct_final = pct_db
+                    monto_final = monto_db
+
+                result.append({
+                    "id_contrato": gv("ID_CONTRATO_A"),
+                    "canon_incluido": gv("CANON_INCLUIDO"),
+                    "comision_porcentaje_contrato": pct_final,
+                    "comision_monto_contrato": monto_final,
+                    "direccion": gv("DIRECCION_PROPIEDAD"),
+                    "arrendatario": gv("ARRENDATARIO"),
+                })
+            return result
 
     def _row_to_entity(self, row: Dict[str, Any]) -> LiquidacionAsesor:
         """Helper para mapeo de fila a entidad."""
@@ -379,6 +408,7 @@ class RepositorioLiquidacionAsesor:
             total_bonificaciones=gv("TOTAL_BONIFICACIONES") or 0,
             valor_neto_asesor=gv("VALOR_NETO_ASESOR") or 0,
             estado_liquidacion=gv("ESTADO_LIQUIDACION"),
+            modo_comision=gv("MODO_COMISION") or "ASESOR",
             fecha_creacion=gv("FECHA_CREACION"),
             fecha_aprobacion=gv("FECHA_APROBACION"),
             usuario_creador=gv("USUARIO_CREADOR"),

@@ -26,7 +26,6 @@ class LiquidacionFiltrosState(rx.State):
             asesores = [{
                 "id": str(a.id_asesor),
                 "texto": a.nombre_completo,
-                "comision_porcentaje": a.comision_porcentaje_arriendo or 5.0,
             } for a in asesores_entidades]
 
             from dateutil.relativedelta import relativedelta

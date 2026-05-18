@@ -1064,6 +1064,9 @@ class PDFState(rx.State):
             from src.infraestructura.persistencia.repositorio_asesor_postgres import (
                 RepositorioAsesorPostgres,
             )
+            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+                RepositorioContratoArrendamientoPostgres,
+            )
             from src.infraestructura.persistencia.repositorio_persona_postgres import (
                 RepositorioPersonaPostgres,
             )

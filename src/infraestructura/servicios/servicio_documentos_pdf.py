@@ -557,9 +557,10 @@ class ServicioDocumentosPDF:
 
         pdf.set_font("helvetica", "B", 9)
         pdf.set_fill_color(240, 240, 240)
-        pdf.cell(30, 8, "Contrato", border=1, fill=True)
-        pdf.cell(100, 8, "Dirección Inmueble", border=1, fill=True)
-        pdf.cell(30, 8, "Canon", border=1, fill=True)
+        pdf.cell(20, 8, "ID", border=1, fill=True)
+        pdf.cell(90, 8, "Dirección Inmueble", border=1, fill=True)
+        pdf.cell(25, 8, "Canon", border=1, fill=True)
+        pdf.cell(25, 8, "% Com.", border=1, fill=True)
         pdf.cell(30, 8, "Comisión", border=1, fill=True, new_x="LMARGIN", new_y="NEXT")
 
         pdf.set_font("helvetica", "", 9)
@@ -572,19 +573,34 @@ class ServicioDocumentosPDF:
             contratos = [
                 {
                     "id_contrato": datos["id_contrato_legacy"],
-                    "direccion": datos.get("direccion_legacy", "N/A"),
-                    "canon_incluido": datos.get("canon_legacy", 0),
+                    "direccion": datos.get("direccion_legacy") or "N/A",
+                    "canon_incluido": datos.get("canon_legacy") or 0,
                 }
             ]
 
         for c in contratos:
-            canon = c.get("canon_incluido", 0)
-            # Calcular comision individual estimada
-            com_ind = int(canon * datos["porcentaje_comision"] / 100)
+            canon = c.get("canon_incluido") or 0
+            # Usar % y monto del contrato si vienen en los datos, si no estimar (legacy)
+            pct_val = c.get("comision_porcentaje_contrato")
+            if pct_val is not None:
+                pct_str = f"{pct_val / 100.0:.1f}%"
+                com_ind = c.get("comision_monto_contrato") or 0
+            else:
+                # Fallback legacy: el porcentaje viene en datos['porcentaje_comision'] en escala 100
+                # o en datos['porcentaje_real'] que es float.
+                base_pct = datos.get("porcentaje_comision") or 0
+                if base_pct > 100: # Escala 10000 (bps)
+                     pct_str = f"{base_pct / 100.0:.1f}%"
+                     com_ind = int(canon * base_pct / 10000)
+                else: # Escala 100
+                     pct_str = f"{base_pct:.1f}%"
+                     com_ind = int(canon * base_pct / 100)
 
-            pdf.cell(30, 6, f"#{c.get('id_contrato')}", border=1)
-            pdf.cell(100, 6, str(c.get("direccion"))[:50], border=1)
-            pdf.cell(30, 6, f"${canon:,}", border=1, align="R")
+            pdf.cell(20, 6, f"#{c.get('id_contrato')}", border=1)
+            direccion = str(c.get("direccion") or "N/A")
+            pdf.cell(90, 6, direccion[:45], border=1)
+            pdf.cell(25, 6, f"${canon:,}", border=1, align="R")
+            pdf.cell(25, 6, pct_str, border=1, align="C")
             pdf.cell(30, 6, f"${com_ind:,}", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
             total_canon += canon
 
@@ -624,25 +640,32 @@ class ServicioDocumentosPDF:
 
         # Descuentos
         if datos["total_descuentos"] > 0:
-            pdf.set_font("helvetica", "B", 10)
-            pdf.cell(
-                0, 7, "Menos Descuentos y Deducciones:", border=0, new_x="LMARGIN", new_y="NEXT"
-            )
-            pdf.set_font("helvetica", "", 9)
+            descuentos = datos.get("descuentos_lista", [])
+            
+            # Clasificación Élite (LIQ-AUTO-001)
+            ley_seguros = [d for d in descuentos if "4x1000" in d['descripcion_descuento'].lower() or "seguro" in d['descripcion_descuento'].lower()]
+            operativos = [d for d in descuentos if d not in ley_seguros]
 
-            for desc in datos.get("descuentos_lista", []):
-                pdf.cell(
-                    140, 6, f"- {desc['tipo_descuento']}: {desc['descripcion_descuento']}", border=1
-                )
-                pdf.cell(
-                    50,
-                    6,
-                    f"${desc['valor_descuento']:,}",
-                    border=1,
-                    align="R",
-                    new_x="LMARGIN",
-                    new_y="NEXT",
-                )
+            def render_grupo_descuentos(titulo, lista):
+                if not lista:
+                    return
+                pdf.set_font("helvetica", "B", 10)
+                pdf.cell(0, 7, titulo, border=0, new_x="LMARGIN", new_y="NEXT")
+                pdf.set_font("helvetica", "", 9)
+                for desc in lista:
+                    pdf.cell(140, 6, f"- {desc['descripcion_descuento']}", border=1)
+                    pdf.cell(
+                        50,
+                        6,
+                        f"${desc['valor_descuento']:,}",
+                        border=1,
+                        align="R",
+                        new_x="LMARGIN",
+                        new_y="NEXT",
+                    )
+
+            render_grupo_descuentos("Deducciones de Ley / Seguros:", ley_seguros)
+            render_grupo_descuentos("Deducciones Operativas / Préstamos:", operativos)
 
             pdf.set_font("helvetica", "B", 10)
             pdf.cell(140, 7, "TOTAL DESCUENTOS", border=1, align="R")

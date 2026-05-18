@@ -1,6 +1,8 @@
 import reflex as rx
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+import logging
+
 from src.aplicacion.servicios.servicio_liquidacion_asesores import ServicioLiquidacionAsesores
 from src.infraestructura.persistencia.database import db_manager
 from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
@@ -12,15 +14,9 @@ from src.infraestructura.repositorios.repositorio_descuento_asesor import Reposi
 from src.infraestructura.repositorios.repositorio_liquidacion_asesor import RepositorioLiquidacionAsesor
 from src.infraestructura.repositorios.repositorio_pago_asesor import RepositorioPagoAsesor
 from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
-from .filtros_state import LiquidacionFiltrosState
-
-def format_currency(value: Optional[float]) -> str:
-    if value is None:
-        return "$0"
-    return f"${float(value):,.0f}".replace(",", ".")
-
-from .filtros_state import LiquidacionFiltrosState
 from src.presentacion_reflex.state.auth_state import AuthState
+
+logger = logging.getLogger(__name__)
 
 def format_currency(value: Optional[float]) -> str:
     if value is None:
@@ -35,6 +31,24 @@ class LiquidacionFormState(rx.State):
     show_discount_modal: bool = False
     show_annul_modal: bool = False
     show_bulk_modal: bool = False
+
+    def set_show_form_modal(self, value: bool):
+        self.show_form_modal = value
+
+    def set_show_detail_modal(self, value: bool):
+        self.show_detail_modal = value
+
+    def set_show_discount_modal(self, value: bool):
+        self.show_discount_modal = value
+
+    def set_show_annul_modal(self, value: bool):
+        self.show_annul_modal = value
+
+    def set_show_bulk_modal(self, value: bool):
+        self.show_bulk_modal = value
+
+    def set_annul_reason(self, value: str):
+        self.annul_reason = value
     
     selected_liquidacion_id: int = 0
     form_data: Dict[str, Any] = {}
@@ -46,6 +60,10 @@ class LiquidacionFormState(rx.State):
     descuentos_actuales: List[Dict[str, Any]] = []
     bonificaciones_actuales: List[Dict[str, Any]] = []
     advisor_properties: List[Dict[str, Any]] = []
+    
+    # Previsualización Financiera (LIQ-AUTO-001)
+    preview_4x1000: str = "$0"
+    preview_seguros_total: str = "$0"
     
     # Datos para edición
     existing_discounts: List[Dict[str, Any]] = []
@@ -126,18 +144,33 @@ class LiquidacionFormState(rx.State):
                 async with self:
                     self.show_form_modal = False
                     self.selected_liquidacion_id = 0
+                
+                # Sincronización Élite: Recargar grilla para reflejar totales actualizados
+                from src.presentacion_reflex.state.liquidacion_asesores.grid_state import LiquidacionGridState
+                yield LiquidacionGridState.load_liquidaciones()
                 yield rx.toast.success("Liquidación actualizada")
             else:
                 # Creación
                 id_asesor = int(form_data.get("id_asesor"))
                 periodo = form_data.get("periodo")
-                pct = int(float(form_data.get("porcentaje_comision", "5.0")) * 100)
-
+                
                 contratos_activos = servicio.repo_contrato_arrendamiento.obtener_activos_por_asesor(id_asesor)
                 if not contratos_activos:
                     async with self:
                         self.error_message = "Asesor sin contratos activos"
                     return
+
+                # Desglose de contratos con su porcentaje respectivo
+                contratos_lista = []
+                for c in contratos_activos:
+                    pct = getattr(c, 'comision_porcentaje_contrato_m', 0) or 0
+                    contratos_lista.append({
+                        "id": c.id_contrato_a,
+                        "canon": c.canon_arrendamiento,
+                        "porcentaje_comision": pct,
+                        "id_seguro": getattr(c, "id_seguro", None),
+                        "porcentaje_seguro": getattr(c, "porcentaje_seguro", 0),
+                    })
 
                 async with self:
                     new_d = list(self.new_discounts)
@@ -146,8 +179,7 @@ class LiquidacionFormState(rx.State):
                 liquidacion = servicio.generar_liquidacion_multi_contrato(
                     id_asesor=id_asesor,
                     periodo=periodo,
-                    contratos_lista=[{"id": c.id_contrato_a, "canon": c.canon_arrendamiento} for c in contratos_activos],
-                    porcentaje_comision=pct,
+                    contratos_lista=contratos_lista,
                     total_bonificaciones=sum(int(b.get("valor", 0)) for b in new_b),
                     datos_adicionales={"observaciones": form_data.get("observaciones", "")},
                     usuario=usuario,
@@ -270,7 +302,9 @@ class LiquidacionFormState(rx.State):
                 
                 self.advisor_properties = [{
                     "DIRECCION_PROPIEDAD": p.get("direccion") or p.get("DIRECCION_PROPIEDAD"),
-                    "CANON_ARRENDAMIENTO_VIEW": format_currency(p.get("canon") or p.get("CANON_ARRENDAMIENTO")),
+                    "CANON_ARRENDAMIENTO_VIEW": format_currency(p.get("canon_incluido") or p.get("CANON_INCLUIDO")),
+                    "COMISION_PORCENTAJE_VIEW": f"{(p.get('comision_porcentaje_contrato') or 0) / 100.0:.2f}%",
+                    "COMISION_MONTO_VIEW": format_currency(p.get('comision_monto_contrato') or 0),
                 } for p in detalles.get("contratos", [])]
                 
                 self.show_detail_modal = True
@@ -288,16 +322,49 @@ class LiquidacionFormState(rx.State):
         try:
             servicio = self._obtener_servicio()
             props = servicio.repo_contrato_arrendamiento.obtener_activos_por_asesor(id_asesor)
-            async with self:
-                self.advisor_properties = [{
-                    "DIRECCION_PROPIEDAD": p.direccion_propiedad if hasattr(p, 'direccion_propiedad') else "N/A",
-                    "CANON_ARRENDAMIENTO": p.canon_arrendamiento,
-                    "CANON_ARRENDAMIENTO_VIEW": format_currency(p.canon_arrendamiento),
-                    "ID_CONTRATO_A": p.id_contrato_a,
-                } for p in props]
-        except Exception:
+            from src.dominio.entidades.liquidacion_asesor import LiquidacionAsesor
             async with self:
                 self.advisor_properties = []
+                total_4x1000 = 0
+                total_seguros = 0
+                
+                for p in props:
+                    pct = getattr(p, 'comision_porcentaje_contrato_m', 0) or 0
+                    monto = LiquidacionAsesor.calcular_comision_bruta(p.canon_arrendamiento, pct)
+                    
+                    # Previsualización de 4x1000 (Granular por Propiedad - Base Canon)
+                    valor_4x1000 = LiquidacionAsesor.calcular_4x1000(p.canon_arrendamiento)
+                    total_4x1000 += valor_4x1000
+                    
+                    # Previsualización de Seguro (LIQ-AUTO-001 - Normalizado)
+                    pct_seguro = getattr(p, 'porcentaje_seguro', 0) or 0
+                    if pct_seguro > 0 and pct_seguro < 100:
+                        pct_seguro *= 100 # Normalizar 2 -> 200 (2.00%)
+                        
+                    valor_seguro = LiquidacionAsesor.calcular_valor_seguro(p.canon_arrendamiento, pct_seguro)
+                    total_seguros += valor_seguro
+                    
+                    self.advisor_properties.append({
+                        "DIRECCION_PROPIEDAD": p.direccion_propiedad if hasattr(p, 'direccion_propiedad') else "N/A",
+                        "CANON_ARRENDAMIENTO": p.canon_arrendamiento,
+                        "CANON_ARRENDAMIENTO_VIEW": format_currency(p.canon_arrendamiento),
+                        "ID_CONTRATO_A": p.id_contrato_a,
+                        "COMISION_PORCENTAJE_CONTRATO": pct,
+                        "COMISION_PORCENTAJE_VIEW": f"{pct / 100.0:.2f}%",
+                        "COMISION_MONTO_CONTRATO": monto,
+                        "COMISION_MONTO_VIEW": format_currency(monto),
+                    })
+                
+                # Previsualización global (LIQ-AUTO-001)
+                self.preview_4x1000 = format_currency(total_4x1000)
+                self.preview_seguros_total = format_currency(total_seguros)
+                
+        except Exception as e:
+            logger.error(f"Error fetch_advisor_properties: {e}")
+            async with self:
+                self.advisor_properties = []
+                self.preview_4x1000 = "$0"
+                self.preview_seguros_total = "$0"
 
     def open_create_modal(self):
         self.selected_liquidacion_id = 0
@@ -305,7 +372,7 @@ class LiquidacionFormState(rx.State):
         self.form_data = {
             "id_asesor": "",
             "periodo": datetime.now().strftime("%Y-%m"),
-            "porcentaje_comision": "5.0",
+            "porcentaje_comision": "0.0",
             "observaciones": "",
         }
         self.new_discounts = []
@@ -356,9 +423,16 @@ class LiquidacionFormState(rx.State):
                 
                 self.new_discounts = []
                 self.new_bonuses = []
-                self.show_form_modal = True
                 
-            yield LiquidacionFormState.fetch_advisor_properties(liq["id_asesor"])
+                # Cargar propiedades históricas asociadas a esta liquidación (con Fallback de Mandato)
+                self.advisor_properties = [{
+                    "DIRECCION_PROPIEDAD": p.get("direccion") or p.get("DIRECCION_PROPIEDAD") or "N/A",
+                    "CANON_ARRENDAMIENTO_VIEW": format_currency(p.get("canon_incluido") or p.get("CANON_INCLUIDO")),
+                    "COMISION_PORCENTAJE_VIEW": f"{(p.get('comision_porcentaje_contrato') or 0) / 100.0:.2f}%",
+                    "COMISION_MONTO_VIEW": format_currency(p.get('comision_monto_contrato') or 0),
+                } for p in detalles.get("contratos", [])]
+
+                self.show_form_modal = True
             
         except Exception as e:
             async with self:
@@ -412,17 +486,10 @@ class LiquidacionFormState(rx.State):
             async with self:
                 self.error_message = str(e)
 
-    def set_show_form_modal(self, value: bool): self.show_form_modal = value
-    def set_show_detail_modal(self, value: bool): self.show_detail_modal = value
-    def set_show_annul_modal(self, value: bool): self.show_annul_modal = value
-    def set_annul_reason(self, value: str): self.annul_reason = value
     def open_annul_modal(self, id_liq: int):
         self.selected_liquidacion_id = id_liq
         self.annul_reason = ""
         self.show_annul_modal = True
-
-    def set_show_bulk_modal(self, value: bool): 
-        self.show_bulk_modal = value
 
     def open_bulk_modal(self):
         self.show_bulk_modal = True

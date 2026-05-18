@@ -21,6 +21,9 @@ class IPCState(rx.State):
     is_editing: bool = False
     current_ipc_id: int = 0
 
+    def set_show_modal(self, value: bool):
+        self.show_modal = value
+
     # Form Fields
     form_anio: int = 2025
     form_valor: float = 0.0
@@ -79,9 +82,6 @@ class IPCState(rx.State):
 
     def close_modal(self):
         self.show_modal = False
-
-    def set_show_modal(self, value: bool):
-        self.show_modal = value
 
     @rx.event(background=True)
     async def save_ipc(self):

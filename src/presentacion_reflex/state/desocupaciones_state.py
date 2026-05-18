@@ -145,10 +145,17 @@ class DesocupacionesState(DocumentosStateMixin):
         except Exception:
             pass  # print(f"Error cargando candidatos: {e}") [OpSec Removed]
 
-    # --- Acciones CRUD ---
-
+    # --- Setters Modales explícitos ---
     def set_modal_create_open(self, value: bool):
         self.modal_create_open = value
+
+    def set_modal_checklist_open(self, value: bool):
+        self.modal_checklist_open = value
+
+    def set_modal_confirm_finalize_open(self, value: bool):
+        self.modal_confirm_finalize_open = value
+
+    # --- Acciones CRUD ---
 
     def open_create_modal(self):
         self.modal_create_open = True
@@ -278,9 +285,6 @@ class DesocupacionesState(DocumentosStateMixin):
             "tareas_completadas": 0,
             "tareas_total": 0,
         }
-
-    def set_modal_checklist_open(self, value: bool):
-        self.modal_checklist_open = value
 
     @rx.event(background=True)
     async def toggle_tarea(self, id_tarea: int, completed: bool):

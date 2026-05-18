@@ -1,6 +1,7 @@
 """
 Vista: Formulario de Liquidación de Asesor
 Permite crear y editar liquidaciones de comisiones para asesores.
+@deprecated: La lógica de comisiones ha migrado a Reflex con desglose por Contrato de Mandato.
 """
 
 from typing import Any, Callable, Dict, Optional

@@ -97,16 +97,21 @@ class RepositorioContratoArrendamientoPostgres:
     def obtener_activos_por_asesor(self, id_asesor: int) -> List[ContratoArrendamiento]:
         """
         Obtiene los contratos de arrendamiento activos asociados a un asesor activo.
-        Realiza JOIN con CONTRATOS_MANDATOS.
+        Realiza JOIN con CONTRATOS_MANDATOS, ARRENDATARIOS y SEGUROS.
         """
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
         query = f"""
-            SELECT ca.* 
+            SELECT ca.*, cm.COMISION_PORCENTAJE_CONTRATO_M, cm.ID_CONTRATO_M,
+                   p.DIRECCION_PROPIEDAD,
+                   arr.ID_SEGURO, seg.NOMBRE_SEGURO, seg.PORCENTAJE_SEGURO
             FROM CONTRATOS_ARRENDAMIENTOS ca
             JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
+            JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+            LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+            LEFT JOIN SEGUROS seg ON arr.ID_SEGURO = seg.ID_SEGURO
             WHERE cm.ID_ASESOR = {placeholder}
               AND ca.ESTADO_CONTRATO_A = 'Activo'
               AND cm.ESTADO_CONTRATO_M = 'Activo'
@@ -127,9 +132,15 @@ class RepositorioContratoArrendamientoPostgres:
         cursor = self.db.get_dict_cursor(conn)
 
         query = """
-            SELECT ca.*, cm.ID_ASESOR as asesor_id_agrupacion
+            SELECT ca.*, cm.ID_ASESOR as asesor_id_agrupacion, 
+                   cm.COMISION_PORCENTAJE_CONTRATO_M, cm.ID_CONTRATO_M,
+                   p.DIRECCION_PROPIEDAD,
+                   arr.ID_SEGURO, seg.NOMBRE_SEGURO, seg.PORCENTAJE_SEGURO
             FROM CONTRATOS_ARRENDAMIENTOS ca
             JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
+            JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+            LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+            LEFT JOIN SEGUROS seg ON arr.ID_SEGURO = seg.ID_SEGURO
             WHERE ca.ESTADO_CONTRATO_A = 'Activo'
               AND cm.ESTADO_CONTRATO_M = 'Activo'
               AND cm.ID_ASESOR IS NOT NULL
@@ -165,7 +176,8 @@ class RepositorioContratoArrendamientoPostgres:
                 ca.CANON_ARRENDAMIENTO,
                 ca.FECHA_INICIO_CONTRATO_A,
                 p.DIRECCION_PROPIEDAD,
-                p.MATRICULA_INMOBILIARIA
+                p.MATRICULA_INMOBILIARIA,
+                cm.COMISION_PORCENTAJE_CONTRATO_M
             FROM CONTRATOS_ARRENDAMIENTOS ca
             JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
@@ -405,7 +417,11 @@ class RepositorioContratoArrendamientoPostgres:
         else:
             row_dict = row
 
-        return ContratoArrendamiento(
+        # Helper para manejar nombres de columnas (Automatización LIQ-AUTO-001)
+        def gv(k):
+            return row_dict.get(k) or row_dict.get(k.upper()) or row_dict.get(k.lower())
+
+        contrato = ContratoArrendamiento(
             id_contrato_a=(
                 row_dict.get("id_contrato_a") or row_dict.get("ID_CONTRATO_A")
             ),
@@ -451,11 +467,6 @@ class RepositorioContratoArrendamientoPostgres:
                 row_dict.get("fecha_incremento_ipc")
                 or row_dict.get("FECHA_INCREMENTO_IPC")
             ),
-            # Fecha ultimo incremento no existe en entidad según el código anterior, pero el original lo tenía?
-            # Si el original lo tenía en _row_to_entity es porque debería estar.
-            # Verifique el código original: 'FECHA_ULTIMO_INCREMENTO_IPC'.
-            # Pero ContratoArrendamiento entidad tiene ese campo?
-            # Asumamos que sí.
             fecha_ultimo_incremento_ipc=(
                 row_dict.get("fecha_ultimo_incremento_ipc")
                 or row_dict.get("FECHA_ULTIMO_INCREMENTO_IPC")
@@ -464,4 +475,13 @@ class RepositorioContratoArrendamientoPostgres:
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),
             updated_by=(row_dict.get("updated_by") or row_dict.get("UPDATED_BY")),
+            # Datos de Seguros y Campos Extendidos (Automatización LIQ-AUTO-001)
+            id_seguro=gv("ID_SEGURO"),
+            nombre_seguro=gv("NOMBRE_SEGURO"),
+            porcentaje_seguro=gv("PORCENTAJE_SEGURO") or 0,
+            comision_porcentaje_contrato_m=gv("COMISION_PORCENTAJE_CONTRATO_M") or 0,
+            id_contrato_m=gv("ID_CONTRATO_M") or 0,
+            direccion_propiedad=gv("DIRECCION_PROPIEDAD") or "Sin Dirección",
         )
+
+        return contrato
