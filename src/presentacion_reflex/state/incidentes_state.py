@@ -203,6 +203,22 @@ class IncidentesState(DocumentosStateMixin):
     direct_finish_proveedor: Optional[str] = None
     direct_finish_error: str = ""
 
+    # Setters explícitos para modales requeridos por Reflex en build
+    def set_modal_open(self, value: bool):
+        self.modal_open = value
+
+    def set_details_modal_open(self, value: bool):
+        self.details_modal_open = value
+
+    def set_edit_modal_open(self, value: bool):
+        self.edit_modal_open = value
+
+    def set_cancel_modal_open(self, value: bool):
+        self.cancel_modal_open = value
+
+    def close_cancel_modal(self, value: bool = False):
+        self.cancel_modal_open = value
+
     @rx.var
     def incidentes_reportado(self) -> List[IncidenteDict]:
         return self.incidentes_kanban.get("Reportado", [])
