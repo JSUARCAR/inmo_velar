@@ -145,6 +145,16 @@ class DesocupacionesState(DocumentosStateMixin):
         except Exception:
             pass  # print(f"Error cargando candidatos: {e}") [OpSec Removed]
 
+    # --- Setters Modales explícitos ---
+    def set_modal_create_open(self, value: bool):
+        self.modal_create_open = value
+
+    def set_modal_checklist_open(self, value: bool):
+        self.modal_checklist_open = value
+
+    def set_modal_confirm_finalize_open(self, value: bool):
+        self.modal_confirm_finalize_open = value
+
     # --- Acciones CRUD ---
 
     def open_create_modal(self):
