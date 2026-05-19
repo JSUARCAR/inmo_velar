@@ -17,6 +17,8 @@ from src.presentacion_reflex.components.tablas import header_cell_sortable
 from src.presentacion_reflex.components.contratos.tarjeta_contrato import (
     tarjeta_contrato,
 )
+from src.presentacion_reflex.components.contratos.badge_grupo_pago import badge_grupo_pago
+
 from src.presentacion_reflex.components.contratos.formulario_contrato_mandato import (
     formulario_contrato_mandato,
 )
@@ -306,26 +308,7 @@ def render_table_view() -> rx.Component:
                         rx.text("$", c.valor_canon.to_string(), weight="bold")
                     ),
                     rx.table.cell(
-                        rx.tooltip(
-                            rx.cond(
-                                c.fecha_pago != "",
-                                rx.vstack(
-                                    rx.text(f"Día {c.fecha_pago}", size="2"),
-                                    spacing="0",
-                                ),
-                                rx.text(
-                                    "No registrada",
-                                    size="1",
-                                    color="var(--gray-9)",
-                                    font_style="italic",
-                                ),
-                            ),
-                            content=rx.cond(
-                                c.fecha_pago != "",
-                                f"Pago día {c.fecha_pago} de cada mes",
-                                "Configure la fecha de pago en el detalle del contrato",
-                            ),
-                        )
+                        badge_grupo_pago(c.grupo_operativo, c.fecha_pago)
                     ),
                     rx.table.cell(
                         rx.vstack(

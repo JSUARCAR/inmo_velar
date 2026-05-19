@@ -38,12 +38,12 @@ class PersonasState(rx.State):
     page_size: int = 10
     total_pages: int = 1
 
-    # --- KPIs Globales ---
-    kpi_propietarios: int = 0
-    kpi_arrendatarios: int = 0
-    kpi_codeudores: int = 0
-    kpi_asesores: int = 0
-    kpi_proveedores: int = 0
+    # --- KPIs Globales (Activos | Inactivos) ---
+    kpi_propietarios: Dict[str, int] = {"activos": 0, "inactivos": 0}
+    kpi_arrendatarios: Dict[str, int] = {"activos": 0, "inactivos": 0}
+    kpi_codeudores: Dict[str, int] = {"activos": 0, "inactivos": 0}
+    kpi_asesores: Dict[str, int] = {"activos": 0, "inactivos": 0}
+    kpi_proveedores: Dict[str, int] = {"activos": 0, "inactivos": 0}
 
     # --- Filtros ---
     search_query: str = ""
@@ -284,17 +284,13 @@ class PersonasState(rx.State):
 
             self.total_items = resultado.total
             
-            # Cargar KPIs
-            conteos = servicio.obtener_conteos_por_rol(
-                solo_activos=not self.mostrar_inactivos,
-                solo_inactivos=self.mostrar_inactivos,
-                sin_contrato=self.filtro_sin_contrato
-            )
-            self.kpi_propietarios = conteos.get("Propietario", 0)
-            self.kpi_arrendatarios = conteos.get("Arrendatario", 0)
-            self.kpi_codeudores = conteos.get("Codeudor", 0)
-            self.kpi_asesores = conteos.get("Asesor", 0)
-            self.kpi_proveedores = conteos.get("Proveedor", 0)
+            # Cargar KPIs Globales (Activos | Inactivos)
+            conteos = servicio.obtener_conteos_por_rol()
+            self.kpi_propietarios = conteos.get("Propietario", {"activos": 0, "inactivos": 0})
+            self.kpi_arrendatarios = conteos.get("Arrendatario", {"activos": 0, "inactivos": 0})
+            self.kpi_codeudores = conteos.get("Codeudor", {"activos": 0, "inactivos": 0})
+            self.kpi_asesores = conteos.get("Asesor", {"activos": 0, "inactivos": 0})
+            self.kpi_proveedores = conteos.get("Proveedor", {"activos": 0, "inactivos": 0})
 
             # Convertir objetos a diccionarios para serialización Reflex
             self.personas = [
@@ -350,7 +346,7 @@ class PersonasState(rx.State):
         """Ejecuta la búsqueda contra BD (llamar desde botón o Enter)."""
         logger.debug(f"Ejecutando search_personas con query: {self.search_query}")
         self.page = 1
-        self.load_personas()
+        return PersonasState.load_personas
 
     def handle_search_key_down(self, key: str):
         """Lanza la búsqueda al presionar Enter en el campo de texto."""
@@ -363,7 +359,7 @@ class PersonasState(rx.State):
         logger.debug(f"Ejecutando set_filtro_rol: {rol}")
         self.filtro_rol = rol
         self.page = 1
-        self.load_personas()
+        return PersonasState.load_personas
 
     def set_fecha_inicio(self, fecha: str):
         """Actualiza fecha inicio (sin recarga inmediata)."""
@@ -485,13 +481,13 @@ class PersonasState(rx.State):
         logger.debug("Ejecutando next_page")
         if self.page < self.total_pages:
             self.page += 1
-            self.load_personas()
+            yield PersonasState.load_personas
 
     def prev_page(self):
         logger.debug("Ejecutando prev_page")
         if self.page > 1:
             self.page -= 1
-            self.load_personas()
+            yield PersonasState.load_personas
 
     # --- Role Management Logic ---
 

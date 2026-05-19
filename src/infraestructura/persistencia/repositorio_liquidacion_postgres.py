@@ -1399,7 +1399,7 @@ class RepositorioLiquidacionPostgres:
                 l.OTROS_INGRESOS, l.COMISION_MONTO, l.IVA_COMISION, l.IMPUESTO_4X1000,
                 l.GASTOS_ADMINISTRACION, l.GASTOS_SERVICIOS, l.GASTOS_REPARACIONES, 
                 l.PAGO_PREDIAL, l.OTROS_EGRESOS, l.NETO_A_PAGAR,
-                p.DIRECCION_PROPIEDAD, cm.FECHA_PAGO,
+                p.DIRECCION_PROPIEDAD, cm.FECHA_PAGO, cm.GRUPO_OPERATIVO,
                 rrec.ESTADO_RECAUDO
             {base_from} {where_clause}
             ORDER BY {sort_col} {order}, l.ID_LIQUIDACION DESC
@@ -1419,6 +1419,7 @@ class RepositorioLiquidacionPostgres:
                     "neto": row["NETO_A_PAGAR"],
                     "contrato": row["DIRECCION_PROPIEDAD"],
                     "fecha_pago_mandato": row["FECHA_PAGO"],
+                    "grupo_operativo": row.get("GRUPO_OPERATIVO") or 0,
                     "estado_recaudo": row.get("ESTADO_RECAUDO") or "Sin Recaudo",
                 }
             )

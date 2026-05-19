@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.contrato_mandato import ContratoMandato
 from src.dominio.entidades.renovacion_contrato import RenovacionContrato
+from src.dominio.servicios.calculadora_contratos import CalculadoraContratos
 from src.dominio.repositorios.interfaces import (
     RepositorioContratoMandato,
     RepositorioPropiedad,
@@ -48,12 +49,27 @@ class ServicioContratoMandato:
         """Crea un nuevo contrato de mandato con validaciones de negocio."""
         id_propiedad = datos["id_propiedad"]
 
+        # 0. Validar Coherencia de Fechas y Duración
+        fecha_inicio = datos["fecha_inicio"]
+        fecha_fin = datos["fecha_fin"]
+        duracion_reg = int(datos.get("duracion_meses") or 0)
+
+        coherente, mensaje = CalculadoraContratos.validar_coherencia(
+            fecha_inicio, fecha_fin, duracion_reg
+        )
+        if not coherente:
+            raise ValueError(f"Error de Integridad Contractual: {mensaje}")
+
         # 1. Validar que no exista otro mandato activo
         existente = self.repo_mandato.obtener_activo_por_propiedad(id_propiedad)
         if existente:
             raise ValueError(
                 f"La propiedad ya tiene un contrato de mandato activo (ID: {existente.id_contrato_m})"
             )
+
+        # Calcular Ciclo de Pago y Grupo Operativo
+        grupo, dia_pago = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
+        fecha_pago_str = str(dia_pago)
 
         # 2. Crear Entidad
         contrato = ContratoMandato(
@@ -68,7 +84,8 @@ class ServicioContratoMandato:
             iva_contrato_m=datos.get("iva_porcentaje", 1900),
             estado_contrato_m="Activo",
             alerta_vencimiento_contrato_m=True,
-            fecha_pago=datos.get("fecha_pago"),
+            fecha_pago=fecha_pago_str,
+            grupo_operativo=grupo,
             # Campos bancarios migrados
             banco_propietario=datos.get("banco_propietario"),
             numero_cuenta_propietario=datos.get("numero_cuenta_propietario"),
@@ -91,13 +108,28 @@ class ServicioContratoMandato:
         if not mandato:
             raise ValueError(f"No existe el contrato de mandato con ID {id_contrato}")
 
+        # 0. Validar Coherencia si se están modificando fechas o duración
+        if "fecha_inicio" in datos or "fecha_fin" in datos or "duracion_meses" in datos:
+            f_inicio = datos.get("fecha_inicio", mandato.fecha_inicio_contrato_m)
+            f_fin = datos.get("fecha_fin", mandato.fecha_fin_contrato_m)
+            d_reg = int(datos.get("duracion_meses", mandato.duracion_contrato_m))
+            
+            coherente, mensaje = CalculadoraContratos.validar_coherencia(f_inicio, f_fin, d_reg)
+            if not coherente:
+                raise ValueError(f"Error de Integridad Contractual: {mensaje}")
+
         # Update fields
         mandato.id_propiedad = datos.get("id_propiedad", mandato.id_propiedad)
         mandato.id_propietario = datos.get("id_propietario", mandato.id_propietario)
         mandato.id_asesor = datos.get("id_asesor", mandato.id_asesor)
-        mandato.fecha_inicio_contrato_m = datos.get(
-            "fecha_inicio", mandato.fecha_inicio_contrato_m
-        )
+
+        if "fecha_inicio" in datos:
+            mandato.fecha_inicio_contrato_m = datos["fecha_inicio"]
+            # Recalcular Ciclo de Pago y Grupo Operativo
+            grupo, dia_pago = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
+            mandato.fecha_pago = str(dia_pago)
+            mandato.grupo_operativo = grupo
+
         mandato.fecha_fin_contrato_m = datos.get(
             "fecha_fin", mandato.fecha_fin_contrato_m
         )
@@ -108,7 +140,11 @@ class ServicioContratoMandato:
         mandato.comision_porcentaje_contrato_m = datos.get(
             "comision_porcentaje", mandato.comision_porcentaje_contrato_m
         )
-        mandato.fecha_pago = datos.get("fecha_pago", mandato.fecha_pago)
+        mandato.iva_contrato_m = datos.get("iva_porcentaje", mandato.iva_contrato_m)
+        
+        # Solo actualizar fecha_pago si no fue recalculada por un cambio en fecha_inicio
+        if "fecha_inicio" not in datos:
+            mandato.fecha_pago = datos.get("fecha_pago", mandato.fecha_pago)
 
         # Actualizar campos bancarios
         if "banco_propietario" in datos:

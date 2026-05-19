@@ -147,13 +147,48 @@ def personas_page() -> rx.Component:
                                 spacing="2",
                                 align="center",
                             ),
-                            # KPI Indicators
+                            # KPI Indicators (Activos | Inactivos)
                             rx.hstack(
-                                rx.badge(rx.icon("home", size=14), "Propietarios ", PersonasState.kpi_propietarios, color_scheme="blue", radius="full", size="2", variant="surface"),
-                                rx.badge(rx.icon("key", size=14), "Arrendatarios ", PersonasState.kpi_arrendatarios, color_scheme="green", radius="full", size="2", variant="surface"),
-                                rx.badge(rx.icon("briefcase", size=14), "Asesores ", PersonasState.kpi_asesores, color_scheme="purple", radius="full", size="2", variant="surface"),
-                                rx.badge(rx.icon("handshake", size=14), "Codeudores ", PersonasState.kpi_codeudores, color_scheme="orange", radius="full", size="2", variant="surface"),
-                                rx.badge(rx.icon("truck", size=14), "Proveedores ", PersonasState.kpi_proveedores, color_scheme="cyan", radius="full", size="2", variant="surface"),
+                                rx.badge(
+                                    rx.icon("home", size=14), 
+                                    "Propietarios ", 
+                                    rx.text(PersonasState.kpi_propietarios["activos"], as_="span", weight="bold"),
+                                    rx.text(" | ", as_="span", opacity=0.5),
+                                    rx.text(PersonasState.kpi_propietarios["inactivos"], as_="span", color_scheme="ruby", weight="bold"),
+                                    color_scheme="blue", radius="full", size="2", variant="surface"
+                                ),
+                                rx.badge(
+                                    rx.icon("key", size=14), 
+                                    "Arrendatarios ", 
+                                    rx.text(PersonasState.kpi_arrendatarios["activos"], as_="span", weight="bold"),
+                                    rx.text(" | ", as_="span", opacity=0.5),
+                                    rx.text(PersonasState.kpi_arrendatarios["inactivos"], as_="span", color_scheme="ruby", weight="bold"),
+                                    color_scheme="green", radius="full", size="2", variant="surface"
+                                ),
+                                rx.badge(
+                                    rx.icon("briefcase", size=14), 
+                                    "Asesores ", 
+                                    rx.text(PersonasState.kpi_asesores["activos"], as_="span", weight="bold"),
+                                    rx.text(" | ", as_="span", opacity=0.5),
+                                    rx.text(PersonasState.kpi_asesores["inactivos"], as_="span", color_scheme="ruby", weight="bold"),
+                                    color_scheme="purple", radius="full", size="2", variant="surface"
+                                ),
+                                rx.badge(
+                                    rx.icon("handshake", size=14), 
+                                    "Codeudores ", 
+                                    rx.text(PersonasState.kpi_codeudores["activos"], as_="span", weight="bold"),
+                                    rx.text(" | ", as_="span", opacity=0.5),
+                                    rx.text(PersonasState.kpi_codeudores["inactivos"], as_="span", color_scheme="ruby", weight="bold"),
+                                    color_scheme="orange", radius="full", size="2", variant="surface"
+                                ),
+                                rx.badge(
+                                    rx.icon("truck", size=14), 
+                                    "Proveedores ", 
+                                    rx.text(PersonasState.kpi_proveedores["activos"], as_="span", weight="bold"),
+                                    rx.text(" | ", as_="span", opacity=0.5),
+                                    rx.text(PersonasState.kpi_proveedores["inactivos"], as_="span", color_scheme="ruby", weight="bold"),
+                                    color_scheme="cyan", radius="full", size="2", variant="surface"
+                                ),
                                 spacing="3",
                                 wrap="wrap",
                                 margin_top="2"

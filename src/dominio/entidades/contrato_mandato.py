@@ -34,6 +34,7 @@ class ContratoMandato:
     canon_mandato: int = 0  # Valor estimado de arriendo
     comision_porcentaje_contrato_m: int = 0  # Base 10000 (ej: 800 = 8%)
     iva_contrato_m: int = 1900  # Base 10000 (1900 = 19%)
+    grupo_operativo: int = 0
 
     # Estado
     estado_contrato_m: str = "Activo"  # Activo, Finalizado, Cancelado

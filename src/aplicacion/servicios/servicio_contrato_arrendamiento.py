@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
 from src.dominio.entidades.renovacion_contrato import RenovacionContrato
+from src.dominio.servicios.calculadora_contratos import CalculadoraContratos
 from src.dominio.repositorios.interfaces import (
     RepositorioContratoArrendamiento,
     RepositorioContratoMandato,
@@ -61,12 +62,27 @@ class ServicioContratoArrendamiento:
         """Crea un nuevo contrato de arrendamiento con validaciones."""
         id_propiedad = datos["id_propiedad"]
 
+        # 0. Validar Coherencia de Fechas y Duración
+        fecha_inicio = datos["fecha_inicio"]
+        fecha_fin = datos["fecha_fin"]
+        duracion_reg = int(datos.get("duracion_meses") or 0)
+
+        coherente, mensaje = CalculadoraContratos.validar_coherencia(
+            fecha_inicio, fecha_fin, duracion_reg
+        )
+        if not coherente:
+            raise ValueError(f"Error de Integridad Contractual: {mensaje}")
+
         # Validar si ya existe arriendo activo
         existente = self.repo_arriendo.obtener_activo_por_propiedad(id_propiedad)
         if existente:
             raise ValueError(
                 f"La propiedad ya tiene un contrato de arrendamiento activo (ID: {existente.id_contrato_a})"
             )
+
+        # Calcular Ciclo de Pago y Grupo Operativo
+        dia_pago = CalculadoraContratos.calcular_ciclo_pago_arrendamiento(datos["fecha_inicio"])
+        fecha_pago_str = str(dia_pago)
 
         contrato = ContratoArrendamiento(
             id_propiedad=datos["id_propiedad"],
@@ -77,7 +93,8 @@ class ServicioContratoArrendamiento:
             duracion_contrato_a=datos["duracion_meses"],
             canon_arrendamiento=datos["canon"],
             deposito=datos.get("deposito", 0),
-            fecha_pago=datos.get("fecha_pago"),
+            fecha_pago=fecha_pago_str,
+            grupo_operativo=0,  # Arrendamientos no se clasifican por grupo operativo de dispersión
             estado_contrato_a="Activo",
             alerta_vencimiento_contrato_a=True,
             alerta_ipc=True,
@@ -108,15 +125,27 @@ class ServicioContratoArrendamiento:
                 f"No existe el contrato de arrendamiento con ID {id_contrato}"
             )
 
+        # 0. Validar Coherencia si se están modificando fechas o duración
+        if "fecha_inicio" in datos or "fecha_fin" in datos or "duracion_meses" in datos:
+            f_inicio = datos.get("fecha_inicio", arriendo.fecha_inicio_contrato_a)
+            f_fin = datos.get("fecha_fin", arriendo.fecha_fin_contrato_a)
+            d_reg = int(datos.get("duracion_meses", arriendo.duracion_contrato_a))
+            
+            coherente, mensaje = CalculadoraContratos.validar_coherencia(f_inicio, f_fin, d_reg)
+            if not coherente:
+                raise ValueError(f"Error de Integridad Contractual: {mensaje}")
+
         # Actualización de llaves foráneas y datos básicos
         arriendo.id_propiedad = datos.get("id_propiedad", arriendo.id_propiedad)
         arriendo.id_arrendatario = datos.get("id_arrendatario", arriendo.id_arrendatario)
         arriendo.id_codeudor = datos.get("id_codeudor", arriendo.id_codeudor)
 
         # Actualización de fechas y duración
-        arriendo.fecha_inicio_contrato_a = datos.get(
-            "fecha_inicio", arriendo.fecha_inicio_contrato_a
-        )
+        if "fecha_inicio" in datos:
+            arriendo.fecha_inicio_contrato_a = datos["fecha_inicio"]
+            # Recalcular Ciclo de Pago
+            arriendo.fecha_pago = str(CalculadoraContratos.calcular_ciclo_pago_arrendamiento(datos["fecha_inicio"]))
+            
         arriendo.fecha_fin_contrato_a = datos.get(
             "fecha_fin", arriendo.fecha_fin_contrato_a
         )
@@ -127,7 +156,10 @@ class ServicioContratoArrendamiento:
         # Condiciones económicas
         arriendo.canon_arrendamiento = datos.get("canon", arriendo.canon_arrendamiento)
         arriendo.deposito = datos.get("deposito", arriendo.deposito)
-        arriendo.fecha_pago = datos.get("fecha_pago", arriendo.fecha_pago)
+        
+        # Solo actualizar fecha_pago si no fue recalculada por un cambio en fecha_inicio
+        if "fecha_inicio" not in datos:
+            arriendo.fecha_pago = datos.get("fecha_pago", arriendo.fecha_pago)
 
         # Estado y Alertas
         arriendo.estado_contrato_a = datos.get("estado", arriendo.estado_contrato_a)
