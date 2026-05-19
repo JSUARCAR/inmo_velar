@@ -26,11 +26,11 @@ class RepositorioContratoArrendamientoPostgres:
         INSERT INTO CONTRATOS_ARRENDAMIENTOS (
             ID_PROPIEDAD, ID_ARRENDATARIO, ID_CODEUDOR,
             FECHA_INICIO_CONTRATO_A, FECHA_FIN_CONTRATO_A, DURACION_CONTRATO_A,
-            CANON_ARRENDAMIENTO, DEPOSITO, FECHA_PAGO,
+            CANON_ARRENDAMIENTO, DEPOSITO, FECHA_PAGO, GRUPO_OPERATIVO,
             ESTADO_CONTRATO_A, ALERTA_VENCIMIENTO_CONTRATO_A, ALERTA_IPC,
             FECHA_RENOVACION_CONTRATO_A, FECHA_INCREMENTO_IPC, FECHA_ULTIMO_INCREMENTO_IPC,
             CREATED_BY, UPDATED_BY
-        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
         RETURNING ID_CONTRATO_A
         """,
             (
@@ -43,6 +43,7 @@ class RepositorioContratoArrendamientoPostgres:
                 contrato.canon_arrendamiento,
                 contrato.deposito,
                 contrato.fecha_pago,
+                contrato.grupo_operativo,
                 contrato.estado_contrato_a,
                 contrato.alerta_vencimiento_contrato_a,
                 contrato.alerta_ipc,
@@ -306,7 +307,8 @@ class RepositorioContratoArrendamientoPostgres:
                     arr.NOMBRE_HABITANTE as HABITANTE,
                     COALESCE(prop_per.NOMBRE_COMPLETO, 'N/A') as PROPIETARIO,
                     COALESCE(prop_per.NUMERO_DOCUMENTO, 'N/A') as PROPIETARIO_DOC,
-                    ca.FECHA_PAGO
+                    ca.FECHA_PAGO,
+                    ca.GRUPO_OPERATIVO
                 {base_from}
                 LEFT JOIN PROPIETARIOS prop_ent ON cm.ID_PROPIETARIO = prop_ent.ID_PROPIETARIO
                 LEFT JOIN PERSONAS prop_per ON prop_ent.ID_PERSONA = prop_per.ID_PERSONA
@@ -347,6 +349,7 @@ class RepositorioContratoArrendamientoPostgres:
                         "habitante_nombre": gv("HABITANTE") or "",
                         "asesor_nombre": gv("ASESOR") or "Sin asesor",
                         "fecha_pago": gv("FECHA_PAGO") or "",
+                        "grupo_operativo": gv("GRUPO_OPERATIVO") or 0,
                     }
                 )
 
@@ -371,6 +374,7 @@ class RepositorioContratoArrendamientoPostgres:
             CANON_ARRENDAMIENTO = {placeholder},
             DEPOSITO = {placeholder},
             FECHA_PAGO = {placeholder},
+            GRUPO_OPERATIVO = {placeholder},
             ESTADO_CONTRATO_A = {placeholder},
             MOTIVO_CANCELACION = {placeholder},
             ALERTA_VENCIMIENTO_CONTRATO_A = {placeholder},
@@ -392,6 +396,7 @@ class RepositorioContratoArrendamientoPostgres:
                 contrato.canon_arrendamiento,
                 contrato.deposito,
                 contrato.fecha_pago,
+                contrato.grupo_operativo,
                 contrato.estado_contrato_a,
                 contrato.motivo_cancelacion,
                 contrato.alerta_vencimiento_contrato_a,

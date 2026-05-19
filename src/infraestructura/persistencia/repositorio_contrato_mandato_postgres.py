@@ -26,11 +26,11 @@ class RepositorioContratoMandatoPostgres:
             FECHA_INICIO_CONTRATO_M, FECHA_FIN_CONTRATO_M, DURACION_CONTRATO_M,
             CANON_MANDATO, COMISION_PORCENTAJE_CONTRATO_M, IVA_CONTRATO_M,
             ESTADO_CONTRATO_M, ALERTA_VENCIMIENTO_CONTRATO_M, FECHA_RENOVACION_CONTRATO_M,
-            FECHA_PAGO,
+            FECHA_PAGO, GRUPO_OPERATIVO,
             BANCO_PROPIETARIO, NUMERO_CUENTA_PROPIETARIO, TIPO_CUENTA,
             CONSIGNATARIO, DOCUMENTO_CONSIGNATARIO,
             CREATED_BY, UPDATED_BY
-        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
         RETURNING ID_CONTRATO_M
         """,
             (
@@ -47,6 +47,7 @@ class RepositorioContratoMandatoPostgres:
                 contrato.alerta_vencimiento_contrato_m,
                 contrato.fecha_renovacion_contrato_m,
                 contrato.fecha_pago,
+                contrato.grupo_operativo,
                 contrato.banco_propietario,
                 contrato.numero_cuenta_propietario,
                 contrato.tipo_cuenta,
@@ -226,7 +227,8 @@ class RepositorioContratoMandatoPostgres:
                     COALESCE(per.NOMBRE_COMPLETO, 'Propietario no encontrado') as PROPIETARIO,
                     COALESCE(per.NUMERO_DOCUMENTO, 'N/A') as NUMERO_DOCUMENTO,
                     per_asesor.NOMBRE_COMPLETO as ASESOR,
-                    cm.FECHA_PAGO
+                    cm.FECHA_PAGO,
+                    cm.GRUPO_OPERATIVO
                 {base_from}
                 {where_clause}
                 ORDER BY {sort_column} {sort_order_valid}
@@ -265,6 +267,7 @@ class RepositorioContratoMandatoPostgres:
                         "habitante_nombre": "",
                         "asesor_nombre": gv("ASESOR") or "Sin asesor",
                         "fecha_pago": gv("FECHA_PAGO") or "",
+                        "grupo_operativo": gv("GRUPO_OPERATIVO") or 0,
                     }
                 )
             return PaginatedResult(
@@ -293,6 +296,7 @@ class RepositorioContratoMandatoPostgres:
             ALERTA_VENCIMIENTO_CONTRATO_M = {placeholder},
             FECHA_RENOVACION_CONTRATO_M = {placeholder},
             FECHA_PAGO = {placeholder},
+            GRUPO_OPERATIVO = {placeholder},
             BANCO_PROPIETARIO = {placeholder},
             NUMERO_CUENTA_PROPIETARIO = {placeholder},
             TIPO_CUENTA = {placeholder},
@@ -317,6 +321,7 @@ class RepositorioContratoMandatoPostgres:
                 contrato.alerta_vencimiento_contrato_m,
                 contrato.fecha_renovacion_contrato_m,
                 contrato.fecha_pago,
+                contrato.grupo_operativo,
                 contrato.banco_propietario,
                 contrato.numero_cuenta_propietario,
                 contrato.tipo_cuenta,
@@ -389,6 +394,7 @@ class RepositorioContratoMandatoPostgres:
                 or row_dict.get("FECHA_RENOVACION_CONTRATO_M")
             ),
             fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
+            grupo_operativo=(row_dict.get("grupo_operativo") or row_dict.get("GRUPO_OPERATIVO") or 0),
             banco_propietario=(row_dict.get("banco_propietario") or row_dict.get("BANCO_PROPIETARIO")),
             numero_cuenta_propietario=(row_dict.get("numero_cuenta_propietario") or row_dict.get("NUMERO_CUENTA_PROPIETARIO")),
             tipo_cuenta=(row_dict.get("tipo_cuenta") or row_dict.get("TIPO_CUENTA")),

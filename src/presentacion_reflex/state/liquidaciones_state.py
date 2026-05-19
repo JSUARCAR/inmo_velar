@@ -25,7 +25,7 @@ class LiquidacionDict(pydantic.BaseModel):
     canon_view: str
     neto_view: str
     cantidad_propiedades: Optional[int]
-    fecha_pago_mandato: Optional[str] = None
+    grupo_operativo: int = 0
     estado_recaudo: str = "Sin Recaudo"
 
 
@@ -329,6 +329,7 @@ class LiquidacionesState(DocumentosStateMixin):
                     # Guardamos versiones formateadas para la UI
                     new_item["canon_view"] = format_currency(item.get("canon", 0))
                     new_item["neto_view"] = format_currency(item.get("neto", 0))
+                    new_item["grupo_operativo"] = item.get("grupo_operativo", 0)
                     formatted_items.append(new_item)
 
                 self.liquidaciones = formatted_items

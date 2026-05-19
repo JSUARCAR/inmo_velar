@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 
 import reflex as rx
 
+from src.dominio.servicios.calculadora_contratos import CalculadoraContratos
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
@@ -29,6 +30,7 @@ class ContratoDict(pydantic.BaseModel):
     valor_canon: float
     valor_administracion: float
     fecha_pago: str = ""
+    grupo_operativo: int = 0
     estado_cumplimiento: str = "PENDIENTE"  # AL_DIA, PENDIENTE, VENCIDO
 
 
@@ -373,13 +375,7 @@ class ContratosState(DocumentosStateMixin):
         f_fin = self.form_data.get("fecha_fin")
         if f_inicio and f_fin:
             try:
-                d_inicio = datetime.strptime(f_inicio, "%Y-%m-%d")
-                d_fin = datetime.strptime(f_fin, "%Y-%m-%d")
-                diff_years = d_fin.year - d_inicio.year
-                diff_months = d_fin.month - d_inicio.month
-                total_meses = (diff_years * 12) + diff_months
-                if total_meses < 0:
-                    total_meses = 0
+                total_meses = CalculadoraContratos.calcular_duracion_meses(f_inicio, f_fin)
                 self.form_data["duracion_meses"] = str(total_meses)
             except ValueError:
                 pass

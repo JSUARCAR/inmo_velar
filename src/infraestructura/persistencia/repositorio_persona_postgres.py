@@ -127,10 +127,10 @@ class RepositorioPersonaPostgres:
         if sin_contrato:
             conditions.append(
                 "("
-                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO WHERE arr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR WHERE cod.ID_PERSONA = p.ID_PERSONA) "
+                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO WHERE arr.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR WHERE cod.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'Activo') "
                 "AND ("
                 "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
                 "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
@@ -209,10 +209,10 @@ class RepositorioPersonaPostgres:
         if sin_contrato:
             conditions.append(
                 "("
-                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO WHERE arr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR WHERE cod.ID_PERSONA = p.ID_PERSONA) "
+                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO WHERE arr.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR WHERE cod.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'Activo') "
                 "AND ("
                 "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
                 "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
@@ -366,68 +366,64 @@ class RepositorioPersonaPostgres:
         cursor.execute(query, (f"%{termino_busqueda}%", limite))
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
-    def obtener_conteos_por_rol(
-        self,
-        solo_activos: bool = True,
-        solo_inactivos: bool = False,
-        sin_contrato: bool = False
-    ) -> dict[str, int]:
-        """Obtiene el número total de personas que tienen cada rol."""
+    def obtener_conteos_por_rol(self) -> dict[str, dict[str, int]]:
+        """Obtiene el número total de personas activas e inactivas que tienen cada rol."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
-        conditions = []
-        if solo_activos:
-            conditions.append("p.ESTADO_REGISTRO = TRUE")
-        elif solo_inactivos:
-            conditions.append("p.ESTADO_REGISTRO = FALSE")
-        
-        if sin_contrato:
-            conditions.append(
-                "("
-                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO WHERE arr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR WHERE cod.ID_PERSONA = p.ID_PERSONA) "
-                "AND ("
-                "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM ARRENDATARIOS ar_r WHERE ar_r.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM CODEUDORES co_r WHERE co_r.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM ASESORES as_r WHERE as_r.ID_PERSONA = p.ID_PERSONA)"
-                ")"
-                ")"
-            )
-
-        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
-
-        query = f"""
+        # Consulta unificada para obtener activos e inactivos por rol
+        # Un registro se considera activo si tanto la PERSONA como el ROL están activos.
+        # Caso especial: PROVEEDORES no tiene ESTADO_PROVEEDOR en algunos esquemas, usamos ESTADO_REGISTRO de persona.
+        query = """
         SELECT 
-            (SELECT COUNT(pr.ID_PERSONA) FROM PROPIETARIOS pr INNER JOIN PERSONAS p ON p.ID_PERSONA = pr.ID_PERSONA {where_clause}) as total_propietarios,
-            (SELECT COUNT(ar.ID_PERSONA) FROM ARRENDATARIOS ar INNER JOIN PERSONAS p ON p.ID_PERSONA = ar.ID_PERSONA {where_clause}) as total_arrendatarios,
-            (SELECT COUNT(co.ID_PERSONA) FROM CODEUDORES co INNER JOIN PERSONAS p ON p.ID_PERSONA = co.ID_PERSONA {where_clause}) as total_codeudores,
-            (SELECT COUNT(ase.ID_PERSONA) FROM ASESORES ase INNER JOIN PERSONAS p ON p.ID_PERSONA = ase.ID_PERSONA {where_clause}) as total_asesores,
-            (SELECT COUNT(prov.ID_PERSONA) FROM PROVEEDORES prov INNER JOIN PERSONAS p ON p.ID_PERSONA = prov.ID_PERSONA {where_clause}) as total_proveedores
+            -- Propietarios
+            COUNT(CASE WHEN pr.ID_PERSONA IS NOT NULL AND p.ESTADO_REGISTRO IS TRUE AND pr.ESTADO_PROPIETARIO::INTEGER = 1 THEN 1 END) as prop_activos,
+            COUNT(CASE WHEN pr.ID_PERSONA IS NOT NULL AND (p.ESTADO_REGISTRO IS FALSE OR pr.ESTADO_PROPIETARIO::INTEGER = 0) THEN 1 END) as prop_inactivos,
+            -- Arrendatarios
+            COUNT(CASE WHEN ar.ID_PERSONA IS NOT NULL AND p.ESTADO_REGISTRO IS TRUE AND ar.ESTADO_ARRENDATARIO::INTEGER = 1 THEN 1 END) as arr_activos,
+            COUNT(CASE WHEN ar.ID_PERSONA IS NOT NULL AND (p.ESTADO_REGISTRO IS FALSE OR ar.ESTADO_ARRENDATARIO::INTEGER = 0) THEN 1 END) as arr_inactivos,
+            -- Codeudores
+            COUNT(CASE WHEN co.ID_PERSONA IS NOT NULL AND p.ESTADO_REGISTRO IS TRUE AND co.ESTADO_REGISTRO::INTEGER = 1 THEN 1 END) as cod_activos,
+            COUNT(CASE WHEN co.ID_PERSONA IS NOT NULL AND (p.ESTADO_REGISTRO IS FALSE OR co.ESTADO_REGISTRO::INTEGER = 0) THEN 1 END) as cod_inactivos,
+            -- Asesores
+            COUNT(CASE WHEN ase.ID_PERSONA IS NOT NULL AND p.ESTADO_REGISTRO IS TRUE AND ase.ESTADO::INTEGER = 1 THEN 1 END) as ase_activos,
+            COUNT(CASE WHEN ase.ID_PERSONA IS NOT NULL AND (p.ESTADO_REGISTRO IS FALSE OR ase.ESTADO::INTEGER = 0) THEN 1 END) as ase_inactivos,
+            -- Proveedores
+            COUNT(CASE WHEN prov.ID_PERSONA IS NOT NULL AND p.ESTADO_REGISTRO IS TRUE AND prov.ESTADO_REGISTRO::INTEGER = 1 THEN 1 END) as prov_activos,
+            COUNT(CASE WHEN prov.ID_PERSONA IS NOT NULL AND (p.ESTADO_REGISTRO IS FALSE OR prov.ESTADO_REGISTRO::INTEGER = 0) THEN 1 END) as prov_inactivos
+        FROM PERSONAS p
+        LEFT JOIN PROPIETARIOS pr ON p.ID_PERSONA = pr.ID_PERSONA
+        LEFT JOIN ARRENDATARIOS ar ON p.ID_PERSONA = ar.ID_PERSONA
+        LEFT JOIN CODEUDORES co ON p.ID_PERSONA = co.ID_PERSONA
+        LEFT JOIN ASESORES ase ON p.ID_PERSONA = ase.ID_PERSONA
+        LEFT JOIN PROVEEDORES prov ON p.ID_PERSONA = prov.ID_PERSONA
         """
         
         cursor.execute(query)
         row = cursor.fetchone()
         
         conteos = {
-            "Propietario": 0,
-            "Arrendatario": 0,
-            "Codeudor": 0,
-            "Asesor": 0,
-            "Proveedor": 0
+            "Propietario": {"activos": 0, "inactivos": 0},
+            "Arrendatario": {"activos": 0, "inactivos": 0},
+            "Codeudor": {"activos": 0, "inactivos": 0},
+            "Asesor": {"activos": 0, "inactivos": 0},
+            "Proveedor": {"activos": 0, "inactivos": 0}
         }
 
         if row:
-            # En PostgreSQL con DictCursor, accedemos por alias (UpperCase por el wrapper si aplica)
-            # El wrapper DatabaseManager.UpperCaseConnectionWrapper asegura llaves en Mayúsculas
-            conteos["Propietario"] = row.get("TOTAL_PROPIETARIOS", 0)
-            conteos["Arrendatario"] = row.get("TOTAL_ARRENDATARIOS", 0)
-            conteos["Codeudor"] = row.get("TOTAL_CODEUDORES", 0)
-            conteos["Asesor"] = row.get("TOTAL_ASESORES", 0)
-            conteos["Proveedor"] = row.get("TOTAL_PROVEEDORES", 0)
+            conteos["Propietario"]["activos"] = row.get("PROP_ACTIVOS", 0)
+            conteos["Propietario"]["inactivos"] = row.get("PROP_INACTIVOS", 0)
+            
+            conteos["Arrendatario"]["activos"] = row.get("ARR_ACTIVOS", 0)
+            conteos["Arrendatario"]["inactivos"] = row.get("ARR_INACTIVOS", 0)
+            
+            conteos["Codeudor"]["activos"] = row.get("COD_ACTIVOS", 0)
+            conteos["Codeudor"]["inactivos"] = row.get("COD_INACTIVOS", 0)
+            
+            conteos["Asesor"]["activos"] = row.get("ASE_ACTIVOS", 0)
+            conteos["Asesor"]["inactivos"] = row.get("ASE_INACTIVOS", 0)
+            
+            conteos["Proveedor"]["activos"] = row.get("PROV_ACTIVOS", 0)
+            conteos["Proveedor"]["inactivos"] = row.get("PROV_INACTIVOS", 0)
                 
         return conteos

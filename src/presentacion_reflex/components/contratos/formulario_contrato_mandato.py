@@ -231,6 +231,7 @@ def formulario_contrato_mandato() -> rx.Component:
                                         name="fecha_pago",
                                         placeholder="Ej: Día 5 de cada mes",
                                         required=True,
+                                        read_only=True,
                                         value=ContratosState.form_data["fecha_pago"],
                                         on_change=lambda v: (
                                             ContratosState.set_form_field(

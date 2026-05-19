@@ -176,19 +176,10 @@ class ServicioPersonas:
         )
 
     @cache_manager.cached("personas:kpis", level=1, ttl=300)
-    def obtener_conteos_por_rol(
-        self,
-        solo_activos: bool = True,
-        solo_inactivos: bool = False,
-        sin_contrato: bool = False
-    ) -> dict[str, int]:
-        """Obtiene un diccionario con el total de personas por cada rol."""
-        logger.debug(f"Obteniendo KPIs de conteos por rol: solo_activos={solo_activos}, solo_inactivos={solo_inactivos}, sin_contrato={sin_contrato}")
-        return self.repo_persona.obtener_conteos_por_rol(
-            solo_activos=solo_activos,
-            solo_inactivos=solo_inactivos,
-            sin_contrato=sin_contrato
-        )
+    def obtener_conteos_por_rol(self) -> dict[str, dict[str, int]]:
+        """Obtiene un diccionario con el total de personas activas e inactivas por cada rol."""
+        logger.debug("Obteniendo KPIs globales de conteos por rol")
+        return self.repo_persona.obtener_conteos_por_rol()
 
     def exportar_personas_csv(
         self,

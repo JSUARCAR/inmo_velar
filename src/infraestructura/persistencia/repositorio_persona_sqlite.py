@@ -142,10 +142,10 @@ class RepositorioPersonaSQLite:
         if sin_contrato:
             conditions.append(
                 "("
-                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS ar ON ca.ID_ARRENDATARIO = ar.ID_ARRENDATARIO WHERE ar.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES co ON ca.ID_CODEUDOR = co.ID_CODEUDOR WHERE co.ID_PERSONA = p.ID_PERSONA) "
+                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS ar ON ca.ID_ARRENDATARIO = ar.ID_ARRENDATARIO WHERE ar.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES co ON ca.ID_CODEUDOR = co.ID_CODEUDOR WHERE co.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'Activo') "
                 "AND ("
                 "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
                 "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
@@ -231,10 +231,10 @@ class RepositorioPersonaSQLite:
         if sin_contrato:
             conditions.append(
                 "("
-                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS ar ON ca.ID_ARRENDATARIO = ar.ID_ARRENDATARIO WHERE ar.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES co ON ca.ID_CODEUDOR = co.ID_CODEUDOR WHERE co.ID_PERSONA = p.ID_PERSONA) "
+                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS ar ON ca.ID_ARRENDATARIO = ar.ID_ARRENDATARIO WHERE ar.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'Activo') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES co ON ca.ID_CODEUDOR = co.ID_CODEUDOR WHERE co.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'Activo') "
                 "AND ("
                 "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
                 "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
@@ -288,76 +288,69 @@ class RepositorioPersonaSQLite:
                     # Intento 4: Primer valor de dict (si las keys son raras)
         return 0
 
-    def obtener_conteos_por_rol(
-        self,
-        solo_activos: bool = True,
-        sin_contrato: bool = False
-    ) -> dict[str, int]:
-        """Obtiene el número total de personas que tienen cada rol (Propietario, Arrendatario, etc.)"""
-        logger.debug(f"Ejecutando obtener_conteos_por_rol: solo_activos={solo_activos}, sin_contrato={sin_contrato}")
+    def obtener_conteos_por_rol(self) -> dict[str, dict[str, int]]:
+        """Obtiene el número total de personas activas e inactivas que tienen cada rol."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
-        conditions = []
-        if solo_activos:
-            conditions.append("p.ESTADO_REGISTRO = TRUE")
-        
-        if sin_contrato:
-            conditions.append(
-                "("
-                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS ar ON ca.ID_ARRENDATARIO = ar.ID_ARRENDATARIO WHERE ar.ID_PERSONA = p.ID_PERSONA) "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES co ON ca.ID_CODEUDOR = co.ID_CODEUDOR WHERE co.ID_PERSONA = p.ID_PERSONA) "
-                "AND ("
-                "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM ARRENDATARIOS ar_r WHERE ar_r.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM CODEUDORES co_r WHERE co_r.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM ASESORES as_r WHERE as_r.ID_PERSONA = p.ID_PERSONA)"
-                ")"
-                ")"
-            )
-
-        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
-
-        query = f"""
+        # Consulta unificada para SQLite corregida para evitar inflación
+        query = """
         SELECT 
-            (SELECT COUNT(pr.ID_PERSONA) FROM PROPIETARIOS pr INNER JOIN PERSONAS p ON p.ID_PERSONA = pr.ID_PERSONA {where_clause}) as total_propietarios,
-            (SELECT COUNT(ar.ID_PERSONA) FROM ARRENDATARIOS ar INNER JOIN PERSONAS p ON p.ID_PERSONA = ar.ID_PERSONA {where_clause}) as total_arrendatarios,
-            (SELECT COUNT(co.ID_PERSONA) FROM CODEUDORES co INNER JOIN PERSONAS p ON p.ID_PERSONA = co.ID_PERSONA {where_clause}) as total_codeudores,
-            (SELECT COUNT(ase.ID_PERSONA) FROM ASESORES ase INNER JOIN PERSONAS p ON p.ID_PERSONA = ase.ID_PERSONA {where_clause}) as total_asesores,
-            (SELECT COUNT(prov.ID_PERSONA) FROM PROVEEDORES prov INNER JOIN PERSONAS p ON p.ID_PERSONA = prov.ID_PERSONA {where_clause}) as total_proveedores
+            -- Propietarios
+            SUM(CASE WHEN pr.ID_PERSONA IS NOT NULL AND p.ESTADO_REGISTRO = 1 AND pr.ESTADO_PROPIETARIO = 1 THEN 1 ELSE 0 END) as prop_activos,
+            SUM(CASE WHEN pr.ID_PERSONA IS NOT NULL AND (p.ESTADO_REGISTRO = 0 OR pr.ESTADO_PROPIETARIO = 0) THEN 1 ELSE 0 END) as prop_inactivos,
+            -- Arrendatarios
+            SUM(CASE WHEN ar.ID_PERSONA IS NOT NULL AND p.ESTADO_REGISTRO = 1 AND ar.ESTADO_ARRENDATARIO = 1 THEN 1 ELSE 0 END) as arr_activos,
+            SUM(CASE WHEN ar.ID_PERSONA IS NOT NULL AND (p.ESTADO_REGISTRO = 0 OR ar.ESTADO_ARRENDATARIO = 0) THEN 1 ELSE 0 END) as arr_inactivos,
+            -- Codeudores
+            SUM(CASE WHEN co.ID_PERSONA IS NOT NULL AND p.ESTADO_REGISTRO = 1 AND co.ESTADO_REGISTRO = 1 THEN 1 ELSE 0 END) as cod_activos,
+            SUM(CASE WHEN co.ID_PERSONA IS NOT NULL AND (p.ESTADO_REGISTRO = 0 OR co.ESTADO_REGISTRO = 0) THEN 1 ELSE 0 END) as cod_inactivos,
+            -- Asesores
+            SUM(CASE WHEN ase.ID_PERSONA IS NOT NULL AND p.ESTADO_REGISTRO = 1 AND ase.ESTADO = 1 THEN 1 ELSE 0 END) as ase_activos,
+            SUM(CASE WHEN ase.ID_PERSONA IS NOT NULL AND (p.ESTADO_REGISTRO = 0 OR ase.ESTADO = 0) THEN 1 ELSE 0 END) as ase_inactivos,
+            -- Proveedores
+            SUM(CASE WHEN prov.ID_PERSONA IS NOT NULL AND p.ESTADO_REGISTRO = 1 AND prov.ESTADO_REGISTRO = 1 THEN 1 ELSE 0 END) as prov_activos,
+            SUM(CASE WHEN prov.ID_PERSONA IS NOT NULL AND (p.ESTADO_REGISTRO = 0 OR prov.ESTADO_REGISTRO = 0) THEN 1 ELSE 0 END) as prov_inactivos
+        FROM PERSONAS p
+        LEFT JOIN PROPIETARIOS pr ON p.ID_PERSONA = pr.ID_PERSONA
+        LEFT JOIN ARRENDATARIOS ar ON p.ID_PERSONA = ar.ID_PERSONA
+        LEFT JOIN CODEUDORES co ON p.ID_PERSONA = co.ID_PERSONA
+        LEFT JOIN ASESORES ase ON p.ID_PERSONA = ase.ID_PERSONA
+        LEFT JOIN PROVEEDORES prov ON p.ID_PERSONA = prov.ID_PERSONA
         """
         
         cursor.execute(query)
         row = cursor.fetchone()
         
         conteos = {
-            "Propietario": 0,
-            "Arrendatario": 0,
-            "Codeudor": 0,
-            "Asesor": 0,
-            "Proveedor": 0
+            "Propietario": {"activos": 0, "inactivos": 0},
+            "Arrendatario": {"activos": 0, "inactivos": 0},
+            "Codeudor": {"activos": 0, "inactivos": 0},
+            "Asesor": {"activos": 0, "inactivos": 0},
+            "Proveedor": {"activos": 0, "inactivos": 0}
         }
 
         if row:
-            if isinstance(row, dict) or hasattr(row, "keys"):
-                # dict-like (psycopg2 RealDictRow v. sqlite3.Row)
-                r_dict = dict(row)
-                conteos["Propietario"] = r_dict.get("total_propietarios") or r_dict.get("TOTAL_PROPIETARIOS") or 0
-                conteos["Arrendatario"] = r_dict.get("total_arrendatarios") or r_dict.get("TOTAL_ARRENDATARIOS") or 0
-                conteos["Codeudor"] = r_dict.get("total_codeudores") or r_dict.get("TOTAL_CODEUDORES") or 0
-                conteos["Asesor"] = r_dict.get("total_asesores") or r_dict.get("TOTAL_ASESORES") or 0
-                conteos["Proveedor"] = r_dict.get("total_proveedores") or r_dict.get("TOTAL_PROVEEDORES") or 0
-            else:
-                # tuple fallback
-                conteos["Propietario"] = row[0] or 0
-                conteos["Arrendatario"] = row[1] or 0
-                conteos["Codeudor"] = row[2] or 0
-                conteos["Asesor"] = row[3] or 0
-                conteos["Proveedor"] = row[4] or 0
+            r_dict = dict(row)
+            # Normalizar nombres de columnas a lowercase para SQLite dict factory
+            r_dict = {k.lower(): v for k, v in r_dict.items()}
+            
+            conteos["Propietario"]["activos"] = r_dict.get("prop_activos") or 0
+            conteos["Propietario"]["inactivos"] = r_dict.get("prop_inactivos") or 0
+            
+            conteos["Arrendatario"]["activos"] = r_dict.get("arr_activos") or 0
+            conteos["Arrendatario"]["inactivos"] = r_dict.get("arr_inactivos") or 0
+            
+            conteos["Codeudor"]["activos"] = r_dict.get("cod_activos") or 0
+            conteos["Codeudor"]["inactivos"] = r_dict.get("cod_inactivos") or 0
+            
+            conteos["Asesor"]["activos"] = r_dict.get("ase_activos") or 0
+            conteos["Asesor"]["inactivos"] = r_dict.get("ase_inactivos") or 0
+            
+            conteos["Proveedor"]["activos"] = r_dict.get("prov_activos") or 0
+            conteos["Proveedor"]["inactivos"] = r_dict.get("prov_inactivos") or 0
                 
+        return conteos
         return conteos
 
     def crear(self, persona: Persona, usuario_sistema: str) -> Persona:
