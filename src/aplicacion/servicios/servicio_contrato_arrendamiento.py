@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
@@ -198,30 +199,51 @@ class ServicioContratoArrendamiento:
         self.repo_arriendo.actualizar(arriendo, usuario_sistema)
 
         # 2. Sincronización en Cascada (Integridad Contractual Élite)
+        logger = logging.getLogger(__name__)
         
         # A. Si cambió el CANON, sincronizar Propiedad y Mandato
         if arriendo.canon_arrendamiento != canon_anterior:
+            logger.info(
+                f"Cascada canon activada: contrato={id_contrato}, "
+                f"anterior={canon_anterior}, nuevo={arriendo.canon_arrendamiento}"
+            )
             # Sincronizar Propiedad
-            propiedad = self.repo_propiedad.obtener_por_id(arriendo.id_propiedad)
-            if propiedad:
-                propiedad.canon_arrendamiento_estimado = arriendo.canon_arrendamiento
-                self.repo_propiedad.actualizar(propiedad, usuario_sistema)
+            if self.repo_propiedad is None:
+                logger.error("CASCADA ABORTADA: repo_propiedad es None")
+            else:
+                propiedad = self.repo_propiedad.obtener_por_id(arriendo.id_propiedad)
+                if propiedad:
+                    propiedad.canon_arrendamiento_estimado = arriendo.canon_arrendamiento
+                    self.repo_propiedad.actualizar(propiedad, usuario_sistema)
+                    logger.info(f"Propiedad {arriendo.id_propiedad} actualizada a canon={arriendo.canon_arrendamiento}")
+                else:
+                    logger.warning(f"Propiedad {arriendo.id_propiedad} no encontrada para cascada")
             
             # Sincronizar Mandato
-            mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
-            if mandato:
-                mandato.canon_mandato = arriendo.canon_arrendamiento
-                self.repo_mandato.actualizar(mandato, usuario_sistema)
+            if self.repo_mandato is None:
+                logger.error("CASCADA ABORTADA: repo_mandato es None")
+            else:
+                mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
+                if mandato:
+                    mandato.canon_mandato = arriendo.canon_arrendamiento
+                    self.repo_mandato.actualizar(mandato, usuario_sistema)
+                    logger.info(f"Mandato activo de propiedad {arriendo.id_propiedad} actualizado a canon={arriendo.canon_arrendamiento}")
+                else:
+                    logger.info(f"No existe mandato activo para propiedad {arriendo.id_propiedad}")
 
         # B. Si cambiaron las FECHAS, sincronizar Mandato
         if (arriendo.fecha_inicio_contrato_a != fecha_inicio_anterior or 
             arriendo.fecha_fin_contrato_a != fecha_fin_anterior):
             
-            mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
-            if mandato:
-                mandato.fecha_inicio_contrato_m = arriendo.fecha_inicio_contrato_a
-                mandato.fecha_fin_contrato_m = arriendo.fecha_fin_contrato_a
-                self.repo_mandato.actualizar(mandato, usuario_sistema)
+            if self.repo_mandato is None:
+                logger.error("CASCADA FECHAS ABORTADA: repo_mandato es None")
+            else:
+                mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
+                if mandato:
+                    mandato.fecha_inicio_contrato_m = arriendo.fecha_inicio_contrato_a
+                    mandato.fecha_fin_contrato_m = arriendo.fecha_fin_contrato_a
+                    self.repo_mandato.actualizar(mandato, usuario_sistema)
+                    logger.info(f"Mandato fechas sincronizadas con arrendamiento {id_contrato}")
 
     def listar_arrendamientos_paginado(self, **kwargs):
         return self.repo_arriendo.listar_paginado(**kwargs)

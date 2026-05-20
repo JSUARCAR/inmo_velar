@@ -812,6 +812,8 @@ class ContratosState(DocumentosStateMixin):
                 self.modal_open = False
                 self.form_data = {}
             yield ContratosState.load_contratos()
+            yield ContratosState.load_kpis()
+            yield ContratosState.load_filter_options()
             yield rx.toast.success("Guardado exitoso", position="bottom-right")
         except Exception as e:
             async with self:
@@ -944,6 +946,8 @@ class ContratosState(DocumentosStateMixin):
                     id_contrato, beneficiario
                 )
                 yield ContratosState.load_contratos()
+                yield ContratosState.load_kpis()
+                yield ContratosState.load_filter_options()
                 yield rx.toast.info("Contrato cancelado")
             else:
                 async with self:
@@ -1054,6 +1058,8 @@ class ContratosState(DocumentosStateMixin):
                     self.show_renewal_confirm = False
                     self.renewal_proyeccion = {}
                 yield ContratosState.load_contratos()
+                yield ContratosState.load_kpis()
+                yield ContratosState.load_filter_options()
                 yield rx.toast.success(res["message"])
             else:
                 async with self:
@@ -1121,6 +1127,8 @@ class ContratosState(DocumentosStateMixin):
                     self.ipc_target_contrato_id = 0
                     self.form_data = {}
                 yield ContratosState.load_contratos()
+                yield ContratosState.load_kpis()
+                yield ContratosState.load_filter_options()
                 yield rx.toast.success(resultado["message"], position="bottom-right")
             else:
                 async with self:
