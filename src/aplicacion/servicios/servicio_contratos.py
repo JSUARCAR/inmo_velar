@@ -45,21 +45,21 @@ class ServicioContratos:
     def __init__(
         self,
         db_manager: DatabaseManager,
-        repo_mandato: RepositorioContratoMandatoPostgres,
-        repo_arriendo: RepositorioContratoArrendamientoPostgres,
-        repo_propiedad: RepositorioPropiedadPostgres,
-        repo_renovacion: RepositorioRenovacionPostgres,
-        repo_ipc: RepositorioIPCPostgres,
-        repo_arrendatario: RepositorioArrendatarioPostgres,
-        repo_codeudor: RepositorioCodeudorPostgres,
+        repo_mandato: Optional[RepositorioContratoMandatoPostgres] = None,
+        repo_arriendo: Optional[RepositorioContratoArrendamientoPostgres] = None,
+        repo_propiedad: Optional[RepositorioPropiedadPostgres] = None,
+        repo_renovacion: Optional[RepositorioRenovacionPostgres] = None,
+        repo_ipc: Optional[RepositorioIPCPostgres] = None,
+        repo_arrendatario: Optional[RepositorioArrendatarioPostgres] = None,
+        repo_codeudor: Optional[RepositorioCodeudorPostgres] = None,
         repo_idempotencia: Optional[IRepositorioIdempotencia] = None,
     ):
         self.db = db_manager
-        self.repo_mandato = repo_mandato
-        self.repo_arriendo = repo_arriendo
-        self.repo_propiedad = repo_propiedad
-        self.repo_renovacion = repo_renovacion
-        self.repo_ipc = repo_ipc
+        self.repo_mandato = repo_mandato or RepositorioContratoMandatoPostgres(db_manager)
+        self.repo_arriendo = repo_arriendo or RepositorioContratoArrendamientoPostgres(db_manager)
+        self.repo_propiedad = repo_propiedad or RepositorioPropiedadPostgres(db_manager)
+        self.repo_renovacion = repo_renovacion or RepositorioRenovacionPostgres(db_manager)
+        self.repo_ipc = repo_ipc or RepositorioIPCPostgres(db_manager)
         self.repo_idempotencia = repo_idempotencia
 
         # Servicios especializados (SRP)
@@ -75,8 +75,8 @@ class ServicioContratos:
         )
 
         # Repositorios auxiliares
-        self.repo_arrendatario = repo_arrendatario
-        self.repo_codeudor = repo_codeudor
+        self.repo_arrendatario = repo_arrendatario or RepositorioArrendatarioPostgres(db_manager)
+        self.repo_codeudor = repo_codeudor or RepositorioCodeudorPostgres(db_manager)
 
     # =========================================================================
     # DROPDOWN HELPERS

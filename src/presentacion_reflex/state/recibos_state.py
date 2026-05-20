@@ -6,7 +6,7 @@ import reflex as rx
 from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
 from src.aplicacion.servicios.servicio_recibos_publicos import ServicioRecibosPublicos
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
 from src.infraestructura.repositorios.repositorio_recibo_publico import (
     RepositorioReciboPublico,
 )
@@ -93,7 +93,7 @@ class RecibosState(DocumentosStateMixin):
     async def load_propiedades_options(self):
         """Carga opciones de propiedades para selects."""
         try:
-            repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
             servicio_prop = ServicioPropiedades(repo_propiedad=repo_propiedad)
             props = servicio_prop.listar_propiedades()
 
@@ -118,7 +118,7 @@ class RecibosState(DocumentosStateMixin):
 
         try:
             repo_recibo = RepositorioReciboPublico(db_manager)
-            repo_prop = RepositorioPropiedadSQLite(db_manager)
+            repo_prop = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
 
             # Preparar filtros
@@ -266,7 +266,7 @@ class RecibosState(DocumentosStateMixin):
 
         try:
             repo_recibo = RepositorioReciboPublico(db_manager)
-            repo_prop = RepositorioPropiedadSQLite(db_manager)
+            repo_prop = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
 
             datos = self.form_data.copy()
@@ -321,7 +321,7 @@ class RecibosState(DocumentosStateMixin):
 
         try:
             repo_recibo = RepositorioReciboPublico(db_manager)
-            repo_prop = RepositorioPropiedadSQLite(db_manager)
+            repo_prop = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
 
             servicio.marcar_como_pagado(
@@ -373,7 +373,7 @@ class RecibosState(DocumentosStateMixin):
 
         try:
             repo_recibo = RepositorioReciboPublico(db_manager)
-            repo_prop = RepositorioPropiedadSQLite(db_manager)
+            repo_prop = RepositorioPropiedadPostgres(db_manager)
             servicio = ServicioRecibosPublicos(repo_recibo, repo_prop)
 
             servicio.eliminar_recibo(id_recibo)

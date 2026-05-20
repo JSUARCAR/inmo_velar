@@ -221,38 +221,21 @@ class PersonasState(rx.State):
         self.is_loading = True
         yield
         try:
-            if db_manager.use_postgresql:
-                from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-                from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
-                from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-                from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-                from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-                from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
-                from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
 
-                repo_persona = RepositorioPersonaPostgres(db_manager)
-                repo_propietario = RepositorioPropietarioPostgres(db_manager)
-                repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
-                repo_codeudor = RepositorioCodeudorPostgres(db_manager)
-                repo_asesor = RepositorioAsesorPostgres(db_manager)
-                repo_proveedor = RepositorioProveedoresPostgres(db_manager)
-                repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
-            else:
-                from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
-                from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
-                from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
-                from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
-                from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
-                from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
-                from src.infraestructura.persistencia.repositorio_auditoria_sqlite import RepositorioAuditoriaSQLite
-
-                repo_persona = RepositorioPersonaSQLite(db_manager)
-                repo_propietario = RepositorioPropietarioSQLite(db_manager)
-                repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-                repo_codeudor = RepositorioCodeudorSQLite(db_manager)
-                repo_asesor = RepositorioAsesorSQLite(db_manager)
-                repo_proveedor = RepositorioProveedoresSQLite(db_manager)
-                repo_auditoria = RepositorioAuditoriaSQLite(db_manager)
+            repo_persona = RepositorioPersonaPostgres(db_manager)
+            repo_propietario = RepositorioPropietarioPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
+            repo_asesor = RepositorioAsesorPostgres(db_manager)
+            repo_proveedor = RepositorioProveedoresPostgres(db_manager)
+            repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
 
             servicio = ServicioPersonas(
                 repo_persona=repo_persona,
@@ -378,38 +361,21 @@ class PersonasState(rx.State):
         try:
             yield rx.toast.info("Generando archivo...", position="bottom-right")
 
-            if db_manager.use_postgresql:
-                from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-                from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
-                from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-                from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-                from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-                from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
-                from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
 
-                repo_persona = RepositorioPersonaPostgres(db_manager)
-                repo_propietario = RepositorioPropietarioPostgres(db_manager)
-                repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
-                repo_codeudor = RepositorioCodeudorPostgres(db_manager)
-                repo_asesor = RepositorioAsesorPostgres(db_manager)
-                repo_proveedor = RepositorioProveedoresPostgres(db_manager)
-                repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
-            else:
-                from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
-                from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
-                from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
-                from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
-                from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
-                from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
-                from src.infraestructura.persistencia.repositorio_auditoria_sqlite import RepositorioAuditoriaSQLite
-
-                repo_persona = RepositorioPersonaSQLite(db_manager)
-                repo_propietario = RepositorioPropietarioSQLite(db_manager)
-                repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-                repo_codeudor = RepositorioCodeudorSQLite(db_manager)
-                repo_asesor = RepositorioAsesorSQLite(db_manager)
-                repo_proveedor = RepositorioProveedoresSQLite(db_manager)
-                repo_auditoria = RepositorioAuditoriaSQLite(db_manager)
+            repo_persona = RepositorioPersonaPostgres(db_manager)
+            repo_propietario = RepositorioPropietarioPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
+            repo_asesor = RepositorioAsesorPostgres(db_manager)
+            repo_proveedor = RepositorioProveedoresPostgres(db_manager)
+            repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
 
             servicio = ServicioPersonas(
                 repo_persona=repo_persona,
@@ -640,38 +606,21 @@ class PersonasState(rx.State):
             self.current_persona_id = persona["id"]
 
             # 1. Obtener datos completos desde el servicio (incluyendo roles)
-            if db_manager.use_postgresql:
-                from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-                from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
-                from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-                from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-                from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-                from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
-                from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
 
-                repo_persona = RepositorioPersonaPostgres(db_manager)
-                repo_propietario = RepositorioPropietarioPostgres(db_manager)
-                repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
-                repo_codeudor = RepositorioCodeudorPostgres(db_manager)
-                repo_asesor = RepositorioAsesorPostgres(db_manager)
-                repo_proveedor = RepositorioProveedoresPostgres(db_manager)
-                repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
-            else:
-                from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
-                from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
-                from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
-                from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
-                from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
-                from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
-                from src.infraestructura.persistencia.repositorio_auditoria_sqlite import RepositorioAuditoriaSQLite
-
-                repo_persona = RepositorioPersonaSQLite(db_manager)
-                repo_propietario = RepositorioPropietarioSQLite(db_manager)
-                repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-                repo_codeudor = RepositorioCodeudorSQLite(db_manager)
-                repo_asesor = RepositorioAsesorSQLite(db_manager)
-                repo_proveedor = RepositorioProveedoresSQLite(db_manager)
-                repo_auditoria = RepositorioAuditoriaSQLite(db_manager)
+            repo_persona = RepositorioPersonaPostgres(db_manager)
+            repo_propietario = RepositorioPropietarioPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
+            repo_asesor = RepositorioAsesorPostgres(db_manager)
+            repo_proveedor = RepositorioProveedoresPostgres(db_manager)
+            repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
 
             servicio = ServicioPersonas(
                 repo_persona=repo_persona,
@@ -795,38 +744,21 @@ class PersonasState(rx.State):
             self.current_persona_details = {"persona": persona} # Datos básicos mientras carga
         
         try:
-            if db_manager.use_postgresql:
-                from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-                from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
-                from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-                from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-                from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-                from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
-                from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
 
-                repo_persona = RepositorioPersonaPostgres(db_manager)
-                repo_propietario = RepositorioPropietarioPostgres(db_manager)
-                repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
-                repo_codeudor = RepositorioCodeudorPostgres(db_manager)
-                repo_asesor = RepositorioAsesorPostgres(db_manager)
-                repo_proveedor = RepositorioProveedoresPostgres(db_manager)
-                repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
-            else:
-                from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
-                from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
-                from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
-                from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
-                from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
-                from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
-                from src.infraestructura.persistencia.repositorio_auditoria_sqlite import RepositorioAuditoriaSQLite
-
-                repo_persona = RepositorioPersonaSQLite(db_manager)
-                repo_propietario = RepositorioPropietarioSQLite(db_manager)
-                repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-                repo_codeudor = RepositorioCodeudorSQLite(db_manager)
-                repo_asesor = RepositorioAsesorSQLite(db_manager)
-                repo_proveedor = RepositorioProveedoresSQLite(db_manager)
-                repo_auditoria = RepositorioAuditoriaSQLite(db_manager)
+            repo_persona = RepositorioPersonaPostgres(db_manager)
+            repo_propietario = RepositorioPropietarioPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
+            repo_asesor = RepositorioAsesorPostgres(db_manager)
+            repo_proveedor = RepositorioProveedoresPostgres(db_manager)
+            repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
 
             servicio = ServicioPersonas(
                 repo_persona=repo_persona,
@@ -956,38 +888,21 @@ class PersonasState(rx.State):
             return
 
         try:
-            if db_manager.use_postgresql:
-                from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-                from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
-                from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-                from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-                from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-                from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
-                from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
 
-                repo_persona = RepositorioPersonaPostgres(db_manager)
-                repo_propietario = RepositorioPropietarioPostgres(db_manager)
-                repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
-                repo_codeudor = RepositorioCodeudorPostgres(db_manager)
-                repo_asesor = RepositorioAsesorPostgres(db_manager)
-                repo_proveedor = RepositorioProveedoresPostgres(db_manager)
-                repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
-            else:
-                from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
-                from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
-                from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
-                from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
-                from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
-                from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
-                from src.infraestructura.persistencia.repositorio_auditoria_sqlite import RepositorioAuditoriaSQLite
-
-                repo_persona = RepositorioPersonaSQLite(db_manager)
-                repo_propietario = RepositorioPropietarioSQLite(db_manager)
-                repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-                repo_codeudor = RepositorioCodeudorSQLite(db_manager)
-                repo_asesor = RepositorioAsesorSQLite(db_manager)
-                repo_proveedor = RepositorioProveedoresSQLite(db_manager)
-                repo_auditoria = RepositorioAuditoriaSQLite(db_manager)
+            repo_persona = RepositorioPersonaPostgres(db_manager)
+            repo_propietario = RepositorioPropietarioPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
+            repo_asesor = RepositorioAsesorPostgres(db_manager)
+            repo_proveedor = RepositorioProveedoresPostgres(db_manager)
+            repo_auditoria = RepositorioAuditoriaPostgres(db_manager)
 
             servicio = ServicioPersonas(
                 repo_persona=repo_persona,

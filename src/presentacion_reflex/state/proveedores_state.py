@@ -4,11 +4,8 @@ import reflex as rx
 
 from src.aplicacion.servicios.servicio_proveedores import ServicioProveedores
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.persistencia.repositorio_persona_sqlite import (
-    RepositorioPersonaSQLite,
-)
-from src.infraestructura.persistencia.repositorio_proveedores_sqlite import (
-    RepositorioProveedoresSQLite,
+from src.infraestructura.persistencia.repositorio_persona_postgres import (
+    RepositorioPersonaPostgres,
 )
 
 
@@ -72,9 +69,7 @@ class ProveedoresState(rx.State):
             self.error_message = ""
 
         try:
-            repo = RepositorioProveedoresSQLite(db_manager)
             servicio = ServicioProveedores(db_manager)
-            servicio.repo = repo
 
             # Obtener todos (el servicio filtra por estado_registro=1)
             # Nota: El servicio actual devuelve objetos Proveedor.
@@ -147,7 +142,7 @@ class ProveedoresState(rx.State):
     async def load_personas_options(self):
         """Carga personas para el select del formulario."""
         try:
-            repo_personas = RepositorioPersonaSQLite(db_manager)
+            repo_personas = RepositorioPersonaPostgres(db_manager)
             personas = repo_personas.listar_activos()
 
             # TODO: Idealmente solo cargar personas que NO son proveedores aún.
@@ -239,9 +234,7 @@ class ProveedoresState(rx.State):
             self.error_message = ""
 
         try:
-            repo = RepositorioProveedoresSQLite(db_manager)
             servicio = ServicioProveedores(db_manager)
-            servicio.repo = repo
 
             datos = self.form_data.copy()
 
@@ -272,9 +265,7 @@ class ProveedoresState(rx.State):
     async def delete_proveedor(self, id_proveedor: int):
         """Elimina (soft delete) un proveedor."""
         try:
-            repo = RepositorioProveedoresSQLite(db_manager)
             servicio = ServicioProveedores(db_manager)
-            servicio.repo = repo
             servicio.eliminar_proveedor(id_proveedor)
             yield ProveedoresState.load_proveedores
         except Exception as e:

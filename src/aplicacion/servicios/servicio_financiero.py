@@ -30,20 +30,42 @@ class ServicioFinanciero:
 
     def __init__(
         self,
-        repo_recaudo: IRepositorioRecaudo,
-        repo_liquidacion: IRepositorioLiquidacion,
-        repo_propiedad: IRepositorioPropiedad,
-        repo_arriendo: Any,  # Podría ser IRepositorioContratoArriendo
-        repo_mandato: Any,  # Podría ser IRepositorioContratoMandato
-        pdf_service: ServicioDocumentosPDF,
+        db_manager: Any,
+        repo_recaudo: Optional[IRepositorioRecaudo] = None,
+        repo_liquidacion: Optional[IRepositorioLiquidacion] = None,
+        repo_propiedad: Optional[IRepositorioPropiedad] = None,
+        repo_arriendo: Optional[Any] = None,
+        repo_mandato: Optional[Any] = None,
+        pdf_service: Optional[ServicioDocumentosPDF] = None,
         servicio_configuracion: Optional[ServicioConfiguracion] = None,
     ):
-        self.repo_recaudo = repo_recaudo
-        self.repo_liquidacion = repo_liquidacion
-        self.repo_propiedad = repo_propiedad
-        self.repo_arriendo = repo_arriendo
-        self.repo_mandato = repo_mandato
-        self.pdf_service = pdf_service
+        from src.infraestructura.persistencia.repositorio_recaudo import RepositorioRecaudo
+        from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
+            RepositorioLiquidacionPostgres,
+        )
+        from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+            RepositorioPropiedadPostgres,
+        )
+        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+            RepositorioContratoArrendamientoPostgres,
+        )
+        from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+            RepositorioContratoMandatoPostgres,
+        )
+        from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+
+        self.repo_recaudo = repo_recaudo or RepositorioRecaudo(db_manager)
+        self.repo_liquidacion = (
+            repo_liquidacion or RepositorioLiquidacionPostgres(db_manager)
+        )
+        self.repo_propiedad = repo_propiedad or RepositorioPropiedadPostgres(db_manager)
+        self.repo_arriendo = (
+            repo_arriendo or RepositorioContratoArrendamientoPostgres(db_manager)
+        )
+        self.repo_mandato = (
+            repo_mandato or RepositorioContratoMandatoPostgres(db_manager)
+        )
+        self.pdf_service = pdf_service or ServicioDocumentosPDF()
         self.servicio_config = servicio_configuracion
 
     def registrar_recaudo(

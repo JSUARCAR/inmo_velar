@@ -29,18 +29,11 @@ class AlertasDashboardState(rx.State):
     page_size: int = 20
 
     def _get_servicio(self) -> ServicioAlertas:
-        if db_manager.use_postgresql:
-            from src.infraestructura.persistencia.repositorio_alerta_postgres import (
-                RepositorioAlertaPostgres,
-            )
+        from src.infraestructura.persistencia.repositorio_alerta_postgres import (
+            RepositorioAlertaPostgres,
+        )
 
-            repo = RepositorioAlertaPostgres(db_manager)
-        else:
-            from src.infraestructura.persistencia.repositorio_alerta_sqlite import (
-                RepositorioAlertaSQLite,
-            )
-
-            repo = RepositorioAlertaSQLite(db_manager)
+        repo = RepositorioAlertaPostgres(db_manager)
         return ServicioAlertas(db_manager, repo)
 
     def load_alertas(self):

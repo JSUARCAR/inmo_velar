@@ -784,43 +784,7 @@ class PDFState(rx.State):
         from src.aplicacion.servicios.servicio_financiero import ServicioFinanciero
         from src.infraestructura.persistencia.database import db_manager
 
-        # Importar repositorios requeridos para ServicioFinanciero
-        from src.infraestructura.persistencia.repositorio_recaudo import (
-            RepositorioRecaudo,
-        )
-        from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
-            RepositorioLiquidacionPostgres,
-        )
-        from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
-            RepositorioPropiedadPostgres,
-        )
-        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-            RepositorioContratoArrendamientoPostgres,
-        )
-        from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-            RepositorioContratoMandatoPostgres,
-        )
-        from src.infraestructura.servicios.servicio_documentos_pdf import (
-            ServicioDocumentosPDF,
-        )
-
-        # Instanciar dependencias
-        repo_recaudo = RepositorioRecaudo(db_manager)
-        repo_liquidacion = RepositorioLiquidacionPostgres(db_manager)
-        repo_propiedad = RepositorioPropiedadPostgres(db_manager)
-        repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
-        repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
-        servicio_pdf = ServicioDocumentosPDF()
-
-        # Instanciar servicio financiero con todas sus dependencias
-        servicio = ServicioFinanciero(
-            repo_recaudo=repo_recaudo,
-            repo_liquidacion=repo_liquidacion,
-            repo_propiedad=repo_propiedad,
-            repo_arriendo=repo_arriendo,
-            repo_mandato=repo_mandato,
-            pdf_service=servicio_pdf,
-        )
+        servicio = ServicioFinanciero(db_manager)
 
         datos = servicio.obtener_datos_consolidados_para_pdf(propietario_id, periodo)
 
@@ -1362,43 +1326,7 @@ class PDFState(rx.State):
         from src.aplicacion.servicios.servicio_financiero import ServicioFinanciero
         from src.infraestructura.persistencia.database import db_manager
 
-        # Importar repositorios requeridos para ServicioFinanciero
-        from src.infraestructura.persistencia.repositorio_recaudo import (
-            RepositorioRecaudo,
-        )
-        from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
-            RepositorioLiquidacionPostgres,
-        )
-        from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
-            RepositorioPropiedadPostgres,
-        )
-        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-            RepositorioContratoArrendamientoPostgres,
-        )
-        from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-            RepositorioContratoMandatoPostgres,
-        )
-        from src.infraestructura.servicios.servicio_documentos_pdf import (
-            ServicioDocumentosPDF,
-        )
-
-        # Instanciar dependencias
-        repo_recaudo = RepositorioRecaudo(db_manager)
-        repo_liquidacion = RepositorioLiquidacionPostgres(db_manager)
-        repo_propiedad = RepositorioPropiedadPostgres(db_manager)
-        repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
-        repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
-        servicio_pdf = ServicioDocumentosPDF()
-
-        # Instanciar servicio financiero con todas sus dependencias
-        servicio = ServicioFinanciero(
-            repo_recaudo=repo_recaudo,
-            repo_liquidacion=repo_liquidacion,
-            repo_propiedad=repo_propiedad,
-            repo_arriendo=repo_arriendo,
-            repo_mandato=repo_mandato,
-            pdf_service=servicio_pdf,
-        )
+        servicio = ServicioFinanciero(db_manager)
 
         # Get real liquidation data from database
         datos = servicio.obtener_datos_liquidacion_para_pdf(id_liquidacion)

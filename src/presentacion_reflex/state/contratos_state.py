@@ -410,11 +410,7 @@ class ContratosState(DocumentosStateMixin):
             RepositorioContratoArrendamientoPostgres,
         )
 
-        repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
-        repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
-        servicio = ServicioContratos(
-            db_manager, repo_mandato, repo_arriendo, None, None, None, None, None
-        )
+        servicio = ServicioContratos(db_manager)
         kpis = servicio.obtener_kpis(self.filter_asesor_id)
         async with self:
             m = kpis.get("mandatos", {})
@@ -436,11 +432,7 @@ class ContratosState(DocumentosStateMixin):
             RepositorioContratoArrendamientoPostgres,
         )
 
-        repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
-        repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
-        servicio = ServicioContratos(
-            db_manager, repo_mandato, repo_arriendo, None, None, None, None, None
-        )
+        servicio = ServicioContratos(db_manager)
         ops = servicio.obtener_opciones_filtro()
         async with self:
             self.propiedades_select_options = ops["propiedades"]
@@ -481,24 +473,7 @@ class ContratosState(DocumentosStateMixin):
                 RepositorioCodeudorPostgres,
             )
 
-            repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
-            repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
-            repo_propiedad = RepositorioPropiedadPostgres(db_manager)
-            repo_renovacion = RepositorioRenovacionPostgres(db_manager)
-            repo_ipc = RepositorioIPCPostgres(db_manager)
-            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
-            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
-
-            servicio = ServicioContratos(
-                db_manager,
-                repo_mandato,
-                repo_arriendo,
-                repo_propiedad,
-                repo_renovacion,
-                repo_ipc,
-                repo_arrendatario,
-                repo_codeudor,
-            )
+            servicio = ServicioContratos(db_manager)
             asesor_filter = (
                 self.filter_asesor_id
                 if self.filter_asesor_id and self.filter_asesor_id != "todos"
@@ -678,18 +653,7 @@ class ContratosState(DocumentosStateMixin):
                 RepositorioCodeudorPostgres,
             )
 
-            repo_m = RepositorioContratoMandatoPostgres(db_manager)
-            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
-            servicio = ServicioContratos(
-                db_manager,
-                repo_m,
-                repo_a,
-                RepositorioPropiedadPostgres(db_manager),
-                None,
-                None,
-                RepositorioArrendatarioPostgres(db_manager),
-                RepositorioCodeudorPostgres(db_manager),
-            )
+            servicio = ServicioContratos(db_manager)
 
             if tipo == "Mandato":
                 c = servicio.obtener_mandato_por_id(id_contrato)
@@ -792,11 +756,7 @@ class ContratosState(DocumentosStateMixin):
                 RepositorioContratoArrendamientoPostgres,
             )
 
-            repo_m = RepositorioContratoMandatoPostgres(db_manager)
-            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
-            servicio = ServicioContratos(
-                db_manager, repo_m, repo_a, None, None, None, None, None
-            )
+            servicio = ServicioContratos(db_manager)
 
             # form_data HTML tiene prioridad sobre state_snapshot
             # porque contiene los valores al momento exacto del submit
@@ -873,18 +833,7 @@ class ContratosState(DocumentosStateMixin):
                 RepositorioContratoArrendamientoPostgres,
             )
 
-            repo_m = RepositorioContratoMandatoPostgres(db_manager)
-            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
-            servicio = ServicioContratos(
-                db_manager,
-                repo_mandato=repo_m,
-                repo_arriendo=repo_a,
-                repo_propiedad=None,
-                repo_renovacion=None,
-                repo_ipc=None,
-                repo_arrendatario=None,
-                repo_codeudor=None,
-            )
+            servicio = ServicioContratos(db_manager)
 
             detalle = servicio.obtener_detalle_contrato_ui(id_contrato, tipo)
             if detalle:
@@ -913,18 +862,7 @@ class ContratosState(DocumentosStateMixin):
                 RepositorioContratoArrendamientoPostgres,
             )
 
-            repo_m = RepositorioContratoMandatoPostgres(db_manager)
-            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
-            servicio = ServicioContratos(
-                db_manager,
-                repo_mandato=repo_m,
-                repo_arriendo=repo_a,
-                repo_propiedad=None,
-                repo_renovacion=None,
-                repo_ipc=None,
-                repo_arrendatario=None,
-                repo_codeudor=None,
-            )
+            servicio = ServicioContratos(db_manager)
 
             estado_filtro = (
                 self.filter_estado if self.filter_estado != "Todos" else None
@@ -981,24 +919,7 @@ class ContratosState(DocumentosStateMixin):
             )
             from src.presentacion_reflex.state.pdf_state import PDFState
 
-            repo_m = RepositorioContratoMandatoPostgres(db_manager)
-            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
-            repo_p = RepositorioPropiedadPostgres(db_manager)
-            repo_r = RepositorioRenovacionPostgres(db_manager)
-            repo_i = RepositorioIPCPostgres(db_manager)
-            repo_arr = RepositorioArrendatarioPostgres(db_manager)
-            repo_cod = RepositorioCodeudorPostgres(db_manager)
-
-            servicio = ServicioContratos(
-                db_manager=db_manager,
-                repo_mandato=repo_m,
-                repo_arriendo=repo_a,
-                repo_propiedad=repo_p,
-                repo_renovacion=repo_r,
-                repo_ipc=repo_i,
-                repo_arrendatario=repo_arr,
-                repo_codeudor=repo_cod,
-            )
+            servicio = ServicioContratos(db_manager)
             usuario_sistema = "admin"
 
             if estado_actual == "Activo":
@@ -1064,21 +985,7 @@ class ContratosState(DocumentosStateMixin):
                 RepositorioIPCPostgres,
             )
 
-            repo_m = RepositorioContratoMandatoPostgres(db_manager)
-            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
-            repo_p = RepositorioPropiedadPostgres(db_manager)
-            repo_i = RepositorioIPCPostgres(db_manager)
-
-            servicio = ServicioContratos(
-                db_manager,
-                repo_mandato=repo_m,
-                repo_arriendo=repo_a,
-                repo_propiedad=repo_p,
-                repo_renovacion=None,
-                repo_ipc=repo_i,
-                repo_arrendatario=None,
-                repo_codeudor=None,
-            )
+            servicio = ServicioContratos(db_manager)
 
             proyeccion = servicio.calcular_proyeccion_renovacion(id_contrato, tipo)
             async with self:
@@ -1113,22 +1020,7 @@ class ContratosState(DocumentosStateMixin):
                 RepositorioIPCPostgres,
             )
 
-            repo_m = RepositorioContratoMandatoPostgres(db_manager)
-            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
-            repo_r = RepositorioRenovacionPostgres(db_manager)
-            repo_p = RepositorioPropiedadPostgres(db_manager)
-            repo_i = RepositorioIPCPostgres(db_manager)
-
-            servicio = ServicioContratos(
-                db_manager,
-                repo_mandato=repo_m,
-                repo_arriendo=repo_a,
-                repo_propiedad=repo_p,
-                repo_renovacion=repo_r,
-                repo_ipc=repo_i,
-                repo_arrendatario=None,
-                repo_codeudor=None,
-            )
+            servicio = ServicioContratos(db_manager)
 
             res = {"success": False, "message": "Error desconocido"}
             try:
@@ -1213,19 +1105,7 @@ class ContratosState(DocumentosStateMixin):
                 RepositorioIPCPostgres,
             )
 
-            repo_m = RepositorioContratoMandatoPostgres(db_manager)
-            repo_a = RepositorioContratoArrendamientoPostgres(db_manager)
-            repo_ipc = RepositorioIPCPostgres(db_manager)
-            servicio = ServicioContratos(
-                db_manager,
-                repo_mandato=repo_m,
-                repo_arriendo=repo_a,
-                repo_propiedad=None,
-                repo_renovacion=None,
-                repo_ipc=repo_ipc,
-                repo_arrendatario=None,
-                repo_codeudor=None,
-            )
+            servicio = ServicioContratos(db_manager)
 
             resultado = servicio.aplicar_incremento_ipc(
                 id_contrato=self.ipc_target_contrato_id,

@@ -10,8 +10,8 @@ from typing import Dict, List, Optional
 
 from src.dominio.entidades.propiedad import Propiedad
 from src.dominio.interfaces.repositorio_propiedad import IRepositorioPropiedad
-from src.infraestructura.persistencia.repositorio_municipio_sqlite import (
-    RepositorioMunicipioSQLite,
+from src.infraestructura.persistencia.repositorio_municipio_postgres import (
+    RepositorioMunicipioPostgres,
 )
 
 # Integración Fase 3: CacheManager
@@ -37,7 +37,7 @@ class ServicioPropiedades:
     def __init__(
         self,
         repo_propiedad: IRepositorioPropiedad,
-        repo_municipio: Optional[RepositorioMunicipioSQLite] = None,
+        repo_municipio: Optional[RepositorioMunicipioPostgres] = None,
     ):
         self.repo = repo_propiedad
         self.repo_municipio = repo_municipio
@@ -446,7 +446,7 @@ class ServicioPropiedades:
         if not self.repo_municipio:
             from src.infraestructura.persistencia.database import db_manager
 
-            self.repo_municipio = RepositorioMunicipioSQLite(db_manager)
+            self.repo_municipio = RepositorioMunicipioPostgres(db_manager)
 
         municipios = self.repo_municipio.listar_todos()
         return [

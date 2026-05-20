@@ -141,12 +141,12 @@ class PropiedadesState(DocumentosStateMixin):
             from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
                 RepositorioPropiedadPostgres,
             )
-            from src.infraestructura.persistencia.repositorio_municipio_sqlite import (
-                RepositorioMunicipioSQLite,
+            from src.infraestructura.persistencia.repositorio_municipio_postgres import (
+                RepositorioMunicipioPostgres,
             )
 
             repo_propiedad = RepositorioPropiedadPostgres(db_manager)
-            repo_municipio = RepositorioMunicipioSQLite(db_manager)
+            repo_municipio = RepositorioMunicipioPostgres(db_manager)
             servicio = ServicioPropiedades(
                 repo_propiedad=repo_propiedad, repo_municipio=repo_municipio
             )

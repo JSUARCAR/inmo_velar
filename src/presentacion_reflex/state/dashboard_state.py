@@ -139,12 +139,8 @@ class DashboardState(rx.State):
             repo_dashboard = RepositorioDashboard(db_manager)
             
             # Instanciar Repo de Alertas para el servicio de Dashboard
-            if db_manager.use_postgresql:
-                from src.infraestructura.persistencia.repositorio_alerta_postgres import RepositorioAlertaPostgres
-                repo_alerta = RepositorioAlertaPostgres(db_manager)
-            else:
-                from src.infraestructura.persistencia.repositorio_alerta_sqlite import RepositorioAlertaSQLite
-                repo_alerta = RepositorioAlertaSQLite(db_manager)
+            from src.infraestructura.persistencia.repositorio_alerta_postgres import RepositorioAlertaPostgres
+            repo_alerta = RepositorioAlertaPostgres(db_manager)
 
             servicio = ServicioDashboard(repo_dashboard=repo_dashboard, repo_alerta=repo_alerta)
             logger.debug("Servicio Dashboard instanciado OK")
