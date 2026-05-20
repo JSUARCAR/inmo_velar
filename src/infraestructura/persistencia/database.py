@@ -94,6 +94,7 @@ if DB_MODE == "postgresql":
             self._pool = pool_ref
             self._conn = conn
             self._is_returned = False
+            self.in_managed_transaction = False
 
         def cursor(self, *args, **kwargs):
             # Always force RealDictCursor if not specified to ensure dict access
@@ -104,6 +105,18 @@ if DB_MODE == "postgresql":
 
             cursor = self._conn.cursor(*args, **kwargs)
             return UpperCaseCursorWrapper(cursor, conn_wrapper=self)
+
+        def commit(self):
+            """Ignora el commit si estamos dentro de una transacción gestionada por el servicio."""
+            if self.in_managed_transaction:
+                return
+            return self._conn.commit()
+
+        def rollback(self):
+            """Ignora el rollback si estamos dentro de una transacción gestionada por el servicio (el gestor lo hará)."""
+            if self.in_managed_transaction:
+                return
+            return self._conn.rollback()
 
         def __getattr__(self, name):
             return getattr(self._conn, name)
@@ -130,6 +143,31 @@ if DB_MODE == "postgresql":
                 except Exception:
                     pass
                 self._is_returned = True
+
+    class SQLiteConnectionWrapper:
+        """Wrapper para SQLite para dar paridad funcional con el wrapper de Postgres."""
+        def __init__(self, conn):
+            self._conn = conn
+            self.in_managed_transaction = False
+
+        def commit(self):
+            if self.in_managed_transaction:
+                return
+            return self._conn.commit()
+
+        def rollback(self):
+            if self.in_managed_transaction:
+                return
+            return self._conn.rollback()
+
+        def __getattr__(self, name):
+            return getattr(self._conn, name)
+
+        def __enter__(self):
+            return self._conn.__enter__()
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            return self._conn.__exit__(exc_type, exc_val, exc_tb)
 
 else:
     import sqlite3
@@ -269,7 +307,7 @@ class DatabaseManager:
             # Registrar función de búsqueda sin acentos
             conexion.create_function("unaccent_lower", 1, self.normalize_search_term)
 
-            self._connection_pool[thread_id] = conexion
+            self._connection_pool[thread_id] = SQLiteConnectionWrapper(conexion)
 
         return self._connection_pool[thread_id]
 
@@ -415,21 +453,31 @@ class DatabaseManager:
     def transaccion(self):
         """
         Context manager para transacciones.
-
-        Ejemplo de uso:
-            >>> with db_manager.transaccion() as conn:
-            ...     cursor = conn.cursor()
-            ...     cursor.execute("INSERT ...")
-            ...     # commit automático al salir del context
+        Gestiona automáticamente el estado in_managed_transaction para permitir
+        que los repositorios llamen a .commit() sin romper la transacción atómica
+        iniciada en la capa de servicios.
         """
         conexion = self.obtener_conexion()
+        # Verificar si ya estamos en una transacción gestionada (anidamiento)
+        was_managed = getattr(conexion, "in_managed_transaction", False)
 
         try:
+            if not was_managed:
+                conexion.in_managed_transaction = True
+            
             yield conexion
-            conexion.commit()
+            
+            # Solo hacemos commit si somos el nivel más externo de la transacción
+            if not was_managed:
+                conexion.commit()
         except Exception as e:
+            # Si hay error, siempre hacemos rollback (aunque sea anidado, 
+            # para asegurar que la transacción falle completa)
             conexion.rollback()
             raise e
+        finally:
+            if not was_managed:
+                conexion.in_managed_transaction = False
 
     def ejecutar_script(self, script_sql: str) -> None:
         """

@@ -119,6 +119,24 @@ class ServicioContratoArrendamiento:
     def actualizar_arrendamiento(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
+        """
+        Actualiza un contrato de arrendamiento y sincroniza en cascada con Propiedad y Mandato.
+        Utiliza blindaje transaccional atómico.
+        """
+        # Obtenemos el db_manager desde el repositorio para el bloque transaccional
+        db = getattr(self.repo_arriendo, "db", None)
+        
+        # Si no hay db_manager (caso raro o mocks), ejecutamos sin transacción explícita
+        if db is None:
+            self._ejecutar_actualizacion_arrendamiento(id_contrato, datos, usuario_sistema)
+            return
+
+        with db.transaccion():
+            self._ejecutar_actualizacion_arrendamiento(id_contrato, datos, usuario_sistema)
+
+    def _ejecutar_actualizacion_arrendamiento(
+        self, id_contrato: int, datos: Dict, usuario_sistema: str
+    ) -> None:
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
         if not arriendo:
             raise ValueError(
@@ -134,6 +152,11 @@ class ServicioContratoArrendamiento:
             coherente, mensaje = CalculadoraContratos.validar_coherencia(f_inicio, f_fin, d_reg)
             if not coherente:
                 raise ValueError(f"Error de Integridad Contractual: {mensaje}")
+
+        # Guardar valores anteriores para detectar cambios que requieren cascada
+        canon_anterior = arriendo.canon_arrendamiento
+        fecha_inicio_anterior = arriendo.fecha_inicio_contrato_a
+        fecha_fin_anterior = arriendo.fecha_fin_contrato_a
 
         # Actualización de llaves foráneas y datos básicos
         arriendo.id_propiedad = datos.get("id_propiedad", arriendo.id_propiedad)
@@ -171,7 +194,34 @@ class ServicioContratoArrendamiento:
         arriendo.updated_by = usuario_sistema
         arriendo.updated_at = datetime.now().isoformat()
 
+        # 1. Actualizar el Arrendamiento
         self.repo_arriendo.actualizar(arriendo, usuario_sistema)
+
+        # 2. Sincronización en Cascada (Integridad Contractual Élite)
+        
+        # A. Si cambió el CANON, sincronizar Propiedad y Mandato
+        if arriendo.canon_arrendamiento != canon_anterior:
+            # Sincronizar Propiedad
+            propiedad = self.repo_propiedad.obtener_por_id(arriendo.id_propiedad)
+            if propiedad:
+                propiedad.canon_arrendamiento_estimado = arriendo.canon_arrendamiento
+                self.repo_propiedad.actualizar(propiedad, usuario_sistema)
+            
+            # Sincronizar Mandato
+            mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
+            if mandato:
+                mandato.canon_mandato = arriendo.canon_arrendamiento
+                self.repo_mandato.actualizar(mandato, usuario_sistema)
+
+        # B. Si cambiaron las FECHAS, sincronizar Mandato
+        if (arriendo.fecha_inicio_contrato_a != fecha_inicio_anterior or 
+            arriendo.fecha_fin_contrato_a != fecha_fin_anterior):
+            
+            mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
+            if mandato:
+                mandato.fecha_inicio_contrato_m = arriendo.fecha_inicio_contrato_a
+                mandato.fecha_fin_contrato_m = arriendo.fecha_fin_contrato_a
+                self.repo_mandato.actualizar(mandato, usuario_sistema)
 
     def listar_arrendamientos_paginado(self, **kwargs):
         return self.repo_arriendo.listar_paginado(**kwargs)
@@ -236,6 +286,17 @@ class ServicioContratoArrendamiento:
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoArrendamiento:
         """Lógica de renovación automática con incremento IPC. Acepta fecha fin personalizada."""
+        db = getattr(self.repo_arriendo, "db", None)
+        
+        if db is None:
+            return self._ejecutar_renovacion_arrendamiento(id_contrato, usuario_sistema, nueva_fecha_fin)
+            
+        with db.transaccion():
+            return self._ejecutar_renovacion_arrendamiento(id_contrato, usuario_sistema, nueva_fecha_fin)
+
+    def _ejecutar_renovacion_arrendamiento(
+        self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
+    ) -> ContratoArrendamiento:
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
         if not arriendo or arriendo.estado_contrato_a != "Activo":
             raise ValueError("Contrato no válido para renovación")
@@ -309,10 +370,11 @@ class ServicioContratoArrendamiento:
             propiedad.canon_arrendamiento_estimado = nuevo_canon
             self.repo_propiedad.actualizar(propiedad, usuario_sistema)
 
-        # 6. Sincronizar canon en mandato activo asociado a la misma propiedad
+        # 6. Sincronizar canon y fecha_fin en mandato activo asociado a la misma propiedad
         mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
         if mandato:
             mandato.canon_mandato = nuevo_canon
+            mandato.fecha_fin_contrato_m = nueva_fecha_fin_str # Sincronizar fecha fin en renovación
             mandato.updated_by = usuario_sistema
             mandato.updated_at = datetime.now().isoformat()
             self.repo_mandato.actualizar(mandato, usuario_sistema)

@@ -1419,62 +1419,36 @@ class ServicioContratos:
         """
         Aplica incremento IPC a contrato de arrendamiento activo.
         También actualiza en cascada la Propiedad y el Contrato de Mandato.
-
-        Args:
-            id_contrato: ID del contrato de arrendamiento
-            porcentaje_ipc: Porcentaje de incremento (ej: 5.62 para 5.62%)
-            fecha_aplicacion: Fecha de aplicación (YYYY-MM-D)
-            observaciones: Notas adicionales
-            usuario: Usuario que ejecuta la acción
-
-        Returns:
-            Dict con resultado de la operación
+        Utiliza blindaje transaccional atómico.
         """
         try:
-            with self.db.obtener_conexion() as conn:
-                cursor = conn.cursor()
+            with self.db.transaccion():
                 # 1. Validar contrato existe y está activo
-                cursor.execute(
-                    """
-                    SELECT ID_CONTRATO_A, CANON_ARRENDAMIENTO, ESTADO_CONTRATO_A,
-                           FECHA_ULTIMO_INCREMENTO_IPC, ID_PROPIEDAD
-                    FROM CONTRATOS_ARRENDAMIENTOS
-                    WHERE ID_CONTRATO_A = %s
-                """,
-                    (id_contrato,),
-                )
-
-                row = cursor.fetchone()
-                if not row:
+                arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
+                if not arriendo:
                     return {
                         "success": False,
                         "message": f"Contrato {id_contrato} no encontrado",
                     }
 
-                estado = row[2]
-                if estado != "Activo":
+                if arriendo.estado_contrato_a != "Activo":
                     return {
                         "success": False,
                         "message": "Solo se puede aplicar IPC a contratos activos",
                     }
 
-                id_propiedad = row[4]
-                ultimo_incremento = row[3]
-                canon_actual = row[1]
+                id_propiedad = arriendo.id_propiedad
+                ultimo_incremento = arriendo.fecha_ultimo_incremento_ipc
+                canon_anterior = arriendo.canon_arrendamiento
 
                 # 2. Validar no hay incremento reciente
                 if ultimo_incremento:
-                    from datetime import datetime
-
                     try:
                         ultima_fecha = (
                             ultimo_incremento
-                            if isinstance(ultimo_incremento, (datetime, list))
+                            if isinstance(ultimo_incremento, datetime)
                             else datetime.strptime(str(ultimo_incremento), "%Y-%m-%d")
                         )
-                        if isinstance(ultima_fecha, str):
-                            ultima_fecha = datetime.strptime(ultima_fecha, "%Y-%m-%d")
-
                         nueva_fecha = datetime.strptime(fecha_aplicacion, "%Y-%m-%d")
 
                         if (
@@ -1489,80 +1463,62 @@ class ServicioContratos:
                         pass
 
                 # 3. Porcentaje check
-                if porcentaje_ipc <= 0 or porcentaje_ipc > 20:
-                    return {"success": False, "message": "Porcentaje invalido"}
+                if porcentaje_ipc <= 0 or porcentaje_ipc > 25: # Ajustado a 25% por inflación extrema posible
+                    return {"success": False, "message": "Porcentaje inválido o fuera de rango (0-25%)"}
 
-                # 4. Calculo
-                canon_anterior = int(canon_actual) if canon_actual else 0
+                # 4. Cálculo
                 incremento = canon_anterior * (porcentaje_ipc / 100)
                 canon_nuevo = round(canon_anterior + incremento)
 
-                # 5. EXECUTE UPDATES
-                # (No hay bloque de transacción, operaciones inmediatas por autocommit=True)
+                # 5. EXECUTE UPDATES (Transaccional)
 
-                # 5a. Contrato
-                cursor.execute(
-                    """
-                    UPDATE CONTRATOS_ARRENDAMIENTOS
-                    SET CANON_ARRENDAMIENTO = %s,
-                        FECHA_ULTIMO_INCREMENTO_IPC = %s,
-                        ALERTA_IPC = FALSE,
-                        UPDATED_AT = CURRENT_TIMESTAMP,
-                        UPDATED_BY = %s
-                    WHERE ID_CONTRATO_A = %s
-                """,
-                    (canon_nuevo, fecha_aplicacion, usuario, id_contrato),
-                )
+                # 5a. Contrato Arrendamiento
+                arriendo.canon_arrendamiento = canon_nuevo
+                arriendo.fecha_ultimo_incremento_ipc = fecha_aplicacion
+                arriendo.alerta_ipc = False
+                self.repo_arriendo.actualizar(arriendo, usuario)
 
                 # 5b. Propiedad
-                cursor.execute(
-                    """
-                    UPDATE PROPIEDADES
-                    SET CANON_ARRENDAMIENTO_ESTIMADO = %s,
-                        UPDATED_AT = CURRENT_TIMESTAMP,
-                        UPDATED_BY = %s
-                    WHERE ID_PROPIEDAD = %s
-                """,
-                    (canon_nuevo, usuario, id_propiedad),
-                )
+                propiedad = self.repo_propiedad.obtener_por_id(id_propiedad)
+                if propiedad:
+                    propiedad.canon_arrendamiento_estimado = canon_nuevo
+                    self.repo_propiedad.actualizar(propiedad, usuario)
 
                 # 5c. Mandato
-                cursor.execute(
-                    """
-                    UPDATE CONTRATOS_MANDATOS
-                    SET CANON_MANDATO = %s,
-                        UPDATED_AT = CURRENT_TIMESTAMP,
-                        UPDATED_BY = %s
-                    WHERE ID_PROPIEDAD = %s
-                    AND ESTADO_CONTRATO_M = 'Activo'
-                """,
-                    (canon_nuevo, usuario, id_propiedad),
-                )
+                mandato = self.repo_mandato.obtener_activo_por_propiedad(id_propiedad)
+                if mandato:
+                    mandato.canon_mandato = canon_nuevo
+                    self.repo_mandato.actualizar(mandato, usuario)
 
-                # 6. Registar Historial
-                try:
-                    cursor.execute(
-                        """
-                        INSERT INTO IPC_INCREMENT_HISTORY (
-                            ID_CONTRATO_A, FECHA_APLICACION, PORCENTAJE_IPC,
-                            CANON_ANTERIOR, CANON_NUEVO, OBSERVACIONES, CREATED_BY
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-                    """,
-                        (
-                            id_contrato,
-                            fecha_aplicacion,
-                            porcentaje_ipc,
-                            canon_anterior,
-                            canon_nuevo,
-                            observaciones,
-                            usuario,
-                        ),
-                    )
-                except Exception:
-                    pass
-
-                conn.commit()
-                cursor.close()
+                # 6. Registrar Historial
+                # Usamos SQL crudo aquí para el historial si no hay repositorio específico
+                query_historial = """
+                    INSERT INTO IPC_INCREMENT_HISTORY (
+                        ID_CONTRATO_A, FECHA_APLICACION, PORCENTAJE_IPC,
+                        CANON_ANTERIOR, CANON_NUEVO, OBSERVACIONES, CREATED_BY
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
+                placeholder = self.db.get_placeholder()
+                if placeholder != "%s":
+                    query_historial = query_historial.replace("%s", placeholder)
+                
+                with self.db.obtener_conexion() as conn:
+                    cursor = conn.cursor()
+                    try:
+                        cursor.execute(
+                            query_historial,
+                            (
+                                id_contrato,
+                                fecha_aplicacion,
+                                porcentaje_ipc,
+                                canon_anterior,
+                                canon_nuevo,
+                                observaciones,
+                                usuario,
+                            ),
+                        )
+                    except Exception as e:
+                        print(f"DEBUG: Error al registrar historial IPC (no crítico): {e}")
 
                 return {
                     "success": True,
@@ -1573,6 +1529,5 @@ class ServicioContratos:
                 }
         except Exception as e:
             import traceback
-
             traceback.print_exc()
-            return {"success": False, "message": f"Error al aplicar IPC: {str(e)}"}
+            return {"success": False, "message": f"Error crítico al aplicar IPC: {str(e)}"}

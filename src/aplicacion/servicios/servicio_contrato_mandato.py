@@ -47,6 +47,14 @@ class ServicioContratoMandato:
     @cache_manager.invalidates("mandatos:list_paginated")
     def crear_mandato(self, datos: Dict, usuario_sistema: str) -> ContratoMandato:
         """Crea un nuevo contrato de mandato con validaciones de negocio."""
+        db = getattr(self.repo_mandato, "db", None)
+        if db is None:
+            return self._ejecutar_creacion_mandato(datos, usuario_sistema)
+            
+        with db.transaccion():
+            return self._ejecutar_creacion_mandato(datos, usuario_sistema)
+
+    def _ejecutar_creacion_mandato(self, datos: Dict, usuario_sistema: str) -> ContratoMandato:
         id_propiedad = datos["id_propiedad"]
 
         # 0. Validar Coherencia de Fechas y Duración
@@ -104,6 +112,17 @@ class ServicioContratoMandato:
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
         """Actualiza condiciones de un mandato."""
+        db = getattr(self.repo_mandato, "db", None)
+        if db is None:
+            self._ejecutar_actualizacion_mandato(id_contrato, datos, usuario_sistema)
+            return
+            
+        with db.transaccion():
+            self._ejecutar_actualizacion_mandato(id_contrato, datos, usuario_sistema)
+
+    def _ejecutar_actualizacion_mandato(
+        self, id_contrato: int, datos: Dict, usuario_sistema: str
+    ) -> None:
         mandato = self.repo_mandato.obtener_por_id(id_contrato)
         if not mandato:
             raise ValueError(f"No existe el contrato de mandato con ID {id_contrato}")
