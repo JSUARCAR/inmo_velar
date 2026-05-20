@@ -60,7 +60,18 @@ class ServicioContratoArrendamiento:
     def crear_arrendamiento(
         self, datos: Dict, usuario_sistema: str
     ) -> ContratoArrendamiento:
-        """Crea un nuevo contrato de arrendamiento con validaciones."""
+        """Crea un nuevo contrato de arrendamiento con validaciones. Uso de transacción atómica."""
+        db = getattr(self.repo_arriendo, "db", None)
+
+        if db is None:
+            return self._ejecutar_creacion_arrendamiento(datos, usuario_sistema)
+
+        with db.transaccion():
+            return self._ejecutar_creacion_arrendamiento(datos, usuario_sistema)
+
+    def _ejecutar_creacion_arrendamiento(
+        self, datos: Dict, usuario_sistema: str
+    ) -> ContratoArrendamiento:
         id_propiedad = datos["id_propiedad"]
 
         # 0. Validar Coherencia de Fechas y Duración
@@ -126,7 +137,7 @@ class ServicioContratoArrendamiento:
         """
         # Obtenemos el db_manager desde el repositorio para el bloque transaccional
         db = getattr(self.repo_arriendo, "db", None)
-        
+
         # Si no hay db_manager (caso raro o mocks), ejecutamos sin transacción explícita
         if db is None:
             self._ejecutar_actualizacion_arrendamiento(id_contrato, datos, usuario_sistema)
@@ -149,13 +160,13 @@ class ServicioContratoArrendamiento:
             f_inicio = datos.get("fecha_inicio", arriendo.fecha_inicio_contrato_a)
             f_fin = datos.get("fecha_fin", arriendo.fecha_fin_contrato_a)
             d_reg = int(datos.get("duracion_meses", arriendo.duracion_contrato_a))
-            
+
             coherente, mensaje = CalculadoraContratos.validar_coherencia(f_inicio, f_fin, d_reg)
             if not coherente:
                 raise ValueError(f"Error de Integridad Contractual: {mensaje}")
 
         # Guardar valores anteriores para detectar cambios que requieren cascada
-        canon_anterior = arriendo.canon_arrendamiento
+        canon_anterior = int(arriendo.canon_arrendamiento or 0)
         fecha_inicio_anterior = arriendo.fecha_inicio_contrato_a
         fecha_fin_anterior = arriendo.fecha_fin_contrato_a
 
@@ -169,7 +180,7 @@ class ServicioContratoArrendamiento:
             arriendo.fecha_inicio_contrato_a = datos["fecha_inicio"]
             # Recalcular Ciclo de Pago
             arriendo.fecha_pago = str(CalculadoraContratos.calcular_ciclo_pago_arrendamiento(datos["fecha_inicio"]))
-            
+
         arriendo.fecha_fin_contrato_a = datos.get(
             "fecha_fin", arriendo.fecha_fin_contrato_a
         )
@@ -178,9 +189,11 @@ class ServicioContratoArrendamiento:
         )
 
         # Condiciones económicas
-        arriendo.canon_arrendamiento = datos.get("canon", arriendo.canon_arrendamiento)
-        arriendo.deposito = datos.get("deposito", arriendo.deposito)
-        
+        if "canon" in datos:
+            arriendo.canon_arrendamiento = int(datos["canon"])
+
+        arriendo.deposito = int(datos.get("deposito", arriendo.deposito))
+
         # Solo actualizar fecha_pago si no fue recalculada por un cambio en fecha_inicio
         if "fecha_inicio" not in datos:
             arriendo.fecha_pago = datos.get("fecha_pago", arriendo.fecha_pago)
@@ -200,12 +213,13 @@ class ServicioContratoArrendamiento:
 
         # 2. Sincronización en Cascada (Integridad Contractual Élite)
         logger = logging.getLogger(__name__)
-        
+        nuevo_canon = int(arriendo.canon_arrendamiento or 0)
+
         # A. Si cambió el CANON, sincronizar Propiedad y Mandato
-        if arriendo.canon_arrendamiento != canon_anterior:
+        if nuevo_canon != canon_anterior:
             logger.info(
                 f"Cascada canon activada: contrato={id_contrato}, "
-                f"anterior={canon_anterior}, nuevo={arriendo.canon_arrendamiento}"
+                f"anterior={canon_anterior}, nuevo={nuevo_canon}"
             )
             # Sincronizar Propiedad
             if self.repo_propiedad is None:
@@ -213,24 +227,23 @@ class ServicioContratoArrendamiento:
             else:
                 propiedad = self.repo_propiedad.obtener_por_id(arriendo.id_propiedad)
                 if propiedad:
-                    propiedad.canon_arrendamiento_estimado = arriendo.canon_arrendamiento
+                    propiedad.canon_arrendamiento_estimado = nuevo_canon
                     self.repo_propiedad.actualizar(propiedad, usuario_sistema)
-                    logger.info(f"Propiedad {arriendo.id_propiedad} actualizada a canon={arriendo.canon_arrendamiento}")
+                    logger.info(f"Propiedad {arriendo.id_propiedad} sincronizada: canon_estimado={nuevo_canon}")
                 else:
                     logger.warning(f"Propiedad {arriendo.id_propiedad} no encontrada para cascada")
-            
+
             # Sincronizar Mandato
             if self.repo_mandato is None:
                 logger.error("CASCADA ABORTADA: repo_mandato es None")
             else:
                 mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
                 if mandato:
-                    mandato.canon_mandato = arriendo.canon_arrendamiento
+                    mandato.canon_mandato = nuevo_canon
                     self.repo_mandato.actualizar(mandato, usuario_sistema)
-                    logger.info(f"Mandato activo de propiedad {arriendo.id_propiedad} actualizado a canon={arriendo.canon_arrendamiento}")
+                    logger.info(f"Mandato {mandato.id_contrato_m} sincronizado: canon_mandato={nuevo_canon}")
                 else:
-                    logger.info(f"No existe mandato activo para propiedad {arriendo.id_propiedad}")
-
+                    logger.info(f"No existe mandato activo para propiedad {arriendo.id_propiedad} (cascada canon saltada)")
         # B. Si cambiaron las FECHAS, sincronizar Mandato
         if (arriendo.fecha_inicio_contrato_a != fecha_inicio_anterior or 
             arriendo.fecha_fin_contrato_a != fecha_fin_anterior):

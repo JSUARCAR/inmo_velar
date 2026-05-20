@@ -469,10 +469,14 @@ class DatabaseManager:
             
             # Solo hacemos commit si somos el nivel más externo de la transacción
             if not was_managed:
+                # IMPORTANTE: Desactivamos el flag antes del commit final
+                # para que el wrapper no lo ignore.
+                conexion.in_managed_transaction = False
                 conexion.commit()
         except Exception as e:
-            # Si hay error, siempre hacemos rollback (aunque sea anidado, 
-            # para asegurar que la transacción falle completa)
+            # Si hay error, desactivamos el flag para asegurar que el rollback ocurra
+            if not was_managed:
+                conexion.in_managed_transaction = False
             conexion.rollback()
             raise e
         finally:

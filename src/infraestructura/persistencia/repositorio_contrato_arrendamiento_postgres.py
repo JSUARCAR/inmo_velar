@@ -56,7 +56,6 @@ class RepositorioContratoArrendamientoPostgres:
         )
 
         row = cursor.fetchone()
-        conn.commit()
 
         if row:
             if hasattr(row, "values"):
@@ -362,15 +361,6 @@ class RepositorioContratoArrendamientoPostgres:
         cursor = conn.cursor()
         placeholder = self.db.get_placeholder()
 
-        # ═══════════ DIAGNÓSTICO TEMPORAL ═══════════
-        import logging
-        _dbg = logging.getLogger("REPO_ARRIENDO_DEBUG")
-        _dbg.setLevel(logging.DEBUG)
-        if not _dbg.handlers:
-            _dbg.addHandler(logging.StreamHandler())
-        _dbg.info(f">>> REPO.actualizar: id={contrato.id_contrato_a}, canon={contrato.canon_arrendamiento}, tipo_canon={type(contrato.canon_arrendamiento)}")
-        # ═══════════ FIN DIAGNÓSTICO ═══════════
-
         cursor.execute(
             f"""
         UPDATE CONTRATOS_ARRENDAMIENTOS SET
@@ -419,11 +409,6 @@ class RepositorioContratoArrendamientoPostgres:
             ),
         )
 
-        # ═══════════ DIAGNÓSTICO TEMPORAL ═══════════
-        _dbg.info(f">>> REPO.actualizar: rowcount={cursor.rowcount}, id={contrato.id_contrato_a}")
-        # ═══════════ FIN DIAGNÓSTICO ═══════════
-
-        conn.commit()
         return cursor.rowcount > 0
 
     def _row_to_entity(self, row) -> ContratoArrendamiento:

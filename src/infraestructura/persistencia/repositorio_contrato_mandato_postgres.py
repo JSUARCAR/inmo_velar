@@ -59,7 +59,6 @@ class RepositorioContratoMandatoPostgres:
         )
 
         row = cursor.fetchone()
-        conn.commit()
 
         if row:
             if hasattr(row, "values"):
@@ -333,7 +332,6 @@ class RepositorioContratoMandatoPostgres:
             ),
         )
 
-        conn.commit()
         return cursor.rowcount > 0
 
     def _row_to_entity(self, row) -> ContratoMandato:
