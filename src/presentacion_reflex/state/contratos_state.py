@@ -758,10 +758,24 @@ class ContratosState(DocumentosStateMixin):
 
             servicio = ServicioContratos(db_manager)
 
-            # form_data HTML tiene prioridad sobre state_snapshot
-            # porque contiene los valores al momento exacto del submit
-            full_data = {**state_snapshot, **form_data}
+            # El state_snapshot es la fuente de verdad porque TODOS los inputs
+            # controlados actualizan el state vía on_change handlers.
+            # form_data HTML aporta campos con 'name=' como fallback, pero
+            # puede contener valores stale en inputs type="number" controlados.
+            full_data = {**form_data, **state_snapshot}
             usuario = "admin"
+
+            # ═══════════ DIAGNÓSTICO TEMPORAL ═══════════
+            import logging
+            _dbg = logging.getLogger("SAVE_CONTRATO_DEBUG")
+            _dbg.setLevel(logging.DEBUG)
+            if not _dbg.handlers:
+                _dbg.addHandler(logging.StreamHandler())
+            _dbg.info(f">>> form_data HTML: {form_data}")
+            _dbg.info(f">>> state_snapshot: {state_snapshot}")
+            _dbg.info(f">>> full_data (merged): canon={full_data.get('canon')}, tipo={type(full_data.get('canon'))}")
+            _dbg.info(f">>> modal_mode={self.modal_mode}, editing_id={self.editing_id}")
+            # ═══════════ FIN DIAGNÓSTICO ═══════════
 
             if "mandato" in self.modal_mode:
                 datos = {
