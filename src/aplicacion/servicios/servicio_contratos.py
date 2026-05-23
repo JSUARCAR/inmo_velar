@@ -402,6 +402,9 @@ class ServicioContratos:
         return self.servicio_arriendo.obtener_arrendamiento(id_contrato)
 
     @cache_manager.invalidates("arriendos:list_paginated")
+    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates("propiedades:list_paginated")
+    @cache_manager.invalidates("dashboard:propiedades_tipo")
     def actualizar_arrendamiento(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
