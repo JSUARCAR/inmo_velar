@@ -178,8 +178,15 @@ class ServicioContratoArrendamiento:
         # Actualización de fechas y duración
         if "fecha_inicio" in datos:
             arriendo.fecha_inicio_contrato_a = datos["fecha_inicio"]
-            # Recalcular Ciclo de Pago
-            arriendo.fecha_pago = str(CalculadoraContratos.calcular_ciclo_pago_arrendamiento(datos["fecha_inicio"]))
+            # Recalcular Ciclo de Pago Unificado
+            grupo, dia_pago = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
+            arriendo.fecha_pago = str(dia_pago)
+            # Nota: Como el esquema histórico usa grupo_operativo principalmente en mandatos,
+            # pero la arquitectura dictamina alinear el módulo, la asignaremos implícitamente
+            # si el campo existiera en el ORM, de lo contrario mantendrá solo la fecha_pago ajustada al grupo.
+            # En la DB la tabla ARRENDAMIENTOS tiene GRUPO_OPERATIVO, la forzamos.
+            if hasattr(arriendo, 'grupo_operativo'):
+                arriendo.grupo_operativo = grupo
 
         arriendo.fecha_fin_contrato_a = datos.get(
             "fecha_fin", arriendo.fecha_fin_contrato_a

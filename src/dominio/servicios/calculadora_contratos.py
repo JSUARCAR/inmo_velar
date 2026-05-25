@@ -97,31 +97,28 @@ class CalculadoraContratos:
     @staticmethod
     def calcular_ciclo_pago_arrendamiento(fecha_inicio: Union[date, str]) -> int:
         """
-        Calcula el día de pago para arrendamiento (mismo día de inicio).
+        Calcula el día de pago para arrendamiento.
+        Ahora alineado al mismo ciclo operativo de mandatos (3 grupos).
         """
-        if isinstance(fecha_inicio, str):
-            fecha_inicio = datetime.strptime(fecha_inicio[:10], "%Y-%m-%d").date()
-        return fecha_inicio.day
+        _, dia_pago = CalculadoraContratos.calcular_ciclo_pago_mandato(fecha_inicio)
+        return dia_pago
 
     @staticmethod
     def calcular_ciclo_pago_mandato(fecha_inicio: Union[date, str]) -> Tuple[int, int]:
         """
-        Calcula el grupo operativo y día de pago para mandato.
-        Reglas:
-        1-5: Grupo 1, Paga 10
-        6-15: Grupo 2, Paga 20
-        16-24: Grupo 3, Paga 30
-        25-31: Grupo 4, Paga 10 (sig mes)
+        Calcula el grupo operativo y día de pago para mandato y arrendamiento.
+        Reglas Operativas (Nuevo Esquema):
+        1-10: Grupo 1, Paga 10
+        11-20: Grupo 2, Paga 20
+        21-31: Grupo 3, Paga 30 (Comercial, el motor resuelve 28/29 en febrero si es necesario)
         """
         if isinstance(fecha_inicio, str):
             fecha_inicio = datetime.strptime(fecha_inicio[:10], "%Y-%m-%d").date()
         
         dia = fecha_inicio.day
-        if 1 <= dia <= 5:
+        if 1 <= dia <= 10:
             return 1, 10
-        elif 6 <= dia <= 15:
+        elif 11 <= dia <= 20:
             return 2, 20
-        elif 16 <= dia <= 24:
-            return 3, 30
         else:
-            return 4, 10
+            return 3, 30

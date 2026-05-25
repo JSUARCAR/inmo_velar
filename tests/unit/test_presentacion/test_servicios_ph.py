@@ -124,4 +124,5 @@ class TestServicioPagosAdministracion:
             filtro_periodo="2026-04",
             filtro_estado="Pendiente",
             filtro_propiedad=None,
+            filtro_nombre=None,
         )

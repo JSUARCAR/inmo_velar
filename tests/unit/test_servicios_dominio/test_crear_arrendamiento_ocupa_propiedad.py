@@ -26,17 +26,19 @@ def mocks():
     repo_propiedad = MagicMock()
     repo_renovacion = MagicMock()
     repo_ipc = MagicMock()
-    return repo_arriendo, repo_propiedad, repo_renovacion, repo_ipc
+    repo_mandato = MagicMock()
+    return repo_arriendo, repo_propiedad, repo_renovacion, repo_ipc, repo_mandato
 
 
 @pytest.fixture
 def servicio(mocks):
-    repo_arriendo, repo_propiedad, repo_renovacion, repo_ipc = mocks
+    repo_arriendo, repo_propiedad, repo_renovacion, repo_ipc, repo_mandato = mocks
     return ServicioContratoArrendamiento(
         repo_arriendo=repo_arriendo,
         repo_propiedad=repo_propiedad,
         repo_renovacion=repo_renovacion,
         repo_ipc=repo_ipc,
+        repo_mandato=repo_mandato,
     )
 
 
@@ -46,7 +48,7 @@ def test_crear_arrendamiento_marca_propiedad_como_ocupada(servicio, mocks):
     WHEN se llama a crear_arrendamiento()
     THEN la propiedad debe quedar con disponibilidad_propiedad = 0 (Ocupada)
     """
-    repo_arriendo, repo_propiedad, repo_renovacion, repo_ipc = mocks
+    repo_arriendo, repo_propiedad, repo_renovacion, repo_ipc, repo_mandato = mocks
 
     # Arrange
     id_propiedad = 42
@@ -72,7 +74,7 @@ def test_crear_arrendamiento_marca_propiedad_como_ocupada(servicio, mocks):
         "id_propiedad": id_propiedad,
         "id_arrendatario": 10,
         "fecha_inicio": "2026-03-01",
-        "fecha_fin": "2027-03-01",
+        "fecha_fin": "2027-02-28",
         "duracion_meses": 12,
         "canon": 1_500_000,
         "deposito": 0,
@@ -103,7 +105,7 @@ def test_crear_arrendamiento_propiedad_no_encontrada_no_falla(servicio, mocks):
     WHEN se llama a crear_arrendamiento()
     THEN no debe lanzar excepción y retorna el contrato igualmente
     """
-    repo_arriendo, repo_propiedad, repo_renovacion, repo_ipc = mocks
+    repo_arriendo, repo_propiedad, repo_renovacion, repo_ipc, repo_mandato = mocks
 
     # Arrange
     repo_arriendo.obtener_activo_por_propiedad.return_value = None
@@ -114,7 +116,7 @@ def test_crear_arrendamiento_propiedad_no_encontrada_no_falla(servicio, mocks):
         "id_propiedad": 999,
         "id_arrendatario": 10,
         "fecha_inicio": "2026-03-01",
-        "fecha_fin": "2027-03-01",
+        "fecha_fin": "2027-02-28",
         "duracion_meses": 12,
         "canon": 1_000_000,
         "deposito": 0,
