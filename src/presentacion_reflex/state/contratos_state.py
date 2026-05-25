@@ -792,7 +792,6 @@ class ContratosState(DocumentosStateMixin):
                         float(full_data.get("iva_porcentaje") or 19) * 100
                     ),
                     "duracion_meses": int(full_data.get("duracion_meses") or 12),
-                    "fecha_pago": full_data.get("fecha_pago", ""),
                     "banco_propietario": full_data.get("banco_propietario", ""),
                     "numero_cuenta_propietario": full_data.get("numero_cuenta_propietario", ""),
                     "tipo_cuenta": full_data.get("tipo_cuenta", "Ahorros"),
@@ -815,7 +814,6 @@ class ContratosState(DocumentosStateMixin):
                     "canon": int(full_data.get("canon") or 0),
                     "deposito": int(full_data.get("deposito") or 0),
                     "duracion_meses": int(full_data.get("duracion_meses") or 12),
-                    "fecha_pago": full_data.get("fecha_pago", ""),
                 }
                 if self.modal_mode == "crear_arrendamiento":
                     servicio.crear_arrendamiento(datos, usuario)

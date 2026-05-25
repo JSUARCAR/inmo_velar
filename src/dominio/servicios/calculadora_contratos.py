@@ -5,7 +5,7 @@ Centraliza la lógica de cálculo de duraciones y validaciones de fechas.
 
 from datetime import date, datetime
 import calendar
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 
 
 class CalculadoraContratos:
@@ -95,22 +95,31 @@ class CalculadoraContratos:
             return False, f"Error en validación: {str(e)}"
 
     @staticmethod
-    def calcular_ciclo_pago_arrendamiento(fecha_inicio: Union[date, str]) -> int:
+    def calcular_dia_pago_mandato(fecha_inicio: Union[date, str]) -> int:
         """
-        Calcula el día de pago para arrendamiento.
-        Ahora alineado al mismo ciclo operativo de mandatos (3 grupos).
+        Retorna el día de pago para mandato según grupo operativo.
+        G1 (1-10) -> 10
+        G2 (11-20) -> 20
+        G3 (21-31) -> -1 (sentinel: último día del mes)
         """
-        _, dia_pago = CalculadoraContratos.calcular_ciclo_pago_mandato(fecha_inicio)
-        return dia_pago
+        if isinstance(fecha_inicio, str):
+            fecha_inicio = datetime.strptime(fecha_inicio[:10], "%Y-%m-%d").date()
+        dia = fecha_inicio.day
+        if 1 <= dia <= 10:
+            return 10
+        elif 11 <= dia <= 20:
+            return 20
+        else:
+            return -1  # Sentinel: Último día del mes
 
     @staticmethod
     def calcular_ciclo_pago_mandato(fecha_inicio: Union[date, str]) -> Tuple[int, int]:
         """
-        Calcula el grupo operativo y día de pago para mandato y arrendamiento.
+        Calcula el grupo operativo y día de pago para mandato.
         Reglas Operativas (Nuevo Esquema):
         1-10: Grupo 1, Paga 10
         11-20: Grupo 2, Paga 20
-        21-31: Grupo 3, Paga 30 (Comercial, el motor resuelve 28/29 en febrero si es necesario)
+        21-31: Grupo 3, Paga -1 (Último día del mes)
         """
         if isinstance(fecha_inicio, str):
             fecha_inicio = datetime.strptime(fecha_inicio[:10], "%Y-%m-%d").date()
@@ -121,4 +130,42 @@ class CalculadoraContratos:
         elif 11 <= dia <= 20:
             return 2, 20
         else:
-            return 3, 30
+            return 3, -1
+
+    @staticmethod
+    def resolver_dia_pago_real(fecha_pago: Optional[int], grupo_operativo: int, mes: int, año: int) -> int:
+        """
+        Resuelve el día de pago real según el grupo.
+        Para G1/G2: retorna el día almacenado (10 o 20).
+        Para G3 (fecha_pago=-1 o None): retorna el último día calendario del (mes, año).
+        """
+        if grupo_operativo == 3 or fecha_pago == -1 or fecha_pago is None:
+            import calendar
+            return calendar.monthrange(año, mes)[1]
+        return fecha_pago if fecha_pago is not None else 1
+
+    @staticmethod
+    def calcular_dia_pago_arrendamiento(fecha_inicio: Union[date, str]) -> int:
+        """
+        Arrendamiento: la fecha de pago es EXACTAMENTE el mismo día de la fecha de inicio.
+        """
+        if isinstance(fecha_inicio, str):
+            fecha_inicio = datetime.strptime(fecha_inicio[:10], "%Y-%m-%d").date()
+        return fecha_inicio.day
+
+    @staticmethod
+    def sumar_meses(fecha: Union[date, str], meses: int) -> date:
+        """
+        Suma N meses a una fecha manejando bordes (31 -> último día del mes destino).
+        Único punto de verdad para lógica de renovación.
+        """
+        if isinstance(fecha, str):
+            fecha = datetime.strptime(fecha[:10], "%Y-%m-%d").date()
+        año = fecha.year + (fecha.month + meses - 1) // 12
+        mes = (fecha.month + meses - 1) % 12 + 1
+        try:
+            return fecha.replace(year=año, month=mes)
+        except ValueError:
+            import calendar
+            ultimo_dia = calendar.monthrange(año, mes)[1]
+            return fecha.replace(year=año, month=mes, day=ultimo_dia)

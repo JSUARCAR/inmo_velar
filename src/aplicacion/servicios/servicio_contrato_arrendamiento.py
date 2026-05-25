@@ -94,8 +94,9 @@ class ServicioContratoArrendamiento:
             )
 
         # Calcular Ciclo de Pago y Grupo Operativo
-        dia_pago = CalculadoraContratos.calcular_ciclo_pago_arrendamiento(datos["fecha_inicio"])
+        dia_pago = CalculadoraContratos.calcular_dia_pago_arrendamiento(datos["fecha_inicio"])
         fecha_pago_str = str(dia_pago)
+        grupo, _ = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
 
         contrato = ContratoArrendamiento(
             id_propiedad=datos["id_propiedad"],
@@ -107,7 +108,7 @@ class ServicioContratoArrendamiento:
             canon_arrendamiento=datos["canon"],
             deposito=datos.get("deposito", 0),
             fecha_pago=fecha_pago_str,
-            grupo_operativo=0,  # Arrendamientos no se clasifican por grupo operativo de dispersión
+            grupo_operativo=grupo,
             estado_contrato_a=EstadoContrato.ACTIVO,
             alerta_vencimiento_contrato_a=True,
             alerta_ipc=True,
@@ -250,6 +251,10 @@ class ServicioContratoArrendamiento:
                     if cambio_fechas:
                         mandato.fecha_inicio_contrato_m = arriendo.fecha_inicio_contrato_a
                         mandato.fecha_fin_contrato_m = arriendo.fecha_fin_contrato_a
+                        dia_pago = CalculadoraContratos.calcular_dia_pago_mandato(mandato.fecha_inicio_contrato_m)
+                        mandato.fecha_pago = str(dia_pago)
+                        grupo_op = CalculadoraContratos.calcular_ciclo_pago_mandato(mandato.fecha_inicio_contrato_m)
+                        mandato.grupo_operativo = grupo_op[0]
                     
                     self.repo_mandato.actualizar(mandato, usuario_sistema)
                     logger.info(f"Mandato {mandato.id_contrato_m} sincronizado exitosamente")

@@ -18,7 +18,7 @@ def badge_grupo_pago(grupo_operativo: rx.Var[int], fecha_pago: Optional[rx.Var[s
         grupo_operativo,
         (1, "Grupo 1: Contratos iniciados entre día 1 y 10. Pago programado: 10 de cada mes."),
         (2, "Grupo 2: Contratos iniciados entre día 11 y 20. Pago programado: 20 de cada mes."),
-        (3, "Grupo 3: Contratos iniciados entre día 21 y 31. Pago programado: Fin de mes (30/31)."),
+        (3, "Grupo 3: Contratos iniciados entre día 21 y 31. Pago programado: Último día del mes (28/29/30/31 según calendario)."),
         "Sin grupo asignado"
     )
 
@@ -40,11 +40,16 @@ def badge_grupo_pago(grupo_operativo: rx.Var[int], fecha_pago: Optional[rx.Var[s
             content=label,
         )
     else:
+        badge_text = rx.cond(
+            fecha_pago == "-1",
+            "Fin de Mes",
+            rx.cond(fecha_pago != "", f"Día {fecha_pago}", "N/R")
+        )
         return rx.cond(
             fecha_pago != "",
             rx.tooltip(
                 rx.badge(
-                    f"Día {fecha_pago}",
+                    badge_text,
                     color_scheme=color,
                     variant="soft",
                     cursor="help",
