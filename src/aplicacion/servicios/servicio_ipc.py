@@ -3,13 +3,13 @@ from typing import List, Optional
 
 from src.dominio.entidades.ipc import IPC
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
 
 
 class ServicioIPC:
 
     def __init__(self, db_manager: DatabaseManager):
-        self.repo = RepositorioIPCSQLite(db_manager)
+        self.repo = RepositorioIPCPostgres(db_manager)
 
     def listar_todos(self) -> List[IPC]:
         """Retorna todos los registros de IPC ordenados por año."""

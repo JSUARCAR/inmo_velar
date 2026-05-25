@@ -1,5 +1,5 @@
 """
-Tests de integración para RepositorioPersonaSQLite.
+Tests de integración para RepositorioPersonaPostgres.
 
 Verifica la interacción con la base de datos SQLite para operaciones CRUD
 de la entidad Persona.
@@ -10,7 +10,7 @@ from pathlib import Path
 from datetime import datetime
 
 from tests.integration.test_database_manager import TestDatabaseManager
-from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
+from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
 from src.dominio.entidades.persona import Persona
 
 
@@ -52,11 +52,11 @@ def db_manager(tmp_path):
 @pytest.fixture
 def repositorio(db_manager):
     """Crea una instancia del repositorio."""
-    return RepositorioPersonaSQLite(db_manager)
+    return RepositorioPersonaPostgres(db_manager)
 
 
 class TestRepositorioPersona:
-    """Tests de integración para RepositorioPersonaSQLite."""
+    """Tests de integración para RepositorioPersonaPostgres."""
     
     def test_crear_persona_basica(self, repositorio):
         """Test: Crear una persona con datos básicos."""

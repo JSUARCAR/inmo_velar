@@ -7,12 +7,12 @@ sys.path.insert(0, os.getcwd())
 
 from src.infraestructura.persistencia.database import db_manager
 from src.aplicacion.servicios.servicio_dashboard import ServicioDashboard
-from src.infraestructura.persistencia.repositorio_dashboard_sqlite import RepositorioDashboardSQLite
+from src.infraestructura.persistencia.repositorio_dashboard_postgres import RepositorioDashboardPostgres
 
 def test_dashboard_service():
     print("Initializing ServicioDashboard...")
     try:
-        repo = RepositorioDashboardSQLite(db_manager)
+        repo = RepositorioDashboardPostgres(db_manager)
         servicio = ServicioDashboard(repo)
         print("Service initialized.")
         

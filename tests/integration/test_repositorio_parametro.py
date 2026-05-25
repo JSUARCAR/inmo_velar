@@ -1,5 +1,5 @@
 """
-Tests de integración para RepositorioParametroSQLite.
+Tests de integración para RepositorioParametroPostgres.
 Usa la base de datos real con datos de prueba prefijados.
 """
 
@@ -7,7 +7,7 @@ import pytest
 from datetime import datetime
 
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.persistencia.repositorio_parametro_sqlite import RepositorioParametroSQLite
+from src.infraestructura.persistencia.repositorio_parametro_postgres import RepositorioParametroPostgres
 from src.dominio.entidades.parametro_sistema import ParametroSistema
 
 
@@ -18,7 +18,7 @@ TEST_PREFIX = "TEST_INTEG_"
 @pytest.fixture
 def repositorio():
     """Crea instancia del repositorio."""
-    return RepositorioParametroSQLite(db_manager)
+    return RepositorioParametroPostgres(db_manager)
 
 
 @pytest.fixture
@@ -45,7 +45,7 @@ def setup_test_data():
         conn.commit()
 
 
-class TestRepositorioParametroSQLite:
+class TestRepositorioParametroPostgres:
     """Tests de integración para el repositorio de parámetros."""
     
     def test_obtener_por_nombre(self, repositorio, setup_test_data):

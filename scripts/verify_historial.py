@@ -5,11 +5,11 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.persistencia.repositorio_incidentes_sqlite import RepositorioIncidentesSQLite
+from src.infraestructura.persistencia.repositorio_incidentes_postgres import RepositorioIncidentesPostgres
 
 def verify_table_creation():
     print("Verifying HISTORIAL_INCIDENTES table creation...")
-    repo = RepositorioIncidentesSQLite(db_manager)
+    repo = RepositorioIncidentesPostgres(db_manager)
     try:
         repo.crear_tabla_historial()
         print("Success: Method creating_tabla_historial executed without error.")

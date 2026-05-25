@@ -9,8 +9,8 @@ from typing import Any, Dict, List, Optional
 from src.dominio.entidades.poliza import PolizaSeguro
 from src.dominio.entidades.seguro import Seguro
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_poliza_sqlite import RepositorioPolizaSQLite
-from src.infraestructura.persistencia.repositorio_seguro_sqlite import RepositorioSeguroSQLite
+from src.infraestructura.persistencia.repositorio_poliza_postgres import RepositorioPolizaPostgres
+from src.infraestructura.persistencia.repositorio_seguro_postgres import RepositorioSeguroPostgres
 
 
 class ServicioSeguros:
@@ -20,8 +20,8 @@ class ServicioSeguros:
 
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
-        self.repo_seguros = RepositorioSeguroSQLite(db_manager)
-        self.repo_polizas = RepositorioPolizaSQLite(db_manager)
+        self.repo_seguros = RepositorioSeguroPostgres(db_manager)
+        self.repo_polizas = RepositorioPolizaPostgres(db_manager)
 
     def listar_seguros_activos(self) -> List[Seguro]:
         """

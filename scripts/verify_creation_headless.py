@@ -1,19 +1,19 @@
 from datetime import datetime
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.repositorios.repositorio_liquidacion_asesor_sqlite import RepositorioLiquidacionAsesorSQLite
-from src.infraestructura.repositorios.repositorio_descuento_asesor_sqlite import RepositorioDescuentoAsesorSQLite
-from src.infraestructura.repositorios.repositorio_pago_asesor_sqlite import RepositorioPagoAsesorSQLite
-from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import RepositorioContratoArrendamientoSQLite
+from src.infraestructura.repositorios.repositorio_liquidacion_asesor_postgres import RepositorioLiquidacionAsesorPostgres
+from src.infraestructura.repositorios.repositorio_descuento_asesor_postgres import RepositorioDescuentoAsesorPostgres
+from src.infraestructura.repositorios.repositorio_pago_asesor_postgres import RepositorioPagoAsesorPostgres
+from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import RepositorioContratoArrendamientoPostgres
 from src.aplicacion.servicios.servicio_liquidacion_asesores import ServicioLiquidacionAsesores
 
 def verify_headless():
     print("Starting Headless Verification...")
     try:
         # 1. Setup Service
-        repo_liq = RepositorioLiquidacionAsesorSQLite(db_manager)
-        repo_desc = RepositorioDescuentoAsesorSQLite(db_manager)
-        repo_pago = RepositorioPagoAsesorSQLite(db_manager)
-        repo_contrato = RepositorioContratoArrendamientoSQLite(db_manager)
+        repo_liq = RepositorioLiquidacionAsesorPostgres(db_manager)
+        repo_desc = RepositorioDescuentoAsesorPostgres(db_manager)
+        repo_pago = RepositorioPagoAsesorPostgres(db_manager)
+        repo_contrato = RepositorioContratoArrendamientoPostgres(db_manager)
         
         print(f"DB Placeholder: '{db_manager.get_placeholder()}'")
         

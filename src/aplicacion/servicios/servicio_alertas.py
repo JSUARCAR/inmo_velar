@@ -7,14 +7,14 @@ from src.aplicacion.servicios.servicio_recibos_publicos import ServicioRecibosPu
 from src.dominio.entidades.alerta import Alerta
 from src.dominio.interfaces.repositorio_alerta import IRepositorioAlerta
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
-    RepositorioArrendatarioSQLite,
+from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+    RepositorioArrendatarioPostgres,
 )
 from src.infraestructura.persistencia.repositorio_asistencia_postgres import (
     RepositorioAsistenciaPostgres,
 )
-from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
-    RepositorioCodeudorSQLite,
+from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+    RepositorioCodeudorPostgres,
 )
 from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
     RepositorioContratoArrendamientoPostgres,
@@ -22,15 +22,15 @@ from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgre
 from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
     RepositorioContratoMandatoPostgres,
 )
-from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
 from src.infraestructura.persistencia.repositorio_pagos_admin_postgres import (
     RepositorioPagosAdminPostgres,
 )
-from src.infraestructura.persistencia.repositorio_propiedad_sqlite import (
-    RepositorioPropiedadSQLite,
+from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+    RepositorioPropiedadPostgres,
 )
-from src.infraestructura.persistencia.repositorio_renovacion_sqlite import (
-    RepositorioRenovacionSQLite,
+from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
+    RepositorioRenovacionPostgres,
 )
 from src.infraestructura.repositorios.repositorio_recibo_publico import (
     RepositorioReciboPublico,
@@ -55,13 +55,13 @@ class ServicioAlertas:
         self.repo_alerta = repo_alerta
 
         # Instanciar Repositorios Auxiliares
-        repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+        repo_propiedad = RepositorioPropiedadPostgres(db_manager)
         repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
         repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
-        repo_renovacion = RepositorioRenovacionSQLite(db_manager)
-        repo_ipc = RepositorioIPCSQLite(db_manager)
-        repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-        repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+        repo_renovacion = RepositorioRenovacionPostgres(db_manager)
+        repo_ipc = RepositorioIPCPostgres(db_manager)
+        repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+        repo_codeudor = RepositorioCodeudorPostgres(db_manager)
         repo_recibos = RepositorioReciboPublico(db_manager)
 
         # Repositorios PH

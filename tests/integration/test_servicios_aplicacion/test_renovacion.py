@@ -11,14 +11,14 @@ from src.infraestructura.persistencia.database import DatabaseManager
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
 from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
 from src.dominio.entidades.ipc import IPC
-from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
+from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
 
 def setup_test_data(db):
     """Crea datos de prueba: Propiedad, IPC y Contrato por vencer."""
     print("--- Configurando Datos de Prueba ---")
     
     # 1. IPC (Si no existe, crear uno alto para notar el cambio)
-    repo_ipc = RepositorioIPCSQLite(db)
+    repo_ipc = RepositorioIPCPostgres(db)
     ipc = IPC(anio=2024, valor_ipc=10, fecha_publicacion="2025-01-01") # 10% incremento
     try:
         repo_ipc.crear(ipc, "test_script")

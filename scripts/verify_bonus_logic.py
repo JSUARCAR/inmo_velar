@@ -7,9 +7,9 @@ import logging
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.repositorios.repositorio_liquidacion_asesor_sqlite import RepositorioLiquidacionAsesorSQLite
-from src.infraestructura.repositorios.repositorio_descuento_asesor_sqlite import RepositorioDescuentoAsesorSQLite
-from src.infraestructura.repositorios.repositorio_pago_asesor_sqlite import RepositorioPagoAsesorSQLite
+from src.infraestructura.repositorios.repositorio_liquidacion_asesor_postgres import RepositorioLiquidacionAsesorPostgres
+from src.infraestructura.repositorios.repositorio_descuento_asesor_postgres import RepositorioDescuentoAsesorPostgres
+from src.infraestructura.repositorios.repositorio_pago_asesor_postgres import RepositorioPagoAsesorPostgres
 from src.aplicacion.servicios.servicio_liquidacion_asesores import ServicioLiquidacionAsesores
 
 logging.basicConfig(level=logging.INFO)
@@ -17,9 +17,9 @@ logging.basicConfig(level=logging.INFO)
 def verify_bonus():
     print("=== VERIFYING BONUS LOGIC ===")
     
-    repo_liq = RepositorioLiquidacionAsesorSQLite(db_manager)
-    repo_desc = RepositorioDescuentoAsesorSQLite(db_manager)
-    repo_pago = RepositorioPagoAsesorSQLite(db_manager)
+    repo_liq = RepositorioLiquidacionAsesorPostgres(db_manager)
+    repo_desc = RepositorioDescuentoAsesorPostgres(db_manager)
+    repo_pago = RepositorioPagoAsesorPostgres(db_manager)
     
     servicio = ServicioLiquidacionAsesores(repo_liq, repo_desc, repo_pago)
     
