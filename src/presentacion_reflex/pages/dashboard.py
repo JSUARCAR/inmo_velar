@@ -60,7 +60,21 @@ def dashboard_page() -> rx.Component:
                     width="100%",
                 ),
                 rx.box(
-                    dashboard_filters(),
+                    rx.flex(
+                        dashboard_filters(),
+                        rx.spacer(),
+                        rx.button(
+                            rx.icon("refresh-cw", size=18),
+                            "Actualizar",
+                            on_click=DashboardState.load_dashboard_data,
+                            color_scheme="gray",
+                            variant="surface",
+                            cursor="pointer",
+                        ),
+                        align="center",
+                        width="100%",
+                        gap="4",
+                    ),
                     width="100%",
                     padding_top="4",
                 ),
@@ -107,8 +121,8 @@ def dashboard_page() -> rx.Component:
                 rx.cond(
                     ~DashboardState.is_loading & (DashboardState.error_message == ""),
                     rx.vstack(
-                        # 1. KPIs ESTRATÉGICOS (Top Row - Flex en lugar de Grid)
-                        rx.flex(
+                        # 1. KPIs ESTRATÉGICOS (Top Row - Grid)
+                        rx.grid(
                             kpi_card(
                                 "Ocupación Financiera",
                                 f"{DashboardState.kpi_ocupacion_financiera_view}%",
@@ -116,6 +130,8 @@ def dashboard_page() -> rx.Component:
                                 styles.BRAND_PRIMARY,
                                 "Ingresos vs Potencial",
                                 variant="elite",
+                                tooltip="Mide los ingresos reales frente a la capacidad de generación total.",
+                                tendencia="+2.1% MoM",
                             ),
                             kpi_card(
                                 "Eficiencia Recaudo",
@@ -124,6 +140,8 @@ def dashboard_page() -> rx.Component:
                                 styles.TEXT_SECONDARY,
                                 "Recaudado este mes",
                                 variant="elite",
+                                tooltip="Porcentaje del monto total esperado que ha sido efectivamente recaudado este mes.",
+                                tendencia="+1.5% YoY",
                             ),
                             kpi_card(
                                 "Potencial Total",
@@ -132,13 +150,14 @@ def dashboard_page() -> rx.Component:
                                 styles.TEXT_TERTIARY,
                                 "Cartera Total Estimada",
                                 variant="elite",
+                                tooltip="Valor total estimado de contratos activos sin aplicar descuentos o mora.",
                             ),
-                            wrap="wrap",
+                            columns=rx.breakpoints(initial="1", md="3"),
                             gap="4",
                             width="100%",
                         ),
 
-                        # 4. PULSO OPERATIVO (Bottom Row - Full Width Actions)
+                        # 4. PULSO OPERATIVO (Bottom Row - Bento Grid)
                         rx.box(
                             rx.vstack(
                                 rx.text(
@@ -149,7 +168,7 @@ def dashboard_page() -> rx.Component:
                                     letter_spacing="0.1em",
                                     font_family=styles.FONT_SANS,
                                 ),
-                                rx.flex(
+                                rx.grid(
                                     kpi_card(
                                         "Cartera Mora",
                                         DashboardState.mora_monto_total_view,
@@ -157,6 +176,7 @@ def dashboard_page() -> rx.Component:
                                         styles.BRAND_PRIMARY,
                                         f"{DashboardState.mora_cantidad_contratos_view} ctros",
                                         variant="compact",
+                                        tooltip="Total acumulado en mora actual",
                                     ),
                                     kpi_card(
                                         "Recaudo Mes",
@@ -165,6 +185,7 @@ def dashboard_page() -> rx.Component:
                                         styles.TEXT_SECONDARY,
                                         f"{DashboardState.recaudo_porcentaje_view}%",
                                         variant="compact",
+                                        tooltip="Recaudo efectivo del mes vs esperado",
                                     ),
                                     kpi_card(
                                         "Ocupación",
@@ -173,6 +194,7 @@ def dashboard_page() -> rx.Component:
                                         styles.BRAND_PRIMARY,
                                         f"{DashboardState.ocupacion_ocupadas_view}/{DashboardState.ocupacion_disponibles_view}",
                                         variant="compact",
+                                        tooltip="Porcentaje de inmuebles ocupados respecto al total administrable",
                                     ),
                                     kpi_card(
                                         "Comisiones",
@@ -181,6 +203,7 @@ def dashboard_page() -> rx.Component:
                                         styles.TEXT_TERTIARY,
                                         f"{DashboardState.comisiones_cantidad_view} pend",
                                         variant="compact",
+                                        tooltip="Comisiones pendientes por cobrar de Asesores",
                                     ),
                                     kpi_card(
                                         "Contratos",
@@ -189,6 +212,7 @@ def dashboard_page() -> rx.Component:
                                         styles.TEXT_SECONDARY,
                                         "Activos",
                                         variant="compact",
+                                        tooltip="Número de contratos activos en la plataforma",
                                     ),
                                     kpi_card(
                                         "Recibos Pend.",
@@ -197,6 +221,7 @@ def dashboard_page() -> rx.Component:
                                         styles.TEXT_SECONDARY,
                                         f"En mora/proximos",
                                         variant="compact",
+                                        tooltip="Facturas o recibos pendientes de pago por parte de arrendatarios",
                                     ),
                                     kpi_card(
                                         "Alertas Activas",
@@ -205,9 +230,10 @@ def dashboard_page() -> rx.Component:
                                         styles.BRAND_PRIMARY,
                                         "Requieren atención",
                                         variant="compact",
-                                        href="/alertas"
+                                        href="/alertas",
+                                        tooltip="Alertas del sistema que requieren acción manual",
                                     ),
-                                    wrap="wrap",
+                                    columns=rx.breakpoints(initial="1", sm="2", md="3", lg="4"),
                                     gap="4",
                                     width="100%",
                                 ),
@@ -218,15 +244,19 @@ def dashboard_page() -> rx.Component:
                             width="100%",
                         ),
 
-                        # GRÁFICOS REACTIVADOS
-                        rx.box(evolucion_chart(), width="100%"),
-                        rx.box(tunel_vencimientos_chart(), width="100%"),
-                        rx.box(propiedades_tipo_chart(), width="100%"),
-                        rx.box(incidentes_pie_chart(), width="100%"),
-                        rx.box(top_asesores_chart(), width="100%"),
-                        rx.box(tablas_vencimientos_detalle(), width="100%"),
-                        spacing="6",
-                        width="100%",
+                        # GRÁFICOS REACTIVADOS EN BENTO GRID
+                        rx.grid(
+                            rx.box(evolucion_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
+                            rx.box(vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                            rx.box(tunel_vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                            rx.box(propiedades_tipo_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                            rx.box(incidentes_pie_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                            rx.box(top_asesores_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                            rx.box(tablas_vencimientos_detalle(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
+                            columns=rx.breakpoints(initial="1", md="2", lg="3"),
+                            spacing="6",
+                            width="100%",
+                        ),
                     ),
                 ),
                 width="100%",

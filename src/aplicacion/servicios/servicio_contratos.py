@@ -287,6 +287,7 @@ class ServicioContratos:
     # =========================================================================
 
     @idempotent(key_prefix="contrato:crear_mandato")
+    @cache_manager.invalidates("dashboard")
     def crear_mandato(self, datos: Dict, usuario_sistema: str) -> ContratoMandato:
         return self.servicio_mandato.crear_mandato(datos, usuario_sistema)
 
@@ -299,6 +300,7 @@ class ServicioContratos:
         return self.servicio_mandato.obtener_mandato(id_contrato)
 
     @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def actualizar_mandato(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
@@ -385,6 +387,7 @@ class ServicioContratos:
     # =========================================================================
 
     @idempotent(key_prefix="contrato:crear_arriendo")
+    @cache_manager.invalidates("dashboard")
     def crear_arrendamiento(
         self, datos: Dict, usuario_sistema: str
     ) -> ContratoArrendamiento:
@@ -406,6 +409,7 @@ class ServicioContratos:
     @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     @cache_manager.invalidates(CacheKeys.PROPIEDADES_LIST)
     @cache_manager.invalidates(CacheKeys.DASHBOARD_PROPIEDADES_TIPO)
+    @cache_manager.invalidates("dashboard")
     def actualizar_arrendamiento(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
@@ -416,6 +420,7 @@ class ServicioContratos:
 
     @idempotent(key_prefix="contrato:renovar_arriendo")
     @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def renovar_arrendamiento(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoArrendamiento:
@@ -425,6 +430,7 @@ class ServicioContratos:
 
     @idempotent(key_prefix="contrato:renovar_mandato")
     @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def renovar_mandato(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoMandato:
@@ -446,6 +452,7 @@ class ServicioContratos:
 
     @idempotent(key_prefix="contrato:terminar_arriendo")
     @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def terminar_arrendamiento(
         self, id_contrato: int, motivo: str, usuario_sistema: str
     ) -> None:
@@ -455,6 +462,7 @@ class ServicioContratos:
 
     @idempotent(key_prefix="contrato:terminar_mandato")
     @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def terminar_mandato(
         self, id_contrato: int, motivo: str, usuario_sistema: str
     ) -> None:

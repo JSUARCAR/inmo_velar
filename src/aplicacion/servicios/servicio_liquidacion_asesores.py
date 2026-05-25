@@ -11,6 +11,7 @@ from src.dominio.entidades.bonificacion_asesor import BonificacionAsesor
 from src.dominio.entidades.descuento_asesor import DescuentoAsesor
 from src.dominio.entidades.liquidacion_asesor import LiquidacionAsesor
 from src.dominio.entidades.pago_asesor import PagoAsesor
+from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.cache.cache_manager import cache_manager, invalidate_cache
 from src.infraestructura.repositorios.repositorio_bonificacion_asesor import (
     RepositorioBonificacionAsesor,
@@ -140,7 +141,8 @@ class ServicioLiquidacionAsesores:
 
         return self.servicio_pdf.generar_cuenta_cobro_asesor(datos_pdf)
 
-    @idempotent(key_prefix="liq_asesores:generar")
+    @idempotent(key_prefix="liquidacion:generar")
+    @cache_manager.invalidates("dashboard")
     def generar_liquidacion(
         self,
         id_contrato: int,
@@ -193,6 +195,7 @@ class ServicioLiquidacionAsesores:
         return resultado
 
     @idempotent(key_prefix="liq_asesores:generar_multi")
+    @cache_manager.invalidates("dashboard")
     def generar_liquidacion_multi_contrato(
         self,
         id_asesor: int,
@@ -299,6 +302,7 @@ class ServicioLiquidacionAsesores:
             self._invalidar_caches()
             return liquidacion_creada
 
+    @cache_manager.invalidates("dashboard")
     def actualizar_liquidacion(self, id_liquidacion: int, datos: Dict[str, Any], usuario: str) -> LiquidacionAsesor:
         """Actualiza una liquidación pendiente."""
         liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
@@ -325,6 +329,7 @@ class ServicioLiquidacionAsesores:
         self._invalidar_caches()
         return result
 
+    @cache_manager.invalidates("dashboard")
     def aprobar_liquidacion(self, id_liquidacion: int, usuario: str) -> LiquidacionAsesor:
         """Aprueba una liquidación."""
         liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
@@ -336,6 +341,7 @@ class ServicioLiquidacionAsesores:
         self._invalidar_caches()
         return result
 
+    @cache_manager.invalidates("dashboard")
     def anular_liquidacion(self, id_liquidacion: int, motivo: str, usuario: str) -> LiquidacionAsesor:
         """Anula una liquidación."""
         liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
@@ -347,6 +353,7 @@ class ServicioLiquidacionAsesores:
         self._invalidar_caches()
         return result
 
+    @cache_manager.invalidates("dashboard")
     def agregar_descuento(self, id_liquidacion: int, tipo: str, descripcion: str, valor: int, usuario: str) -> DescuentoAsesor:
         """Agrega un descuento y recalcula el neto."""
         liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
@@ -364,6 +371,7 @@ class ServicioLiquidacionAsesores:
         self._invalidar_caches()
         return descuento_creado
 
+    @cache_manager.invalidates("dashboard")
     def eliminar_descuento(self, id_descuento: int, usuario: str) -> bool:
         """Elimina un descuento y recalcula el neto."""
         descuento = self.repo_descuento.obtener_por_id(id_descuento)
@@ -412,7 +420,7 @@ class ServicioLiquidacionAsesores:
         self.repo_liquidacion.actualizar(liquidacion, usuario)
         logger.info(f"Recálculo exitoso Liquidación {id_liquidacion}: Neto=${nuevo_valor_neto}")
 
-
+    @cache_manager.invalidates("dashboard")
     def agregar_bonificacion(self, id_liquidacion: int, tipo: str, descripcion: str, valor: int, usuario: str) -> BonificacionAsesor:
         """Agrega una bonificación detallada."""
         if not self.repo_bonificacion:
@@ -433,6 +441,7 @@ class ServicioLiquidacionAsesores:
         self._invalidar_caches()
         return resultado
 
+    @cache_manager.invalidates("dashboard")
     def eliminar_bonificacion(self, id_bonificacion: int, usuario: str) -> bool:
         """Elimina una bonificación detallada."""
         if not self.repo_bonificacion:
@@ -475,6 +484,7 @@ class ServicioLiquidacionAsesores:
         return result
 
     @idempotent(key_prefix="liquidacion:registrar_pago")
+    @cache_manager.invalidates("dashboard")
     def registrar_pago(self, id_pago: int, fecha_pago: str, comprobante: str, usuario: str) -> PagoAsesor:
         """Registra un pago efectivo."""
         pago = self.repo_pago.obtener_por_id(id_pago)
@@ -594,6 +604,8 @@ class ServicioLiquidacionAsesores:
             "matricula_inmobiliaria": propiedad.matricula_inmobiliaria,
         }
 
+    @idempotent(key_prefix="liquidacion:masiva")
+    @cache_manager.invalidates("dashboard")
     def generar_liquidaciones_masivas_optimizado(self, periodo: str, usuario: str) -> Dict[str, int]:
         """
         Generación masiva optimizada bajo el estándar de Atomicidad Élite.

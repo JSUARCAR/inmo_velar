@@ -9,9 +9,12 @@ import os
 import sqlite3
 import threading
 import atexit
+import logging
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Optional
+
+logger = logging.getLogger(__name__)
 import unicodedata
 from contextvars import ContextVar
 
@@ -517,15 +520,15 @@ class DatabaseManager:
         if self.use_postgresql and self._pg_pool is not None:
             try:
                 self._pg_pool.closeall()
-                print("DEBUG [database.py]: PostgreSQL pool cerrado exitosamente")
+                logger.debug("PostgreSQL pool cerrado exitosamente")
             except Exception as e:
-                print(f"DEBUG [database.py]: Error cerrando pool PostgreSQL: {e}")
+                logger.error(f"Error cerrando pool PostgreSQL: {e}")
             finally:
                 self._pg_pool = None
 
         # Cerrar conexiones SQLite si existen
         self.cerrar_todas_conexiones()
-        print("DEBUG [database.py]: DatabaseManager shutdown completado")
+        logger.debug("DatabaseManager shutdown completado")
 
     def inicializar_base_datos(self, ruta_schema: Optional[Path] = None) -> None:
         """

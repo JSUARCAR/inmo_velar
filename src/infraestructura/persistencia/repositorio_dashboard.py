@@ -21,7 +21,8 @@ class RepositorioDashboard(IRepositorioDashboard):
     def obtener_top_morosos(self, limit: int = 5) -> List[Dict]:
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
-            cursor.execute(f"SELECT ARRENDATARIO, DIAS_RETRASO, VALOR_RECAUDO FROM VW_ALERTA_MORA_DIARIA ORDER BY DIAS_RETRASO DESC, VALOR_RECAUDO DESC LIMIT {limit}")
+            placeholder = self.db.get_placeholder()
+            cursor.execute(f"SELECT ARRENDATARIO, DIAS_RETRASO, VALOR_RECAUDO FROM VW_ALERTA_MORA_DIARIA ORDER BY DIAS_RETRASO DESC, VALOR_RECAUDO DESC LIMIT {placeholder}", (limit,))
             return [{"nombre": row["ARRENDATARIO"], "dias_retraso": row["DIAS_RETRASO"], "monto": row["VALOR_RECAUDO"]} for row in cursor.fetchall()]
 
     def obtener_total_recaudado(self, mes: str, anio: str, id_asesor: Optional[int] = None) -> float:
@@ -39,6 +40,7 @@ class RepositorioDashboard(IRepositorioDashboard):
                 query += " JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD "
                 where = f" WHERE TO_CHAR(r.FECHA_PAGO::DATE, 'MM') = {placeholder} AND TO_CHAR(r.FECHA_PAGO::DATE, 'YYYY') = {placeholder} AND r.ESTADO_RECAUDO = 'Aplicado' AND cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'ACTIVO'"
                 params.append(id_asesor)
+            else:
                 where = f" WHERE TO_CHAR(r.FECHA_PAGO::DATE, 'MM') = {placeholder} AND TO_CHAR(r.FECHA_PAGO::DATE, 'YYYY') = {placeholder} AND r.ESTADO_RECAUDO = 'Aplicado'"
 
             cursor.execute(query + where, params)

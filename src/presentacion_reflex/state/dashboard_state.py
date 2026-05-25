@@ -145,69 +145,72 @@ class DashboardState(rx.State):
             servicio = ServicioDashboard(repo_dashboard=repo_dashboard, repo_alerta=repo_alerta)
             logger.debug("Servicio Dashboard instanciado OK")
 
-            logger.debug("Obteniendo conteo alertas...")
-            conteo_alertas = servicio.obtener_conteo_alertas_pendientes()
+            def _safe_fetch(fetch_fn, default_val):
+                try:
+                    return fetch_fn()
+                except Exception as e:
+                    logger.error(f"Error fetch KPI {fetch_fn.__name__ if hasattr(fetch_fn, '__name__') else 'lambda'}: {e}")
+                    return default_val
             
-            logger.debug("Obteniendo flujo_caja_mes...")
-            datos_flujo = servicio.obtener_flujo_caja_mes(mes=mes, anio=anio, id_asesor=id_asesor)
-
-            logger.debug("Obteniendo tasa_ocupacion...")
-            datos_ocupacion = servicio.obtener_tasa_ocupacion(id_asesor=id_asesor)
-
-            logger.debug("Obteniendo contratos_activos...")
-            contratos_activos = servicio.obtener_total_contratos_activos(id_asesor=id_asesor)
-
-            logger.debug("Obteniendo comisiones_pendientes...")
-            datos_comisiones = servicio.obtener_comisiones_pendientes(id_asesor=id_asesor)
-
-            logger.debug("Obteniendo cartera_mora...")
-            datos_mora = servicio.obtener_cartera_mora()
-
-            logger.debug("Obteniendo contratos_por_vencer...")
-            datos_vencimiento = servicio.obtener_contratos_por_vencer()
-            datos_vencimiento_lista = servicio.obtener_contratos_proximos_vencer(90)
-
-            logger.debug("Obteniendo metricas_incidentes...")
-            datos_incidentes = servicio.obtener_metricas_incidentes()
-
-            logger.debug("Obteniendo evolucion_recaudo...")
-            datos_evolucion = servicio.obtener_evolucion_recaudo(mes_fin=mes, anio_fin=anio)
-
-            logger.debug("Obteniendo recibos_vencidos...")
-            datos_recibos = servicio.obtener_recibos_vencidos_resumen()
-
-            logger.debug("Obteniendo propiedades_tipo...")
-            datos_propiedades_tipo = servicio.obtener_propiedades_por_tipo(id_asesor=id_asesor)
-
-            logger.debug("Obteniendo metricas_expertas...")
-            datos_kpi_financiero = servicio.obtener_metricas_expertas(id_asesor=id_asesor)
-
-            if not id_asesor:
-                logger.debug("Obteniendo top_asesores y tunel...")
-                datos_top_asesores = servicio.obtener_top_asesores_revenue()
-                datos_tunel = servicio.obtener_tunel_vencimientos()
-            else:
-                datos_top_asesores = []
-                datos_tunel = []
-
-            logger.debug("Actualizando estado del dashboard...")
-
-            # Actualizar estado sanitizando tipos para evitar crash en Reflex JSON serializer
-            self.mora_data = _serialize_decimals(datos_mora)
-            self.flujo_data = _serialize_decimals(datos_flujo)
-            self.ocupacion_data = _serialize_decimals(datos_ocupacion)
-            self.comisiones_data = _serialize_decimals(datos_comisiones)
-            self.contratos_count = _serialize_decimals(contratos_activos)
-            self.recibos_data = _serialize_decimals(datos_recibos)
-            self.vencimiento_data = _serialize_decimals(datos_vencimiento)
-            self.vencimientos_lista = _serialize_decimals(datos_vencimiento_lista)
-            self.evolucion_data = _serialize_decimals(datos_evolucion)
-            self.incidentes_data = _serialize_decimals(datos_incidentes)
-            self.propiedades_tipo_data = _serialize_decimals(datos_propiedades_tipo)
-            self.kpi_financiero = _serialize_decimals(datos_kpi_financiero)
-            self.top_asesores_data = _serialize_decimals(datos_top_asesores)
-            self.tunel_vencimientos_data = _serialize_decimals(datos_tunel)
+            logger.debug("Obteniendo alertas y flujo de caja...")
+            conteo_alertas = _safe_fetch(servicio.obtener_conteo_alertas_pendientes, 0)
             self.alertas_pendientes = _serialize_decimals(conteo_alertas)
+            
+            datos_flujo = _safe_fetch(lambda: servicio.obtener_flujo_caja_mes(mes=mes, anio=anio, id_asesor=id_asesor), {"recaudado": 0, "esperado": 0, "porcentaje": 0})
+            self.flujo_data = _serialize_decimals(datos_flujo)
+            
+            datos_ocupacion = _safe_fetch(lambda: servicio.obtener_tasa_ocupacion(id_asesor=id_asesor), {"porcentaje_ocupacion": 0, "ocupadas": 0, "disponibles": 0})
+            self.ocupacion_data = _serialize_decimals(datos_ocupacion)
+            yield # Update primary KPIs
+
+            logger.debug("Obteniendo contratos y comisiones...")
+            contratos_activos = _safe_fetch(lambda: servicio.obtener_total_contratos_activos(id_asesor=id_asesor), 0)
+            self.contratos_count = _serialize_decimals(contratos_activos)
+            
+            datos_comisiones = _safe_fetch(lambda: servicio.obtener_comisiones_pendientes(id_asesor=id_asesor), {"monto_total": 0, "cantidad_liquidaciones": 0})
+            self.comisiones_data = _serialize_decimals(datos_comisiones)
+            
+            datos_mora = _safe_fetch(servicio.obtener_cartera_mora, {"monto_total": 0, "cantidad_contratos": 0})
+            self.mora_data = _serialize_decimals(datos_mora)
+            yield # Update secondary KPIs
+
+            logger.debug("Obteniendo vencimientos e incidentes...")
+            datos_vencimiento = _safe_fetch(servicio.obtener_contratos_por_vencer, {"vence_30_dias": 0, "vence_60_dias": 0, "vence_90_dias": 0})
+            self.vencimiento_data = _serialize_decimals(datos_vencimiento)
+            
+            datos_vencimiento_lista = _safe_fetch(lambda: servicio.obtener_contratos_proximos_vencer(90), [])
+            self.vencimientos_lista = _serialize_decimals(datos_vencimiento_lista)
+            
+            datos_incidentes = _safe_fetch(servicio.obtener_metricas_incidentes, {"por_estado": {}})
+            self.incidentes_data = _serialize_decimals(datos_incidentes)
+            yield # Update list KPIs and incident charts
+            
+            logger.debug("Obteniendo gráficas y datos expertos...")
+            datos_evolucion = _safe_fetch(lambda: servicio.obtener_evolucion_recaudo(mes_fin=mes, anio_fin=anio), {"etiquetas": [], "valores": []})
+            self.evolucion_data = _serialize_decimals(datos_evolucion)
+            
+            datos_recibos = _safe_fetch(servicio.obtener_recibos_vencidos_resumen, {"cantidad": 0, "monto_total": 0})
+            self.recibos_data = _serialize_decimals(datos_recibos)
+            
+            datos_propiedades_tipo = _safe_fetch(lambda: servicio.obtener_propiedades_por_tipo(id_asesor=id_asesor), {})
+            self.propiedades_tipo_data = _serialize_decimals(datos_propiedades_tipo)
+            
+            datos_kpi_financiero = _safe_fetch(lambda: servicio.obtener_metricas_expertas(id_asesor=id_asesor), {
+                "ocupacion_financiera": 0, "eficiencia_recaudo": 0, "potencial_total": 0, "recaudo_real": 0
+            })
+            self.kpi_financiero = _serialize_decimals(datos_kpi_financiero)
+            yield # Update advanced metrics
+            
+            if not id_asesor:
+                datos_top_asesores = _safe_fetch(servicio.obtener_top_asesores_revenue, [])
+                self.top_asesores_data = _serialize_decimals(datos_top_asesores)
+                
+                datos_tunel = _safe_fetch(servicio.obtener_tunel_vencimientos, [])
+                self.tunel_vencimientos_data = _serialize_decimals(datos_tunel)
+            else:
+                self.top_asesores_data = []
+                self.tunel_vencimientos_data = []
+            
             self.is_loading = False
 
             logger.info("load_dashboard_data COMPLETO OK")
