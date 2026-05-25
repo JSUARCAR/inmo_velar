@@ -124,7 +124,7 @@ class AuthState(rx.State):
                 "id_usuario": usuario.id_usuario,
                 "nombre_usuario": usuario.nombre_usuario,
                 "rol": usuario.rol,
-                "ultimo_acceso": usuario.ultimo_acceso.isoformat() if usuario.ultimo_acceso else None,
+                "ultimo_acceso": usuario.ultimo_acceso.isoformat() if hasattr(usuario.ultimo_acceso, 'isoformat') else usuario.ultimo_acceso,
             }
             self._user_data = user_dict
             self.is_authenticated = True
@@ -239,7 +239,7 @@ class AuthState(rx.State):
                 "id_usuario": usuario_autenticado.id_usuario,
                 "nombre_usuario": usuario_autenticado.nombre_usuario,
                 "rol": usuario_autenticado.rol,
-                "ultimo_acceso": usuario_autenticado.ultimo_acceso.isoformat() if usuario_autenticado.ultimo_acceso else None,
+                "ultimo_acceso": usuario_autenticado.ultimo_acceso.isoformat() if hasattr(usuario_autenticado.ultimo_acceso, 'isoformat') else usuario_autenticado.ultimo_acceso,
             }
             self._user_data = user_dict
             self.is_authenticated = True
