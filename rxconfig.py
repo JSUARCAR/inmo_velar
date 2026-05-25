@@ -26,7 +26,7 @@ if not api_url:
             api_url = railway_domain if railway_domain.startswith("http") else f"https://{railway_domain}"
         else:
             # Fallback genérico para evitar 404 si el dominio cambia
-            api_url = "https://extraordinary-joy-production-2fd2.up.railway.app"
+            api_url = "https://inmovelar-production.up.railway.app"
 
 # Railway provides DATABASE_URL automatically when a Postgres plugin is attached.
 # Compatibility: Replace 'postgres://' with 'postgresql://' for SQLAlchemy
@@ -51,8 +51,9 @@ config = rx.Config(
     # frontend_port=3000,
     # Configuración PostgreSQL
     db_url=_db_url,
-    # Entorno de desarrollo
-    env=rx.Env.DEV,
+    api_url=api_url,
+    # Entorno dinámico (PROD en Railway, DEV en local)
+    env=rx.Env.PROD if IS_PROD else rx.Env.DEV,
     # Desactivar telemetría (opcional)
     telemetry_enabled=False,
     # Permitir orígenes cruzados en producción (evita WS error en Railway)

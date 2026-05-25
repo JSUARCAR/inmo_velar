@@ -33,8 +33,9 @@ RUN chmod +x /app/entrypoint.sh
 # Initialize Reflex and build frontend at BUILD time.
 # Railway env vars (DATABASE_URL) are NOT available during docker build,
 # so we pass a dummy SQLite URL inline — it does NOT persist in the image.
-RUN DATABASE_URL=sqlite:///dummy_build.db reflex init
-RUN DATABASE_URL=sqlite:///dummy_build.db reflex export --frontend-only --no-zip
+# We also set RAILWAY_ENVIRONMENT to ensure rxconfig compiles the frontend in PROD mode.
+RUN RAILWAY_ENVIRONMENT=production DATABASE_URL=sqlite:///dummy_build.db reflex init
+RUN RAILWAY_ENVIRONMENT=production DATABASE_URL=sqlite:///dummy_build.db reflex export --frontend-only --no-zip
 RUN rm -f dummy_build.db
 
 # Diagnostic: show where the frontend files ended up
