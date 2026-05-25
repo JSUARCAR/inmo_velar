@@ -11,11 +11,6 @@ from src.presentacion_reflex.state.dashboard_state import DashboardState
 from src.presentacion_reflex.components.neuro_elements import neuro_panel
 from src.presentacion_reflex import styles
 
-# Formateador nativo JS para tooltips (usando formato alemán para separador de miles por punto)
-# Reemplaza el símbolo de moneda de DE para mantener consistencia con el estilo local
-js_number_formatter = Var(
-    _js_expr='(value) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value).replace("$\xa0", "$")'
-)
 
 def _info_header(title: str, tooltip_text: str) -> rx.Component:
     """Genera un encabezado estándar con ícono de información y tooltip neumático."""
