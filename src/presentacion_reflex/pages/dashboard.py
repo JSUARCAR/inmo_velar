@@ -134,18 +134,18 @@ def dashboard_page() -> rx.Component:
                         ),
 
                         # 2. ANÁLISIS DE EVOLUCIÓN (Middle Row - Left 2/3)
-                        # rx.box(
-                        #     evolucion_chart(),
-                        #     style={"grid_column": rx.breakpoints(initial="span 1", lg="span 2")},
-                        #     width="100%",
-                        # ),
+                        rx.box(
+                            evolucion_chart(),
+                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 2")},
+                            width="100%",
+                        ),
                         
                         # 3. TÚNEL DE VENCIMIENTOS (Middle Row - Right 1/3)
-                        # rx.box(
-                        #     tunel_vencimientos_chart(),
-                        #     style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
-                        #     width="100%",
-                        # ),
+                        rx.box(
+                            tunel_vencimientos_chart(),
+                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
+                            width="100%",
+                        ),
 
                         # 4. PULSO OPERATIVO (Bottom Row - Full Width Actions)
                         rx.box(
@@ -234,21 +234,21 @@ def dashboard_page() -> rx.Component:
                         ),
 
                         # 5. COMPOSICIÓN, INCIDENTES Y TOP ASESORES (3 columnas)
-                        # rx.box(
-                        #     propiedades_tipo_chart(),
-                        #     style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
-                        #     width="100%",
-                        # ),
-                        # rx.box(
-                        #     incidentes_pie_chart(),
-                        #     style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
-                        #     width="100%",
-                        # ),
-                        # rx.box(
-                        #     top_asesores_chart(),
-                        #     style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
-                        #     width="100%",
-                        # ),
+                        rx.box(
+                            propiedades_tipo_chart(),
+                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
+                            width="100%",
+                        ),
+                        rx.box(
+                            incidentes_pie_chart(),
+                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
+                            width="100%",
+                        ),
+                        rx.box(
+                            top_asesores_chart(),
+                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
+                            width="100%",
+                        ),
 
                         # 6. DETALLE DE VENCIMIENTOS (Extra Row)
                         rx.box(

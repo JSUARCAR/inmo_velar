@@ -58,16 +58,7 @@ def vencimientos_chart() -> rx.Component:
                     rx.recharts.cartesian_grid(
                         stroke_dasharray="3 3", vertical=False, stroke=styles.BORDER_DEFAULT
                     ),
-                    rx.recharts.tooltip(
-                        cursor={"stroke": styles.BORDER_DEFAULT, "strokeWidth": 1},
-                        content_style={
-                            "backgroundColor": styles.BG_PANEL,
-                            "border": "none",
-                            "borderRadius": "12px",
-                            "boxShadow": styles.NEU_SHADOW,
-                            "color": styles.TEXT_PRIMARY,
-                        },
-                    ),
+                    rx.recharts.tooltip(),
                     data=DashboardState.vencimiento_chart_data,
                     height=250,
                     width="100%",
@@ -97,21 +88,9 @@ def evolucion_chart() -> rx.Component:
                     rx.recharts.area(
                         data_key="recaudo",
                         stroke="#10b981",
-                        fill="url(#colorRecaudo)",
+                        fill="#10b981",
                         fill_opacity=0.3,
                         type_="monotone",
-                        label={"dataKey": "recaudo_view", "position": "top", "fontSize": 10, "fill": "#10b981"},
-                    ),
-                    rx.el.svg.defs(
-                        rx.el.svg.linear_gradient(
-                            rx.el.svg.stop(offset="5%", stop_color="#10b981", stop_opacity=0.8),
-                            rx.el.svg.stop(offset="95%", stop_color="#10b981", stop_opacity=0),
-                            id="colorRecaudo",
-                            x1="0",
-                            y1="0",
-                            x2="0",
-                            y2="1",
-                        )
                     ),
                     rx.recharts.x_axis(
                         data_key="name",
@@ -125,17 +104,7 @@ def evolucion_chart() -> rx.Component:
                     rx.recharts.cartesian_grid(
                         stroke_dasharray="3 3", vertical=False, stroke=styles.BORDER_DEFAULT
                     ),
-                    rx.recharts.tooltip(
-                        content_style={
-                            "backgroundColor": styles.BG_PANEL,
-                            "borderRadius": "12px",
-                            "border": "none",
-                            "boxShadow": styles.NEU_SHADOW,
-                            "padding": "12px",
-                        },
-                        label_style={"color": styles.TEXT_TERTIARY, "fontSize": "12px", "marginBottom": "4px"},
-                        item_style={"color": "#10b981", "fontSize": "14px", "fontWeight": "bold"},
-                    ),
+                    rx.recharts.tooltip(),
                     data=DashboardState.evolucion_chart_data,
                     height=250,
                     width="100%",
@@ -184,18 +153,7 @@ def propiedades_tipo_chart() -> rx.Component:
                     rx.recharts.cartesian_grid(
                         stroke_dasharray="3 3", vertical=False, stroke=styles.BORDER_DEFAULT
                     ),
-                    rx.recharts.tooltip(
-                        cursor={"fill": "rgba(99, 102, 241, 0.04)"},
-                        content_style={
-                            "backgroundColor": styles.BG_PANEL,
-                            "borderRadius": "12px",
-                            "border": "none",
-                            "boxShadow": styles.NEU_SHADOW,
-                            "padding": "12px",
-                        },
-                        label_style={"color": styles.TEXT_TERTIARY, "fontSize": "12px", "marginBottom": "4px"},
-                        item_style={"color": styles.ACCENT_COLOR, "fontSize": "14px", "fontWeight": "bold"},
-                    ),
+                    rx.recharts.tooltip(),
                     data=DashboardState.propiedades_tipo_chart_data,
                     height=250,
                     width="100%",
@@ -227,23 +185,10 @@ def incidentes_pie_chart() -> rx.Component:
                         data=DashboardState.incidentes_chart_data,
                         data_key="value",
                         name_key="name",
-                        cx="50%",
-                        cy="50%",
                         outer_radius=80,
-                        label={"fill": styles.TEXT_SECONDARY, "fontSize": 12},
                     ),
-                    rx.recharts.tooltip(
-                        content_style={
-                            "backgroundColor": styles.BG_PANEL,
-                            "borderRadius": "12px",
-                            "border": "none",
-                            "boxShadow": styles.NEU_SHADOW,
-                            "padding": "12px",
-                        },
-                        label_style={"color": styles.TEXT_TERTIARY, "fontSize": "12px", "marginBottom": "4px"},
-                        item_style={"color": styles.TEXT_PRIMARY, "fontSize": "14px", "fontWeight": "bold"},
-                    ),
-                    rx.recharts.legend(vertical_align="bottom", height=36, icon_type="circle", wrapper_style={"paddingTop": "20px", "color": styles.TEXT_SECONDARY}),
+                    rx.recharts.tooltip(),
+                    rx.recharts.legend(vertical_align="bottom", height=36, icon_type="circle"),
                     height=250,
                     width="100%",
                 ),
@@ -271,15 +216,7 @@ def top_asesores_chart() -> rx.Component:
                 rx.recharts.bar_chart(
                     rx.recharts.bar(
                         data_key="revenue",
-                        fill="#10b981",
                         radius=[0, 4, 4, 0],
-                        label={
-                            "position": "right",
-                            "fill": "#10b981",
-                            "fontSize": 10,
-                            "fontWeight": "bold",
-                            "dataKey": "revenue_view",
-                        },
                     ),
                     rx.recharts.x_axis(type_="number", hide=True),
                     rx.recharts.y_axis(
@@ -290,18 +227,7 @@ def top_asesores_chart() -> rx.Component:
                         axis_line=False,
                         tick_line=False,
                     ),
-                    rx.recharts.tooltip(
-                        cursor={"fill": "rgba(16, 185, 129, 0.04)"},
-                        content_style={
-                            "backgroundColor": styles.BG_PANEL,
-                            "borderRadius": "12px",
-                            "border": "none",
-                            "boxShadow": styles.NEU_SHADOW,
-                            "padding": "12px",
-                        },
-                        label_style={"color": styles.TEXT_TERTIARY, "fontSize": "12px", "marginBottom": "4px"},
-                        item_style={"color": "#10b981", "fontSize": "14px", "fontWeight": "bold"},
-                    ),
+                    rx.recharts.tooltip(),
                     layout="vertical",
                     data=DashboardState.top_asesores_chart_data,
                     height=250,
@@ -330,21 +256,9 @@ def tunel_vencimientos_chart() -> rx.Component:
                     rx.recharts.area(
                         data_key="riesgo",
                         stroke="#f59e0b",
-                        fill="url(#colorRiesgo)",
+                        fill="#f59e0b",
                         fill_opacity=0.4,
                         type_="monotone",
-                        label={"dataKey": "riesgo_view", "position": "top", "fontSize": 10, "fill": "#f59e0b"},
-                    ),
-                    rx.el.svg.defs(
-                        rx.el.svg.linear_gradient(
-                            rx.el.svg.stop(offset="5%", stop_color="#f59e0b", stop_opacity=0.6),
-                            rx.el.svg.stop(offset="95%", stop_color="#f59e0b", stop_opacity=0),
-                            id="colorRiesgo",
-                            x1="0",
-                            y1="0",
-                            x2="0",
-                            y2="1",
-                        )
                     ),
                     rx.recharts.x_axis(
                         data_key="name",
@@ -355,17 +269,7 @@ def tunel_vencimientos_chart() -> rx.Component:
                     rx.recharts.y_axis(
                         axis_line=False, tick_line=False, tick={"fontSize": 10, "fill": styles.TEXT_TERTIARY}
                     ),
-                    rx.recharts.tooltip(
-                        content_style={
-                            "backgroundColor": styles.BG_PANEL,
-                            "borderRadius": "12px",
-                            "border": "none",
-                            "boxShadow": styles.NEU_SHADOW,
-                            "padding": "12px",
-                        },
-                        label_style={"color": styles.TEXT_TERTIARY, "fontSize": "12px", "marginBottom": "4px"},
-                        item_style={"color": "#f59e0b", "fontSize": "14px", "fontWeight": "bold"},
-                    ),
+                    rx.recharts.tooltip(),
                     data=DashboardState.tunel_chart_data,
                     height=250,
                     width="100%",
