@@ -50,7 +50,7 @@ def modal_detalle_seguro() -> rx.Component:
                                 rx.badge(
                                     SegurosState.selected_seguro["estado_seguro"],
                                     color_scheme=rx.cond(
-                                        SegurosState.selected_seguro["estado_seguro"] == "Activo",
+                                        SegurosState.selected_seguro["estado_seguro"] == "ACTIVO",
                                         "green",
                                         "red",
                                     ),

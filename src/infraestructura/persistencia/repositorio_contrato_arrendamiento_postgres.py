@@ -79,7 +79,7 @@ class RepositorioContratoArrendamientoPostgres:
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
-    def obtener_activo_por_propiedad(
+    def obtener_ACTIVO_por_propiedad(
         self, id_propiedad: int
     ) -> Optional[ContratoArrendamiento]:
         conn = self.db.obtener_conexion()
@@ -88,16 +88,16 @@ class RepositorioContratoArrendamientoPostgres:
         cursor.execute(
             f"""
         SELECT * FROM CONTRATOS_ARRENDAMIENTOS 
-        WHERE ID_PROPIEDAD = {placeholder} AND ESTADO_CONTRATO_A = 'Activo'
+        WHERE ID_PROPIEDAD = {placeholder} AND ESTADO_CONTRATO_A = 'ACTIVO'
         """,
             (id_propiedad,),
         )
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
-    def obtener_activos_por_asesor(self, id_asesor: int) -> List[ContratoArrendamiento]:
+    def obtener_ACTIVOs_por_asesor(self, id_asesor: int) -> List[ContratoArrendamiento]:
         """
-        Obtiene los contratos de arrendamiento activos asociados a un asesor activo.
+        Obtiene los contratos de arrendamiento ACTIVOs asociados a un asesor ACTIVO.
         Realiza JOIN con CONTRATOS_MANDATOS, ARRENDATARIOS y SEGUROS.
         """
         conn = self.db.obtener_conexion()
@@ -114,8 +114,8 @@ class RepositorioContratoArrendamientoPostgres:
             LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             LEFT JOIN SEGUROS seg ON arr.ID_SEGURO = seg.ID_SEGURO
             WHERE cm.ID_ASESOR = {placeholder}
-              AND ca.ESTADO_CONTRATO_A = 'Activo'
-              AND cm.ESTADO_CONTRATO_M = 'Activo'
+              AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
+              AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
         """
 
         cursor.execute(query, (id_asesor,))
@@ -123,9 +123,9 @@ class RepositorioContratoArrendamientoPostgres:
 
         return [self._row_to_entity(row) for row in rows]
 
-    def obtener_activos_todos_agrupados(self) -> Dict[int, List[ContratoArrendamiento]]:
+    def obtener_ACTIVOs_todos_agrupados(self) -> Dict[int, List[ContratoArrendamiento]]:
         """
-        Obtiene TODOS los contratos activos de TODOS los asesores,
+        Obtiene TODOS los contratos ACTIVOs de TODOS los asesores,
         agrupados por ID_ASESOR en un diccionario.
         OPTIMIZACIÓN ÉLITE: Resuelve el problema N+1 queries.
         """
@@ -142,8 +142,8 @@ class RepositorioContratoArrendamientoPostgres:
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
             LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             LEFT JOIN SEGUROS seg ON arr.ID_SEGURO = seg.ID_SEGURO
-            WHERE ca.ESTADO_CONTRATO_A = 'Activo'
-              AND cm.ESTADO_CONTRATO_M = 'Activo'
+            WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
+              AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
               AND cm.ID_ASESOR IS NOT NULL
         """
 
@@ -164,7 +164,7 @@ class RepositorioContratoArrendamientoPostgres:
 
     def obtener_detalle_contratos_asesor(self, id_asesor: int) -> List[dict]:
         """
-        Obtiene detalles de contratos activos (incluyendo dirección) para UI.
+        Obtiene detalles de contratos ACTIVOs (incluyendo dirección) para UI.
         Retorna lista de diccionarios.
         """
         conn = self.db.obtener_conexion()
@@ -183,8 +183,8 @@ class RepositorioContratoArrendamientoPostgres:
             JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
             WHERE cm.ID_ASESOR = {placeholder}
-              AND ca.ESTADO_CONTRATO_A = 'Activo'
-              AND cm.ESTADO_CONTRATO_M = 'Activo'
+              AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
+              AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
         """
 
         cursor.execute(query, (id_asesor,))
@@ -224,7 +224,7 @@ class RepositorioContratoArrendamientoPostgres:
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
                 JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-                LEFT JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'Activo'
+                LEFT JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
                 LEFT JOIN ASESORES am ON cm.ID_ASESOR = am.ID_ASESOR
                 LEFT JOIN PERSONAS per_asesor ON am.ID_PERSONA = per_asesor.ID_PERSONA
             """

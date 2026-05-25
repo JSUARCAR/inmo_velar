@@ -936,7 +936,7 @@ class ContratosState(DocumentosStateMixin):
             servicio = ServicioContratos(db_manager)
             usuario_sistema = "admin"
 
-            if estado_actual == "Activo":
+            if estado_actual == "ACTIVO":
                 detalle = servicio.obtener_detalle_contrato_ui(id_contrato, tipo)
                 beneficiario = (
                     detalle.get("propietario", "Propietario")

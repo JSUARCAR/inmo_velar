@@ -102,7 +102,7 @@ class UsuariosState(rx.State):
                     nombre_fallback=u.nombre_usuario[:2].upper() if u.nombre_usuario else "US",
                     rol=u.rol,
                     estado_usuario=u.es_activo(),
-                    estado_label="Activo" if u.es_activo() else "Inactivo",
+                    estado_label="ACTIVO" if u.es_activo() else "Inactivo",
                     ultimo_acceso=u.ultimo_acceso or "Nunca",
                 )
 
@@ -112,7 +112,7 @@ class UsuariosState(rx.State):
                     pass_filter = False
                 if self.filter_status != "Todos":
                     is_active = item.estado_usuario
-                    if self.filter_status == "Activo" and not is_active:
+                    if self.filter_status == "ACTIVO" and not is_active:
                         pass_filter = False
                     if self.filter_status == "Inactivo" and is_active:
                         pass_filter = False

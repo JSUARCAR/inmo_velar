@@ -137,11 +137,11 @@ class ContratosListView(ft.Container):
             text_size=14,
             content_padding=10,
             options=[
-                ft.dropdown.Option("Activo", "Activos"),
+                ft.dropdown.Option("ACTIVO", "Activos"),
                 ft.dropdown.Option("Cancelado", "Cancelados"),
                 ft.dropdown.Option("Todos", "Todos"),
             ],
-            value="Activo",
+            value="ACTIVO",
             on_change=lambda e: self._reset_pagination(),
         )
 
@@ -384,7 +384,7 @@ class ContratosListView(ft.Container):
                         ),
                         bgcolor=(
                             colors.SUCCESS_LIGHT
-                            if m["estado"] == "Activo"
+                            if m["estado"] == "ACTIVO"
                             else colors.ERROR_LIGHT
                         ),
                         padding=5,
@@ -416,7 +416,7 @@ class ContratosListView(ft.Container):
                                 icon=ft.Icons.AUTORENEW,
                                 icon_color=colors.SECONDARY,
                                 tooltip="Renovar Mandato",
-                                disabled=m["estado"] != "Activo",
+                                disabled=m["estado"] != "ACTIVO",
                                 on_click=lambda e, id=m["id"]: self.on_renovar_mandato(
                                     id
                                 ),
@@ -425,7 +425,7 @@ class ContratosListView(ft.Container):
                                 icon=ft.Icons.BLOCK,
                                 icon_color=colors.ERROR,
                                 tooltip="Terminar Mandato",
-                                disabled=m["estado"] != "Activo",
+                                disabled=m["estado"] != "ACTIVO",
                                 on_click=lambda e, id=m["id"]: self.on_terminar_mandato(
                                     id
                                 ),
@@ -475,7 +475,7 @@ class ContratosListView(ft.Container):
                         ),
                         bgcolor=(
                             colors.SUCCESS_LIGHT
-                            if a["estado"] == "Activo"
+                            if a["estado"] == "ACTIVO"
                             else colors.ERROR_LIGHT
                         ),
                         padding=5,
@@ -507,7 +507,7 @@ class ContratosListView(ft.Container):
                                 icon=ft.Icons.AUTORENEW,
                                 icon_color=colors.SECONDARY,
                                 tooltip="Renovar Contrato",
-                                disabled=a["estado"] != "Activo",
+                                disabled=a["estado"] != "ACTIVO",
                                 on_click=lambda e, id=a["id"]: self.on_renovar_arriendo(
                                     id
                                 ),
@@ -516,7 +516,7 @@ class ContratosListView(ft.Container):
                                 icon=ft.Icons.BLOCK,
                                 icon_color=colors.ERROR,
                                 tooltip="Terminar Arriendo",
-                                disabled=a["estado"] != "Activo",
+                                disabled=a["estado"] != "ACTIVO",
                                 on_click=lambda e, id=a["id"]: (
                                     self.on_terminar_arriendo(id)
                                 ),

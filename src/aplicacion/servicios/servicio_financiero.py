@@ -252,7 +252,7 @@ class ServicioFinanciero:
             query = """
             SELECT ID_CONTRATO_M 
             FROM CONTRATOS_MANDATOS
-            WHERE ID_PROPIETARIO = %s AND ESTADO_CONTRATO_M = 'Activo'
+            WHERE ID_PROPIETARIO = %s AND ESTADO_CONTRATO_M = 'ACTIVO'
             """
             cursor.execute(query, (id_propietario,))
             contratos = cursor.fetchall()

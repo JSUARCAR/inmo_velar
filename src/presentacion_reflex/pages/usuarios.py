@@ -33,7 +33,7 @@ def filtros_bar() -> rx.Component:
             neuro_select_root(
                 [
                     rx.select.item("Todos", value="Todos"),
-                    rx.select.item("Activo", value="Activo"),
+                    rx.select.item("ACTIVO", value="ACTIVO"),
                     rx.select.item("Inactivo", value="Inactivo"),
                 ],
                 placeholder="Estado",

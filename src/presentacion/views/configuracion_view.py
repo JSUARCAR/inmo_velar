@@ -301,7 +301,7 @@ class ConfiguracionView(ft.Container):
         rows = []
         for u in usuarios:
             estado_color = ft.Colors.GREEN if u.es_activo() else ft.Colors.RED_400
-            estado_texto = "Activo" if u.es_activo() else "Inactivo"
+            estado_texto = "ACTIVO" if u.es_activo() else "Inactivo"
 
             rows.append(
                 ft.DataRow(

@@ -79,7 +79,7 @@ class RepositorioContratoArrendamientoSQLite:
         cursor.execute(
             f"""
         SELECT * FROM CONTRATOS_ARRENDAMIENTOS 
-        WHERE ID_PROPIEDAD = {placeholder} AND ESTADO_CONTRATO_A = 'Activo'
+        WHERE ID_PROPIEDAD = {placeholder} AND ESTADO_CONTRATO_A = 'ACTIVO'
         """,
             (id_propiedad,),
         )
@@ -100,8 +100,8 @@ class RepositorioContratoArrendamientoSQLite:
             FROM CONTRATOS_ARRENDAMIENTOS ca
             JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
             WHERE cm.ID_ASESOR = {placeholder}
-              AND ca.ESTADO_CONTRATO_A = 'Activo'
-              AND cm.ESTADO_CONTRATO_M = 'Activo'
+              AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
+              AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
         """
 
         cursor.execute(query, (id_asesor,))
@@ -122,8 +122,8 @@ class RepositorioContratoArrendamientoSQLite:
             SELECT ca.*, cm.ID_ASESOR
             FROM CONTRATOS_ARRENDAMIENTOS ca
             JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
-            WHERE ca.ESTADO_CONTRATO_A = 'Activo'
-              AND cm.ESTADO_CONTRATO_M = 'Activo'
+            WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
+              AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
               AND cm.ID_ASESOR IS NOT NULL
         """
 
@@ -162,8 +162,8 @@ class RepositorioContratoArrendamientoSQLite:
             JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
             WHERE cm.ID_ASESOR = {placeholder}
-              AND ca.ESTADO_CONTRATO_A = 'Activo'
-              AND cm.ESTADO_CONTRATO_M = 'Activo'
+              AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
+              AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
         """
 
         cursor.execute(query, (id_asesor,))
@@ -203,7 +203,7 @@ class RepositorioContratoArrendamientoSQLite:
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
                 JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-                LEFT JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'Activo'
+                LEFT JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
                 LEFT JOIN ASESORES am ON cm.ID_ASESOR = am.ID_ASESOR
                 LEFT JOIN PERSONAS per_asesor ON am.ID_PERSONA = per_asesor.ID_PERSONA
             """
@@ -212,10 +212,10 @@ class RepositorioContratoArrendamientoSQLite:
             query_params = []
 
             if estado and estado != "Todos":
-                if estado == "Activo":
-                    conditions.append("ca.ESTADO_CONTRATO_A = 'Activo'")
+                if estado == "ACTIVO":
+                    conditions.append("ca.ESTADO_CONTRATO_A = 'ACTIVO'")
                 elif estado == "Cancelado":
-                    conditions.append("ca.ESTADO_CONTRATO_A != 'Activo'")
+                    conditions.append("ca.ESTADO_CONTRATO_A != 'ACTIVO'")
                 else:
                     conditions.append(f"ca.ESTADO_CONTRATO_A = {placeholder}")
                     query_params.append(estado)

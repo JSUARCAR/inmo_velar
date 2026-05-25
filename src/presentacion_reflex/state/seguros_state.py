@@ -369,7 +369,7 @@ class SegurosState(rx.State):
                     "nombre_seguro": seguro.nombre_seguro,
                     "porcentaje_seguro": seguro.porcentaje_seguro,
                     "fecha_inicio_seguro": seguro.fecha_inicio_seguro or "N/A",
-                    "estado_seguro": "Activo" if seguro.estado_seguro == 1 else "Inactivo",
+                    "estado_seguro": "ACTIVO" if seguro.estado_seguro == 1 else "Inactivo",
                     "fecha_ingreso_seguro": seguro.fecha_ingreso_seguro or "N/A",
                     "motivo_inactivacion": seguro.motivo_inactivacion or "N/A",
                 }

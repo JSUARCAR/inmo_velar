@@ -149,7 +149,7 @@ class LiquidacionesState(DocumentosStateMixin):
         SELECT DISTINCT p.ID_PROPIEDAD, p.MATRICULA_INMOBILIARIA, p.DIRECCION_PROPIEDAD
         FROM PROPIEDADES p
         INNER JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD
-        WHERE cm.ESTADO_CONTRATO_M = 'Activo'
+        WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO'
         ORDER BY p.DIRECCION_PROPIEDAD
         """
 
@@ -159,7 +159,7 @@ class LiquidacionesState(DocumentosStateMixin):
         FROM PERSONAS per
         INNER JOIN PROPIETARIOS prop ON per.ID_PERSONA = prop.ID_PERSONA
         INNER JOIN CONTRATOS_MANDATOS cm ON prop.ID_PROPIETARIO = cm.ID_PROPIETARIO
-        WHERE cm.ESTADO_CONTRATO_M = 'Activo'
+        WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO'
         ORDER BY per.NOMBRE_COMPLETO
         """
 
@@ -494,7 +494,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
                 JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
-                WHERE cm.ID_PROPIEDAD = {placeholder} AND cm.ESTADO_CONTRATO_M = 'Activo'
+                WHERE cm.ID_PROPIEDAD = {placeholder} AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
                 LIMIT 1
                 """
                 cursor.execute(query_mandato, (id_propiedad,))
@@ -921,7 +921,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 SELECT DISTINCT prop.ID_PROPIETARIO
                 FROM PROPIETARIOS prop
                 INNER JOIN CONTRATOS_MANDATOS cm ON prop.ID_PROPIETARIO = cm.ID_PROPIETARIO
-                WHERE cm.ESTADO_CONTRATO_M = 'Activo'
+                WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO'
                 """
                 cursor.execute(query)
                 rows = cursor.fetchall()

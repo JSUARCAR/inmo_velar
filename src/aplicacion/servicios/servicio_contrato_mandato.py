@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from src.dominio.constantes.estados_contrato import EstadoContrato
 from src.dominio.entidades.contrato_mandato import ContratoMandato
 from src.dominio.entidades.renovacion_contrato import RenovacionContrato
 from src.dominio.servicios.calculadora_contratos import CalculadoraContratos
@@ -91,7 +92,7 @@ class ServicioContratoMandato:
             canon_mandato=datos["canon"],
             comision_porcentaje_contrato_m=datos["comision_porcentaje"],
             iva_contrato_m=datos.get("iva_porcentaje", 1900),
-            estado_contrato_m="Activo",
+            estado_contrato_m=EstadoContrato.ACTIVO,
             alerta_vencimiento_contrato_m=True,
             fecha_pago=fecha_pago_str,
             grupo_operativo=grupo,
@@ -198,7 +199,7 @@ class ServicioContratoMandato:
         El mandato no aplica IPC, solo se extienden las fechas.
         """
         mandato = self.repo_mandato.obtener_por_id(id_contrato)
-        if not mandato or mandato.estado_contrato_m != "Activo":
+        if not mandato or mandato.estado_contrato_m != EstadoContrato.ACTIVO:
             raise ValueError("Contrato no válido para proyección de renovación")
 
         fecha_fin_actual = datetime.strptime(mandato.fecha_fin_contrato_m, "%Y-%m-%d")
@@ -240,7 +241,7 @@ class ServicioContratoMandato:
     ) -> "ContratoMandato":
         """Renueva un contrato de mandato extendiendo su fecha de fin. Acepta fecha personalizada."""
         mandato = self.repo_mandato.obtener_por_id(id_contrato)
-        if not mandato or mandato.estado_contrato_m != "Activo":
+        if not mandato or mandato.estado_contrato_m != EstadoContrato.ACTIVO:
             raise ValueError("Contrato de mandato no válido para renovación")
 
         fecha_fin_actual = datetime.strptime(mandato.fecha_fin_contrato_m, "%Y-%m-%d")
@@ -314,7 +315,7 @@ class ServicioContratoMandato:
         if not mandato:
             raise ValueError(f"Contrato {id_contrato} no existe")
 
-        mandato.estado_contrato_m = "Cancelado"
+        mandato.estado_contrato_m = EstadoContrato.CANCELADO
         mandato.motivo_cancelacion = motivo
         mandato.fecha_fin_contrato_m = datetime.now().strftime("%Y-%m-%d")
         mandato.updated_by = usuario_sistema

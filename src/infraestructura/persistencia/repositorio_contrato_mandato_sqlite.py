@@ -75,7 +75,7 @@ class RepositorioContratoMandatoSQLite:
         cursor.execute(
             f"""
         SELECT * FROM CONTRATOS_MANDATOS 
-        WHERE ID_PROPIEDAD = {placeholder} AND ESTADO_CONTRATO_M = 'Activo'
+        WHERE ID_PROPIEDAD = {placeholder} AND ESTADO_CONTRATO_M = 'ACTIVO'
         """,
             (id_propiedad,),
         )
@@ -122,10 +122,10 @@ class RepositorioContratoMandatoSQLite:
             query_params = []
 
             if estado and estado != "Todos":
-                if estado == "Activo":
-                    conditions.append("cm.ESTADO_CONTRATO_M = 'Activo'")
+                if estado == "ACTIVO":
+                    conditions.append("cm.ESTADO_CONTRATO_M = 'ACTIVO'")
                 elif estado == "Cancelado":
-                    conditions.append("cm.ESTADO_CONTRATO_M != 'Activo'")
+                    conditions.append("cm.ESTADO_CONTRATO_M != 'ACTIVO'")
                 else:
                     conditions.append(f"cm.ESTADO_CONTRATO_M = {placeholder}")
                     query_params.append(estado)

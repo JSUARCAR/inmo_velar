@@ -69,7 +69,7 @@ class ServicioDesocupaciones:
             if not row:
                 raise ValueError(f"Contrato {id_contrato} no encontrado")
 
-            if row["ESTADO_CONTRATO_A"] != "Activo":
+            if row["ESTADO_CONTRATO_A"] != "ACTIVO":
                 raise ValueError("El contrato debe estar Activo para iniciar desocupación")
 
         # Verificar que no exista una desocupación con la misma fecha programada para este contrato
@@ -273,7 +273,7 @@ class ServicioDesocupaciones:
                 cursor.execute(check_contrato_query, (desocupacion.id_contrato,))
                 contrato_row = cursor.fetchone()
 
-                if contrato_row and contrato_row["ESTADO_CONTRATO_A"] == "Activo":
+                if contrato_row and contrato_row["ESTADO_CONTRATO_A"] == "ACTIVO":
                     id_propiedad = contrato_row["id_propiedad"] if "id_propiedad" in contrato_row else contrato_row["ID_PROPIEDAD"]
                     
                     update_contrato_query = f"""
@@ -369,7 +369,7 @@ class ServicioDesocupaciones:
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
                 JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-                WHERE ca.ESTADO_CONTRATO_A = 'Activo'
+                WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
                 ORDER BY p.DIRECCION_PROPIEDAD
             """
             )

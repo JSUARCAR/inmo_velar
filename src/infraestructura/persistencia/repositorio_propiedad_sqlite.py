@@ -273,7 +273,7 @@ class RepositorioPropiedadSQLite:
           AND NOT EXISTS (
               SELECT 1 FROM CONTRATOS_MANDATOS cm
               WHERE cm.ID_PROPIEDAD = p.ID_PROPIEDAD
-                AND cm.ESTADO_CONTRATO_M = 'Activo'
+                AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
           )
         ORDER BY p.MATRICULA_INMOBILIARIA
         """
@@ -289,11 +289,11 @@ class RepositorioPropiedadSQLite:
         FROM PROPIEDADES p
         JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD
         WHERE p.ESTADO_REGISTRO IS TRUE
-          AND cm.ESTADO_CONTRATO_M = 'Activo'
+          AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
           AND NOT EXISTS (
               SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca
               WHERE ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-                AND ca.ESTADO_CONTRATO_A = 'Activo'
+                AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
           )
         ORDER BY p.MATRICULA_INMOBILIARIA
         """

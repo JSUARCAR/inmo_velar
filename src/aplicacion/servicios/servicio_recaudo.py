@@ -404,7 +404,7 @@ class ServicioRecaudo:
             INNER JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
             INNER JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             INNER JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-            WHERE ca.ESTADO_CONTRATO_A = 'Activo'
+            WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
             ORDER BY p.DIRECCION_PROPIEDAD
         """
 
@@ -495,7 +495,7 @@ class ServicioRecaudo:
         query_contratos = """
             SELECT ID_CONTRATO_A, CANON_ARRENDAMIENTO, FECHA_INICIO_CONTRATO_A
             FROM CONTRATOS_ARRENDAMIENTOS
-            WHERE ESTADO_CONTRATO_A = 'Activo'
+            WHERE ESTADO_CONTRATO_A = 'ACTIVO'
         """
 
         with self.db.obtener_conexion() as conn:

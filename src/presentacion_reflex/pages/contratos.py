@@ -76,7 +76,7 @@ def render_table_view() -> rx.Component:
                     color_scheme="green",
                     size="1",
                     tooltip_content="Renovar Contrato",
-                    disabled=c.estado_contrato != "Activo",
+                    disabled=c.estado_contrato != "ACTIVO",
                     on_click=lambda: ContratosState.confirm_renewal(
                         c.id_contrato, c.tipo_contrato
                     ),
@@ -91,7 +91,7 @@ def render_table_view() -> rx.Component:
                     color_scheme="cyan",
                     size="1",
                     tooltip_content="Aplicar IPC",
-                    disabled=c.estado_contrato != "Activo",
+                    disabled=c.estado_contrato != "ACTIVO",
                     on_click=lambda: ContratosState.open_ipc_modal(c.id_contrato),
                 ),
             ),
@@ -113,7 +113,7 @@ def render_table_view() -> rx.Component:
                     color_scheme="red",
                     size="1",
                     tooltip_content="Terminar Contrato",
-                    disabled=c.estado_contrato != "Activo",
+                    disabled=c.estado_contrato != "ACTIVO",
                     on_click=lambda: ContratosState.toggle_estado(
                         c.id_contrato, c.tipo_contrato, c.estado_contrato
                     ),
@@ -217,7 +217,7 @@ def render_table_view() -> rx.Component:
                         neuro_badge(
                             c.estado_contrato,
                             color_scheme=rx.cond(
-                                c.estado_contrato == "Activo", "green", "red"
+                                c.estado_contrato == "ACTIVO", "green", "red"
                             ),
                         )
                     ),

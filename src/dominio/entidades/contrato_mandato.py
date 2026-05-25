@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
+from src.dominio.constantes.estados_contrato import EstadoContrato
+
 
 @dataclass
 class ContratoMandato:
@@ -37,7 +39,7 @@ class ContratoMandato:
     grupo_operativo: int = 0
 
     # Estado
-    estado_contrato_m: str = "Activo"  # Activo, Finalizado, Cancelado
+    estado_contrato_m: EstadoContrato = EstadoContrato.ACTIVO
     motivo_cancelacion: Optional[str] = None
 
     # Alertas
@@ -61,7 +63,7 @@ class ContratoMandato:
     @property
     def esta_activo(self) -> bool:
         """Indica si el contrato está activo."""
-        return self.estado_contrato_m == "Activo"
+        return self.estado_contrato_m == EstadoContrato.ACTIVO
 
     @property
     def comision_porcentaje_decimal(self) -> float:

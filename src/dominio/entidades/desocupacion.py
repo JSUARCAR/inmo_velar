@@ -14,7 +14,7 @@ class Desocupacion:
     Entidad que representa un proceso de desocupación de inmueble.
 
     Business Rules:
-    - Solo puede iniciarse para contratos en estado 'Activo'
+    - Solo puede iniciarse para contratos en estado 'ACTIVO'
     - Requiere fecha programada de entrega
     - Al finalizar, el contrato debe cambiar a estado 'Finalizado'
     """

@@ -816,7 +816,7 @@ class RepositorioLiquidacionPostgres:
                 JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
                 JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
                 JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
-                LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON cm.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'Activo'
+                LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON cm.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'ACTIVO'
                 LEFT JOIN RECAUDOS rrec ON rrec.ID_CONTRATO_A = ca_rec.ID_CONTRATO_A
                 LEFT JOIN RECAUDO_CONCEPTOS rconc ON rconc.ID_RECAUDO = rrec.ID_RECAUDO AND rconc.PERIODO = l.PERIODO
             """
@@ -909,7 +909,7 @@ class RepositorioLiquidacionPostgres:
                     SELECT rrec.ESTADO_RECAUDO, COUNT(*) as CNT
                     FROM LIQUIDACIONES l
                     JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
-                    LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON cm.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'Activo'
+                    LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON cm.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'ACTIVO'
                     LEFT JOIN RECAUDOS rrec ON rrec.ID_CONTRATO_A = ca_rec.ID_CONTRATO_A
                     LEFT JOIN RECAUDO_CONCEPTOS rconc ON rconc.ID_RECAUDO = rrec.ID_RECAUDO AND rconc.PERIODO = l.PERIODO
                     WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder}
@@ -1038,7 +1038,7 @@ class RepositorioLiquidacionPostgres:
         LEFT JOIN ASESORES ase ON cm.ID_ASESOR = ase.ID_ASESOR
         
         -- Left Join para obtener Arrendatario y Seguro
-        LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON p.ID_PROPIEDAD = ca.ID_PROPIEDAD AND ca.ESTADO_CONTRATO_A = 'Activo'
+        LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON p.ID_PROPIEDAD = ca.ID_PROPIEDAD AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
         LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
         LEFT JOIN PERSONAS per_arr ON arr.ID_PERSONA = per_arr.ID_PERSONA
         
@@ -1155,7 +1155,7 @@ class RepositorioLiquidacionPostgres:
         JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
         
         -- Left Join para obtener Arrendatario y Seguro
-        LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON p.ID_PROPIEDAD = ca.ID_PROPIEDAD AND ca.ESTADO_CONTRATO_A = 'Activo'
+        LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON p.ID_PROPIEDAD = ca.ID_PROPIEDAD AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
         LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
         
         -- Join 1: A través de Póliza (tabla POLIZAS)
@@ -1358,7 +1358,7 @@ class RepositorioLiquidacionPostgres:
             JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
             JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
             JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
-            LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON p.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'Activo'
+            LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON p.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'ACTIVO'
             LEFT JOIN RECAUDOS rrec ON rrec.ID_CONTRATO_A = ca_rec.ID_CONTRATO_A
             LEFT JOIN RECAUDO_CONCEPTOS rconc ON rconc.ID_RECAUDO = rrec.ID_RECAUDO AND rconc.PERIODO = l.PERIODO
         """

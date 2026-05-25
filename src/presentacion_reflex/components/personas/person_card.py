@@ -108,8 +108,8 @@ def person_card(persona: dict) -> rx.Component:
             # Footer: Status, Date & Actions
             rx.hstack(
                 rx.cond(
-                    persona["estado"] == "Activo",
-                    neuro_badge("Activo", color_scheme="green"),
+                    persona["estado"] == "ACTIVO",
+                    neuro_badge("ACTIVO", color_scheme="green"),
                     neuro_badge("Inactivo", color_scheme="red"),
                 ),
                 rx.spacer(),
@@ -144,7 +144,7 @@ def person_card(persona: dict) -> rx.Component:
                     rx.cond(
                         AuthState.check_action("Personas", "ELIMINAR"),
                         rx.cond(
-                            persona["estado"] == "Activo",
+                            persona["estado"] == "ACTIVO",
                             rx.tooltip(
                                 neuro_button(
                                     rx.icon("trash_2", size=16),

@@ -218,7 +218,7 @@ class SegurosListView(ft.Container):
                         ft.DataCell(ft.Text(f"{s.obtener_porcentaje_decimal()}%")),
                         ft.DataCell(
                             ft.Text(
-                                "Activo" if s.esta_activo() else "Inactivo",
+                                "ACTIVO" if s.esta_activo() else "Inactivo",
                                 color="green" if s.esta_activo() else "red",
                             )
                         ),

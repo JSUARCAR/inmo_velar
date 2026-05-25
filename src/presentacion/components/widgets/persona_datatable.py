@@ -51,7 +51,7 @@ class PersonaDataTable(ft.Column):
             ft.DataColumn(ft.Text("Celular", weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("Correo", weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("Roles", weight=ft.FontWeight.BOLD)),
-            ft.DataColumn(ft.Text("Activo", weight=ft.FontWeight.BOLD)),
+            ft.DataColumn(ft.Text("ACTIVO", weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("Acciones", weight=ft.FontWeight.BOLD)),
         ]
 

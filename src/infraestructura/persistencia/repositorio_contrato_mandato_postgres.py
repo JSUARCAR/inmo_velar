@@ -81,7 +81,7 @@ class RepositorioContratoMandatoPostgres:
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
-    def obtener_activo_por_propiedad(
+    def obtener_ACTIVO_por_propiedad(
         self, id_propiedad: int
     ) -> Optional[ContratoMandato]:
         conn = self.db.obtener_conexion()
@@ -90,7 +90,7 @@ class RepositorioContratoMandatoPostgres:
         cursor.execute(
             f"""
         SELECT * FROM CONTRATOS_MANDATOS 
-        WHERE ID_PROPIEDAD = {placeholder} AND ESTADO_CONTRATO_M = 'Activo'
+        WHERE ID_PROPIEDAD = {placeholder} AND ESTADO_CONTRATO_M = 'ACTIVO'
         """,
             (id_propiedad,),
         )
@@ -123,11 +123,11 @@ class RepositorioContratoMandatoPostgres:
         Args:
             page: Número de página.
             page_size: Tamaño de página.
-            estado: Filtro de estado (Activo, Cancelado, Todos).
+            estado: Filtro de estado (ACTIVO, Cancelado, Todos).
             busqueda: Texto de búsqueda libre.
             id_asesor: ID del asesor para filtrar.
             sin_arrendamiento: Si True, retorna solo mandatos cuya propiedad
-                NO tiene un contrato de arrendamiento activo.
+                NO tiene un contrato de arrendamiento ACTIVO.
             sort_by: Columna para ordenar.
             sort_order: Orden (asc/desc).
         """
@@ -174,7 +174,7 @@ class RepositorioContratoMandatoPostgres:
                     """NOT EXISTS (
                         SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca
                         WHERE ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
-                          AND ca.ESTADO_CONTRATO_A = 'Activo'
+                          AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
                     )"""
                 )
 

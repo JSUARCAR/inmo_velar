@@ -232,7 +232,7 @@ class ServicioSeguros:
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
                 JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-                WHERE ca.ESTADO_CONTRATO_A = 'Activo'
+                WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
             """
             )
             return [dict(row) for row in cursor.fetchall()]

@@ -113,7 +113,7 @@ class ServicioReportes:
         # 1. Reportes de Entidades Base (Paginación real en PostgreSQL)
         if report_id == "personas":
             solo_activos: Optional[bool] = (
-                True if estado == "Activo" else (False if estado == "Inactivo" else None)
+                True if estado == "ACTIVO" else (False if estado == "Inactivo" else None)
             )
             filtro_rol = filtros.get("rol") if filtros.get("rol") != "Todos" else None
             data, total = self.repo_reportes.obtener_reporte_personas(
@@ -132,7 +132,7 @@ class ServicioReportes:
 
         if report_id == "propiedades":
             solo_activas: Optional[bool] = (
-                True if estado == "Activo" else (False if estado == "Inactivo" else None)
+                True if estado == "ACTIVO" else (False if estado == "Inactivo" else None)
             )
             data, total = self.repo_reportes.obtener_reporte_propiedades(
                 busqueda=busqueda,
@@ -158,7 +158,7 @@ class ServicioReportes:
         if report_id in role_map:
             solo_activos = (
                 True
-                if estado == "Activo"
+                if estado == "ACTIVO"
                 else (False if estado == "Inactivo" else True)
             )
             data, total = self.repo_reportes.obtener_reporte_roles(

@@ -339,7 +339,7 @@ class RepositorioPropiedadPostgres:
           AND NOT EXISTS (
               SELECT 1 FROM CONTRATOS_MANDATOS cm
               WHERE cm.ID_PROPIEDAD = p.ID_PROPIEDAD
-                AND cm.ESTADO_CONTRATO_M = 'Activo'
+                AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
           )
         ORDER BY p.MATRICULA_INMOBILIARIA
         """
@@ -355,11 +355,11 @@ class RepositorioPropiedadPostgres:
         FROM PROPIEDADES p
         JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD
         WHERE p.ESTADO_REGISTRO IS TRUE
-          AND cm.ESTADO_CONTRATO_M = 'Activo'
+          AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
           AND NOT EXISTS (
               SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca
               WHERE ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-                AND ca.ESTADO_CONTRATO_A = 'Activo'
+                AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
           )
         ORDER BY p.MATRICULA_INMOBILIARIA
         """
@@ -470,7 +470,7 @@ class RepositorioPropiedadPostgres:
             JOIN PERSONAS persona_prop ON prop_jun.ID_PERSONA = persona_prop.ID_PERSONA
             LEFT JOIN PROPIETARIOS apo_jun ON cm.ID_ASESOR = apo_jun.ID_PROPIETARIO
             LEFT JOIN PERSONAS persona_asesor ON apo_jun.ID_PERSONA = persona_asesor.ID_PERSONA
-            WHERE p.ID_PROPIEDAD = {p} AND cm.ESTADO_CONTRATO_M = 'Activo'
+            WHERE p.ID_PROPIEDAD = {p} AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
         """
 
         cursor.execute(query, (id_propiedad,))

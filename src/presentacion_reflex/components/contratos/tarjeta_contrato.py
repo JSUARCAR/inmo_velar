@@ -57,7 +57,7 @@ def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
                 neuro_badge(
                     contrato.estado_contrato,
                     color_scheme=rx.cond(
-                        contrato.estado_contrato == "Activo",
+                        contrato.estado_contrato == "ACTIVO",
                         "green",
                         "red",
                     ),
@@ -217,7 +217,7 @@ def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
                                         contrato.id_contrato
                                     ),
                                     color_scheme="cyan",
-                                    disabled=contrato.estado_contrato != "Activo",
+                                    disabled=contrato.estado_contrato != "ACTIVO",
                                     tooltip_content="Incremento IPC",
                                 ),
                             ),
@@ -257,7 +257,7 @@ def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
                                 contrato.id_contrato, contrato.tipo_contrato
                             ),
                             color_scheme="green",
-                            disabled=contrato.estado_contrato != "Activo",
+                            disabled=contrato.estado_contrato != "ACTIVO",
                             tooltip_content="Renovar",
                         ),
                     ),
@@ -272,7 +272,7 @@ def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
                                 contrato.estado_contrato,
                             ),
                             color_scheme="red",
-                            disabled=contrato.estado_contrato != "Activo",
+                            disabled=contrato.estado_contrato != "ACTIVO",
                             tooltip_content="Terminar",
                         ),
                     ),

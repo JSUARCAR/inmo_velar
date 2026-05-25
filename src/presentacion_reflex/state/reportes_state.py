@@ -190,7 +190,7 @@ class ReportesState(rx.State):
     error_message: str = ""
 
     # Opciones para dropdowns de filtros
-    estado_options: List[str] = ["Todos", "Activo", "Inactivo"]
+    estado_options: List[str] = ["Todos", "ACTIVO", "Inactivo"]
     rol_options: List[str] = [
         "Todos",
         "Propietario",
@@ -207,7 +207,7 @@ class ReportesState(rx.State):
         "PSE",
         "Consignación",
     ]
-    estado_contrato_options: List[str] = ["Todos", "Activo", "Finalizado", "Cancelado"]
+    estado_contrato_options: List[str] = ["Todos", "ACTIVO", "Finalizado", "Cancelado"]
     estado_liquidacion_options: List[str] = [
         "Todos",
         "Sin Liquidar",

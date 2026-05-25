@@ -267,7 +267,7 @@ class ServicioPropiedades:
                         """
                         SELECT ID_CONTRATO_A, CANON_ARRENDAMIENTO
                         FROM CONTRATOS_ARRENDAMIENTOS
-                        WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'Activo'
+                        WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'ACTIVO'
                         """,
                         (id_propiedad,),
                     )
@@ -283,7 +283,7 @@ class ServicioPropiedades:
                             UPDATED_AT = CURRENT_TIMESTAMP,
                             UPDATED_BY = %s
                         WHERE ID_PROPIEDAD = %s
-                        AND ESTADO_CONTRATO_M = 'Activo'
+                        AND ESTADO_CONTRATO_M = 'ACTIVO'
                         """,
                         (nuevo_canon, usuario_sistema, id_propiedad),
                     )
@@ -296,7 +296,7 @@ class ServicioPropiedades:
                             UPDATED_AT = CURRENT_TIMESTAMP,
                             UPDATED_BY = %s
                         WHERE ID_PROPIEDAD = %s
-                        AND ESTADO_CONTRATO_A = 'Activo'
+                        AND ESTADO_CONTRATO_A = 'ACTIVO'
                         """,
                         (nuevo_canon, usuario_sistema, id_propiedad),
                     )
@@ -466,7 +466,7 @@ class ServicioPropiedades:
 
     def _verificar_arrendamiento_activo(self, id_propiedad: int) -> None:
         """Verifica si la propiedad tiene un arrendamiento activo. Lanza ValueError si es así."""
-        query_check_arr = "SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'Activo'"
+        query_check_arr = "SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'ACTIVO'"
         if db_manager.execute_query_one(
             query_check_arr.replace("%s", db_manager.get_placeholder()),
             (int(id_propiedad),),

@@ -37,7 +37,7 @@ class RepositorioDashboard(IRepositorioDashboard):
             """
             if id_asesor:
                 query += " JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD "
-                where = f" WHERE TO_CHAR(r.FECHA_PAGO::DATE, 'MM') = {placeholder} AND TO_CHAR(r.FECHA_PAGO::DATE, 'YYYY') = {placeholder} AND r.ESTADO_RECAUDO = 'Aplicado' AND cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'Activo'"
+                where = f" WHERE TO_CHAR(r.FECHA_PAGO::DATE, 'MM') = {placeholder} AND TO_CHAR(r.FECHA_PAGO::DATE, 'YYYY') = {placeholder} AND r.ESTADO_RECAUDO = 'Aplicado' AND cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'ACTIVO'"
                 params.append(id_asesor)
             else:
                 where = f" WHERE TO_CHAR(r.FECHA_PAGO::DATE, 'MM') = {placeholder} AND TO_CHAR(r.FECHA_PAGO::DATE, 'YYYY') = {placeholder} AND r.ESTADO_RECAUDO = 'Aplicado'"
@@ -57,10 +57,10 @@ class RepositorioDashboard(IRepositorioDashboard):
             query = "SELECT SUM(ca.CANON_ARRENDAMIENTO) AS TOTAL_ESPERADO FROM CONTRATOS_ARRENDAMIENTOS ca"
             params = []
             if id_asesor:
-                query += f" JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE ca.ESTADO_CONTRATO_A = 'Activo' AND cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'Activo' "
+                query += f" JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO' AND cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'ACTIVO' "
                 params.append(id_asesor)
             else:
-                query += " WHERE ca.ESTADO_CONTRATO_A = 'Activo' "
+                query += " WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO' "
             cursor.execute(query, params)
             res = cursor.fetchone()
             return res["TOTAL_ESPERADO"] if res and res["TOTAL_ESPERADO"] else 0
@@ -106,7 +106,7 @@ class RepositorioDashboard(IRepositorioDashboard):
                         JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
                         JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
                         LEFT JOIN IPC ipc ON ipc.ANIO = EXTRACT(YEAR FROM CURRENT_DATE)::INTEGER - 1
-                        WHERE ca.ESTADO_CONTRATO_A = 'Activo' 
+                        WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO' 
                         AND CURRENT_DATE - ca.FECHA_INICIO_CONTRATO_A::DATE >= 365 
                         AND ipc.VALOR_IPC IS NOT NULL
                     )
@@ -130,7 +130,7 @@ class RepositorioDashboard(IRepositorioDashboard):
                         JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
                         JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
                         LEFT JOIN IPC ipc ON ipc.ANIO = CAST(strftime('%Y', 'now') AS INTEGER) - 1
-                        WHERE ca.ESTADO_CONTRATO_A = 'Activo' AND julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A) >= 365 AND ipc.VALOR_IPC IS NOT NULL
+                        WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO' AND julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A) >= 365 AND ipc.VALOR_IPC IS NOT NULL
                     )
                     SELECT * FROM ProximosAniversarios WHERE DIAS_HASTA_ANIVERSARIO BETWEEN 0 AND {placeholder} ORDER BY DIAS_HASTA_ANIVERSARIO ASC
                 """
@@ -160,7 +160,7 @@ class RepositorioDashboard(IRepositorioDashboard):
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
             if id_asesor:
-                query = f"SELECT SUM(CASE WHEN p.DISPONIBILIDAD_PROPIEDAD IS TRUE THEN 1 ELSE 0 END) AS DISPONIBLES, SUM(CASE WHEN p.DISPONIBILIDAD_PROPIEDAD IS FALSE THEN 1 ELSE 0 END) AS OCUPADAS FROM PROPIEDADES p JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'Activo' AND p.ESTADO_REGISTRO IS TRUE"
+                query = f"SELECT SUM(CASE WHEN p.DISPONIBILIDAD_PROPIEDAD IS TRUE THEN 1 ELSE 0 END) AS DISPONIBLES, SUM(CASE WHEN p.DISPONIBILIDAD_PROPIEDAD IS FALSE THEN 1 ELSE 0 END) AS OCUPADAS FROM PROPIEDADES p JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'ACTIVO' AND p.ESTADO_REGISTRO IS TRUE"
                 cursor.execute(query, (id_asesor,))
             else:
                 query = "SELECT SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD IS TRUE THEN 1 ELSE 0 END) AS DISPONIBLES, SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD IS FALSE THEN 1 ELSE 0 END) AS OCUPADAS FROM PROPIEDADES WHERE ESTADO_REGISTRO IS TRUE"
@@ -175,7 +175,7 @@ class RepositorioDashboard(IRepositorioDashboard):
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
             if id_asesor:
-                query = f"SELECT p.TIPO_PROPIEDAD, COUNT(*) as CONTAR FROM PROPIEDADES p JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'Activo' AND p.ESTADO_REGISTRO IS TRUE GROUP BY p.TIPO_PROPIEDAD"
+                query = f"SELECT p.TIPO_PROPIEDAD, COUNT(*) as CONTAR FROM PROPIEDADES p JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'ACTIVO' AND p.ESTADO_REGISTRO IS TRUE GROUP BY p.TIPO_PROPIEDAD"
                 cursor.execute(query, (id_asesor,))
             else:
                 query = "SELECT TIPO_PROPIEDAD, COUNT(*) as CONTAR FROM PROPIEDADES WHERE ESTADO_REGISTRO IS TRUE GROUP BY TIPO_PROPIEDAD"
@@ -187,9 +187,9 @@ class RepositorioDashboard(IRepositorioDashboard):
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
             q_potencial = "SELECT SUM(CANON_ARRENDAMIENTO_ESTIMADO) as TOTAL FROM PROPIEDADES WHERE ESTADO_REGISTRO IS TRUE"
-            q_real = "SELECT SUM(CANON_ARRENDAMIENTO) as TOTAL FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'Activo'"
+            q_real = "SELECT SUM(CANON_ARRENDAMIENTO) as TOTAL FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'ACTIVO'"
             if id_asesor:
-                cand = f" AND ID_PROPIEDAD IN (SELECT ID_PROPIEDAD FROM CONTRATOS_MANDATOS WHERE ID_ASESOR = {placeholder} AND ESTADO_CONTRATO_M = 'Activo')"
+                cand = f" AND ID_PROPIEDAD IN (SELECT ID_PROPIEDAD FROM CONTRATOS_MANDATOS WHERE ID_ASESOR = {placeholder} AND ESTADO_CONTRATO_M = 'ACTIVO')"
                 cursor.execute(q_potencial + cand, (id_asesor,))
                 potencial = cursor.fetchone()["TOTAL"] or 0
                 cursor.execute(q_real + cand, (id_asesor,))
@@ -222,7 +222,7 @@ class RepositorioDashboard(IRepositorioDashboard):
     def obtener_top_asesores_revenue(self) -> List[Dict]:
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
-            query = "SELECT p.NOMBRE_COMPLETO as nombre, COUNT(cm.ID_CONTRATO_M) as contratos, SUM(cm.CANON_MANDATO * (cm.COMISION_PORCENTAJE_CONTRATO_M / 10000.0)) as revenue FROM CONTRATOS_MANDATOS cm JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA WHERE cm.ESTADO_CONTRATO_M = 'Activo' GROUP BY p.NOMBRE_COMPLETO ORDER BY revenue DESC LIMIT 5"
+            query = "SELECT p.NOMBRE_COMPLETO as nombre, COUNT(cm.ID_CONTRATO_M) as contratos, SUM(cm.CANON_MANDATO * (cm.COMISION_PORCENTAJE_CONTRATO_M / 10000.0)) as revenue FROM CONTRATOS_MANDATOS cm JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO' GROUP BY p.NOMBRE_COMPLETO ORDER BY revenue DESC LIMIT 5"
             cursor.execute(query)
             return [{"nombre": r["NOMBRE"], "contratos": int(r["CONTRATOS"]), "revenue": float(r["REVENUE"])} for r in cursor.fetchall()]
 
@@ -230,9 +230,9 @@ class RepositorioDashboard(IRepositorioDashboard):
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
             if self.db.use_postgresql:
-                query = "SELECT TO_CHAR(TO_DATE(FECHA_FIN_CONTRATO_A, 'YYYY-MM-DD'), 'YYYY-MM') as mes, SUM(CANON_ARRENDAMIENTO) as valor_riesgo FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'Activo' AND TO_DATE(FECHA_FIN_CONTRATO_A, 'YYYY-MM-DD') BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '12 months') GROUP BY mes ORDER BY mes"
+                query = "SELECT TO_CHAR(TO_DATE(FECHA_FIN_CONTRATO_A, 'YYYY-MM-DD'), 'YYYY-MM') as mes, SUM(CANON_ARRENDAMIENTO) as valor_riesgo FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'ACTIVO' AND TO_DATE(FECHA_FIN_CONTRATO_A, 'YYYY-MM-DD') BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '12 months') GROUP BY mes ORDER BY mes"
             else:
-                query = "SELECT strftime('%Y-%m', FECHA_FIN_CONTRATO_A) as mes, SUM(CANON_ARRENDAMIENTO) as valor_riesgo FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'Activo' AND FECHA_FIN_CONTRATO_A BETWEEN date('now') AND date('now', '+12 months') GROUP BY mes ORDER BY mes"
+                query = "SELECT strftime('%Y-%m', FECHA_FIN_CONTRATO_A) as mes, SUM(CANON_ARRENDAMIENTO) as valor_riesgo FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'ACTIVO' AND FECHA_FIN_CONTRATO_A BETWEEN date('now') AND date('now', '+12 months') GROUP BY mes ORDER BY mes"
             cursor.execute(query)
             return [{"mes": r["MES"], "valor_riesgo": float(r["VALOR_RIESGO"])} for r in cursor.fetchall()]
 
@@ -248,10 +248,10 @@ class RepositorioDashboard(IRepositorioDashboard):
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
             if id_asesor:
-                query = f"SELECT COUNT(*) AS COUNT FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE ca.ESTADO_CONTRATO_A = 'Activo' AND cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'Activo'"
+                query = f"SELECT COUNT(*) AS COUNT FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO' AND cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'ACTIVO'"
                 cursor.execute(query, (id_asesor,))
             else:
-                query = "SELECT COUNT(*) AS COUNT FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'Activo'"
+                query = "SELECT COUNT(*) AS COUNT FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'ACTIVO'"
                 cursor.execute(query)
             r = cursor.fetchone()
             return r["COUNT"] if r else 0
@@ -272,7 +272,7 @@ class RepositorioDashboard(IRepositorioDashboard):
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
-            cursor.execute("SELECT p.NOMBRE_COMPLETO, COUNT(ca.ID_CONTRATO_A) AS CONTRATOS_ACTIVOS, SUM(ca.CANON_ARRENDAMIENTO) AS VALOR_CARTERA FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ASESORES a ON ca.ID_ASESOR = a.ID_ASESOR JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA WHERE ca.ESTADO_CONTRATO_A = 'Activo' GROUP BY p.NOMBRE_COMPLETO ORDER BY CONTRATOS_ACTIVOS DESC LIMIT 5")
+            cursor.execute("SELECT p.NOMBRE_COMPLETO, COUNT(ca.ID_CONTRATO_A) AS CONTRATOS_ACTIVOS, SUM(ca.CANON_ARRENDAMIENTO) AS VALOR_CARTERA FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ASESORES a ON ca.ID_ASESOR = a.ID_ASESOR JOIN PERSONAS p ON a.ID_PERSONA = p.ID_PERSONA WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO' GROUP BY p.NOMBRE_COMPLETO ORDER BY CONTRATOS_ACTIVOS DESC LIMIT 5")
             top_contratos = [{"nombre": r["NOMBRE_COMPLETO"], "contratos": r["CONTRATOS_ACTIVOS"], "cartera": r["VALOR_CARTERA"]} for r in cursor.fetchall()]
             
             hoy = datetime.now()
