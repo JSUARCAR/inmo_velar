@@ -124,7 +124,7 @@ class AuthState(rx.State):
                 "id_usuario": usuario.id_usuario,
                 "nombre_usuario": usuario.nombre_usuario,
                 "rol": usuario.rol,
-                "ultimo_acceso": usuario.ultimo_acceso,
+                "ultimo_acceso": usuario.ultimo_acceso.isoformat() if usuario.ultimo_acceso else None,
             }
             self._user_data = user_dict
             self.is_authenticated = True
@@ -212,6 +212,7 @@ class AuthState(rx.State):
         _debug("login CALLED", username=form_data.get("username"))
         self.is_loading = True
         self.error_message = ""
+        yield  # Enviar estado de loading al frontend inmediatamente
 
         username = form_data.get("username")
         password = form_data.get("password")
@@ -219,6 +220,7 @@ class AuthState(rx.State):
         if not username or not password:
             self.error_message = "Por favor ingrese usuario y contraseña."
             self.is_loading = False
+            yield
             return
 
         try:
@@ -237,7 +239,7 @@ class AuthState(rx.State):
                 "id_usuario": usuario_autenticado.id_usuario,
                 "nombre_usuario": usuario_autenticado.nombre_usuario,
                 "rol": usuario_autenticado.rol,
-                "ultimo_acceso": usuario_autenticado.ultimo_acceso,
+                "ultimo_acceso": usuario_autenticado.ultimo_acceso.isoformat() if usuario_autenticado.ultimo_acceso else None,
             }
             self._user_data = user_dict
             self.is_authenticated = True
@@ -250,13 +252,19 @@ class AuthState(rx.State):
             self.error_message = ""
 
             _debug("login → ÉXITO, redirigiendo a /dashboard", usuario=username)
+            self.is_loading = False
             yield rx.redirect("/dashboard")
+            return  # Terminar el generador para prevenir colisiones en el ciclo de vida
 
         except ErrorAutenticacion as e:
             _debug("login → ERROR_AUTH", error=str(e))
             self.error_message = str(e)
+            self.is_loading = False
+            yield
         except ExcepcionDominio as e:
             self.error_message = f"Error de negocio: {str(e)}"
+            self.is_loading = False
+            yield
         except Exception as e:
             import traceback
             error_trace = traceback.format_exc()
@@ -269,8 +277,8 @@ class AuthState(rx.State):
             except Exception:
                 pass
             self.error_message = "Ocurrió un error inesperado. Intente de nuevo."
-        finally:
             self.is_loading = False
+            yield
 
     def logout(self):
         """Cierra la sesión del usuario."""
