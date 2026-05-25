@@ -39,16 +39,34 @@ class RepositorioDashboard(IRepositorioDashboard):
                 query += " JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD "
                 where = f" WHERE TO_CHAR(r.FECHA_PAGO::DATE, 'MM') = {placeholder} AND TO_CHAR(r.FECHA_PAGO::DATE, 'YYYY') = {placeholder} AND r.ESTADO_RECAUDO = 'Aplicado' AND cm.ID_ASESOR = {placeholder} AND cm.ESTADO_CONTRATO_M = 'ACTIVO'"
                 params.append(id_asesor)
-            else:
                 where = f" WHERE TO_CHAR(r.FECHA_PAGO::DATE, 'MM') = {placeholder} AND TO_CHAR(r.FECHA_PAGO::DATE, 'YYYY') = {placeholder} AND r.ESTADO_RECAUDO = 'Aplicado'"
-            
-            # Ajuste para SQLite si no es Postgres
-            if not self.db.use_postgresql:
-                where = where.replace("TO_CHAR(r.FECHA_PAGO::DATE, 'MM')", "strftime('%m', r.FECHA_PAGO)").replace("TO_CHAR(r.FECHA_PAGO::DATE, 'YYYY')", "strftime('%Y', r.FECHA_PAGO)")
 
             cursor.execute(query + where, params)
             res = cursor.fetchone()
             return res["TOTAL_RECAUDO"] if res and res["TOTAL_RECAUDO"] else 0
+
+    def obtener_historico_recaudos(self, meses: int, mes_fin: int, anio_fin: int) -> Dict[str, float]:
+        with self.db.obtener_conexion() as conn:
+            cursor = self.db.get_dict_cursor(conn)
+            
+            query = """
+                SELECT 
+                    TO_CHAR(r.FECHA_PAGO::DATE, 'MM/YYYY') AS MES_ANIO,
+                    SUM(r.VALOR_TOTAL) AS TOTAL_RECAUDO
+                FROM RECAUDOS r
+                WHERE r.ESTADO_RECAUDO = 'Aplicado'
+                AND r.FECHA_PAGO::DATE >= DATE_TRUNC('month', TO_DATE(%(fin)s, 'YYYY-MM-DD') - INTERVAL %(intervalo)s)
+                AND r.FECHA_PAGO::DATE < DATE_TRUNC('month', TO_DATE(%(fin)s, 'YYYY-MM-DD') + INTERVAL '1 month')
+                GROUP BY TO_CHAR(r.FECHA_PAGO::DATE, 'MM/YYYY')
+            """
+            
+            fecha_fin = f"{anio_fin}-{mes_fin:02d}-01"
+            intervalo = f"{meses - 1} months"
+            
+            cursor.execute(query, {"fin": fecha_fin, "intervalo": intervalo})
+            resultados = cursor.fetchall()
+            
+            return {row["MES_ANIO"]: float(row["TOTAL_RECAUDO"] or 0) for row in resultados}
 
     def obtener_total_esperado(self, id_asesor: Optional[int] = None) -> float:
         with self.db.obtener_conexion() as conn:
@@ -90,50 +108,29 @@ class RepositorioDashboard(IRepositorioDashboard):
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
             
-            if self.db.use_postgresql:
-                # Versión PostgreSQL: usa AGE, EXTRACT e intervalos
-                query = f"""
-                    WITH ProximosAniversarios AS (
-                        SELECT 
-                            ca.ID_CONTRATO_A, p.DIRECCION_PROPIEDAD, per.NOMBRE_COMPLETO AS INQUILINO,
-                            ca.FECHA_INICIO_CONTRATO_A, ca.CANON_ARRENDAMIENTO,
-                            EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER AS ANIOS_ACTIVOS,
-                            (ca.FECHA_INICIO_CONTRATO_A::DATE + (EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER + 1 || ' years')::INTERVAL)::DATE AS PROXIMO_ANIVERSARIO,
-                            ((ca.FECHA_INICIO_CONTRATO_A::DATE + (EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER + 1 || ' years')::INTERVAL)::DATE - CURRENT_DATE) AS DIAS_HASTA_ANIVERSARIO,
-                            ipc.VALOR_IPC, ipc.ANIO
-                        FROM CONTRATOS_ARRENDAMIENTOS ca
-                        JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-                        JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
-                        JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-                        LEFT JOIN IPC ipc ON ipc.ANIO = EXTRACT(YEAR FROM CURRENT_DATE)::INTEGER - 1
-                        WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO' 
-                        AND CURRENT_DATE - ca.FECHA_INICIO_CONTRATO_A::DATE >= 365 
-                        AND ipc.VALOR_IPC IS NOT NULL
-                    )
-                    SELECT * FROM ProximosAniversarios 
-                    WHERE DIAS_HASTA_ANIVERSARIO BETWEEN 0 AND {placeholder} 
-                    ORDER BY DIAS_HASTA_ANIVERSARIO ASC
-                """
-            else:
-                # Versión SQLite original
-                query = f"""
-                    WITH ProximosAniversarios AS (
-                        SELECT 
-                            ca.ID_CONTRATO_A, p.DIRECCION_PROPIEDAD, per.NOMBRE_COMPLETO AS INQUILINO,
-                            ca.FECHA_INICIO_CONTRATO_A, ca.CANON_ARRENDAMIENTO,
-                            CAST((julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A)) / 365.25 AS INTEGER) AS ANIOS_ACTIVOS,
-                            date(ca.FECHA_INICIO_CONTRATO_A, '+' || CAST((julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A)) / 365.25 AS INTEGER) + 1 || ' years') AS PROXIMO_ANIVERSARIO,
-                            CAST(julianday(date(ca.FECHA_INICIO_CONTRATO_A, '+' || CAST((julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A)) / 365.25 AS INTEGER) + 1 || ' years')) - julianday('now') AS INTEGER) AS DIAS_HASTA_ANIVERSARIO,
-                            ipc.VALOR_IPC, ipc.ANIO
-                        FROM CONTRATOS_ARRENDAMIENTOS ca
-                        JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-                        JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
-                        JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-                        LEFT JOIN IPC ipc ON ipc.ANIO = CAST(strftime('%Y', 'now') AS INTEGER) - 1
-                        WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO' AND julianday('now') - julianday(ca.FECHA_INICIO_CONTRATO_A) >= 365 AND ipc.VALOR_IPC IS NOT NULL
-                    )
-                    SELECT * FROM ProximosAniversarios WHERE DIAS_HASTA_ANIVERSARIO BETWEEN 0 AND {placeholder} ORDER BY DIAS_HASTA_ANIVERSARIO ASC
-                """
+            # Versión PostgreSQL: usa AGE, EXTRACT e intervalos
+            query = f"""
+                WITH ProximosAniversarios AS (
+                    SELECT 
+                        ca.ID_CONTRATO_A, p.DIRECCION_PROPIEDAD, per.NOMBRE_COMPLETO AS INQUILINO,
+                        ca.FECHA_INICIO_CONTRATO_A, ca.CANON_ARRENDAMIENTO,
+                        EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER AS ANIOS_ACTIVOS,
+                        (ca.FECHA_INICIO_CONTRATO_A::DATE + (EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER + 1 || ' years')::INTERVAL)::DATE AS PROXIMO_ANIVERSARIO,
+                        ((ca.FECHA_INICIO_CONTRATO_A::DATE + (EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER + 1 || ' years')::INTERVAL)::DATE - CURRENT_DATE) AS DIAS_HASTA_ANIVERSARIO,
+                        ipc.VALOR_IPC, ipc.ANIO
+                    FROM CONTRATOS_ARRENDAMIENTOS ca
+                    JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+                    JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+                    JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+                    LEFT JOIN IPC ipc ON ipc.ANIO = EXTRACT(YEAR FROM CURRENT_DATE)::INTEGER - 1
+                    WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO' 
+                    AND CURRENT_DATE - ca.FECHA_INICIO_CONTRATO_A::DATE >= 365 
+                    AND ipc.VALOR_IPC IS NOT NULL
+                )
+                SELECT * FROM ProximosAniversarios 
+                WHERE DIAS_HASTA_ANIVERSARIO BETWEEN 0 AND {placeholder} 
+                ORDER BY DIAS_HASTA_ANIVERSARIO ASC
+            """
             cursor.execute(query, (dias,))
             return [{
                 "id_contrato": r["ID_CONTRATO_A"], "direccion": r["DIRECCION_PROPIEDAD"], "inquilino": r["INQUILINO"],
@@ -201,10 +198,8 @@ class RepositorioDashboard(IRepositorioDashboard):
                 real = cursor.fetchone()["TOTAL"] or 0
             
             # Eficiencia Recaudo Mes
-            if not self.db.use_postgresql:
-                q_rec = "SELECT SUM(VALOR_TOTAL) as TOTAL FROM RECAUDOS WHERE strftime('%Y-%m', FECHA_PAGO) = strftime('%Y-%m', 'now') AND ESTADO_RECAUDO = 'Aplicado'"
-            else:
-                q_rec = "SELECT SUM(VALOR_TOTAL) as TOTAL FROM RECAUDOS WHERE DATE_TRUNC('month', TO_DATE(FECHA_PAGO, 'YYYY-MM-DD')) = DATE_TRUNC('month', CURRENT_DATE) AND ESTADO_RECAUDO = 'Aplicado'"
+            q_rec = "SELECT SUM(VALOR_TOTAL) as TOTAL FROM RECAUDOS WHERE DATE_TRUNC('month', TO_DATE(FECHA_PAGO, 'YYYY-MM-DD')) = DATE_TRUNC('month', CURRENT_DATE) AND ESTADO_RECAUDO = 'Aplicado'"
+
             
             if id_asesor:
                 q_rec += f" AND ID_CONTRATO_A IN (SELECT ID_CONTRATO_A FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD WHERE cm.ID_ASESOR = {placeholder})"
@@ -229,10 +224,8 @@ class RepositorioDashboard(IRepositorioDashboard):
     def obtener_tunel_vencimientos(self) -> List[Dict]:
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
-            if self.db.use_postgresql:
-                query = "SELECT TO_CHAR(TO_DATE(FECHA_FIN_CONTRATO_A, 'YYYY-MM-DD'), 'YYYY-MM') as mes, SUM(CANON_ARRENDAMIENTO) as valor_riesgo FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'ACTIVO' AND TO_DATE(FECHA_FIN_CONTRATO_A, 'YYYY-MM-DD') BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '12 months') GROUP BY mes ORDER BY mes"
-            else:
-                query = "SELECT strftime('%Y-%m', FECHA_FIN_CONTRATO_A) as mes, SUM(CANON_ARRENDAMIENTO) as valor_riesgo FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'ACTIVO' AND FECHA_FIN_CONTRATO_A BETWEEN date('now') AND date('now', '+12 months') GROUP BY mes ORDER BY mes"
+            query = "SELECT TO_CHAR(TO_DATE(FECHA_FIN_CONTRATO_A, 'YYYY-MM-DD'), 'YYYY-MM') as mes, SUM(CANON_ARRENDAMIENTO) as valor_riesgo FROM CONTRATOS_ARRENDAMIENTOS WHERE ESTADO_CONTRATO_A = 'ACTIVO' AND TO_DATE(FECHA_FIN_CONTRATO_A, 'YYYY-MM-DD') BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '12 months') GROUP BY mes ORDER BY mes"
+
             cursor.execute(query)
             return [{"mes": r["MES"], "valor_riesgo": float(r["VALOR_RIESGO"])} for r in cursor.fetchall()]
 
@@ -284,20 +277,12 @@ class RepositorioDashboard(IRepositorioDashboard):
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
             
-            # Query compatible con SQLite y PostgreSQL para vencimientos
-            if self.db.use_postgresql:
-                query = """
-                    SELECT COUNT(*) AS CANTIDAD, SUM(VALOR_RECIBO) AS MONTO_TOTAL 
-                    FROM RECIBOS_PUBLICOS 
-                    WHERE ESTADO != 'Pagado' AND CAST(FECHA_VENCIMIENTO AS DATE) < CURRENT_DATE
-                """
-            else:
-                query = """
-                    SELECT COUNT(*) AS CANTIDAD, SUM(VALOR_RECIBO) AS MONTO_TOTAL 
-                    FROM RECIBOS_PUBLICOS 
-                    WHERE ESTADO != 'Pagado' AND FECHA_VENCIMIENTO < date('now')
-                """
-                
+            query = """
+                SELECT COUNT(*) AS CANTIDAD, SUM(VALOR_RECIBO) AS MONTO_TOTAL 
+                FROM RECIBOS_PUBLICOS 
+                WHERE ESTADO != 'Pagado' AND CAST(FECHA_VENCIMIENTO AS DATE) < CURRENT_DATE
+            """
+
             cursor.execute(query)
             res = cursor.fetchone()
             return {

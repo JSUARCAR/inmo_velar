@@ -218,13 +218,13 @@ def dashboard_page() -> rx.Component:
                             width="100%",
                         ),
 
-                        # GRÁFICOS DESACTIVADOS TEMPORALMENTE (FASE 4)
-                        # rx.box(evolucion_chart(), width="100%"),
-                        # rx.box(tunel_vencimientos_chart(), width="100%"),
-                        # rx.box(propiedades_tipo_chart(), width="100%"),
-                        # rx.box(incidentes_pie_chart(), width="100%"),
-                        # rx.box(top_asesores_chart(), width="100%"),
-                        # rx.box(tablas_vencimientos_detalle(), width="100%"),
+                        # GRÁFICOS REACTIVADOS
+                        rx.box(evolucion_chart(), width="100%"),
+                        rx.box(tunel_vencimientos_chart(), width="100%"),
+                        rx.box(propiedades_tipo_chart(), width="100%"),
+                        rx.box(incidentes_pie_chart(), width="100%"),
+                        rx.box(top_asesores_chart(), width="100%"),
+                        rx.box(tablas_vencimientos_detalle(), width="100%"),
                         spacing="6",
                         width="100%",
                     ),
