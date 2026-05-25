@@ -1,4 +1,5 @@
 import sys
+import os
 from typing import Any, Dict, List, Optional
 
 import reflex as rx
@@ -48,7 +49,11 @@ class AuthState(rx.State):
     # ── Variables de Estado ────────────────────────────────────────────────────
 
     # Token de Sesión (Persistente en Cookie)
-    session_token: str = rx.Cookie(name="session_token", secure=False)
+    session_token: str = rx.Cookie(
+        name="session_token", 
+        secure=os.getenv("RAILWAY_ENVIRONMENT") == "production", 
+        same_site="lax"
+    )
 
     # Datos del usuario autenticado (se llenan en event handlers, no en vars)
     _user_data: Optional[Dict[str, Any]] = None
@@ -245,7 +250,7 @@ class AuthState(rx.State):
             self.error_message = ""
 
             _debug("login → ÉXITO, redirigiendo a /dashboard", usuario=username)
-            return rx.redirect("/dashboard")
+            return type(self).ejecutar_redireccion_segura()
 
         except ErrorAutenticacion as e:
             _debug("login → ERROR_AUTH", error=str(e))
@@ -266,6 +271,11 @@ class AuthState(rx.State):
             self.error_message = "Ocurrió un error inesperado. Intente de nuevo."
         finally:
             self.is_loading = False
+
+    @rx.event
+    def ejecutar_redireccion_segura(self):
+        """Evento encolado para separar la mutación de cookie del redirect."""
+        return rx.redirect("/dashboard")
 
     def logout(self):
         """Cierra la sesión del usuario."""
