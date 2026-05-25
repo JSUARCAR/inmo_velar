@@ -29,56 +29,72 @@ def setup_test_data(db):
     # 1.5. Municipio Dummy (FK para Propiedad)
     with db.obtener_conexion() as conn:
         cursor = conn.cursor()
-        # En entidad Municipio, DEPARTAMENTO es string, no ID
-        cursor.execute("INSERT OR IGNORE INTO MUNICIPIOS (ID_MUNICIPIO, NOMBRE_MUNICIPIO, DEPARTAMENTO, ESTADO_REGISTRO) VALUES (99999, 'MUNICIPIO TEST', 'DEPARTAMENTO TEST', 1)")
+        # Adaptar para Postgres
+        cursor.execute("""
+            INSERT INTO MUNICIPIOS (ID_MUNICIPIO, NOMBRE_MUNICIPIO, DEPARTAMENTO, ESTADO_REGISTRO) 
+            VALUES (99999, 'MUNICIPIO TEST', 'DEPARTAMENTO TEST', TRUE)
+            ON CONFLICT (ID_MUNICIPIO) DO NOTHING
+        """)
         conn.commit()
     
     # 2. Insertar Propiedad Dummy
     with db.obtener_conexion() as conn:
         cursor = conn.cursor()
-        # ID_MUNICIPIO es requerido FK
-        # Agregamos TIPO_PROPIEDAD, AREA_M2, ESTRATO, CANON ESTIMADO para evitar errores de constraints
-        cursor.execute("""
-            INSERT OR IGNORE INTO PROPIEDADES (
-                MATRICULA_INMOBILIARIA, DIRECCION_PROPIEDAD, ESTADO_REGISTRO, ID_MUNICIPIO, 
-                TIPO_PROPIEDAD, AREA_M2, ESTRATO, DISPONIBILIDAD_PROPIEDAD, CANON_ARRENDAMIENTO_ESTIMADO
-            ) VALUES (
-                'TEST-RENOV-001', 'Calle Falsa 123 - Test Renov', 1, 99999,
-                'Apartamento', 60.0, 3, 1, 1000000
-            )
-        """)
-        conn.commit()
         cursor.execute("SELECT ID_PROPIEDAD FROM PROPIEDADES WHERE MATRICULA_INMOBILIARIA = 'TEST-RENOV-001'")
         row = cursor.fetchone()
+        
         if not row:
-             raise Exception("No se pudo crear/encontrar la Propiedad de prueba")
-        id_propiedad = row[0]
+            cursor.execute("""
+                INSERT INTO PROPIEDADES (
+                    MATRICULA_INMOBILIARIA, DIRECCION_PROPIEDAD, ESTADO_REGISTRO, ID_MUNICIPIO, 
+                    TIPO_PROPIEDAD, AREA_M2, ESTRATO, DISPONIBILIDAD_PROPIEDAD, CANON_ARRENDAMIENTO_ESTIMADO
+                ) VALUES (
+                    'TEST-RENOV-001', 'Calle Falsa 123 - Test Renov', TRUE, 99999,
+                    'Apartamento', 60.0, 3, TRUE, 1000000
+                )
+            """)
+            conn.commit()
+            cursor.execute("SELECT ID_PROPIEDAD FROM PROPIEDADES WHERE MATRICULA_INMOBILIARIA = 'TEST-RENOV-001'")
+            row = cursor.fetchone()
+        
+        id_propiedad = row['ID_PROPIEDAD']
         
         # Arrendatario Dummy
-        cursor.execute("INSERT OR IGNORE INTO PERSONAS (NUMERO_DOCUMENTO, NOMBRE_COMPLETO) VALUES ('TEST-DOC', 'Juan Test Renov')")
-        conn.commit()
         cursor.execute("SELECT ID_PERSONA FROM PERSONAS WHERE NUMERO_DOCUMENTO = 'TEST-DOC'")
-        id_persona = cursor.fetchone()[0]
-        cursor.execute("INSERT OR IGNORE INTO ARRENDATARIOS (ID_PERSONA) VALUES (?)", (id_persona,))
-        conn.commit()
-        cursor.execute("SELECT ID_ARRENDATARIO FROM ARRENDATARIOS WHERE ID_PERSONA = ?", (id_persona,))
-        id_arrendatario = cursor.fetchone()[0]
+        row_p = cursor.fetchone()
+        if not row_p:
+            cursor.execute("INSERT INTO PERSONAS (NUMERO_DOCUMENTO, NOMBRE_COMPLETO, ESTADO_REGISTRO) VALUES ('TEST-DOC', 'Juan Test Renov', TRUE)")
+            conn.commit()
+            cursor.execute("SELECT ID_PERSONA FROM PERSONAS WHERE NUMERO_DOCUMENTO = 'TEST-DOC'")
+            row_p = cursor.fetchone()
+            
+        id_persona = row_p['ID_PERSONA']
+        cursor.execute("SELECT ID_ARRENDATARIO FROM ARRENDATARIOS WHERE ID_PERSONA = %s", (id_persona,))
+        row_arr = cursor.fetchone()
+        if not row_arr:
+            cursor.execute("INSERT INTO ARRENDATARIOS (ID_PERSONA, ESTADO_ARRENDATARIO) VALUES (%s, TRUE)", (id_persona,))
+            conn.commit()
+            cursor.execute("SELECT ID_ARRENDATARIO FROM ARRENDATARIOS WHERE ID_PERSONA = %s", (id_persona,))
+            row_arr = cursor.fetchone()
+            
+        id_arrendatario = row_arr['ID_ARRENDATARIO']
 
     # 3. Contrato por vencer
     servicio = ServicioContratos(db)
     
     # Limpiar contratos previos de esa propiedad para el test
     with db.obtener_conexion() as conn:
+        cursor = conn.cursor()
         # TRIGGER impide DELETE. Actualizamos a 'Cancelado' para permitir crear uno nuevo.
         # TRIGGER exige Motivo si es Cancelado
-        conn.execute("UPDATE CONTRATOS_ARRENDAMIENTOS SET ESTADO_CONTRATO_A = 'Cancelado', MOTIVO_CANCELACION = 'Reinicio Test Script' WHERE ID_PROPIEDAD = ? AND ESTADO_CONTRATO_A = 'Activo'", (id_propiedad,))
+        cursor.execute("UPDATE CONTRATOS_ARRENDAMIENTOS SET ESTADO_CONTRATO_A = 'Cancelado', MOTIVO_CANCELACION = 'Reinicio Test Script' WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'Activo'", (id_propiedad,))
         conn.commit()
 
     datos_contrato = {
         "id_propiedad": id_propiedad,
         "id_arrendatario": id_arrendatario,
         "fecha_inicio": "2024-01-01",
-        "fecha_fin": "2025-01-01", # Vence pronto/ya
+        "fecha_fin": "2024-12-31", # Vence pronto/ya
         "duracion_meses": 12,
         "canon": 1000000, # 1 millon
         "deposito": 0
@@ -92,11 +108,9 @@ def test_renovacion():
     db = DatabaseManager()
     servicio = ServicioContratos(db)
     
-    print(f"DB Path: {db.database_path}")
     with db.obtener_conexion() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='trigger'")
-        print("Triggers encontrados:", cursor.fetchall())
+        # Simplificar el test de integración para no depender de la estructura de triggers de postgresql
+        print("--- Continuando con el test de renovación ---")
         
     id_contrato = setup_test_data(db)
     
