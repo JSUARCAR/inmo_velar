@@ -53,7 +53,7 @@ def vencimientos_chart() -> rx.Component:
                         label={"position": "top", "fill": styles.TEXT_TERTIARY, "fontSize": 12},
                         radius=[4, 4, 0, 0],
                     ),
-                    rx.recharts.x_axis(data_key="name", axis_line=False, tick_line=False, tick={"fill": styles.TEXT_TERTIARY, "fontSize": 11}),
+                    rx.recharts.x_axis(data_key="name", axis_line=False, tick_line=False),
                     rx.recharts.y_axis(hide=True),
                     rx.recharts.cartesian_grid(
                         stroke_dasharray="3 3", vertical=False, stroke=styles.BORDER_DEFAULT
@@ -96,10 +96,9 @@ def evolucion_chart() -> rx.Component:
                         data_key="name",
                         axis_line=False,
                         tick_line=False,
-                        tick={"fontSize": 11, "fill": styles.TEXT_TERTIARY},
                     ),
                     rx.recharts.y_axis(
-                        axis_line=False, tick_line=False, tick={"fontSize": 11, "fill": styles.TEXT_TERTIARY}
+                        axis_line=False, tick_line=False
                     ),
                     rx.recharts.cartesian_grid(
                         stroke_dasharray="3 3", vertical=False, stroke=styles.BORDER_DEFAULT
@@ -144,11 +143,9 @@ def propiedades_tipo_chart() -> rx.Component:
                         font_size=10,
                         axis_line=False,
                         tick_line=False,
-                        tick={"fill": styles.TEXT_TERTIARY},
                     ),
                     rx.recharts.y_axis(
                         stroke=styles.TEXT_TERTIARY, font_size=10, axis_line=False, tick_line=False,
-                        tick={"fill": styles.TEXT_TERTIARY},
                     ),
                     rx.recharts.cartesian_grid(
                         stroke_dasharray="3 3", vertical=False, stroke=styles.BORDER_DEFAULT
@@ -223,7 +220,6 @@ def top_asesores_chart() -> rx.Component:
                         data_key="name",
                         type_="category",
                         width=80,
-                        tick={"fontSize": 11, "fill": styles.TEXT_TERTIARY},
                         axis_line=False,
                         tick_line=False,
                     ),
@@ -264,10 +260,9 @@ def tunel_vencimientos_chart() -> rx.Component:
                         data_key="name",
                         axis_line=False,
                         tick_line=False,
-                        tick={"fontSize": 10, "fill": styles.TEXT_TERTIARY},
                     ),
                     rx.recharts.y_axis(
-                        axis_line=False, tick_line=False, tick={"fontSize": 10, "fill": styles.TEXT_TERTIARY}
+                        axis_line=False, tick_line=False
                     ),
                     rx.recharts.tooltip(),
                     data=DashboardState.tunel_chart_data,
@@ -282,4 +277,5 @@ def tunel_vencimientos_chart() -> rx.Component:
         ),
         width="100%",
     )
+
 
