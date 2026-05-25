@@ -76,7 +76,8 @@ class ServicioContratoMandato:
             )
 
         # Calcular Ciclo de Pago y Grupo Operativo
-        grupo, dia_pago = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
+        grupo, _ = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
+        dia_pago = CalculadoraContratos.calcular_dia_pago_mandato(datos["fecha_inicio"])
         fecha_pago_str = str(dia_pago)
 
         # 2. Crear Entidad
@@ -145,7 +146,8 @@ class ServicioContratoMandato:
         if "fecha_inicio" in datos:
             mandato.fecha_inicio_contrato_m = datos["fecha_inicio"]
             # Recalcular Ciclo de Pago y Grupo Operativo
-            grupo, dia_pago = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
+            grupo, _ = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
+            dia_pago = CalculadoraContratos.calcular_dia_pago_mandato(datos["fecha_inicio"])
             mandato.fecha_pago = str(dia_pago)
             mandato.grupo_operativo = grupo
 

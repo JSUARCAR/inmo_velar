@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
+from src.dominio.constantes.estados_contrato import EstadoContrato
 from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
 from src.infraestructura.persistencia.database import DatabaseManager
 
@@ -44,7 +45,7 @@ class RepositorioContratoArrendamientoPostgres:
                 contrato.deposito,
                 contrato.fecha_pago,
                 contrato.grupo_operativo,
-                contrato.estado_contrato_a,
+                contrato.estado_contrato_a.value if hasattr(contrato.estado_contrato_a, 'value') else contrato.estado_contrato_a,
                 contrato.alerta_vencimiento_contrato_a,
                 contrato.alerta_ipc,
                 contrato.fecha_renovacion_contrato_a,
@@ -396,7 +397,7 @@ class RepositorioContratoArrendamientoPostgres:
                 contrato.deposito,
                 contrato.fecha_pago,
                 contrato.grupo_operativo,
-                contrato.estado_contrato_a,
+                contrato.estado_contrato_a.value if hasattr(contrato.estado_contrato_a, 'value') else contrato.estado_contrato_a,
                 contrato.motivo_cancelacion,
                 contrato.alerta_vencimiento_contrato_a,
                 contrato.alerta_ipc,
@@ -451,9 +452,7 @@ class RepositorioContratoArrendamientoPostgres:
             ),
             deposito=(row_dict.get("deposito") or row_dict.get("DEPOSITO")),
             fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
-            estado_contrato_a=(
-                row_dict.get("estado_contrato_a") or row_dict.get("ESTADO_CONTRATO_A")
-            ),
+            estado_contrato_a=self._map_estado(row_dict.get("estado_contrato_a") or row_dict.get("ESTADO_CONTRATO_A")),
             motivo_cancelacion=(
                 row_dict.get("motivo_cancelacion") or row_dict.get("MOTIVO_CANCELACION")
             ),
@@ -486,5 +485,12 @@ class RepositorioContratoArrendamientoPostgres:
             id_contrato_m=gv("ID_CONTRATO_M") or 0,
             direccion_propiedad=gv("DIRECCION_PROPIEDAD") or "Sin Dirección",
         )
-
         return contrato
+
+    def _map_estado(self, estado_str: str) -> EstadoContrato:
+        if not estado_str:
+            return EstadoContrato.ACTIVO
+        try:
+            return EstadoContrato(estado_str.upper())
+        except ValueError:
+            return EstadoContrato.ACTIVO

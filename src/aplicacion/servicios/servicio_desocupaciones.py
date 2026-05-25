@@ -11,7 +11,7 @@ from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_desocupacion_postgres import (
     RepositorioDesocupacionPostgres,
 )
-from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
 
 # Plantilla de tareas por defecto para desocupación
 TAREAS_POR_DEFECTO = [
@@ -32,7 +32,7 @@ class ServicioDesocupaciones:
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
         self.repo = RepositorioDesocupacionPostgres(db_manager)
-        self.repo_propiedad = RepositorioPropiedadSQLite(db_manager)
+        self.repo_propiedad = RepositorioPropiedadPostgres(db_manager)
 
     def iniciar_desocupacion(
         self, id_contrato: int, fecha_programada: str, observaciones: Optional[str], usuario: str
@@ -268,16 +268,14 @@ class ServicioDesocupaciones:
                     update_desoc_query, (fecha_real, timestamp, usuario, id_desocupacion)
                 )
 
-                # 3. Actualizar contrato a Finalizado
-                # El trigger TRG_ACTUALIZAR_DISPONIBILIDAD_LIBRE se encargará de liberar la propiedad.
-                pass  # print(f"[DEBUG] Finalizando contrato {desocupacion.id_contrato}") [OpSec Removed]
-
-                # Verificar primero si el contrato ya está finalizado para evitar updates redundantes
-                check_contrato_query = f"SELECT ESTADO_CONTRATO_A FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_CONTRATO_A = {placeholder}"
+                # 3. Actualizar contrato a Finalizado y liberar propiedad
+                check_contrato_query = f"SELECT ID_PROPIEDAD, ESTADO_CONTRATO_A FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_CONTRATO_A = {placeholder}"
                 cursor.execute(check_contrato_query, (desocupacion.id_contrato,))
                 contrato_row = cursor.fetchone()
 
                 if contrato_row and contrato_row["ESTADO_CONTRATO_A"] == "Activo":
+                    id_propiedad = contrato_row["id_propiedad"] if "id_propiedad" in contrato_row else contrato_row["ID_PROPIEDAD"]
+                    
                     update_contrato_query = f"""
                         UPDATE CONTRATOS_ARRENDAMIENTOS
                         SET ESTADO_CONTRATO_A = 'Finalizado',
@@ -289,6 +287,23 @@ class ServicioDesocupaciones:
                     cursor.execute(
                         update_contrato_query, (timestamp, usuario, desocupacion.id_contrato)
                     )
+                    
+                    # 4. Liberar la propiedad desde app layer (remplazo de trigger)
+                    update_propiedad_query = f"""
+                        UPDATE PROPIEDADES
+                        SET DISPONIBILIDAD_PROPIEDAD = TRUE,
+                            UPDATED_AT = {placeholder},
+                            UPDATED_BY = {placeholder}
+                        WHERE ID_PROPIEDAD = {placeholder}
+                    """
+                    cursor.execute(update_propiedad_query, (timestamp, usuario, id_propiedad))
+                    
+                    # Invalidar caché de propiedades
+                    from src.infraestructura.cache.cache_manager import cache_manager
+                    cache_manager.invalidate("propiedades:list")
+                    cache_manager.invalidate("propiedades:list_paginated")
+                    cache_manager.invalidate(f"propiedad:{id_propiedad}")
+                    cache_manager.invalidate("dashboard:propiedades_tipo")
                     pass  # print(f"[SUCCESS] Contrato {desocupacion.id_contrato} finalizado.") [OpSec Removed]
                 else:
                     pass  # print(f"[INFO] Contrato {desocupacion.id_contrato} ya estaba en estado {contrato_row['ESTADO_CONTRATO_A'] if contrato_row else 'No encontrado'}") [OpSec Removed]

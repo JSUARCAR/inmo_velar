@@ -62,7 +62,7 @@ class ContratosState(DocumentosStateMixin):
     # Búsqueda y Filtros
     search_text: str = ""
     filter_tipo: str = "Todos"
-    filter_estado: str = "Activo"
+    filter_estado: str = "ACTIVO"
     filter_propiedad_id: str = ""
     filter_persona_id: str = ""
     filter_asesor_id: str = "todos"
@@ -74,7 +74,7 @@ class ContratosState(DocumentosStateMixin):
 
     # Opciones de filtros
     tipo_options: List[str] = ["Todos", "Mandato", "Arrendamiento"]
-    estado_options: List[str] = ["Todos", "Activo", "Finalizado", "Cancelado", "Legal"]
+    estado_options: List[str] = ["TODOS", "ACTIVO", "FINALIZADO", "CANCELADO", "LEGAL"]
     propiedades_options: List[Dict[str, Any]] = []
     personas_options: List[Dict[str, Any]] = []
 
@@ -480,7 +480,7 @@ class ContratosState(DocumentosStateMixin):
                 else None
             )
             estado_filtro = (
-                self.filter_estado if self.filter_estado != "Todos" else None
+                self.filter_estado if self.filter_estado != "TODOS" else None
             )
 
             # Traducir sort_by según el tipo de repositorio
@@ -792,7 +792,6 @@ class ContratosState(DocumentosStateMixin):
                         float(full_data.get("iva_porcentaje") or 19) * 100
                     ),
                     "duracion_meses": int(full_data.get("duracion_meses") or 12),
-                    "fecha_pago": full_data.get("fecha_pago", ""),
                     "banco_propietario": full_data.get("banco_propietario", ""),
                     "numero_cuenta_propietario": full_data.get("numero_cuenta_propietario", ""),
                     "tipo_cuenta": full_data.get("tipo_cuenta", "Ahorros"),
@@ -815,7 +814,6 @@ class ContratosState(DocumentosStateMixin):
                     "canon": int(full_data.get("canon") or 0),
                     "deposito": int(full_data.get("deposito") or 0),
                     "duracion_meses": int(full_data.get("duracion_meses") or 12),
-                    "fecha_pago": full_data.get("fecha_pago", ""),
                 }
                 if self.modal_mode == "crear_arrendamiento":
                     servicio.crear_arrendamiento(datos, usuario)
