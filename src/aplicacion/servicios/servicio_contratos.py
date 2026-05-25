@@ -15,6 +15,7 @@ from src.aplicacion.servicios.servicio_contrato_arrendamiento import (
 )
 from src.aplicacion.servicios.servicio_contrato_mandato import ServicioContratoMandato
 from src.infraestructura.cache.cache_manager import cache_manager
+from src.dominio.constantes.cache_keys import CacheKeys
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
     RepositorioArrendatarioPostgres,
@@ -290,14 +291,14 @@ class ServicioContratos:
         return self.servicio_mandato.crear_mandato(datos, usuario_sistema)
 
     def obtener_mandato_ACTIVO(self, id_propiedad: int) -> Optional[ContratoMandato]:
-        return self.servicio_mandato.repo_mandato.obtener_ACTIVO_por_propiedad(
+        return self.servicio_mandato.repo_mandato.obtener_activo_por_propiedad(
             id_propiedad
         )
 
     def obtener_mandato_por_id(self, id_contrato: int) -> Optional[ContratoMandato]:
         return self.servicio_mandato.obtener_mandato(id_contrato)
 
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def actualizar_mandato(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
@@ -392,7 +393,7 @@ class ServicioContratos:
     def obtener_arrendamiento_ACTIVO(
         self, id_propiedad: int
     ) -> Optional[ContratoArrendamiento]:
-        return self.servicio_arriendo.repo_arriendo.obtener_ACTIVO_por_propiedad(
+        return self.servicio_arriendo.repo_arriendo.obtener_activo_por_propiedad(
             id_propiedad
         )
 
@@ -401,10 +402,10 @@ class ServicioContratos:
     ) -> Optional[ContratoArrendamiento]:
         return self.servicio_arriendo.obtener_arrendamiento(id_contrato)
 
-    @cache_manager.invalidates("arriendos:list_paginated")
-    @cache_manager.invalidates("mandatos:list_paginated")
-    @cache_manager.invalidates("propiedades:list_paginated")
-    @cache_manager.invalidates("dashboard:propiedades_tipo")
+    @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
+    @cache_manager.invalidates(CacheKeys.PROPIEDADES_LIST)
+    @cache_manager.invalidates(CacheKeys.DASHBOARD_PROPIEDADES_TIPO)
     def actualizar_arrendamiento(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
@@ -414,7 +415,7 @@ class ServicioContratos:
         )
 
     @idempotent(key_prefix="contrato:renovar_arriendo")
-    @cache_manager.invalidates("arriendos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
     def renovar_arrendamiento(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoArrendamiento:
@@ -423,7 +424,7 @@ class ServicioContratos:
         )
 
     @idempotent(key_prefix="contrato:renovar_mandato")
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def renovar_mandato(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoMandato:
@@ -444,7 +445,7 @@ class ServicioContratos:
             return self.servicio_mandato.calcular_proyeccion_renovacion(id_contrato)
 
     @idempotent(key_prefix="contrato:terminar_arriendo")
-    @cache_manager.invalidates("arriendos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
     def terminar_arrendamiento(
         self, id_contrato: int, motivo: str, usuario_sistema: str
     ) -> None:
@@ -453,7 +454,7 @@ class ServicioContratos:
         )
 
     @idempotent(key_prefix="contrato:terminar_mandato")
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def terminar_mandato(
         self, id_contrato: int, motivo: str, usuario_sistema: str
     ) -> None:
@@ -1488,7 +1489,7 @@ class ServicioContratos:
                     self.repo_propiedad.actualizar(propiedad, usuario)
 
                 # 5c. Mandato
-                mandato = self.repo_mandato.obtener_ACTIVO_por_propiedad(id_propiedad)
+                mandato = self.repo_mandato.obtener_activo_por_propiedad(id_propiedad)
                 if mandato:
                     mandato.canon_mandato = canon_nuevo
                     self.repo_mandato.actualizar(mandato, usuario)

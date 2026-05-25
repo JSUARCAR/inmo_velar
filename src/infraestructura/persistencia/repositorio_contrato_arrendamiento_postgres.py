@@ -79,7 +79,7 @@ class RepositorioContratoArrendamientoPostgres:
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
-    def obtener_ACTIVO_por_propiedad(
+    def obtener_activo_por_propiedad(
         self, id_propiedad: int
     ) -> Optional[ContratoArrendamiento]:
         conn = self.db.obtener_conexion()
@@ -95,7 +95,7 @@ class RepositorioContratoArrendamientoPostgres:
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
-    def obtener_ACTIVOs_por_asesor(self, id_asesor: int) -> List[ContratoArrendamiento]:
+    def obtener_activos_por_asesor(self, id_asesor: int) -> List[ContratoArrendamiento]:
         """
         Obtiene los contratos de arrendamiento ACTIVOs asociados a un asesor ACTIVO.
         Realiza JOIN con CONTRATOS_MANDATOS, ARRENDATARIOS y SEGUROS.
@@ -123,7 +123,7 @@ class RepositorioContratoArrendamientoPostgres:
 
         return [self._row_to_entity(row) for row in rows]
 
-    def obtener_ACTIVOs_todos_agrupados(self) -> Dict[int, List[ContratoArrendamiento]]:
+    def obtener_activos_todos_agrupados(self) -> Dict[int, List[ContratoArrendamiento]]:
         """
         Obtiene TODOS los contratos ACTIVOs de TODOS los asesores,
         agrupados por ID_ASESOR en un diccionario.

@@ -81,7 +81,7 @@ class RepositorioContratoMandatoPostgres:
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
-    def obtener_ACTIVO_por_propiedad(
+    def obtener_activo_por_propiedad(
         self, id_propiedad: int
     ) -> Optional[ContratoMandato]:
         conn = self.db.obtener_conexion()

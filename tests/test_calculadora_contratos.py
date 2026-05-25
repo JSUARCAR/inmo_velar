@@ -69,3 +69,34 @@ class TestCalculadoraContratos:
 
     def test_sumar_meses_31_a_febrero(self):
         assert CalculadoraContratos.sumar_meses(date(2026, 1, 31), 1) == date(2026, 2, 28)
+
+    # calcular_duracion_meses
+    def test_duracion_meses_exactos(self):
+        # 1-Ene a 31-Dic = 12 meses
+        assert CalculadoraContratos.calcular_duracion_meses(date(2026, 1, 1), date(2026, 12, 31)) == 12
+
+    def test_duracion_meses_mitad_mes(self):
+        # 15-Ene a 14-Feb = 1 mes
+        assert CalculadoraContratos.calcular_duracion_meses(date(2026, 1, 15), date(2026, 2, 14)) == 1
+
+    def test_duracion_meses_incompleto(self):
+        # 15-Ene a 10-Feb = 0 meses
+        assert CalculadoraContratos.calcular_duracion_meses(date(2026, 1, 15), date(2026, 2, 10)) == 0
+
+    def test_duracion_meses_bisiesto(self):
+        # 1-Feb a 29-Feb = 1 mes en año bisiesto
+        assert CalculadoraContratos.calcular_duracion_meses(date(2024, 2, 1), date(2024, 2, 29)) == 1
+        
+    def test_duracion_meses_varios_anios(self):
+        # 1-Ene-2024 a 31-Dic-2025 = 24 meses
+        assert CalculadoraContratos.calcular_duracion_meses(date(2024, 1, 1), date(2025, 12, 31)) == 24
+
+    # validar_coherencia
+    def test_validar_coherencia_correcta(self):
+        valido, msg = CalculadoraContratos.validar_coherencia(date(2026, 1, 1), date(2026, 12, 31), 12)
+        assert valido is True
+        
+    def test_validar_coherencia_incorrecta(self):
+        valido, msg = CalculadoraContratos.validar_coherencia(date(2026, 1, 1), date(2026, 12, 31), 6)
+        assert valido is False
+        assert "discrepancia detectada" in msg.lower()

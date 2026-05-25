@@ -56,7 +56,7 @@ class TestEstadoRecaudo:
 
     def test_valores_contiene_todos_los_estados(self) -> None:
         """Verifica que valores() retorna todos los estados."""
-        esperados = ["Pendiente", "Aplicado", "Reversado"]
+        esperados = ["Pendiente", "Aplicado", "Reversado", "Vencido"]
         assert EstadoRecaudo.valores() == esperados
 
     def test_pendiente_puede_editarse(self) -> None:

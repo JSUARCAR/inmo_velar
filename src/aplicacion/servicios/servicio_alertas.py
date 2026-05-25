@@ -16,11 +16,11 @@ from src.infraestructura.persistencia.repositorio_asistencia_postgres import (
 from src.infraestructura.persistencia.repositorio_codeudor_sqlite import (
     RepositorioCodeudorSQLite,
 )
-from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_sqlite import (
-    RepositorioContratoArrendamientoSQLite,
+from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
+    RepositorioContratoArrendamientoPostgres,
 )
-from src.infraestructura.persistencia.repositorio_contrato_mandato_sqlite import (
-    RepositorioContratoMandatoSQLite,
+from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
+    RepositorioContratoMandatoPostgres,
 )
 from src.infraestructura.persistencia.repositorio_ipc_sqlite import RepositorioIPCSQLite
 from src.infraestructura.persistencia.repositorio_pagos_admin_postgres import (
@@ -56,8 +56,8 @@ class ServicioAlertas:
 
         # Instanciar Repositorios Auxiliares
         repo_propiedad = RepositorioPropiedadSQLite(db_manager)
-        repo_mandato = RepositorioContratoMandatoSQLite(db_manager)
-        repo_arriendo = RepositorioContratoArrendamientoSQLite(db_manager)
+        repo_mandato = RepositorioContratoMandatoPostgres(db_manager)
+        repo_arriendo = RepositorioContratoArrendamientoPostgres(db_manager)
         repo_renovacion = RepositorioRenovacionSQLite(db_manager)
         repo_ipc = RepositorioIPCSQLite(db_manager)
         repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
