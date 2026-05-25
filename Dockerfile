@@ -18,7 +18,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Cache-busting ARG — incrementar para forzar rebuild limpio desde COPY . .
-ARG CACHEBUST=20260525_1208
+ARG CACHEBUST=20260525_1342
 
 # Copy ALL source code
 COPY . .
@@ -34,7 +34,7 @@ RUN chmod +x /app/entrypoint.sh
 # Railway env vars (DATABASE_URL) are NOT available during docker build,
 # so we pass a dummy SQLite URL inline — it does NOT persist in the image.
 # We also set RAILWAY_ENVIRONMENT to ensure rxconfig compiles the frontend in PROD mode.
-RUN RAILWAY_ENVIRONMENT=production DATABASE_URL=sqlite:///dummy_build.db reflex init
+RUN rm -rf .web && RAILWAY_ENVIRONMENT=production DATABASE_URL=sqlite:///dummy_build.db reflex init
 RUN RAILWAY_ENVIRONMENT=production DATABASE_URL=sqlite:///dummy_build.db reflex export --frontend-only --no-zip
 RUN rm -f dummy_build.db
 

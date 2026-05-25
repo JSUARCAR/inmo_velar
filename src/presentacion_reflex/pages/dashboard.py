@@ -106,44 +106,35 @@ def dashboard_page() -> rx.Component:
                 # Dashboard Grid
                 rx.cond(
                     ~DashboardState.is_loading & (DashboardState.error_message == ""),
-                    rx.grid(
-                        # 1. KPIs ESTRATÉGICOS (Top Row - Direct in Grid)
-                        kpi_card(
-                            "Ocupación Financiera",
-                            f"{DashboardState.kpi_ocupacion_financiera_view}%",
-                            "bar-chart-2",
-                            styles.BRAND_PRIMARY,
-                            "Ingresos vs Potencial",
-                            variant="elite",
-                        ),
-                        kpi_card(
-                            "Eficiencia Recaudo",
-                            f"{DashboardState.kpi_eficiencia_recaudo_view}%",
-                            "wallet",
-                            styles.TEXT_SECONDARY,
-                            "Recaudado este mes",
-                            variant="elite",
-                        ),
-                        kpi_card(
-                            "Potencial Total",
-                            DashboardState.kpi_potencial_total_view,
-                            "banknote",
-                            styles.TEXT_TERTIARY,
-                            "Cartera Total Estimada",
-                            variant="elite",
-                        ),
-
-                        # 2. ANÁLISIS DE EVOLUCIÓN (Middle Row - Left 2/3)
-                        rx.box(
-                            evolucion_chart(),
-                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 2")},
-                            width="100%",
-                        ),
-                        
-                        # 3. TÚNEL DE VENCIMIENTOS (Middle Row - Right 1/3)
-                        rx.box(
-                            tunel_vencimientos_chart(),
-                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
+                    rx.vstack(
+                        # 1. KPIs ESTRATÉGICOS (Top Row - Flex en lugar de Grid)
+                        rx.flex(
+                            kpi_card(
+                                "Ocupación Financiera",
+                                f"{DashboardState.kpi_ocupacion_financiera_view}%",
+                                "bar-chart-2",
+                                styles.BRAND_PRIMARY,
+                                "Ingresos vs Potencial",
+                                variant="elite",
+                            ),
+                            kpi_card(
+                                "Eficiencia Recaudo",
+                                f"{DashboardState.kpi_eficiencia_recaudo_view}%",
+                                "wallet",
+                                styles.TEXT_SECONDARY,
+                                "Recaudado este mes",
+                                variant="elite",
+                            ),
+                            kpi_card(
+                                "Potencial Total",
+                                DashboardState.kpi_potencial_total_view,
+                                "banknote",
+                                styles.TEXT_TERTIARY,
+                                "Cartera Total Estimada",
+                                variant="elite",
+                            ),
+                            wrap="wrap",
+                            gap="4",
                             width="100%",
                         ),
 
@@ -158,7 +149,7 @@ def dashboard_page() -> rx.Component:
                                     letter_spacing="0.1em",
                                     font_family=styles.FONT_SANS,
                                 ),
-                                rx.grid(
+                                rx.flex(
                                     kpi_card(
                                         "Cartera Mora",
                                         DashboardState.mora_monto_total_view,
@@ -216,12 +207,7 @@ def dashboard_page() -> rx.Component:
                                         variant="compact",
                                         href="/alertas"
                                     ),
-                                    grid_template_columns=rx.breakpoints(
-                                        initial="1fr",
-                                        md="repeat(2, 1fr)",
-                                        lg="repeat(3, 1fr)",
-                                        xl="repeat(4, 1fr)",
-                                    ),
+                                    wrap="wrap",
                                     gap="4",
                                     width="100%",
                                 ),
@@ -229,38 +215,17 @@ def dashboard_page() -> rx.Component:
                                 width="100%",
                                 spacing="4",
                             ),
-                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 3")},
                             width="100%",
                         ),
 
-                        # 5. COMPOSICIÓN, INCIDENTES Y TOP ASESORES (3 columnas)
-                        rx.box(
-                            propiedades_tipo_chart(),
-                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
-                            width="100%",
-                        ),
-                        rx.box(
-                            incidentes_pie_chart(),
-                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
-                            width="100%",
-                        ),
-                        rx.box(
-                            top_asesores_chart(),
-                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 1")},
-                            width="100%",
-                        ),
-
-                        # 6. DETALLE DE VENCIMIENTOS (Extra Row)
-                        rx.box(
-                            tablas_vencimientos_detalle(),
-                            style={"grid_column": rx.breakpoints(initial="span 1", lg="span 3")},
-                            width="100%",
-                        ),
-                        grid_template_columns=rx.breakpoints(
-                            initial="1fr",
-                            lg="repeat(3, 1fr)"
-                        ),
-                        gap="6",
+                        # GRÁFICOS DESACTIVADOS TEMPORALMENTE (FASE 4)
+                        # rx.box(evolucion_chart(), width="100%"),
+                        # rx.box(tunel_vencimientos_chart(), width="100%"),
+                        # rx.box(propiedades_tipo_chart(), width="100%"),
+                        # rx.box(incidentes_pie_chart(), width="100%"),
+                        # rx.box(top_asesores_chart(), width="100%"),
+                        # rx.box(tablas_vencimientos_detalle(), width="100%"),
+                        spacing="6",
                         width="100%",
                     ),
                 ),

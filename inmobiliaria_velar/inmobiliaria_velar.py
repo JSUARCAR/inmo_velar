@@ -49,6 +49,17 @@ app = rx.App(
         rx.el.meta(name="og:type", content="website"),
         rx.el.meta(name="twitter:card", content="summary_large_image"),
         rx.script(src="/matrix.js?v=5"),
+        rx.script(
+            """
+            window.addEventListener('error', function(event) {
+                console.error("Frontend Global Error Caught:", event.error);
+                if (event.error && event.error.name === 'TypeError') {
+                    console.log("TypeError detected. Soft reloading in 3s...");
+                    setTimeout(() => { window.location.reload(); }, 3000);
+                }
+            });
+            """
+        ),
     ],
     style={
         "font_family": "var(--font-sans)",
