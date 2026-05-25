@@ -16,6 +16,7 @@ from src.dominio.repositorios.interfaces import (
 from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempotencia
 from src.aplicacion.decorators.idempotent import idempotent
 from src.infraestructura.cache.cache_manager import cache_manager
+from src.dominio.constantes.cache_keys import CacheKeys
 
 
 class ServicioContratoArrendamiento:
@@ -57,7 +58,7 @@ class ServicioContratoArrendamiento:
         ]
 
     @idempotent(key_prefix="arriendo:crear")
-    @cache_manager.invalidates("arriendos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
     def crear_arrendamiento(
         self, datos: Dict, usuario_sistema: str
     ) -> ContratoArrendamiento:
@@ -126,7 +127,7 @@ class ServicioContratoArrendamiento:
     ) -> Optional[ContratoArrendamiento]:
         return self.repo_arriendo.obtener_por_id(id_contrato)
 
-    @cache_manager.invalidates("arriendos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
     def actualizar_arrendamiento(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
@@ -178,13 +179,11 @@ class ServicioContratoArrendamiento:
         # Actualización de fechas y duración
         if "fecha_inicio" in datos:
             arriendo.fecha_inicio_contrato_a = datos["fecha_inicio"]
-            # Recalcular Ciclo de Pago Unificado
-            grupo, dia_pago = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
+            # Recalcular Ciclo de Pago para Arrendamiento (mismo día de inicio)
+            dia_pago = CalculadoraContratos.calcular_dia_pago_arrendamiento(datos["fecha_inicio"])
             arriendo.fecha_pago = str(dia_pago)
-            # Nota: Como el esquema histórico usa grupo_operativo principalmente en mandatos,
-            # pero la arquitectura dictamina alinear el módulo, la asignaremos implícitamente
-            # si el campo existiera en el ORM, de lo contrario mantendrá solo la fecha_pago ajustada al grupo.
-            # En la DB la tabla ARRENDAMIENTOS tiene GRUPO_OPERATIVO, la forzamos.
+            # Para mantener coherencia en la DB, calculamos el grupo operativo
+            grupo, _ = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
             if hasattr(arriendo, 'grupo_operativo'):
                 arriendo.grupo_operativo = grupo
 
@@ -290,23 +289,8 @@ class ServicioContratoArrendamiento:
         fecha_fin_actual = datetime.strptime(arriendo.fecha_fin_contrato_a, "%Y-%m-%d")
         meses_duracion = arriendo.duracion_contrato_a
 
-        # Calcular nueva fecha fin
-        anio_nuevo = (
-            fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
-        )
-        mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
-        try:
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo
-            )
-        except ValueError:
-            import calendar
-
-            last_day = calendar.monthrange(anio_nuevo, mes_nuevo)[1]
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo, day=last_day
-            )
-
+        # Calcular nueva fecha fin usando CalculadoraContratos
+        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(fecha_fin_actual, meses_duracion)
         nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
 
         # Calcular IPC si aplica
@@ -333,7 +317,7 @@ class ServicioContratoArrendamiento:
         }
 
     @idempotent(key_prefix="arriendo:renovar")
-    @cache_manager.invalidates("arriendos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
     def renovar_arrendamiento(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoArrendamiento:
@@ -357,25 +341,8 @@ class ServicioContratoArrendamiento:
         fecha_fin_actual = datetime.strptime(arriendo.fecha_fin_contrato_a, "%Y-%m-%d")
         meses_duracion = arriendo.duracion_contrato_a
 
-        # Lógica de suma de meses (simplificada para SRP, reutilizando la existente)
-        anio_nuevo = (
-            fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
-        )
-        mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
-
-        try:
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo
-            )
-        except ValueError:
-            # Caso 31 de mes, etc.
-            import calendar
-
-            last_day = calendar.monthrange(anio_nuevo, mes_nuevo)[1]
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo, day=last_day
-            )
-
+        # Calcular nueva fecha fin automática usando CalculadoraContratos
+        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(fecha_fin_actual, meses_duracion)
         nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
 
         # Si el usuario proveyó una fecha personalizada, usarla en lugar de la calculada
@@ -444,7 +411,7 @@ class ServicioContratoArrendamiento:
         return int(canon_actual + incremento), porcentaje
 
     @idempotent(key_prefix="arriendo:terminar")
-    @cache_manager.invalidates("arriendos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
     def terminar_arrendamiento(
         self, id_contrato: int, motivo: str, usuario_sistema: str, estado_destino: EstadoContrato = EstadoContrato.CANCELADO
     ) -> None:
@@ -504,7 +471,7 @@ class ServicioContratoArrendamiento:
 
     def _invalidar_cache_propiedad(self, id_propiedad: int):
         """Invalida caché relacionada a propiedades"""
-        cache_manager.invalidate("propiedades:list")
-        cache_manager.invalidate("propiedades:list_paginated")
-        cache_manager.invalidate(f"propiedad:{id_propiedad}")
-        cache_manager.invalidate("dashboard:propiedades_tipo")
+        cache_manager.invalidate(CacheKeys.PROPIEDADES_BASE_LIST)
+        cache_manager.invalidate(CacheKeys.PROPIEDADES_LIST)
+        cache_manager.invalidate(CacheKeys.propiedad(id_propiedad))
+        cache_manager.invalidate(CacheKeys.DASHBOARD_PROPIEDADES_TIPO)

@@ -47,34 +47,21 @@ class CalculadoraContratos:
         # Último día del mes de fin
         _, last_day_fin = calendar.monthrange(fecha_fin.year, fecha_fin.month)
 
-        # Caso base: Mismo mes
-        if total == 0:
-            if d1 == 1 and d2 >= last_day_fin - 1:
-                return 1
-            if d2 >= d1 - 1 and d1 > 1:
-                # Ej: 15-Ene a 14-Ene? No pasa por el if fecha_fin < fecha_inicio
-                # Pero 15-Ene a 15-Ene es 0 meses.
-                return 0
-            return 0
-
-        # Caso meses distintos
-        if d2 >= d1 - 1:
-            # Ej: 15-Ene a 14-Feb. total=1. 14 >= 14. Retorna 1.
-            # Ej: 01-Ene a 31-Dic. total=11. 31 >= 0.
-            # Si inició el 1, sumamos 1 para completar el ciclo.
-            return total + (1 if d1 == 1 else 0)
-        else:
-            # No alcanzó el día umbral
-            # Ej: 15-Ene a 10-Feb. total=1. 10 < 14. Retorna 0.
-            # Excepción: si terminó el último día del mes (ej. 31-Ene a 28-Feb)
-            if d2 == last_day_fin and d1 >= last_day_fin:
+        if d1 == 1:
+            # Si inicia el día 1, el mes se completa si llega a fin de mes
+            if d2 >= last_day_fin - 1:
+                return total + 1
+            else:
                 return total
-            
-            # Si inició el 1 y no terminó el último día, pero llegó cerca
-            if d1 == 1 and d2 < last_day_fin - 1:
-                return total # Ej: 1-Ene a 15-Feb. total=1. Retorna 1.
-
-            return total - 1 if total > 0 else 0
+        else:
+            # Si inicia otro día, ej: 15, el mes se completa si llega al 14
+            if d2 >= d1 - 1:
+                return total
+            else:
+                # Si termina a fin de mes pero el mes tiene menos días (ej: 31-Ene a 28-Feb)
+                if d2 == last_day_fin:
+                    return total
+                return max(0, total - 1)
 
     @staticmethod
     def validar_coherencia(

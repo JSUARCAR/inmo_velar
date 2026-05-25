@@ -11,6 +11,7 @@ from src.dominio.repositorios.interfaces import (
     RepositorioRenovacion,
 )
 from src.infraestructura.cache.cache_manager import cache_manager
+from src.dominio.constantes.cache_keys import CacheKeys
 
 
 class ServicioContratoMandato:
@@ -45,7 +46,7 @@ class ServicioContratoMandato:
             for row in rows
         ]
 
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def crear_mandato(self, datos: Dict, usuario_sistema: str) -> ContratoMandato:
         """Crea un nuevo contrato de mandato con validaciones de negocio."""
         db = getattr(self.repo_mandato, "db", None)
@@ -109,7 +110,7 @@ class ServicioContratoMandato:
     def obtener_mandato(self, id_contrato: int) -> Optional[ContratoMandato]:
         return self.repo_mandato.obtener_por_id(id_contrato)
 
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def actualizar_mandato(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
@@ -206,22 +207,7 @@ class ServicioContratoMandato:
         meses_duracion = mandato.duracion_contrato_m
 
         # Calcular nueva fecha fin sumando los meses de duración
-        anio_nuevo = (
-            fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
-        )
-        mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
-        try:
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo
-            )
-        except ValueError:
-            import calendar
-
-            last_day = calendar.monthrange(anio_nuevo, mes_nuevo)[1]
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo, day=last_day
-            )
-
+        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(fecha_fin_actual, meses_duracion)
         nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
 
         return {
@@ -235,7 +221,7 @@ class ServicioContratoMandato:
             "aplica_ipc": False,
         }
 
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def renovar_mandato(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> "ContratoMandato":
@@ -248,22 +234,8 @@ class ServicioContratoMandato:
         meses_duracion = mandato.duracion_contrato_m
 
         # Calcular nueva fecha fin automática
-        anio_nuevo = (
-            fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
-        )
-        mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
-        try:
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo
-            )
-        except ValueError:
-            import calendar
-
-            last_day = calendar.monthrange(anio_nuevo, mes_nuevo)[1]
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo, day=last_day
-            )
-
+        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(fecha_fin_actual, meses_duracion)
+        
         nueva_fecha_fin_str = (
             nueva_fecha_fin
             if nueva_fecha_fin
@@ -271,7 +243,6 @@ class ServicioContratoMandato:
         )
 
         # Registrar historial de renovación
-        from src.dominio.entidades.renovacion_contrato import RenovacionContrato
 
         renovacion = RenovacionContrato(
             id_contrato_m=mandato.id_contrato_m,
@@ -303,7 +274,7 @@ class ServicioContratoMandato:
 
         return mandato
 
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def terminar_mandato(
         self, id_contrato: int, motivo: str, usuario_sistema: str
     ) -> None:

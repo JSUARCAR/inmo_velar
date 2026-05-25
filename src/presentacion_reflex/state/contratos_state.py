@@ -383,6 +383,16 @@ class ContratosState(DocumentosStateMixin):
     def on_change_fecha_inicio(self, fecha: str):
         self.form_data["fecha_inicio"] = fecha
         self._calcular_duracion()
+        
+        if fecha:
+            try:
+                if "mandato" in self.modal_mode:
+                    dia_pago = CalculadoraContratos.calcular_dia_pago_mandato(fecha)
+                else:
+                    dia_pago = CalculadoraContratos.calcular_dia_pago_arrendamiento(fecha)
+                self.form_data["fecha_pago"] = str(dia_pago)
+            except Exception:
+                pass
 
     def on_change_fecha_fin(self, fecha: str):
         self.form_data["fecha_fin"] = fecha
