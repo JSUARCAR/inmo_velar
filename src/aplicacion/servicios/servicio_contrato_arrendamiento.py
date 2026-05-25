@@ -3,6 +3,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
+from src.dominio.constantes.estados_contrato import EstadoContrato
 from src.dominio.entidades.renovacion_contrato import RenovacionContrato
 from src.dominio.servicios.calculadora_contratos import CalculadoraContratos
 from src.dominio.repositorios.interfaces import (
@@ -107,18 +108,15 @@ class ServicioContratoArrendamiento:
             deposito=datos.get("deposito", 0),
             fecha_pago=fecha_pago_str,
             grupo_operativo=0,  # Arrendamientos no se clasifican por grupo operativo de dispersión
-            estado_contrato_a="Activo",
+            estado_contrato_a=EstadoContrato.ACTIVO,
             alerta_vencimiento_contrato_a=True,
             alerta_ipc=True,
         )
 
         contrato_creado = self.repo_arriendo.crear(contrato, usuario_sistema)
 
-        # Marcar la propiedad como OCUPADA al crear el contrato
-        propiedad = self.repo_propiedad.obtener_por_id(id_propiedad)
-        if propiedad:
-            propiedad.disponibilidad_propiedad = 0  # Ocupada
-            self.repo_propiedad.actualizar(propiedad, usuario_sistema)
+        # Marcar la propiedad como OCUPADA usando el método unificado
+        self._sincronizar_disponibilidad_por_estado(contrato_creado, EstadoContrato.BORRADOR, EstadoContrato.ACTIVO, usuario_sistema)
 
         return contrato_creado
 
@@ -169,6 +167,7 @@ class ServicioContratoArrendamiento:
         canon_anterior = int(arriendo.canon_arrendamiento or 0)
         fecha_inicio_anterior = arriendo.fecha_inicio_contrato_a
         fecha_fin_anterior = arriendo.fecha_fin_contrato_a
+        estado_anterior = arriendo.estado_contrato_a
 
         # Actualización de llaves foráneas y datos básicos
         arriendo.id_propiedad = datos.get("id_propiedad", arriendo.id_propiedad)
@@ -218,6 +217,11 @@ class ServicioContratoArrendamiento:
         # 1. Actualizar el Arrendamiento
         self.repo_arriendo.actualizar(arriendo, usuario_sistema)
 
+        # 1.1 Sincronizar disponibilidad si hubo cambio de estado
+        estado_nuevo = arriendo.estado_contrato_a
+        if estado_anterior != estado_nuevo:
+            self._sincronizar_disponibilidad_por_estado(arriendo, estado_anterior, estado_nuevo, usuario_sistema)
+
         # 2. Sincronización en Cascada (Integridad Contractual Élite)
         logger = logging.getLogger(__name__)
         nuevo_canon = int(arriendo.canon_arrendamiento or 0)
@@ -261,6 +265,7 @@ class ServicioContratoArrendamiento:
                     if propiedad:
                         propiedad.canon_arrendamiento_estimado = nuevo_canon
                         self.repo_propiedad.actualizar(propiedad, usuario_sistema)
+                        self._invalidar_cache_propiedad(arriendo.id_propiedad)
                         logger.info(f"Propiedad {arriendo.id_propiedad} sincronizada: canon_estimado={nuevo_canon}")
                     else:
                         logger.warning(f"Propiedad {arriendo.id_propiedad} no encontrada para cascada")
@@ -274,7 +279,7 @@ class ServicioContratoArrendamiento:
         Retorna un dict con las fechas y canon proyectados para mostrar en UI.
         """
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
-        if not arriendo or arriendo.estado_contrato_a != "Activo":
+        if not arriendo or arriendo.estado_contrato_a != EstadoContrato.ACTIVO:
             raise ValueError("Contrato no válido para proyección de renovación")
 
         fecha_fin_actual = datetime.strptime(arriendo.fecha_fin_contrato_a, "%Y-%m-%d")
@@ -340,7 +345,7 @@ class ServicioContratoArrendamiento:
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoArrendamiento:
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
-        if not arriendo or arriendo.estado_contrato_a != "Activo":
+        if not arriendo or arriendo.estado_contrato_a != EstadoContrato.ACTIVO:
             raise ValueError("Contrato no válido para renovación")
 
         # 1. Calcular nuevas fechas
@@ -411,6 +416,7 @@ class ServicioContratoArrendamiento:
         if propiedad:
             propiedad.canon_arrendamiento_estimado = nuevo_canon
             self.repo_propiedad.actualizar(propiedad, usuario_sistema)
+            self._invalidar_cache_propiedad(arriendo.id_propiedad)
 
         # 6. Sincronizar canon y fecha_fin en mandato activo asociado a la misma propiedad
         mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
@@ -435,19 +441,65 @@ class ServicioContratoArrendamiento:
     @idempotent(key_prefix="arriendo:terminar")
     @cache_manager.invalidates("arriendos:list_paginated")
     def terminar_arrendamiento(
-        self, id_contrato: int, motivo: str, usuario_sistema: str
+        self, id_contrato: int, motivo: str, usuario_sistema: str, estado_destino: EstadoContrato = EstadoContrato.CANCELADO
+    ) -> None:
+        db = getattr(self.repo_arriendo, "db", None)
+        if db is None:
+            self._ejecutar_terminacion_arrendamiento(id_contrato, motivo, usuario_sistema, estado_destino)
+            return
+        with db.transaccion():
+            self._ejecutar_terminacion_arrendamiento(id_contrato, motivo, usuario_sistema, estado_destino)
+
+    def _ejecutar_terminacion_arrendamiento(
+        self, id_contrato: int, motivo: str, usuario_sistema: str, estado_destino: EstadoContrato
     ) -> None:
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
         if not arriendo:
             raise ValueError(f"Contrato {id_contrato} no existe")
 
-        arriendo.estado_contrato_a = "Cancelado"
+        estado_anterior = arriendo.estado_contrato_a
+        if estado_destino not in [EstadoContrato.FINALIZADO, EstadoContrato.CANCELADO]:
+            raise ValueError(f"Estado de terminación inválido: {estado_destino}")
+
+        arriendo.estado_contrato_a = estado_destino
         arriendo.motivo_cancelacion = motivo
         arriendo.fecha_fin_contrato_a = datetime.now().strftime("%Y-%m-%d")
 
-        propiedad = self.repo_propiedad.obtener_por_id(arriendo.id_propiedad)
-        if propiedad:
-            propiedad.disponibilidad_propiedad = 1  # Libre
-            self.repo_propiedad.actualizar(propiedad, usuario_sistema)
-
         self.repo_arriendo.actualizar(arriendo, usuario_sistema)
+        self._sincronizar_disponibilidad_por_estado(arriendo, estado_anterior, arriendo.estado_contrato_a, usuario_sistema)
+
+    def _sincronizar_disponibilidad_por_estado(
+        self,
+        contrato: ContratoArrendamiento,
+        estado_anterior: EstadoContrato,
+        estado_nuevo: EstadoContrato,
+        usuario: str
+    ) -> None:
+        """
+        Único punto de sincronización de disponibilidad.
+        Detecta transiciones de estado y actualiza propiedad atómicamente.
+        """
+        ESTADOS_TERMINALES = {EstadoContrato.FINALIZADO, EstadoContrato.CANCELADO}
+
+        # Transición: Activo → Terminal → Liberar propiedad
+        if estado_anterior == EstadoContrato.ACTIVO and estado_nuevo in ESTADOS_TERMINALES:
+            propiedad = self.repo_propiedad.obtener_por_id(contrato.id_propiedad)
+            if propiedad and getattr(propiedad, 'disponibilidad_propiedad', None) != 1:
+                propiedad.disponibilidad_propiedad = 1  # DISPONIBLE
+                self.repo_propiedad.actualizar(propiedad, usuario)
+                self._invalidar_cache_propiedad(contrato.id_propiedad)
+
+        # Transición: Terminal/Borrador → Activo → Ocupar propiedad (re-activación)
+        elif estado_anterior != EstadoContrato.ACTIVO and estado_nuevo == EstadoContrato.ACTIVO:
+            propiedad = self.repo_propiedad.obtener_por_id(contrato.id_propiedad)
+            if propiedad and getattr(propiedad, 'disponibilidad_propiedad', None) != 0:
+                propiedad.disponibilidad_propiedad = 0  # OCUPADA
+                self.repo_propiedad.actualizar(propiedad, usuario)
+                self._invalidar_cache_propiedad(contrato.id_propiedad)
+
+    def _invalidar_cache_propiedad(self, id_propiedad: int):
+        """Invalida caché relacionada a propiedades"""
+        cache_manager.invalidate("propiedades:list")
+        cache_manager.invalidate("propiedades:list_paginated")
+        cache_manager.invalidate(f"propiedad:{id_propiedad}")
+        cache_manager.invalidate("dashboard:propiedades_tipo")

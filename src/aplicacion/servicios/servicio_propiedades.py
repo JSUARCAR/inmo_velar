@@ -234,6 +234,10 @@ class ServicioPropiedades:
         ):
             datos["link_pago_administracion"] = f"https://{link_pago}"
 
+        # REGLA DE ÉLITE: Prevenir estado "Disponible" si tiene Arrendamiento Activo
+        if "disponibilidad_propiedad" in datos and datos["disponibilidad_propiedad"] == 1:
+            self._verificar_arrendamiento_activo(id_propiedad)
+
         # Capturar canon anterior antes de aplicar cambios
         old_canon = propiedad.canon_arrendamiento_estimado
 
@@ -336,6 +340,9 @@ class ServicioPropiedades:
         propiedad = self.repo.obtener_por_id(id_propiedad)
         if not propiedad:
             return False
+
+        if nueva_disponibilidad == 1:
+            self._verificar_arrendamiento_activo(id_propiedad)
 
         propiedad.disponibilidad_propiedad = nueva_disponibilidad
         propiedad.updated_at = datetime.now().isoformat()
@@ -456,3 +463,12 @@ class ServicioPropiedades:
     def obtener_tipos_propiedad(self) -> List[str]:
         """Retorna los tipos de propiedad permitidos."""
         return self.TIPOS_PROPIEDAD
+
+    def _verificar_arrendamiento_activo(self, id_propiedad: int) -> None:
+        """Verifica si la propiedad tiene un arrendamiento activo. Lanza ValueError si es así."""
+        query_check_arr = "SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'Activo'"
+        if db_manager.execute_query_one(
+            query_check_arr.replace("%s", db_manager.get_placeholder()),
+            (int(id_propiedad),),
+        ):
+            raise ValueError("No se puede cambiar a Disponible: existe un Arrendamiento Activo vinculado.")

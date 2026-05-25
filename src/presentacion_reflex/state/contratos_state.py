@@ -62,7 +62,7 @@ class ContratosState(DocumentosStateMixin):
     # Búsqueda y Filtros
     search_text: str = ""
     filter_tipo: str = "Todos"
-    filter_estado: str = "Activo"
+    filter_estado: str = "ACTIVO"
     filter_propiedad_id: str = ""
     filter_persona_id: str = ""
     filter_asesor_id: str = "todos"
@@ -74,7 +74,7 @@ class ContratosState(DocumentosStateMixin):
 
     # Opciones de filtros
     tipo_options: List[str] = ["Todos", "Mandato", "Arrendamiento"]
-    estado_options: List[str] = ["Todos", "Activo", "Finalizado", "Cancelado", "Legal"]
+    estado_options: List[str] = ["TODOS", "ACTIVO", "FINALIZADO", "CANCELADO", "LEGAL"]
     propiedades_options: List[Dict[str, Any]] = []
     personas_options: List[Dict[str, Any]] = []
 
@@ -480,7 +480,7 @@ class ContratosState(DocumentosStateMixin):
                 else None
             )
             estado_filtro = (
-                self.filter_estado if self.filter_estado != "Todos" else None
+                self.filter_estado if self.filter_estado != "TODOS" else None
             )
 
             # Traducir sort_by según el tipo de repositorio

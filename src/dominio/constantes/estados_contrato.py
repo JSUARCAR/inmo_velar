@@ -26,6 +26,15 @@ class EstadoContrato(str, Enum):
     CANCELADO = "CANCELADO"
     RENOVADO = "RENOVADO"
 
+    @property
+    def es_terminal(self) -> bool:
+        """Retorna True si el estado es terminal."""
+        return self in {
+            EstadoContrato.FINALIZADO,
+            EstadoContrato.CANCELADO,
+        }
+
+    @property
     def es_activo(self) -> bool:
         """Retorna True si el estado permite operaciones activas."""
-        return self in [EstadoContrato.ACTIVO, EstadoContrato.SUSPENDIDO]
+        return self == EstadoContrato.ACTIVO
