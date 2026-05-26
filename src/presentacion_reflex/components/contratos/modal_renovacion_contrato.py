@@ -31,7 +31,7 @@ def modal_renovacion_contrato() -> rx.Component:
                 ContratosState.error_message != "",
                 rx.callout(
                     ContratosState.error_message,
-                    icon="circle_alert",
+                    icon="alert_triangle",
                     color_scheme="red",
                     margin_bottom="1rem",
                 ),

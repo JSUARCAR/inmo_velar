@@ -112,7 +112,7 @@ def dashboard_page() -> rx.Component:
                     DashboardState.error_message != "",
                     neuro_callout(
                         DashboardState.error_message,
-                        icon="circle_alert",
+                        icon="alert_triangle",
                         color_scheme="red",
                         width="100%",
                     ),
@@ -172,7 +172,7 @@ def dashboard_page() -> rx.Component:
                                     kpi_card(
                                         "Cartera Mora",
                                         DashboardState.mora_monto_total_view,
-                                        "circle_alert",
+                                        "alert_triangle",
                                         styles.BRAND_PRIMARY,
                                         f"{DashboardState.mora_cantidad_contratos_view} ctros",
                                         variant="compact",

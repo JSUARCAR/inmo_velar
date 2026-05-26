@@ -177,7 +177,7 @@ def modal_form() -> rx.Component:
                                 width="100%",
                                 style=styles.NEU_SELECT_STYLE,
                             ),
-                            icon="circle_alert",
+                            icon="alert_triangle",
                         ),
                         _form_field(
                             "Responsable de Pago (Sugerido)",
