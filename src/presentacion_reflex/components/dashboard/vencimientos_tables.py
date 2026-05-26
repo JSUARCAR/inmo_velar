@@ -6,7 +6,11 @@ Muestra las listas detalladas de contratos próximos a vencer.
 import reflex as rx
 from src.presentacion_reflex.state.dashboard_state import DashboardState
 from src.presentacion_reflex import styles
-
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_table_container,
+    neuro_tooltip,
+    neuro_badge,
+)
 
 def badge_dias(dias: int) -> rx.Component:
     """Retorna un badge de color según los días restantes."""
@@ -21,11 +25,7 @@ def badge_dias(dias: int) -> rx.Component:
     )
 
 
-from src.presentacion_reflex.components.neuro_elements import (
-    neuro_table_container,
-    neuro_tooltip,
-    neuro_badge,
-)
+
 
 
 def _tabla_vencimientos(

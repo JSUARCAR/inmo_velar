@@ -146,11 +146,7 @@ class ServicioDashboard:
     def obtener_total_contratos_activos(self, id_asesor: int = None) -> int:
         return self.repo.obtener_total_contratos_activos(id_asesor)
 
-    def obtener_morosidad_por_zona(self) -> Dict:
-        return self.repo.obtener_morosidad_por_zona()
 
-    def obtener_desempeno_asesores(self) -> Dict:
-        return self.repo.obtener_desempeno_asesores()
 
     def obtener_recibos_vencidos_resumen(self) -> Dict:
         return self.repo.obtener_recibos_vencidos_resumen()

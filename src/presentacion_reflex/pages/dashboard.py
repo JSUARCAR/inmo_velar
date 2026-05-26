@@ -18,6 +18,7 @@ from src.presentacion_reflex.components.dashboard import (
 )
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
+from src.presentacion_reflex.state.alertas_state import AlertasState
 from src.presentacion_reflex.state.dashboard_state import DashboardState
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_panel,
@@ -358,9 +359,6 @@ def dashboard_page() -> rx.Component:
     )
 
 
-from src.presentacion_reflex.state.alertas_state import AlertasState
-
-
 # Ruta protegida
 @rx.page(
     route="/dashboard",
@@ -368,7 +366,6 @@ from src.presentacion_reflex.state.alertas_state import AlertasState
     on_load=[
         AuthState.require_login,
         DashboardState.on_load,
-        AlertasState.check_alerts,
     ],
 )
 def dashboard():

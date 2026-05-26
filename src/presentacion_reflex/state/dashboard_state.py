@@ -1,7 +1,7 @@
 import sys
 import decimal
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, ClassVar
 
 import reflex as rx
 
@@ -143,15 +143,18 @@ class DashboardState(rx.State):
         return ServicioDashboard(repo_dashboard=repo_dashboard, repo_alerta=repo_alerta)
 
     @staticmethod
-    def _safe_fetch(fetch_fn, default_val):
+    def _safe_fetch(fetch_fn, default_val, error_list: Optional[List[str]] = None):
         """Ejecuta una función de fetch con fallback seguro."""
         try:
             return fetch_fn()
         except Exception as e:
+            msg = f"{getattr(fetch_fn, '__name__', 'lambda')} falló."
             logger.error(f"Error fetch KPI {getattr(fetch_fn, '__name__', 'lambda')}: {e}")
+            if error_list is not None:
+                error_list.append(msg)
             return default_val
 
-    def _load_kpis_rapidos(self, servicio: ServicioDashboard) -> None:
+    def _load_kpis_rapidos(self, servicio: ServicioDashboard, errors: List[str]) -> None:
         """
         Carga KPIs primarios: alertas, flujo de caja, ocupación, contratos, comisiones, mora.
         Estos datos se muestran inmediato en las tarjetas principales.
@@ -162,13 +165,14 @@ class DashboardState(rx.State):
 
         try:
             # Alertas
-            conteo_alertas = self._safe_fetch(servicio.obtener_conteo_alertas_pendientes, 0)
+            conteo_alertas = self._safe_fetch(servicio.obtener_conteo_alertas_pendientes, 0, errors)
             self.alertas_pendientes = _serialize_decimals(conteo_alertas)
 
             # Flujo de caja
             datos_flujo = self._safe_fetch(
                 lambda: servicio.obtener_flujo_caja_mes(mes=mes, anio=anio, id_asesor=id_asesor),
                 {"recaudado": 0, "esperado": 0, "porcentaje": 0},
+                errors
             )
             self.flujo_data = _serialize_decimals(datos_flujo)
 
@@ -176,12 +180,13 @@ class DashboardState(rx.State):
             datos_ocupacion = self._safe_fetch(
                 lambda: servicio.obtener_tasa_ocupacion(id_asesor=id_asesor),
                 {"porcentaje_ocupacion": 0, "ocupadas": 0, "disponibles": 0},
+                errors
             )
             self.ocupacion_data = _serialize_decimals(datos_ocupacion)
 
             # Contratos activos
             contratos_activos = self._safe_fetch(
-                lambda: servicio.obtener_total_contratos_activos(id_asesor=id_asesor), 0
+                lambda: servicio.obtener_total_contratos_activos(id_asesor=id_asesor), 0, errors
             )
             self.contratos_count = _serialize_decimals(contratos_activos)
 
@@ -189,6 +194,7 @@ class DashboardState(rx.State):
             datos_comisiones = self._safe_fetch(
                 lambda: servicio.obtener_comisiones_pendientes(id_asesor=id_asesor),
                 {"monto_total": 0, "cantidad_liquidaciones": 0},
+                errors
             )
             self.comisiones_data = _serialize_decimals(datos_comisiones)
 
@@ -196,14 +202,16 @@ class DashboardState(rx.State):
             datos_mora = self._safe_fetch(
                 servicio.obtener_cartera_mora,
                 {"monto_total": 0, "cantidad_contratos": 0},
+                errors
             )
             self.mora_data = _serialize_decimals(datos_mora)
 
             logger.debug("_load_kpis_rapidos OK")
         except Exception as e:
             logger.error(f"_load_kpis_rapidos ERROR: {e}", exc_info=True)
+            errors.append("_load_kpis_rapidos_fatal")
 
-    def _load_graficas(self, servicio: ServicioDashboard) -> None:
+    def _load_graficas(self, servicio: ServicioDashboard, errors: List[str]) -> None:
         """
         Carga datos de gráficas: evolución recaudo, recibos, propiedades,
         KPI financiero, top asesores y túnel de vencimientos.
@@ -217,6 +225,7 @@ class DashboardState(rx.State):
             datos_evolucion = self._safe_fetch(
                 lambda: servicio.obtener_evolucion_recaudo(mes_fin=mes, anio_fin=anio),
                 {"etiquetas": [], "valores": []},
+                errors
             )
             self.evolucion_data = _serialize_decimals(datos_evolucion)
 
@@ -224,12 +233,13 @@ class DashboardState(rx.State):
             datos_recibos = self._safe_fetch(
                 servicio.obtener_recibos_vencidos_resumen,
                 {"cantidad": 0, "monto_total": 0},
+                errors
             )
             self.recibos_data = _serialize_decimals(datos_recibos)
 
             # Propiedades por tipo
             datos_propiedades_tipo = self._safe_fetch(
-                lambda: servicio.obtener_propiedades_por_tipo(id_asesor=id_asesor), {}
+                lambda: servicio.obtener_propiedades_por_tipo(id_asesor=id_asesor), {}, errors
             )
             self.propiedades_tipo_data = _serialize_decimals(datos_propiedades_tipo)
 
@@ -237,15 +247,16 @@ class DashboardState(rx.State):
             datos_kpi_financiero = self._safe_fetch(
                 lambda: servicio.obtener_metricas_expertas(id_asesor=id_asesor),
                 {"ocupacion_financiera": 0, "eficiencia_recaudo": 0, "potencial_total": 0, "recaudo_real": 0},
+                errors
             )
             self.kpi_financiero = _serialize_decimals(datos_kpi_financiero)
 
             # Top asesores y túnel (solo sin filtro de asesor)
             if not id_asesor:
-                datos_top_asesores = self._safe_fetch(servicio.obtener_top_asesores_revenue, [])
+                datos_top_asesores = self._safe_fetch(servicio.obtener_top_asesores_revenue, [], errors)
                 self.top_asesores_data = _serialize_decimals(datos_top_asesores)
 
-                datos_tunel = self._safe_fetch(servicio.obtener_tunel_vencimientos, [])
+                datos_tunel = self._safe_fetch(servicio.obtener_tunel_vencimientos, [], errors)
                 self.tunel_vencimientos_data = _serialize_decimals(datos_tunel)
             else:
                 self.top_asesores_data = []
@@ -254,8 +265,9 @@ class DashboardState(rx.State):
             logger.debug("_load_graficas OK")
         except Exception as e:
             logger.error(f"_load_graficas ERROR: {e}", exc_info=True)
+            errors.append("_load_graficas_fatal")
 
-    def _load_tablas_vencimiento(self, servicio: ServicioDashboard) -> None:
+    def _load_tablas_vencimiento(self, servicio: ServicioDashboard, errors: List[str]) -> None:
         """
         Carga datos de tablas de vencimiento e incidentes.
         Esta es la operación más pesada.
@@ -265,12 +277,13 @@ class DashboardState(rx.State):
             datos_vencimiento = self._safe_fetch(
                 servicio.obtener_contratos_por_vencer,
                 {"vence_30_dias": 0, "vence_60_dias": 0, "vence_90_dias": 0},
+                errors
             )
             self.vencimiento_data = _serialize_decimals(datos_vencimiento)
 
             # Lista detallada de vencimientos
             datos_vencimiento_lista = self._safe_fetch(
-                lambda: servicio.obtener_contratos_proximos_vencer(90), []
+                lambda: servicio.obtener_contratos_proximos_vencer(90), [], errors
             )
             self.vencimientos_lista = _serialize_decimals(datos_vencimiento_lista)
 
@@ -278,12 +291,14 @@ class DashboardState(rx.State):
             datos_incidentes = self._safe_fetch(
                 servicio.obtener_metricas_incidentes,
                 {"por_estado": {}},
+                errors
             )
             self.incidentes_data = _serialize_decimals(datos_incidentes)
 
             logger.debug("_load_tablas_vencimiento OK")
         except Exception as e:
             logger.error(f"_load_tablas_vencimiento ERROR: {e}", exc_info=True)
+            errors.append("_load_tablas_fatal")
 
     def load_dashboard_data(self):
         """
@@ -299,34 +314,52 @@ class DashboardState(rx.State):
             logger.warning("load_dashboard_data ABORTADO: hydration no lista")
             return
 
-        logger.debug(f"load_dashboard_data START | run_id={self._load_run_id}")
+        current_run_id = self._load_run_id
+        logger.debug(f"load_dashboard_data START | run_id={current_run_id}")
 
         self.is_loading = True
         self.error_message = ""
         yield  # ← Entrega is_loading=True → spinner visible
 
+        # Concurrency Guard
+        if self._load_run_id != current_run_id:
+            logger.warning(f"load_dashboard_data CANCELADO: run_id obsoleto. {self._load_run_id} != {current_run_id}")
+            return
+
         try:
             servicio = self._get_servicio()
             logger.debug("Servicio Dashboard instanciado OK")
+            
+            fetch_errors: List[str] = []
 
             # Fase atómica 1: KPIs rápidos
-            self._load_kpis_rapidos(servicio)
+            self._load_kpis_rapidos(servicio, fetch_errors)
 
             # Fase atómica 2: Gráficas
-            self._load_graficas(servicio)
+            self._load_graficas(servicio, fetch_errors)
 
             # Fase atómica 3: Tablas de vencimiento
-            self._load_tablas_vencimiento(servicio)
+            self._load_tablas_vencimiento(servicio, fetch_errors)
 
             self.is_loading = False
             logger.info("load_dashboard_data COMPLETO OK")
+
+            if fetch_errors:
+                yield rx.toast.warning(
+                    f"Carga parcial: {len(fetch_errors)} métricas fallaron. Algunos datos pueden estar en 0.", 
+                    position="bottom-right"
+                )
+            
+            # Post-carga: sincronizar alertas de manera segura post-SSR
+            from src.presentacion_reflex.state.alertas_state import AlertasState
+            yield AlertasState.check_alerts
 
         except Exception as e:
             logger.error(f"load_dashboard_data ERROR: {type(e).__name__}: {e}", exc_info=True)
             self.error_message = f"Error al cargar datos: {type(e).__name__}: {str(e)}"
             self.is_loading = False
 
-    MONTH_MAP = {
+    MONTH_MAP: ClassVar[Dict[str, int]] = {
         "Enero": 1,
         "Febrero": 2,
         "Marzo": 3,

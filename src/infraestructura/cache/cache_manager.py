@@ -194,17 +194,17 @@ class CacheManager:
 
     def _generate_key(self, namespace: str, *args, **kwargs) -> str:
         """
-        Genera clave hash única de argumentos.
-
-        Args:
-            namespace: Namespace del cache (ej: 'personas')
-            *args: Argumentos posicionales
-            **kwargs: Argumentos nombrados
-
-        Returns:
-            Clave única en formato 'namespace:hash'
+        Genera clave hash única de argumentos. Ignora la dirección de memoria de 'self'.
         """
-        key_data = {"args": args, "kwargs": sorted(kwargs.items())}
+        safe_args = []
+        for i, arg in enumerate(args):
+            # Si es el primer argumento y parece una instancia de clase (self), guardar solo el nombre de la clase
+            if i == 0 and hasattr(arg, "__class__") and not isinstance(arg, (int, float, str, bool, list, dict, tuple, type(None))):
+                safe_args.append(arg.__class__.__name__)
+            else:
+                safe_args.append(arg)
+
+        key_data = {"args": tuple(safe_args), "kwargs": sorted(kwargs.items())}
 
         # Serializar y hashear
         try:
