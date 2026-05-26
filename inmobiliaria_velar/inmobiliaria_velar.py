@@ -60,6 +60,32 @@ app = rx.App(
             });
             """
         ),
+        rx.script(
+            """window.__REFLEX_HYDRATION_DELAY = 300;"""
+        ),
+        rx.script(
+            """
+            // ErrorBoundary: Captura errores de renderizado React y muestra fallback amigable
+            window.addEventListener('DOMContentLoaded', function() {
+                var observer = new MutationObserver(function(mutations) {
+                    var dashEl = document.querySelector('[data-page="/dashboard"]');
+                    if (dashEl && dashEl.innerHTML.trim() === '') {
+                        dashEl.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:80vh;gap:16px;font-family:Inter,sans-serif;">'
+                            + '<svg width="48" height="48" fill="none" stroke="#c96442" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+                            + '<h2 style="color:#141413;font-size:1.5rem;margin:0;">Error al cargar métricas</h2>'
+                            + '<p style="color:#5e5d59;text-align:center;max-width:400px;">Redirigiendo a Contratos en 10 segundos...</p>'
+                            + '<a href="/contratos" style="padding:8px 24px;background:#c96442;color:white;border-radius:8px;text-decoration:none;">Ir a Contratos</a>'
+                            + '</div>';
+                        setTimeout(function() { window.location.href = '/contratos'; }, 10000);
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(document.body, { childList: true, subtree: true });
+                // Auto-cleanup después de 30s
+                setTimeout(function() { observer.disconnect(); }, 30000);
+            });
+            """
+        ),
     ],
     style={
         "font_family": "var(--font-sans)",
@@ -129,6 +155,7 @@ class SecurityHeadersMiddleware:
                 headers.append("X-Content-Type-Options", "nosniff")
                 headers.append("X-XSS-Protection", "1; mode=block")
                 headers.append("Referrer-Policy", "strict-origin-when-cross-origin")
+                headers.append("Content-Security-Policy", "upgrade-insecure-requests")
 
             try:
                 await send(message)

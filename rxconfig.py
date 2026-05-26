@@ -54,6 +54,8 @@ config = rx.Config(
     api_url=api_url,
     # Entorno dinámico (PROD en Railway, DEV en local)
     env=rx.Env.PROD if IS_PROD else rx.Env.DEV,
+    # Deshabilitar SSR para evitar Hydration mismatch en dashboards
+    static_generation=False,
     # Desactivar telemetría (opcional)
     telemetry_enabled=False,
     # Permitir orígenes cruzados en producción (evita WS error en Railway)

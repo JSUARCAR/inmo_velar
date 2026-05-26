@@ -32,11 +32,19 @@ class DashboardState(rx.State):
     """
     Estado del Dashboard.
     Maneja datos de KPIs, gráficos y filtros.
+
+    FASE 1+2: Hydration-safe + Métodos atómicos.
+    - _hydration_ready previene carga de datos durante SSR.
+    - load_dashboard_data() NO es generador (sin yields intermedios).
+    - Datos se cargan en 3 métodos atómicos con try/except individual.
     """
 
     # Estado de carga
     is_loading: bool = False
     error_message: str = ""
+
+    # Flag de hidratación: solo True después de que el componente se montó en cliente
+    _hydration_ready: bool = False
 
     # Filtros — se inicializan en on_load para tomar la fecha real del sistema
     selected_month: int = 0  # 0 = "no inicializado aún"
@@ -83,18 +91,26 @@ class DashboardState(rx.State):
     # Guard: ID único del run activo (para detectar concurrencia entre sesiones)
     _load_run_id: int = 0
 
+    # ─── Fase 1: Hydration-safe on_load ───────────────────────────────────────
+
     def on_load(self):
-        """Se ejecuta al montar la página del dashboard."""
-        from datetime import datetime
+        """
+        Se ejecuta al montar la página del dashboard.
+        Marca _hydration_ready=True y dispara la carga de datos como evento
+        separado para evitar mutación de estado durante SSR/hydration.
+        """
         import time
-        run_id = int(time.time() * 1000) % 1000000  # ms timestamp mod 1M
+        run_id = int(time.time() * 1000) % 1000000
         self._load_run_id = run_id
-        logger.debug(f"DashboardState.on_load CALLED | run_id={run_id}")
+        self._hydration_ready = True
+        logger.debug(f"DashboardState.on_load CALLED | run_id={run_id} | hydration_ready=True")
+
         # Inicializar fecha solo si es la primera vez (valor = 0 indica "no inicializado")
         if self.selected_month == 0 or self.selected_year == 0:
             now = datetime.now()
             self.selected_month = now.month
             self.selected_year = now.year
+
         self.load_advisor_options()
         logger.debug(f"on_load → yield load_dashboard_data | run_id={run_id}")
         yield DashboardState.load_dashboard_data
@@ -117,102 +133,192 @@ class DashboardState(rx.State):
             logger.error(f"load_advisor_options ERROR: {e}", exc_info=True)
             self.advisor_options = []
 
-    def load_dashboard_data(self):
-        """
-        Carga todos los datos del dashboard.
-        NOTA: Usa generador síncrono con yield (no background task) para garantizar
-        que el estado se entrega siempre al WebSocket activo del cliente actual.
-        Esto elimina el 'Warning: disconnected client' de los background tasks en F5.
-        """
-        logger.debug(f"load_dashboard_data START (sync) | run_id={self._load_run_id}")
+    # ─── Fase 2: Métodos atómicos de carga ────────────────────────────────────
 
-        self.is_loading = True
-        self.error_message = ""
-        yield  # ← Entrega is_loading=True al WebSocket activo → spinner visible
+    def _get_servicio(self) -> ServicioDashboard:
+        """Instancia el servicio de dashboard con sus repositorios."""
+        from src.infraestructura.persistencia.repositorio_alerta_postgres import RepositorioAlertaPostgres
+        repo_dashboard = RepositorioDashboard(db_manager)
+        repo_alerta = RepositorioAlertaPostgres(db_manager)
+        return ServicioDashboard(repo_dashboard=repo_dashboard, repo_alerta=repo_alerta)
+
+    @staticmethod
+    def _safe_fetch(fetch_fn, default_val):
+        """Ejecuta una función de fetch con fallback seguro."""
+        try:
+            return fetch_fn()
+        except Exception as e:
+            logger.error(f"Error fetch KPI {getattr(fetch_fn, '__name__', 'lambda')}: {e}")
+            return default_val
+
+    def _load_kpis_rapidos(self, servicio: ServicioDashboard) -> None:
+        """
+        Carga KPIs primarios: alertas, flujo de caja, ocupación, contratos, comisiones, mora.
+        Estos datos se muestran inmediato en las tarjetas principales.
+        """
+        mes = self.selected_month
+        anio = self.selected_year
+        id_asesor = self.selected_advisor_id
 
         try:
-            mes = self.selected_month
-            anio = self.selected_year
-            id_asesor = self.selected_advisor_id
-            logger.debug(f"filtros | mes={mes} anio={anio} asesor={id_asesor}")
-
-            repo_dashboard = RepositorioDashboard(db_manager)
-            
-            # Instanciar Repo de Alertas para el servicio de Dashboard
-            from src.infraestructura.persistencia.repositorio_alerta_postgres import RepositorioAlertaPostgres
-            repo_alerta = RepositorioAlertaPostgres(db_manager)
-
-            servicio = ServicioDashboard(repo_dashboard=repo_dashboard, repo_alerta=repo_alerta)
-            logger.debug("Servicio Dashboard instanciado OK")
-
-            def _safe_fetch(fetch_fn, default_val):
-                try:
-                    return fetch_fn()
-                except Exception as e:
-                    logger.error(f"Error fetch KPI {fetch_fn.__name__ if hasattr(fetch_fn, '__name__') else 'lambda'}: {e}")
-                    return default_val
-            
-            logger.debug("Obteniendo alertas y flujo de caja...")
-            conteo_alertas = _safe_fetch(servicio.obtener_conteo_alertas_pendientes, 0)
+            # Alertas
+            conteo_alertas = self._safe_fetch(servicio.obtener_conteo_alertas_pendientes, 0)
             self.alertas_pendientes = _serialize_decimals(conteo_alertas)
-            
-            datos_flujo = _safe_fetch(lambda: servicio.obtener_flujo_caja_mes(mes=mes, anio=anio, id_asesor=id_asesor), {"recaudado": 0, "esperado": 0, "porcentaje": 0})
+
+            # Flujo de caja
+            datos_flujo = self._safe_fetch(
+                lambda: servicio.obtener_flujo_caja_mes(mes=mes, anio=anio, id_asesor=id_asesor),
+                {"recaudado": 0, "esperado": 0, "porcentaje": 0},
+            )
             self.flujo_data = _serialize_decimals(datos_flujo)
-            
-            datos_ocupacion = _safe_fetch(lambda: servicio.obtener_tasa_ocupacion(id_asesor=id_asesor), {"porcentaje_ocupacion": 0, "ocupadas": 0, "disponibles": 0})
+
+            # Ocupación
+            datos_ocupacion = self._safe_fetch(
+                lambda: servicio.obtener_tasa_ocupacion(id_asesor=id_asesor),
+                {"porcentaje_ocupacion": 0, "ocupadas": 0, "disponibles": 0},
+            )
             self.ocupacion_data = _serialize_decimals(datos_ocupacion)
-            yield # Update primary KPIs
 
-            logger.debug("Obteniendo contratos y comisiones...")
-            contratos_activos = _safe_fetch(lambda: servicio.obtener_total_contratos_activos(id_asesor=id_asesor), 0)
+            # Contratos activos
+            contratos_activos = self._safe_fetch(
+                lambda: servicio.obtener_total_contratos_activos(id_asesor=id_asesor), 0
+            )
             self.contratos_count = _serialize_decimals(contratos_activos)
-            
-            datos_comisiones = _safe_fetch(lambda: servicio.obtener_comisiones_pendientes(id_asesor=id_asesor), {"monto_total": 0, "cantidad_liquidaciones": 0})
-            self.comisiones_data = _serialize_decimals(datos_comisiones)
-            
-            datos_mora = _safe_fetch(servicio.obtener_cartera_mora, {"monto_total": 0, "cantidad_contratos": 0})
-            self.mora_data = _serialize_decimals(datos_mora)
-            yield # Update secondary KPIs
 
-            logger.debug("Obteniendo vencimientos e incidentes...")
-            datos_vencimiento = _safe_fetch(servicio.obtener_contratos_por_vencer, {"vence_30_dias": 0, "vence_60_dias": 0, "vence_90_dias": 0})
-            self.vencimiento_data = _serialize_decimals(datos_vencimiento)
-            
-            datos_vencimiento_lista = _safe_fetch(lambda: servicio.obtener_contratos_proximos_vencer(90), [])
-            self.vencimientos_lista = _serialize_decimals(datos_vencimiento_lista)
-            
-            datos_incidentes = _safe_fetch(servicio.obtener_metricas_incidentes, {"por_estado": {}})
-            self.incidentes_data = _serialize_decimals(datos_incidentes)
-            yield # Update list KPIs and incident charts
-            
-            logger.debug("Obteniendo gráficas y datos expertos...")
-            datos_evolucion = _safe_fetch(lambda: servicio.obtener_evolucion_recaudo(mes_fin=mes, anio_fin=anio), {"etiquetas": [], "valores": []})
+            # Comisiones
+            datos_comisiones = self._safe_fetch(
+                lambda: servicio.obtener_comisiones_pendientes(id_asesor=id_asesor),
+                {"monto_total": 0, "cantidad_liquidaciones": 0},
+            )
+            self.comisiones_data = _serialize_decimals(datos_comisiones)
+
+            # Mora
+            datos_mora = self._safe_fetch(
+                servicio.obtener_cartera_mora,
+                {"monto_total": 0, "cantidad_contratos": 0},
+            )
+            self.mora_data = _serialize_decimals(datos_mora)
+
+            logger.debug("_load_kpis_rapidos OK")
+        except Exception as e:
+            logger.error(f"_load_kpis_rapidos ERROR: {e}", exc_info=True)
+
+    def _load_graficas(self, servicio: ServicioDashboard) -> None:
+        """
+        Carga datos de gráficas: evolución recaudo, recibos, propiedades,
+        KPI financiero, top asesores y túnel de vencimientos.
+        """
+        mes = self.selected_month
+        anio = self.selected_year
+        id_asesor = self.selected_advisor_id
+
+        try:
+            # Evolución recaudo
+            datos_evolucion = self._safe_fetch(
+                lambda: servicio.obtener_evolucion_recaudo(mes_fin=mes, anio_fin=anio),
+                {"etiquetas": [], "valores": []},
+            )
             self.evolucion_data = _serialize_decimals(datos_evolucion)
-            
-            datos_recibos = _safe_fetch(servicio.obtener_recibos_vencidos_resumen, {"cantidad": 0, "monto_total": 0})
+
+            # Recibos vencidos
+            datos_recibos = self._safe_fetch(
+                servicio.obtener_recibos_vencidos_resumen,
+                {"cantidad": 0, "monto_total": 0},
+            )
             self.recibos_data = _serialize_decimals(datos_recibos)
-            
-            datos_propiedades_tipo = _safe_fetch(lambda: servicio.obtener_propiedades_por_tipo(id_asesor=id_asesor), {})
+
+            # Propiedades por tipo
+            datos_propiedades_tipo = self._safe_fetch(
+                lambda: servicio.obtener_propiedades_por_tipo(id_asesor=id_asesor), {}
+            )
             self.propiedades_tipo_data = _serialize_decimals(datos_propiedades_tipo)
-            
-            datos_kpi_financiero = _safe_fetch(lambda: servicio.obtener_metricas_expertas(id_asesor=id_asesor), {
-                "ocupacion_financiera": 0, "eficiencia_recaudo": 0, "potencial_total": 0, "recaudo_real": 0
-            })
+
+            # KPI Financiero experto
+            datos_kpi_financiero = self._safe_fetch(
+                lambda: servicio.obtener_metricas_expertas(id_asesor=id_asesor),
+                {"ocupacion_financiera": 0, "eficiencia_recaudo": 0, "potencial_total": 0, "recaudo_real": 0},
+            )
             self.kpi_financiero = _serialize_decimals(datos_kpi_financiero)
-            yield # Update advanced metrics
-            
+
+            # Top asesores y túnel (solo sin filtro de asesor)
             if not id_asesor:
-                datos_top_asesores = _safe_fetch(servicio.obtener_top_asesores_revenue, [])
+                datos_top_asesores = self._safe_fetch(servicio.obtener_top_asesores_revenue, [])
                 self.top_asesores_data = _serialize_decimals(datos_top_asesores)
-                
-                datos_tunel = _safe_fetch(servicio.obtener_tunel_vencimientos, [])
+
+                datos_tunel = self._safe_fetch(servicio.obtener_tunel_vencimientos, [])
                 self.tunel_vencimientos_data = _serialize_decimals(datos_tunel)
             else:
                 self.top_asesores_data = []
                 self.tunel_vencimientos_data = []
-            
-            self.is_loading = False
 
+            logger.debug("_load_graficas OK")
+        except Exception as e:
+            logger.error(f"_load_graficas ERROR: {e}", exc_info=True)
+
+    def _load_tablas_vencimiento(self, servicio: ServicioDashboard) -> None:
+        """
+        Carga datos de tablas de vencimiento e incidentes.
+        Esta es la operación más pesada.
+        """
+        try:
+            # Vencimientos agrupados
+            datos_vencimiento = self._safe_fetch(
+                servicio.obtener_contratos_por_vencer,
+                {"vence_30_dias": 0, "vence_60_dias": 0, "vence_90_dias": 0},
+            )
+            self.vencimiento_data = _serialize_decimals(datos_vencimiento)
+
+            # Lista detallada de vencimientos
+            datos_vencimiento_lista = self._safe_fetch(
+                lambda: servicio.obtener_contratos_proximos_vencer(90), []
+            )
+            self.vencimientos_lista = _serialize_decimals(datos_vencimiento_lista)
+
+            # Incidentes
+            datos_incidentes = self._safe_fetch(
+                servicio.obtener_metricas_incidentes,
+                {"por_estado": {}},
+            )
+            self.incidentes_data = _serialize_decimals(datos_incidentes)
+
+            logger.debug("_load_tablas_vencimiento OK")
+        except Exception as e:
+            logger.error(f"_load_tablas_vencimiento ERROR: {e}", exc_info=True)
+
+    def load_dashboard_data(self):
+        """
+        Carga todos los datos del dashboard en 3 fases atómicas.
+        
+        FASE 2: Refactorizado de generador con 5 yields a método determinista.
+        Solo se hace un yield inicial para mostrar el spinner y un yield final
+        para entregar todos los datos de golpe. Sin yields intermedios.
+        
+        FASE 1: Solo ejecuta si _hydration_ready es True (post-mount en cliente).
+        """
+        if not self._hydration_ready:
+            logger.warning("load_dashboard_data ABORTADO: hydration no lista")
+            return
+
+        logger.debug(f"load_dashboard_data START | run_id={self._load_run_id}")
+
+        self.is_loading = True
+        self.error_message = ""
+        yield  # ← Entrega is_loading=True → spinner visible
+
+        try:
+            servicio = self._get_servicio()
+            logger.debug("Servicio Dashboard instanciado OK")
+
+            # Fase atómica 1: KPIs rápidos
+            self._load_kpis_rapidos(servicio)
+
+            # Fase atómica 2: Gráficas
+            self._load_graficas(servicio)
+
+            # Fase atómica 3: Tablas de vencimiento
+            self._load_tablas_vencimiento(servicio)
+
+            self.is_loading = False
             logger.info("load_dashboard_data COMPLETO OK")
 
         except Exception as e:
@@ -423,10 +529,10 @@ class DashboardState(rx.State):
         """Transforma datos de top asesores para gráfico."""
         return [
             {
-                "name": row["nombre"].split()[0],  # Primer nombre para ahorrar espacio
-                "revenue": row["revenue"],
-                "revenue_view": format_currency(row["revenue"]),
-                "contratos": row["contratos"],
+                "name": row.get("nombre", "N/A").split()[0],  # Primer nombre para ahorrar espacio
+                "revenue": row.get("revenue", 0),
+                "revenue_view": format_currency(row.get("revenue", 0)),
+                "contratos": row.get("contratos", 0),
             }
             for row in self.top_asesores_data
         ]
@@ -436,9 +542,9 @@ class DashboardState(rx.State):
         """Transforma datos de tunel de vencimientos."""
         return [
             {
-                "name": row["mes"], 
-                "riesgo": row["valor_riesgo"],
-                "riesgo_view": format_currency(row["valor_riesgo"])
+                "name": row.get("mes", "N/A"), 
+                "riesgo": row.get("valor_riesgo", 0),
+                "riesgo_view": format_currency(row.get("valor_riesgo", 0))
             }
             for row in self.tunel_vencimientos_data
         ]

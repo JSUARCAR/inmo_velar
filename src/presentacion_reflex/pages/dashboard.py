@@ -28,6 +28,91 @@ from src.presentacion_reflex.components.neuro_elements import (
 from src.presentacion_reflex import styles
 
 
+def _error_fallback() -> rx.Component:
+    """Componente de fallback cuando el dashboard falla en renderizado."""
+    return rx.center(
+        rx.vstack(
+            rx.icon("alert-triangle", size=48, color=styles.BRAND_PRIMARY),
+            rx.heading(
+                "Error al cargar métricas",
+                size="6",
+                color=styles.TEXT_PRIMARY,
+                font_family=styles.FONT_DISPLAY,
+            ),
+            rx.text(
+                "Hubo un problema al renderizar el dashboard. Serás redirigido automáticamente.",
+                size="3",
+                color=styles.TEXT_SECONDARY,
+                text_align="center",
+                max_width="400px",
+            ),
+            rx.hstack(
+                rx.link(
+                    rx.button(
+                        rx.icon("file-text", size=18),
+                        "Ir a Contratos",
+                        color_scheme="gray",
+                        variant="surface",
+                        size="3",
+                    ),
+                    href="/contratos",
+                ),
+                rx.link(
+                    rx.button(
+                        rx.icon("refresh-cw", size=18),
+                        "Reintentar",
+                        color_scheme="gray",
+                        variant="outline",
+                        size="3",
+                    ),
+                    href="/dashboard",
+                ),
+                spacing="3",
+            ),
+            spacing="4",
+            align="center",
+            padding="8",
+        ),
+        height="80vh",
+        width="100%",
+    )
+
+
+def _empty_state_message() -> rx.Component:
+    """Mensaje amigable cuando no hay datos disponibles."""
+    return rx.center(
+        rx.vstack(
+            rx.icon("inbox", size=40, color=styles.TEXT_TERTIARY),
+            rx.text(
+                "No hay datos para mostrar",
+                size="4",
+                weight="bold",
+                color=styles.TEXT_SECONDARY,
+            ),
+            rx.text(
+                "Intenta ajustar los filtros o verifica la conexión con la base de datos.",
+                size="2",
+                color=styles.TEXT_TERTIARY,
+                text_align="center",
+            ),
+            rx.link(
+                rx.button(
+                    rx.icon("file-text", size=16),
+                    "Ir a Contratos",
+                    color_scheme="gray",
+                    variant="surface",
+                    size="2",
+                ),
+                href="/contratos",
+            ),
+            spacing="3",
+            align="center",
+            padding="12",
+        ),
+        width="100%",
+        min_height="300px",
+    )
+
 def dashboard_page() -> rx.Component:
     """
     Dashboard principal con KPIs y gráficos.
@@ -258,6 +343,8 @@ def dashboard_page() -> rx.Component:
                             width="100%",
                         ),
                     ),
+                    # Fase 5: Mensaje amigable cuando no hay datos en vez de grid vacío
+                    _empty_state_message(),
                 ),
                 width="100%",
                 padding_x=["4", "6", "8", "10"],
@@ -277,6 +364,7 @@ from src.presentacion_reflex.state.alertas_state import AlertasState
 # Ruta protegida
 @rx.page(
     route="/dashboard",
+    title="Panel | Velar",
     on_load=[
         AuthState.require_login,
         DashboardState.on_load,
