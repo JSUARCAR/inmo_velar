@@ -136,7 +136,9 @@ if DB_MODE == "postgresql":
             return self
 
         def __exit__(self, exc_type, exc_val, exc_tb):
-            # No retornamos aqui para permitir operaciones multiplexadas. Se hara GC en __del__
+            # Retornar la conexión al pool si no está atada a una transacción multi-paso
+            if not self.in_managed_transaction:
+                self.close()
             return False
 
         def __del__(self):
@@ -485,6 +487,11 @@ class DatabaseManager:
         finally:
             if not was_managed:
                 conexion.in_managed_transaction = False
+                # Retornar explícitamente la conexión al pool para evitar Starvation
+                if hasattr(conexion, 'close'):
+                    conexion.close()
+                if self.use_postgresql:
+                    _pg_conn_ctx.set(None)
 
     def ejecutar_script(self, script_sql: str) -> None:
         """
