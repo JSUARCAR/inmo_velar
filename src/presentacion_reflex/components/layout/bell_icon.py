@@ -8,7 +8,7 @@ def notification_item(item: dict) -> rx.Component:
         rx.hstack(
             rx.cond(
                 item["nivel"] == "danger",
-                rx.icon("alert_triangle", color="var(--red-9)", size=20),
+                rx.icon("triangle_alert", color="var(--red-9)", size=20),
                 rx.icon("info", color="var(--blue-9)", size=20),
             ),
             rx.vstack(

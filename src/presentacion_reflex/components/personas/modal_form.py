@@ -530,7 +530,7 @@ def paso_3_detalles_rol() -> rx.Component:
             # Mensaje cuando no hay roles seleccionados
             rx.center(
                 rx.vstack(
-                    rx.icon("alert_triangle", size=32, color=styles.TEXT_TERTIARY),
+                    rx.icon("triangle_alert", size=32, color=styles.TEXT_TERTIARY),
                     rx.text(
                         "No hay roles seleccionados",
                         size="3",

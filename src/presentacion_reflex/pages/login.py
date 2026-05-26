@@ -116,7 +116,7 @@ def login_card() -> rx.Component:
                     rx.cond(
                         AuthState.error_message != "",
                         rx.hstack(
-                            rx.icon("alert_triangle", size=14, color="#f87171"),
+                            rx.icon("triangle_alert", size=14, color="#f87171"),
                             rx.text(
                                 AuthState.error_message,
                                 color="#f87171",

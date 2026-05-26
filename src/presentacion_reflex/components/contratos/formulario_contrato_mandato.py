@@ -54,7 +54,7 @@ def formulario_contrato_mandato() -> rx.Component:
                 ContratosState.error_message != "",
                 rx.callout(
                     ContratosState.error_message,
-                    icon="alert_triangle",
+                    icon="triangle_alert",
                     color="red",
                     role="alert",
                     margin_bottom="1rem",

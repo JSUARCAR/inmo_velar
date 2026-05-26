@@ -110,7 +110,7 @@ def seguros_page() -> rx.Component:
                     SegurosState.error_message != "",
                     rx.callout(
                         SegurosState.error_message,
-                        icon="alert_triangle",
+                        icon="triangle_alert",
                         color_scheme="red",
                         role="alert",
                     ),
