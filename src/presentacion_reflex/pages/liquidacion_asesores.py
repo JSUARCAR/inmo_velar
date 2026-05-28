@@ -67,7 +67,7 @@ def liquidacion_asesores_content() -> rx.Component:
                     LiquidacionFormState.error_message != "",
                     rx.callout(
                         LiquidacionFormState.error_message,
-                        icon="alert-triangle",
+                        icon="triangle-alert",
                         color_scheme="red",
                         role="alert",
                         width="100%",

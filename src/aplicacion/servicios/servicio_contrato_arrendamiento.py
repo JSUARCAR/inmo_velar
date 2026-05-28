@@ -59,6 +59,7 @@ class ServicioContratoArrendamiento:
 
     @idempotent(key_prefix="arriendo:crear")
     @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def crear_arrendamiento(
         self, datos: Dict, usuario_sistema: str
     ) -> ContratoArrendamiento:
@@ -128,6 +129,7 @@ class ServicioContratoArrendamiento:
         return self.repo_arriendo.obtener_por_id(id_contrato)
 
     @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def actualizar_arrendamiento(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
@@ -318,6 +320,7 @@ class ServicioContratoArrendamiento:
 
     @idempotent(key_prefix="arriendo:renovar")
     @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def renovar_arrendamiento(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoArrendamiento:
@@ -412,6 +415,7 @@ class ServicioContratoArrendamiento:
 
     @idempotent(key_prefix="arriendo:terminar")
     @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def terminar_arrendamiento(
         self, id_contrato: int, motivo: str, usuario_sistema: str, estado_destino: EstadoContrato = EstadoContrato.CANCELADO
     ) -> None:

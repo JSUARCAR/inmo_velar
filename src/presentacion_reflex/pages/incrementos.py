@@ -15,7 +15,7 @@ def ipc_modal() -> rx.Component:
                     IPCState.error_message != "",
                     rx.callout(
                         IPCState.error_message,
-                        icon="alert-triangle",
+                        icon="triangle-alert",
                         color_scheme="red",
                         width="100%",
                     ),

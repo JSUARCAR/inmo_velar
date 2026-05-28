@@ -34,11 +34,11 @@ try {
 # Exportar variable de entorno (feature flag)
 $env:USE_REFLEX = "true"
 
-# Limpiar cache anterior si existe
-if (Test-Path ".\.web\") {
-    Write-Host "Limpiando cache anterior..." -ForegroundColor Yellow
-    Remove-Item -Recurse -Force ".\.web\"
-}
+# Limpiar cache anterior si existe (DESACTIVADO para evitar que Reflex deba reconstruir todo el frontend, lo cual causa errores en la generación de package.json)
+# if (Test-Path ".\.web\") {
+#     Write-Host "Limpiando cache anterior..." -ForegroundColor Yellow
+#     Remove-Item -Recurse -Force ".\.web\"
+# }
 
 Write-Host ""
 Write-Host "======================================" -ForegroundColor Cyan

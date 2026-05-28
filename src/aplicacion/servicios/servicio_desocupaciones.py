@@ -12,6 +12,7 @@ from src.infraestructura.persistencia.repositorio_desocupacion_postgres import (
     RepositorioDesocupacionPostgres,
 )
 from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+from src.infraestructura.cache.cache_manager import cache_manager
 
 # Plantilla de tareas por defecto para desocupación
 TAREAS_POR_DEFECTO = [
@@ -34,6 +35,7 @@ class ServicioDesocupaciones:
         self.repo = RepositorioDesocupacionPostgres(db_manager)
         self.repo_propiedad = RepositorioPropiedadPostgres(db_manager)
 
+    @cache_manager.invalidates("dashboard")
     def iniciar_desocupacion(
         self, id_contrato: int, fecha_programada: str, observaciones: Optional[str], usuario: str
     ) -> Desocupacion:
@@ -159,6 +161,7 @@ class ServicioDesocupaciones:
         """
         return self.repo.obtener_tareas(id_desocupacion)
 
+    @cache_manager.invalidates("dashboard")
     def completar_tarea(self, id_tarea: int, usuario: str, observaciones: Optional[str] = None):
         """
         Marca una tarea como completada.
@@ -189,6 +192,7 @@ class ServicioDesocupaciones:
             "puede_finalizar": completadas == total,
         }
 
+    @cache_manager.invalidates("dashboard")
     def finalizar_desocupacion(self, id_desocupacion: int, usuario: str, rol_usuario: str = "Asesor"):
         """
         Finaliza una desocupación (marca como Completada y actualiza estados relacionados).
@@ -315,6 +319,7 @@ class ServicioDesocupaciones:
             pass  # print(f"[ERROR] Transacción fallida al finalizar desocupación: {str(e)}") [OpSec Removed]
             raise e
 
+    @cache_manager.invalidates("dashboard")
     def cancelar_desocupacion(self, id_desocupacion: int, motivo: str, usuario: str):
         """
         Cancela una desocupación en proceso.

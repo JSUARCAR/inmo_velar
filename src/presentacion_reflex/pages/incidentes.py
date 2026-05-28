@@ -170,7 +170,7 @@ def incidentes() -> rx.Component:
                 IncidentesState.error_message != "",
                 rx.box(
                     rx.hstack(
-                        rx.icon("alert-triangle", color="red"),
+                        rx.icon("triangle-alert", color="red"),
                         rx.text(IncidentesState.error_message, color="red", size="2"),
                     ),
                     padding="3",

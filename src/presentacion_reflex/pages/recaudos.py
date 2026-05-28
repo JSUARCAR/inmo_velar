@@ -499,7 +499,7 @@ def recaudos_page() -> rx.Component:
             RecaudosState.error_message,
             rx.callout(
                 RecaudosState.error_message,
-                icon="alert-triangle",
+                icon="triangle-alert",
                 color_scheme="red",
                 role="alert",
             ),

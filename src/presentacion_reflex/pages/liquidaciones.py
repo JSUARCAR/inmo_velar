@@ -583,7 +583,7 @@ def liquidaciones_page() -> rx.Component:
             LiquidacionesState.error_message != "",
             rx.callout(
                 LiquidacionesState.error_message,
-                icon="alert-triangle",
+                icon="triangle-alert",
                 color_scheme="red",
                 role="alert",
             ),
