@@ -147,7 +147,7 @@ def dashboard_page() -> rx.Component:
                 ),
                 rx.box(
                     rx.flex(
-                        rx.box(width="100%"),
+                        dashboard_filters(),
                         rx.spacer(),
                         rx.button(
                             rx.icon("refresh-cw", size=18),
@@ -174,86 +174,187 @@ def dashboard_page() -> rx.Component:
                 top="0",
                 z_index="100",
             ),
-            # CONTENIDO BENTO GRID
+            # CONTENIDO BENTO GRID (Estabilizado para Hydration React 19)
             rx.vstack(
-                # Loading / Error states
-                rx.cond(
-                    DashboardState.is_loading,
-                    rx.center(
-                        rx.vstack(
-                            neuro_spinner(size="3"),
-                            rx.text(
-                                "Procesando métricas INMOBILIARIA...",
-                                color=styles.TEXT_SECONDARY,
-                                size="2",
-                                font_family=styles.FONT_SANS,
-                            ),
-                            spacing="3",
+                # 1. ESTADO DE CARGA (Overlay)
+                rx.center(
+                    rx.vstack(
+                        neuro_spinner(size="3"),
+                        rx.text(
+                            "Procesando métricas INMOBILIARIA...",
+                            color=styles.TEXT_SECONDARY,
+                            size="2",
+                            font_family=styles.FONT_SANS,
                         ),
-                        padding="100px",
-                        width="100%",
+                        spacing="3",
+                        align="center",
                     ),
+                    padding="100px",
+                    width="100%",
+                    display=rx.cond(DashboardState.is_loading, "flex", "none"),
                 ),
+
+                # 2. ESTADO DE ERROR
                 rx.cond(
                     DashboardState.error_message != "",
                     neuro_callout(
                         DashboardState.error_message,
-                        icon="triangle_alert",
+                        icon="alert-triangle",
                         color_scheme="red",
                         width="100%",
                     ),
                 ),
-                # Dashboard Grid
+
+                # 3. GRID DE CONTENIDO (Siempre presente en DOM para evitar Hydration Error #418)
+                rx.vstack(
+                    # 1. KPIs ESTRATÉGICOS (Top Row - Grid)
+                    rx.grid(
+                        kpi_card(
+                            "Ocupación Financiera",
+                            f"{DashboardState.kpi_ocupacion_financiera_view}%",
+                            "bar-chart-2",
+                            styles.BRAND_PRIMARY,
+                            "Ingresos vs Potencial",
+                            variant="elite",
+                            tooltip="Mide los ingresos reales frente a la capacidad de generación total.",
+                            tendencia="+2.1% MoM",
+                        ),
+                        kpi_card(
+                            "Eficiencia Recaudo",
+                            f"{DashboardState.kpi_eficiencia_recaudo_view}%",
+                            "wallet",
+                            styles.TEXT_SECONDARY,
+                            "Recaudado este mes",
+                            variant="elite",
+                            tooltip="Porcentaje del monto total esperado que ha sido efectivamente recaudado este mes.",
+                            tendencia="+1.5% YoY",
+                        ),
+                        kpi_card(
+                            "Potencial Total",
+                            DashboardState.kpi_potencial_total_view,
+                            "banknote",
+                            styles.TEXT_TERTIARY,
+                            "Cartera Total Estimada",
+                            variant="elite",
+                            tooltip="Valor total estimado de contratos activos sin aplicar descuentos o mora.",
+                        ),
+                        columns=rx.breakpoints(initial="1", md="3"),
+                        gap="4",
+                        width="100%",
+                    ),
+
+                    # 2. SECCIÓN DE FILTROS (OPCIONAL: Duplicado si se requiere)
+                    # rx.box(dashboard_filters(), width="100%", padding_y="2"),
+
+                    # 3. GRÁFICOS PRINCIPALES
+                    # GRÁFICOS REACTIVADOS EN BENTO GRID
+                    rx.grid(
+                        rx.box(evolucion_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
+                        rx.box(vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(tunel_vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(propiedades_tipo_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(incidentes_pie_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(top_asesores_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(tablas_vencimientos_detalle(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
+                        columns=rx.breakpoints(initial="1", md="2", lg="3"),
+                        spacing="6",
+                        width="100%",
+                    ),
+
+                    # 4. PULSO OPERATIVO (Bottom Row - Bento Grid)
+                    rx.box(
+                        rx.vstack(
+                            rx.text(
+                                "PULSO OPERATIVO Y ACCIONES",
+                                size="2",
+                                weight="bold",
+                                color=styles.TEXT_SECONDARY,
+                                letter_spacing="0.1em",
+                                font_family=styles.FONT_SANS,
+                            ),
+                            rx.grid(
+                                kpi_card(
+                                    "Cartera Mora",
+                                    DashboardState.mora_monto_total_view,
+                                    "alert-triangle",
+                                    styles.BRAND_PRIMARY,
+                                    f"{DashboardState.mora_cantidad_contratos_view} ctros",
+                                    variant="compact",
+                                    tooltip="Total acumulado en mora actual",
+                                ),
+                                kpi_card(
+                                    "Recaudo Mes",
+                                    DashboardState.recaudo_mes_view,
+                                    "wallet",
+                                    styles.TEXT_SECONDARY,
+                                    f"{DashboardState.recaudo_porcentaje_view}%",
+                                    variant="compact",
+                                    tooltip="Recaudo efectivo del mes vs esperado",
+                                ),
+                                kpi_card(
+                                    "Ocupación",
+                                    f"{DashboardState.ocupacion_porcentaje_view}%",
+                                    "home",
+                                    styles.BRAND_PRIMARY,
+                                    f"{DashboardState.ocupacion_ocupadas_view}/{DashboardState.ocupacion_disponibles_view}",
+                                    variant="compact",
+                                    tooltip="Porcentaje de inmuebles ocupados respecto al total administrable",
+                                ),
+                                kpi_card(
+                                    "Comisiones",
+                                    DashboardState.comisiones_monto_total_view,
+                                    "credit-card",
+                                    styles.TEXT_TERTIARY,
+                                    f"{DashboardState.comisiones_cantidad_view} pend",
+                                    variant="compact",
+                                    tooltip="Comisiones pendientes por cobrar de Asesores",
+                                ),
+                                kpi_card(
+                                    "Contratos",
+                                    DashboardState.contratos_count_view,
+                                    "file-text",
+                                    styles.TEXT_SECONDARY,
+                                    "Activos",
+                                    variant="compact",
+                                    tooltip="Número de contratos activos en la plataforma",
+                                ),
+                                kpi_card(
+                                    "Recibos Pend.",
+                                    DashboardState.recibos_cantidad_view,
+                                    "receipt",
+                                    styles.TEXT_SECONDARY,
+                                    f"En mora/proximos",
+                                    variant="compact",
+                                    tooltip="Facturas o recibos pendientes de pago por parte de arrendatarios",
+                                ),
+                                kpi_card(
+                                    "Alertas Activas",
+                                    DashboardState.alertas_pendientes.to(str),
+                                    "bell-ring",
+                                    styles.BRAND_PRIMARY,
+                                    "Requieren atención",
+                                    variant="compact",
+                                    href="/alertas",
+                                    tooltip="Alertas del sistema que requieren acción manual",
+                                ),
+                                columns=rx.breakpoints(initial="1", sm="2", md="3", lg="4"),
+                                gap="4",
+                                width="100%",
+                            ),
+                            style=styles.NEU_PANEL_STYLE,
+                            width="100%",
+                            spacing="4",
+                        ),
+                        width="100%",
+                    ),
+                    spacing="6",
+                    width="100%",
+                    display=rx.cond(DashboardState.is_loading | (DashboardState.error_message != ""), "none", "flex"),
+                ),
+
+                # Fase 5: Mensaje amigable cuando no hay datos en vez de grid vacío
                 rx.cond(
                     ~DashboardState.is_loading & (DashboardState.error_message == ""),
-                    rx.vstack(
-                        # 1. KPIs ESTRATÉGICOS (Top Row - Grid)
-                        rx.grid(
-                            rx.box(width="100%"),
-                            columns=rx.breakpoints(initial="1", md="3"),
-                            gap="4",
-                            width="100%",
-                        ),
-
-                        # 4. PULSO OPERATIVO (Bottom Row - Bento Grid)
-                        rx.box(
-                            rx.vstack(
-                                rx.text(
-                                    "PULSO OPERATIVO Y ACCIONES",
-                                    size="2",
-                                    weight="bold",
-                                    color=styles.TEXT_SECONDARY,
-                                    letter_spacing="0.1em",
-                                    font_family=styles.FONT_SANS,
-                                ),
-                                rx.grid(
-                                    rx.box(width="100%"),
-                                    columns=rx.breakpoints(initial="1", sm="2", md="3", lg="4"),
-                                    gap="4",
-                                    width="100%",
-                                ),
-                                style=styles.NEU_PANEL_STYLE,
-                                width="100%",
-                                spacing="4",
-                            ),
-                            width="100%",
-                        ),
-
-                        # GRÁFICOS REACTIVADOS EN BENTO GRID
-                        rx.grid(
-                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
-                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
-                            columns=rx.breakpoints(initial="1", md="2", lg="3"),
-                            spacing="6",
-                            width="100%",
-                        ),
-                    ),
-                    # Fase 5: Mensaje amigable cuando no hay datos en vez de grid vacío
                     _empty_state_message(),
                 ),
                 width="100%",
