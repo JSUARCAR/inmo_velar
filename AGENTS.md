@@ -167,3 +167,12 @@ cp -r skills/{skill-name} ~/.claude/skills/
 Add the skill to project knowledge or paste SKILL.md contents into the conversation.
 
 If the skill requires network access, instruct users to add required domains at `claude.ai/settings/capabilities`.
+
+## Reglas de Build
+1. ANTES de modificar inmobiliaria_velar.py:
+   - Verificar que todos los símbolos nuevos existen en sus módulos fuente
+   - Ejecutar: python -c "from src.presentacion_reflex.styles import BASE_STYLE"
+   
+2. ANTES de hacer push:
+   - git status debe mostrar working tree limpio
+   - Ejecutar: DATABASE_URL=sqlite:///test.db reflex export --frontend-only --no-zip

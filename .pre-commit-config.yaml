@@ -13,3 +13,14 @@ repos:
     rev: v0.1.0
     hooks:
     -   id: ruff
+
+-   repo: local
+    hooks:
+    -   id: reflex-build-validate
+        name: Validate reflex export compiles
+        entry: bash -c 'trap "rm -f dummy_build.db" EXIT; DATABASE_URL=sqlite:///dummy_build.db reflex export --frontend-only --no-zip'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
+        verbose: true
