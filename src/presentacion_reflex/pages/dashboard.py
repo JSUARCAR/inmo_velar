@@ -7,7 +7,13 @@ import reflex as rx
 
 from src.presentacion_reflex.components.dashboard import (
     dashboard_filters,
+    evolucion_chart,
+    incidentes_pie_chart,
     kpi_card,
+    propiedades_tipo_chart,
+    top_asesores_chart,
+    tunel_vencimientos_chart,
+    vencimientos_chart,
     tablas_vencimientos_detalle,
 )
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
@@ -59,7 +65,7 @@ def _empty_state_message() -> rx.Component:
 
 def dashboard_page() -> rx.Component:
     """
-    Dashboard principal con KPIs y Tablas. (Gráficos desactivados temporalmente por estabilidad)
+    Dashboard principal con KPIs y gráficos estabilizados.
     """
 
     return dashboard_layout(
@@ -110,11 +116,11 @@ def dashboard_page() -> rx.Component:
             ),
             # CONTENIDO
             rx.vstack(
-                # 1. ESTADO DE CARGA
+                # 1. ESTADO DE CARGA (Overlay)
                 rx.center(
                     rx.vstack(
                         neuro_spinner(size="3"),
-                        rx.text("Procesando métricas..."),
+                        rx.text("Cargando métricas..."),
                         spacing="3",
                         align="center",
                     ),
@@ -127,37 +133,27 @@ def dashboard_page() -> rx.Component:
                 rx.vstack(
                     # KPIs
                     rx.grid(
-                        kpi_card(
-                            "Ocupación Financiera",
-                            f"{DashboardState.kpi_ocupacion_financiera_view}%",
-                            "bar-chart-2",
-                            styles.BRAND_PRIMARY,
-                            "Ingresos vs Potencial",
-                            variant="elite",
-                        ),
-                        kpi_card(
-                            "Eficiencia Recaudo",
-                            f"{DashboardState.kpi_eficiencia_recaudo_view}%",
-                            "wallet",
-                            styles.TEXT_SECONDARY,
-                            "Recaudado este mes",
-                            variant="elite",
-                        ),
-                        kpi_card(
-                            "Potencial Total",
-                            DashboardState.kpi_potencial_total_view,
-                            "banknote",
-                            styles.TEXT_TERTIARY,
-                            "Cartera Total Estimada",
-                            variant="elite",
-                        ),
+                        kpi_card("Ocupación Financiera", f"{DashboardState.kpi_ocupacion_financiera_view}%", "bar-chart-2", styles.BRAND_PRIMARY, "Ingresos vs Potencial", variant="elite"),
+                        kpi_card("Eficiencia Recaudo", f"{DashboardState.kpi_eficiencia_recaudo_view}%", "wallet", styles.TEXT_SECONDARY, "Recaudado este mes", variant="elite"),
+                        kpi_card("Potencial Total", DashboardState.kpi_potencial_total_view, "banknote", styles.TEXT_TERTIARY, "Cartera Total Estimada", variant="elite"),
                         columns=rx.breakpoints(initial="1", md="3"),
                         gap="4",
                         width="100%",
                     ),
                     
-                    # Tablas de detalle
-                    rx.box(tablas_vencimientos_detalle(), width="100%"),
+                    # Gráficos en Bento Grid
+                    rx.grid(
+                        rx.box(evolucion_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
+                        rx.box(vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(tunel_vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(propiedades_tipo_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(incidentes_pie_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(top_asesores_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(tablas_vencimientos_detalle(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
+                        columns=rx.breakpoints(initial="1", md="2", lg="3"),
+                        spacing="6",
+                        width="100%",
+                    ),
                     
                     spacing="6",
                     width="100%",
