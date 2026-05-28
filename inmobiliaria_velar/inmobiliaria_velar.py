@@ -7,6 +7,10 @@ import reflex as rx
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex import styles
 
+@rx.page(route="/health", title="Health")
+def health() -> rx.Component:
+    return rx.center(rx.text("DEPLOY OK - V10"), height="100vh")
+
 @rx.page(route="/", on_load=AuthState.redirect_to_dashboard)
 def index() -> rx.Component:
     return rx.center(rx.spinner(size="3"), height="100vh")
