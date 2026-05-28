@@ -1,24 +1,50 @@
 """
-Componentes de Gráficos para Dashboard - Reflex
-Wrappers COMPLETAMENTE DESACTIVADOS para evitar TypeError fatal en Recharts 3 / React 19.
+Componentes de Gráficos para Dashboard - Reflex usando Plotly nativo.
+Estos componentes leen las figuras `go.Figure` generadas asíncronamente
+en el `DashboardState`.
 """
 
 import reflex as rx
+from src.presentacion_reflex.state.dashboard_state import DashboardState
 
 def vencimientos_chart() -> rx.Component:
-    return rx.center(rx.text("Gráfico de Vencimientos (Desactivado)"), height="250px", width="100%", border="1px dashed gray", border_radius="8px")
+    return rx.plotly(
+        data=DashboardState.vencimiento_chart_fig,
+        height="250px",
+        width="100%"
+    )
 
 def evolucion_chart() -> rx.Component:
-    return rx.center(rx.text("Gráfico de Evolución (Desactivado)"), height="250px", width="100%", border="1px dashed gray", border_radius="8px")
+    return rx.plotly(
+        data=DashboardState.evolucion_chart_fig,
+        height="250px",
+        width="100%"
+    )
 
 def incidentes_pie_chart() -> rx.Component:
-    return rx.center(rx.text("Gráfico de Incidentes (Desactivado)"), height="250px", width="100%", border="1px dashed gray", border_radius="8px")
+    return rx.plotly(
+        data=DashboardState.incidentes_chart_fig,
+        height="250px",
+        width="100%"
+    )
 
 def propiedades_tipo_chart() -> rx.Component:
-    return rx.center(rx.text("Gráfico de Propiedades (Desactivado)"), height="250px", width="100%", border="1px dashed gray", border_radius="8px")
+    return rx.plotly(
+        data=DashboardState.propiedades_tipo_chart_fig,
+        height="250px",
+        width="100%"
+    )
 
 def top_asesores_chart() -> rx.Component:
-    return rx.center(rx.text("Gráfico de Asesores (Desactivado)"), height="250px", width="100%", border="1px dashed gray", border_radius="8px")
+    return rx.plotly(
+        data=DashboardState.top_asesores_chart_fig,
+        height="250px",
+        width="100%"
+    )
 
 def tunel_vencimientos_chart() -> rx.Component:
-    return rx.center(rx.text("Túnel de Vencimientos (Desactivado)"), height="250px", width="100%", border="1px dashed gray", border_radius="8px")
+    return rx.plotly(
+        data=DashboardState.tunel_chart_fig,
+        height="250px",
+        width="100%"
+    )

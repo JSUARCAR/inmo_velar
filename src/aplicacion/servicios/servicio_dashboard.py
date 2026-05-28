@@ -151,7 +151,7 @@ class ServicioDashboard:
     def obtener_recibos_vencidos_resumen(self) -> Dict:
         return self.repo.obtener_recibos_vencidos_resumen()
 
-    def obtener_evolucion_recaudo(self, meses: int = 6, mes_fin: int = None, anio_fin: int = None) -> Dict:
+    def obtener_evolucion_recaudo(self, meses: int = 6, mes_fin: int = None, anio_fin: int = None, id_asesor: Optional[int] = None) -> Dict:
         """Obtiene la evolución del recaudo histórico utilizando una única consulta optimizada (Fase 3)."""
         hoy = datetime.now()
         mes_fin = mes_fin or hoy.month
@@ -163,7 +163,7 @@ class ServicioDashboard:
         
         try:
             # Obtener datos optimizados (1 sola query)
-            historico = self.repo.obtener_historico_recaudos(meses, mes_fin, anio_fin)
+            historico = self.repo.obtener_historico_recaudos(meses, mes_fin, anio_fin, id_asesor)
             
             # Reconstruir la serie asegurando que los meses sin recaudo aparezcan como 0
             for i in range(meses - 1, -1, -1):

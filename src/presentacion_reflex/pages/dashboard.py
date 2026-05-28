@@ -22,8 +22,12 @@ from src.presentacion_reflex.state.alertas_state import AlertasState
 from src.presentacion_reflex.state.dashboard_state import DashboardState
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_panel,
-    neuro_spinner,
     neuro_callout,
+)
+from src.presentacion_reflex.components.dashboard.skeleton_loaders import (
+    kpi_skeleton,
+    chart_skeleton,
+    table_skeleton
 )
 from src.presentacion_reflex import styles
 
@@ -119,22 +123,37 @@ def dashboard_page() -> rx.Component:
             ),
             # CONTENIDO BENTO GRID
             rx.vstack(
-                # 1. ESTADO DE CARGA (Overlay)
-                rx.center(
+                # 1. ESTADO DE CARGA (Skeletons - Carga progresiva)
+                rx.box(
                     rx.vstack(
-                        neuro_spinner(size="3"),
-                        rx.text(
-                            "Procesando métricas INMOBILIARIA...",
-                            color=styles.TEXT_SECONDARY,
-                            size="2",
-                            font_family=styles.FONT_SANS,
+                        rx.grid(
+                            kpi_skeleton(), kpi_skeleton(), kpi_skeleton(),
+                            columns=rx.breakpoints(initial="1", md="3"), gap="4", width="100%"
                         ),
-                        spacing="3",
-                        align="center",
+                        rx.grid(
+                            chart_skeleton(height="250px"), chart_skeleton(height="250px"), chart_skeleton(height="250px"),
+                            chart_skeleton(height="250px"), chart_skeleton(height="250px"), chart_skeleton(height="250px"),
+                            columns=rx.breakpoints(initial="1", md="2", lg="3"), spacing="6", width="100%"
+                        ),
+                        rx.box(table_skeleton(rows=8), width="100%", margin_top="6"),
+                        spacing="6", width="100%"
                     ),
-                    padding="100px",
-                    width="100%",
-                    display=rx.cond(DashboardState.is_loading, "flex", "none"),
+                    display=rx.cond(DashboardState.is_loading, "block", "none"),
+                    width="100%"
+                ),
+
+                # 1.5 ERRORES DE CARGA (Si existen)
+                rx.cond(
+                    DashboardState.errores_carga.length() > 0,
+                    rx.box(
+                        neuro_callout(
+                            "Ocurrieron errores al cargar algunos componentes. Reintente más tarde.",
+                            icon="triangle-alert",
+                            color_scheme="red",
+                        ),
+                        width="100%",
+                        padding_bottom="4"
+                    )
                 ),
 
                 # 2. CONTENIDO PRINCIPAL
@@ -204,7 +223,7 @@ def dashboard_page() -> rx.Component:
                                 kpi_card(
                                     "Cartera Mora",
                                     DashboardState.mora_monto_total_view,
-                                    "alert-triangle",
+                                    "triangle-alert",
                                     styles.BRAND_PRIMARY,
                                     f"{DashboardState.mora_cantidad_contratos_view} ctros",
                                     variant="compact",
