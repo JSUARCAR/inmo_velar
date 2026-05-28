@@ -181,7 +181,6 @@ def dashboard_page() -> rx.Component:
     route="/dashboard",
     title="Panel | Velar",
     on_load=[
-        AuthState.require_login,
         DashboardState.on_load,
     ],
 )
