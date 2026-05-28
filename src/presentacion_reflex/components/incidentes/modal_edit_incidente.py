@@ -158,7 +158,7 @@ def _edit_incidente_form() -> rx.Component:
             IncidentesState.edit_error != "",
             rx.callout(
                 IncidentesState.edit_error,
-                icon="alert-triangle",
+                icon="triangle-alert",
                 color_scheme="red",
                 width="100%",
                 margin_top="1em",

@@ -115,7 +115,7 @@ def modal_recaudo() -> rx.Component:
             rx.cond(
                 RecaudosState.error_message != "",
                 rx.callout.root(
-                    rx.callout.icon(icon="alert-triangle"),
+                    rx.callout.icon(icon="triangle-alert"),
                     rx.callout.text(RecaudosState.error_message),
                     color="red",
                     size="1",

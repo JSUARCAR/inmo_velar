@@ -26,7 +26,7 @@ def modal_cancel_incidente() -> rx.Component:
                     ),
                     rx.callout(
                         "Confirme los detalles antes de cancelar el reporte.",
-                        icon="alert-triangle",
+                        icon="triangle-alert",
                         color_scheme="red",
                         width="100%",
                         margin_bottom="1em",
@@ -64,7 +64,7 @@ def modal_cancel_incidente() -> rx.Component:
                             IncidentesState.cancel_error != "",
                             rx.callout(
                                 IncidentesState.cancel_error,
-                                icon="alert-triangle",
+                                icon="triangle-alert",
                                 color_scheme="red",
                                 width="100%",
                                 margin_top="0.5em",

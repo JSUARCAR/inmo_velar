@@ -40,7 +40,7 @@ def cancel_modal() -> rx.Component:
                     LiquidacionesState.error_message != "",
                     rx.callout(
                         LiquidacionesState.error_message,
-                        icon="alert-triangle",
+                        icon="triangle-alert",
                         color_scheme="red",
                         size="1",
                     ),

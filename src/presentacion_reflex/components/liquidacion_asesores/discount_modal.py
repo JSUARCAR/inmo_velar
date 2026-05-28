@@ -91,7 +91,7 @@ def discount_modal() -> rx.Component:
                 LiquidacionFormState.error_message != "",
                 rx.callout(
                     LiquidacionFormState.error_message,
-                    icon="alert-triangle",
+                    icon="triangle-alert",
                     color_scheme="red",
                     role="alert",
                     margin_top="2",

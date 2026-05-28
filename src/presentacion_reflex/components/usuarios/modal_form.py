@@ -88,7 +88,7 @@ def modal_form() -> rx.Component:
                     UsuariosState.error_message != "",
                     rx.callout(
                         UsuariosState.error_message,
-                        icon="alert-triangle",
+                        icon="triangle-alert",
                         color_scheme="red",
                         role="alert",
                         width="100%",

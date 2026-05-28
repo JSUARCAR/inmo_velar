@@ -119,7 +119,7 @@ def modal_form() -> rx.Component:
                     IncidentesState.error_message != "",
                     rx.callout(
                         IncidentesState.error_message,
-                        icon="alert-triangle",
+                        icon="triangle-alert",
                         color_scheme="red",
                         role="alert",
                         variant="soft",
@@ -177,7 +177,7 @@ def modal_form() -> rx.Component:
                                 width="100%",
                                 style=styles.NEU_SELECT_STYLE,
                             ),
-                            icon="alert-triangle",
+                            icon="triangle-alert",
                         ),
                         _form_field(
                             "Responsable de Pago (Sugerido)",

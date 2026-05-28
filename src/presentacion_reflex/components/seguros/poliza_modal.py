@@ -25,7 +25,7 @@ def modal_poliza() -> rx.Component:
                         SegurosState.error_message != "",
                         rx.callout(
                             SegurosState.error_message,
-                            icon="alert-triangle",
+                            icon="triangle-alert",
                             color_scheme="red",
                             role="alert",
                             width="100%",
