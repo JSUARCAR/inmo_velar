@@ -332,12 +332,12 @@ def dashboard_page() -> rx.Component:
 
                         # GRÁFICOS REACTIVADOS EN BENTO GRID
                         rx.grid(
-                            rx.box(evolucion_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
-                            rx.box(vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                            rx.box(tunel_vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                            rx.box(propiedades_tipo_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                            rx.box(incidentes_pie_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                            rx.box(top_asesores_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
+                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                            rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
                             rx.box(tablas_vencimientos_detalle(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
                             columns=rx.breakpoints(initial="1", md="2", lg="3"),
                             spacing="6",
