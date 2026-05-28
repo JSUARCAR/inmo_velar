@@ -33,7 +33,7 @@ app = rx.App(
         rx.el.meta(name="description", content="Sistema integral de gestión inmobiliaria."),
         rx.script(src="/matrix.js?v=5"),
     ],
-    style=styles.BASE_STYLE,
+    style=getattr(styles, "BASE_STYLE", None) or {},
 )
 
 from src.presentacion_reflex import pages
