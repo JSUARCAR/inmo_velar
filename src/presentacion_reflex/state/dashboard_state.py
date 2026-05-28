@@ -18,6 +18,26 @@ import plotly.graph_objects as go
 import logging
 logger = logging.getLogger(__name__)
 
+def _default_fig_layout(height=280, show_legend=False, **kwargs):
+    layout = dict(
+        margin=dict(l=50, r=20, t=30, b=40),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, sans-serif", size=11, color="#5e5d59"),
+        hovermode="x unified",
+        hoverlabel=dict(bgcolor="#1f2937", font_size=12, font_color="white", bordercolor="#374151"),
+        xaxis=dict(showgrid=False, tickfont=dict(size=10, color="#87867f")),
+        yaxis=dict(showgrid=True, gridcolor="#f0eee6", tickfont=dict(size=10, color="#87867f")),
+        height=height,
+        showlegend=show_legend,
+    )
+    for k, v in kwargs.items():
+        if isinstance(v, dict) and k in layout and isinstance(layout[k], dict):
+            layout[k].update(v)
+        else:
+            layout[k] = v
+    return layout
+
 def _serialize_decimals(obj: Any) -> Any:
     """Convierte tipos incompatibles (Decimal, date, datetime) a tipos serializables por Reflex JSON."""
     if isinstance(obj, decimal.Decimal):
@@ -399,29 +419,34 @@ class DashboardState(DashboardBaseState):
     def recibos_cantidad_view(self) -> str:
         return str(self.recibos_data.get("cantidad", 0))
 
+    @rx.var
+    def pulso_tendencias(self) -> Dict[str, Dict[str, Any]]:
+        return {
+            "mora": {"valor": self.mora_monto_total_view, "progreso": min(self.flujo_data.get("porcentaje", 0), 100)},
+            "recaudo": {"valor": self.recaudo_mes_view, "progreso": self.flujo_data.get("porcentaje", 0)},
+            "ocupacion": {"valor": f"{self.ocupacion_porcentaje_view}%", "progreso": self.ocupacion_data.get("porcentaje_ocupacion", 0)},
+            "comisiones": {"valor": self.comisiones_monto_total_view, "progreso": 0},
+            "contratos": {"valor": self.contratos_count_view, "progreso": 0},
+            "recibos": {"valor": self.recibos_cantidad_view, "progreso": 0},
+            "alertas": {"valor": str(self.alertas_pendientes), "progreso": min(self.alertas_pendientes * 10, 100)},
+        }
+
 
     @rx.var
     def vencimiento_chart_fig(self) -> go.Figure:
         """Figura de Plotly para el gráfico de barras de vencimientos."""
         labels = ["30 Días", "60 Días", "90 Días"]
-        values = [
-            self.vencimiento_data.get("vence_30_dias", 0),
-            self.vencimiento_data.get("vence_60_dias", 0),
-            self.vencimiento_data.get("vence_90_dias", 0),
-        ]
-        colors = ["#8b5cf6", "#14b8a6", "#f59e0b"]
-        
-        fig = go.Figure(data=[
-            go.Bar(x=labels, y=values, marker_color=colors, text=values, textposition='auto')
-        ])
-        fig.update_layout(
-            margin=dict(l=20, r=20, t=20, b=20),
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=False),
-            yaxis=dict(showgrid=True, gridcolor="#e2e8f0"),
-            height=250,
-        )
+        values_30 = self.vencimiento_data.get("vence_30_dias", 0)
+        values_60 = self.vencimiento_data.get("vence_60_dias", 0)
+        values_90 = self.vencimiento_data.get("vence_90_dias", 0)
+        fig = go.Figure()
+        fig.add_trace(go.Bar(name="Próximos 30d", x=["Vencimientos"], y=[values_30],
+                             marker_color="#ef4444", text=[format_currency(values_30)], textposition="inside"))
+        fig.add_trace(go.Bar(name="30-60 días", x=["Vencimientos"], y=[values_60],
+                             marker_color="#f59e0b", text=[format_currency(values_60)], textposition="inside"))
+        fig.add_trace(go.Bar(name="60-90 días", x=["Vencimientos"], y=[values_90],
+                             marker_color="#14b8a6", text=[format_currency(values_90)], textposition="inside"))
+        fig.update_layout(barmode='stack', **_default_fig_layout(height=320, show_legend=True))
         return fig
 
     @rx.var
@@ -437,6 +462,7 @@ class DashboardState(DashboardBaseState):
         """Figura de Plotly para el gráfico de área de evolución."""
         etiquetas = self.evolucion_data.get("etiquetas", [])
         valores = self.evolucion_data.get("valores", [])
+        targets = [v * 1.1 for v in valores] if valores else []
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(
@@ -447,17 +473,19 @@ class DashboardState(DashboardBaseState):
             marker=dict(size=8, color='#3b82f6'),
             fillcolor='rgba(59, 130, 246, 0.2)',
             text=[format_currency(v) for v in valores],
-            hoverinfo='text+x'
+            hoverinfo='text+x',
+            name='Real'
         ))
-        fig.update_layout(
-            margin=dict(l=40, r=20, t=20, b=30),
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=False),
-            yaxis=dict(showgrid=True, gridcolor="#e2e8f0"),
-            height=250,
-            showlegend=False
-        )
+        
+        # AGREGAR: segunda traza con línea punteada de target
+        if targets:
+            fig.add_trace(go.Scatter(
+                x=etiquetas, y=targets, mode='lines',
+                line=dict(color='#f59e0b', width=2, dash='dash'),
+                name='Target'
+            ))
+            
+        fig.update_layout(**_default_fig_layout(height=320, show_legend=True))
         return fig
 
     @rx.var
@@ -496,14 +524,7 @@ class DashboardState(DashboardBaseState):
                 textposition='auto'
             )
         ])
-        fig.update_layout(
-            margin=dict(l=20, r=20, t=20, b=20),
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=False),
-            yaxis=dict(showgrid=True, gridcolor="#e2e8f0"),
-            height=250,
-        )
+        fig.update_layout(**_default_fig_layout(height=280))
         return fig
 
     @rx.var
@@ -511,23 +532,17 @@ class DashboardState(DashboardBaseState):
         """Figura Plotly para el gráfico de top asesores."""
         nombres = [row.get("nombre", "N/A").split()[0] for row in self.top_asesores_data]
         revenues = [row.get("revenue", 0) for row in self.top_asesores_data]
+        ranking_colors = ["#c96442", "#d97757", "#e8a080"] + ["#d1d5db"] * max(0, len(nombres)-3)
         
         fig = go.Figure(data=[
             go.Bar(
                 y=nombres, x=revenues, orientation='h',
-                marker_color="#10b981",
+                marker_color=ranking_colors,
                 text=[format_currency(r) for r in revenues],
                 textposition='auto'
             )
         ])
-        fig.update_layout(
-            margin=dict(l=80, r=20, t=20, b=20),
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=True, gridcolor="#e2e8f0"),
-            yaxis=dict(showgrid=False, autorange="reversed"),
-            height=250,
-        )
+        fig.update_layout(**_default_fig_layout(height=280, yaxis=dict(showgrid=False, autorange="reversed")))
         return fig
 
     @rx.var
@@ -535,50 +550,34 @@ class DashboardState(DashboardBaseState):
         """Figura Plotly para el gráfico de tunel de vencimientos."""
         meses = [row.get("mes", "N/A") for row in self.tunel_vencimientos_data]
         riesgos = [row.get("valor_riesgo", 0) for row in self.tunel_vencimientos_data]
-        
-        fig = go.Figure(go.Funnel(
-            y=meses,
-            x=riesgos,
-            textinfo="value+percent initial",
-            marker=dict(color=["#3b82f6", "#8b5cf6", "#ec4899", "#f43f5e", "#f59e0b", "#10b981"])
-        ))
-        fig.update_layout(
-            margin=dict(l=60, r=20, t=20, b=20),
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            height=250,
-        )
+        n = len(riesgos)
+        colors = [f"rgba(201, 100, 66, {0.3 + 0.7*(n-i)/n})" for i in range(n)] if n > 0 else []
+        fig = go.Figure(data=[go.Bar(
+            y=meses, x=riesgos, orientation='h',
+            marker_color=colors,
+            text=[format_currency(v) for v in riesgos],
+            textposition='outside',
+        )])
+        fig.update_layout(**_default_fig_layout(height=280))
         return fig
 
     @rx.var
     def incidentes_chart_fig(self) -> go.Figure:
         """Figura Plotly para el gráfico circular de incidentes."""
         por_estado = self.incidentes_data.get("por_estado", {})
-
-        colors = {
+        por_estado = dict(sorted(por_estado.items(), key=lambda x: x[1], reverse=True))
+        COLORS_MAP = {
             "Reportado": "#FF8042",
             "Cotizado": "#FFBB28",
             "Aprobado": "#0088FE",
             "En Reparación": "#00C49F",
             "Finalizado": "#8884d8",
         }
-        
-        labels = list(por_estado.keys())
-        values = list(por_estado.values())
-        marker_colors = [colors.get(e, "#8884d8") for e in labels]
-
-        fig = go.Figure(data=[go.Pie(
-            labels=labels,
-            values=values,
-            hole=.4,
-            marker_colors=marker_colors,
-            textinfo='label+percent'
+        fig = go.Figure(data=[go.Bar(
+            y=list(por_estado.keys()), x=list(por_estado.values()),
+            orientation='h',
+            marker_color=[COLORS_MAP.get(k, "#6b7280") for k in por_estado.keys()],
+            text=list(por_estado.values()), textposition='outside',
         )])
-        fig.update_layout(
-            margin=dict(l=20, r=20, t=20, b=20),
-            paper_bgcolor="rgba(0,0,0,0)",
-            showlegend=True,
-            legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
-            height=250,
-        )
+        fig.update_layout(**_default_fig_layout(height=280))
         return fig

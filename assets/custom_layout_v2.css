@@ -400,3 +400,35 @@ html {
         --font-size-1: 1rem !important; /* 1rem × 12px = 12px mínimo */
     }
 }
+
+/* Borde izquierdo semántico para pulse cards */
+.pulse-card-red    { border-left: 4px solid #ef4444 !important; }
+.pulse-card-amber  { border-left: 4px solid #f59e0b !important; }
+.pulse-card-green  { border-left: 4px solid #14b8a6 !important; }
+.pulse-card-blue   { border-left: 4px solid #3b82f6 !important; }
+
+/* Grid de 3 columnas iguales para vencimientos */
+.grid-vencimientos {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: 1fr;
+    width: 100%;
+}
+
+@media (min-width: 1024px) {
+    .grid-vencimientos {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+/* Altura mínima para gráficos - evitar CLS */
+.chart-container {
+    min-height: 250px;
+}
+
+/* Altura reducida en mobile */
+@media (max-width: 767px) {
+    .chart-container {
+        min-height: 200px;
+    }
+}

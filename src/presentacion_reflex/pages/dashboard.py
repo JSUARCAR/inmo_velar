@@ -15,6 +15,7 @@ from src.presentacion_reflex.components.dashboard import (
     tunel_vencimientos_chart,
     vencimientos_chart,
     tablas_vencimientos_detalle,
+    _tabla_vencimientos,
 )
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
@@ -23,6 +24,7 @@ from src.presentacion_reflex.state.dashboard_state import DashboardState
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_panel,
     neuro_callout,
+    neuro_pulse_card,
 )
 from src.presentacion_reflex.components.dashboard.skeleton_loaders import (
     kpi_skeleton,
@@ -194,105 +196,72 @@ def dashboard_page() -> rx.Component:
                         width="100%",
                     ),
 
-                    # 3. GRÁFICOS PRINCIPALES (Placeholder Seguros)
-                    rx.grid(
-                        rx.box(evolucion_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
-                        rx.box(vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                        rx.box(tunel_vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                        rx.box(propiedades_tipo_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                        rx.box(incidentes_pie_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                        rx.box(top_asesores_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                        rx.box(tablas_vencimientos_detalle(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
-                        columns=rx.breakpoints(initial="1", md="2", lg="3"),
-                        spacing="6",
-                        width="100%",
+                    # ROW 2: PULSO OPERATIVO (HERO - mucho más ancho)
+                    rx.box(
+                        neuro_panel(
+                            rx.vstack(
+                                rx.hstack(
+                                    rx.text("PULSO OPERATIVO Y ACCIONES", size="4", weight="bold", color=styles.TEXT_SECONDARY),
+                                    rx.spacer(),
+                                    rx.badge("Tiempo real", color_scheme="green", variant="soft"),
+                                    width="100%"
+                                ),
+                                rx.grid(
+                                    neuro_pulse_card("Cartera Mora", DashboardState.mora_monto_total_view,
+                                        "triangle-alert", progreso=DashboardState.pulso_tendencias["mora"]["progreso"],
+                                        color_scheme="red",
+                                        subtitulo=f"{DashboardState.mora_cantidad_contratos_view} contratos"),
+                                    neuro_pulse_card("Recaudo Mes", DashboardState.recaudo_mes_view,
+                                        "wallet", progreso=DashboardState.pulso_tendencias["recaudo"]["progreso"],
+                                        color_scheme="blue",
+                                        subtitulo=f"{DashboardState.recaudo_porcentaje_view}% de meta"),
+                                    neuro_pulse_card("Ocupación", f"{DashboardState.ocupacion_porcentaje_view}%",
+                                        "home", progreso=DashboardState.pulso_tendencias["ocupacion"]["progreso"],
+                                        color_scheme="green",
+                                        subtitulo=f"{DashboardState.ocupacion_ocupadas_view}/{DashboardState.ocupacion_disponibles_view} disp"),
+                                    neuro_pulse_card("Alertas Activas", DashboardState.alertas_pendientes.to(str),
+                                        "bell-ring", progreso=DashboardState.pulso_tendencias["alertas"]["progreso"],
+                                        color_scheme="amber", href="/alertas",
+                                        subtitulo="Requieren atención"),
+                                    columns=rx.breakpoints(initial="1", sm="2", md="4"), gap="4", width="100%"
+                                ),
+                                rx.grid(
+                                    kpi_card("Comisiones", DashboardState.comisiones_monto_total_view,
+                                        "credit-card", styles.TEXT_TERTIARY, f"{DashboardState.comisiones_cantidad_view} pend", variant="compact"),
+                                    kpi_card("Contratos", DashboardState.contratos_count_view,
+                                        "file-text", styles.TEXT_SECONDARY, "Activos", variant="compact"),
+                                    kpi_card("Recibos Pend.", DashboardState.recibos_cantidad_view,
+                                        "receipt", styles.TEXT_SECONDARY, "En mora/próximos", variant="compact"),
+                                    columns=rx.breakpoints(initial="1", md="3"), gap="4", width="100%"
+                                ),
+                                spacing="4", width="100%"
+                            ),
+                        ), width="100%",
                     ),
 
-                    # 4. PULSO OPERATIVO (Bottom Row - Bento Grid)
-                    rx.box(
-                        rx.vstack(
-                            rx.text(
-                                "PULSO OPERATIVO Y ACCIONES",
-                                size="2",
-                                weight="bold",
-                                color=styles.TEXT_SECONDARY,
-                                letter_spacing="0.1em",
-                                font_family=styles.FONT_SANS,
-                            ),
-                            rx.grid(
-                                kpi_card(
-                                    "Cartera Mora",
-                                    DashboardState.mora_monto_total_view,
-                                    "triangle-alert",
-                                    styles.BRAND_PRIMARY,
-                                    f"{DashboardState.mora_cantidad_contratos_view} ctros",
-                                    variant="compact",
-                                    tooltip="Total acumulado en mora actual",
-                                ),
-                                kpi_card(
-                                    "Recaudo Mes",
-                                    DashboardState.recaudo_mes_view,
-                                    "wallet",
-                                    styles.TEXT_SECONDARY,
-                                    f"{DashboardState.recaudo_porcentaje_view}%",
-                                    variant="compact",
-                                    tooltip="Recaudo efectivo del mes vs esperado",
-                                ),
-                                kpi_card(
-                                    "Ocupación",
-                                    f"{DashboardState.ocupacion_porcentaje_view}%",
-                                    "home",
-                                    styles.BRAND_PRIMARY,
-                                    f"{DashboardState.ocupacion_ocupadas_view}/{DashboardState.ocupacion_disponibles_view}",
-                                    variant="compact",
-                                    tooltip="Porcentaje de inmuebles ocupados respecto al total administrable",
-                                ),
-                                kpi_card(
-                                    "Comisiones",
-                                    DashboardState.comisiones_monto_total_view,
-                                    "credit-card",
-                                    styles.TEXT_TERTIARY,
-                                    f"{DashboardState.comisiones_cantidad_view} pend",
-                                    variant="compact",
-                                    tooltip="Comisiones pendientes por cobrar de Asesores",
-                                ),
-                                kpi_card(
-                                    "Contratos",
-                                    DashboardState.contratos_count_view,
-                                    "file-text",
-                                    styles.TEXT_SECONDARY,
-                                    "Activos",
-                                    variant="compact",
-                                    tooltip="Número de contratos activos en la plataforma",
-                                ),
-                                kpi_card(
-                                    "Recibos Pend.",
-                                    DashboardState.recibos_cantidad_view,
-                                    "receipt",
-                                    styles.TEXT_SECONDARY,
-                                    f"En mora/proximos",
-                                    variant="compact",
-                                    tooltip="Facturas o recibos pendientes de pago por parte de arrendatarios",
-                                ),
-                                kpi_card(
-                                    "Alertas Activas",
-                                    DashboardState.alertas_pendientes.to(str),
-                                    "bell-ring",
-                                    styles.BRAND_PRIMARY,
-                                    "Requieren atención",
-                                    variant="compact",
-                                    href="/alertas",
-                                    tooltip="Alertas del sistema que requieren acción manual",
-                                ),
-                                columns=rx.breakpoints(initial="1", sm="2", md="3", lg="4"),
-                                gap="4",
-                                width="100%",
-                            ),
-                            style=styles.NEU_PANEL_STYLE,
-                            width="100%",
-                            spacing="4",
-                        ),
-                        width="100%",
+                    # ROW 3: SEGUIMIENTO FINANCIERO Y RIESGO
+                    rx.grid(
+                        rx.box(evolucion_chart(height="320px"), grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
+                        rx.box(vencimientos_chart(height="320px"), grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        columns=rx.breakpoints(initial="1", lg="3"), spacing="6", width="100%"
+                    ),
+
+                    # ROW 4: DISTRIBUCIÓN OPERATIVA
+                    rx.grid(
+                        rx.box(propiedades_tipo_chart(height="280px")),
+                        rx.box(incidentes_pie_chart(height="280px")),
+                        rx.box(top_asesores_chart(height="280px")),
+                        columns=rx.breakpoints(initial="1", md="2", lg="3"), spacing="6", width="100%"
+                    ),
+
+                    # ROW 5: GESTIÓN DE VENCIMIENTOS
+                    rx.grid(
+                        rx.box(tunel_vencimientos_chart(height="300px")),
+                        rx.box(_tabla_vencimientos("Vencimientos de Mandato (90 Días)", "briefcase", "mandato",
+                               DashboardState.contratos_vencer_mandato_view)),
+                        rx.box(_tabla_vencimientos("Vencimientos de Arrendamiento (90 Días)", "home", "arrendamiento",
+                               DashboardState.contratos_vencer_arrendamiento_view)),
+                        columns=rx.breakpoints(initial="1", lg="3"), spacing="6", width="100%", class_name="grid-vencimientos"
                     ),
                     spacing="6",
                     width="100%",

@@ -1,4 +1,5 @@
 import reflex as rx
+from typing import Any
 from .. import styles
 
 
@@ -521,3 +522,51 @@ def neuro_icon_action_button(
     if tooltip_content:
         return rx.tooltip(btn, content=tooltip_content)
     return btn
+
+
+def neuro_pulse_card(
+    titulo: str,
+    valor: str,
+    icono: str,
+    progreso: Any = 0.0,
+    color_scheme: str = "gray",
+    subtitulo: str = "",
+    href: str = None,
+) -> rx.Component:
+    """
+    Card para Pulso Operativo. Incluye:
+    - Borde izquierdo semántico de 4px
+    - Barra de progreso sutil
+    - Icono + valor grande + subtítulo
+    """
+    border_accent = f"var(--{color_scheme}-9)"
+    progress_color = color_scheme
+    progreso_var = rx.Var.create(progreso).to(float)
+    card = rx.box(
+        rx.vstack(
+            rx.hstack(
+                rx.icon(icono, size=18, color=f"var(--{color_scheme}-9)"),
+                rx.text(titulo, size="1", weight="bold", color=styles.TEXT_TERTIARY, text_transform="uppercase"),
+                spacing="2",
+            ),
+            rx.text(valor, size="6", weight="bold", color=styles.TEXT_PRIMARY, letter_spacing="-0.02em"),
+            rx.cond(progreso_var > 0,
+                neuro_progress(value=progreso, size="1", color_scheme=progress_color, width="100%"),
+            ),
+            rx.cond(subtitulo, rx.text(subtitulo, size="1", color=styles.TEXT_SECONDARY)),
+            spacing="2", align="start", width="100%",
+        ),
+        style={
+            "background": styles.BG_PANEL,
+            "border": f"1px solid {styles.BORDER_DEFAULT}",
+            "border_left": f"4px solid {border_accent}",
+            "border_radius": "12px",
+            "padding": "1.25rem",
+            "box_shadow": styles.SHADOW_WHISPER,
+            "transition": styles.GLOBAL_TRANSITION,
+            "_hover": {"box_shadow": styles.SHADOW_ELEVATED, "transform": "translateY(-2px)"},
+        },
+    )
+    if href:
+        card = rx.link(card, href=href, underline="none", width="100%")
+    return card
