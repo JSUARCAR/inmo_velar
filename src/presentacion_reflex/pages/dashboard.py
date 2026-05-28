@@ -1,13 +1,13 @@
 import reflex as rx
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
-from src.presentacion_reflex.components.dashboard import kpi_card
+from src.presentacion_reflex.components.dashboard import kpi_card, vencimientos_chart
 from src.presentacion_reflex.state.dashboard_state import DashboardState
 from src.presentacion_reflex import styles
 
 def dashboard_page() -> rx.Component:
     return dashboard_layout(
         rx.vstack(
-            rx.heading("Dashboard con KPIs"),
+            rx.heading("Dashboard con KPIs y Gráfico"),
             rx.grid(
                 kpi_card(
                     "Ocupación Financiera",
@@ -36,6 +36,11 @@ def dashboard_page() -> rx.Component:
                 columns=rx.breakpoints(initial="1", md="3"),
                 gap="4",
                 width="100%",
+            ),
+            rx.box(
+                vencimientos_chart(),
+                width="100%",
+                height="300px",
             ),
             spacing="6",
             width="100%",
