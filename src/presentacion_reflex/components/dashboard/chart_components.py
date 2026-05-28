@@ -47,10 +47,10 @@ def vencimientos_chart() -> rx.Component:
             rx.box(
                 rx.recharts.bar_chart(
                     rx.recharts.bar(
+                        rx.recharts.label_list(data_key="value", position="top", fill=styles.TEXT_TERTIARY, font_size=12),
                         data_key="value",
                         stroke=styles.ACCENT_COLOR,
                         fill=styles.ACCENT_COLOR,
-                        label={"position": "top", "fill": styles.TEXT_TERTIARY, "fontSize": 12},
                         radius=[4, 4, 0, 0],
                     ),
                     rx.recharts.x_axis(data_key="name", axis_line=False, tick_line=False),
@@ -131,11 +131,11 @@ def propiedades_tipo_chart() -> rx.Component:
             rx.box(
                 rx.recharts.bar_chart(
                     rx.recharts.bar(
+                        rx.recharts.label_list(data_key="value", position="top", fill=styles.TEXT_TERTIARY, font_size=10),
                         data_key="value",
                         stroke=styles.ACCENT_COLOR,
                         fill=styles.ACCENT_COLOR,
                         radius=[4, 4, 0, 0],
-                        label={"position": "top", "fill": styles.TEXT_TERTIARY, "fontSize": 10},
                     ),
                     rx.recharts.x_axis(
                         data_key="name",
