@@ -7,7 +7,13 @@ import reflex as rx
 
 from src.presentacion_reflex.components.dashboard import (
     dashboard_filters,
+    evolucion_chart,
+    incidentes_pie_chart,
     kpi_card,
+    propiedades_tipo_chart,
+    top_asesores_chart,
+    tunel_vencimientos_chart,
+    vencimientos_chart,
     tablas_vencimientos_detalle,
 )
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
@@ -237,14 +243,15 @@ def dashboard_page() -> rx.Component:
                         width="100%",
                     ),
 
-                    # 3. GRÁFICOS PRINCIPALES (Sustituidos por placeholders para aislamiento)
+                    # 3. GRÁFICOS PRINCIPALES
+                    # GRÁFICOS REACTIVADOS EN BENTO GRID
                     rx.grid(
-                        rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
-                        rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                        rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                        rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                        rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
-                        rx.box(width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(evolucion_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
+                        rx.box(vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(tunel_vencimientos_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(propiedades_tipo_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(incidentes_pie_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
+                        rx.box(top_asesores_chart(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 1")),
                         rx.box(tablas_vencimientos_detalle(), width="100%", grid_column=rx.breakpoints(initial="span 1", lg="span 2")),
                         columns=rx.breakpoints(initial="1", md="2", lg="3"),
                         spacing="6",
