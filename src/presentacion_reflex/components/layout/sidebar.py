@@ -252,7 +252,7 @@ def sidebar_items() -> rx.Component:
             ),
             sidebar_item(
                 "Incidentes",
-                "triangle_alert",
+                "alert-triangle",
                 "/incidentes",
                 "Seguimiento y resolución de incidencias, reparaciones y mantenimiento.",
                 module_name="Incidentes",

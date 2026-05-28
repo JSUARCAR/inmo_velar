@@ -71,7 +71,7 @@ def finalize_confirm_modal() -> rx.Component:
                                 ),
                                 spacing="2",
                             ),
-                            icon="triangle_alert",
+                            icon="alert-triangle",
                             color_scheme="orange",
                             role="alert",
                             width="100%",

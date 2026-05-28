@@ -23,7 +23,7 @@ def modal_proveedor() -> rx.Component:
                     ProveedoresState.error_message != "",
                     rx.callout(
                         ProveedoresState.error_message,
-                        icon="triangle_alert",
+                        icon="alert-triangle",
                         color_scheme="red",
                         role="alert",
                         width="100%",

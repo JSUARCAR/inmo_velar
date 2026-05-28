@@ -259,7 +259,7 @@ def reports_content():
             ReportesState.error_message != "",
             rx.callout(
                 ReportesState.error_message,
-                icon="triangle_alert",
+                icon="alert-triangle",
                 color_scheme="red",
                 width="100%",
                 margin_y="2",

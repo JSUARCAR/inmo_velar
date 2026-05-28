@@ -530,7 +530,7 @@ def paso_3_detalles_rol() -> rx.Component:
             # Mensaje cuando no hay roles seleccionados
             rx.center(
                 rx.vstack(
-                    rx.icon("triangle_alert", size=32, color=styles.TEXT_TERTIARY),
+                    rx.icon("alert-triangle", size=32, color=styles.TEXT_TERTIARY),
                     rx.text(
                         "No hay roles seleccionados",
                         size="3",
@@ -582,7 +582,7 @@ def modal_persona() -> rx.Component:
                     PersonasState.error_message != "",
                     rx.callout(
                         PersonasState.error_message,
-                        icon="triangle_alert",
+                        icon="alert-triangle",
                         color_scheme="red",
                         role="alert",
                         width="100%",

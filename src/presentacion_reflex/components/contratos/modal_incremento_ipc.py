@@ -22,7 +22,7 @@ def modal_incremento_ipc() -> rx.Component:
                 ContratosState.error_message != "",
                 rx.callout(
                     ContratosState.error_message,
-                    icon="triangle_alert",
+                    icon="alert-triangle",
                     color="red",
                     margin_bottom="1rem",
                 ),

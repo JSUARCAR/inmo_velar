@@ -175,7 +175,7 @@ def gestion_permisos_modal() -> rx.Component:
                 UsuariosState.permissions_error != "",
                 rx.callout(
                     UsuariosState.permissions_error,
-                    icon="triangle_alert",
+                    icon="alert-triangle",
                     color_scheme="red",
                     margin_top="12px",
                 ),

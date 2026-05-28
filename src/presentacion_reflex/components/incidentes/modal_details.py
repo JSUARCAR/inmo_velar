@@ -309,7 +309,7 @@ def modal_details() -> rx.Component:
                                         "Propiedad", inc["direccion_propiedad"], "home"
                                     ),
                                     _detail_row(
-                                        "Prioridad", inc["prioridad"], "triangle_alert"
+                                        "Prioridad", inc["prioridad"], "alert-triangle"
                                     ),
                                     _detail_row("Fecha", inc["fecha"], "calendar"),
                                     _detail_row("Origen", inc["origen"], "user"),
@@ -402,7 +402,7 @@ def modal_details() -> rx.Component:
                                             ),
                                             rx.callout(
                                                 "El incidente se cerrara directamente sin seguir el flujo normal.",
-                                                icon="triangle_alert",
+                                                icon="alert-triangle",
                                                 color_scheme="yellow",
                                                 width="100%",
                                             ),
@@ -497,7 +497,7 @@ def modal_details() -> rx.Component:
                                                 != "",
                                                 rx.callout(
                                                     IncidentesState.direct_finish_error,
-                                                    icon="triangle_alert",
+                                                    icon="alert-triangle",
                                                     color_scheme="red",
                                                     width="100%",
                                                     margin_top="0.5em",

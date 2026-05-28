@@ -31,7 +31,7 @@ def modal_renovacion_contrato() -> rx.Component:
                 ContratosState.error_message != "",
                 rx.callout(
                     ContratosState.error_message,
-                    icon="triangle_alert",
+                    icon="alert-triangle",
                     color_scheme="red",
                     margin_bottom="1rem",
                 ),
@@ -45,7 +45,7 @@ def modal_renovacion_contrato() -> rx.Component:
                     # Visor de Error en Proyección
                     rx.callout(
                         ContratosState.renewal_proyeccion["error"],
-                        icon="triangle_alert",
+                        icon="alert-triangle",
                         color_scheme="ruby",
                         margin_y="1rem",
                         width="100%",
