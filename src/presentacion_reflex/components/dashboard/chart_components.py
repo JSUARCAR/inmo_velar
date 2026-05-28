@@ -47,7 +47,6 @@ def vencimientos_chart() -> rx.Component:
             rx.box(
                 rx.recharts.bar_chart(
                     rx.recharts.bar(
-                        rx.recharts.label_list(data_key="value", position="top", fill=styles.TEXT_TERTIARY, font_size=12),
                         data_key="value",
                         stroke=styles.ACCENT_COLOR,
                         fill=styles.ACCENT_COLOR,
