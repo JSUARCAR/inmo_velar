@@ -109,6 +109,16 @@ class LiquidacionesState(DocumentosStateMixin):
         int
     ] = []  # IDs seleccionados para acciones masivas
 
+    @staticmethod
+    def parse_int_safe(value: Any, default: int = 0) -> int:
+        """Convierte de forma segura valores numéricos provenientes de JS."""
+        if value in (None, "undefined", "null", ""):
+            return default
+        try:
+            return int(float(value))
+        except (ValueError, TypeError):
+            return default
+
     @rx.var
     def detalles_ingresos(self) -> List[Dict[str, Any]]:
         """Devuelve la lista de ingresos tipeada para rx.foreach."""
@@ -1069,19 +1079,23 @@ class LiquidacionesState(DocumentosStateMixin):
 
             # Procesar datos del formulario
             datos_procesados = {
-                "otros_ingresos": int(form_data.get("otros_ingresos", 0)),
-                "gastos_administracion": int(form_data.get("gastos_administracion", 0)),
-                "gastos_servicios": int(form_data.get("gastos_servicios", 0)),
-                "gastos_reparaciones": int(form_data.get("gastos_reparaciones", 0)),
-                "pago_predial": int(form_data.get("pago_predial", 0)),
-                "otros_egresos": int(form_data.get("otros_egresos", 0)),
+                "otros_ingresos": LiquidacionesState.parse_int_safe(form_data.get("otros_ingresos")),
+                "gastos_administracion": LiquidacionesState.parse_int_safe(form_data.get("gastos_administracion")),
+                "gastos_servicios": LiquidacionesState.parse_int_safe(form_data.get("gastos_servicios")),
+                "gastos_reparaciones": LiquidacionesState.parse_int_safe(form_data.get("gastos_reparaciones")),
+                "pago_predial": LiquidacionesState.parse_int_safe(form_data.get("pago_predial")),
+                "otros_egresos": LiquidacionesState.parse_int_safe(form_data.get("otros_egresos")),
                 "observaciones": form_data.get("observaciones", ""),
             }
 
             if is_create_mode:
                 # Crear nueva liquidación
-                datos_procesados["id_contrato_m"] = int(form_data["id_contrato_m"])
-                datos_procesados["periodo"] = form_data["periodo"]
+                id_contrato_m = LiquidacionesState.parse_int_safe(form_data.get("id_contrato_m"), default=-1)
+                if id_contrato_m <= 0:
+                    raise ValueError("El ID del contrato es obligatorio. Por favor seleccione una propiedad válida.")
+                
+                datos_procesados["id_contrato_m"] = id_contrato_m
+                datos_procesados["periodo"] = form_data.get("periodo", "")
                 servicio.generar_liquidacion_mensual(
                     id_contrato_m=datos_procesados["id_contrato_m"],
                     periodo=datos_procesados["periodo"],
@@ -1249,6 +1263,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 self.show_reverse_confirm = False
                 self.show_detail_modal = False
                 self.is_loading = False
+                self.form_data = {}  # Limpieza de Estado (Post-Reversión)
 
             yield LiquidacionesState.load_liquidaciones()
 
