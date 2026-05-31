@@ -124,13 +124,9 @@ def modal_recaudo() -> rx.Component:
             ),
             # Formulario
             rx.form.root(
-                # Campos ocultos reales vía HTML para evitar renderizado de wrappers de Reflex
-                rx.html(
-                    f'<input type="hidden" name="id_recaudo" value="{RecaudosState.form_data["id_recaudo"]}">'
-                ),
-                rx.html(
-                    f'<input type="hidden" name="id_contrato_a" value="{RecaudosState.form_data["id_contrato_a"]}">'
-                ),
+                # Campos ocultos nativos y seguros
+                rx.input(type="hidden", name="id_recaudo", value=RecaudosState.form_data["id_recaudo"].to(str)),
+                rx.input(type="hidden", name="id_contrato_a", value=RecaudosState.form_data["id_contrato_a"].to(str)),
                 rx.vstack(
                     # Contrato (solo en creación, visualmente)
                     rx.cond(

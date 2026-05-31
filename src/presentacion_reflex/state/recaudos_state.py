@@ -437,13 +437,11 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             servicio = _crear_servicio()
             usuario = await self._get_usuario_actual()
 
-            id_contrato = form_data.get("id_contrato_a") or st_form_data.get(
-                "id_contrato_a"
-            )
+            id_contrato = str(form_data.get("id_contrato_a") or st_form_data.get("id_contrato_a", "")).strip()
 
-            if not id_contrato:
+            if not id_contrato or id_contrato == "undefined" or id_contrato == "None":
                 async with self:
-                    self.error_message = "Debe seleccionar un contrato"
+                    self.error_message = "Debe seleccionar un contrato válido"
                     self.is_loading = False
                 return
 
