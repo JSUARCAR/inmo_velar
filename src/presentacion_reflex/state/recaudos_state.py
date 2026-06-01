@@ -534,7 +534,8 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                 idem_key = self.generate_idempotency_key(
                     "recaudo:registrar", comando.__dict__
                 )
-                self.start_idempotent_request(idem_key)
+                async with self:
+                    self.start_idempotent_request(idem_key)
                 servicio.registrar_pago(comando, usuario, idempotency_key=idem_key)
 
             async with self:
