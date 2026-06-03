@@ -408,7 +408,6 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
             "[DIRECCION CODEUDOR]": data['codeudor']['direccion'],
             "[TELEFONO CODEUDOR]": data['codeudor']['telefono'],
             "[CORREO CODEUDOR]": data['codeudor']['email'],
-            "[CORREO CODEUDOR]": data['codeudor']['email'],
             "[DIFERENCIA DE MESES FECHA FIN - FECHA INICIO]": str(data['condiciones']['duracion_meses']), # Simplificado, asumimos viene calculado o data raw
             "[VALOR CANON ARRENDAMIENTO EN TEXTO]": num2words(data['condiciones']['canon'], lang='es').upper() + " PESOS M/CTE",
             
@@ -417,9 +416,6 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
             "[DÍA DE PAGO EN TEXTO]": fecha_pago_texto
         }
 
-        # Fix placeholder variations
-        mapeo["[TELEFONO CODEUDOR]"] = data['codeudor']['telefono']
-        mapeo["[CORREO CODEUDOR]"] = data['codeudor']['email']
 
         for clausula in self.CLAUSULAS_TEXTO:
             titulo = clausula["titulo"]

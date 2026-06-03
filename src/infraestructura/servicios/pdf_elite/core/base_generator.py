@@ -49,6 +49,21 @@ class BasePDFGenerator(ABC):
 
         self.config = config
 
+        self.output_dir = output_dir or config.output_dir
+        self.output_dir.mkdir(exist_ok=True, parents=True)
+
+        # Metadata del documento
+        self.metadata: Dict[str, Any] = {
+            "creator": "Sistema PDF Élite - Inmobiliaria Velar",
+            "producer": "ReportLab PDF Library",
+            "created_at": datetime.now(),
+        }
+
+        # Estado interno
+        self._generated_file: Optional[Path] = None
+
+        logger.debug(f"Inicializado {self.__class__.__name__}")
+
     def _sanitize_string(self, text: str) -> str:
         """Sanitiza strings para prevenir errores de XML en ReportLab"""
         import html
@@ -79,20 +94,6 @@ class BasePDFGenerator(ABC):
             else:
                 sanitized[key] = value
         return sanitized
-        self.output_dir = output_dir or config.output_dir
-        self.output_dir.mkdir(exist_ok=True, parents=True)
-
-        # Metadata del documento
-        self.metadata: Dict[str, Any] = {
-            "creator": "Sistema PDF Élite - Inmobiliaria Velar",
-            "producer": "ReportLab PDF Library",
-            "created_at": datetime.now(),
-        }
-
-        # Estado interno
-        self._generated_file: Optional[Path] = None
-
-        logger.debug(f"Inicializado {self.__class__.__name__}")
 
     # ========================================================================
     # MÉTODOS ABSTRACTOS (Deben ser implementados por subclases)
