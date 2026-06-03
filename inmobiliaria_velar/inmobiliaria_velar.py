@@ -37,3 +37,13 @@ app = rx.App(
 )
 
 from src.presentacion_reflex import pages
+
+# Registrar rutas de descarga (PDFs y Blobs)
+from src.presentacion_reflex.api.pdf_download_api import register_pdf_routes
+from src.presentacion_reflex.api.document_download_api import register_document_routes
+
+try:
+    register_pdf_routes(app)
+    register_document_routes(app)
+except Exception as e:
+    print(f"Error registrando rutas API: {e}")

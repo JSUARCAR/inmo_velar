@@ -423,7 +423,7 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
 
         for clausula in self.CLAUSULAS_TEXTO:
             titulo = clausula["titulo"]
-            texto = clausula["texto"].replace("<br>", "<br/>")
+            texto = clausula["texto"].replace("<br/>", "<br/>")
             
             # Reemplazar con formato Negrita y Subrayado
             for k, v in mapeo.items():

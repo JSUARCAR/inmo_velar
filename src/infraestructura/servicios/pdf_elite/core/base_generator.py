@@ -48,6 +48,37 @@ class BasePDFGenerator(ABC):
         from .config import config
 
         self.config = config
+
+    def _sanitize_string(self, text: str) -> str:
+        """Sanitiza strings para prevenir errores de XML en ReportLab"""
+        import html
+        if not isinstance(text, str):
+            return str(text)
+        if text.startswith('data:image'):
+            return text
+        return html.escape(text)
+
+    def _sanitize_data_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Aplica sanitización XML recursiva a un diccionario de datos"""
+        sanitized = {}
+        for key, value in data.items():
+            if isinstance(value, str):
+                sanitized[key] = self._sanitize_string(value)
+            elif isinstance(value, dict):
+                sanitized[key] = self._sanitize_data_dict(value)
+            elif isinstance(value, list):
+                sanitized_list = []
+                for item in value:
+                    if isinstance(item, str):
+                        sanitized_list.append(self._sanitize_string(item))
+                    elif isinstance(item, dict):
+                        sanitized_list.append(self._sanitize_data_dict(item))
+                    else:
+                        sanitized_list.append(item)
+                sanitized[key] = sanitized_list
+            else:
+                sanitized[key] = value
+        return sanitized
         self.output_dir = output_dir or config.output_dir
         self.output_dir.mkdir(exist_ok=True, parents=True)
 
@@ -164,6 +195,9 @@ class BasePDFGenerator(ABC):
             Path del archivo generado, o None si hubo error
         """
         try:
+            # 1. Sanitizar datos contra inyecciones XML
+            data = self._sanitize_data_dict(data)
+
             # Validar datos primero
             if not self.validate_data(data):
                 raise ValueError("Datos de entrada inválidos")
