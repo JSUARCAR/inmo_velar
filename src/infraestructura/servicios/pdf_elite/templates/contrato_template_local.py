@@ -11,9 +11,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
 from num2words import num2words
+import html
 
 
 from ..components.tables import AdvancedTable
@@ -232,9 +232,9 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
 
     def _add_resumen_partes(self, data: Dict[str, Any]):
         """Crea el bloque visual de resumen tipo ficha técnica"""
-        arrendador = self.ARRENDADOR_INFO
+        arrendador = data.get('inmobiliaria', self.ARRENDADOR_INFO)
         arrendatario = data['arrendatario']
-        codeudor = data['codeudor']
+        codeudor = data.get('codeudor', {})
         inmueble = data['inmueble']
         cond = data['condiciones']
         
@@ -297,7 +297,9 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
         # 3. ARRENDATARIO
         data_table.append(row_user[0])
         # 4. CODEUDOR
-        data_table.append(row_cod[0])
+        tiene_codeudor = codeudor and codeudor.get('documento') and codeudor.get('documento') != "N/A"
+        if tiene_codeudor:
+            data_table.append(row_cod[0])
         # 5. CANON
         data_table.append([p_kw("CANON ARRENDAMIENTO:"), p_val(canon_fmt)])
         # 6. INICIO
@@ -348,12 +350,13 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
 
         for clausula in self.CLAUSULAS_TEXTO:
             titulo = clausula["titulo"]
-            texto = clausula["texto"]
+            texto = clausula["texto"].replace("<br>", "<br/>")
             
             # Reemplazar con formato Negrita y Subrayado
             for k, v in mapeo.items():
                 if k in texto:
-                    replacement = f"<b><u>{v}</u></b>" if "<u>" not in texto else f"{v}" # Simplificado para evitar tags anidadas
+                    v_escaped = html.escape(str(v))
+                    replacement = f"<b><u>{v_escaped}</u></b>" if "<u>" not in texto else f"{v_escaped}" # Simplificado para evitar tags anidadas
                     texto = texto.replace(k, replacement)
             
             # Render
@@ -362,11 +365,11 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
             self.add_spacer(0.15)
 
     def _add_firmas_tres_columnas(self, data: Dict[str, Any]):
-        """Renderiza bloque de 3 firmas"""
+        """Renderiza bloque de firmas dinámico (2 o 3 columnas)"""
         
-        arr_info = self.ARRENDADOR_INFO
+        arr_info = data.get('inmobiliaria', self.ARRENDADOR_INFO)
         arren = data['arrendatario']
-        cod = data['codeudor']
+        cod = data.get('codeudor', {})
         
         style_firma = ParagraphStyle('Firma', fontName='Helvetica', fontSize=8, leading=10, alignment=1) # Center
         
@@ -394,20 +397,27 @@ class ContratoArrendamientoElite(BaseDocumentTemplate):
             arren['telefono']
         )
         
-        # Codeudor
-        bloque_3 = firma_bloque(
-            "CODEUDOR",
-            cod['nombre'],
-            cod['documento'],
-            cod.get('direccion', ''),
-            cod['telefono']
-        )
+        # Tabla dinámica según exista codeudor
+        tiene_codeudor = cod and cod.get('documento') and cod.get('documento') != "N/A"
         
-        # Tabla de 3 columnas
-        tabla_firmas = Table(
-            [[bloque_1, bloque_2, bloque_3]], 
-            colWidths=[170, 170, 170]
-        )
+        if tiene_codeudor:
+            bloque_3 = firma_bloque(
+                "CODEUDOR",
+                cod['nombre'],
+                cod['documento'],
+                cod.get('direccion', ''),
+                cod['telefono']
+            )
+            tabla_firmas = Table(
+                [[bloque_1, bloque_2, bloque_3]], 
+                colWidths=[170, 170, 170]
+            )
+        else:
+            tabla_firmas = Table(
+                [[bloque_1, bloque_2]], 
+                colWidths=[255, 255]
+            )
+            
         tabla_firmas.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'TOP'),
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),

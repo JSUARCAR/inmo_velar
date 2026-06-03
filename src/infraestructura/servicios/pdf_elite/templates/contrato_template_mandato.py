@@ -423,16 +423,16 @@ class ContratoMandatoElite(BaseDocumentTemplate):
 
         # Mapping para compatibilidad con texto existente
         mapeo = {
-            "[DIRECCION PREDIO]": html.escape(str(data['inmueble'].get('direccion', 'N/A'))).upper(),
-            "[MATRICULA INMOBILIARIA]": html.escape(str(data['inmueble'].get('matricula_inmobiliaria', 'N/A'))),
+            "[DIRECCION PREDIO]": str(data['inmueble'].get('direccion', 'N/A')).upper(),
+            "[MATRICULA INMOBILIARIA]": str(data['inmueble'].get('matricula_inmobiliaria', 'N/A')),
             "[FECHA ACTUAL DEL SISTEMA]": self._format_fecha_es(data.get('fecha', 'N/A')),
-            "[NOMBRE PROPIETARIO]": html.escape(str(mandante.get('nombre', 'N/A'))).upper(),
-            "[NOMBRE CONSIGNATARIO]": html.escape(str(mandante.get('consignatario') or mandante.get('nombre', 'N/A'))).upper(),
-            "[TELEFONO PROPIETARIO]": html.escape(str(mandante.get('telefono', 'N/A'))),
-            "[CORREO PROPIETARIO]": html.escape(str(mandante.get('email', 'N/A'))),
-            "[BANCO PROPIETARIO]": html.escape(str(mandante.get('banco', '___BANCO___'))),
-            "[TIPO DE CUENTA PROPIETARIO]": html.escape(str(mandante.get('tipo_cuenta', '___TIPO___'))),
-            "[NUMERO DE CUENTA PROPIETARIO]": html.escape(str(mandante.get('numero_cuenta', '___NUMERO___'))),
+            "[NOMBRE PROPIETARIO]": str(mandante.get('nombre', 'N/A')).upper(),
+            "[NOMBRE CONSIGNATARIO]": str(mandante.get('consignatario') or mandante.get('nombre', 'N/A')).upper(),
+            "[TELEFONO PROPIETARIO]": str(mandante.get('telefono', 'N/A')),
+            "[CORREO PROPIETARIO]": str(mandante.get('email', 'N/A')),
+            "[BANCO PROPIETARIO]": str(mandante.get('banco', '___BANCO___')),
+            "[TIPO DE CUENTA PROPIETARIO]": str(mandante.get('tipo_cuenta', '___TIPO___')),
+            "[NUMERO DE CUENTA PROPIETARIO]": str(mandante.get('numero_cuenta', '___NUMERO___')),
             "[FECHA DE INICIO]": self._format_fecha_es(data.get('fecha_inicio', 'N/A')),
             "[FECHA DE FIN]": self._format_fecha_es(data.get('fecha_fin', 'N/A')), 
             "[VALOR CANON ARRENDAMIENTO]": f"${data['condiciones'].get('valor_canon_sugerido', 0):,.0f}",
@@ -448,18 +448,19 @@ class ContratoMandatoElite(BaseDocumentTemplate):
 
         for clausula in self.CLAUSULAS_TEXTO:
             titulo = clausula["titulo"]
-            texto = clausula["texto"]
+            texto = clausula["texto"].replace("<br>", "<br/>")
             
             # Reemplazar con formato Negrita y Subrayado
             for k, v in mapeo.items():
                 if k in texto:
-                    replacement = f"<b><u>{v}</u></b>" if "<u>" not in texto else f"{v}" # Simplificado para evitar tags anidadas
+                    v_escaped = html.escape(str(v))
+                    replacement = f"<b><u>{v_escaped}</u></b>" if "<u>" not in texto else f"{v_escaped}" # Simplificado para evitar tags anidadas
                     texto = texto.replace(k, replacement)
             
             # Render
             self.add_heading(titulo, level=2)
             
-            parts = texto.split('<br>')
+            parts = texto.split('<br/>')
             for part in parts:
                 if part.strip():
                     self.add_paragraph(part.strip(), style_name="Body", alignment="justify")
