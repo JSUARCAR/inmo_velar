@@ -110,7 +110,7 @@ def seguros_page() -> rx.Component:
                     SegurosState.error_message != "",
                     rx.callout(
                         SegurosState.error_message,
-                        icon="circle_alert",
+                        icon="triangle-alert",
                         color_scheme="red",
                         role="alert",
                     ),
@@ -165,7 +165,7 @@ def seguros_page() -> rx.Component:
                                         rx.table.cell(
                                             rx.badge(
                                                 rx.cond(
-                                                    seguro.estado_seguro == 1, "Activo", "Inactivo"
+                                                    seguro.estado_seguro == 1, "ACTIVO", "Inactivo"
                                                 ),
                                                 color_scheme=rx.cond(
                                                     seguro.estado_seguro == 1, "green", "gray"

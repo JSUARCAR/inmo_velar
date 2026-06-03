@@ -1,16 +1,14 @@
-import datetime
 import reflex as rx
 from src.presentacion_reflex.state.auth_state import AuthState
-from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
 from src.presentacion_reflex import styles
 
 
 def login_card() -> rx.Component:
-    """Tarjeta de login refinada con estética 'The Digital Curator'."""
+    """Tarjeta de login con estética Claude Design System."""
     return rx.box(
         rx.form(
             rx.vstack(
-                # Header del Card
+                # ── Header del Card ─────────────────────────────────────
                 rx.vstack(
                     rx.heading(
                         "INMOBILIARIA VELAR S.A.S",
@@ -32,8 +30,9 @@ def login_card() -> rx.Component:
                     width="100%",
                     margin_bottom="8",
                 ),
-                # Formulario
+                # ── Campos del formulario ───────────────────────────────
                 rx.vstack(
+                    # Campo Usuario
                     rx.vstack(
                         rx.text(
                             "Usuario",
@@ -53,6 +52,7 @@ def login_card() -> rx.Component:
                         width="100%",
                         spacing="2",
                     ),
+                    # Campo Contraseña con toggle de visibilidad
                     rx.vstack(
                         rx.text(
                             "Contraseña",
@@ -104,6 +104,7 @@ def login_card() -> rx.Component:
                         width="100%",
                         spacing="2",
                     ),
+                    # Botón de acceso
                     rx.button(
                         "Acceder al Panel",
                         type="submit",
@@ -113,6 +114,7 @@ def login_card() -> rx.Component:
                         margin_top="4",
                         loading=AuthState.is_loading,
                     ),
+                    # Mensaje de error condicional
                     rx.cond(
                         AuthState.error_message != "",
                         rx.hstack(
@@ -132,9 +134,9 @@ def login_card() -> rx.Component:
                     spacing="4",
                     width="100%",
                 ),
-                # Footer sutil
+                # ── Footer ─────────────────────────────────────────────
                 rx.text(
-                    f"© {datetime.datetime.now().year} Velar Inmobiliaria SAS",
+                    "© 2026 Velar Inmobiliaria SAS",
                     size="1",
                     color=styles.TEXT_TERTIARY,
                     margin_top="12",
@@ -165,7 +167,7 @@ def login_page() -> rx.Component:
     Móvil: Imagen de fondo (opacidad 60%) con tarjeta superpuesta.
     """
     return rx.flex(
-        # Panel Visual (Hero en Desktop / Fondo en Móvil)
+        # ── Panel Visual (Hero en Desktop / Fondo en Móvil) ─────────
         rx.box(
             rx.image(
                 src="/login/image_login_velar.png",
@@ -173,7 +175,8 @@ def login_page() -> rx.Component:
                 width="100%",
                 object_fit="cover",
                 filter="sepia(0.2) contrast(1.1)",
-                opacity=["0.6", "0.6", "1", "1"],  # 60% opacidad en móvil
+                opacity=["0.6", "0.6", "1", "1"],
+                loading="lazy",
             ),
             width=["100%", "100%", "50%", "60%"],
             height="100vh",
@@ -183,7 +186,7 @@ def login_page() -> rx.Component:
             z_index="0",
             overflow="hidden",
         ),
-        # Panel de Acceso (Formulario)
+        # ── Panel de Acceso (Formulario) ────────────────────────────
         rx.center(
             rx.vstack(
                 login_card(),
@@ -193,7 +196,9 @@ def login_page() -> rx.Component:
             ),
             width=["100%", "100%", "50%", "40%"],
             height="100vh",
-            background_color=["transparent", "transparent", styles.BG_APP, styles.BG_APP],
+            background_color=[
+                "transparent", "transparent", styles.BG_APP, styles.BG_APP
+            ],
             z_index="1",
             position="relative",
         ),

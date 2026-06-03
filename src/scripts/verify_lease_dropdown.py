@@ -33,7 +33,7 @@ def verify_logic():
             cursor.execute(
                 """
                 SELECT 1 FROM CONTRATOS_MANDATOS 
-                WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_M = 'Activo'
+                WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_M = 'ACTIVO'
             """
                 % db_manager.get_placeholder(),
                 (p_id,),
@@ -44,7 +44,7 @@ def verify_logic():
             cursor.execute(
                 """
                 SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS 
-                WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'Activo'
+                WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'ACTIVO'
             """
                 % db_manager.get_placeholder(),
                 (p_id,),

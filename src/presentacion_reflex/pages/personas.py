@@ -66,7 +66,7 @@ def persona_row(persona: dict) -> rx.Component:
         rx.table.cell(
             rx.box(
                 persona["estado"],
-                color=rx.cond(persona["estado"] == "Activo", "var(--green-9)", "var(--red-9)"),
+                color=rx.cond(persona["estado"] == "ACTIVO", "var(--green-9)", "var(--red-9)"),
                 background=styles.BG_PANEL,
                 border_radius="20px",
                 padding="2px 10px",
@@ -498,7 +498,7 @@ def personas_page() -> rx.Component:
                                                     neuro_badge(
                                                         p["estado"],
                                                         color_scheme=rx.cond(
-                                                            p["estado"] == "Activo", "green", "red"
+                                                            p["estado"] == "ACTIVO", "green", "red"
                                                         ),
                                                     )
                                                 ),
@@ -542,7 +542,7 @@ def personas_page() -> rx.Component:
                                                                 "Personas", "ELIMINAR"
                                                             ),
                                                             rx.cond(
-                                                                p["estado"] == "Activo",
+                                                                p["estado"] == "ACTIVO",
                                                                 rx.tooltip(
                                                                     rx.icon_button(
                                                                         rx.icon("trash_2", size=16),

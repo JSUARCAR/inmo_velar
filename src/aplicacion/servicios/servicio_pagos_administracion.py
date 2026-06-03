@@ -13,6 +13,7 @@ from src.dominio.excepciones.propiedad_horizontal_error import (
 )
 from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempotencia
 from src.aplicacion.decorators.idempotent import idempotent
+from src.infraestructura.cache.cache_manager import cache_manager
 
 
 class ServicioPagosAdministracion:
@@ -29,6 +30,7 @@ class ServicioPagosAdministracion:
         self.repo_pagos = repo_pagos
         self.repo_idempotencia = repo_idempotencia
 
+    @cache_manager.invalidates("dashboard")
     def generar_pagos_mes(self, periodo: str, usuario_sistema: str) -> Dict[str, Any]:
         """
         Genera masivamente los pagos de administración para un periodo dado.
@@ -97,6 +99,7 @@ class ServicioPagosAdministracion:
         )
 
     @idempotent(key_prefix="pagos_admin:marcar_pagado")
+    @cache_manager.invalidates("dashboard")
     def marcar_como_pagado(self, id_pago: int, usuario_sistema: str) -> bool:
         return self.repo_pagos.marcar_pagado(id_pago, usuario_sistema)
 

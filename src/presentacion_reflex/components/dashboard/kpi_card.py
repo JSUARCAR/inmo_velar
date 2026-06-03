@@ -16,6 +16,8 @@ def kpi_card(
     variant: str = "standard",  # standard, elite, compact
     hover_content: rx.Component = None,
     href: str = None,
+    tooltip: str = "",
+    tendencia: str = "",
 ) -> rx.Component:
     """
     Tarjeta KPI reutilizable.
@@ -129,18 +131,27 @@ def kpi_card(
                 ),
                 rx.cond(
                     subtitulo != "",
-                    rx.box(
+                    rx.hstack(
                         rx.text(
                             subtitulo, 
                             size="1", 
                             weight="medium", 
-                            color=subtitle_color,
+                            color=subtitle_color, 
                             font_family=styles.FONT_SANS,
                         ),
-                        margin_top="8px",
+                        rx.cond(
+                            tendencia != "",
+                            rx.badge(
+                                tendencia,
+                                color_scheme="green" if "+" in tendencia else "red" if "-" in tendencia else "gray",
+                                size="1",
+                                variant="soft",
+                            ),
+                        ),
+                        align="center",
+                        width="100%",
                         padding_top="8px",
                         border_top=f"1px solid {styles.BORDER_DEFAULT}",
-                        width="100%",
                     ),
                 ),
                 spacing="1",
@@ -211,6 +222,9 @@ def kpi_card(
             underline="none",
             width="100%",
         )
+
+    if tooltip:
+        card_component = rx.tooltip(card_component, content=tooltip)
 
     if hover_content is not None:
         from src.presentacion_reflex.components.neuro_elements import neuro_tooltip

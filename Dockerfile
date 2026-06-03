@@ -18,7 +18,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Cache-busting ARG — incrementar para forzar rebuild limpio desde COPY . .
-ARG CACHEBUST=20260226_1303
+ARG CACHEBUST=20260528_0150
 
 # Copy ALL source code
 COPY . .
@@ -33,8 +33,16 @@ RUN chmod +x /app/entrypoint.sh
 # Initialize Reflex and build frontend at BUILD time.
 # Railway env vars (DATABASE_URL) are NOT available during docker build,
 # so we pass a dummy SQLite URL inline — it does NOT persist in the image.
-RUN DATABASE_URL=sqlite:///dummy_build.db reflex init
-RUN DATABASE_URL=sqlite:///dummy_build.db reflex export --frontend-only --no-zip
+# We also set RAILWAY_ENVIRONMENT to ensure rxconfig compiles the frontend in PROD mode.
+# Hardening: Verificar que los símbolos de estilo existan antes de construir
+RUN python -c "\
+import sys, importlib; \
+mod = importlib.import_module('src.presentacion_reflex.styles'); \
+[sys.exit(f'Missing: {attr}') for attr in ['BASE_STYLE', 'BG_APP', 'BG_PANEL', 'TEXT_PRIMARY'] if not hasattr(mod, attr)]; \
+print(' All required style symbols verified')"
+
+RUN rm -rf .web && RAILWAY_ENVIRONMENT=production DATABASE_URL=sqlite:///dummy_build.db reflex init
+RUN RAILWAY_ENVIRONMENT=production DATABASE_URL=sqlite:///dummy_build.db reflex export --frontend-only --no-zip
 RUN rm -f dummy_build.db
 
 # Diagnostic: show where the frontend files ended up

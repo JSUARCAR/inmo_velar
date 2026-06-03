@@ -270,7 +270,7 @@ class RepositorioPagosAdminPostgres:
             JOIN PERSONAS prop ON prop_jun.ID_PERSONA = prop.ID_PERSONA
             LEFT JOIN PROPIETARIOS apo_jun ON cm.ID_ASESOR = apo_jun.ID_PROPIETARIO
             LEFT JOIN PERSONAS prop_apoderado ON apo_jun.ID_PERSONA = prop_apoderado.ID_PERSONA
-            WHERE cm.ESTADO_CONTRATO_M = 'Activo'
+            WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO'
               AND p.VALOR_ADMINISTRACION IS NOT NULL
               AND p.VALOR_ADMINISTRACION > 0
         """

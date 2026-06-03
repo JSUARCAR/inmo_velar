@@ -15,7 +15,7 @@ def create_saldo_modal() -> rx.Component:
                     SaldosState.error_message != "",
                     rx.callout(
                         SaldosState.error_message,
-                        icon="triangle_alert",
+                        icon="triangle-alert",
                         color_scheme="red",
                         width="100%",
                     ),

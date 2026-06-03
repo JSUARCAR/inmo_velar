@@ -15,6 +15,7 @@ from src.aplicacion.servicios.servicio_contrato_arrendamiento import (
 )
 from src.aplicacion.servicios.servicio_contrato_mandato import ServicioContratoMandato
 from src.infraestructura.cache.cache_manager import cache_manager
+from src.dominio.constantes.cache_keys import CacheKeys
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
     RepositorioArrendatarioPostgres,
@@ -82,9 +83,9 @@ class ServicioContratos:
     # DROPDOWN HELPERS
     # =========================================================================
 
-    def obtener_propiedades_sin_mandato_activo(self) -> List[Dict[str, Any]]:
+    def obtener_propiedades_sin_mandato_ACTIVO(self) -> List[Dict[str, Any]]:
         """
-        Retorna lista de propiedades que NO tienen contrato de mandato activo.
+        Retorna lista de propiedades que NO tienen contrato de mandato ACTIVO.
         Útil para el dropdown de Creación de Mandato.
         """
         query = """
@@ -94,7 +95,7 @@ class ServicioContratos:
           AND NOT EXISTS (
               SELECT 1 FROM CONTRATOS_MANDATOS cm
               WHERE cm.ID_PROPIEDAD = p.ID_PROPIEDAD
-                AND cm.ESTADO_CONTRATO_M = 'Activo'
+                AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
           )
         ORDER BY p.MATRICULA_INMOBILIARIA
         """
@@ -112,7 +113,7 @@ class ServicioContratos:
 
     def obtener_propiedades_para_arrendamiento(self) -> List[Dict[str, Any]]:
         """
-        Retorna lista de propiedades con Mandato Activo y SIN Arriendo Activo.
+        Retorna lista de propiedades con Mandato ACTIVO y SIN Arriendo ACTIVO.
         Útil para el dropdown de Creación de Arrendamiento.
         """
         query = """
@@ -120,11 +121,11 @@ class ServicioContratos:
         FROM PROPIEDADES p
         JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD
         WHERE p.ESTADO_REGISTRO = TRUE
-          AND cm.ESTADO_CONTRATO_M = 'Activo'
+          AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
           AND NOT EXISTS (
               SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca
               WHERE ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-                AND ca.ESTADO_CONTRATO_A = 'Activo'
+                AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
           )
         ORDER BY p.MATRICULA_INMOBILIARIA
         """
@@ -153,8 +154,8 @@ class ServicioContratos:
         query_mandatos = f"""
         SELECT 
             COUNT(*) as total,
-            SUM(CASE WHEN ESTADO_CONTRATO_M = 'Activo' THEN 1 ELSE 0 END) as activos,
-            SUM(CASE WHEN ESTADO_CONTRATO_M != 'Activo' THEN 1 ELSE 0 END) as inactivos
+            SUM(CASE WHEN ESTADO_CONTRATO_M = 'ACTIVO' THEN 1 ELSE 0 END) as ACTIVOs,
+            SUM(CASE WHEN ESTADO_CONTRATO_M != 'ACTIVO' THEN 1 ELSE 0 END) as inACTIVOs
         FROM CONTRATOS_MANDATOS
         {asesor_where_mandatos}
         """
@@ -162,8 +163,8 @@ class ServicioContratos:
         query_arriendos = f"""
         SELECT 
             COUNT(*) as total,
-            SUM(CASE WHEN ESTADO_CONTRATO_A = 'Activo' THEN 1 ELSE 0 END) as activos,
-            SUM(CASE WHEN ESTADO_CONTRATO_A != 'Activo' THEN 1 ELSE 0 END) as inactivos
+            SUM(CASE WHEN ESTADO_CONTRATO_A = 'ACTIVO' THEN 1 ELSE 0 END) as ACTIVOs,
+            SUM(CASE WHEN ESTADO_CONTRATO_A != 'ACTIVO' THEN 1 ELSE 0 END) as inACTIVOs
         FROM CONTRATOS_ARRENDAMIENTOS
         {asesor_where_arriendos}
         """
@@ -188,13 +189,13 @@ class ServicioContratos:
             return {
                 "mandatos": {
                     "total": _get_val(r_mandato, "total"),
-                    "activos": _get_val(r_mandato, "activos"),
-                    "inactivos": _get_val(r_mandato, "inactivos"),
+                    "ACTIVOs": _get_val(r_mandato, "ACTIVOs"),
+                    "inACTIVOs": _get_val(r_mandato, "inACTIVOs"),
                 },
                 "arriendos": {
                     "total": _get_val(r_arriendo, "total"),
-                    "activos": _get_val(r_arriendo, "activos"),
-                    "inactivos": _get_val(r_arriendo, "inactivos"),
+                    "ACTIVOs": _get_val(r_arriendo, "ACTIVOs"),
+                    "inACTIVOs": _get_val(r_arriendo, "inACTIVOs"),
                 },
             }
 
@@ -203,8 +204,8 @@ class ServicioContratos:
         query_propietarios = "SELECT PR.ID_PROPIETARIO, P.NOMBRE_COMPLETO FROM PERSONAS P INNER JOIN PROPIETARIOS PR ON P.ID_PERSONA = PR.ID_PERSONA WHERE P.ESTADO_REGISTRO = TRUE AND PR.ESTADO_PROPIETARIO = TRUE ORDER BY P.NOMBRE_COMPLETO"
         query_asesores = "SELECT A.ID_ASESOR, P.NOMBRE_COMPLETO FROM PERSONAS P INNER JOIN ASESORES A ON P.ID_PERSONA = A.ID_PERSONA WHERE P.ESTADO_REGISTRO = TRUE AND A.ESTADO = TRUE ORDER BY P.NOMBRE_COMPLETO"
         query_personas = "SELECT ID_PERSONA, NOMBRE_COMPLETO FROM PERSONAS WHERE ESTADO_REGISTRO = TRUE ORDER BY NOMBRE_COMPLETO"
-        query_prop_sin_mandato = "SELECT ID_PROPIEDAD, DIRECCION_PROPIEDAD FROM PROPIEDADES P WHERE ESTADO_REGISTRO = TRUE AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS CM WHERE CM.ID_PROPIEDAD = P.ID_PROPIEDAD AND CM.ESTADO_CONTRATO_M = 'Activo') ORDER BY DIRECCION_PROPIEDAD"
-        query_prop_sin_arriendo = "SELECT P.ID_PROPIEDAD, P.DIRECCION_PROPIEDAD FROM PROPIEDADES P JOIN CONTRATOS_MANDATOS CM ON P.ID_PROPIEDAD = CM.ID_PROPIEDAD WHERE P.ESTADO_REGISTRO = TRUE AND CM.ESTADO_CONTRATO_M = 'Activo' AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS CA WHERE CA.ID_PROPIEDAD = P.ID_PROPIEDAD AND CA.ESTADO_CONTRATO_A = 'Activo') ORDER BY P.DIRECCION_PROPIEDAD"
+        query_prop_sin_mandato = "SELECT ID_PROPIEDAD, DIRECCION_PROPIEDAD FROM PROPIEDADES P WHERE ESTADO_REGISTRO = TRUE AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS CM WHERE CM.ID_PROPIEDAD = P.ID_PROPIEDAD AND CM.ESTADO_CONTRATO_M = 'ACTIVO') ORDER BY DIRECCION_PROPIEDAD"
+        query_prop_sin_arriendo = "SELECT P.ID_PROPIEDAD, P.DIRECCION_PROPIEDAD FROM PROPIEDADES P JOIN CONTRATOS_MANDATOS CM ON P.ID_PROPIEDAD = CM.ID_PROPIEDAD WHERE P.ESTADO_REGISTRO = TRUE AND CM.ESTADO_CONTRATO_M = 'ACTIVO' AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS CA WHERE CA.ID_PROPIEDAD = P.ID_PROPIEDAD AND CA.ESTADO_CONTRATO_A = 'ACTIVO') ORDER BY P.DIRECCION_PROPIEDAD"
         query_arrendatarios = "SELECT AR.ID_ARRENDATARIO, P.NOMBRE_COMPLETO FROM PERSONAS P INNER JOIN ARRENDATARIOS AR ON P.ID_PERSONA = AR.ID_PERSONA WHERE P.ESTADO_REGISTRO = TRUE AND AR.ESTADO_ARRENDATARIO = TRUE ORDER BY P.NOMBRE_COMPLETO"
         query_codeudores = "SELECT C.ID_CODEUDOR, P.NOMBRE_COMPLETO FROM PERSONAS P INNER JOIN CODEUDORES C ON P.ID_PERSONA = C.ID_PERSONA WHERE P.ESTADO_REGISTRO = TRUE AND C.ESTADO_REGISTRO = TRUE ORDER BY P.NOMBRE_COMPLETO"
 
@@ -286,10 +287,11 @@ class ServicioContratos:
     # =========================================================================
 
     @idempotent(key_prefix="contrato:crear_mandato")
+    @cache_manager.invalidates("dashboard")
     def crear_mandato(self, datos: Dict, usuario_sistema: str) -> ContratoMandato:
         return self.servicio_mandato.crear_mandato(datos, usuario_sistema)
 
-    def obtener_mandato_activo(self, id_propiedad: int) -> Optional[ContratoMandato]:
+    def obtener_mandato_ACTIVO(self, id_propiedad: int) -> Optional[ContratoMandato]:
         return self.servicio_mandato.repo_mandato.obtener_activo_por_propiedad(
             id_propiedad
         )
@@ -297,7 +299,8 @@ class ServicioContratos:
     def obtener_mandato_por_id(self, id_contrato: int) -> Optional[ContratoMandato]:
         return self.servicio_mandato.obtener_mandato(id_contrato)
 
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def actualizar_mandato(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
@@ -348,7 +351,7 @@ class ServicioContratos:
     def listar_mandatos_paginado(self, **kwargs) -> Any:
         return self.servicio_mandato.listar_mandatos_paginado(**kwargs)
 
-    def listar_mandatos_activos(self) -> List[Dict[str, Any]]:
+    def listar_mandatos_ACTIVOs(self) -> List[Dict[str, Any]]:
         """
         Retorna lista de mandatos ACTIVOS para dropdowns.
         """
@@ -363,7 +366,7 @@ class ServicioContratos:
         JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
         JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
         JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
-        WHERE cm.ESTADO_CONTRATO_M = 'Activo'
+        WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO'
         ORDER BY p.DIRECCION_PROPIEDAD
         """
         with self.db.obtener_conexion() as conn:
@@ -384,12 +387,13 @@ class ServicioContratos:
     # =========================================================================
 
     @idempotent(key_prefix="contrato:crear_arriendo")
+    @cache_manager.invalidates("dashboard")
     def crear_arrendamiento(
         self, datos: Dict, usuario_sistema: str
     ) -> ContratoArrendamiento:
         return self.servicio_arriendo.crear_arrendamiento(datos, usuario_sistema)
 
-    def obtener_arrendamiento_activo(
+    def obtener_arrendamiento_ACTIVO(
         self, id_propiedad: int
     ) -> Optional[ContratoArrendamiento]:
         return self.servicio_arriendo.repo_arriendo.obtener_activo_por_propiedad(
@@ -401,10 +405,11 @@ class ServicioContratos:
     ) -> Optional[ContratoArrendamiento]:
         return self.servicio_arriendo.obtener_arrendamiento(id_contrato)
 
-    @cache_manager.invalidates("arriendos:list_paginated")
-    @cache_manager.invalidates("mandatos:list_paginated")
-    @cache_manager.invalidates("propiedades:list_paginated")
-    @cache_manager.invalidates("dashboard:propiedades_tipo")
+    @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
+    @cache_manager.invalidates(CacheKeys.PROPIEDADES_LIST)
+    @cache_manager.invalidates(CacheKeys.DASHBOARD_PROPIEDADES_TIPO)
+    @cache_manager.invalidates("dashboard")
     def actualizar_arrendamiento(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
@@ -414,7 +419,8 @@ class ServicioContratos:
         )
 
     @idempotent(key_prefix="contrato:renovar_arriendo")
-    @cache_manager.invalidates("arriendos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def renovar_arrendamiento(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoArrendamiento:
@@ -423,7 +429,8 @@ class ServicioContratos:
         )
 
     @idempotent(key_prefix="contrato:renovar_mandato")
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def renovar_mandato(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoMandato:
@@ -444,7 +451,8 @@ class ServicioContratos:
             return self.servicio_mandato.calcular_proyeccion_renovacion(id_contrato)
 
     @idempotent(key_prefix="contrato:terminar_arriendo")
-    @cache_manager.invalidates("arriendos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def terminar_arrendamiento(
         self, id_contrato: int, motivo: str, usuario_sistema: str
     ) -> None:
@@ -453,7 +461,8 @@ class ServicioContratos:
         )
 
     @idempotent(key_prefix="contrato:terminar_mandato")
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
+    @cache_manager.invalidates("dashboard")
     def terminar_mandato(
         self, id_contrato: int, motivo: str, usuario_sistema: str
     ) -> None:
@@ -552,7 +561,7 @@ class ServicioContratos:
         JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
         JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
         JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-        WHERE ca.ESTADO_CONTRATO_A = 'Activo'
+        WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
           AND ca.FECHA_FIN_CONTRATO_A <= {placeholder}
         ORDER BY ca.FECHA_FIN_CONTRATO_A ASC
         """
@@ -599,7 +608,7 @@ class ServicioContratos:
         JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
         JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
         JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
-        WHERE cm.ESTADO_CONTRATO_M = 'Activo'
+        WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO'
           AND cm.FECHA_FIN_CONTRATO_M <= {placeholder}
         ORDER BY cm.FECHA_FIN_CONTRATO_M ASC
         """
@@ -778,10 +787,10 @@ class ServicioContratos:
             params = []
 
             if estado and estado != "Todos":
-                if estado == "Activo":
-                    conditions.append("cm.ESTADO_CONTRATO_M = 'Activo'")
+                if estado == "ACTIVO":
+                    conditions.append("cm.ESTADO_CONTRATO_M = 'ACTIVO'")
                 elif estado == "Cancelado":
-                    conditions.append("cm.ESTADO_CONTRATO_M != 'Activo'")
+                    conditions.append("cm.ESTADO_CONTRATO_M != 'ACTIVO'")
                 else:
                     conditions.append(f"cm.ESTADO_CONTRATO_M = {placeholder}")
                     params.append(estado)
@@ -826,10 +835,10 @@ class ServicioContratos:
             params = []
 
             if estado and estado != "Todos":
-                if estado == "Activo":
-                    conditions.append("ca.ESTADO_CONTRATO_A = 'Activo'")
+                if estado == "ACTIVO":
+                    conditions.append("ca.ESTADO_CONTRATO_A = 'ACTIVO'")
                 elif estado == "Cancelado":
-                    conditions.append("ca.ESTADO_CONTRATO_A != 'Activo'")
+                    conditions.append("ca.ESTADO_CONTRATO_A != 'ACTIVO'")
                 else:
                     conditions.append(f"ca.ESTADO_CONTRATO_A = {placeholder}")
                     params.append(estado)
@@ -1061,7 +1070,7 @@ class ServicioContratos:
         JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
         JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
         JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-        WHERE ca.ESTADO_CONTRATO_A = 'Activo'
+        WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
           AND ca.FECHA_FIN_CONTRATO_A BETWEEN {placeholder} AND {placeholder}
         ORDER BY ca.FECHA_FIN_CONTRATO_A ASC
         """
@@ -1091,7 +1100,7 @@ class ServicioContratos:
 
             return resultados
 
-    def listar_arrendamientos_activos(self) -> List[Dict[str, Any]]:
+    def listar_arrendamientos_ACTIVOs(self) -> List[Dict[str, Any]]:
         """
         Retorna lista de arrendamientos ACTIVOS para dropdowns.
         """
@@ -1105,7 +1114,7 @@ class ServicioContratos:
         JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
         JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
         JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-        WHERE ca.ESTADO_CONTRATO_A = 'Activo'
+        WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
         ORDER BY p.DIRECCION_PROPIEDAD
         """
         with self.db.obtener_conexion() as conn:
@@ -1130,7 +1139,7 @@ class ServicioContratos:
             id_asesor: ID del asesor (tabla ASESORES)
 
         Returns:
-            Lista de diccionarios con información de cada contrato activo
+            Lista de diccionarios con información de cada contrato ACTIVO
         """
         placeholder = self.db.get_placeholder()
         query = f"""
@@ -1149,8 +1158,8 @@ class ServicioContratos:
         JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
         JOIN PERSONAS per_arr ON arr.ID_PERSONA = per_arr.ID_PERSONA
         WHERE a.ID_ASESOR = {placeholder}
-          AND ca.ESTADO_CONTRATO_A = 'Activo'
-          AND cm.ESTADO_CONTRATO_M = 'Activo'
+          AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
+          AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
         ORDER BY p.DIRECCION_PROPIEDAD
         """
         with self.db.obtener_conexion() as conn:
@@ -1191,7 +1200,7 @@ class ServicioContratos:
                 query = f"""
                 SELECT ID_CONTRATO_M, FECHA_FIN_CONTRATO_M 
                 FROM CONTRATOS_MANDATOS 
-                WHERE ESTADO_CONTRATO_M = 'Activo'
+                WHERE ESTADO_CONTRATO_M = 'ACTIVO'
                   AND date(FECHA_FIN_CONTRATO_M) = date('now', '+{dias} days')
                 """
                 cursor.execute(query)
@@ -1212,7 +1221,7 @@ class ServicioContratos:
                 query = f"""
                 SELECT ID_CONTRATO_A, FECHA_FIN_CONTRATO_A 
                 FROM CONTRATOS_ARRENDAMIENTOS 
-                WHERE ESTADO_CONTRATO_A = 'Activo'
+                WHERE ESTADO_CONTRATO_A = 'ACTIVO'
                   AND date(FECHA_FIN_CONTRATO_A) = date('now', '+{dias} days')
                 """
                 cursor.execute(query)
@@ -1234,7 +1243,7 @@ class ServicioContratos:
             query_ipc = """
             SELECT ID_CONTRATO_A, FECHA_INICIO_CONTRATO_A
             FROM CONTRATOS_ARRENDAMIENTOS
-            WHERE ESTADO_CONTRATO_A = 'Activo'
+            WHERE ESTADO_CONTRATO_A = 'ACTIVO'
             AND strftime('%m-%d', date('now', '+60 days')) = strftime('%m-%d', FECHA_INICIO_CONTRATO_A)
             AND date(FECHA_FIN_CONTRATO_A) > date('now', '+60 days') -- Que no sea el fin del contrato
             """
@@ -1420,13 +1429,13 @@ class ServicioContratos:
         usuario: str = "admin",
     ) -> Dict[str, Any]:
         """
-        Aplica incremento IPC a contrato de arrendamiento activo.
+        Aplica incremento IPC a contrato de arrendamiento ACTIVO.
         También actualiza en cascada la Propiedad y el Contrato de Mandato.
         Utiliza blindaje transaccional atómico.
         """
         try:
             with self.db.transaccion():
-                # 1. Validar contrato existe y está activo
+                # 1. Validar contrato existe y está ACTIVO
                 arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
                 if not arriendo:
                     return {
@@ -1434,10 +1443,10 @@ class ServicioContratos:
                         "message": f"Contrato {id_contrato} no encontrado",
                     }
 
-                if arriendo.estado_contrato_a != "Activo":
+                if arriendo.estado_contrato_a != "ACTIVO":
                     return {
                         "success": False,
-                        "message": "Solo se puede aplicar IPC a contratos activos",
+                        "message": "Solo se puede aplicar IPC a contratos ACTIVOs",
                     }
 
                 id_propiedad = arriendo.id_propiedad

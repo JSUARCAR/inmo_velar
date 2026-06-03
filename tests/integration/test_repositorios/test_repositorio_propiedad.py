@@ -1,5 +1,5 @@
 """
-Tests de integración para RepositorioPropiedadSQLite.
+Tests de integración para RepositorioPropiedadPostgres.
 
 Verifica la interacción con la base de datos SQLite para operaciones CRUD
 de la entidad Propiedad.
@@ -9,7 +9,7 @@ import sqlite3
 from pathlib import Path
 
 from tests.integration.test_database_manager import TestDatabaseManager
-from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
+from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
 from src.dominio.entidades.propiedad import Propiedad
 
 
@@ -72,11 +72,11 @@ def db_manager(tmp_path):
 @pytest.fixture
 def repositorio(db_manager):
     """Crea una instancia del repositorio."""
-    return RepositorioPropiedadSQLite(db_manager)
+    return RepositorioPropiedadPostgres(db_manager)
 
 
 class TestRepositorioPropiedad:
-    """Tests de integración para RepositorioPropiedadSQLite."""
+    """Tests de integración para RepositorioPropiedadPostgres."""
     
     def test_crear_propiedad_basica(self, repositorio):
         """Test: Crear una propiedad con datos básicos."""

@@ -11,14 +11,14 @@ from src.dominio.entidades.codeudor import Codeudor
 from src.dominio.entidades.persona import Persona
 from src.dominio.entidades.propietario import Propietario
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import (
-    RepositorioArrendatarioSQLite,
+from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+    RepositorioArrendatarioPostgres,
 )
-from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
-from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
-from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
-from src.infraestructura.persistencia.repositorio_propietario_sqlite import (
-    RepositorioPropietarioSQLite,
+from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
+from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
+from src.infraestructura.persistencia.repositorio_propietario_postgres import (
+    RepositorioPropietarioPostgres,
 )
 
 
@@ -30,11 +30,11 @@ class ServicioTerceros:
 
     def __init__(self, db_manager: DatabaseManager):
         self.db = db_manager
-        self.repo_persona = RepositorioPersonaSQLite(db_manager)
-        self.repo_asesor = RepositorioAsesorSQLite(db_manager)
-        self.repo_propietario = RepositorioPropietarioSQLite(db_manager)
-        self.repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-        self.repo_codeudor = RepositorioCodeudorSQLite(db_manager)
+        self.repo_persona = RepositorioPersonaPostgres(db_manager)
+        self.repo_asesor = RepositorioAsesorPostgres(db_manager)
+        self.repo_propietario = RepositorioPropietarioPostgres(db_manager)
+        self.repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+        self.repo_codeudor = RepositorioCodeudorPostgres(db_manager)
 
     def crear_persona_con_roles(
         self, persona: Persona, roles: List[str], usuario_sistema: str, **kwargs

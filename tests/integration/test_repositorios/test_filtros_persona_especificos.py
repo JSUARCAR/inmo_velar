@@ -1,11 +1,11 @@
 """
 Tests de integración para Filtros Específicos de RepositorioPersona.
 
-Verifica la lógica de "Inactivos" y "Sin contrato" en RepositorioPersonaSQLite.
+Verifica la lógica de "Inactivos" y "Sin contrato" en RepositorioPersonaPostgres.
 """
 import pytest
 from tests.integration.test_database_manager import TestDatabaseManager
-from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
+from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
 from src.dominio.entidades.persona import Persona
 
 @pytest.fixture
@@ -52,7 +52,7 @@ def db_manager(tmp_path):
 
 @pytest.fixture
 def repo(db_manager):
-    return RepositorioPersonaSQLite(db_manager)
+    return RepositorioPersonaPostgres(db_manager)
 
 class TestFiltrosPersonaEspecificos:
     

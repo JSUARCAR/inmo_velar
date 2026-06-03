@@ -234,7 +234,7 @@ class ServicioPersonas:
                     p.correo_electronico,
                     p.direccion_principal,
                     p.created_at[:10] if p.created_at else "",
-                    "Activo" if p.estado_registro else "Inactivo",
+                    "ACTIVO" if p.estado_registro else "Inactivo",
                 ]
             )
 
@@ -272,7 +272,7 @@ class ServicioPersonas:
                 "correo": persona_dto.correo_principal,
                 "direccion": persona_dto.persona.direccion_principal,
                 "roles": persona_dto.roles,
-                "estado": "Activo" if persona_dto.esta_activa else "Inactivo",
+                "estado": "ACTIVO" if persona_dto.esta_activa else "Inactivo",
                 "fecha_creacion": persona_dto.persona.created_at[:10] if persona_dto.persona.created_at else "N/A",
             },
             "detalles_roles": {}
@@ -290,7 +290,7 @@ class ServicioPersonas:
                 SELECT p.ID_PROPIEDAD, p.MATRICULA_INMOBILIARIA, p.DIRECCION_PROPIEDAD, p.TIPO_PROPIEDAD, p.DISPONIBILIDAD_PROPIEDAD
                 FROM PROPIEDADES p
                 WHERE p.ID_PROPIEDAD IN (
-                    SELECT ID_PROPIEDAD FROM CONTRATOS_MANDATOS WHERE ID_PROPIETARIO = {placeholder} AND ESTADO_CONTRATO_M = 'Activo'
+                    SELECT ID_PROPIEDAD FROM CONTRATOS_MANDATOS WHERE ID_PROPIETARIO = {placeholder} AND ESTADO_CONTRATO_M = 'ACTIVO'
                 )
             """
             
@@ -321,7 +321,7 @@ class ServicioPersonas:
                 SELECT ca.ID_CONTRATO_A, ca.FECHA_INICIO_CONTRATO_A, ca.FECHA_FIN_CONTRATO_A, ca.CANON_ARRENDAMIENTO, p.DIRECCION_PROPIEDAD
                 FROM CONTRATOS_ARRENDAMIENTOS ca
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-                WHERE ca.ID_ARRENDATARIO = {placeholder} AND ca.ESTADO_CONTRATO_A = 'Activo'
+                WHERE ca.ID_ARRENDATARIO = {placeholder} AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
             """
             
             with db_manager.obtener_conexion() as conn:
@@ -610,7 +610,7 @@ class ServicioPersonas:
         result = self.repo_persona.inactivar(id_persona, motivo, usuario_sistema)
         if result:
             self._auditar_accion(
-                id_persona, "ESTADO_CHANGE", "Persona inactivada", "Activo", "Inactivo", usuario_sistema, motivo
+                id_persona, "ESTADO_CHANGE", "Persona inactivada", "ACTIVO", "Inactivo", usuario_sistema, motivo
             )
             cache_manager.invalidate("personas")
         return result
@@ -627,7 +627,7 @@ class ServicioPersonas:
         result = self.repo_persona.actualizar(persona, usuario_sistema)
         if result:
             self._auditar_accion(
-                id_persona, "ESTADO_CHANGE", "Persona reactivada", "Inactivo", "Activo", usuario_sistema
+                id_persona, "ESTADO_CHANGE", "Persona reactivada", "Inactivo", "ACTIVO", usuario_sistema
             )
             cache_manager.invalidate("personas")
         return result

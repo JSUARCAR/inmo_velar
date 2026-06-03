@@ -6,7 +6,11 @@ Muestra las listas detalladas de contratos próximos a vencer.
 import reflex as rx
 from src.presentacion_reflex.state.dashboard_state import DashboardState
 from src.presentacion_reflex import styles
-
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_table_container,
+    neuro_tooltip,
+    neuro_badge,
+)
 
 def badge_dias(dias: int) -> rx.Component:
     """Retorna un badge de color según los días restantes."""
@@ -21,11 +25,7 @@ def badge_dias(dias: int) -> rx.Component:
     )
 
 
-from src.presentacion_reflex.components.neuro_elements import (
-    neuro_table_container,
-    neuro_tooltip,
-    neuro_badge,
-)
+
 
 
 def _tabla_vencimientos(
@@ -97,21 +97,21 @@ def _tabla_vencimientos(
                                 lambda item: rx.table.row(
                                     rx.table.cell(
                                         rx.text(
-                                            item["parte_contratante"],
+                                            item.get("parte_contratante", "N/A"),
                                             size="2",
                                             weight="medium",
                                         )
                                     ),
                                     rx.table.cell(
                                         rx.text(
-                                            item["direccion"],
+                                            item.get("direccion", "N/A"),
                                             size="2",
                                             color=styles.TEXT_SECONDARY,
                                         )
                                     ),
-                                    rx.table.cell(rx.text(item["fecha_fin"], size="2")),
+                                    rx.table.cell(rx.text(item.get("fecha_fin", "N/A"), size="2")),
                                     rx.table.cell(
-                                        badge_dias(item["dias_restantes"].to(int))
+                                        badge_dias(item.get("dias_restantes", 0).to(int))
                                     ),
                                     align="center",
                                 ),

@@ -12,6 +12,7 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
+from xml.parsers.expat import ExpatError
 
 import reflex as rx
 import rxconfig
@@ -234,6 +235,11 @@ class PDFState(rx.State):
             # ESTRATEGIA EXPERTA: API Backend Directa
             yield type(self).descargar_pdf_script(pdf_path)
 
+        except ExpatError as e:
+            logger.error("[ERROR] [PDF_ENGINE] Falla en parsing XML. Motivo: ExpatError.")
+            logger.error(f"Detalle: {str(e)}")
+            self.error_message = "Error en generación de PDF por caracteres especiales no válidos."
+            yield rx.toast.error(self.error_message)
         except Exception as e:
             logger.error("[ERROR] ERROR EN GENERACIN DE CONTRATO")
             logger.error(f"Tipo: {type(e).__name__}")
@@ -551,11 +557,29 @@ class PDFState(rx.State):
         servicio_config = ServicioConfiguracion(db_manager)
         config_empresa = servicio_config.obtener_configuracion_empresa()
         logo_data = config_empresa.logo_base64 if config_empresa else None
+        
+        # Datos Inmobiliaria (Arrendador) desde config o fallback
+        nombre_inmo = config_empresa.nombre_empresa if config_empresa else "INMOBILIARIA VELAR S.A.S."
+        nit_inmo = config_empresa.nit if config_empresa else "901703515-7"
+        direccion_inmo = config_empresa.direccion if config_empresa else "Calle 19 No. 16 – 44 Centro Comercial Manhatan Local 15"
+        telefono_inmo = config_empresa.telefono if config_empresa else "3011281684"
+        email_inmo = config_empresa.email if config_empresa else "inmobiliariavelarsasaxm@gmail.com"
+        rep_legal = config_empresa.representante_legal if config_empresa else "CRISTIAN FERNANDO JAMIOY FONSECA"
+        rep_legal_cc = config_empresa.cedula_representante if config_empresa else "1.094.959.215"
 
         # Transformar el formato de la BD al formato esperado por el generador PDF
         return {
             "contrato_id": detalle["id"],
             "logo_base64": logo_data,  # Logo inyectado
+            "inmobiliaria": {  # Arrendador
+                "nombre": nombre_inmo,
+                "nit": nit_inmo,
+                "direccion": direccion_inmo,
+                "telefono": telefono_inmo,
+                "email": email_inmo,
+                "representante": rep_legal,
+                "documento_rep": rep_legal_cc,
+            },
             "fecha": detalle["fecha_inicio"],
             "fecha_inicio": detalle["fecha_inicio"],
             "fecha_fin": detalle["fecha_fin"],

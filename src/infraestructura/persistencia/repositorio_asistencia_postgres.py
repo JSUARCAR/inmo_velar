@@ -270,7 +270,7 @@ class RepositorioAsistenciaPostgres:
         FROM ASAMBLEAS a
         LEFT JOIN PROPIEDADES p ON a.ID_PROPIEDAD = p.ID_PROPIEDAD
         LEFT JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD
-            AND cm.ESTADO_CONTRATO_M = 'Activo'
+            AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
         LEFT JOIN PROPIETARIOS prop_jun ON cm.ID_PROPIETARIO = prop_jun.ID_PROPIETARIO
         LEFT JOIN PERSONAS persona_prop ON prop_jun.ID_PERSONA = persona_prop.ID_PERSONA
         LEFT JOIN PROPIETARIOS apo_jun ON cm.ID_ASESOR = apo_jun.ID_PROPIETARIO

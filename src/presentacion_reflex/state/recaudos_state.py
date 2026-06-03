@@ -294,6 +294,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
         self.show_form_modal = True
         self.show_detail_modal = False
         self.form_data = {
+            "id_recaudo": "",
             "id_contrato_a": "",
             "fecha_pago": datetime.now().date().isoformat(),
             "valor_total": "",
@@ -437,29 +438,46 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             servicio = _crear_servicio()
             usuario = await self._get_usuario_actual()
 
-            id_contrato = form_data.get("id_contrato_a") or st_form_data.get(
-                "id_contrato_a"
-            )
+            def _es_id_valido(valor: Any) -> bool:
+                if valor is None: return False
+                v = str(valor).strip().lower()
+                return v.isdigit() and v not in ["undefined", "null", "none", ""]
 
-            if not id_contrato:
-                async with self:
-                    self.error_message = "Debe seleccionar un contrato"
-                    self.is_loading = False
-                return
+            id_contrato = str(form_data.get("id_contrato_a") or st_form_data.get("id_contrato_a", "")).strip()
 
-            if isinstance(id_contrato, str) and not id_contrato.isdigit():
+            if isinstance(id_contrato, str) and not id_contrato.isdigit() and id_contrato.lower() not in ["undefined", "null", "none", ""]:
                 contrato_opt = next(
                     (c for c in st_contratos_options if c["texto"] == id_contrato), None
                 )
                 if contrato_opt:
-                    id_contrato = contrato_opt["id"]
+                    id_contrato = str(contrato_opt["id"])
                 elif id_contrato.startswith("ID:"):
                     try:
                         id_contrato = id_contrato.split(":")[1].split(" -")[0].strip()
                     except (IndexError, ValueError):
                         pass
 
-            valor_total = int(float(form_data.get("valor_total") or 0))
+            if not _es_id_valido(id_contrato):
+                async with self:
+                    self.error_message = "Debe seleccionar un contrato válido"
+                    self.is_loading = False
+                return
+
+            valor_total_raw = form_data.get("valor_total")
+            if not valor_total_raw or str(valor_total_raw).strip().lower() in ["undefined", "null", "none", ""]:
+                async with self:
+                    self.error_message = "El valor total es inválido"
+                    self.is_loading = False
+                return
+
+            try:
+                valor_total = int(float(valor_total_raw))
+            except ValueError:
+                async with self:
+                    self.error_message = "El valor total debe ser numérico"
+                    self.is_loading = False
+                return
+
             if valor_total <= 0:
                 async with self:
                     self.error_message = "El valor total debe ser mayor a cero"
@@ -481,7 +499,8 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             from src.aplicacion.esquemas.recaudo import ComandoRegistrarPago, ComandoActualizarPago
             from datetime import date
 
-            if form_data.get("id_recaudo"):
+            raw_id_recaudo = form_data.get("id_recaudo")
+            if _es_id_valido(raw_id_recaudo):
                 comando = ComandoActualizarPago(
                     fecha_pago=date.fromisoformat(form_data["fecha_pago"]),
                     valor_total=valor_total,
@@ -493,7 +512,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                     observaciones=form_data.get("observaciones", "").strip() or None,
                 )
                 resultado = servicio.actualizar_pago(
-                    int(form_data.get("id_recaudo")), comando, usuario
+                    int(raw_id_recaudo), comando, usuario
                 )
                 if not resultado.exito:
                     async with self:
@@ -515,7 +534,8 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                 idem_key = self.generate_idempotency_key(
                     "recaudo:registrar", comando.__dict__
                 )
-                self.start_idempotent_request(idem_key)
+                async with self:
+                    self.start_idempotent_request(idem_key)
                 servicio.registrar_pago(comando, usuario, idempotency_key=idem_key)
 
             async with self:

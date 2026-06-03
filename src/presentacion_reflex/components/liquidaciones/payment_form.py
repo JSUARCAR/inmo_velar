@@ -80,7 +80,7 @@ def payment_form() -> rx.Component:
                     ),
                     rx.callout(
                         "Esta acción cambiará el estado de la liquidación a 'Pagada' y no se podrá revertir fácilmente.",
-                        icon="triangle_alert",
+                        icon="triangle-alert",
                         color_scheme="yellow",
                     ),
                     rx.divider(margin_y="1em"),

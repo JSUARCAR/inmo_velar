@@ -84,6 +84,12 @@ env/
 .coverage
 htmlcov/
 .tox/
+node_modules/
+package-lock.json
+package.json
+playwright_result*.png
+commit_msg.txt
+
 
 # === OS ===
 .DS_Store

@@ -53,9 +53,11 @@ class TestArriendoSincronizacion(unittest.TestCase):
         # Avoid CalculadoraContratos logic by patching it or just let it pass if it returns True
         with unittest.mock.patch('src.dominio.servicios.calculadora_contratos.CalculadoraContratos.validar_coherencia') as mock_validar:
             mock_validar.return_value = (True, "OK")
-            with unittest.mock.patch('src.dominio.servicios.calculadora_contratos.CalculadoraContratos.calcular_ciclo_pago_arrendamiento') as mock_ciclo:
+            with unittest.mock.patch('src.dominio.servicios.calculadora_contratos.CalculadoraContratos.calcular_dia_pago_arrendamiento') as mock_ciclo:
                 mock_ciclo.return_value = 1
-                self.servicio.crear_arrendamiento(datos, usuario)
+                with unittest.mock.patch('src.dominio.servicios.calculadora_contratos.CalculadoraContratos.calcular_ciclo_pago_mandato') as mock_mandato:
+                    mock_mandato.return_value = (1, 10)
+                    self.servicio.crear_arrendamiento(datos, usuario)
         
         # Assert
         self.assertEqual(propiedad_mock.disponibilidad_propiedad, 0) # 0 is Ocupada

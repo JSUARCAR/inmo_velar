@@ -56,7 +56,7 @@ def liquidacion_asesores_content() -> rx.Component:
                     LiquidacionGridState.error_message != "",
                     rx.callout(
                         LiquidacionGridState.error_message,
-                        icon="alert-circle",
+                        icon="circle-alert",
                         color_scheme="red",
                         role="alert",
                         width="100%",

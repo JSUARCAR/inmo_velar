@@ -18,7 +18,7 @@ def modal_form() -> rx.Component:
                     DesocupacionesState.error_message != "",
                     rx.callout(
                         DesocupacionesState.error_message,
-                        icon="triangle_alert",
+                        icon="triangle-alert",
                         color_scheme="red",
                         role="alert",
                         width="100%",

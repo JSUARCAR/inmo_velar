@@ -360,7 +360,7 @@ class RepositorioLiquidacionAsesor:
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD 
             JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO 
             JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA 
-            LEFT JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'Activo'
+            LEFT JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
             WHERE lc.ID_LIQUIDACION_ASESOR = %s
         """
         with self.db_manager.obtener_conexion() as conn:

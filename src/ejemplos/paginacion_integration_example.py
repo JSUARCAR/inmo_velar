@@ -28,11 +28,11 @@ class ServicioPersonasConPaginacion:
 
     def __init__(self, db_manager):
         self.db_manager = db_manager
-        from src.infraestructura.persistencia.repositorio_persona_sqlite import (
-            RepositorioPersonaSQLite,
+        from src.infraestructura.persistencia.repositorio_persona_postgres import (
+            RepositorioPersonaPostgres,
         )
 
-        self.repo = RepositorioPersonaSQLite(db_manager)
+        self.repo = RepositorioPersonaPostgres(db_manager)
 
     # Método existente (mantener por compatibilidad)
     def listar_personas(

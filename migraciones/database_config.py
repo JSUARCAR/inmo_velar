@@ -89,10 +89,10 @@ if DB_MODE == 'postgresql':
     try:
         from psycopg2 import pool
         
-        # Crear pool de conexiones
-        connection_pool = pool.SimpleConnectionPool(
-            minconn=int(os.getenv('DB_POOL_MIN', 1)),
-            maxconn=int(os.getenv('DB_POOL_MAX', 10)),
+        # Crear pool de conexiones Thread-Safe para entornos asíncronos/Reflex
+        connection_pool = pool.ThreadedConnectionPool(
+            minconn=int(os.getenv('DB_POOL_MIN', 5)),
+            maxconn=int(os.getenv('DB_POOL_MAX', 30)),
             **POSTGRES_CONFIG
         )
         

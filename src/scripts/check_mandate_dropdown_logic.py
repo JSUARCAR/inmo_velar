@@ -29,7 +29,7 @@ def verify_mandate_logic():
                 # 2. Check for Active Mandate
                 cursor.execute("""
                     SELECT 1 FROM CONTRATOS_MANDATOS 
-                    WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_M = 'Activo'
+                    WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_M = 'ACTIVO'
                 """ % db_manager.get_placeholder(), (p_id,))
                 has_active_mandate = cursor.fetchone() is not None
 

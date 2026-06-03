@@ -53,7 +53,7 @@ def formulario_contrato_arrendamiento() -> rx.Component:
                 ContratosState.error_message != "",
                 rx.callout(
                     ContratosState.error_message,
-                    icon="circle_alert",
+                    icon="triangle-alert",
                     color="red",
                     role="alert",
                     margin_bottom="1rem",

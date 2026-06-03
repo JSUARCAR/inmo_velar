@@ -687,7 +687,7 @@ class RepositorioReportes:
                     ca_inner.ESTADO_CONTRATO_A,
                     ca_inner.FECHA_INICIO_CONTRATO_A
                 FROM CONTRATOS_ARRENDAMIENTOS ca_inner
-                WHERE ca_inner.ESTADO_CONTRATO_A IN ('Activo', 'En Mora', 'Renovado')
+                WHERE ca_inner.ESTADO_CONTRATO_A IN ('ACTIVO', 'En Mora', 'Renovado')
                 ORDER BY ca_inner.ID_PROPIEDAD, ca_inner.FECHA_INICIO_CONTRATO_A DESC
             ) ca ON p.ID_PROPIEDAD = ca.ID_PROPIEDAD
             
@@ -710,7 +710,7 @@ class RepositorioReportes:
         params = list(liq_params)
 
         # REGLA FUNCIONAL: Mandato Activo + Arrendamiento Activo/Mora
-        conditions.append("cm.ESTADO_CONTRATO_M = 'Activo'")
+        conditions.append("cm.ESTADO_CONTRATO_M = 'ACTIVO'")
         conditions.append("ca.ID_CONTRATO_A IS NOT NULL")
 
         # Filtro: Estado de Liquidación (ahora filtrado sobre el resultado del JOIN)

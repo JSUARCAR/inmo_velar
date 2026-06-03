@@ -9,9 +9,12 @@ import os
 import sqlite3
 import threading
 import atexit
+import logging
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Optional
+
+logger = logging.getLogger(__name__)
 import unicodedata
 from contextvars import ContextVar
 
@@ -133,7 +136,9 @@ if DB_MODE == "postgresql":
             return self
 
         def __exit__(self, exc_type, exc_val, exc_tb):
-            # No retornamos aqui para permitir operaciones multiplexadas. Se hara GC en __del__
+            # Retornar la conexión al pool si no está atada a una transacción multi-paso
+            if not self.in_managed_transaction:
+                self.close()
             return False
 
         def __del__(self):
@@ -482,6 +487,11 @@ class DatabaseManager:
         finally:
             if not was_managed:
                 conexion.in_managed_transaction = False
+                # Retornar explícitamente la conexión al pool para evitar Starvation
+                if hasattr(conexion, 'close'):
+                    conexion.close()
+                if self.use_postgresql:
+                    _pg_conn_ctx.set(None)
 
     def ejecutar_script(self, script_sql: str) -> None:
         """
@@ -517,15 +527,15 @@ class DatabaseManager:
         if self.use_postgresql and self._pg_pool is not None:
             try:
                 self._pg_pool.closeall()
-                print("DEBUG [database.py]: PostgreSQL pool cerrado exitosamente")
+                logger.debug("PostgreSQL pool cerrado exitosamente")
             except Exception as e:
-                print(f"DEBUG [database.py]: Error cerrando pool PostgreSQL: {e}")
+                logger.error(f"Error cerrando pool PostgreSQL: {e}")
             finally:
                 self._pg_pool = None
 
         # Cerrar conexiones SQLite si existen
         self.cerrar_todas_conexiones()
-        print("DEBUG [database.py]: DatabaseManager shutdown completado")
+        logger.debug("DatabaseManager shutdown completado")
 
     def inicializar_base_datos(self, ruta_schema: Optional[Path] = None) -> None:
         """

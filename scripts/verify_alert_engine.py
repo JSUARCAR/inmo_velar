@@ -21,8 +21,8 @@ def verify_alert_engine():
         repo = RepositorioAlertaPostgres(db_manager)
         print("🔗 Conectado a POSTGRESQL")
     else:
-        from src.infraestructura.persistencia.repositorio_alerta_sqlite import RepositorioAlertaSQLite
-        repo = RepositorioAlertaSQLite(db_manager)
+        from src.infraestructura.persistencia.repositorio_alerta_postgres import RepositorioAlertaPostgres
+        repo = RepositorioAlertaPostgres(db_manager)
         print("🔗 Conectado a SQLITE")
         
     servicio = ServicioAlertas(db_manager, repo)

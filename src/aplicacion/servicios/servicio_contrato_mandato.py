@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from src.dominio.constantes.estados_contrato import EstadoContrato
 from src.dominio.entidades.contrato_mandato import ContratoMandato
 from src.dominio.entidades.renovacion_contrato import RenovacionContrato
 from src.dominio.servicios.calculadora_contratos import CalculadoraContratos
@@ -10,6 +11,7 @@ from src.dominio.repositorios.interfaces import (
     RepositorioRenovacion,
 )
 from src.infraestructura.cache.cache_manager import cache_manager
+from src.dominio.constantes.cache_keys import CacheKeys
 
 
 class ServicioContratoMandato:
@@ -44,7 +46,7 @@ class ServicioContratoMandato:
             for row in rows
         ]
 
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def crear_mandato(self, datos: Dict, usuario_sistema: str) -> ContratoMandato:
         """Crea un nuevo contrato de mandato con validaciones de negocio."""
         db = getattr(self.repo_mandato, "db", None)
@@ -91,7 +93,7 @@ class ServicioContratoMandato:
             canon_mandato=datos["canon"],
             comision_porcentaje_contrato_m=datos["comision_porcentaje"],
             iva_contrato_m=datos.get("iva_porcentaje", 1900),
-            estado_contrato_m="Activo",
+            estado_contrato_m=EstadoContrato.ACTIVO,
             alerta_vencimiento_contrato_m=True,
             fecha_pago=fecha_pago_str,
             grupo_operativo=grupo,
@@ -108,7 +110,7 @@ class ServicioContratoMandato:
     def obtener_mandato(self, id_contrato: int) -> Optional[ContratoMandato]:
         return self.repo_mandato.obtener_por_id(id_contrato)
 
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def actualizar_mandato(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
     ) -> None:
@@ -198,29 +200,14 @@ class ServicioContratoMandato:
         El mandato no aplica IPC, solo se extienden las fechas.
         """
         mandato = self.repo_mandato.obtener_por_id(id_contrato)
-        if not mandato or mandato.estado_contrato_m != "Activo":
+        if not mandato or mandato.estado_contrato_m != EstadoContrato.ACTIVO:
             raise ValueError("Contrato no válido para proyección de renovación")
 
         fecha_fin_actual = datetime.strptime(mandato.fecha_fin_contrato_m, "%Y-%m-%d")
         meses_duracion = mandato.duracion_contrato_m
 
         # Calcular nueva fecha fin sumando los meses de duración
-        anio_nuevo = (
-            fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
-        )
-        mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
-        try:
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo
-            )
-        except ValueError:
-            import calendar
-
-            last_day = calendar.monthrange(anio_nuevo, mes_nuevo)[1]
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo, day=last_day
-            )
-
+        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(fecha_fin_actual, meses_duracion)
         nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
 
         return {
@@ -234,35 +221,21 @@ class ServicioContratoMandato:
             "aplica_ipc": False,
         }
 
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def renovar_mandato(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> "ContratoMandato":
         """Renueva un contrato de mandato extendiendo su fecha de fin. Acepta fecha personalizada."""
         mandato = self.repo_mandato.obtener_por_id(id_contrato)
-        if not mandato or mandato.estado_contrato_m != "Activo":
+        if not mandato or mandato.estado_contrato_m != EstadoContrato.ACTIVO:
             raise ValueError("Contrato de mandato no válido para renovación")
 
         fecha_fin_actual = datetime.strptime(mandato.fecha_fin_contrato_m, "%Y-%m-%d")
         meses_duracion = mandato.duracion_contrato_m
 
         # Calcular nueva fecha fin automática
-        anio_nuevo = (
-            fecha_fin_actual.year + (fecha_fin_actual.month + meses_duracion - 1) // 12
-        )
-        mes_nuevo = (fecha_fin_actual.month + meses_duracion - 1) % 12 + 1
-        try:
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo
-            )
-        except ValueError:
-            import calendar
-
-            last_day = calendar.monthrange(anio_nuevo, mes_nuevo)[1]
-            nueva_fecha_fin_dt = fecha_fin_actual.replace(
-                year=anio_nuevo, month=mes_nuevo, day=last_day
-            )
-
+        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(fecha_fin_actual, meses_duracion)
+        
         nueva_fecha_fin_str = (
             nueva_fecha_fin
             if nueva_fecha_fin
@@ -270,7 +243,6 @@ class ServicioContratoMandato:
         )
 
         # Registrar historial de renovación
-        from src.dominio.entidades.renovacion_contrato import RenovacionContrato
 
         renovacion = RenovacionContrato(
             id_contrato_m=mandato.id_contrato_m,
@@ -302,7 +274,7 @@ class ServicioContratoMandato:
 
         return mandato
 
-    @cache_manager.invalidates("mandatos:list_paginated")
+    @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def terminar_mandato(
         self, id_contrato: int, motivo: str, usuario_sistema: str
     ) -> None:
@@ -314,7 +286,7 @@ class ServicioContratoMandato:
         if not mandato:
             raise ValueError(f"Contrato {id_contrato} no existe")
 
-        mandato.estado_contrato_m = "Cancelado"
+        mandato.estado_contrato_m = EstadoContrato.CANCELADO
         mandato.motivo_cancelacion = motivo
         mandato.fecha_fin_contrato_m = datetime.now().strftime("%Y-%m-%d")
         mandato.updated_by = usuario_sistema

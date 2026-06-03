@@ -186,3 +186,5 @@ pytest --cov=src --cov-report=term-missing
 Copyright © 2026 Inmobiliaria Velar SAS. Todos los derechos comerciales, códigos, diagramas de arquitectura y marcas se encuentran registrados. Queda estrictamente prohibida su copia transversal, bifurcación, modificación u outsourcing sin licenciamiento contractual explícito por escrito expedido por Inmobiliaria Velar.
 
 *Diseñado para el Alto Volumen. Construido por la élite de Ingeniería Interna.*
+D E P L O Y _ V E R S I O N = 1 0 1  
+ 

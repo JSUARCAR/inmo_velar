@@ -12,6 +12,7 @@ from src.infraestructura.persistencia.repositorio_desocupacion_postgres import (
     RepositorioDesocupacionPostgres,
 )
 from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+from src.infraestructura.cache.cache_manager import cache_manager
 
 # Plantilla de tareas por defecto para desocupación
 TAREAS_POR_DEFECTO = [
@@ -34,6 +35,7 @@ class ServicioDesocupaciones:
         self.repo = RepositorioDesocupacionPostgres(db_manager)
         self.repo_propiedad = RepositorioPropiedadPostgres(db_manager)
 
+    @cache_manager.invalidates("dashboard")
     def iniciar_desocupacion(
         self, id_contrato: int, fecha_programada: str, observaciones: Optional[str], usuario: str
     ) -> Desocupacion:
@@ -69,7 +71,7 @@ class ServicioDesocupaciones:
             if not row:
                 raise ValueError(f"Contrato {id_contrato} no encontrado")
 
-            if row["ESTADO_CONTRATO_A"] != "Activo":
+            if row["ESTADO_CONTRATO_A"] != "ACTIVO":
                 raise ValueError("El contrato debe estar Activo para iniciar desocupación")
 
         # Verificar que no exista una desocupación con la misma fecha programada para este contrato
@@ -159,6 +161,7 @@ class ServicioDesocupaciones:
         """
         return self.repo.obtener_tareas(id_desocupacion)
 
+    @cache_manager.invalidates("dashboard")
     def completar_tarea(self, id_tarea: int, usuario: str, observaciones: Optional[str] = None):
         """
         Marca una tarea como completada.
@@ -189,6 +192,7 @@ class ServicioDesocupaciones:
             "puede_finalizar": completadas == total,
         }
 
+    @cache_manager.invalidates("dashboard")
     def finalizar_desocupacion(self, id_desocupacion: int, usuario: str, rol_usuario: str = "Asesor"):
         """
         Finaliza una desocupación (marca como Completada y actualiza estados relacionados).
@@ -273,7 +277,7 @@ class ServicioDesocupaciones:
                 cursor.execute(check_contrato_query, (desocupacion.id_contrato,))
                 contrato_row = cursor.fetchone()
 
-                if contrato_row and contrato_row["ESTADO_CONTRATO_A"] == "Activo":
+                if contrato_row and contrato_row["ESTADO_CONTRATO_A"] == "ACTIVO":
                     id_propiedad = contrato_row["id_propiedad"] if "id_propiedad" in contrato_row else contrato_row["ID_PROPIEDAD"]
                     
                     update_contrato_query = f"""
@@ -315,6 +319,7 @@ class ServicioDesocupaciones:
             pass  # print(f"[ERROR] Transacción fallida al finalizar desocupación: {str(e)}") [OpSec Removed]
             raise e
 
+    @cache_manager.invalidates("dashboard")
     def cancelar_desocupacion(self, id_desocupacion: int, motivo: str, usuario: str):
         """
         Cancela una desocupación en proceso.
@@ -369,7 +374,7 @@ class ServicioDesocupaciones:
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
                 JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-                WHERE ca.ESTADO_CONTRATO_A = 'Activo'
+                WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
                 ORDER BY p.DIRECCION_PROPIEDAD
             """
             )

@@ -25,19 +25,19 @@ class MockState:
         try:
             from src.infraestructura.persistencia.database import db_manager
             from src.aplicacion.servicios.servicio_personas import ServicioPersonas
-            from src.infraestructura.persistencia.repositorio_persona_sqlite import RepositorioPersonaSQLite
-            from src.infraestructura.persistencia.repositorio_propietario_sqlite import RepositorioPropietarioSQLite
-            from src.infraestructura.persistencia.repositorio_arrendatario_sqlite import RepositorioArrendatarioSQLite
-            from src.infraestructura.persistencia.repositorio_codeudor_sqlite import RepositorioCodeudorSQLite
-            from src.infraestructura.persistencia.repositorio_asesor_sqlite import RepositorioAsesorSQLite
-            from src.infraestructura.persistencia.repositorio_proveedores_sqlite import RepositorioProveedoresSQLite
+            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
 
-            repo_persona = RepositorioPersonaSQLite(db_manager)
-            repo_propietario = RepositorioPropietarioSQLite(db_manager)
-            repo_arrendatario = RepositorioArrendatarioSQLite(db_manager)
-            repo_codeudor = RepositorioCodeudorSQLite(db_manager)
-            repo_asesor = RepositorioAsesorSQLite(db_manager)
-            repo_proveedor = RepositorioProveedoresSQLite(db_manager)
+            repo_persona = RepositorioPersonaPostgres(db_manager)
+            repo_propietario = RepositorioPropietarioPostgres(db_manager)
+            repo_arrendatario = RepositorioArrendatarioPostgres(db_manager)
+            repo_codeudor = RepositorioCodeudorPostgres(db_manager)
+            repo_asesor = RepositorioAsesorPostgres(db_manager)
+            repo_proveedor = RepositorioProveedoresPostgres(db_manager)
 
             print("Instantiating ServicioPersonas...")
             servicio = ServicioPersonas(

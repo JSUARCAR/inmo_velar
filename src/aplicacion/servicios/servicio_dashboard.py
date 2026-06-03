@@ -37,44 +37,64 @@ class ServicioDashboard:
     @cache_manager.cached("dashboard:cartera_mora", level=1, ttl=60)
     def obtener_cartera_mora(self) -> Dict:
         """Obtiene resumen de cartera en mora."""
-        resumen = self.repo.obtener_resumen_mora()
-        top_morosos = self.repo.obtener_top_morosos(5)
-        return {
-            "monto_total": resumen["monto_total"],
-            "cantidad_contratos": resumen["cantidad_contratos"],
-            "top_morosos": top_morosos,
-        }
+        try:
+            resumen = self.repo.obtener_resumen_mora()
+            top_morosos = self.repo.obtener_top_morosos(5)
+            return {
+                "monto_total": resumen["monto_total"],
+                "cantidad_contratos": resumen["cantidad_contratos"],
+                "top_morosos": top_morosos,
+            }
+        except Exception as e:
+            import logging
+            logging.error(f"Error en obtener_cartera_mora: {e}")
+            return {"monto_total": 0, "cantidad_contratos": 0, "top_morosos": []}
 
     @cache_manager.cached("dashboard:flujo_caja", level=1, ttl=60)
     def obtener_flujo_caja_mes(
         self, mes: int = None, anio: int = None, id_asesor: int = None
     ) -> Dict:
         """Obtiene flujo de caja filtrado."""
-        hoy = datetime.now()
-        mes_actual = f"{mes:02d}" if mes else f"{hoy.month:02d}"
-        anio_actual = str(anio) if anio else str(hoy.year)
+        try:
+            hoy = datetime.now()
+            mes_actual = f"{mes:02d}" if mes else f"{hoy.month:02d}"
+            anio_actual = str(anio) if anio else str(hoy.year)
 
-        recaudado = self.repo.obtener_total_recaudado(mes_actual, anio_actual, id_asesor)
-        esperado = self.repo.obtener_total_esperado(id_asesor)
+            recaudado = self.repo.obtener_total_recaudado(mes_actual, anio_actual, id_asesor)
+            esperado = self.repo.obtener_total_esperado(id_asesor)
 
-        porcentaje = (recaudado / esperado * 100) if esperado > 0 else 0
+            porcentaje = (recaudado / esperado * 100) if esperado > 0 else 0
 
-        return {
-            "recaudado": recaudado,
-            "esperado": esperado,
-            "porcentaje": round(porcentaje, 1),
-            "diferencia": esperado - recaudado,
-        }
+            return {
+                "recaudado": recaudado,
+                "esperado": esperado,
+                "porcentaje": round(porcentaje, 1),
+                "diferencia": esperado - recaudado,
+            }
+        except Exception as e:
+            import logging
+            logging.error(f"Error en obtener_flujo_caja_mes: {e}")
+            return {"recaudado": 0, "esperado": 0, "porcentaje": 0, "diferencia": 0}
 
     @cache_manager.cached("dashboard:contratos_vencer", level=1, ttl=60)
     def obtener_contratos_por_vencer(self) -> Dict:
         """Contratos proximos a vencer por rango."""
-        rangos = self.repo.obtener_conteo_vencimientos_rangos()
-        total = sum(rangos.values())
-        return {**rangos, "total": total}
+        try:
+            rangos = self.repo.obtener_conteo_vencimientos_rangos()
+            total = sum(rangos.values())
+            return {**rangos, "total": total}
+        except Exception as e:
+            import logging
+            logging.error(f"Error en obtener_contratos_por_vencer: {e}")
+            return {"vence_30_dias": 0, "vence_60_dias": 0, "vence_90_dias": 0, "total": 0}
 
     def obtener_contratos_proximos_vencer(self, dias_limite: int = 30) -> List[Dict[str, Any]]:
-        return self.repo.obtener_lista_vencimientos(dias_limite)
+        try:
+            return self.repo.obtener_lista_vencimientos(dias_limite)
+        except Exception as e:
+            import logging
+            logging.error(f"Error en obtener_contratos_proximos_vencer: {e}")
+            return []
 
     def obtener_contratos_elegibles_ipc(self, dias_anticipacion: int = 30) -> List[Dict[str, Any]]:
         return self.repo.obtener_contratos_elegibles_ipc(dias_anticipacion)
@@ -85,7 +105,12 @@ class ServicioDashboard:
 
     @cache_manager.cached("dashboard:tasa_ocupacion", level=1, ttl=60)
     def obtener_tasa_ocupacion(self, id_asesor: int = None) -> Dict:
-        return self.repo.obtener_metricas_ocupacion(id_asesor)
+        try:
+            return self.repo.obtener_metricas_ocupacion(id_asesor)
+        except Exception as e:
+            import logging
+            logging.error(f"Error en obtener_tasa_ocupacion: {e}")
+            return {"ocupadas": 0, "disponibles": 0, "total": 0, "porcentaje_ocupacion": 0}
 
     @cache_manager.cached("dashboard:propiedades_tipo", level=1, ttl=60)
     def obtener_propiedades_por_tipo(self, id_asesor: int = None) -> Dict[str, int]:
@@ -93,9 +118,14 @@ class ServicioDashboard:
 
     @cache_manager.cached("dashboard:metricas_expertas", level=1, ttl=60)
     def obtener_metricas_expertas(self, id_asesor: int = None) -> Dict[str, float]:
-        data = self.repo.obtener_metricas_expertas(id_asesor)
-        # Asegurar que los valores sean float para evitar errores de tipo en Reflex
-        return {k: float(v) for k, v in data.items()}
+        try:
+            data = self.repo.obtener_metricas_expertas(id_asesor)
+            # Asegurar que los valores sean float para evitar errores de tipo en Reflex
+            return {k: float(v) for k, v in data.items()}
+        except Exception as e:
+            import logging
+            logging.error(f"Error en obtener_metricas_expertas: {e}")
+            return {"ocupacion_financiera": 0.0, "eficiencia_recaudo": 0.0, "potencial_total": 0.0, "recaudo_real": 0.0}
 
     @cache_manager.cached("dashboard:top_asesores", level=1, ttl=60)
     def obtener_top_asesores_revenue(self) -> List[Dict]:
@@ -103,7 +133,12 @@ class ServicioDashboard:
 
     @cache_manager.cached("dashboard:tunel_vencimientos", level=1, ttl=60)
     def obtener_tunel_vencimientos(self) -> List[Dict]:
-        return self.repo.obtener_tunel_vencimientos()
+        try:
+            return self.repo.obtener_tunel_vencimientos()
+        except Exception as e:
+            import logging
+            logging.error(f"Error en obtener_tunel_vencimientos: {e}")
+            return []
 
     def obtener_metricas_incidentes(self) -> Dict:
         return self.repo.obtener_metricas_incidentes()
@@ -111,30 +146,39 @@ class ServicioDashboard:
     def obtener_total_contratos_activos(self, id_asesor: int = None) -> int:
         return self.repo.obtener_total_contratos_activos(id_asesor)
 
-    def obtener_morosidad_por_zona(self) -> Dict:
-        return self.repo.obtener_morosidad_por_zona()
 
-    def obtener_desempeno_asesores(self) -> Dict:
-        return self.repo.obtener_desempeno_asesores()
 
     def obtener_recibos_vencidos_resumen(self) -> Dict:
         return self.repo.obtener_recibos_vencidos_resumen()
 
-    def obtener_evolucion_recaudo(self, meses: int = 6, mes_fin: int = None, anio_fin: int = None) -> Dict:
-        """Pendiente migrar lógica secuencial a repo o mantenerla aquí llamando al repo mes a mes."""
-        # Para cumplir Fase 3, lo ideal es que el repo lo haga en una sola consulta o el servicio llame al repo.
+    def obtener_evolucion_recaudo(self, meses: int = 6, mes_fin: int = None, anio_fin: int = None, id_asesor: Optional[int] = None) -> Dict:
+        """Obtiene la evolución del recaudo histórico utilizando una única consulta optimizada (Fase 3)."""
+        hoy = datetime.now()
+        mes_fin = mes_fin or hoy.month
+        anio_fin = anio_fin or hoy.year
+        fecha_corte = datetime(anio_fin, mes_fin, 1)
+
         etiquetas = []
         valores = []
-        hoy = datetime.now()
-        fecha_corte = datetime(anio_fin, mes_fin, 1) if anio_fin and mes_fin else hoy
-
-        for i in range(meses - 1, -1, -1):
-            # Lógica de desplazamiento de meses (simplificada para el ejemplo)
-            m = (fecha_corte.month - i - 1) % 12 + 1
-            a = fecha_corte.year + (fecha_corte.month - i - 1) // 12
-            mes_str = f"{m:02d}"
-            anio_str = str(a)
-            val = self.repo.obtener_total_recaudado(mes_str, anio_str)
-            etiquetas.append(f"{mes_str}/{anio_str}")
-            valores.append(val)
+        
+        try:
+            # Obtener datos optimizados (1 sola query)
+            historico = self.repo.obtener_historico_recaudos(meses, mes_fin, anio_fin, id_asesor)
+            
+            # Reconstruir la serie asegurando que los meses sin recaudo aparezcan como 0
+            for i in range(meses - 1, -1, -1):
+                m = (fecha_corte.month - i - 1) % 12 + 1
+                a = fecha_corte.year + (fecha_corte.month - i - 1) // 12
+                mes_str = f"{m:02d}/{a}"
+                
+                etiquetas.append(mes_str)
+                valores.append(historico.get(mes_str, 0.0))
+                
+        except Exception as e:
+            # Fallback en caso de error o si el repositorio falla
+            import logging
+            logging.error(f"Error al obtener evolución recaudo: {e}")
+            etiquetas = [f"Mes {-i}" for i in range(meses - 1, -1, -1)]
+            valores = [0.0] * meses
+            
         return {"etiquetas": etiquetas, "valores": valores}

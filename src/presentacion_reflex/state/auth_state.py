@@ -1,4 +1,7 @@
+import hashlib
 import sys
+import os
+import time as _time
 from typing import Any, Dict, List, Optional
 
 import reflex as rx
@@ -16,7 +19,14 @@ from src.infraestructura.persistencia.repositorio_sesion import RepositorioSesio
 from src.infraestructura.persistencia.repositorio_usuario import RepositorioUsuario
 
 # ─── Constante de versión para confirmar que el nuevo código se ejecuta ───────
-_AUTH_STATE_VERSION = "2026-02-25-v3-DEBUG"
+_AUTH_STATE_VERSION = "2026-05-25-v4-HARDENED"
+
+IS_PROD: bool = os.getenv("RAILWAY_ENVIRONMENT") == "production"
+
+# Rate limiting: máximo 5 intentos por IP en 15 minutos
+_LOGIN_MAX_ATTEMPTS: int = 5
+_LOGIN_WINDOW_SECONDS: int = 900  # 15 minutos
+_login_attempts: Dict[str, List[float]] = {}  # {ip: [timestamps]}
 
 
 def _debug(msg: str, **kwargs):
@@ -47,8 +57,22 @@ class AuthState(rx.State):
 
     # ── Variables de Estado ────────────────────────────────────────────────────
 
-    # Token de Sesión (Persistente en Cookie)
-    session_token: str = rx.Cookie(name="session_token", secure=False)
+    # Cookie de sesión ofuscada (nombre no descriptivo para dificultar ingeniería inversa)
+    session_token: str = rx.Cookie(
+        name="_s",
+        path="/",
+        secure=os.getenv("RAILWAY_ENVIRONMENT") == "production",
+        same_site="lax",
+        max_age=86400,  # 24 horas
+    )
+    # Cookie de fingerprint para verificación dual
+    _refresh_fingerprint: str = rx.Cookie(
+        name="_r",
+        path="/",
+        secure=os.getenv("RAILWAY_ENVIRONMENT") == "production",
+        same_site="strict",
+        max_age=86400,
+    )
 
     # Datos del usuario autenticado (se llenan en event handlers, no en vars)
     _user_data: Optional[Dict[str, Any]] = None
@@ -119,7 +143,7 @@ class AuthState(rx.State):
                 "id_usuario": usuario.id_usuario,
                 "nombre_usuario": usuario.nombre_usuario,
                 "rol": usuario.rol,
-                "ultimo_acceso": usuario.ultimo_acceso,
+                "ultimo_acceso": usuario.ultimo_acceso.isoformat() if hasattr(usuario.ultimo_acceso, 'isoformat') else usuario.ultimo_acceso,
             }
             self._user_data = user_dict
             self.is_authenticated = True
@@ -145,9 +169,12 @@ class AuthState(rx.State):
             return False
 
         except Exception as e:
-            import traceback
-            _debug("_validate_session → EXCEPCIÓN INESPERADA", error=str(e))
-            traceback.print_exc(file=sys.stderr)
+            if not IS_PROD:
+                import traceback
+                _debug("_validate_session → EXCEPCIÓN INESPERADA", error=str(e))
+                traceback.print_exc(file=sys.stderr)
+            else:
+                logger.error("Error de validación de sesión (detalles ocultos en producción)")
             try:
                 db_manager.obtener_conexion().rollback()
             except Exception:
@@ -203,10 +230,25 @@ class AuthState(rx.State):
         return rx.redirect("/login")
 
     def login(self, form_data: dict):
-        """Procesa el inicio de sesión."""
+        """Procesa el inicio de sesión con rate-limiting por IP."""
         _debug("login CALLED", username=form_data.get("username"))
+
+        # Rate limiting por IP
+        client_ip = self.router.session.client_ip if hasattr(self.router, 'session') else "unknown"
+        now_ts = _time.time()
+        attempts = _login_attempts.get(client_ip, [])
+        # Limpiar intentos expirados
+        attempts = [ts for ts in attempts if now_ts - ts < _LOGIN_WINDOW_SECONDS]
+        if len(attempts) >= _LOGIN_MAX_ATTEMPTS:
+            self.error_message = "Demasiados intentos. Intente de nuevo en 15 minutos."
+            self.is_loading = False
+            return
+        attempts.append(now_ts)
+        _login_attempts[client_ip] = attempts
+
         self.is_loading = True
         self.error_message = ""
+        yield  # Enviar estado de loading al frontend inmediatamente
 
         username = form_data.get("username")
         password = form_data.get("password")
@@ -224,15 +266,19 @@ class AuthState(rx.State):
             usuario_autenticado = servicio_auth.autenticar(username, password)
             sesion = servicio_auth.crear_sesion(usuario_autenticado)
 
-            # Guardar token en cookie
+            # Guardar token en cookie ofuscada
             self.session_token = sesion.token_sesion
+            # Generar fingerprint dual para verificación
+            self._refresh_fingerprint = hashlib.sha256(
+                f"{sesion.token_sesion}:{client_ip}".encode()
+            ).hexdigest()[:16]
 
             # Llenar estado en memoria
             user_dict = {
                 "id_usuario": usuario_autenticado.id_usuario,
                 "nombre_usuario": usuario_autenticado.nombre_usuario,
                 "rol": usuario_autenticado.rol,
-                "ultimo_acceso": usuario_autenticado.ultimo_acceso,
+                "ultimo_acceso": usuario_autenticado.ultimo_acceso.isoformat() if hasattr(usuario_autenticado.ultimo_acceso, 'isoformat') else usuario_autenticado.ultimo_acceso,
             }
             self._user_data = user_dict
             self.is_authenticated = True
@@ -245,32 +291,38 @@ class AuthState(rx.State):
             self.error_message = ""
 
             _debug("login → ÉXITO, redirigiendo a /dashboard", usuario=username)
-            return rx.redirect("/dashboard")
+            self.is_loading = False
+            yield rx.redirect("/dashboard")
+            return  # Terminar el generador para prevenir colisiones en el ciclo de vida
 
         except ErrorAutenticacion as e:
             _debug("login → ERROR_AUTH", error=str(e))
-            self.error_message = str(e)
+            self.error_message = "Credenciales inválidas. Verifique usuario y contraseña."
+            self.is_loading = False
         except ExcepcionDominio as e:
             self.error_message = f"Error de negocio: {str(e)}"
+            self.is_loading = False
         except Exception as e:
-            import traceback
-            error_trace = traceback.format_exc()
-            _debug("login → EXCEPCIÓN", error=str(e))
-            print(f"LOGIN ERROR: {str(e)}", file=sys.stderr)
-            print(f"TRACEBACK: {error_trace}", file=sys.stderr)
-            logger.error("Error inesperado en login", error=e)
+            if not IS_PROD:
+                import traceback
+                error_trace = traceback.format_exc()
+                _debug("login → EXCEPCIÓN", error=str(e))
+                print(f"LOGIN ERROR: {str(e)}", file=sys.stderr)
+                print(f"TRACEBACK: {error_trace}", file=sys.stderr)
+            else:
+                logger.error("Error inesperado en login (detalles ocultos en producción)")
             try:
                 db_manager.obtener_conexion().rollback()
             except Exception:
                 pass
             self.error_message = "Ocurrió un error inesperado. Intente de nuevo."
-        finally:
             self.is_loading = False
 
     def logout(self):
         """Cierra la sesión del usuario."""
         _debug("logout CALLED")
         self.session_token = ""
+        self._refresh_fingerprint = ""
         self._user_data = None
         self.is_authenticated = False
         self.user_nombre = ""

@@ -186,11 +186,11 @@ TIPOS_DOCUMENTO_MODULO: Dict[str, Dict[str, Any]] = {
 # Validaciones de documentos requeridos por estado del módulo
 DOCUMENTOS_REQUERIDOS_POR_ESTADO: Dict[str, Dict[str, List[str]]] = {
     "CONTRATO_MANDATO": {
-        "Activo": ["contrato_firmado", "cedula_propietario", "certificado_libertad"],
+        "ACTIVO": ["contrato_firmado", "cedula_propietario", "certificado_libertad"],
         "Finalizado": [],
     },
     "CONTRATO_ARRENDAMIENTO": {
-        "Activo": ["contrato_firmado", "cedula_arrendatario", "acta_entrega"],
+        "ACTIVO": ["contrato_firmado", "cedula_arrendatario", "acta_entrega"],
         "Finalizado": ["acta_desocupacion"],
     },
     "INCIDENTE": {

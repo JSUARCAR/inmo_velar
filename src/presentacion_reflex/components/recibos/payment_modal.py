@@ -33,7 +33,7 @@ def payment_modal() -> rx.Component:
                     RecibosState.error_message != "",
                     rx.callout(
                         RecibosState.error_message,
-                        icon="triangle_alert",
+                        icon="triangle-alert",
                         color_scheme="red",
                         role="alert",
                         width="100%",

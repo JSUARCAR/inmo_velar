@@ -24,6 +24,7 @@ from src.infraestructura.persistencia.repositorio_proveedores_postgres import (
 
 from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempotencia
 from src.aplicacion.decorators.idempotent import idempotent
+from src.infraestructura.cache.cache_manager import cache_manager
 
 class ServicioIncidentes:
     def __init__(
@@ -44,6 +45,7 @@ class ServicioIncidentes:
         self.repo_idempotencia = repo_idempotencia
 
     @idempotent(key_prefix="incidentes:reportar")
+    @cache_manager.invalidates("dashboard")
     def reportar_incidente(
         self, 
         datos: Dict[str, Any], 
@@ -144,6 +146,7 @@ class ServicioIncidentes:
     # Los métodos obtener_datos_* han sido removidos. La data ahora se obtiene
     # mediante JOINs en el Repositorio (Fase 1 del Refactor Maestro).
 
+    @cache_manager.invalidates("dashboard")
     def cambiar_estado(
         self,
         id_incidente: int,
@@ -173,6 +176,7 @@ class ServicioIncidentes:
             self.repo_incidentes.actualizar(incidente)
             return incidente
 
+    @cache_manager.invalidates("dashboard")
     def registrar_cotizacion(
         self, id_incidente: int, datos_cotizacion: Dict[str, Any], usuario_sistema: str
     ) -> Cotizacion:
@@ -211,6 +215,7 @@ class ServicioIncidentes:
 
             return cotizacion
 
+    @cache_manager.invalidates("dashboard")
     def iniciar_reparacion(self, id_incidente: int, usuario_sistema: str) -> None:
         """Inicia la reparación, cambiando el estado de Aprobado a En Reparacion."""
         with self.db_manager.transaccion():
@@ -235,6 +240,7 @@ class ServicioIncidentes:
                 tipo_accion="INICIAR_REPARACION",
             )
 
+    @cache_manager.invalidates("dashboard")
     def aprobar_cotizacion(
         self,
         id_incidente: int,
@@ -339,6 +345,7 @@ class ServicioIncidentes:
             motivo=f"Acción: {tipo_accion} | Comentario: {comentario or 'N/A'}",
         )
 
+    @cache_manager.invalidates("dashboard")
     def rechazar_cotizacion(
         self,
         id_incidente: int,
@@ -382,6 +389,7 @@ class ServicioIncidentes:
                 },
             )
 
+    @cache_manager.invalidates("dashboard")
     def finalizar_incidente(
         self,
         id_incidente: int,
@@ -447,6 +455,7 @@ class ServicioIncidentes:
 
             return incidente
 
+    @cache_manager.invalidates("dashboard")
     def cancelar_incidente(
         self, id_incidente: int, usuario_sistema: str, motivo: str
     ) -> Incidente:
@@ -496,6 +505,7 @@ class ServicioIncidentes:
         cotizaciones = self.repo_incidentes.obtener_cotizaciones(id_incidente)
         return [c for c in cotizaciones if c.estado_cotizacion == "Rechazada"]
 
+    @cache_manager.invalidates("dashboard")
     def editar_incidente(
         self,
         id_incidente: int,

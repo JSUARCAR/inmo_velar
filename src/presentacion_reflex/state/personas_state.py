@@ -288,7 +288,7 @@ class PersonasState(rx.State):
                     correo=p.correo_principal or "",
                     direccion=p.persona.direccion_principal or "",
                     roles=p.roles,
-                    estado="Activo" if p.esta_activa else "Inactivo",
+                    estado="ACTIVO" if p.esta_activa else "Inactivo",
                     fecha_creacion=p.persona.created_at[:10] if p.persona.created_at else "N/A",
                 )
                 for p in resultado.items
@@ -1084,7 +1084,7 @@ class PersonasState(rx.State):
             )
             
             # Lógica de transición
-            if estado_actual == "Activo":
+            if estado_actual == "ACTIVO":
                 exito = servicio.desactivar_persona(id_persona, motivo="Desactivado desde UI", usuario_sistema="admin")
                 msg = "Persona desactivada exitosamente"
             else:

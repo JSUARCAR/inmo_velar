@@ -35,6 +35,7 @@ from src.aplicacion.esquemas.recaudo import (
 )
 from src.aplicacion.utils.formatters import format_currency
 from src.infraestructura.persistencia.database import DatabaseManager
+from src.infraestructura.cache.cache_manager import cache_manager
 
 
 class ServicioRecaudo:
@@ -58,6 +59,7 @@ class ServicioRecaudo:
     # ==================== REGISTRO ====================
 
     @idempotent(key_prefix="recaudo:registrar")
+    @cache_manager.invalidates("dashboard")
     def registrar_pago(
         self,
         comando: ComandoRegistrarPago,
@@ -122,6 +124,7 @@ class ServicioRecaudo:
 
     # ==================== CAMBIOS DE ESTADO ====================
 
+    @cache_manager.invalidates("dashboard")
     def aplicar_pago(self, id_recaudo: int, usuario: str) -> ResultadoOperacion:
         """
         Aplica un pago pendiente.
@@ -158,6 +161,7 @@ class ServicioRecaudo:
             id_recaudo=id_recaudo,
         )
 
+    @cache_manager.invalidates("dashboard")
     def reversar_pago(self, id_recaudo: int, usuario: str) -> ResultadoOperacion:
         """
         Revierte un pago aplicado.
@@ -196,6 +200,7 @@ class ServicioRecaudo:
 
     # ==================== ELIMINACIÓN ====================
 
+    @cache_manager.invalidates("dashboard")
     def eliminar_pago(self, id_recaudo: int, usuario: str) -> ResultadoOperacion:
         """
         Elimina un pago pendiente.
@@ -234,6 +239,7 @@ class ServicioRecaudo:
 
     # ==================== ACTUALIZACIÓN ====================
 
+    @cache_manager.invalidates("dashboard")
     def actualizar_pago(
         self, id_recaudo: int, comando: ComandoActualizarPago, usuario: str
     ) -> ResultadoOperacion:
@@ -404,7 +410,7 @@ class ServicioRecaudo:
             INNER JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
             INNER JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             INNER JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
-            WHERE ca.ESTADO_CONTRATO_A = 'Activo'
+            WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
             ORDER BY p.DIRECCION_PROPIEDAD
         """
 
@@ -458,6 +464,7 @@ class ServicioRecaudo:
 
     # ==================== GENERACIÓN MASIVA ====================
 
+    @cache_manager.invalidates("dashboard")
     def generar_recaudos_mes_actual(
         self, usuario_sistema: str
     ) -> ResultadoGeneracionMasiva:
@@ -495,7 +502,7 @@ class ServicioRecaudo:
         query_contratos = """
             SELECT ID_CONTRATO_A, CANON_ARRENDAMIENTO, FECHA_INICIO_CONTRATO_A
             FROM CONTRATOS_ARRENDAMIENTOS
-            WHERE ESTADO_CONTRATO_A = 'Activo'
+            WHERE ESTADO_CONTRATO_A = 'ACTIVO'
         """
 
         with self.db.obtener_conexion() as conn:
