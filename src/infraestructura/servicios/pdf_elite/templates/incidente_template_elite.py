@@ -60,7 +60,6 @@ class IncidenteTemplateElite(BaseDocumentTemplate):
     def generate(self, data: Dict[str, Any]) -> Path:
         self.empresa_config = data.get("empresa", {})
         self.data_source = data
-        self.enable_verification_qr("incidente", data["id"])
 
         # Configurar Header/Footer con Membrete
         self.set_header_footer(self._header_footer_with_features, self._header_footer_with_features)

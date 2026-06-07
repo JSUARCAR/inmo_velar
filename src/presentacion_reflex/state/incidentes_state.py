@@ -154,9 +154,9 @@ class IncidentesState(DocumentosStateMixin):
     # --- DETAILS MODAL & QUOTING ---
     details_modal_open: bool = False
     selected_incidente: Dict[str, Any] = {}
-    cotizaciones: List[Dict[str, Any]] = (
-        []
-    )  # Lista de cotizaciones del incidente seleccionado
+    cotizaciones: List[
+        Dict[str, Any]
+    ] = []  # Lista de cotizaciones del incidente seleccionado
 
     show_quote_form: bool = False
 
@@ -280,6 +280,10 @@ class IncidentesState(DocumentosStateMixin):
     @rx.event(background=True)
     async def load_incidentes(self):
         """Carga lista de incidentes y actualiza vistas optimizadamente."""
+        import logging
+
+        _log = logging.getLogger("IncidentesState")
+
         async with self:
             self.is_loading = True
             self.error_message = ""
@@ -367,8 +371,15 @@ class IncidentesState(DocumentosStateMixin):
                 if self.total_pages < 1:
                     self.total_pages = 1
 
+                _log.info(
+                    "load_incidentes: cargados=%d, total=%d, kanban=%s",
+                    len(items),
+                    total_items,
+                    {k: len(v) for k, v in kanban_grouped.items()},
+                )
+
         except Exception as e:
-            print(f"Error critico en load_incidentes: {e}")
+            _log.exception("Error crítico en load_incidentes")
             async with self:
                 self.error_message = f"Error al cargar incidentes: {str(e)}"
                 self.incidentes = []
@@ -892,24 +903,115 @@ class IncidentesState(DocumentosStateMixin):
 
     @rx.event(background=True)
     async def generar_pdf_incidente(self):
-        """Genera el PDF del incidente seleccionado."""
+        """Genera el PDF del incidente seleccionado.
+
+        Estrategia CQRS lite: consulta directa a la DB para obtener datos
+        frescos y completos, independientes del estado de la UI. Esto evita
+        que fallos de carga de incidentes contamenen la generación del PDF.
+        """
+        import logging
+
+        _log = logging.getLogger("IncidentesState")
+
         async with self:
             if not self.selected_incidente:
                 yield rx.toast.error("No hay incidente seleccionado.")
                 return
             self.is_loading = True
 
-        try:
-            # 1. Obtener datos completos
-            datos = self.selected_incidente.copy()
-            # Mapear fecha a fecha_reporte para el template
-            datos["fecha_reporte"] = datos.get("fecha")
-            # Agregar cotizaciones
-            datos["cotizaciones"] = self.cotizaciones
-            # Agregar dirección legible
-            datos["direccion"] = datos.get("direccion_propiedad")
+        incidente_id = self.selected_incidente.get("id")
+        if not incidente_id:
+            yield rx.toast.error("El incidente seleccionado no tiene un ID válido.")
+            async with self:
+                self.is_loading = False
+            return
 
-            # 2. Configuración empresa
+        try:
+            # 1. Consulta fresca a la DB (CQRS lite) - datos aislados del UI state
+            servicio = ServicioIncidentes(db_manager)
+            detalle = servicio.obtener_detalle(incidente_id)
+
+            if not detalle or not detalle.get("incidente"):
+                _log.error("PDF: No se encontró incidente %s en DB", incidente_id)
+                yield rx.toast.error("No se encontró el incidente en la base de datos.")
+                return
+
+            inc_obj = detalle["incidente"]
+            propiedad = detalle.get("propiedad")
+            cotizaciones_db = detalle.get("cotizaciones", [])
+
+            # 2. Construir datos del PDF con mapeo explícito desde la entidad
+            datos = {
+                "id": inc_obj.id_incidente,
+                "descripcion": inc_obj.descripcion_incidente,
+                "estado": inc_obj.estado,
+                "prioridad": inc_obj.prioridad,
+                "fecha": (
+                    inc_obj.fecha_incidente.strftime("%Y-%m-%d")
+                    if hasattr(inc_obj.fecha_incidente, "strftime")
+                    else str(inc_obj.fecha_incidente)[:10]
+                ),
+                "id_propiedad": inc_obj.id_propiedad,
+                "direccion": getattr(
+                    propiedad, "direccion_propiedad", f"#{inc_obj.id_propiedad}"
+                )
+                if propiedad
+                else f"#{inc_obj.id_propiedad}",
+                "origen_reporte": inc_obj.origen_reporte or "Inquilino",
+                "responsable_pago": inc_obj.responsable_pago or "Por definir",
+                "nombre_propietario": inc_obj.nombre_propietario or "N/D",
+                "nombre_proveedor": inc_obj.nombre_proveedor or "No Asignado",
+                "costo_incidente": inc_obj.costo_incidente,
+                "fecha_arreglo": (
+                    inc_obj.fecha_arreglo.strftime("%Y-%m-%d")
+                    if inc_obj.fecha_arreglo
+                    and hasattr(inc_obj.fecha_arreglo, "strftime")
+                    else str(inc_obj.fecha_arreglo).split(" ")[0]
+                    if inc_obj.fecha_arreglo
+                    else None
+                ),
+                "cotizaciones": [],
+                "fecha_reporte": (
+                    inc_obj.fecha_incidente.strftime("%Y-%m-%d")
+                    if hasattr(inc_obj.fecha_incidente, "strftime")
+                    else str(inc_obj.fecha_incidente)[:10]
+                ),
+            }
+
+            # 3. Mapear cotizaciones con nombre de proveedor
+            for cot in cotizaciones_db:
+                nombre_prov = "Proveedor"
+                if cot.id_proveedor:
+                    prov_opt = next(
+                        (
+                            p
+                            for p in self.proveedores_options
+                            if p["id"] == str(cot.id_proveedor)
+                        ),
+                        None,
+                    )
+                    if prov_opt:
+                        nombre_prov = prov_opt["texto"]
+                datos["cotizaciones"].append(
+                    {
+                        "proveedor": nombre_prov,
+                        "descripcion": cot.descripcion_trabajo or "",
+                        "dias": cot.dias_estimados,
+                        "mano_obra": cot.valor_mano_obra,
+                        "materiales": cot.valor_materiales,
+                        "valor_total": cot.valor_total,
+                        "estado": cot.estado_cotizacion,
+                    }
+                )
+
+            # 4. Obtener observaciones de finalización desde historial
+            historial = servicio.obtener_historial(incidente_id)
+            for h in historial:
+                if h.estado_nuevo == "Finalizado" and h.comentario:
+                    datos["observaciones_final"] = h.comentario
+                    break
+
+            # 5. Configuración empresa
             servicio_config = ServicioConfiguracion(db_manager)
             config_empresa = servicio_config.obtener_configuracion_empresa()
             if config_empresa:
@@ -918,14 +1020,20 @@ class IncidentesState(DocumentosStateMixin):
                     "nombre": config_empresa.nombre_empresa,
                 }
 
-            # 3. Generar PDF
-            # Usar un directorio temporal o el de documentos generados
+            _log.info(
+                "PDF generado para incidente %s (estado=%s, cotizaciones=%d)",
+                incidente_id,
+                inc_obj.estado,
+                len(datos["cotizaciones"]),
+            )
+
+            # 6. Generar PDF
             template = IncidenteTemplateElite(output_dir=Path("documentos_generados"))
             pdf_path = template.generate(datos)
 
             yield rx.toast.success("PDF generado exitosamente.")
 
-            # 4. Descargar
+            # 7. Descargar
             pdf_filename = Path(pdf_path).name
             download_url = f"{config.api_url}/api/pdf/download/{pdf_filename}"
 
@@ -952,6 +1060,7 @@ class IncidentesState(DocumentosStateMixin):
             yield rx.call_script(js_download)
 
         except Exception as e:
+            _log.exception("Error generando PDF para incidente %s", incidente_id)
             yield rx.toast.error(f"Error generando PDF: {str(e)}")
         finally:
             async with self:

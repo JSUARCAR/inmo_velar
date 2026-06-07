@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.cotizacion import Cotizacion
@@ -6,6 +7,8 @@ from src.dominio.entidades.historial_incidente import HistorialIncidente
 from src.dominio.entidades.incidente import Incidente
 from src.dominio.interfaces.repositorio_incidentes import RepositorioIncidentes
 from src.infraestructura.persistencia.database import DatabaseManager
+
+_log = logging.getLogger("RepositorioIncidentes")
 
 
 class RepositorioIncidentesPostgres(RepositorioIncidentes):
@@ -166,7 +169,10 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         LEFT JOIN PROVEEDORES PR ON I.ID_PROVEEDOR_ASIGNADO = PR.ID_PROVEEDOR
         LEFT JOIN PERSONAS PER_PROV ON PR.ID_PERSONA = PER_PROV.ID_PERSONA
         LEFT JOIN PROPIEDADES PROP ON I.ID_PROPIEDAD = PROP.ID_PROPIEDAD
-        LEFT JOIN CONTRATOS_MANDATOS CM ON (I.ID_CONTRATO_M = CM.ID_CONTRATO_M OR I.ID_PROPIEDAD = CM.ID_PROPIEDAD)
+        LEFT JOIN CONTRATOS_MANDATOS CM ON (
+            I.ID_CONTRATO_M = CM.ID_CONTRATO_M
+            OR (I.ID_CONTRATO_M IS NULL AND I.ID_PROPIEDAD = CM.ID_PROPIEDAD AND CM.ESTADO_CONTRATO_M = 'ACTIVO')
+        )
         LEFT JOIN PROPIETARIOS P ON CM.ID_PROPIETARIO = P.ID_PROPIETARIO
         LEFT JOIN PERSONAS PER_PROP ON P.ID_PERSONA = PER_PROP.ID_PERSONA
         LEFT JOIN CONTRATOS_ARRENDAMIENTOS CA ON I.ID_PROPIEDAD = CA.ID_PROPIEDAD AND CA.ESTADO_CONTRATO_A = 'ACTIVO'
@@ -181,7 +187,13 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         cursor = self.db.get_dict_cursor(conn)
         cursor.execute(query, (id_incidente,))
         row = cursor.fetchone()
-        return self._mapear_incidente(row) if row else None
+        resultado = self._mapear_incidente(row) if row else None
+        if not resultado:
+            _log.warning(
+                "obtener_por_id(%s): no se encontró incidente o fallo en JOINs",
+                id_incidente,
+            )
+        return resultado
 
     def listar_con_filtros(
         self,
@@ -228,7 +240,10 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         LEFT JOIN PERSONAS PER_PROV ON PR.ID_PERSONA = PER_PROV.ID_PERSONA
         LEFT JOIN PROPIEDADES PROP ON I.ID_PROPIEDAD = PROP.ID_PROPIEDAD
         -- Join Propietario (via Mandato o Propiedad)
-        LEFT JOIN CONTRATOS_MANDATOS CM ON (I.ID_CONTRATO_M = CM.ID_CONTRATO_M OR I.ID_PROPIEDAD = CM.ID_PROPIEDAD)
+        LEFT JOIN CONTRATOS_MANDATOS CM ON (
+            I.ID_CONTRATO_M = CM.ID_CONTRATO_M
+            OR (I.ID_CONTRATO_M IS NULL AND I.ID_PROPIEDAD = CM.ID_PROPIEDAD AND CM.ESTADO_CONTRATO_M = 'ACTIVO')
+        )
         LEFT JOIN PROPIETARIOS P ON CM.ID_PROPIETARIO = P.ID_PROPIETARIO
         LEFT JOIN PERSONAS PER_PROP ON P.ID_PERSONA = PER_PROP.ID_PERSONA
         -- Join Inquilino (Contrato Activo)
@@ -341,6 +356,12 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
 
         cursor.execute(query, tuple(params))
         incidentes = [self._mapear_incidente(row) for row in cursor.fetchall()]
+
+        _log.debug(
+            "listar_con_filtros: total=%d, incidentes_devueltos=%d",
+            total,
+            len(incidentes),
+        )
 
         return {"items": incidentes, "total": total}
 

@@ -816,9 +816,6 @@ class RepositorioLiquidacionPostgres:
                 JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
                 JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
                 JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
-                LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON cm.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'ACTIVO'
-                LEFT JOIN RECAUDOS rrec ON rrec.ID_CONTRATO_A = ca_rec.ID_CONTRATO_A
-                LEFT JOIN RECAUDO_CONCEPTOS rconc ON rconc.ID_RECAUDO = rrec.ID_RECAUDO AND rconc.PERIODO = l.PERIODO
             """
 
             conditions = []
@@ -904,16 +901,29 @@ class RepositorioLiquidacionPostgres:
                     estado_consolidado = "Mixto"
 
                 # Determinar estado_recaudo consolidado del propietario
+                # Subconsulta por liquidación individual para evitar producto cartesiano
                 cursor.execute(
                     f"""
-                    SELECT rrec.ESTADO_RECAUDO, COUNT(*) as CNT
-                    FROM LIQUIDACIONES l
-                    JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
-                    LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON cm.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'ACTIVO'
-                    LEFT JOIN RECAUDOS rrec ON rrec.ID_CONTRATO_A = ca_rec.ID_CONTRATO_A
-                    LEFT JOIN RECAUDO_CONCEPTOS rconc ON rconc.ID_RECAUDO = rrec.ID_RECAUDO AND rconc.PERIODO = l.PERIODO
-                    WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder}
-                    GROUP BY rrec.ESTADO_RECAUDO
+                    SELECT recaudo_info.ESTADO_RECAUDO, COUNT(*) as CNT
+                    FROM (
+                        SELECT l.ID_LIQUIDACION,
+                            COALESCE(
+                                (SELECT rrec_sub.ESTADO_RECAUDO
+                                 FROM RECAUDOS rrec_sub
+                                 JOIN RECAUDO_CONCEPTOS rconc_sub ON rconc_sub.ID_RECAUDO = rrec_sub.ID_RECAUDO
+                                 JOIN CONTRATOS_ARRENDAMIENTOS ca_sub ON ca_sub.ID_CONTRATO_A = rrec_sub.ID_CONTRATO_A
+                                 WHERE ca_sub.ID_PROPIEDAD = (
+                                     SELECT cm2.ID_PROPIEDAD FROM CONTRATOS_MANDATOS cm2 WHERE cm2.ID_CONTRATO_M = l.ID_CONTRATO_M
+                                 )
+                                 AND rconc_sub.PERIODO = l.PERIODO
+                                 LIMIT 1),
+                                'Sin Recaudo'
+                            ) AS ESTADO_RECAUDO
+                        FROM LIQUIDACIONES l
+                        JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+                        WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder}
+                    ) AS recaudo_info
+                    GROUP BY recaudo_info.ESTADO_RECAUDO
                 """,
                     (row["ID_PROPIETARIO"], row["PERIODO"]),
                 )
@@ -1182,7 +1192,9 @@ class RepositorioLiquidacionPostgres:
         iva_total = sum(l.get("IVA_COMISION", 0) or 0 for l in liquidaciones)
         impuesto_total = sum(l.get("IMPUESTO_4X1000", 0) or 0 for l in liquidaciones)
 
-        gastos_admin = sum(l.get("GASTOS_ADMINISTRACION", 0) or 0 for l in liquidaciones)
+        gastos_admin = sum(
+            l.get("GASTOS_ADMINISTRACION", 0) or 0 for l in liquidaciones
+        )
         gastos_serv = sum(l.get("GASTOS_SERVICIOS", 0) or 0 for l in liquidaciones)
         gastos_rep = sum(l.get("GASTOS_REPARACIONES", 0) or 0 for l in liquidaciones)
         pago_predial = sum(l.get("PAGO_PREDIAL", 0) or 0 for l in liquidaciones)
@@ -1220,12 +1232,16 @@ class RepositorioLiquidacionPostgres:
             )
 
         # 6. Consolidar observaciones
-        lista_obs = [l.get("OBSERVACIONES") for l in liquidaciones if l.get("OBSERVACIONES")]
+        lista_obs = [
+            l.get("OBSERVACIONES") for l in liquidaciones if l.get("OBSERVACIONES")
+        ]
         observaciones_final = ""
         if lista_obs:
             observaciones_final = " | ".join(lista_obs)
         else:
-            observaciones_final = f"Estado de cuenta consolidado para {len(liquidaciones)} inmuebles."
+            observaciones_final = (
+                f"Estado de cuenta consolidado para {len(liquidaciones)} inmuebles."
+            )
 
         return {
             "propietario": propietario["NOMBRE_COMPLETO"],
@@ -1337,7 +1353,6 @@ class RepositorioLiquidacionPostgres:
             "neto": "l.NETO_A_PAGAR",
             "contrato": "p.DIRECCION_PROPIEDAD",
             "dia_pago": "cm.FECHA_PAGO",
-            "estado_recaudo": "rrec.ESTADO_RECAUDO",
         }
 
         sort_col_raw = SORT_COLUMNS.get(sort_by, "l.PERIODO")
@@ -1358,9 +1373,6 @@ class RepositorioLiquidacionPostgres:
             JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
             JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
             JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
-            LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca_rec ON p.ID_PROPIEDAD = ca_rec.ID_PROPIEDAD AND ca_rec.ESTADO_CONTRATO_A = 'ACTIVO'
-            LEFT JOIN RECAUDOS rrec ON rrec.ID_CONTRATO_A = ca_rec.ID_CONTRATO_A
-            LEFT JOIN RECAUDO_CONCEPTOS rconc ON rconc.ID_RECAUDO = rrec.ID_RECAUDO AND rconc.PERIODO = l.PERIODO
         """
 
         conditions = []
@@ -1400,7 +1412,13 @@ class RepositorioLiquidacionPostgres:
                 l.GASTOS_ADMINISTRACION, l.GASTOS_SERVICIOS, l.GASTOS_REPARACIONES, 
                 l.PAGO_PREDIAL, l.OTROS_EGRESOS, l.NETO_A_PAGAR,
                 p.DIRECCION_PROPIEDAD, cm.FECHA_PAGO, cm.GRUPO_OPERATIVO,
-                rrec.ESTADO_RECAUDO
+                (SELECT rrec_sub.ESTADO_RECAUDO
+                 FROM RECAUDOS rrec_sub
+                 JOIN RECAUDO_CONCEPTOS rconc_sub ON rconc_sub.ID_RECAUDO = rrec_sub.ID_RECAUDO
+                 JOIN CONTRATOS_ARRENDAMIENTOS ca_sub ON ca_sub.ID_CONTRATO_A = rrec_sub.ID_CONTRATO_A
+                 WHERE ca_sub.ID_PROPIEDAD = p.ID_PROPIEDAD
+                   AND rconc_sub.PERIODO = l.PERIODO
+                 LIMIT 1) AS ESTADO_RECAUDO
             {base_from} {where_clause}
             ORDER BY {sort_col} {order}, l.ID_LIQUIDACION DESC
             LIMIT {placeholder} OFFSET {placeholder}
