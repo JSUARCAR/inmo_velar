@@ -143,7 +143,7 @@ def recaudos_toolbar() -> rx.Component:
 def header_cell_sortable(label: str, column_id: str) -> rx.Component:
     """Renderiza celda de encabezado con capacidad de ordenamiento."""
     is_active = RecaudosState.sort_by == column_id
-    
+
     return rx.table.column_header_cell(
         rx.hstack(
             rx.text(label, weight="bold"),
@@ -162,7 +162,7 @@ def header_cell_sortable(label: str, column_id: str) -> rx.Component:
             on_click=lambda: RecaudosState.toggle_sort(column_id),
             _hover={"opacity": 0.8},
         ),
-        style={"font-weight": "600"}
+        style={"font-weight": "600"},
     )
 
 
@@ -176,6 +176,7 @@ def recaudos_table() -> rx.Component:
                 header_cell_sortable("Pago Contrato", "fecha_pago_contrato"),
                 header_cell_sortable("Propiedad", "direccion"),
                 header_cell_sortable("Arrendatario", "arrendatario"),
+                header_cell_sortable("Habitante", "habitante"),
                 header_cell_sortable("Valor", "valor_total"),
                 rx.table.column_header_cell("Método", style={"font-weight": "600"}),
                 header_cell_sortable("Estado", "estado"),
@@ -191,7 +192,11 @@ def recaudos_table() -> rx.Component:
                     rx.table.cell(rec["id_recaudo"]),
                     rx.table.cell(rec["fecha_pago"]),
                     rx.table.cell(
-                        rx.badge(rec["fecha_pago_contrato"], variant="surface", color_scheme="indigo")
+                        rx.badge(
+                            rec["fecha_pago_contrato"],
+                            variant="surface",
+                            color_scheme="indigo",
+                        )
                     ),
                     rx.table.cell(
                         rx.vstack(
@@ -206,7 +211,63 @@ def recaudos_table() -> rx.Component:
                             align="start",
                         )
                     ),
-                    rx.table.cell(rec["arrendatario"]),
+                    rx.table.cell(
+                        rx.vstack(
+                            rx.hstack(
+                                rx.icon("phone", size=12, color="gray"),
+                                rx.cond(
+                                    rec["telefono_arrendatario"] != "",
+                                    rx.text(
+                                        rec["telefono_arrendatario"],
+                                        size="1",
+                                        color="gray",
+                                    ),
+                                    rx.text(
+                                        "Sin registro",
+                                        size="1",
+                                        color="gray",
+                                        font_style="italic",
+                                    ),
+                                ),
+                                spacing="1",
+                                align="center",
+                            ),
+                            rx.text(rec["arrendatario"], size="2", weight="medium"),
+                            spacing="1",
+                            align="start",
+                        )
+                    ),
+                    rx.table.cell(
+                        rx.cond(
+                            rec["habitante"] != "",
+                            rx.vstack(
+                                rx.hstack(
+                                    rx.icon("phone", size=12, color="gray"),
+                                    rx.cond(
+                                        rec["telefono_habitante"] != "",
+                                        rx.text(
+                                            rec["telefono_habitante"],
+                                            size="1",
+                                            color="gray",
+                                        ),
+                                        rx.text(
+                                            "Sin registro",
+                                            size="1",
+                                            color="gray",
+                                            font_style="italic",
+                                        ),
+                                    ),
+                                    spacing="1",
+                                    align="center",
+                                ),
+                                rx.text(rec["habitante"], size="2", weight="medium"),
+                                spacing="1",
+                                align="start",
+                            ),
+                            rx.text("—", size="2", color="gray"),
+                        ),
+                        display=rx.breakpoints(initial="none", md="table-cell"),
+                    ),
                     rx.table.cell(
                         rx.text(
                             rec["valor_total_view"],
@@ -218,6 +279,27 @@ def recaudos_table() -> rx.Component:
                     rx.table.cell(render_estado_badge(rec["estado"])),
                     rx.table.cell(
                         rx.hstack(
+                            # Tooltip móvil: Info del habitante
+                            rx.cond(
+                                rec["habitante"] != "",
+                                rx.tooltip(
+                                    rx.icon(
+                                        "user",
+                                        size=14,
+                                        display=rx.breakpoints(
+                                            initial="block", md="none"
+                                        ),
+                                    ),
+                                    content=rx.cond(
+                                        rec["telefono_habitante"] != "",
+                                        rec["habitante"].to_string()
+                                        + " \u2022 "
+                                        + rec["telefono_habitante"].to_string(),
+                                        rec["habitante"].to_string(),
+                                    ),
+                                ),
+                                rx.box(),
+                            ),
                             # PDF Recibo de Pago
                             rx.tooltip(
                                 rx.icon_button(
@@ -248,7 +330,10 @@ def recaudos_table() -> rx.Component:
                             ),
                             # Aplicar Pago (Pendientes o Vencidos)
                             rx.cond(
-                                ((rec["estado"] == "Pendiente") | (rec["estado"] == "Vencido"))
+                                (
+                                    (rec["estado"] == "Pendiente")
+                                    | (rec["estado"] == "Vencido")
+                                )
                                 & AuthState.check_action("Recaudos", "APLICAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -284,7 +369,10 @@ def recaudos_table() -> rx.Component:
                             ),
                             # Editar (Pendientes o Vencidos)
                             rx.cond(
-                                ((rec["estado"] == "Pendiente") | (rec["estado"] == "Vencido"))
+                                (
+                                    (rec["estado"] == "Pendiente")
+                                    | (rec["estado"] == "Vencido")
+                                )
                                 & AuthState.check_action("Recaudos", "EDITAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -302,7 +390,10 @@ def recaudos_table() -> rx.Component:
                             ),
                             # Eliminar (Pendientes o Vencidos)
                             rx.cond(
-                                ((rec["estado"] == "Pendiente") | (rec["estado"] == "Vencido"))
+                                (
+                                    (rec["estado"] == "Pendiente")
+                                    | (rec["estado"] == "Vencido")
+                                )
                                 & AuthState.check_action("Recaudos", "ELIMINAR"),
                                 rx.tooltip(
                                     rx.icon_button(
@@ -397,7 +488,6 @@ def pagination_controls() -> rx.Component:
             "background": styles.BG_PANEL,
         },
     )
-
 
 
 def modal_exportar_recibos_periodo() -> rx.Component:

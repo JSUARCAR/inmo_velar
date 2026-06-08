@@ -13,7 +13,7 @@ from .chart_components import (
 from .dashboard_filters import dashboard_filters
 from .kpi_card import kpi_card
 
-from .vencimientos_tables import tablas_vencimientos_detalle, _tabla_vencimientos
+from .vencimientos_tables import tabla_vencimientos_consolidados
 
 __all__ = [
     "kpi_card",
@@ -24,6 +24,5 @@ __all__ = [
     "top_asesores_chart",
     "tunel_vencimientos_chart",
     "dashboard_filters",
-    "tablas_vencimientos_detalle",
-    "_tabla_vencimientos",
+    "tabla_vencimientos_consolidados",
 ]

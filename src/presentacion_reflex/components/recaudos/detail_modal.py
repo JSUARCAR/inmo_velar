@@ -2,7 +2,9 @@
 
 import reflex as rx
 
-from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+from src.presentacion_reflex.components.document_manager_elite import (
+    document_manager_elite,
+)
 from src.presentacion_reflex.state.recaudos_state import RecaudosState
 
 
@@ -34,18 +36,26 @@ def modal_detalle_recaudo() -> rx.Component:
                                     rx.separator(),
                                     rx.hstack(
                                         rx.vstack(
-                                            rx.text("Propiedad", size="1", color="gray"),
                                             rx.text(
-                                                RecaudosState.recaudo_actual["direccion"],
+                                                "Propiedad", size="1", color="gray"
+                                            ),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual[
+                                                    "direccion"
+                                                ],
                                                 weight="medium",
                                             ),
                                             align="start",
                                             flex="1",
                                         ),
                                         rx.vstack(
-                                            rx.text("Matrícula", size="1", color="gray"),
                                             rx.text(
-                                                RecaudosState.recaudo_actual["matricula"],
+                                                "Matrícula", size="1", color="gray"
+                                            ),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual[
+                                                    "matricula"
+                                                ],
                                                 weight="medium",
                                             ),
                                             align="start",
@@ -55,24 +65,118 @@ def modal_detalle_recaudo() -> rx.Component:
                                     ),
                                     rx.hstack(
                                         rx.vstack(
-                                            rx.text("Arrendatario", size="1", color="gray"),
                                             rx.text(
-                                                RecaudosState.recaudo_actual["arrendatario"],
+                                                "Arrendatario", size="1", color="gray"
+                                            ),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual[
+                                                    "arrendatario"
+                                                ],
                                                 weight="medium",
                                             ),
                                             align="start",
                                             flex="1",
                                         ),
                                         rx.vstack(
-                                            rx.text("ID Contrato", size="1", color="gray"),
+                                            rx.text("Teléfono", size="1", color="gray"),
+                                            rx.cond(
+                                                RecaudosState.recaudo_actual[
+                                                    "telefono_arrendatario"
+                                                ]
+                                                != "",
+                                                rx.text(
+                                                    RecaudosState.recaudo_actual[
+                                                        "telefono_arrendatario"
+                                                    ],
+                                                    weight="medium",
+                                                ),
+                                                rx.text(
+                                                    "Sin registro",
+                                                    font_style="italic",
+                                                    color="gray",
+                                                ),
+                                            ),
+                                            align="start",
+                                            flex="1",
+                                        ),
+                                        rx.vstack(
                                             rx.text(
-                                                RecaudosState.recaudo_actual["id_contrato"],
+                                                "ID Contrato", size="1", color="gray"
+                                            ),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual[
+                                                    "id_contrato"
+                                                ],
                                                 weight="medium",
                                             ),
                                             align="start",
                                             flex="1",
                                         ),
                                         width="100%",
+                                    ),
+                                    spacing="3",
+                                    width="100%",
+                                ),
+                                width="100%",
+                            ),
+                            # Información del Habitante
+                            rx.card(
+                                rx.vstack(
+                                    rx.text(
+                                        "Información del Habitante",
+                                        size="3",
+                                        weight="bold",
+                                        color="#8b5cf6",
+                                    ),
+                                    rx.separator(),
+                                    rx.cond(
+                                        RecaudosState.recaudo_actual["habitante"] != "",
+                                        rx.hstack(
+                                            rx.vstack(
+                                                rx.text(
+                                                    "Nombre", size="1", color="gray"
+                                                ),
+                                                rx.text(
+                                                    RecaudosState.recaudo_actual[
+                                                        "habitante"
+                                                    ],
+                                                    weight="medium",
+                                                ),
+                                                align="start",
+                                                flex="1",
+                                            ),
+                                            rx.vstack(
+                                                rx.text(
+                                                    "Teléfono", size="1", color="gray"
+                                                ),
+                                                rx.cond(
+                                                    RecaudosState.recaudo_actual[
+                                                        "telefono_habitante"
+                                                    ]
+                                                    != "",
+                                                    rx.text(
+                                                        RecaudosState.recaudo_actual[
+                                                            "telefono_habitante"
+                                                        ],
+                                                        weight="medium",
+                                                    ),
+                                                    rx.text(
+                                                        "Sin registro",
+                                                        font_style="italic",
+                                                        color="gray",
+                                                    ),
+                                                ),
+                                                align="start",
+                                                flex="1",
+                                            ),
+                                            width="100%",
+                                        ),
+                                        rx.text(
+                                            "No hay habitante registrado para este contrato.",
+                                            size="2",
+                                            color="gray",
+                                            font_style="italic",
+                                        ),
                                     ),
                                     spacing="3",
                                     width="100%",
@@ -91,18 +195,26 @@ def modal_detalle_recaudo() -> rx.Component:
                                     rx.separator(),
                                     rx.hstack(
                                         rx.vstack(
-                                            rx.text("Fecha de Pago", size="1", color="gray"),
                                             rx.text(
-                                                RecaudosState.recaudo_actual["fecha_pago"],
+                                                "Fecha de Pago", size="1", color="gray"
+                                            ),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual[
+                                                    "fecha_pago"
+                                                ],
                                                 weight="medium",
                                             ),
                                             align="start",
                                             flex="1",
                                         ),
                                         rx.vstack(
-                                            rx.text("Valor Total", size="1", color="gray"),
                                             rx.text(
-                                                RecaudosState.recaudo_actual["valor_total_view"],
+                                                "Valor Total", size="1", color="gray"
+                                            ),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual[
+                                                    "valor_total_view"
+                                                ],
                                                 weight="bold",
                                                 color="green",
                                                 size="4",
@@ -114,9 +226,13 @@ def modal_detalle_recaudo() -> rx.Component:
                                     ),
                                     rx.hstack(
                                         rx.vstack(
-                                            rx.text("Método de Pago", size="1", color="gray"),
+                                            rx.text(
+                                                "Método de Pago", size="1", color="gray"
+                                            ),
                                             rx.badge(
-                                                RecaudosState.recaudo_actual["metodo_pago"],
+                                                RecaudosState.recaudo_actual[
+                                                    "metodo_pago"
+                                                ],
                                                 variant="soft",
                                             ),
                                             align="start",
@@ -151,7 +267,9 @@ def modal_detalle_recaudo() -> rx.Component:
                                                     ),
                                                 ),
                                                 rx.badge(
-                                                    RecaudosState.recaudo_actual["estado"],
+                                                    RecaudosState.recaudo_actual[
+                                                        "estado"
+                                                    ],
                                                     color_scheme="gray",
                                                 ),
                                             ),
@@ -161,11 +279,18 @@ def modal_detalle_recaudo() -> rx.Component:
                                         width="100%",
                                     ),
                                     rx.cond(
-                                        RecaudosState.recaudo_actual["referencia"] != "",
+                                        RecaudosState.recaudo_actual["referencia"]
+                                        != "",
                                         rx.vstack(
-                                            rx.text("Referencia Bancaria", size="1", color="gray"),
                                             rx.text(
-                                                RecaudosState.recaudo_actual["referencia"],
+                                                "Referencia Bancaria",
+                                                size="1",
+                                                color="gray",
+                                            ),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual[
+                                                    "referencia"
+                                                ],
                                                 weight="medium",
                                             ),
                                             align="start",
@@ -173,10 +298,17 @@ def modal_detalle_recaudo() -> rx.Component:
                                         ),
                                     ),
                                     rx.cond(
-                                        RecaudosState.recaudo_actual["observaciones"] != "",
+                                        RecaudosState.recaudo_actual["observaciones"]
+                                        != "",
                                         rx.vstack(
-                                            rx.text("Observaciones", size="1", color="gray"),
-                                            rx.text(RecaudosState.recaudo_actual["observaciones"]),
+                                            rx.text(
+                                                "Observaciones", size="1", color="gray"
+                                            ),
+                                            rx.text(
+                                                RecaudosState.recaudo_actual[
+                                                    "observaciones"
+                                                ]
+                                            ),
                                             align="start",
                                             width="100%",
                                         ),
@@ -211,16 +343,23 @@ def modal_detalle_recaudo() -> rx.Component:
                             # Auditoría
                             rx.card(
                                 rx.vstack(
-                                    rx.text("Auditoría", size="2", weight="bold", color="gray"),
+                                    rx.text(
+                                        "Auditoría",
+                                        size="2",
+                                        weight="bold",
+                                        color="gray",
+                                    ),
                                     rx.separator(),
                                     rx.hstack(
                                         rx.text("Creado por:", size="1", color="gray"),
                                         rx.text(
-                                            RecaudosState.recaudo_actual["created_by"], size="1"
+                                            RecaudosState.recaudo_actual["created_by"],
+                                            size="1",
                                         ),
                                         rx.text("el", size="1", color="gray"),
                                         rx.text(
-                                            RecaudosState.recaudo_actual["created_at"], size="1"
+                                            RecaudosState.recaudo_actual["created_at"],
+                                            size="1",
                                         ),
                                         spacing="2",
                                     ),
