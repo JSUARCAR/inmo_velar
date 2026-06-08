@@ -6,6 +6,8 @@ Selectores con búsqueda accesibles y alineados con Claude Design System.
 import reflex as rx
 from typing import Any, List, Union
 
+from src.presentacion_reflex.components.neuro_elements import neuro_button, neuro_input
+
 
 def searchable_select(
     label: str,
@@ -53,7 +55,7 @@ def searchable_select(
         ),
         rx.popover.root(
             rx.popover.trigger(
-                rx.button(
+                neuro_button(
                     rx.cond(
                         value_label == "",
                         rx.text(
@@ -82,12 +84,11 @@ def searchable_select(
             ),
             rx.popover.content(
                 rx.vstack(
-                    rx.input(
+                    neuro_input(
                         placeholder="Buscar...",
                         value=search_value,
                         on_change=on_change_search,
                         on_key_down=on_key_down,
-                        autofocus=True,
                         width="100%",
                         variant="soft",
                         size="2",
