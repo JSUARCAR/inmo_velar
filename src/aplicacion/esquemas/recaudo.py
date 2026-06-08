@@ -3,6 +3,7 @@ DTOs para el módulo de Recaudos.
 Esquemas de entrada/salida para la capa de aplicación.
 Validaciones estrictas con Pydantic v2 e implementación de Mappers.
 """
+
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
@@ -13,6 +14,7 @@ from src.dominio.constantes.recaudo import MetodoPago, TipoConcepto
 
 class ComandoRegistrarPago(BaseModel):
     """Comando para registrar un nuevo pago."""
+
     id_contrato_a: int = Field(gt=0, description="ID del contrato de arrendamiento")
     fecha_pago: date = Field(description="Fecha del pago en formato ISO")
     valor_total: int = Field(gt=0, description="Valor total del pago en pesos")
@@ -41,6 +43,7 @@ class ComandoRegistrarPago(BaseModel):
 
 class ComandoActualizarPago(BaseModel):
     """Comando para actualizar un pago existente."""
+
     fecha_pago: date = Field(description="Fecha del pago en formato ISO")
     valor_total: int = Field(gt=0, description="Valor total del pago en pesos")
     metodo_pago: MetodoPago = Field(description="Método de pago utilizado")
@@ -68,6 +71,7 @@ class ComandoActualizarPago(BaseModel):
 
 class ComandoGenerarMasivo(BaseModel):
     """Comando para generación masiva de pagos."""
+
     periodo: str = Field(
         pattern=r"^\d{4}-\d{2}$", description="Período en formato YYYY-MM"
     )
@@ -76,12 +80,16 @@ class ComandoGenerarMasivo(BaseModel):
 
 class RecaudoDTO(BaseModel):
     """DTO para representación de recaudo en listados."""
+
     id_recaudo: int
     id_contrato: int = 0
     codigo_contrato: str = ""
     direccion: str = ""
     matricula: str = ""
     arrendatario: str = ""
+    telefono_arrendatario: str = ""
+    habitante: str = ""
+    telefono_habitante: str = ""
     fecha_pago: str = ""
     fecha_pago_contrato: str = "N/A"
     valor_total: int = 0
@@ -94,6 +102,7 @@ class RecaudoDTO(BaseModel):
 
 class ConceptoDTO(BaseModel):
     """DTO para representación de un concepto de recaudo."""
+
     tipo: str = ""
     periodo: str = ""
     valor: int = 0
@@ -102,11 +111,15 @@ class ConceptoDTO(BaseModel):
 
 class RecaudoDetalleDTO(BaseModel):
     """DTO para detalle completo de recaudo."""
+
     id_recaudo: int
     id_contrato: int = 0
     direccion: str = ""
     matricula: str = ""
     arrendatario: str = ""
+    telefono_arrendatario: str = ""
+    habitante: str = ""
+    telefono_habitante: str = ""
     fecha_pago: str = ""
     valor_total: int = 0
     valor_total_view: str = ""
@@ -121,6 +134,7 @@ class RecaudoDetalleDTO(BaseModel):
 
 class EmpresaDTO(BaseModel):
     """DTO para información de la empresa en documentos."""
+
     nombre: str
     nit: str
     direccion: str
@@ -132,6 +146,7 @@ class EmpresaDTO(BaseModel):
 
 class RecaudoEnriquecidoPDFDTO(BaseModel):
     """DTO enriquecido para la generación de PDFs Élite."""
+
     id: int
     periodo: str
     fecha_generacion: str
@@ -187,6 +202,9 @@ class RecaudoMapper:
             direccion=row.get("direccion", ""),
             matricula=row.get("matricula", ""),
             arrendatario=row.get("arrendatario", ""),
+            telefono_arrendatario=row.get("telefono_arrendatario", ""),
+            habitante=row.get("habitante", ""),
+            telefono_habitante=row.get("telefono_habitante", ""),
             fecha_pago=row.get("fecha_pago", ""),
             fecha_pago_contrato=row.get("fecha_pago_contrato", "N/A"),
             valor_total=row.get("valor_total", 0),
@@ -198,7 +216,9 @@ class RecaudoMapper:
 
     @staticmethod
     def map_to_pdf_dto(
-        rec: Dict[str, Any], empresa: Optional[EmpresaDTO] = None, periodo_fallback: str = ""
+        rec: Dict[str, Any],
+        empresa: Optional[EmpresaDTO] = None,
+        periodo_fallback: str = "",
     ) -> RecaudoEnriquecidoPDFDTO:
         """Transforma un recaudo enriquecido del repositorio en un RecaudoEnriquecidoPDFDTO."""
         # Extraer período del primer concepto si existe
@@ -241,6 +261,7 @@ class RecaudoMapper:
 
 class ResultadoGeneracionMasiva(BaseModel):
     """Resultado de generación masiva de recaudos."""
+
     generados: int = 0
     omitidos_por_duplicidad: int = 0
     periodo: str = ""
@@ -248,6 +269,7 @@ class ResultadoGeneracionMasiva(BaseModel):
 
 class ResultadoOperacion(BaseModel):
     """Resultado estándar de una operación sobre recaudos."""
+
     exito: bool = False
     mensaje: str = ""
     id_recaudo: Optional[int] = None

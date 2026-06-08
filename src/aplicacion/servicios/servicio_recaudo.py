@@ -275,7 +275,7 @@ class ServicioRecaudo:
             valor_total=comando.valor_total,
             metodo_pago=comando.metodo_pago,
             referencia_bancaria=comando.referencia_bancaria,
-            estado_recaudo=recaudo_existente.estado_recaudo, # Preservar estado (Pendiente o Vencido)
+            estado_recaudo=recaudo_existente.estado_recaudo,  # Preservar estado (Pendiente o Vencido)
             observaciones=comando.observaciones,
             created_by=recaudo_existente.created_by,
             created_at=recaudo_existente.created_at,
@@ -305,9 +305,7 @@ class ServicioRecaudo:
 
     # ==================== CONSULTAS ====================
 
-    def listar_paginado(
-        self, filtros: FiltrosRecaudo
-    ) -> ResultadoPaginado[RecaudoDTO]:
+    def listar_paginado(self, filtros: FiltrosRecaudo) -> ResultadoPaginado[RecaudoDTO]:
         """
         Lista recaudos con filtros y paginación.
 
@@ -361,7 +359,7 @@ class ServicioRecaudo:
             return None
 
         conceptos_entities = self.repo.obtener_conceptos_por_recaudo(id_recaudo)
-        
+
         info_contrato = self.obtener_info_contrato(recaudo.id_contrato_a)
 
         conceptos_dto = [
@@ -380,12 +378,19 @@ class ServicioRecaudo:
             direccion=info_contrato.get("direccion", ""),
             matricula=info_contrato.get("matricula", ""),
             arrendatario=info_contrato.get("arrendatario", ""),
+            telefono_arrendatario=info_contrato.get("telefono_arrendatario", ""),
+            habitante=info_contrato.get("habitante", ""),
+            telefono_habitante=info_contrato.get("telefono_habitante", ""),
             fecha_pago=recaudo.fecha_pago,
             valor_total=recaudo.valor_total,
             valor_total_view=format_currency(recaudo.valor_total),
-            metodo_pago=recaudo.metodo_pago.value if hasattr(recaudo.metodo_pago, "value") else str(recaudo.metodo_pago),
+            metodo_pago=recaudo.metodo_pago.value
+            if hasattr(recaudo.metodo_pago, "value")
+            else str(recaudo.metodo_pago),
             referencia=recaudo.referencia_bancaria or "",
-            estado=recaudo.estado_recaudo.value if hasattr(recaudo.estado_recaudo, "value") else str(recaudo.estado_recaudo),
+            estado=recaudo.estado_recaudo.value
+            if hasattr(recaudo.estado_recaudo, "value")
+            else str(recaudo.estado_recaudo),
             observaciones=recaudo.observaciones or "",
             created_at=recaudo.created_at or "",
             created_by=recaudo.created_by or "",
@@ -436,14 +441,17 @@ class ServicioRecaudo:
             id_contrato: ID del contrato de arrendamiento
 
         Returns:
-            Dict con direccion, matricula y arrendatario
+            Dict con direccion, matricula, arrendatario y datos de contacto
         """
         placeholder = self.db.get_placeholder()
         query = f"""
             SELECT 
                 p.DIRECCION_PROPIEDAD,
                 p.MATRICULA_INMOBILIARIA,
-                per.NOMBRE_COMPLETO as ARRENDATARIO
+                per.NOMBRE_COMPLETO as ARRENDATARIO,
+                per.TELEFONO_PRINCIPAL as TELEFONO_ARRENDATARIO,
+                arr.NOMBRE_HABITANTE,
+                arr.TELEFONO_HABITANTE
             FROM CONTRATOS_ARRENDAMIENTOS ca
             INNER JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
             INNER JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
@@ -457,9 +465,14 @@ class ServicioRecaudo:
             row = cursor.fetchone()
 
         return {
-            "direccion": row["DIRECCION_PROPIEDAD"] if row else "",
-            "matricula": row["MATRICULA_INMOBILIARIA"] if row else "",
-            "arrendatario": row["ARRENDATARIO"] if row else "",
+            "direccion": (row["DIRECCION_PROPIEDAD"] or "") if row else "",
+            "matricula": (row["MATRICULA_INMOBILIARIA"] or "") if row else "",
+            "arrendatario": (row["ARRENDATARIO"] or "") if row else "",
+            "telefono_arrendatario": (row["TELEFONO_ARRENDATARIO"] or "")
+            if row
+            else "",
+            "habitante": (row["NOMBRE_HABITANTE"] or "") if row else "",
+            "telefono_habitante": (row["TELEFONO_HABITANTE"] or "") if row else "",
         }
 
     # ==================== GENERACIÓN MASIVA ====================

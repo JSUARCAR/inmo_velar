@@ -394,6 +394,8 @@ class RepositorioRecaudo:
             FROM RECAUDOS r
             JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+            JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+            JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
         """
 
         conditions = []
@@ -415,6 +417,8 @@ class RepositorioRecaudo:
             cols = [
                 "r.REFERENCIA_BANCARIA",
                 "p.DIRECCION_PROPIEDAD",
+                "per.NOMBRE_COMPLETO",
+                "arr.NOMBRE_HABITANTE",
                 "CAST(r.ID_RECAUDO AS TEXT)",
             ]
             cond = self.db.get_search_condition(cols)
@@ -559,9 +563,10 @@ class RepositorioRecaudo:
             "valor_total": "r.VALOR_TOTAL",
             "estado": "r.ESTADO_RECAUDO",
             "arrendatario": "per.NOMBRE_COMPLETO",
-            "direccion": "p.DIRECCION_PROPIEDAD"
+            "habitante": "arr.NOMBRE_HABITANTE",
+            "direccion": "p.DIRECCION_PROPIEDAD",
         }
-        
+
         sort_col = SORT_COLUMNS.get(sort_by, "r.FECHA_PAGO")
         order = "ASC" if sort_order.lower() == "asc" else "DESC"
 
@@ -578,7 +583,10 @@ class RepositorioRecaudo:
                 r.OBSERVACIONES,
                 p.DIRECCION_PROPIEDAD,
                 p.MATRICULA_INMOBILIARIA,
-                per.NOMBRE_COMPLETO as NOMBRE_ARRENDATARIO
+                per.NOMBRE_COMPLETO as NOMBRE_ARRENDATARIO,
+                per.TELEFONO_PRINCIPAL as TELEFONO_ARRENDATARIO,
+                arr.NOMBRE_HABITANTE,
+                arr.TELEFONO_HABITANTE
             FROM RECAUDOS r
             INNER JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
             INNER JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
@@ -605,6 +613,7 @@ class RepositorioRecaudo:
                 "r.REFERENCIA_BANCARIA",
                 "p.DIRECCION_PROPIEDAD",
                 "per.NOMBRE_COMPLETO",
+                "arr.NOMBRE_HABITANTE",
                 "CAST(r.ID_RECAUDO AS TEXT)",
             ]
             cond = self.db.get_search_condition(cols)
@@ -628,6 +637,9 @@ class RepositorioRecaudo:
                 "direccion": row["DIRECCION_PROPIEDAD"],
                 "matricula": row["MATRICULA_INMOBILIARIA"],
                 "arrendatario": row["NOMBRE_ARRENDATARIO"],
+                "telefono_arrendatario": row.get("TELEFONO_ARRENDATARIO") or "",
+                "habitante": row.get("NOMBRE_HABITANTE") or "",
+                "telefono_habitante": row.get("TELEFONO_HABITANTE") or "",
                 "fecha_pago": row["FECHA_PAGO"],
                 "fecha_pago_contrato": row["FECHA_PAGO_CONTRATO"] or "N/A",
                 "valor_total": row["VALOR_TOTAL"],
@@ -700,31 +712,36 @@ class RepositorioRecaudo:
             cursor.execute(query_conceptos, (id_recaudo,))
             conceptos_rows = cursor.fetchall()
 
-            resultados.append({
-                "id_recaudo": row["ID_RECAUDO"],
-                "id_contrato_a": row["ID_CONTRATO_A"],
-                "fecha_pago": row["FECHA_PAGO"],
-                "valor_total": row["VALOR_TOTAL"],
-                "metodo_pago": row["METODO_PAGO"],
-                "referencia_bancaria": row.get("REFERENCIA_BANCARIA") or "",
-                "estado_recaudo": row["ESTADO_RECAUDO"],
-                "observaciones": row.get("OBSERVACIONES") or "",
-                "direccion_propiedad": row["DIRECCION_PROPIEDAD"],
-                "matricula_inmobiliaria": row.get("MATRICULA_INMOBILIARIA") or "Sin matrícula",
-                "municipio": row.get("MUNICIPIO", "Armenia"),
-                "departamento": row.get("DEPARTAMENTO", "Quindío"),
-                "nombre_arrendatario": row["NOMBRE_ARRENDATARIO"],
-                "documento_arrendatario": row["DOCUMENTO_ARRENDATARIO"],
-                "email_arrendatario": row.get("EMAIL_ARRENDATARIO") or "No registrado",
-                "telefono_arrendatario": row.get("TELEFONO_ARRENDATARIO") or "No registrado",
-                "conceptos": [
-                    {
-                        "tipo_concepto": c["TIPO_CONCEPTO"],
-                        "valor": c["VALOR"],
-                        "periodo": c["PERIODO"],
-                    }
-                    for c in conceptos_rows
-                ],
-            })
+            resultados.append(
+                {
+                    "id_recaudo": row["ID_RECAUDO"],
+                    "id_contrato_a": row["ID_CONTRATO_A"],
+                    "fecha_pago": row["FECHA_PAGO"],
+                    "valor_total": row["VALOR_TOTAL"],
+                    "metodo_pago": row["METODO_PAGO"],
+                    "referencia_bancaria": row.get("REFERENCIA_BANCARIA") or "",
+                    "estado_recaudo": row["ESTADO_RECAUDO"],
+                    "observaciones": row.get("OBSERVACIONES") or "",
+                    "direccion_propiedad": row["DIRECCION_PROPIEDAD"],
+                    "matricula_inmobiliaria": row.get("MATRICULA_INMOBILIARIA")
+                    or "Sin matrícula",
+                    "municipio": row.get("MUNICIPIO", "Armenia"),
+                    "departamento": row.get("DEPARTAMENTO", "Quindío"),
+                    "nombre_arrendatario": row["NOMBRE_ARRENDATARIO"],
+                    "documento_arrendatario": row["DOCUMENTO_ARRENDATARIO"],
+                    "email_arrendatario": row.get("EMAIL_ARRENDATARIO")
+                    or "No registrado",
+                    "telefono_arrendatario": row.get("TELEFONO_ARRENDATARIO")
+                    or "No registrado",
+                    "conceptos": [
+                        {
+                            "tipo_concepto": c["TIPO_CONCEPTO"],
+                            "valor": c["VALOR"],
+                            "periodo": c["PERIODO"],
+                        }
+                        for c in conceptos_rows
+                    ],
+                }
+            )
 
         return resultados
