@@ -7,6 +7,7 @@ import reflex as rx
 from typing import Any, List, Union
 
 from src.presentacion_reflex.components.neuro_elements import neuro_button, neuro_input
+from src.presentacion_reflex import styles
 
 
 def searchable_select(
@@ -145,6 +146,10 @@ def searchable_select(
                 side="bottom",
                 side_offset=4,
                 avoid_collisions=True,
+                style={
+                    "pointer_events": "auto",
+                    "z_index": styles.Z_POPOVER,
+                },
             ),
             open=menu_open,
             on_open_change=on_toggle_menu,

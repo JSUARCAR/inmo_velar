@@ -111,5 +111,10 @@ Este manifiesto define los estándares de ejecución técnica, arquitectónica y
 - **ADRs (Architecture Decision Records):** Registrar decisiones arquitectónicas importantes en `docs/decisions/` explicando el contexto, el *por qué* y las alternativas descartadas.
 - **Documentación Dinámica:** Mantener el README y las guías de contribución actualizadas tras cada cambio estructural.
 
+## 16. GESTIÓN DE SUPERPOSICIONES Y PORTALS (RADIX UI)
+- **Bloqueo de Foco (Pointer-Events):** Componentes anidados en *Portals* (ej. Popover dentro de un Dialog) heredan `pointer-events: none` debido al *DismissableLayer* de Radix UI. Es MANDATORIO inyectar `pointer-events: auto` explícitamente en el estilo del contenido (`rx.popover.content`, `rx.hover_card.content`, etc.) si se espera interacción.
+- **Z-Index Global:** Queda estrictamente prohibido el uso de "magic numbers" para `z-index` (ej. `9999`). Se debe utilizar la escala definida en `styles.py` (`Z_MODAL=1000`, `Z_POPOVER=1050`, `Z_TOOLTIP=1100`).
+- **Overrides en `BASE_STYLE`:** Para garantizar la estabilidad en todos los componentes y evitar parches manuales, la configuración de `pointer-events` y `z-index` de las capas abstractas (`rx.dialog.content`, `rx.popover.content`, `rx.hover_card.content`) se gestiona de forma centralizada en el `BASE_STYLE` de la aplicación.
+
 ---
 **"La calidad del código es no negociable. Código que funciona pero no es mantenible, técnicamente no funciona."**

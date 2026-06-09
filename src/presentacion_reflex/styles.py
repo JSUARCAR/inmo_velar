@@ -19,7 +19,8 @@ __all__ = [
     "NEU_BADGE_STYLE",
     "SHADOW_RAISED_ELITE", "SHADOW_FLAT_ELITE", "SHADOW_MODAL_ELITE", "SHADOW_INSET_ELITE",
     "NEU_SHADOW", "NEU_MODAL_SHADOW", "NEU_PANEL_SHADOW", "NEU_INSET", "NEU_INSET_LIGHT", "NEU_PANEL",
-    "BASE_STYLE"
+    "BASE_STYLE",
+    "Z_MODAL", "Z_POPOVER", "Z_TOOLTIP",
 ]
 
 # --- Backgrounds ---
@@ -70,6 +71,11 @@ SHADOW_INSET = "inset 0px 2px 4px rgba(0,0,0,0.05)"
 GLOBAL_TRANSITION = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
 TRANSITION_FAST = "0.15s ease-out"
 TRANSITION_SLOW = "0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+
+# --- Z-Index Escala Global (Elite) ---
+Z_MODAL = "1000"
+Z_POPOVER = "1050"
+Z_TOOLTIP = "1100"
 
 # --- Component Styles ---
 NEU_DIVIDER_STYLE = {
@@ -175,7 +181,8 @@ NEU_TOOLTIP_STYLE = {
     "color": TEXT_PRIMARY,
     "padding": "0.75rem",
     "transition": GLOBAL_TRANSITION,
-    "z_index": "9999",
+    "z_index": Z_TOOLTIP,
+    "pointer_events": "auto",
 }
 
 NEU_ICON_BUTTON_STYLE = {
@@ -228,5 +235,17 @@ BASE_STYLE = {
     "::selection": {
         "background_color": BRAND_PRIMARY,
         "color": "white",
+    },
+    rx.dialog.content: {
+        "pointer_events": "auto",
+        "z_index": Z_MODAL,
+    },
+    rx.popover.content: {
+        "pointer_events": "auto",
+        "z_index": Z_POPOVER,
+    },
+    rx.hover_card.content: {
+        "pointer_events": "auto",
+        "z_index": Z_TOOLTIP,
     },
 }

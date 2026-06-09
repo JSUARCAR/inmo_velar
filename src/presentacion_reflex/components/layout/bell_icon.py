@@ -236,7 +236,10 @@ def bell_icon() -> rx.Component:
                     overflow="hidden",
                 ),
                 side_offset=15,
-                z_index="9999", # Ensure it's above Mobile Drawer (z-100) and everything else
+                style={
+                    "pointer_events": "auto",
+                    "z_index": styles.Z_POPOVER,
+                },
             ),
         ),
     )

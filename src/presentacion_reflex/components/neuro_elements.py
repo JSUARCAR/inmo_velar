@@ -35,6 +35,8 @@ def neuro_select_root(*args, **kwargs) -> rx.Component:
                 "background": styles.BG_PANEL,
                 "box_shadow": styles.NEU_MODAL_SHADOW,
                 "border_radius": "12px",
+                "pointer_events": "auto",
+                "z_index": styles.Z_POPOVER,
             },
         ),
         size=kwargs.pop("size", "3"),
