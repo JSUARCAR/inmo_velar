@@ -16,9 +16,9 @@ def badge_grupo_pago(grupo_operativo: rx.Var[int], fecha_pago: Optional[rx.Var[s
     
     label = rx.match(
         grupo_operativo,
-        (1, "Grupo 1: Contratos iniciados entre día 1 y 10. Pago programado: 10 de cada mes."),
-        (2, "Grupo 2: Contratos iniciados entre día 11 y 20. Pago programado: 20 de cada mes."),
-        (3, "Grupo 3: Contratos iniciados entre día 21 y 31. Pago programado: Último día del mes (28/29/30/31 según calendario)."),
+        (1, "Grupo 1: Contratos iniciados entre día 28 y 7. Pago programado: 10 de cada mes."),
+        (2, "Grupo 2: Contratos iniciados entre día 8 y 17. Pago programado: 20 de cada mes."),
+        (3, "Grupo 3: Contratos iniciados entre día 18 y 27. Pago programado: 30 de cada mes (truncado a fin de mes si aplica)."),
         "Sin grupo asignado"
     )
 
@@ -41,9 +41,7 @@ def badge_grupo_pago(grupo_operativo: rx.Var[int], fecha_pago: Optional[rx.Var[s
         )
     else:
         badge_text = rx.cond(
-            fecha_pago == "-1",
-            "Fin de Mes",
-            rx.cond(fecha_pago != "", f"Día {fecha_pago}", "N/R")
+            fecha_pago != "", f"Día {fecha_pago}", "N/R"
         )
         return rx.cond(
             fecha_pago != "",

@@ -12,9 +12,9 @@ class TestCalculadoraContratos:
         assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 5)) == 10
 
     def test_mandato_g1_dia_10(self):
-        assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 10)) == 10
+        # En V2, el 10 pertenece a G2, y se paga el 20
+        assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 10)) == 20
 
-    # Mandato - Grupo 2 (11-20 -> 20)
     def test_mandato_g2_dia_11(self):
         assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 11)) == 20
 
@@ -22,36 +22,44 @@ class TestCalculadoraContratos:
         assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 15)) == 20
 
     def test_mandato_g2_dia_20(self):
-        assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 20)) == 20
+        # En V2, el 20 pertenece a G3, y se paga el 30
+        assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 20)) == 30
 
-    # Mandato - Grupo 3 (21-31 -> -1 = último día del mes)
     def test_mandato_g3_dia_21(self):
-        assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 21)) == -1
+        assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 21)) == 30
 
     def test_mandato_g3_dia_25(self):
-        assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 25)) == -1
+        assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 25)) == 30
 
     def test_mandato_g3_dia_31(self):
-        assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 31)) == -1
+        # En V2, el 31 pertenece a G1, y se paga el 10
+        assert CalculadoraContratos.calcular_dia_pago_mandato(date(2026, 1, 31)) == 10
 
-    # resolver_dia_pago_real
     def test_resolver_g1(self):
-        assert CalculadoraContratos.resolver_dia_pago_real(10, 1, 1, 2026) == 10
+        # 10 de Marzo de 2026 es Martes, día hábil
+        assert CalculadoraContratos.resolver_dia_pago_real(10, 1, 3, 2026) == 10
 
     def test_resolver_g2(self):
-        assert CalculadoraContratos.resolver_dia_pago_real(20, 2, 1, 2026) == 20
+        # 20 de Abril de 2026 es Lunes, día hábil
+        assert CalculadoraContratos.resolver_dia_pago_real(20, 2, 4, 2026) == 20
 
     def test_resolver_g3_enero(self):
-        assert CalculadoraContratos.resolver_dia_pago_real(-1, 3, 1, 2026) == 31
+        # 30 de Enero de 2026 es Viernes, día hábil. En V2 ya no es -1, pasamos explícitamente 30
+        assert CalculadoraContratos.resolver_dia_pago_real(30, 3, 1, 2026) == 30
 
     def test_resolver_g3_febrero_no_bisiesto(self):
-        assert CalculadoraContratos.resolver_dia_pago_real(-1, 3, 2, 2023) == 28
+        # 2026 no bisiesto, 30 -> 28
+        # Febrero 28 de 2026 es Sabado -> se mueve a Lunes 2 de Marzo (Día 2)
+        assert CalculadoraContratos.resolver_dia_pago_real(30, 3, 2, 2026) == 2
 
     def test_resolver_g3_febrero_bisiesto(self):
-        assert CalculadoraContratos.resolver_dia_pago_real(-1, 3, 2, 2024) == 29
+        # 2024 bisiesto, 30 -> 29
+        # Febrero 29 de 2024 es Jueves, día hábil
+        assert CalculadoraContratos.resolver_dia_pago_real(30, 3, 2, 2024) == 29
 
     def test_resolver_g3_abril(self):
-        assert CalculadoraContratos.resolver_dia_pago_real(-1, 3, 4, 2026) == 30
+        # 30 de Abril 2026 es Jueves
+        assert CalculadoraContratos.resolver_dia_pago_real(30, 3, 4, 2026) == 30
 
     # Arrendamiento
     def test_arrendamiento_dia_1(self):

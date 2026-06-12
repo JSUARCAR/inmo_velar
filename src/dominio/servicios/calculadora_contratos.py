@@ -82,54 +82,96 @@ class CalculadoraContratos:
             return False, f"Error en validación: {str(e)}"
 
     @staticmethod
+    def obtener_siguiente_dia_habil(fecha: date) -> date:
+        """
+        Calcula el siguiente día hábil en Colombia.
+        Si la fecha cae en fin de semana (sábado/domingo) o en festivo,
+        retorna el día hábil inmediatamente siguiente.
+        """
+        import holidays
+        festivos_col = holidays.Colombia()
+        dia = fecha
+        # 5 es sábado, 6 es domingo en weekday()
+        while dia.weekday() >= 5 or dia in festivos_col:
+            from datetime import timedelta
+            dia += timedelta(days=1)
+        return dia
+
+    @staticmethod
     def calcular_dia_pago_mandato(fecha_inicio: Union[date, str]) -> int:
         """
-        Retorna el día de pago para mandato según grupo operativo.
-        G1 (1-10) -> 10
-        G2 (11-20) -> 20
-        G3 (21-31) -> -1 (sentinel: último día del mes)
+        Retorna el día de pago para mandato según el nuevo grupo operativo V2.
+        G1 (Inicios 28 al 7) -> Paga el 10
+        G2 (Inicios 8 al 17) -> Paga el 20
+        G3 (Inicios 18 al 27) -> Paga el 30
         """
         if isinstance(fecha_inicio, str):
             fecha_inicio = datetime.strptime(fecha_inicio[:10], "%Y-%m-%d").date()
         dia = fecha_inicio.day
-        if 1 <= dia <= 10:
+        if dia >= 28 or dia <= 7:
             return 10
-        elif 11 <= dia <= 20:
+        elif 8 <= dia <= 17:
             return 20
-        else:
-            return -1  # Sentinel: Último día del mes
+        else: # 18 al 27
+            return 30
 
     @staticmethod
     def calcular_ciclo_pago_mandato(fecha_inicio: Union[date, str]) -> Tuple[int, int]:
         """
-        Calcula el grupo operativo y día de pago para mandato.
-        Reglas Operativas (Nuevo Esquema):
-        1-10: Grupo 1, Paga 10
-        11-20: Grupo 2, Paga 20
-        21-31: Grupo 3, Paga -1 (Último día del mes)
+        Calcula el grupo operativo y día de pago para mandato (Versión 2).
+        Reglas Operativas:
+        - 28 al 7: Grupo 1, Paga 10
+        - 8 al 17: Grupo 2, Paga 20
+        - 18 al 27: Grupo 3, Paga 30
         """
         if isinstance(fecha_inicio, str):
             fecha_inicio = datetime.strptime(fecha_inicio[:10], "%Y-%m-%d").date()
         
         dia = fecha_inicio.day
-        if 1 <= dia <= 10:
+        if dia >= 28 or dia <= 7:
             return 1, 10
-        elif 11 <= dia <= 20:
+        elif 8 <= dia <= 17:
             return 2, 20
-        else:
-            return 3, -1
+        else: # 18 al 27
+            return 3, 30
 
     @staticmethod
     def resolver_dia_pago_real(fecha_pago: Optional[int], grupo_operativo: int, mes: int, año: int) -> int:
         """
-        Resuelve el día de pago real según el grupo.
-        Para G1/G2: retorna el día almacenado (10 o 20).
-        Para G3 (fecha_pago=-1 o None): retorna el último día calendario del (mes, año).
+        Resuelve el día de pago real según el grupo, truncando al fin de mes
+        si es necesario (ej: febrero) y ajustando por días hábiles.
+        Retorna el día (int) o la fecha completa si se desea, pero por contrato actual 
+        debe retornar el día.
+        Nota: Devuelve el día calculado. Para mayor exactitud financiera, 
+        se sugiere usar resolver_fecha_pago_habil.
         """
-        if grupo_operativo == 3 or fecha_pago == -1 or fecha_pago is None:
-            import calendar
-            return calendar.monthrange(año, mes)[1]
-        return fecha_pago if fecha_pago is not None else 1
+        dia_base = fecha_pago if fecha_pago not in [None, -1] else 30
+        
+        # Validar si el mes tiene menos días que el día de pago (ej. Febrero 30 -> 28/29)
+        import calendar
+        _, ultimo_dia_mes = calendar.monthrange(año, mes)
+        if dia_base > ultimo_dia_mes:
+            dia_base = ultimo_dia_mes
+            
+        fecha_ideal = date(año, mes, dia_base)
+        fecha_habil = CalculadoraContratos.obtener_siguiente_dia_habil(fecha_ideal)
+        
+        return fecha_habil.day
+
+    @staticmethod
+    def resolver_fecha_pago_habil(fecha_pago: int, mes: int, año: int) -> date:
+        """
+        Retorna un objeto date validado y trasladado al siguiente día hábil en caso
+        de fines de semana o festivos, truncando al último día del mes si aplica.
+        """
+        import calendar
+        _, ultimo_dia_mes = calendar.monthrange(año, mes)
+        dia_base = fecha_pago if fecha_pago > 0 else 30
+        if dia_base > ultimo_dia_mes:
+            dia_base = ultimo_dia_mes
+            
+        fecha_ideal = date(año, mes, dia_base)
+        return CalculadoraContratos.obtener_siguiente_dia_habil(fecha_ideal)
 
     @staticmethod
     def calcular_dia_pago_arrendamiento(fecha_inicio: Union[date, str]) -> int:

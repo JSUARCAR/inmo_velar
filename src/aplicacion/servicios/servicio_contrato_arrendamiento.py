@@ -95,10 +95,13 @@ class ServicioContratoArrendamiento:
                 f"La propiedad ya tiene un contrato de arrendamiento activo (ID: {existente.id_contrato_a})"
             )
 
-        # Calcular Ciclo de Pago y Grupo Operativo
+        # Calcular Día de Pago (El mismo día de inicio para arrendamientos)
         dia_pago = CalculadoraContratos.calcular_dia_pago_arrendamiento(datos["fecha_inicio"])
         fecha_pago_str = str(dia_pago)
-        grupo, _ = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
+        
+        # En arrendamientos, el grupo operativo ya no obedece a las reglas de mandato.
+        # Se establece en 0 o se deriva un grupo lógico simple según el día de pago.
+        grupo = 1 if dia_pago <= 10 else (2 if dia_pago <= 20 else 3)
 
         contrato = ContratoArrendamiento(
             id_propiedad=datos["id_propiedad"],
