@@ -56,10 +56,16 @@ class ServicioContratos:
         repo_idempotencia: Optional[IRepositorioIdempotencia] = None,
     ):
         self.db = db_manager
-        self.repo_mandato = repo_mandato or RepositorioContratoMandatoPostgres(db_manager)
-        self.repo_arriendo = repo_arriendo or RepositorioContratoArrendamientoPostgres(db_manager)
+        self.repo_mandato = repo_mandato or RepositorioContratoMandatoPostgres(
+            db_manager
+        )
+        self.repo_arriendo = repo_arriendo or RepositorioContratoArrendamientoPostgres(
+            db_manager
+        )
         self.repo_propiedad = repo_propiedad or RepositorioPropiedadPostgres(db_manager)
-        self.repo_renovacion = repo_renovacion or RepositorioRenovacionPostgres(db_manager)
+        self.repo_renovacion = repo_renovacion or RepositorioRenovacionPostgres(
+            db_manager
+        )
         self.repo_ipc = repo_ipc or RepositorioIPCPostgres(db_manager)
         self.repo_idempotencia = repo_idempotencia
 
@@ -76,7 +82,9 @@ class ServicioContratos:
         )
 
         # Repositorios auxiliares
-        self.repo_arrendatario = repo_arrendatario or RepositorioArrendatarioPostgres(db_manager)
+        self.repo_arrendatario = repo_arrendatario or RepositorioArrendatarioPostgres(
+            db_manager
+        )
         self.repo_codeudor = repo_codeudor or RepositorioCodeudorPostgres(db_manager)
 
     # =========================================================================
@@ -154,8 +162,8 @@ class ServicioContratos:
         query_mandatos = f"""
         SELECT 
             COUNT(*) as total,
-            SUM(CASE WHEN ESTADO_CONTRATO_M = 'ACTIVO' THEN 1 ELSE 0 END) as ACTIVOs,
-            SUM(CASE WHEN ESTADO_CONTRATO_M != 'ACTIVO' THEN 1 ELSE 0 END) as inACTIVOs
+            SUM(CASE WHEN ESTADO_CONTRATO_M = 'ACTIVO' THEN 1 ELSE 0 END) as activos,
+            SUM(CASE WHEN ESTADO_CONTRATO_M != 'ACTIVO' THEN 1 ELSE 0 END) as inactivos
         FROM CONTRATOS_MANDATOS
         {asesor_where_mandatos}
         """
@@ -163,8 +171,8 @@ class ServicioContratos:
         query_arriendos = f"""
         SELECT 
             COUNT(*) as total,
-            SUM(CASE WHEN ESTADO_CONTRATO_A = 'ACTIVO' THEN 1 ELSE 0 END) as ACTIVOs,
-            SUM(CASE WHEN ESTADO_CONTRATO_A != 'ACTIVO' THEN 1 ELSE 0 END) as inACTIVOs
+            SUM(CASE WHEN ESTADO_CONTRATO_A = 'ACTIVO' THEN 1 ELSE 0 END) as activos,
+            SUM(CASE WHEN ESTADO_CONTRATO_A != 'ACTIVO' THEN 1 ELSE 0 END) as inactivos
         FROM CONTRATOS_ARRENDAMIENTOS
         {asesor_where_arriendos}
         """
@@ -189,13 +197,13 @@ class ServicioContratos:
             return {
                 "mandatos": {
                     "total": _get_val(r_mandato, "total"),
-                    "ACTIVOs": _get_val(r_mandato, "ACTIVOs"),
-                    "inACTIVOs": _get_val(r_mandato, "inACTIVOs"),
+                    "activos": _get_val(r_mandato, "activos"),
+                    "inactivos": _get_val(r_mandato, "inactivos"),
                 },
                 "arriendos": {
                     "total": _get_val(r_arriendo, "total"),
-                    "ACTIVOs": _get_val(r_arriendo, "ACTIVOs"),
-                    "inACTIVOs": _get_val(r_arriendo, "inACTIVOs"),
+                    "activos": _get_val(r_arriendo, "activos"),
+                    "inactivos": _get_val(r_arriendo, "inactivos"),
                 },
             }
 
@@ -1357,9 +1365,11 @@ class ServicioContratos:
                     "documento_consignatario": row["documento_consignatario"],
                     "id_view": str(row["id_contrato_m"]),
                     "canon_view": f"${row['canon_mandato']:,}".replace(",", "."),
-                    "comision_view": f"{row['comision_porcentaje_contrato_m'] / 100.0:.2f}%"
-                    if row["comision_porcentaje_contrato_m"]
-                    else "0.00%",
+                    "comision_view": (
+                        f"{row['comision_porcentaje_contrato_m'] / 100.0:.2f}%"
+                        if row["comision_porcentaje_contrato_m"]
+                        else "0.00%"
+                    ),
                     "iva_view": "19.00%",  # Default or from row if added
                 }
             return None
@@ -1475,8 +1485,13 @@ class ServicioContratos:
                         pass
 
                 # 3. Porcentaje check
-                if porcentaje_ipc <= 0 or porcentaje_ipc > 25: # Ajustado a 25% por inflación extrema posible
-                    return {"success": False, "message": "Porcentaje inválido o fuera de rango (0-25%)"}
+                if (
+                    porcentaje_ipc <= 0 or porcentaje_ipc > 25
+                ):  # Ajustado a 25% por inflación extrema posible
+                    return {
+                        "success": False,
+                        "message": "Porcentaje inválido o fuera de rango (0-25%)",
+                    }
 
                 # 4. Cálculo
                 incremento = canon_anterior * (porcentaje_ipc / 100)
@@ -1513,7 +1528,7 @@ class ServicioContratos:
                 placeholder = self.db.get_placeholder()
                 if placeholder != "%s":
                     query_historial = query_historial.replace("%s", placeholder)
-                
+
                 with self.db.obtener_conexion() as conn:
                     cursor = conn.cursor()
                     try:
@@ -1530,7 +1545,9 @@ class ServicioContratos:
                             ),
                         )
                     except Exception as e:
-                        print(f"DEBUG: Error al registrar historial IPC (no crítico): {e}")
+                        print(
+                            f"DEBUG: Error al registrar historial IPC (no crítico): {e}"
+                        )
 
                 return {
                     "success": True,
@@ -1541,5 +1558,9 @@ class ServicioContratos:
                 }
         except Exception as e:
             import traceback
+
             traceback.print_exc()
-            return {"success": False, "message": f"Error crítico al aplicar IPC: {str(e)}"}
+            return {
+                "success": False,
+                "message": f"Error crítico al aplicar IPC: {str(e)}",
+            }
