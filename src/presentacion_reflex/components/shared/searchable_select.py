@@ -46,67 +46,68 @@ def searchable_select(
         Componente Reflex
     """
     
-    # Input principal que actúa como Combobox
-    combobox_input = neuro_input(
-        placeholder=placeholder,
-        value=rx.cond(menu_open, search_value, rx.cond(value_label != "", value_label, search_value)),
-        on_change=lambda val: [on_change_search(val), on_toggle_menu(True)],
-        on_focus=lambda: [on_change_search(""), on_toggle_menu(True)],
-        on_blur=lambda: on_toggle_menu(False),
-        on_key_down=on_key_down,
-        width="100%",
-        variant="surface",
-        size="2",
+    # Input principal que actúa como Combobox y Trigger del Popover
+    combobox_input = rx.popover.trigger(
+        neuro_input(
+            placeholder=placeholder,
+            value=rx.cond(menu_open, search_value, rx.cond(value_label != "", value_label, search_value)),
+            on_change=lambda val: [on_change_search(val), on_toggle_menu(True)],
+            on_click=lambda: on_toggle_menu(True),
+            on_key_down=on_key_down,
+            width="100%",
+            variant="surface",
+            size="2",
+        )
     )
 
-    # Panel flotante de opciones (Absolute Dropdown)
-    dropdown_menu = rx.cond(
-        menu_open,
-        rx.box(
-            rx.scroll_area(
-                rx.vstack(
-                    rx.foreach(
-                        filtered_options,
-                        lambda opt: rx.cond(
-                            opt[0] != "",
-                            rx.box(
-                                rx.text(
-                                    opt[0],
-                                    size="2",
-                                    weight="medium",
-                                    truncate=True,
-                                ),
-                                width="100%",
-                                padding_x="3",
-                                padding_y="2",
-                                _hover={
-                                    "background": "var(--bg-hover)",
-                                    "cursor": "pointer",
-                                },
-                                # Usamos on_mouse_down en lugar de on_click para evitar el on_blur prematuro del input
-                                on_mouse_down=lambda: on_select(opt[1], opt[0]),
+    # Panel flotante de opciones (Popover Content)
+    dropdown_menu = rx.popover.content(
+        rx.scroll_area(
+            rx.vstack(
+                rx.foreach(
+                    filtered_options,
+                    lambda opt: rx.cond(
+                        opt[0] != "",
+                        rx.box(
+                            rx.text(
+                                opt[0],
+                                size="2",
+                                weight="medium",
+                                truncate=True,
                             ),
+                            width="100%",
+                            padding_x="3",
+                            padding_y="2",
+                            _hover={
+                                "background": "var(--bg-hover)",
+                                "cursor": "pointer",
+                            },
+                            on_mouse_down=lambda: on_select(opt[1], opt[0]),
                         ),
                     ),
-                    width="100%",
-                    spacing="0",
                 ),
-                type="auto",
-                scrollbars="vertical",
-                style={"max_height": "200px"},
                 width="100%",
+                spacing="0",
             ),
-            position="absolute",
-            top="100%",
-            left="0",
+            type="auto",
+            scrollbars="vertical",
+            style={"max_height": "200px"},
             width="100%",
-            margin_top="4px",
-            background="var(--bg-panel)",
-            border="1px solid var(--border-default)",
-            border_radius="12px",
-            box_shadow="0px 4px 24px rgba(0,0,0,0.08)",
-            z_index=styles.Z_POPOVER,
-        )
+        ),
+        width="100%",
+        padding="0",
+        background="var(--bg-panel)",
+        border="1px solid var(--border-default)",
+        border_radius="12px",
+        box_shadow="0px 4px 24px rgba(0,0,0,0.08)",
+        style={"z_index": styles.Z_POPOVER},
+    )
+
+    popover_root = rx.popover.root(
+        combobox_input,
+        dropdown_menu,
+        open=menu_open,
+        on_open_change=on_toggle_menu,
     )
 
     return rx.vstack(
@@ -119,9 +120,7 @@ def searchable_select(
             spacing="1",
         ),
         rx.box(
-            combobox_input,
-            dropdown_menu,
-            position="relative",
+            popover_root,
             width="100%",
         ),
         rx.cond(
