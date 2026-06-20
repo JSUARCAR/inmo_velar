@@ -1,6 +1,8 @@
 import pytest
 from playwright.sync_api import Page, expect
 
+from src.presentacion_reflex import styles
+
 def test_searchable_select_focus_in_modal(page: Page):
     """
     Verifica que el componente searchable_select (Combobox) dentro de un Dialog
@@ -32,7 +34,8 @@ def test_searchable_select_focus_in_modal(page: Page):
 
     # 6. Validar que la lista desplegable se haya abierto 
     # (buscamos un contenedor con un z-index alto cercano)
-    dropdown_item = page.locator("div").filter(has_text="Prueba E2E").last
+    dropdown_item = page.locator(f"div[style*='z-index: {styles.Z_POPOVER}']").filter(has_text="Prueba E2E").first
+    expect(dropdown_item).to_be_visible()
     # Nota: la aserción exacta de las opciones depende de los mocks de base de datos,
     # con esto validamos principalmente que no hubo crasheo de UI al escribir.
     
@@ -41,3 +44,4 @@ def test_searchable_select_focus_in_modal(page: Page):
     
     # Después de on_blur, el input debería restaurar su placeholder original o limpiarse
     # (el menú de opciones ya no debería ser interactuable)
+    expect(dropdown_item).not_to_be_visible()
