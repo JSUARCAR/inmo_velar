@@ -73,7 +73,7 @@ class RepositorioDocumento:
             documento.descripcion,
             documento.contenido,
             documento.version,
-            "1" if documento.es_vigente else "0",  # Store as string '1'/'0' to match DB TEXT column
+            documento.es_vigente,
             documento.created_by,
         )
 
@@ -85,7 +85,7 @@ class RepositorioDocumento:
                 if row:
                     documento.id = row["ID"] if isinstance(row, dict) else row[0]
                 return documento
-        except sqlite3.Error:
+        except Exception:
             pass  # print(f"Error al crear documento: {e}") [OpSec Removed]
             raise
 
@@ -105,8 +105,7 @@ class RepositorioDocumento:
         """
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
-        # Use '1' for ES_VIGENTE to match TEXT type
-        cursor.execute(sql, (entidad_tipo, str(entidad_id), "1"))
+        cursor.execute(sql, (entidad_tipo, str(entidad_id), True))
         rows = cursor.fetchall()
         return [self._row_to_entity(row, include_content=False) for row in rows]
 
@@ -147,9 +146,8 @@ class RepositorioDocumento:
         try:
             with self.db.transaccion() as conn:
                 cursor = self.db.get_dict_cursor(conn)
-                # Set to '0' where is '1'
-                cursor.execute(sql, ("0", entidad_tipo, str(entidad_id), nombre_archivo, "1"))
-        except sqlite3.Error:
+                cursor.execute(sql, (False, entidad_tipo, str(entidad_id), nombre_archivo, True))
+        except Exception:
             pass  # print(f"Error al anular versiones anteriores: {e}") [OpSec Removed]
             raise
 
@@ -189,8 +187,7 @@ class RepositorioDocumento:
         try:
             with self.db.transaccion() as conn:
                 cursor = self.db.get_dict_cursor(conn)
-                # Set to '0'
-                cursor.execute(sql, ("0", id_documento))
-        except sqlite3.Error:
+                cursor.execute(sql, (False, id_documento))
+        except Exception:
             pass  # print(f"Error al eliminar documento: {e}") [OpSec Removed]
             raise
