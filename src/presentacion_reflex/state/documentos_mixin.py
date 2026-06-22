@@ -9,6 +9,14 @@ from src.aplicacion.servicios.servicio_documental import ServicioDocumentalElite
 servicio_documental = ServicioDocumentalElite()
 
 
+class DocumentoUI(rx.Base):
+    id_documento: int
+    nombre_archivo: str
+    extension: str
+    mime_type: str
+    version: int
+    fecha_creacion: str
+
 class DocumentosStateMixin(rx.State):
     """
     Mixin para gestión de estado de documentos.
@@ -16,7 +24,7 @@ class DocumentosStateMixin(rx.State):
     """
 
     # Lista de documentos cargados para la entidad actual
-    documentos: List[Dict[str, Any]] = []
+    documentos: List[DocumentoUI] = []
 
     # Estado de carga
     is_uploading: bool = False
@@ -107,14 +115,14 @@ class DocumentosStateMixin(rx.State):
         docs = servicio_documental.listar_documentos(entidad_tipo, str(entidad_id))
         # Serializar para el frontend
         self.documentos = [
-            {
-                "id_documento": d.id,
-                "nombre_archivo": d.nombre_archivo,
-                "extension": d.extension,
-                "mime_type": d.mime_type,
-                "version": d.version,
-                "fecha_creacion": str(d.created_at),
-            }
+            DocumentoUI(
+                id_documento=d.id,
+                nombre_archivo=d.nombre_archivo,
+                extension=d.extension,
+                mime_type=d.mime_type,
+                version=d.version,
+                fecha_creacion=str(d.created_at),
+            )
             for d in docs
         ]
 
