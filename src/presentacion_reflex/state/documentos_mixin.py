@@ -9,7 +9,9 @@ from src.aplicacion.servicios.servicio_documental import ServicioDocumentalElite
 servicio_documental = ServicioDocumentalElite()
 
 
-class DocumentoUI(rx.base.Base):
+import pydantic
+
+class DocumentoUI(pydantic.BaseModel):
     id_documento: int
     nombre_archivo: str
     extension: str
