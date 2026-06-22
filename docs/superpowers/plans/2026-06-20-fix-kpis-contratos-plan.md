@@ -1,3 +1,21 @@
+# Fix KPIs Contratos Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Corregir el cálculo de las KPIs en el módulo de Contratos alineando el formato case-sensitive de las llaves del diccionario entre la capa de Aplicación y Presentación.
+
+**Architecture:** Se actualizarán los alias SQL y las llaves de los diccionarios en `servicio_contratos.py` para usar `snake_case` explícito (`activos`, `inactivos`), mapeando 1:1 con las propiedades reactivas definidas en `contratos_state.py`.
+
+**Tech Stack:** Python, PostgreSQL, Reflex
+
+## Global Constraints
+
+- Prohibido cualquier referencia activa a Flet o SQLite.
+- Código 100% en ESPAÑOL.
+- Todo cambio debe ser validado localmente con check_syntax.py, mypy, ruff, black y servidor reflex local (regla 5).
+
+---
+
 ### Task 1: Corrección de Case-Sensitivity en `servicio_contratos.py`
 
 **Files:**
