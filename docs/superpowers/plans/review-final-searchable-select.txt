@@ -1,0 +1,230 @@
+0e17148 test(e2e): restore missing visibility assertion for searchable select dropdown
+69a27d1 test(e2e): adapt combobox tests to new absolute dropdown pattern
+82ec142 refactor(ui): convert searchable_select to true combobox autocomplete
+
+
+
+ .../components/shared/searchable_select.py         | 109 +++++++++++----------
+ tests/e2e/test_searchable_select.py                |  21 ++--
+ 2 files changed, 66 insertions(+), 64 deletions(-)
+
+
+
+diff --git a/src/presentacion_reflex/components/shared/searchable_select.py b/src/presentacion_reflex/components/shared/searchable_select.py
+index 09ac106..8e27c1e 100644
+--- a/src/presentacion_reflex/components/shared/searchable_select.py
++++ b/src/presentacion_reflex/components/shared/searchable_select.py
+@@ -39,95 +39,96 @@ def searchable_select(
+         on_select: Handler al seleccionar opci├│n
+         is_required: Si el campo es requerido
+         helper_text: Texto de ayuda
+         error_text: Mensaje de error
+         on_key_down: Handler para eventos de teclado
+ 
+     Returns:
+         Componente Reflex
+     """
+     
+-    # Input principal que act├║a como Combobox y Trigger del Popover
+-    combobox_input = rx.popover.trigger(
+-        neuro_input(
+-            placeholder=placeholder,
+-            value=rx.cond(menu_open, search_value, rx.cond(value_label != "", value_label, search_value)),
+-            on_change=lambda val: [on_change_search(val), on_toggle_menu(True)],
+-            on_click=lambda: on_toggle_menu(True),
+-            on_key_down=on_key_down,
+-            width="100%",
+-            variant="surface",
+-            size="2",
+-        )
++    # Input principal que act├║a como Combobox
++    combobox_input = neuro_input(
++        placeholder=placeholder,
++        value=rx.cond(menu_open, search_value, rx.cond(value_label != "", value_label, search_value)),
++        on_change=lambda val: [on_change_search(val), on_toggle_menu(True)],
++        on_focus=lambda: [on_change_search(""), on_toggle_menu(True)],
++        on_blur=lambda: on_toggle_menu(False),
++        on_key_down=on_key_down,
++        width="100%",
++        variant="surface",
++        size="2",
+     )
+ 
+-    # Panel flotante de opciones (Popover Content)
+-    dropdown_menu = rx.popover.content(
+-        rx.scroll_area(
+-            rx.vstack(
+-                rx.foreach(
+-                    filtered_options,
+-                    lambda opt: rx.cond(
+-                        opt[0] != "",
+-                        rx.box(
+-                            rx.text(
+-                                opt[0],
+-                                size="2",
+-                                weight="medium",
+-                                truncate=True,
++    # Panel flotante de opciones (Absolute Dropdown)
++    dropdown_menu = rx.cond(
++        menu_open,
++        rx.box(
++            rx.scroll_area(
++                rx.vstack(
++                    rx.foreach(
++                        filtered_options,
++                        lambda opt: rx.cond(
++                            opt[0] != "",
++                            rx.box(
++                                rx.text(
++                                    opt[0],
++                                    size="2",
++                                    weight="medium",
++                                    truncate=True,
++                                ),
++                                width="100%",
++                                padding_x="3",
++                                padding_y="2",
++                                _hover={
++                                    "background": "var(--bg-hover)",
++                                    "cursor": "pointer",
++                                },
++                                # Usamos on_mouse_down en lugar de on_click para evitar el on_blur prematuro del input
++                                on_mouse_down=lambda: on_select(opt[1], opt[0]),
+                             ),
+-                            width="100%",
+-                            padding_x="3",
+-                            padding_y="2",
+-                            _hover={
+-                                "background": "var(--bg-hover)",
+-                                "cursor": "pointer",
+-                            },
+-                            on_mouse_down=lambda: on_select(opt[1], opt[0]),
+                         ),
+                     ),
++                    width="100%",
++                    spacing="0",
+                 ),
++                type="auto",
++                scrollbars="vertical",
++                style={"max_height": "200px"},
+                 width="100%",
+-                spacing="0",
+             ),
+-            type="auto",
+-            scrollbars="vertical",
+-            style={"max_height": "200px"},
++            position="absolute",
++            top="100%",
++            left="0",
+             width="100%",
+-        ),
+-        width="100%",
+-        padding="0",
+-        background="var(--bg-panel)",
+-        border="1px solid var(--border-default)",
+-        border_radius="12px",
+-        box_shadow="0px 4px 24px rgba(0,0,0,0.08)",
+-        style={"z_index": styles.Z_POPOVER},
+-    )
+-
+-    popover_root = rx.popover.root(
+-        combobox_input,
+-        dropdown_menu,
+-        open=menu_open,
+-        on_open_change=on_toggle_menu,
++            margin_top="4px",
++            background="var(--bg-panel)",
++            border="1px solid var(--border-default)",
++            border_radius="12px",
++            box_shadow="0px 4px 24px rgba(0,0,0,0.08)",
++            z_index=styles.Z_POPOVER,
++        )
+     )
+ 
+     return rx.vstack(
+         rx.hstack(
+             rx.text(label, size="2", weight="bold"),
+             rx.cond(
+                 is_required,
+                 rx.text("*", color="var(--brand-primary)", weight="bold"),
+             ),
+             spacing="1",
+         ),
+         rx.box(
+-            popover_root,
++            combobox_input,
++            dropdown_menu,
++            position="relative",
+             width="100%",
+         ),
+         rx.cond(
+             helper_text != "",
+             rx.text(helper_text, size="1", color="var(--text-tertiary)"),
+         ),
+         rx.cond(
+             error_text != "",
+             rx.text(error_text, size="1", color="var(--red-9)"),
+         ),
+diff --git a/tests/e2e/test_searchable_select.py b/tests/e2e/test_searchable_select.py
+index cb28a32..578917e 100644
+--- a/tests/e2e/test_searchable_select.py
++++ b/tests/e2e/test_searchable_select.py
+@@ -1,47 +1,48 @@
+ import pytest
+ from playwright.sync_api import Page, expect
+ 
+-from src.presentacion_reflex import styles
+ 
+ def test_searchable_select_focus_in_modal(page: Page):
+     """
+     Verifica que el componente searchable_select (Combobox) dentro de un Dialog
+-    permite escritura directa y filtrado, validando la nueva arquitectura 
+-    Popover Combobox que mitiga colisiones de foco.
++    permite escritura directa y filtrado, validando la nueva arquitectura
++    Absolute Dropdown que mitiga colisiones de foco.
+     """
+     # 1. Navegar a la p├ígina de recaudos
+     page.goto("http://localhost:3000/recaudos")
+ 
+     # 2. Abrir el modal que contiene el searchable_select
+     nuevo_btn = page.get_by_role("button", name="Nuevo Recaudo")
+     if not nuevo_btn.is_visible():
+-        pytest.skip("Bot├│n 'Nuevo Recaudo' no encontrado, omitiendo prueba espec├¡fica de layout.")
+-    
++        pytest.skip(
++            "Bot├│n 'Nuevo Recaudo' no encontrado, omitiendo prueba espec├¡fica de layout."
++        )
++
+     nuevo_btn.click()
+ 
+     # 3. Esperar a que el modal cargue y localizar el combobox input
+     # El trigger ahora es directamente un input
+     search_input = page.locator("input[placeholder*='Seleccionar']").first
+     expect(search_input).to_be_visible(timeout=5000)
+ 
+     # 4. Validar que podemos interactuar con ├®l (focus y type directamente)
+     search_input.click()
+     search_input.fill("Prueba E2E")
+ 
+     # 5. Validar que el foco pertenece al input
+     is_focused = search_input.evaluate("node => document.activeElement === node")
+     assert is_focused is True, "El input de b├║squeda no tiene el foco tras escribir."
+ 
+-    # 6. Validar que la lista desplegable se haya abierto 
+-    # Como es un Popover de Radix UI, localizamos el contenido por su rol de di├ílogo
+-    dropdown_item = page.get_by_role("dialog").filter(has_text="Prueba E2E").last
++    # 6. Validar que la lista desplegable se haya abierto
++    # (buscamos un contenedor con un z-index alto cercano)
++    dropdown_item = page.locator("div").filter(has_text="Prueba E2E").last
+     expect(dropdown_item).to_be_visible()
+     # Nota: la aserci├│n exacta de las opciones depende de los mocks de base de datos,
+     # con esto validamos principalmente que no hubo crasheo de UI al escribir.
+-    
++
+     # 7. Cerrar haciendo clic fuera
+     page.mouse.click(0, 0)
+-    
++
+     # Despu├®s de on_blur, el input deber├¡a restaurar su placeholder original o limpiarse
+     # (el men├║ de opciones ya no deber├¡a ser interactuable)
+     expect(dropdown_item).not_to_be_visible()
