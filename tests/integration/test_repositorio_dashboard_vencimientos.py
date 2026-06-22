@@ -8,6 +8,7 @@ Usa SQLite temporal para simular el comportamiento del repositorio.
 import sqlite3
 from contextlib import contextmanager
 from datetime import date, timedelta
+from pathlib import Path
 from typing import Generator
 
 import pytest
@@ -33,7 +34,7 @@ class _TestDBManagerContextManager(TestDatabaseManager):
         finally:
             pass  # No cerrar — reutilizar en el mismo test
 
-    def obtener_conexion_raw(self) -> sqlite3.Connection:
+    def obtener_conexion_directa(self) -> sqlite3.Connection:
         """Acceso directo a la conexión sin context manager.
 
         Útil para insertar datos de setup antes de las pruebas.
@@ -137,8 +138,31 @@ def _insertar_contrato_arrendamiento(
     conn.commit()
 
 
+def _insertar_contrato_mandato(
+    conn: sqlite3.Connection, id_contrato: int, fecha_fin: str, estado: str = "ACTIVO"
+) -> None:
+    """Inserta un contrato de mandato con datos mínimos."""
+    conn.execute(
+        "INSERT OR IGNORE INTO PROPIEDADES "
+        "(ID_PROPIEDAD, DIRECCION_PROPIEDAD, ID_MUNICIPIO) VALUES (?, ?, ?)",
+        (id_contrato, f"PROPIEDAD TEST MANDATO {id_contrato}", 1),
+    )
+    # Se inserta un propietario ficticio asumiendo ID_PERSONA=1
+    conn.execute(
+        "INSERT OR IGNORE INTO PROPIETARIOS (ID_PROPIETARIO, ID_PERSONA) VALUES (?, ?)",
+        (1, 1),
+    )
+    conn.execute(
+        "INSERT INTO CONTRATOS_MANDATOS "
+        "(ID_CONTRATO_M, ID_PROPIEDAD, ID_PROPIETARIO, ESTADO_CONTRATO_M, FECHA_FIN_CONTRATO_M) "
+        "VALUES (?, ?, 1, ?, ?)",
+        (id_contrato, id_contrato, estado, fecha_fin),
+    )
+    conn.commit()
+
+
 @pytest.fixture
-def db_manager(tmp_path: str) -> _TestDBManagerContextManager:
+def db_manager(tmp_path: Path) -> _TestDBManagerContextManager:
     """Fixture que crea un TestDatabaseManager con esquema y context manager.
 
     Returns:
@@ -146,7 +170,7 @@ def db_manager(tmp_path: str) -> _TestDBManagerContextManager:
     """
     db_path = str(tmp_path / "test_vencimientos.db")
     manager = _TestDBManagerContextManager(db_path)
-    conn = manager.obtener_conexion_raw()
+    conn = manager.obtener_conexion_directa()
     _crear_esquema(conn)
     return manager
 
@@ -159,7 +183,7 @@ class TestVencimientosFiltrado:
     ) -> None:
         """Un contrato que vence en 40 días DEBE aparecer en la lista de 90."""
         fecha_fin = (date.today() + timedelta(days=40)).isoformat()
-        conn = db_manager.obtener_conexion_raw()
+        conn = db_manager.obtener_conexion_directa()
         _insertar_contrato_arrendamiento(conn, 1, fecha_fin)
 
         repo = RepositorioDashboard(db_manager)
@@ -179,7 +203,7 @@ class TestVencimientosFiltrado:
     ) -> None:
         """Un contrato que vence en 200 días NO debe aparecer en la lista de 90."""
         fecha_fin = (date.today() + timedelta(days=200)).isoformat()
-        conn = db_manager.obtener_conexion_raw()
+        conn = db_manager.obtener_conexion_directa()
         _insertar_contrato_arrendamiento(conn, 2, fecha_fin)
 
         repo = RepositorioDashboard(db_manager)
@@ -197,7 +221,7 @@ class TestVencimientosFiltrado:
     ) -> None:
         """Un contrato ACTIVO cuya fecha ya pasó (días negativos) DEBE aparecer."""
         fecha_fin = (date.today() - timedelta(days=5)).isoformat()
-        conn = db_manager.obtener_conexion_raw()
+        conn = db_manager.obtener_conexion_directa()
         _insertar_contrato_arrendamiento(conn, 3, fecha_fin)
 
         repo = RepositorioDashboard(db_manager)
@@ -209,3 +233,26 @@ class TestVencimientosFiltrado:
         assert (
             contrato_vencido is not None
         ), f"Contrato vencido debería aparecer. Resultados: {resultados}"
+
+    def test_mandato_proximo_incluido_en_90_dias(
+        self, db_manager: _TestDBManagerContextManager
+    ) -> None:
+        """Un contrato de MANDATO que vence en 40 días DEBE aparecer en la lista."""
+        fecha_fin = (date.today() + timedelta(days=40)).isoformat()
+        conn = db_manager.obtener_conexion_directa()
+        _insertar_contrato_mandato(conn, 4, fecha_fin)
+
+        repo = RepositorioDashboard(db_manager)
+        resultados = repo.obtener_lista_vencimientos(90)
+
+        contrato = next(
+            (
+                r
+                for r in resultados
+                if r["tipo_contrato"] == "MANDATO" and 39 <= r["dias_restantes"] <= 41
+            ),
+            None,
+        )
+        assert (
+            contrato is not None
+        ), f"No se encontró MANDATO con ~40 días. Resultados: {resultados}"
