@@ -7,6 +7,7 @@ import reflex as rx
 
 from src.presentacion_reflex.state.contratos_state import ContratosState
 from src.presentacion_reflex.components.neuro_elements import neuro_button
+from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
 from src.presentacion_reflex import styles
 
 
@@ -242,6 +243,13 @@ def modal_detalle_contrato() -> rx.Component:
                     columns="2",
                     spacing="4",
                     width="100%",
+                ),
+                # Documentos Adjuntos
+                section_divider("Gestión Documental"),
+                rx.box(
+                    document_manager_elite(ContratosState),
+                    width="100%",
+                    margin_y="1em",
                 ),
                 # Botón Cerrar
                 rx.flex(

@@ -119,10 +119,10 @@ def document_manager_elite(
                     state_class.documentos,
                     lambda doc: rx.hstack(
                         rx.icon("file-text", size=16),
-                        rx.text(doc["nombre_archivo"], size="2", flex="1"),
+                        rx.text(doc.nombre_archivo, size="2", flex="1"),
                         rx.icon_button(
                             rx.icon("arrow-down-to-line", size=18),
-                            on_click=lambda: state_class.descargar_documento(doc["id_documento"]),
+                            on_click=lambda: state_class.descargar_documento(doc.id_documento),
                             variant="soft",
                             color_scheme="blue",
                             size="2",
@@ -130,7 +130,7 @@ def document_manager_elite(
                         ),
                         rx.icon_button(
                             rx.icon("trash-2", size=16),
-                            on_click=lambda: state_class.eliminar_documento(doc["id_documento"]),
+                            on_click=lambda: state_class.eliminar_documento(doc.id_documento),
                             variant="ghost",
                             color_scheme="red",
                             size="1",

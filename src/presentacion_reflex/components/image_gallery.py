@@ -4,13 +4,13 @@ import reflex as rx
 
 
 def _get_image_src(doc: rx.Var) -> rx.Var:
-    return rx.Var.create("http://127.0.0.1:8000/api/storage/") + doc['id_documento'].to(str) + "/download"
+    return rx.Var.create("http://127.0.0.1:8000/api/storage/") + doc.id_documento.to(str) + "/download"
 
 def _get_image_href(doc: rx.Var) -> rx.Var:
-    return rx.Var.create("http://127.0.0.1:8000/api/storage/") + doc['id_documento'].to(str) + "/download?force_download=true"
+    return rx.Var.create("http://127.0.0.1:8000/api/storage/") + doc.id_documento.to(str) + "/download?force_download=true"
 
 def image_gallery(
-    documentos: List[Dict[str, Any]],
+    documentos: List[Any],
     on_delete: Callable,
     allow_lightbox: bool = True,
     grid_cols: int = 4,
@@ -43,7 +43,7 @@ def image_gallery(
                             rx.card(
                                 rx.inset(
                                     rx.cond(
-                                        doc["mime_type"].to_string().contains("image"),
+                                        doc.mime_type.to_string().contains("image"),
                                         rx.image(
                                             src=_get_image_src(doc),
                                             object_fit="cover",
@@ -65,14 +65,14 @@ def image_gallery(
                                 ),
                                 rx.vstack(
                                     rx.text(
-                                        doc["nombre_archivo"],
+                                        doc.nombre_archivo,
                                         size="1",
                                         weight="bold",
                                         no_of_lines=1,
                                     ),
                                     rx.hstack(
                                         rx.badge(
-                                            doc["extension"]
+                                            doc.extension
                                             .to_string()
                                             .upper()
                                             .replace(".", ""),
@@ -96,7 +96,7 @@ def image_gallery(
                                             size="1",
                                             variant="ghost",
                                             color_scheme="red",
-                                            on_click=lambda: on_delete(doc["id_documento"]),
+                                            on_click=lambda: on_delete(doc.id_documento),
                                         ),
                                         width="100%",
                                         align="center",
@@ -123,7 +123,7 @@ def image_gallery(
                             rx.context_menu.item(
                                 "Eliminar",
                                 color="red",
-                                on_select=lambda: on_delete(doc["id_documento"]),
+                                on_select=lambda: on_delete(doc.id_documento),
                             ),
                         ),
                     ),
