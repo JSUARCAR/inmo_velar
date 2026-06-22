@@ -21,9 +21,9 @@ class RepositorioDashboard(IRepositorioDashboard):
                     ca.CANON_ARRENDAMIENTO AS VALOR_RECAUDO,
                     '' AS BARRIO,
                     m.NOMBRE_MUNICIPIO AS MUNICIPIO,
-                    EXTRACT(DAY FROM AGE(CURRENT_DATE, (
+                    (CURRENT_DATE - (
                         TO_CHAR(CURRENT_DATE, 'YYYY-MM') || '-' || LPAD(ca.FECHA_PAGO::TEXT, 2, '0')
-                    )::DATE))::INTEGER AS DIAS_RETRASO
+                    )::DATE)::INTEGER AS DIAS_RETRASO
                 FROM CONTRATOS_ARRENDAMIENTOS ca
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN MUNICIPIOS m ON p.ID_MUNICIPIO = m.ID_MUNICIPIO
@@ -223,7 +223,7 @@ class RepositorioDashboard(IRepositorioDashboard):
                     p.DIRECCION_PROPIEDAD AS DIRECCION,
                     per.NOMBRE_COMPLETO AS INQUILINO_PROPIETARIO,
                     ca.FECHA_FIN_CONTRATO_A AS FECHA_FIN,
-                    EXTRACT(DAY FROM AGE(ca.FECHA_FIN_CONTRATO_A::DATE, CURRENT_DATE))::INTEGER AS DIAS_RESTANTES
+                    (ca.FECHA_FIN_CONTRATO_A::DATE - CURRENT_DATE)::INTEGER AS DIAS_RESTANTES
                 FROM CONTRATOS_ARRENDAMIENTOS ca
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN ARRENDATARIOS a ON ca.ID_ARRENDATARIO = a.ID_ARRENDATARIO
@@ -237,7 +237,7 @@ class RepositorioDashboard(IRepositorioDashboard):
                     p.DIRECCION_PROPIEDAD AS DIRECCION,
                     per.NOMBRE_COMPLETO AS INQUILINO_PROPIETARIO,
                     cm.FECHA_FIN_CONTRATO_M AS FECHA_FIN,
-                    EXTRACT(DAY FROM AGE(cm.FECHA_FIN_CONTRATO_M::DATE, CURRENT_DATE))::INTEGER AS DIAS_RESTANTES
+                    (cm.FECHA_FIN_CONTRATO_M::DATE - CURRENT_DATE)::INTEGER AS DIAS_RESTANTES
                 FROM CONTRATOS_MANDATOS cm
                 JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO
