@@ -45,3 +45,4 @@ def test_searchable_select_focus_in_modal(page: Page):
 
     # Después de on_blur, el input debería restaurar su placeholder original o limpiarse
     # (el menú de opciones ya no debería ser interactuable)
+    expect(dropdown_item).not_to_be_visible()
