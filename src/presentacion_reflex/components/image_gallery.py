@@ -3,11 +3,19 @@ from typing import Any, Callable, Dict, List
 import reflex as rx
 
 
+import rxconfig
+
+def _get_api_base() -> str:
+    # Use dynamic api_url from rxconfig or fallback
+    base = rxconfig.api_url if hasattr(rxconfig, "api_url") and rxconfig.api_url else "http://127.0.0.1:8000"
+    # Ensure it doesn't end with slash
+    return base.rstrip("/")
+
 def _get_image_src(doc: rx.Var) -> rx.Var:
-    return rx.Var.create("http://127.0.0.1:8000/api/storage/") + doc.id_documento.to(str) + "/download"
+    return rx.Var.create(f"{_get_api_base()}/api/storage/") + doc.id_documento.to(str) + "/download"
 
 def _get_image_href(doc: rx.Var) -> rx.Var:
-    return rx.Var.create("http://127.0.0.1:8000/api/storage/") + doc.id_documento.to(str) + "/download?force_download=true"
+    return rx.Var.create(f"{_get_api_base()}/api/storage/") + doc.id_documento.to(str) + "/download?force_download=true"
 
 def image_gallery(
     documentos: List[Any],
