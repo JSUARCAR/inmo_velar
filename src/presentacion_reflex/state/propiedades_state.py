@@ -466,9 +466,7 @@ class PropiedadesState(DocumentosStateMixin):
         self.error_message = ""
         self.reset_wizard()
         # Reset documentos config
-        self.current_entidad_id = ""
-        self.current_entidad_tipo = "PROPIEDAD"
-        self.documentos = []
+        self.limpiar_contexto_documental()
         self.upload_progress = 0
 
     def open_edit_modal(self, id_propiedad: int):
@@ -563,9 +561,7 @@ class PropiedadesState(DocumentosStateMixin):
                 self.reset_wizard()
 
                 # Cargar documentos
-                self.current_entidad_id = str(propiedad.id_propiedad)
-                self.current_entidad_tipo = "PROPIEDAD"
-                self.cargar_documentos()
+                self.iniciar_contexto_documental("PROPIEDAD", str(propiedad.id_propiedad))
 
         except Exception as e:
             pass  # print(f"Error cargando propiedad: {e}") [OpSec Removed]

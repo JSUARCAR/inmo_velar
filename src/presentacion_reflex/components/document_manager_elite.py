@@ -102,6 +102,7 @@ def document_manager_elite(
                     )
                 ),
                 loading=state_class.is_uploading,
+                disabled=state_class.current_entidad_id == "",
                 variant="solid",
                 color_scheme="blue",
             ),

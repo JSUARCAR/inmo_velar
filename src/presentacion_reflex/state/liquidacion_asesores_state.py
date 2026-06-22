@@ -43,9 +43,7 @@ class LiquidacionAsesoresState(DocumentosStateMixin):
     async def open_detail_modal(self, id_liquidacion: int):
         """Coordinación de carga de detalles y documentos."""
         async with self:
-            self.current_entidad_tipo = "LIQUIDACION_ASESOR"
-            self.current_entidad_id = str(id_liquidacion)
-            self.cargar_documentos()
+            self.iniciar_contexto_documental("LIQUIDACION_ASESOR", str(id_liquidacion))
         yield LiquidacionFormState.open_detail_modal(id_liquidacion)
 
     @rx.event(background=True)

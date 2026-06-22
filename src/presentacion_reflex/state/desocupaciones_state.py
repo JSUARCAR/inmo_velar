@@ -218,9 +218,7 @@ class DesocupacionesState(DocumentosStateMixin):
             self.is_loading = True
 
             # Contexto Documental
-            self.current_entidad_tipo = "DESOCUPACION"
-            self.current_entidad_id = str(id_desocupacion)
-            self.cargar_documentos()
+            self.iniciar_contexto_documental("DESOCUPACION", str(id_desocupacion))
 
         try:
             servicio = ServicioDesocupaciones(db_manager)

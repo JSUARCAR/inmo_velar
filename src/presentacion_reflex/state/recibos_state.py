@@ -354,9 +354,7 @@ class RecibosState(DocumentosStateMixin):
             self.is_loading = True
 
             # Contexto Documental
-            self.current_entidad_tipo = "RECIBO_PUBLICO"
-            self.current_entidad_id = str(recibo["id_recibo_publico"])
-            self.cargar_documentos()
+            self.iniciar_contexto_documental("RECIBO_PUBLICO", str(recibo["id_recibo_publico"]))
 
             self.show_detail_modal = True
             self.is_loading = False

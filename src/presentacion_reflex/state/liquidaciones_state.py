@@ -612,9 +612,7 @@ class LiquidacionesState(DocumentosStateMixin):
             self.propiedades_consolidadas = []
 
             # Contexto Documental
-            self.current_entidad_tipo = "LIQUIDACION"
-            self.current_entidad_id = str(id_liquidacion)
-            self.cargar_documentos()
+            self.iniciar_contexto_documental("LIQUIDACION", str(id_liquidacion))
 
         try:
             servicio = ServicioFinanciero(db_manager)

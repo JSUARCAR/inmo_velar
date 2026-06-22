@@ -137,9 +137,6 @@ class IncidentesStateBase(rx.State):
 
     detalles_editar_open: bool = False
 
-    current_entidad_tipo: str = ""
-    current_entidad_id: str = ""
-
     def set_propiedad_search(self, value: str):
         self.propiedad_search = value
 

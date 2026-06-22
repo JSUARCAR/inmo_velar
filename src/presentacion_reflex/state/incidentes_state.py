@@ -501,9 +501,7 @@ class IncidentesState(DocumentosStateMixin):
             self.is_loading = True
 
             # Configurar identidad de documentos
-            self.current_entidad_tipo = "INCIDENTE"
-            self.current_entidad_id = str(incidente["id"])
-            self.cargar_documentos()
+            self.iniciar_contexto_documental("INCIDENTE", str(incidente["id"]))
 
         try:
             servicio = ServicioIncidentes(db_manager)

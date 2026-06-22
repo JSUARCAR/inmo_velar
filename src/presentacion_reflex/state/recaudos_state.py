@@ -398,9 +398,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             self.error_message = ""
 
             # Contexto Documental
-            self.current_entidad_tipo = "RECAUDO"
-            self.current_entidad_id = str(id_recaudo)
-            self.cargar_documentos()
+            self.iniciar_contexto_documental("RECAUDO", str(id_recaudo))
 
         try:
             servicio = _crear_servicio()

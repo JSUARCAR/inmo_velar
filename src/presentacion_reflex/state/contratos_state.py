@@ -610,9 +610,7 @@ class ContratosState(DocumentosStateMixin):
     def open_create_mandato_modal(self):
         self.modal_mode = "crear_mandato"
         self.editing_id = None
-        self.current_entidad_tipo = "CONTRATO_MANDATO"
-        self.current_entidad_id = ""
-        self.documentos = []
+        self.limpiar_contexto_documental()
         self.form_data = {
             "id_propiedad": "",
             "id_propietario": "",
@@ -636,9 +634,7 @@ class ContratosState(DocumentosStateMixin):
     def open_create_arrendamiento_modal(self):
         self.modal_mode = "crear_arrendamiento"
         self.editing_id = None
-        self.current_entidad_tipo = "CONTRATO_ARRENDAMIENTO"
-        self.current_entidad_id = ""
-        self.documentos = []
+        self.limpiar_contexto_documental()
         self.form_data = {"id_propiedad": "", "id_arrendatario": "", "id_codeudor": ""}
         self.propiedad_selected_label = ""
         self.arrendatario_selected_label = ""
@@ -653,9 +649,8 @@ class ContratosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             # Configurar contexto documental
-            self.current_entidad_tipo = "CONTRATO_MANDATO" if tipo == "Mandato" else "CONTRATO_ARRENDAMIENTO"
-            self.current_entidad_id = str(id_contrato)
-            self.cargar_documentos()
+            t = "CONTRATO_MANDATO" if tipo == "Mandato" else "CONTRATO_ARRENDAMIENTO"
+            self.iniciar_contexto_documental(t, str(id_contrato))
         try:
             from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
                 RepositorioContratoMandatoPostgres,
@@ -860,9 +855,8 @@ class ContratosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             # Configurar contexto documental
-            self.current_entidad_tipo = "CONTRATO_MANDATO" if tipo == "Mandato" else "CONTRATO_ARRENDAMIENTO"
-            self.current_entidad_id = str(id_contrato)
-            self.cargar_documentos()
+            t = "CONTRATO_MANDATO" if tipo == "Mandato" else "CONTRATO_ARRENDAMIENTO"
+            self.iniciar_contexto_documental(t, str(id_contrato))
         try:
             from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
                 RepositorioContratoMandatoPostgres,

@@ -29,6 +29,20 @@ class DocumentosStateMixin(rx.State):
     # Tipos requeridos (se llena según la entidad/estado)
     tipos_documento_requeridos: List[str] = []
 
+    def iniciar_contexto_documental(self, tipo: str, id_entidad: str):
+        """Inicializa el contexto para la carga y lectura de documentos. Obligatorio."""
+        if not tipo or not str(id_entidad).strip():
+            raise ValueError("El tipo y el ID de entidad son obligatorios para el contexto documental.")
+        self.current_entidad_tipo = tipo
+        self.current_entidad_id = str(id_entidad)
+        self.cargar_documentos()
+
+    def limpiar_contexto_documental(self):
+        """Limpia el contexto documental para prevenir fugas de estado."""
+        self.current_entidad_tipo = ""
+        self.current_entidad_id = ""
+        self.documentos = []
+
     @rx.event
     async def handle_upload(self, files: List[rx.UploadFile]):
         """
@@ -50,6 +64,7 @@ class DocumentosStateMixin(rx.State):
         if not entidad_tipo or not entidad_id:
             pass  # print("Error: Entidad tipo/id no definidos para upload") [OpSec Removed]
             self.is_uploading = False
+            yield rx.toast.error("Error crítico: Contexto documental (tipo/id) no inicializado.")
             return
 
         try:
@@ -85,20 +100,23 @@ class DocumentosStateMixin(rx.State):
         entidad_tipo = getattr(self, "current_entidad_tipo", None)
         entidad_id = getattr(self, "current_entidad_id", None)
 
-        if entidad_tipo and entidad_id:
-            docs = servicio_documental.listar_documentos(entidad_tipo, str(entidad_id))
-            # Serializar para el frontend
-            self.documentos = [
-                {
-                    "id_documento": d.id,
-                    "nombre_archivo": d.nombre_archivo,
-                    "extension": d.extension,
-                    "mime_type": d.mime_type,
-                    "version": d.version,
-                    "fecha_creacion": str(d.created_at),
-                }
-                for d in docs
-            ]
+        if not entidad_tipo or not entidad_id:
+            self.documentos = []
+            return
+
+        docs = servicio_documental.listar_documentos(entidad_tipo, str(entidad_id))
+        # Serializar para el frontend
+        self.documentos = [
+            {
+                "id_documento": d.id,
+                "nombre_archivo": d.nombre_archivo,
+                "extension": d.extension,
+                "mime_type": d.mime_type,
+                "version": d.version,
+                "fecha_creacion": str(d.created_at),
+            }
+            for d in docs
+        ]
 
     @rx.event
     def eliminar_documento(self, id_documento: int):
