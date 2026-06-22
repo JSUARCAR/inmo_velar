@@ -34,11 +34,11 @@ def test_searchable_select_focus_in_modal(page: Page):
     assert is_focused is True, "El input de búsqueda no tiene el foco tras escribir."
 
     # 6. Validar que la lista desplegable se haya abierto
-    # (buscamos un contenedor con un z-index alto cercano)
-    dropdown_item = page.locator("div").filter(has_text="Prueba E2E").last
+    # (buscamos por el ID del listbox y la opción dentro)
+    listbox = page.locator("#opciones-lista")
+    expect(listbox).to_be_visible()
+    dropdown_item = listbox.locator("div").filter(has_text="Prueba E2E").first
     expect(dropdown_item).to_be_visible()
-    # Nota: la aserción exacta de las opciones depende de los mocks de base de datos,
-    # con esto validamos principalmente que no hubo crasheo de UI al escribir.
 
     # 7. Cerrar haciendo clic fuera
     page.mouse.click(0, 0)

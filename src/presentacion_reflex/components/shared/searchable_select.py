@@ -45,11 +45,15 @@ def searchable_select(
     Returns:
         Componente Reflex
     """
-    
+
     # Input principal que actúa como Combobox
     combobox_input = neuro_input(
         placeholder=placeholder,
-        value=rx.cond(menu_open, search_value, rx.cond(value_label != "", value_label, search_value)),
+        value=rx.cond(
+            menu_open,
+            search_value,
+            rx.cond(value_label != "", value_label, search_value),
+        ),
         on_change=lambda val: [on_change_search(val), on_toggle_menu(True)],
         on_focus=lambda: [on_change_search(""), on_toggle_menu(True)],
         on_blur=lambda: on_toggle_menu(False),
@@ -57,6 +61,11 @@ def searchable_select(
         width="100%",
         variant="surface",
         size="2",
+        custom_attrs={
+            "role": "combobox",
+            "aria-expanded": menu_open.to_string(),
+            "aria-controls": "opciones-lista",
+        },
     )
 
     # Panel flotante de opciones (Absolute Dropdown)
@@ -85,11 +94,14 @@ def searchable_select(
                                 },
                                 # Usamos on_mouse_down en lugar de on_click para evitar el on_blur prematuro del input
                                 on_mouse_down=lambda: on_select(opt[1], opt[0]),
+                                custom_attrs={"role": "option"},
                             ),
                         ),
                     ),
                     width="100%",
                     spacing="0",
+                    id="opciones-lista",
+                    custom_attrs={"role": "listbox"},
                 ),
                 type="auto",
                 scrollbars="vertical",
@@ -106,7 +118,8 @@ def searchable_select(
             border_radius="12px",
             box_shadow="0px 4px 24px rgba(0,0,0,0.08)",
             z_index=styles.Z_POPOVER,
-        )
+            on_mouse_down=rx.prevent_default,
+        ),
     )
 
     return rx.vstack(
