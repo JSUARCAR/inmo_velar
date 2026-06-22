@@ -358,6 +358,8 @@ class RepositorioDashboard(IRepositorioDashboard):
                         SELECT 
                             ca.ID_CONTRATO_A, p.DIRECCION_PROPIEDAD, per.NOMBRE_COMPLETO AS INQUILINO,
                             ca.FECHA_INICIO_CONTRATO_A, ca.CANON_ARRENDAMIENTO,
+                            -- NOTA: AGE() aquí es correcto: extraemos YEAR (años completos),
+                            -- no DAY (días totales). Ver ADR-0010.
                             EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER AS ANIOS_ACTIVOS,
                             (ca.FECHA_INICIO_CONTRATO_A::DATE + (EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER + 1 || ' years')::INTERVAL)::DATE AS PROXIMO_ANIVERSARIO,
                             ((ca.FECHA_INICIO_CONTRATO_A::DATE + (EXTRACT(YEAR FROM AGE(CURRENT_DATE, ca.FECHA_INICIO_CONTRATO_A::DATE))::INTEGER + 1 || ' years')::INTERVAL)::DATE - CURRENT_DATE) AS DIAS_HASTA_ANIVERSARIO,
