@@ -9,7 +9,7 @@ from src.aplicacion.servicios.servicio_documental import ServicioDocumentalElite
 servicio_documental = ServicioDocumentalElite()
 
 
-class DocumentoUI(rx.Base):
+class DocumentoUI(rx.base.Base):
     id_documento: int
     nombre_archivo: str
     extension: str
