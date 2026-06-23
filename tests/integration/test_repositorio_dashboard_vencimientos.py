@@ -216,10 +216,10 @@ class TestVencimientosFiltrado:
             contrato_lejano is None
         ), f"Contrato lejano NO debería estar. Resultados: {resultados}"
 
-    def test_contrato_vencido_activo_incluido(
+    def test_contrato_vencido_activo_excluido(
         self, db_manager: _TestDBManagerContextManager
     ) -> None:
-        """Un contrato ACTIVO cuya fecha ya pasó (días negativos) DEBE aparecer."""
+        """Un contrato ACTIVO cuya fecha ya pasó (días negativos) NO DEBE aparecer."""
         fecha_fin = (date.today() - timedelta(days=5)).isoformat()
         conn = db_manager.obtener_conexion_directa()
         _insertar_contrato_arrendamiento(conn, 3, fecha_fin)
@@ -231,13 +231,13 @@ class TestVencimientosFiltrado:
             (r for r in resultados if r["dias_restantes"] < 0), None
         )
         assert (
-            contrato_vencido is not None
-        ), f"Contrato vencido debería aparecer. Resultados: {resultados}"
+            contrato_vencido is None
+        ), f"Contrato vencido NO debería aparecer. Resultados: {resultados}"
 
-    def test_mandato_proximo_incluido_en_90_dias(
+    def test_mandato_proximo_excluido_de_vencimientos(
         self, db_manager: _TestDBManagerContextManager
     ) -> None:
-        """Un contrato de MANDATO que vence en 40 días DEBE aparecer en la lista."""
+        """Un contrato de MANDATO NO DEBE aparecer en la lista, solo arrendamientos."""
         fecha_fin = (date.today() + timedelta(days=40)).isoformat()
         conn = db_manager.obtener_conexion_directa()
         _insertar_contrato_mandato(conn, 4, fecha_fin)
@@ -249,10 +249,10 @@ class TestVencimientosFiltrado:
             (
                 r
                 for r in resultados
-                if r["tipo_contrato"] == "MANDATO" and 39 <= r["dias_restantes"] <= 41
+                if r.get("tipo_contrato") == "MANDATO"
             ),
             None,
         )
         assert (
-            contrato is not None
-        ), f"No se encontró MANDATO con ~40 días. Resultados: {resultados}"
+            contrato is None
+        ), f"No se debe incluir MANDATO. Resultados: {resultados}"
