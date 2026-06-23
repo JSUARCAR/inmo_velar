@@ -41,4 +41,6 @@ pyautogui>=0.9.54
 
 
 psycopg2-binary>=2.9.0
-gunicorn>=21.0.0holidays==0.98
+gunicorn>=21.0.0
+holidays>=0.46
+python-barcode>=0.15.1
