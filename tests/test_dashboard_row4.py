@@ -3,8 +3,15 @@ Test E2E para validar Row 4 del Dashboard - Composición Portafolio, Incidentes 
 Según el blueprint layout_blueprint.svg, estos 3 componentes deben estar presentes.
 """
 
+import pytest
 from playwright.sync_api import sync_playwright
 import time
+from tests.utils_network import SERVER_RUNNING
+
+pytestmark = pytest.mark.skipif(
+    not SERVER_RUNNING,
+    reason="El servidor local en localhost:8000 no esta activo. E2E/Playwright tests ignorados.",
+)
 
 
 def test_dashboard_row4_components():
@@ -51,7 +58,7 @@ def test_dashboard_row4_components():
                         print(
                             f"    Input {i}: name={inp.get_attribute('name')}, type={inp.get_attribute('type')}, placeholder={inp.get_attribute('placeholder')}"
                         )
-                    except:
+                    except Exception:
                         pass
 
             username_input.wait_for(state="visible", timeout=20000)
@@ -205,12 +212,12 @@ def test_dashboard_row4_components():
             print("=" * 60)
 
             # Aserciones para test automatizado
-            assert composicion_visible, (
-                "Componente COMPOSICION PORTAFOLIO no encontrado"
-            )
-            assert incidentes_visible, (
-                "Componente INCIDENTES DISTRIBUCION no encontrado"
-            )
+            assert (
+                composicion_visible
+            ), "Componente COMPOSICION PORTAFOLIO no encontrado"
+            assert (
+                incidentes_visible
+            ), "Componente INCIDENTES DISTRIBUCION no encontrado"
             assert top_asesores_visible, "Componente TOP ASESORES REVENUE no encontrado"
 
             print("\nTest Passed: Todos los componentes de Row 4 estan presentes")
