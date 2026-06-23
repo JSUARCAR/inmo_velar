@@ -262,21 +262,7 @@ class RepositorioDashboard(IRepositorioDashboard):
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN ARRENDATARIOS a ON ca.ID_ARRENDATARIO = a.ID_ARRENDATARIO
                 JOIN PERSONAS per ON a.ID_PERSONA = per.ID_PERSONA
-                WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
-                UNION ALL
-                SELECT 
-                    'MANDATO' AS TIPO_CONTRATO,
-                    cm.ID_CONTRATO_M AS ID_CONTRATO,
-                    cm.ID_PROPIEDAD,
-                    p.DIRECCION_PROPIEDAD AS DIRECCION,
-                    per.NOMBRE_COMPLETO AS INQUILINO_PROPIETARIO,
-                    cm.FECHA_FIN_CONTRATO_M AS FECHA_FIN,
-                    (cm.FECHA_FIN_CONTRATO_M::DATE - CURRENT_DATE)::INTEGER AS DIAS_RESTANTES
-                FROM CONTRATOS_MANDATOS cm
-                JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
-                JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO
-                JOIN PERSONAS per ON pr.ID_PERSONA = per.ID_PERSONA
-                WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO'
+                WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO' AND ca.FECHA_FIN_CONTRATO_A IS NOT NULL
             """
         else:
             return """
@@ -287,26 +273,12 @@ class RepositorioDashboard(IRepositorioDashboard):
                     p.DIRECCION_PROPIEDAD AS DIRECCION,
                     per.NOMBRE_COMPLETO AS INQUILINO_PROPIETARIO,
                     ca.FECHA_FIN_CONTRATO_A AS FECHA_FIN,
-                    CAST(julianday(ca.FECHA_FIN_CONTRATO_A) - julianday('now') AS INTEGER) AS DIAS_RESTANTES
+                    CAST(julianday(ca.FECHA_FIN_CONTRATO_A) - julianday('now', 'localtime') AS INTEGER) AS DIAS_RESTANTES
                 FROM CONTRATOS_ARRENDAMIENTOS ca
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN ARRENDATARIOS a ON ca.ID_ARRENDATARIO = a.ID_ARRENDATARIO
                 JOIN PERSONAS per ON a.ID_PERSONA = per.ID_PERSONA
-                WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
-                UNION ALL
-                SELECT 
-                    'MANDATO' AS TIPO_CONTRATO,
-                    cm.ID_CONTRATO_M AS ID_CONTRATO,
-                    cm.ID_PROPIEDAD,
-                    p.DIRECCION_PROPIEDAD AS DIRECCION,
-                    per.NOMBRE_COMPLETO AS INQUILINO_PROPIETARIO,
-                    cm.FECHA_FIN_CONTRATO_M AS FECHA_FIN,
-                    CAST(julianday(cm.FECHA_FIN_CONTRATO_M) - julianday('now') AS INTEGER) AS DIAS_RESTANTES
-                FROM CONTRATOS_MANDATOS cm
-                JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
-                JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO
-                JOIN PERSONAS per ON pr.ID_PERSONA = per.ID_PERSONA
-                WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO'
+                WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO' AND ca.FECHA_FIN_CONTRATO_A IS NOT NULL
             """
 
     def obtener_conteo_vencimientos_rangos(self) -> Dict:
@@ -315,10 +287,11 @@ class RepositorioDashboard(IRepositorioDashboard):
             query = f"""
                 WITH vencimientos AS ({self._get_sql_vencimientos()})
                 SELECT 
-                    SUM(CASE WHEN DIAS_RESTANTES <= 30 THEN 1 ELSE 0 END) AS VENCE_30,
+                    SUM(CASE WHEN DIAS_RESTANTES >= 0 AND DIAS_RESTANTES <= 30 THEN 1 ELSE 0 END) AS VENCE_30,
                     SUM(CASE WHEN DIAS_RESTANTES > 30 AND DIAS_RESTANTES <= 60 THEN 1 ELSE 0 END) AS VENCE_60,
                     SUM(CASE WHEN DIAS_RESTANTES > 60 AND DIAS_RESTANTES <= 90 THEN 1 ELSE 0 END) AS VENCE_90
                 FROM vencimientos
+                WHERE DIAS_RESTANTES >= 0 AND DIAS_RESTANTES <= 90
             """
             cursor.execute(query)
             r = cursor.fetchone()
@@ -332,7 +305,7 @@ class RepositorioDashboard(IRepositorioDashboard):
         with self.db.obtener_conexion() as conn:
             cursor = self.db.get_dict_cursor(conn)
             placeholder = self.db.get_placeholder()
-            query = f"WITH vencimientos AS ({self._get_sql_vencimientos()}) SELECT TIPO_CONTRATO, ID_PROPIEDAD, DIRECCION, INQUILINO_PROPIETARIO, FECHA_FIN, DIAS_RESTANTES FROM vencimientos WHERE DIAS_RESTANTES <= {placeholder} ORDER BY DIAS_RESTANTES ASC"
+            query = f"WITH vencimientos AS ({self._get_sql_vencimientos()}) SELECT TIPO_CONTRATO, ID_PROPIEDAD, DIRECCION, INQUILINO_PROPIETARIO, FECHA_FIN, DIAS_RESTANTES FROM vencimientos WHERE DIAS_RESTANTES >= 0 AND DIAS_RESTANTES <= {placeholder} ORDER BY DIAS_RESTANTES ASC"
             cursor.execute(query, (dias,))
             return [
                 {

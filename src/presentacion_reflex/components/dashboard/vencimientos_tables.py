@@ -1,6 +1,6 @@
 """
 Componente de Tabla Consolidada de Vencimientos para Dashboard - Reflex
-Muestra una lista unificada de contratos próximos a vencer (Mandato + Arrendamiento).
+Muestra una lista de contratos de Arrendamiento próximos a vencer en los próximos 90 días.
 """
 
 import reflex as rx
