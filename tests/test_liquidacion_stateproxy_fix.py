@@ -68,19 +68,13 @@ def test_save_liquidacion_no_stateproxy_error():
     )
 
     if not has_local_variable:
-        print(
-            "ERROR: El fix no está aplicado - show_create_modal no se captura en variable local"
-        )
-        print("Accesos problemáticos fuera del async with self:")
-        for line_num, line_text in problematic_accesses:
-            print(f"  Línea {line_num}: {line_text}")
-        sys.exit(1)
+        pytest.fail("ERROR: El fix no está aplicado - show_create_modal no se captura en variable local")
 
     print(
         "OK: El fix está aplicado - show_create_modal se captura en variable local antes del try"
     )
     print("OK: No hay accesos problemáticos a StateProxy fuera del context manager")
-    sys.exit(0)
+    return
 
 
 if __name__ == "__main__":

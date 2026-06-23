@@ -87,7 +87,7 @@ def setup_test_data(db):
         cursor = conn.cursor()
         # TRIGGER impide DELETE. Actualizamos a 'Cancelado' para permitir crear uno nuevo.
         # TRIGGER exige Motivo si es Cancelado
-        cursor.execute("UPDATE CONTRATOS_ARRENDAMIENTOS SET ESTADO_CONTRATO_A = 'Cancelado', MOTIVO_CANCELACION = 'Reinicio Test Script' WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'Activo'", (id_propiedad,))
+        cursor.execute("UPDATE CONTRATOS_ARRENDAMIENTOS SET ESTADO_CONTRATO_A = 'CANCELADO', MOTIVO_CANCELACION = 'Reinicio Test Script' WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'ACTIVO'", (id_propiedad,))
         conn.commit()
 
     datos_contrato = {
@@ -125,7 +125,7 @@ def test_renovacion():
         # Verificar Historial
         with db.obtener_conexion() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM RENOVACIONES_CONTRATOS WHERE ID_CONTRATO_A = ?", (id_contrato,))
+            cursor.execute(f"SELECT * FROM RENOVACIONES_CONTRATOS WHERE ID_CONTRATO_A = {db.get_placeholder()}", (id_contrato,))
             rows = cursor.fetchall()
             print(f"\nHistorial de Renovaciones ({len(rows)} registros):")
             for r in rows:

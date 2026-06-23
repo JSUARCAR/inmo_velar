@@ -22,7 +22,9 @@ class TestGestionDocumental(unittest.TestCase):
         except:
             pass
 
-        # Resetear pool y path
+        # Resetear pool y path, forzando SQLite
+        self.original_use_postgresql = getattr(self.db_manager, 'use_postgresql', False)
+        self.db_manager.use_postgresql = False
         self.db_manager._connection_pool = {} 
         self.db_manager.database_path = self.db_path 
         
@@ -35,8 +37,8 @@ class TestGestionDocumental(unittest.TestCase):
         # Pero intentemos con archivo temporal con nombre único.
         
         # CAMBIO DE ESTRATEGIA: Archivo temporal único
-        import time
-        self.db_path = f"test_docs_{int(time.time()*1000)}.db"
+        import uuid
+        self.db_path = f"test_docs_{uuid.uuid4().hex}.db"
         self.db_manager.database_path = self.db_path
         
         # Crear tabla DOCUMENTOS
@@ -64,6 +66,10 @@ class TestGestionDocumental(unittest.TestCase):
         self.servicio = ServicioDocumental(self.repo)
 
     def tearDown(self):
+        # Restaurar configuracion original
+        if hasattr(self, 'original_use_postgresql'):
+            self.db_manager.use_postgresql = self.original_use_postgresql
+            
         # Cerrar conexiones del manager
         try:
             self.db_manager.cerrar_todas_conexiones()

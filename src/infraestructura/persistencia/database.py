@@ -166,6 +166,9 @@ if DB_MODE == "postgresql":
             return self._conn.rollback()
 
         def __getattr__(self, name):
+            if name == 'close':
+                # No close the actual connection, it is reused per thread
+                return lambda: None
             return getattr(self._conn, name)
 
         def __enter__(self):

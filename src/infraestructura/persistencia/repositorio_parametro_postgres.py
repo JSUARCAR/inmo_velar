@@ -84,6 +84,52 @@ class RepositorioParametroPostgres:
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
+    def crear(self, parametro: ParametroSistema, usuario: str) -> ParametroSistema:
+        """Crea un nuevo parámetro de sistema."""
+        with self.db.transaccion() as conn:
+            cursor = self.db.get_dict_cursor(conn)
+            placeholder = self.db.get_placeholder()
+            query = f"""
+                INSERT INTO PARAMETROS_SISTEMA (
+                    NOMBRE_PARAMETRO, VALOR_PARAMETRO, TIPO_DATO,
+                    DESCRIPCION, CATEGORIA, MODIFICABLE,
+                    CREATED_AT, UPDATED_BY
+                ) VALUES (
+                    {placeholder}, {placeholder}, {placeholder},
+                    {placeholder}, {placeholder}, {placeholder},
+                    {placeholder}, {placeholder}
+                )
+            """
+            
+            created_at = datetime.now().isoformat()
+            
+            if self.db.use_postgresql:
+                query += " RETURNING id_parametro"
+                cursor.execute(
+                    query,
+                    (
+                        parametro.nombre_parametro, parametro.valor_parametro,
+                        parametro.tipo_dato, parametro.descripcion,
+                        parametro.categoria, parametro.modificable,
+                        created_at, usuario
+                    )
+                )
+                row = cursor.fetchone()
+                parametro.id_parametro = row.get("id_parametro") or row.get("ID_PARAMETRO")
+            else:
+                cursor.execute(
+                    query,
+                    (
+                        parametro.nombre_parametro, parametro.valor_parametro,
+                        parametro.tipo_dato, parametro.descripcion,
+                        parametro.categoria, parametro.modificable,
+                        created_at, usuario
+                    )
+                )
+                parametro.id_parametro = self.db.get_last_insert_id(cursor, "PARAMETROS_SISTEMA", "ID_PARAMETRO")
+                
+            return parametro
+
     def actualizar(self, parametro: ParametroSistema, usuario: str) -> bool:
         """
         Actualiza el valor de un parámetro existente.

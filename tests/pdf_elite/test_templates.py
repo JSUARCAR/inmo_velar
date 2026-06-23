@@ -63,16 +63,27 @@ def test_contrato_validation():
         'arrendatario': {
             'nombre': 'María López',
             'documento': '789012',
-            'telefono': '555-5678'
+            'telefono': '555-5678',
+            'email': 'maria@example.com'
+        },
+        'codeudor': {
+            'nombre': 'Pedro',
+            'documento': '123',
+            'direccion': 'Calle 123',
+            'telefono': '555-1234',
+            'email': 'pedro@example.com'
         },
         'inmueble': {
             'direccion': 'Calle 123 #45-67',
-            'tipo': 'Apartamento'
+            'tipo': 'Apartamento',
+            'matricula_inmobiliaria': '123'
         },
         'condiciones': {
             'canon': 1000000,
             'duracion_meses': 12
-        }
+        },
+        'fecha_inicio': '2026-01-01',
+        'fecha_fin': '2026-12-31'
     }
     
     assert gen.validate_data(data) is True
@@ -139,7 +150,8 @@ def test_estado_cuenta_validation():
             'total_ingresos': 1500000,
             'total_egresos': 200000,
             'valor_neto': 1300000
-        }
+        },
+        'detalle_propiedades': []
     }
     
     assert gen.validate_data(data) is True

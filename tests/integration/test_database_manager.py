@@ -10,8 +10,68 @@ from contextlib import contextmanager
 
 
 def dict_factory(cursor, row):
-    return {col[0].upper(): row[idx] for idx, col in enumerate(cursor.description)}
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0].upper()] = row[idx]
+        d[col[0].lower()] = row[idx]
+    return d
 
+
+class MockCursor:
+    def __init__(self, cursor):
+        self._cursor = cursor
+        
+    def __getattr__(self, name):
+        return getattr(self._cursor, name)
+        
+    def execute(self, sql, parameters=None):
+        if "%s" in sql:
+            sql = sql.replace("%s", "?")
+        sql = sql.replace(" ILIKE ", " LIKE ")
+        
+        if parameters is not None:
+            return self._cursor.execute(sql, parameters)
+        return self._cursor.execute(sql)
+
+    def executemany(self, sql, seq_of_parameters):
+        if "%s" in sql:
+            sql = sql.replace("%s", "?")
+        sql = sql.replace(" ILIKE ", " LIKE ")
+        return self._cursor.executemany(sql, seq_of_parameters)
+
+class MockConnection:
+    def __init__(self, conn):
+        self._conn = conn
+        
+    def __getattr__(self, name):
+        return getattr(self._conn, name)
+        
+    def cursor(self):
+        return MockCursor(self._conn.cursor())
+        
+    def execute(self, sql, parameters=None):
+        if "%s" in sql:
+            sql = sql.replace("%s", "?")
+        sql = sql.replace(" ILIKE ", " LIKE ")
+        if parameters is not None:
+            return self._conn.execute(sql, parameters)
+        return self._conn.execute(sql)
+
+    def executemany(self, sql, seq_of_parameters):
+        if "%s" in sql:
+            sql = sql.replace("%s", "?")
+        sql = sql.replace(" ILIKE ", " LIKE ")
+        return self._conn.executemany(sql, seq_of_parameters)
+        
+    def __enter__(self):
+        self._conn.__enter__()
+        return self
+        
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return self._conn.__exit__(exc_type, exc_val, exc_tb)
+
+def unaccent_dummy(text):
+    return text
 
 class TestDatabaseManager:
     """
@@ -30,19 +90,21 @@ class TestDatabaseManager:
         self._connection = None
         self.use_postgresql = False
 
-    def obtener_conexion(self) -> sqlite3.Connection:
+    def obtener_conexion(self):
         """
-        Obtiene una conexión a la base de datos.
+        Obtiene una conexión a la base de datos envuelta para compatibilidad con Postgres %s.
 
         Returns:
-            Conexión SQLite
+            Conexión MockConnection (SQLite)
         """
         if self._connection is None:
-            self._connection = sqlite3.connect(
+            conn = sqlite3.connect(
                 str(self.database_path), check_same_thread=False
             )
-            self._connection.row_factory = dict_factory
-            self._connection.execute("PRAGMA foreign_keys = ON")
+            conn.row_factory = dict_factory
+            conn.create_function("unaccent", 1, unaccent_dummy)
+            conn.execute("PRAGMA foreign_keys = ON")
+            self._connection = MockConnection(conn)
 
         return self._connection
 

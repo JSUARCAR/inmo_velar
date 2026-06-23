@@ -211,12 +211,13 @@ def test_finalizar_desocupacion_actualiza_propiedad(db_manager):
             """, (id_desocupacion, desc, i))
         
         conn.commit()
-    
-    # VERIFICAR ESTADO INICIAL
-    with db_manager.obtener_conexion() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT DISPONIBILIDAD_PROPIEDAD FROM PROPIEDADES WHERE ID_PROPIEDAD = ?", (id_propiedad,))
-        assert cursor.fetchone()[0] == 0, "Propiedad debe estar OCUPADA (0) inicialmente"
+        # VERIFICAR ESTADO INICIAL
+        with db_manager.obtener_conexion() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT DISPONIBILIDAD_PROPIEDAD FROM PROPIEDADES WHERE ID_PROPIEDAD = ?", (id_propiedad,))
+            row = cursor.fetchone()
+            val = row.get("disponibilidad_propiedad") if "disponibilidad_propiedad" in row else row.get("DISPONIBILIDAD_PROPIEDAD")
+            assert val == 0, "Propiedad debe estar OCUPADA (0) inicialmente"
     
     # ACTION: Finalizar desocupación
     servicio.finalizar_desocupacion(id_desocupacion, usuario="test_user")
@@ -224,25 +225,29 @@ def test_finalizar_desocupacion_actualiza_propiedad(db_manager):
     # ASSERTIONS: Verificar resultados
     with db_manager.obtener_conexion() as conn:
         cursor = conn.cursor()
-        
-        # 1. Verificar que desocupación está Completada
+
+        # 1. Verificar que desocupación esté Completada
         cursor.execute("SELECT ESTADO FROM DESOCUPACIONES WHERE ID_DESOCUPACION = ?", (id_desocupacion,))
-        estado_desocupacion = cursor.fetchone()[0]
-        assert estado_desocupacion == "Completada", f"Desocupación debe estar 'Completada', pero está '{estado_desocupacion}'"
-        
-        # 2. Verificar que contrato está Finalizado
+        row = cursor.fetchone()
+        estado_desocupacion = row.get("estado") or row.get("ESTADO")
+        assert estado_desocupacion == "Completada", "El estado de la desocupación no cambió a Completada"
+
+        # 2. Verificar que el contrato esté Finalizado
         cursor.execute("SELECT ESTADO_CONTRATO_A FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_CONTRATO_A = ?", (id_contrato,))
-        estado_contrato = cursor.fetchone()[0]
-        assert estado_contrato == "Finalizado", f"Contrato debe estar 'Finalizado', pero está '{estado_contrato}'"
-        
-        # 3. Verificar que propiedad está DISPONIBLE ✅ (ESTE ES EL FIX)
+        row = cursor.fetchone()
+        estado_contrato = row.get("estado_contrato_a") or row.get("ESTADO_CONTRATO_A")
+        assert estado_contrato == "Finalizado", "El estado del contrato no cambió a Finalizado"
+
+        # 3. VERIFICAR ESTADO FINAL: La propiedad debe estar DISPONIBLE (1)
         cursor.execute("SELECT DISPONIBILIDAD_PROPIEDAD FROM PROPIEDADES WHERE ID_PROPIEDAD = ?", (id_propiedad,))
-        disponibilidad = cursor.fetchone()[0]
-        assert disponibilidad == 1, f"Propiedad debe estar DISPONIBLE (1), pero está {disponibilidad}"
+        row = cursor.fetchone()
+        val = row.get("disponibilidad_propiedad") or row.get("DISPONIBILIDAD_PROPIEDAD")
+        assert val == 1, "Propiedad debería estar DISPONIBLE (1) después de finalizar desocupación"
         
         # 4. Verificar que el updated_by se registró correctamente
         cursor.execute("SELECT UPDATED_BY FROM PROPIEDADES WHERE ID_PROPIEDAD = ?", (id_propiedad,))
-        updated_by = cursor.fetchone()[0]
+        row = cursor.fetchone()
+        updated_by = row.get("updated_by") or row.get("UPDATED_BY")
         assert updated_by == "test_user", f"UPDATED_BY debe ser 'test_user', pero es '{updated_by}'"
     
     print("[OK] Test PASSED: La propiedad se marcó correctamente como Disponible")

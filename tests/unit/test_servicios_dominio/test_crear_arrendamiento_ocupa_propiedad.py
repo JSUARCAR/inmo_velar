@@ -62,6 +62,7 @@ def test_crear_arrendamiento_marca_propiedad_como_ocupada(servicio, mocks):
 
     contrato_creado_mock = MagicMock(spec=ContratoArrendamiento)
     contrato_creado_mock.id_contrato_a = 99
+    contrato_creado_mock.id_propiedad = 42
 
     # El repo no tiene arriendo activo previo
     repo_arriendo.obtener_activo_por_propiedad.return_value = None

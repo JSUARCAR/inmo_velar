@@ -22,17 +22,17 @@ class TestVerificacionCIU(unittest.TestCase):
         # Enable FKs
         self.conn.execute("PRAGMA foreign_keys = ON")
         
+        # Setup Dependency Injection
+        from tests.integration.test_database_manager import TestDatabaseManager
+        self.db_manager = TestDatabaseManager(":memory:")
+        self.conn = self.db_manager.obtener_conexion()
+        
         # Create Tables
         self.crear_tablas()
         
-        # Setup Dependency Injection
-        self.db_manager = DatabaseManager()
-        # Mock connection to return our in-memory connection
-        # We need to monkeypatch the instance that ServicioPropiedades will use
-        self.db_manager.obtener_conexion = lambda: self.conn
-        
-        self.servicio = ServicioPropiedades(self.db_manager)
-
+        from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+        self.repo = RepositorioPropiedadPostgres(self.db_manager)
+        self.servicio = ServicioPropiedades(self.repo)
     def tearDown(self):
         self.conn.close()
 
@@ -67,6 +67,16 @@ class TestVerificacionCIU(unittest.TestCase):
                 VALOR_VENTA_PROPIEDAD INTEGER DEFAULT 0,
                 COMISION_VENTA_PROPIEDAD INTEGER DEFAULT 0,
                 OBSERVACIONES_PROPIEDAD TEXT,
+                CODIGO_ENERGIA TEXT,
+                CODIGO_AGUA TEXT,
+                CODIGO_GAS TEXT,
+                TELEFONO_ADMINISTRACION TEXT,
+                TIPO_CUENTA_ADMINISTRACION TEXT,
+                NUMERO_CUENTA_ADMINISTRACION TEXT,
+                FECHA_PAGO_ADMINISTRACION INTEGER,
+                LINK_PAGO_ADMINISTRACION TEXT,
+                CUOTA_EXTRA_ORDINARIA INTEGER,
+                OBSERVACIONES_ADMIN_PH TEXT,
                 FECHA_INGRESO_PROPIETARIO TEXT,
                 FECHA_INGRESO_PROPIEDAD TEXT DEFAULT (date('now')),
                 ESTADO_REGISTRO INTEGER DEFAULT 1,
@@ -75,9 +85,6 @@ class TestVerificacionCIU(unittest.TestCase):
                 CREATED_BY TEXT,
                 UPDATED_AT TEXT DEFAULT (datetime('now')),
                 UPDATED_BY TEXT,
-                CODIGO_ENERGIA TEXT,
-                CODIGO_AGUA TEXT,
-                CODIGO_GAS TEXT,
                 FOREIGN KEY (ID_MUNICIPIO) REFERENCES MUNICIPIOS(ID_MUNICIPIO)
             )
         """)

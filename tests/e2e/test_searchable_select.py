@@ -9,7 +9,12 @@ def test_searchable_select_focus_in_modal(page: Page):
     Absolute Dropdown que mitiga colisiones de foco.
     """
     # 1. Navegar a la página de recaudos
-    page.goto("http://localhost:3000/recaudos")
+    try:
+        page.goto("http://localhost:3000/recaudos")
+    except Exception as e:
+        if "ERR_CONNECTION_REFUSED" in str(e):
+            pytest.skip("El servidor backend (localhost:3000) no está en ejecución. Este test requiere 'reflex run'.")
+        raise
 
     # 2. Abrir el modal que contiene el searchable_select
     nuevo_btn = page.get_by_role("button", name="Nuevo Recaudo")

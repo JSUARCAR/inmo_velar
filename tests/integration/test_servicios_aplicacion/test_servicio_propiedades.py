@@ -23,11 +23,24 @@ def db_manager(tmp_path):
         conn.execute("""
             CREATE TABLE IF NOT EXISTS MUNICIPIOS (
                 ID_MUNICIPIO INTEGER PRIMARY KEY AUTOINCREMENT,
-                NOMBRE_MUNICIPIO TEXT NOT NULL
+                NOMBRE_MUNICIPIO TEXT NOT NULL,
+                DEPARTAMENTO TEXT DEFAULT 'Antioquia',
+                ESTADO_REGISTRO BOOLEAN DEFAULT TRUE
             )
         """)
         conn.execute("INSERT INTO MUNICIPIOS (NOMBRE_MUNICIPIO) VALUES ('Bogotá')")
         conn.execute("INSERT INTO MUNICIPIOS (NOMBRE_MUNICIPIO) VALUES ('Medellín')")
+        
+        # Tabla DOCUMENTOS
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS DOCUMENTOS (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                ENTIDAD_TIPO TEXT NOT NULL,
+                ENTIDAD_ID TEXT NOT NULL,
+                MIME_TYPE TEXT,
+                ES_VIGENTE TEXT
+            )
+        """)
         
         # Tabla PROPIEDADES
         conn.execute("""
@@ -48,6 +61,16 @@ def db_manager(tmp_path):
                 VALOR_VENTA_PROPIEDAD INTEGER,
                 COMISION_VENTA_PROPIEDAD INTEGER,
                 OBSERVACIONES_PROPIEDAD TEXT,
+                CODIGO_ENERGIA TEXT,
+                CODIGO_AGUA TEXT,
+                CODIGO_GAS TEXT,
+                TELEFONO_ADMINISTRACION TEXT,
+                TIPO_CUENTA_ADMINISTRACION TEXT,
+                NUMERO_CUENTA_ADMINISTRACION TEXT,
+                FECHA_PAGO_ADMINISTRACION INTEGER,
+                LINK_PAGO_ADMINISTRACION TEXT,
+                CUOTA_EXTRA_ORDINARIA INTEGER,
+                OBSERVACIONES_ADMIN_PH TEXT,
                 FECHA_INGRESO_PROPIEDAD TEXT,
                 ESTADO_REGISTRO INTEGER DEFAULT 1,
                 MOTIVO_INACTIVACION TEXT,
@@ -68,10 +91,15 @@ def db_manager(tmp_path):
         db_file.unlink()
 
 
+from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+from src.infraestructura.persistencia.repositorio_municipio_postgres import RepositorioMunicipioPostgres
+
 @pytest.fixture
 def servicio(db_manager):
     """Crea una instancia del servicio."""
-    return ServicioPropiedades(db_manager)
+    repo = RepositorioPropiedadPostgres(db_manager)
+    repo_mun = RepositorioMunicipioPostgres(db_manager)
+    return ServicioPropiedades(repo, repo_municipio=repo_mun)
 
 
 class TestServicioPropiedades:

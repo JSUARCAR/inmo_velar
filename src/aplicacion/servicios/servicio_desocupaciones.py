@@ -277,7 +277,8 @@ class ServicioDesocupaciones:
                 cursor.execute(check_contrato_query, (desocupacion.id_contrato,))
                 contrato_row = cursor.fetchone()
 
-                if contrato_row and contrato_row["ESTADO_CONTRATO_A"] == "ACTIVO":
+                estado_contrato = contrato_row.get("estado_contrato_a") or contrato_row.get("ESTADO_CONTRATO_A", "")
+                if contrato_row and estado_contrato.upper() == "ACTIVO":
                     id_propiedad = contrato_row["id_propiedad"] if "id_propiedad" in contrato_row else contrato_row["ID_PROPIEDAD"]
                     
                     update_contrato_query = f"""

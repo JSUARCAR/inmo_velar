@@ -51,7 +51,8 @@ class RepositorioPersonaPostgres:
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
-        cursor.execute("SELECT * FROM PERSONAS WHERE ID_PERSONA = %s", (id_persona,))
+        p = self.db.get_placeholder()
+        cursor.execute(f"SELECT * FROM PERSONAS WHERE ID_PERSONA = {p}", (id_persona,))
 
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
@@ -62,8 +63,9 @@ class RepositorioPersonaPostgres:
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
+        p = self.db.get_placeholder()
         cursor.execute(
-            "SELECT * FROM PERSONAS WHERE NUMERO_DOCUMENTO = %s", (numero_documento,)
+            f"SELECT * FROM PERSONAS WHERE NUMERO_DOCUMENTO = {p}", (numero_documento,)
         )
 
         row = cursor.fetchone()
@@ -141,19 +143,20 @@ class RepositorioPersonaPostgres:
                 ")"
             )
 
+        p = self.db.get_placeholder()
         if busqueda:
             conditions.append(
-                "(unaccent(p.NOMBRE_COMPLETO) ILIKE unaccent(%s) OR p.NUMERO_DOCUMENTO ILIKE %s)"
+                f"(unaccent(p.NOMBRE_COMPLETO) ILIKE unaccent({p}) OR p.NUMERO_DOCUMENTO ILIKE {p})"
             )
             busqueda_param = f"%{busqueda}%"
             params.extend([busqueda_param, busqueda_param])
 
         if fecha_inicio:
-            conditions.append("p.CREATED_AT::DATE >= %s")
+            conditions.append(f"p.CREATED_AT::DATE >= {p}")
             params.append(fecha_inicio)
 
         if fecha_fin:
-            conditions.append("p.CREATED_AT::DATE <= %s")
+            conditions.append(f"p.CREATED_AT::DATE <= {p}")
             params.append(fecha_fin)
 
         if conditions:
@@ -162,7 +165,7 @@ class RepositorioPersonaPostgres:
         query += f" ORDER BY {sort_col} {order}"
 
         if limit is not None:
-            query += " LIMIT %s OFFSET %s"
+            query += f" LIMIT {p} OFFSET {p}"
             params.extend([limit, offset])
 
         cursor.execute(query, params)
@@ -223,19 +226,20 @@ class RepositorioPersonaPostgres:
                 ")"
             )
 
+        p = self.db.get_placeholder()
         if busqueda:
             conditions.append(
-                "(unaccent(p.NOMBRE_COMPLETO) ILIKE unaccent(%s) OR p.NUMERO_DOCUMENTO ILIKE %s)"
+                f"(unaccent(p.NOMBRE_COMPLETO) ILIKE unaccent({p}) OR p.NUMERO_DOCUMENTO ILIKE {p})"
             )
             busqueda_param = f"%{busqueda}%"
             params.extend([busqueda_param, busqueda_param])
 
         if fecha_inicio:
-            conditions.append("p.CREATED_AT::DATE >= %s")
+            conditions.append(f"p.CREATED_AT::DATE >= {p}")
             params.append(fecha_inicio)
 
         if fecha_fin:
-            conditions.append("p.CREATED_AT::DATE <= %s")
+            conditions.append(f"p.CREATED_AT::DATE <= {p}")
             params.append(fecha_fin)
 
         if conditions:
@@ -250,9 +254,10 @@ class RepositorioPersonaPostgres:
         logger.debug(f"Ejecutando crear persona (Postgres): documento={persona.numero_documento}")
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
+        p = self.db.get_placeholder()
 
         cursor.execute(
-            """
+            f"""
             INSERT INTO PERSONAS (
                 TIPO_DOCUMENTO,
                 NUMERO_DOCUMENTO,
@@ -263,7 +268,7 @@ class RepositorioPersonaPostgres:
                 ESTADO_REGISTRO,
                 CREATED_AT,
                 CREATED_BY
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ) VALUES ({p}, {p}, {p}, {p}, {p}, {p}, {p}, {p}, {p})
             RETURNING ID_PERSONA
             """,
             (
@@ -293,20 +298,21 @@ class RepositorioPersonaPostgres:
         """Actualiza una persona existente en PostgreSQL."""
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
+        p = self.db.get_placeholder()
 
         cursor.execute(
-            """
+            f"""
             UPDATE PERSONAS SET
-                TIPO_DOCUMENTO = %s,
-                NUMERO_DOCUMENTO = %s,
-                NOMBRE_COMPLETO = %s,
-                TELEFONO_PRINCIPAL = %s,
-                CORREO_ELECTRONICO = %s,
-                DIRECCION_PRINCIPAL = %s,
-                ESTADO_REGISTRO = %s,
-                UPDATED_AT = %s,
-                UPDATED_BY = %s
-            WHERE ID_PERSONA = %s
+                TIPO_DOCUMENTO = {p},
+                NUMERO_DOCUMENTO = {p},
+                NOMBRE_COMPLETO = {p},
+                TELEFONO_PRINCIPAL = {p},
+                CORREO_ELECTRONICO = {p},
+                DIRECCION_PRINCIPAL = {p},
+                ESTADO_REGISTRO = {p},
+                UPDATED_AT = {p},
+                UPDATED_BY = {p}
+            WHERE ID_PERSONA = {p}
             """,
             (
                 persona.tipo_documento,
@@ -329,15 +335,16 @@ class RepositorioPersonaPostgres:
         """Inactiva una persona (soft delete) en PostgreSQL."""
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
+        p = self.db.get_placeholder()
 
         cursor.execute(
-            """
+            f"""
             UPDATE PERSONAS SET
                 ESTADO_REGISTRO = FALSE,
-                MOTIVO_INACTIVACION = %s,
-                UPDATED_AT = %s,
-                UPDATED_BY = %s
-            WHERE ID_PERSONA = %s
+                MOTIVO_INACTIVACION = {p},
+                UPDATED_AT = {p},
+                UPDATED_BY = {p}
+            WHERE ID_PERSONA = {p}
             """,
             (motivo, datetime.now().isoformat(), usuario_sistema, id_persona),
         )
@@ -349,7 +356,8 @@ class RepositorioPersonaPostgres:
         """Busca una persona por email."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
-        cursor.execute("SELECT * FROM PERSONAS WHERE CORREO_ELECTRONICO = %s", (email,))
+        p = self.db.get_placeholder()
+        cursor.execute(f"SELECT * FROM PERSONAS WHERE CORREO_ELECTRONICO = {p}", (email,))
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
@@ -357,11 +365,12 @@ class RepositorioPersonaPostgres:
         """Búsqueda fuzzy por nombre en PostgreSQL."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
-        query = """
+        p = self.db.get_placeholder()
+        query = f"""
             SELECT * FROM PERSONAS 
-            WHERE unaccent(NOMBRE_COMPLETO) ILIKE unaccent(%s)
+            WHERE unaccent(NOMBRE_COMPLETO) ILIKE unaccent({p})
             AND ESTADO_REGISTRO = TRUE
-            LIMIT %s
+            LIMIT {p}
         """
         cursor.execute(query, (f"%{termino_busqueda}%", limite))
         return [self._row_to_entity(row) for row in cursor.fetchall()]

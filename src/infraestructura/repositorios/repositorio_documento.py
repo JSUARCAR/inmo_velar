@@ -22,9 +22,12 @@ class RepositorioDocumento:
 
         # Helper to get value securely
         def get_val(key, idx):
-            if hasattr(row, "keys"):  # Dict-like (Postgres)
-                return row.get(key)
-            return row[idx]  # Tuple-like or sqlite3.Row (SQLite)
+            try:
+                # Intenta acceder por llave (dict, psycopg2.extras.RealDictRow, sqlite3.Row)
+                return row[key]
+            except (TypeError, IndexError, KeyError):
+                # Fallback a indice numérico
+                return row[idx]
 
         doc = Documento(
             id=get_val("ID", 0),
@@ -47,10 +50,8 @@ class RepositorioDocumento:
 
         if include_content:
             # Check for content in keys or index 11
-            if hasattr(row, "keys"):
-                doc.contenido = bytes(row.get("CONTENIDO")) if row.get("CONTENIDO") else None
-            elif len(row) > 11:
-                doc.contenido = bytes(row[11]) if row[11] else None
+            contenido_raw = get_val("CONTENIDO", 11)
+            doc.contenido = bytes(contenido_raw) if contenido_raw else None
 
         return doc
 
