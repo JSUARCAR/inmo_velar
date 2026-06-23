@@ -83,7 +83,8 @@ class RepositorioPropiedadPostgres:
         placeholder = self.db.get_placeholder()
 
         cursor.execute(
-            f"SELECT * FROM PROPIEDADES WHERE ID_PROPIEDAD = {placeholder}", (id_propiedad,)
+            f"SELECT * FROM PROPIEDADES WHERE ID_PROPIEDAD = {placeholder}",
+            (id_propiedad,),
         )
 
         row = cursor.fetchone()
@@ -97,7 +98,8 @@ class RepositorioPropiedadPostgres:
         placeholder = self.db.get_placeholder()
 
         cursor.execute(
-            f"SELECT * FROM PROPIEDADES WHERE MATRICULA_INMOBILIARIA = {placeholder}", (matricula,)
+            f"SELECT * FROM PROPIEDADES WHERE MATRICULA_INMOBILIARIA = {placeholder}",
+            (matricula,),
         )
 
         row = cursor.fetchone()
@@ -131,9 +133,9 @@ class RepositorioPropiedadPostgres:
             "valor_venta": "p.VALOR_VENTA_PROPIEDAD",
             "disponibilidad": "p.DISPONIBILIDAD_PROPIEDAD",
             "estado": "p.ESTADO_REGISTRO",
-            "creado": "p.CREATED_AT"
+            "creado": "p.CREATED_AT",
         }
-        
+
         sort_col = SORT_COLUMNS.get(sort_by, "p.ID_PROPIEDAD")
         order = "ASC" if sort_order.lower() == "asc" else "DESC"
 
@@ -171,7 +173,7 @@ class RepositorioPropiedadPostgres:
             cols = ["p.MATRICULA_INMOBILIARIA", "p.DIRECCION_PROPIEDAD"]
             cond = self.db.get_search_condition(cols)
             conditions.append(f"({cond})")
-            
+
             term_norm = f"%{self.db.normalize_search_term(busqueda)}%"
             params.extend([term_norm] * len(cols))
 
@@ -203,7 +205,7 @@ class RepositorioPropiedadPostgres:
         filtro_disponibilidad: Optional[int] = None,
         filtro_municipio: Optional[int] = None,
         solo_activas: bool = True,
-        busqueda: Optional[str] = None
+        busqueda: Optional[str] = None,
     ) -> int:
         """Cuenta total de propiedades con filtros."""
         conn = self.db.obtener_conexion()
@@ -268,7 +270,7 @@ class RepositorioPropiedadPostgres:
         self,
         filtro_tipo: Optional[str] = None,
         filtro_municipio: Optional[int] = None,
-        busqueda: Optional[str] = None
+        busqueda: Optional[str] = None,
     ) -> dict:
         """Calcula métricas KPIs de propiedades con filtros aplicados."""
         with self.db.obtener_conexion() as conn:
@@ -286,7 +288,7 @@ class RepositorioPropiedadPostgres:
                 SUM(CASE WHEN DISPONIBILIDAD_PROPIEDAD IS NOT TRUE AND ESTADO_REGISTRO IS FALSE THEN 1 ELSE 0 END) as ocupadas_inactivas
             FROM PROPIEDADES p
             """
-            
+
             conditions = []
             params = []
 
@@ -327,8 +329,24 @@ class RepositorioPropiedadPostgres:
                     "total": _get_val(row, "ocupadas_total"),
                     "activas": _get_val(row, "ocupadas_activas"),
                     "inactivas": _get_val(row, "ocupadas_inactivas"),
-                }
+                },
             }
+
+    def listar_disponibles(self) -> List[Propiedad]:
+        """Retorna propiedades disponibles y activas (DISPONIBILIDAD_PROPIEDAD=1, ESTADO_REGISTRO=1)."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        placeholder = self.db.get_placeholder()
+
+        query = f"""
+            SELECT * FROM PROPIEDADES
+            WHERE DISPONIBILIDAD_PROPIEDAD = {placeholder}
+              AND ESTADO_REGISTRO = {placeholder}
+            ORDER BY ID_PROPIEDAD DESC
+        """
+        cursor.execute(query, (True, True))
+        rows = cursor.fetchall()
+        return [self._row_to_entity(row) for row in rows]
 
     def listar_sin_mandato(self) -> List[dict]:
         """Retorna propiedades que no tienen mandato activo."""
@@ -476,21 +494,26 @@ class RepositorioPropiedadPostgres:
         cursor.execute(query, (id_propiedad,))
         row = cursor.fetchone()
         cursor.close()
-        
+
         if not row:
             return None
-            
+
         # Normalizar claves para acceso uniforme en la aplicación
         return {
             "id_propiedad": row.get("ID_PROPIEDAD") or row.get("id_propiedad"),
-            "direccion_propiedad": row.get("DIRECCION_PROPIEDAD") or row.get("direccion_propiedad"),
-            "valor_administracion": row.get("VALOR_ADMINISTRACION") or row.get("valor_administracion"),
+            "direccion_propiedad": row.get("DIRECCION_PROPIEDAD")
+            or row.get("direccion_propiedad"),
+            "valor_administracion": row.get("VALOR_ADMINISTRACION")
+            or row.get("valor_administracion"),
             "id_propietario": row.get("ID_PROPIETARIO") or row.get("id_propietario"),
             "id_asesor": row.get("ID_ASESOR") or row.get("id_asesor"),
-            "nombre_propietario": row.get("NOMBRE_PROPIETARIO") or row.get("nombre_propietario"),
+            "nombre_propietario": row.get("NOMBRE_PROPIETARIO")
+            or row.get("nombre_propietario"),
             "nombre_asesor": row.get("NOMBRE_ASESOR") or row.get("nombre_asesor"),
-            "link_pago_administracion": row.get("LINK_PAGO_ADMINISTRACION") or row.get("link_pago_administracion"),
-            "fecha_pago_administracion": row.get("FECHA_PAGO_ADMINISTRACION") or row.get("fecha_pago_administracion")
+            "link_pago_administracion": row.get("LINK_PAGO_ADMINISTRACION")
+            or row.get("link_pago_administracion"),
+            "fecha_pago_administracion": row.get("FECHA_PAGO_ADMINISTRACION")
+            or row.get("fecha_pago_administracion"),
         }
 
     def actualizar(self, propiedad: Propiedad, usuario_sistema: str) -> bool:
@@ -579,4 +602,3 @@ class RepositorioPropiedadPostgres:
             )
 
             return cursor.rowcount > 0
-
