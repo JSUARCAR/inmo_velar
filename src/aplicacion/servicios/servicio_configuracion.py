@@ -12,9 +12,15 @@ from src.dominio.entidades.ipc import IPC
 from src.dominio.entidades.parametro_sistema import ParametroSistema
 from src.dominio.entidades.usuario import Usuario
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
-from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
-from src.infraestructura.persistencia.repositorio_parametro_postgres import RepositorioParametroPostgres
+from src.infraestructura.persistencia.repositorio_auditoria_postgres import (
+    RepositorioAuditoriaPostgres,
+)
+from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+    RepositorioIPCPostgres,
+)
+from src.infraestructura.persistencia.repositorio_parametro_postgres import (
+    RepositorioParametroPostgres,
+)
 from src.infraestructura.persistencia.repositorio_usuario import RepositorioUsuario
 
 
@@ -48,7 +54,9 @@ class ServicioConfiguracion:
         """Obtiene la configuración de la empresa."""
         return self.repo_empresa.obtener_configuracion()
 
-    def guardar_configuracion_empresa(self, config, usuario_sistema: str = "SISTEMA") -> bool:
+    def guardar_configuracion_empresa(
+        self, config, usuario_sistema: str = "SISTEMA"
+    ) -> bool:
         """
         Guarda la configuración de la empresa.
 
@@ -123,14 +131,17 @@ class ServicioConfiguracion:
             nombre_usuario=nombre_usuario,
             contrasena_hash=contrasena_hash,
             rol=rol,
-            estado_usuario=1,
+            estado_usuario=True,
             fecha_creacion=datetime.now().isoformat(),
         )
 
         return self.repo_usuario.crear(usuario, usuario_sistema)
 
     def actualizar_usuario(
-        self, id_usuario: int, rol: Optional[str] = None, usuario_sistema: str = "SISTEMA"
+        self,
+        id_usuario: int,
+        rol: Optional[str] = None,
+        usuario_sistema: str = "SISTEMA",
     ) -> bool:
         """
         Actualiza los datos de un usuario (rol).
@@ -218,7 +229,9 @@ class ServicioConfiguracion:
         if len(nueva_contrasena) < 6:
             raise ValueError("La contraseña debe tener al menos 6 caracteres")
 
-        usuario.contrasena_hash = hashlib.sha256(nueva_contrasena.encode("utf-8")).hexdigest()
+        usuario.contrasena_hash = hashlib.sha256(
+            nueva_contrasena.encode("utf-8")
+        ).hexdigest()
         return self.repo_usuario.actualizar(usuario, usuario_sistema)
 
     # ========================================
@@ -400,7 +413,9 @@ class ServicioConfiguracion:
         actualizados = 0
         for id_parametro, nuevo_valor in valores.items():
             try:
-                if self.actualizar_parametro(id_parametro, nuevo_valor, usuario_sistema):
+                if self.actualizar_parametro(
+                    id_parametro, nuevo_valor, usuario_sistema
+                ):
                     actualizados += 1
             except PermissionError:
                 # Ignorar parámetros no modificables
@@ -415,10 +430,14 @@ class ServicioConfiguracion:
     # GESTIÓN DE AUDITORÍA
     # ========================================
 
-    def listar_auditoria(self, limit: int = 100, offset: int = 0) -> List[AuditoriaCambio]:
+    def listar_auditoria(
+        self, limit: int = 100, offset: int = 0
+    ) -> List[AuditoriaCambio]:
         """Lista registros de auditoría."""
         return self.repo_auditoria.listar_todos(limit, offset)
 
-    def buscar_auditoria_por_tabla(self, tabla: str, limit: int = 100) -> List[AuditoriaCambio]:
+    def buscar_auditoria_por_tabla(
+        self, tabla: str, limit: int = 100
+    ) -> List[AuditoriaCambio]:
         """Busca auditoría filtrando por tabla."""
         return self.repo_auditoria.buscar_por_tabla(tabla, limit)

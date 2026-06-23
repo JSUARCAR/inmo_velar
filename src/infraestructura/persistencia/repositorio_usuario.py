@@ -63,7 +63,9 @@ class RepositorioUsuario:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(f"SELECT * FROM USUARIOS WHERE ID_USUARIO = {placeholder}", (id_usuario,))
+        cursor.execute(
+            f"SELECT * FROM USUARIOS WHERE ID_USUARIO = {placeholder}", (id_usuario,)
+        )
 
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
@@ -75,7 +77,8 @@ class RepositorioUsuario:
         placeholder = self.db.get_placeholder()
 
         cursor.execute(
-            f"SELECT * FROM USUARIOS WHERE NOMBRE_USUARIO = {placeholder}", (nombre_usuario,)
+            f"SELECT * FROM USUARIOS WHERE NOMBRE_USUARIO = {placeholder}",
+            (nombre_usuario,),
         )
 
         row = cursor.fetchone()
@@ -110,19 +113,22 @@ class RepositorioUsuario:
                     CREATED_BY
                 ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
             """
-            
+
             # ELITE: Uso de RETURNING para PostgreSQL según reglas del usuario
             if self.db.use_postgresql:
                 query += " RETURNING ID_USUARIO"
-                cursor.execute(query, (
-                    usuario.nombre_usuario,
-                    usuario.contrasena_hash,
-                    usuario.rol,
-                    usuario.estado_usuario,
-                    usuario.ultimo_acceso,
-                    usuario.fecha_creacion or datetime.now().isoformat(),
-                    usuario_sistema,
-                ))
+                cursor.execute(
+                    query,
+                    (
+                        usuario.nombre_usuario,
+                        usuario.contrasena_hash,
+                        usuario.rol,
+                        usuario.estado_usuario,
+                        usuario.ultimo_acceso,
+                        usuario.fecha_creacion or datetime.now().isoformat(),
+                        usuario_sistema,
+                    ),
+                )
                 row = cursor.fetchone()
                 # El cursor de DBManager ya wrappea dicts
                 if isinstance(row, dict):
@@ -130,16 +136,19 @@ class RepositorioUsuario:
                 else:
                     usuario.id_usuario = row[0]
             else:
-                # SQLite fallback
-                cursor.execute(query, (
-                    usuario.nombre_usuario,
-                    usuario.contrasena_hash,
-                    usuario.rol,
-                    1 if usuario.estado_usuario else 0,
-                    usuario.ultimo_acceso,
-                    usuario.fecha_creacion or datetime.now().isoformat(),
-                    usuario_sistema,
-                ))
+                # SQLite fallback: True/False también funcionan en SQLite
+                cursor.execute(
+                    query,
+                    (
+                        usuario.nombre_usuario,
+                        usuario.contrasena_hash,
+                        usuario.rol,
+                        bool(usuario.estado_usuario),
+                        usuario.ultimo_acceso,
+                        usuario.fecha_creacion or datetime.now().isoformat(),
+                        usuario_sistema,
+                    ),
+                )
                 usuario.id_usuario = cursor.lastrowid
 
             conn.commit()
@@ -171,7 +180,7 @@ class RepositorioUsuario:
                     usuario.nombre_usuario,
                     usuario.contrasena_hash,
                     usuario.rol,
-                    usuario.estado_usuario if self.db.use_postgresql else (1 if usuario.estado_usuario else 0),
+                    bool(usuario.estado_usuario),
                     usuario.ultimo_acceso,
                     datetime.now().isoformat(),
                     usuario_sistema,
