@@ -250,7 +250,7 @@ class RepositorioDashboard(IRepositorioDashboard):
     def _get_sql_vencimientos(self) -> str:
         if self.db.use_postgresql:
             return """
-                SELECT 
+                SELECT DISTINCT
                     'ARRENDAMIENTO' AS TIPO_CONTRATO,
                     ca.ID_CONTRATO_A AS ID_CONTRATO,
                     ca.ID_PROPIEDAD,
@@ -266,7 +266,7 @@ class RepositorioDashboard(IRepositorioDashboard):
             """
         else:
             return """
-                SELECT 
+                SELECT DISTINCT
                     'ARRENDAMIENTO' AS TIPO_CONTRATO,
                     ca.ID_CONTRATO_A AS ID_CONTRATO,
                     ca.ID_PROPIEDAD,

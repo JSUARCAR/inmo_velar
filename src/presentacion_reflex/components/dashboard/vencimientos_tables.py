@@ -25,7 +25,7 @@ def badge_dias(dias: int) -> rx.Component:
 
 
 def tabla_vencimientos_consolidados() -> rx.Component:
-    """Tabla consolidada de vencimientos (Mandato + Arrendamiento) con scroll vertical."""
+    """Tabla de Vencimientos Próximos (Exclusivo Arrendamiento) con scroll vertical."""
     return rx.card(
         rx.vstack(
             rx.hstack(
