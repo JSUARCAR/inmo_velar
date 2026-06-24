@@ -21,6 +21,21 @@ class IPCState(rx.State):
     is_editing: bool = False
     current_ipc_id: int = 0
 
+    # Delete Modal State
+    show_delete_dialog: bool = False
+    ipc_to_delete_id: int = 0
+    ipc_to_delete_anio: int = 0
+
+    def confirm_delete_ipc(self, ipc: IPC):
+        self.ipc_to_delete_id = ipc.id_ipc
+        self.ipc_to_delete_anio = ipc.anio
+        self.show_delete_dialog = True
+        
+    def cancel_delete(self):
+        self.show_delete_dialog = False
+        self.ipc_to_delete_id = 0
+        self.ipc_to_delete_anio = 0
+
     def set_show_modal(self, value: bool):
         self.show_modal = value
 
@@ -109,6 +124,38 @@ class IPCState(rx.State):
                 self.is_loading = False
 
         except Exception as e:
+            async with self:
+                self.error_message = str(e)
+                self.is_loading = False
+
+    @rx.event(background=True)
+    async def delete_ipc(self):
+        """Elimina el IPC seleccionado."""
+        async with self:
+            if not self.ipc_to_delete_id:
+                return
+            self.is_loading = True
+            self.error_message = ""
+            current_user = await self.get_state(AuthState)
+            usuario = current_user.user_nombre if current_user.is_authenticated else "sistema"
+            id_ipc = self.ipc_to_delete_id
+
+        try:
+            servicio = ServicioIPC(db_manager)
+            servicio.eliminar_ipc(id_ipc, usuario)
+            
+            # Recargar y cerrar
+            lista = servicio.listar_todos()
+
+            async with self:
+                self.ipcs = lista
+                self.show_delete_dialog = False
+                self.ipc_to_delete_id = 0
+                self.ipc_to_delete_anio = 0
+                self.is_loading = False
+
+        except Exception as e:
+            logger.error(f"Error eliminando IPC: {e}")
             async with self:
                 self.error_message = str(e)
                 self.is_loading = False
