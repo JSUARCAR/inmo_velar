@@ -3,7 +3,9 @@ from typing import List, Optional
 
 from src.dominio.entidades.ipc import IPC
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+    RepositorioIPCPostgres,
+)
 
 
 class ServicioIPC:
@@ -52,7 +54,21 @@ class ServicioIPC:
             raise ValueError("Registro IPC no encontrado")
 
         ipc.valor_ipc = valor
-        ipc.fecha_publicacion = datetime.now().strftime("%Y-%m-%d")  # Actualizamos fecha referencia
+        ipc.fecha_publicacion = datetime.now().strftime(
+            "%Y-%m-%d"
+        )  # Actualizamos fecha referencia
 
         self.repo.actualizar(ipc, usuario)
         return ipc
+
+    def eliminar_ipc(self, id_ipc: int, usuario: str) -> bool:
+        """
+        Elimina un registro de IPC (soft delete).
+        Valida que el registro exista antes de eliminar.
+        """
+        ipc = self.repo.obtener_por_id(id_ipc)
+        if not ipc:
+            raise ValueError("Registro IPC no encontrado")
+
+        exito = self.repo.eliminar(id_ipc)
+        return exito
