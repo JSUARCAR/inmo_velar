@@ -312,37 +312,79 @@ class PDFState(rx.State):
 
     @rx.event
     def generar_certificado_paz_y_salvo(
-        self, contrato_id: int, beneficiario_nombre: str
+        self, contrato_id: int, tipo_contrato: str
     ):
         """
-        Genera certificado de paz y salvo
-
+        Genera certificado de paz y salvo / Acta de Terminación
+        
         Args:
             contrato_id: ID del contrato
-            beneficiario_nombre: Nombre del beneficiario
+            tipo_contrato: 'Mandato' o 'Arrendamiento'
         """
         self.generating = True
 
         try:
+            if tipo_contrato == "Mandato":
+                detalle = self._get_datos_contrato_mandato(contrato_id)
+                propietario_nombre = detalle.get("mandante", {}).get("nombre", "N/A")
+                propietario_doc = detalle.get("mandante", {}).get("documento", "N/A")
+                
+                arrendatario_nombre = detalle.get("inmobiliaria", {}).get("nombre", "N/A")
+                arrendatario_doc = detalle.get("inmobiliaria", {}).get("nit", "N/A")
+                rep_legal = detalle.get("inmobiliaria", {}).get("representante", "Gerencia General")
+                rep_doc = detalle.get("inmobiliaria", {}).get("documento_rep", "N/A")
+                
+                beneficiario_nombre = propietario_nombre
+                beneficiario_doc = propietario_doc
+                
+                contenido = (
+                    f"Entre los suscritos, por una parte {arrendatario_nombre} con NIT {arrendatario_doc} "
+                    f"en calidad de Mandatario, y por la otra parte {propietario_nombre} identificado(a) con "
+                    f"C.C./NIT {propietario_doc} en calidad de Propietario (Mandante), se levanta la presente "
+                    f"Acta de Terminación y Paz y Salvo del contrato de mandato No. {contrato_id}.\\n\\n"
+                    f"Se certifica que el inmueble ubicado en {detalle.get('inmueble', {}).get('direccion', 'N/A')} "
+                    f"se ha restituido a satisfacción y que las partes declaran encontrarse a PAZ Y SALVO "
+                    f"por todo concepto derivado de la ejecución del mencionado contrato, sin que exista "
+                    f"deuda u obligación pendiente entre ellas."
+                )
+            else:
+                detalle = self._get_datos_contrato(contrato_id)
+                propietario_nombre = detalle.get("arrendador", {}).get("nombre", "N/A")
+                propietario_doc = detalle.get("arrendador", {}).get("documento", "N/A")
+                
+                arrendatario_nombre = detalle.get("arrendatario", {}).get("nombre", "N/A")
+                arrendatario_doc = detalle.get("arrendatario", {}).get("documento", "N/A")
+                
+                rep_legal = detalle.get("inmobiliaria", {}).get("representante", "Gerencia General")
+                rep_doc = detalle.get("inmobiliaria", {}).get("documento_rep", "N/A")
+                
+                beneficiario_nombre = arrendatario_nombre
+                beneficiario_doc = arrendatario_doc
+
+                contenido = (
+                    f"Entre los suscritos, por una parte {propietario_nombre} identificado(a) con "
+                    f"C.C./NIT {propietario_doc} en calidad de Propietario (o su representante), y por la otra parte "
+                    f"{arrendatario_nombre} identificado(a) con C.C./NIT {arrendatario_doc} en calidad de Arrendatario, "
+                    f"se levanta la presente Acta de Terminación y Paz y Salvo del contrato de arrendamiento No. {contrato_id}.\\n\\n"
+                    f"Se certifica que el inmueble ubicado en {detalle.get('inmueble', {}).get('direccion', 'N/A')} ha sido "
+                    f"restituido a satisfacción al Propietario, y que el Arrendatario se encuentra a PAZ Y SALVO "
+                    f"por concepto de canon de arrendamiento, servicios públicos, y demás obligaciones contractuales, "
+                    f"declarando las partes que no existen reclamos ni deudas pendientes."
+                )
+
             datos = {
-                "certificado_id": contrato_id * 1000,  # ID nico
+                "certificado_id": contrato_id * 1000,  # ID único
                 "tipo": "paz_y_salvo",
                 "fecha": datetime.now().strftime("%Y-%m-%d"),
                 "beneficiario": {
                     "nombre": beneficiario_nombre,
-                    "documento": "N/A",  # TODO: obtener de DB
+                    "documento": beneficiario_doc,
                 },
-                "contenido": (
-                    f"El seor(a) {beneficiario_nombre} se encuentra a PAZ Y SALVO "
-                    f"con la INMOBILIARIA VELAR SAS por concepto de arrendamiento "
-                    f"del inmueble objeto del contrato No. {contrato_id}.\n\n"
-                    f"No presenta deudas pendientes por canon de arrendamiento, "
-                    f"servicios pblicos, ni otras obligaciones contractuales."
-                ),
+                "contenido": contenido,
                 "firmante": {
-                    "nombre": "Gerencia General",
+                    "nombre": rep_legal,
                     "cargo": "Representante Legal",
-                    "documento": "NIT 900.123.456-7",
+                    "documento": rep_doc,
                 },
             }
 

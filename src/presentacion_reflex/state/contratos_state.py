@@ -955,14 +955,6 @@ class ContratosState(DocumentosStateMixin):
             usuario_sistema = "admin"
 
             if estado_actual == "ACTIVO":
-                detalle = servicio.obtener_detalle_contrato_ui(id_contrato, tipo)
-                beneficiario = (
-                    detalle.get("propietario", "Propietario")
-                    if tipo == "Mandato"
-                    else detalle.get("arrendatario", "Arrendatario")
-                    if detalle
-                    else "Interesado"
-                )
                 motivo = "Cancelación manual desde interfaz"
 
                 if tipo == "Mandato":
@@ -973,7 +965,7 @@ class ContratosState(DocumentosStateMixin):
                     )
 
                 yield PDFState.generar_certificado_paz_y_salvo(
-                    id_contrato, beneficiario
+                    id_contrato, tipo
                 )
                 yield ContratosState.load_contratos()
                 yield ContratosState.load_kpis()
