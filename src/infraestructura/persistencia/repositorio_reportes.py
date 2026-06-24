@@ -753,3 +753,89 @@ class RepositorioReportes:
         query += " ORDER BY l.FECHA_PAGO DESC NULLS LAST, cm.FECHA_INICIO_CONTRATO_M DESC, cm.ID_CONTRATO_M DESC"
 
         return self._ejecutar_query_paginada(query, params, page, limit)
+
+    def obtener_reporte_contratos_mandato(
+        self, busqueda: Optional[str] = None, page: int = 1, limit: int = 20
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        query = """
+            SELECT
+                cm.ID_CONTRATO_M AS "ID_CONTRATO_M",
+                cm.ESTADO_CONTRATO_M AS "ESTADO_CONTRATO_M",
+                p.DIRECCION_PROPIEDAD AS "DIRECCION_PROPIEDAD",
+                per_prop.NOMBRE_COMPLETO AS "NOMBRE_PROPIETARIO",
+                per_ase.NOMBRE_COMPLETO AS "NOMBRE_ASESOR",
+                cm.FECHA_INICIO_CONTRATO_M AS "FECHA_INICIO_CONTRATO_M",
+                cm.FECHA_FIN_CONTRATO_M AS "FECHA_FIN_CONTRATO_M",
+                cm.DURACION_CONTRATO_M AS "DURACION_CONTRATO_M",
+                cm.CANON_MANDATO AS "CANON_MANDATO",
+                cm.COMISION_PORCENTAJE_CONTRATO_M AS "COMISION_PORCENTAJE_CONTRATO_M",
+                cm.ID_PROPIEDAD AS "ID_PROPIEDAD",
+                cm.ID_PROPIETARIO AS "ID_PROPIETARIO",
+                cm.ID_ASESOR AS "ID_ASESOR"
+            FROM CONTRATOS_MANDATOS cm
+            INNER JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+            INNER JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
+            INNER JOIN PERSONAS per_prop ON prop.ID_PERSONA = per_prop.ID_PERSONA
+            INNER JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR
+            INNER JOIN PERSONAS per_ase ON a.ID_PERSONA = per_ase.ID_PERSONA
+        """
+        conditions = []
+        params = []
+        if busqueda:
+            conditions.append("""(
+                p.DIRECCION_PROPIEDAD ILIKE %s OR
+                per_prop.NOMBRE_COMPLETO ILIKE %s OR
+                per_ase.NOMBRE_COMPLETO ILIKE %s OR
+                CAST(cm.ID_CONTRATO_M AS TEXT) ILIKE %s
+            )""")
+            params.extend([f"%{busqueda}%"] * 4)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY cm.ID_CONTRATO_M DESC"
+        return self._ejecutar_query_paginada(query, params, page, limit)
+
+    def obtener_reporte_contratos_arrendamiento(
+        self, busqueda: Optional[str] = None, page: int = 1, limit: int = 20
+    ) -> Tuple[List[Dict[str, Any]], int]:
+        query = """
+            SELECT
+                ca.ID_CONTRATO_A AS "ID_CONTRATO_A",
+                ca.ESTADO_CONTRATO_A AS "ESTADO_CONTRATO_A",
+                p.DIRECCION_PROPIEDAD AS "DIRECCION_PROPIEDAD",
+                per_arr.NOMBRE_COMPLETO AS "NOMBRE_ARRENDATARIO",
+                COALESCE(arr.NOMBRE_HABITANTE, '') AS "NOMBRE_HABITANTE",
+                COALESCE(per_cod.NOMBRE_COMPLETO, 'N/A') AS "NOMBRE_CODEUDOR",
+                ca.FECHA_INICIO_CONTRATO_A AS "FECHA_INICIO_CONTRATO_A",
+                ca.FECHA_FIN_CONTRATO_A AS "FECHA_FIN_CONTRATO_A",
+                ca.DURACION_CONTRATO_A AS "DURACION_CONTRATO_A",
+                ca.CANON_ARRENDAMIENTO AS "CANON_ARRENDAMIENTO",
+                ca.DEPOSITO AS "DEPOSITO",
+                ca.ID_PROPIEDAD AS "ID_PROPIEDAD",
+                ca.ID_ARRENDATARIO AS "ID_ARRENDATARIO",
+                ca.ID_CODEUDOR AS "ID_CODEUDOR"
+            FROM CONTRATOS_ARRENDAMIENTOS ca
+            INNER JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+            INNER JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
+            INNER JOIN PERSONAS per_arr ON arr.ID_PERSONA = per_arr.ID_PERSONA
+            LEFT JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR
+            LEFT JOIN PERSONAS per_cod ON cod.ID_PERSONA = per_cod.ID_PERSONA
+        """
+        conditions = []
+        params = []
+        if busqueda:
+            conditions.append("""(
+                p.DIRECCION_PROPIEDAD ILIKE %s OR
+                per_arr.NOMBRE_COMPLETO ILIKE %s OR
+                arr.NOMBRE_HABITANTE ILIKE %s OR
+                per_cod.NOMBRE_COMPLETO ILIKE %s OR
+                CAST(ca.ID_CONTRATO_A AS TEXT) ILIKE %s
+            )""")
+            params.extend([f"%{busqueda}%"] * 5)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY ca.ID_CONTRATO_A DESC"
+        return self._ejecutar_query_paginada(query, params, page, limit)
