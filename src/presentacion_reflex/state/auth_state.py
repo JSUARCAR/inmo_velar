@@ -365,6 +365,15 @@ class AuthState(rx.State):
             )
         )
 
+    def backend_check_action(self, module_name: str, action: str) -> bool:
+        """
+        Verifica si el usuario actual tiene permiso para una acción en un módulo.
+        A diferencia de `check_action`, este método es para uso síncrono en backend.
+        """
+        if self.user_rol == "Administrador":
+            return True
+        return action in self.permissions_map.get(module_name, [])
+
     def _sync_permissions(self, rol: str = None):
         """Recarga los permisos del usuario desde la base de datos."""
         try:

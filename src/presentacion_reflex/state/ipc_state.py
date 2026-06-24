@@ -26,12 +26,18 @@ class IPCState(rx.State):
     ipc_to_delete_id: int = 0
     ipc_to_delete_anio: int = 0
 
-    def confirm_delete_ipc(self, ipc: IPC):
+    def confirm_delete_ipc(self, ipc: IPC) -> None:
+        """Abre el diálogo de confirmación para eliminar un IPC.
+
+        Args:
+            ipc (IPC): El objeto IPC a eliminar.
+        """
         self.ipc_to_delete_id = ipc.id_ipc
         self.ipc_to_delete_anio = ipc.anio
         self.show_delete_dialog = True
         
-    def cancel_delete(self):
+    def cancel_delete(self) -> None:
+        """Cancela la eliminación de un IPC y cierra el diálogo."""
         self.show_delete_dialog = False
         self.ipc_to_delete_id = 0
         self.ipc_to_delete_anio = 0
@@ -129,14 +135,26 @@ class IPCState(rx.State):
                 self.is_loading = False
 
     @rx.event(background=True)
-    async def delete_ipc(self):
-        """Elimina el IPC seleccionado."""
+    async def delete_ipc(self) -> None:
+        """Elimina el IPC seleccionado.
+
+        Realiza validación de permisos de RBAC (Rol-Based Access Control) antes
+        de proceder. Si ocurre un error de validación o no hay permisos,
+        se actualiza el estado de error de la interfaz.
+        """
         async with self:
             if not self.ipc_to_delete_id:
                 return
             self.is_loading = True
             self.error_message = ""
             current_user = await self.get_state(AuthState)
+            
+            if not current_user.backend_check_action("Incrementos", "ELIMINAR"):
+                self.error_message = "No tiene permisos para eliminar IPC"
+                self.is_loading = False
+                self.show_delete_dialog = False
+                return
+
             usuario = current_user.user_nombre if current_user.is_authenticated else "sistema"
             id_ipc = self.ipc_to_delete_id
 
@@ -154,8 +172,13 @@ class IPCState(rx.State):
                 self.ipc_to_delete_anio = 0
                 self.is_loading = False
 
-        except Exception as e:
-            logger.error(f"Error eliminando IPC: {e}")
+        except ValueError as ve:
+            logger.error(f"Error de validación eliminando IPC: {ve}")
             async with self:
-                self.error_message = str(e)
+                self.error_message = str(ve)
+                self.is_loading = False
+        except Exception as e:
+            logger.error(f"Error inesperado eliminando IPC: {e}")
+            async with self:
+                self.error_message = "Ocurrió un error inesperado al eliminar el IPC"
                 self.is_loading = False
