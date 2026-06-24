@@ -42,6 +42,12 @@ class IPCState(rx.State):
         self.ipc_to_delete_id = 0
         self.ipc_to_delete_anio = 0
 
+    def change_delete_dialog(self, is_open: bool) -> None:
+        self.show_delete_dialog = is_open
+        if not is_open:
+            self.ipc_to_delete_id = 0
+            self.ipc_to_delete_anio = 0
+
     def set_show_modal(self, value: bool):
         self.show_modal = value
 

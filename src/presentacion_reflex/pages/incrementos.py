@@ -97,11 +97,7 @@ def delete_ipc_dialog() -> rx.Component:
             ),
         ),
         open=IPCState.show_delete_dialog,
-        on_open_change=lambda val: rx.cond(
-            val, 
-            rx.do_nothing(), 
-            IPCState.cancel_delete()
-        ),
+        on_open_change=IPCState.change_delete_dialog,
     )
 
 
@@ -180,7 +176,7 @@ def incrementos_content() -> rx.Component:
         rx.divider(),
         rx.cond(
             IPCState.is_loading
-            & ~IPCState.show_modal,  # Show spinner if loading and modal not open (initial load)
+            & ~(IPCState.show_modal | IPCState.show_delete_dialog),  # Show spinner if loading and modal not open (initial load)
             rx.center(rx.spinner()),
             ipc_table(),
         ),

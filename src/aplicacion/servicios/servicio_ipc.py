@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from src.dominio.entidades.ipc import IPC
+from src.infraestructura.logging.logger import logger
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_ipc_postgres import (
     RepositorioIPCPostgres,
@@ -71,4 +72,6 @@ class ServicioIPC:
             raise ValueError("Registro IPC no encontrado")
 
         exito = self.repo.eliminar(id_ipc)
+        if exito:
+            logger.info(f"Usuario {usuario} eliminó lógicamente el IPC {id_ipc}")
         return exito
