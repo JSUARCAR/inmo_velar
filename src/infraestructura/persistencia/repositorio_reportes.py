@@ -757,6 +757,17 @@ class RepositorioReportes:
     def obtener_reporte_contratos_mandato(
         self, busqueda: Optional[str] = None, page: int = 1, limit: int = 20
     ) -> Tuple[List[Dict[str, Any]], int]:
+        """Obtiene el reporte consolidado de contratos de mandato.
+
+        Args:
+            busqueda: Texto libre para buscar por dirección de propiedad, nombre del propietario,
+                nombre del asesor o ID del contrato de mandato.
+            page: Página actual (1-indexed).
+            limit: Registros por página.
+
+        Returns:
+            Tupla con la lista de diccionarios que representan los registros y el total de registros.
+        """
         query = """
             SELECT
                 cm.ID_CONTRATO_M AS "ID_CONTRATO_M",
@@ -799,6 +810,17 @@ class RepositorioReportes:
     def obtener_reporte_contratos_arrendamiento(
         self, busqueda: Optional[str] = None, page: int = 1, limit: int = 20
     ) -> Tuple[List[Dict[str, Any]], int]:
+        """Obtiene el reporte consolidado de contratos de arrendamiento.
+
+        Args:
+            busqueda: Texto libre para buscar por dirección de propiedad, nombre del arrendatario,
+                nombre del habitante, nombre del codeudor o ID del contrato de arrendamiento.
+            page: Página actual (1-indexed).
+            limit: Registros por página.
+
+        Returns:
+            Tupla con la lista de diccionarios que representan los registros y el total de registros.
+        """
         query = """
             SELECT
                 ca.ID_CONTRATO_A AS "ID_CONTRATO_A",
