@@ -247,11 +247,24 @@ class ServicioReportes:
             headers = self._extraer_headers_seguro(data, HEADERS_REPORTE_CONSOLIDADO)
             return data, headers, total
 
+        # 6.5 Reportes Enriquecidos de Contratos
+        if report_id == "contratos_mandato":
+            data, total = self.repo_reportes.obtener_reporte_contratos_mandato(
+                busqueda=busqueda, page=pagina, limit=limite
+            )
+            headers = self._extraer_headers_seguro(data)
+            return data, headers, total
+
+        if report_id == "contratos_arrendamiento":
+            data, total = self.repo_reportes.obtener_reporte_contratos_arrendamiento(
+                busqueda=busqueda, page=pagina, limit=limite
+            )
+            headers = self._extraer_headers_seguro(data)
+            return data, headers, total
+
         # 7. Reportes Genéricos (Paginación Real en DB)
         table_map = {
             "personas_raw": "PERSONAS",
-            "contratos_mandato": "CONTRATOS_MANDATOS",
-            "contratos_arrendamiento": "CONTRATOS_ARRENDAMIENTOS",
             "proveedores": "PROVEEDORES",
             "desocupaciones": "DESOCUPACIONES",
             "seguros": "SEGUROS",
