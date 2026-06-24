@@ -64,6 +64,47 @@ def ipc_modal() -> rx.Component:
     )
 
 
+def delete_ipc_dialog() -> rx.Component:
+    return rx.alert_dialog.root(
+        rx.alert_dialog.content(
+            rx.alert_dialog.title("Confirmar Eliminación"),
+            rx.alert_dialog.description(
+                "¿Está seguro que desea eliminar el IPC del año ",
+                rx.text(IPCState.ipc_to_delete_anio, weight="bold"),
+                "? Esta acción inhabilitará el registro.",
+            ),
+            rx.flex(
+                rx.alert_dialog.cancel(
+                    rx.button(
+                        "Cancelar",
+                        variant="soft",
+                        color_scheme="gray",
+                        on_click=IPCState.cancel_delete,
+                    ),
+                ),
+                rx.alert_dialog.action(
+                    rx.button(
+                        "Eliminar",
+                        color_scheme="red",
+                        variant="solid",
+                        on_click=IPCState.delete_ipc,
+                        loading=IPCState.is_loading,
+                    ),
+                ),
+                spacing="3",
+                margin_top="16px",
+                justify="end",
+            ),
+        ),
+        open=IPCState.show_delete_dialog,
+        on_open_change=lambda val: rx.cond(
+            val, 
+            rx.do_nothing(), 
+            IPCState.cancel_delete()
+        ),
+    )
+
+
 def ipc_table() -> rx.Component:
     return rx.table.root(
         rx.table.header(
@@ -82,17 +123,33 @@ def ipc_table() -> rx.Component:
                     rx.table.cell(rx.text(ipc.valor_ipc, "%", weight="bold")),
                     rx.table.cell(ipc.fecha_publicacion),
                     rx.table.cell(
-                        rx.cond(
-                            AuthState.check_action("Incrementos", "EDITAR"),
-                            rx.tooltip(
-                                rx.button(
-                                    rx.icon("pencil", size=16),
-                                    size="1",
-                                    variant="ghost",
-                                    on_click=lambda: IPCState.open_edit_modal(ipc),
+                        rx.hstack(
+                            rx.cond(
+                                AuthState.check_action("Incrementos", "EDITAR"),
+                                rx.tooltip(
+                                    rx.button(
+                                        rx.icon("pencil", size=16),
+                                        size="1",
+                                        variant="ghost",
+                                        on_click=lambda: IPCState.open_edit_modal(ipc),
+                                    ),
+                                    content="Editar IPC",
                                 ),
-                                content="Editar IPC",
                             ),
+                            rx.cond(
+                                AuthState.check_action("Incrementos", "ELIMINAR"),
+                                rx.tooltip(
+                                    rx.button(
+                                        rx.icon("trash-2", size=16),
+                                        size="1",
+                                        variant="ghost",
+                                        color_scheme="red",
+                                        on_click=lambda: IPCState.confirm_delete_ipc(ipc),
+                                    ),
+                                    content="Eliminar IPC",
+                                ),
+                            ),
+                            spacing="2",
                         )
                     ),
                 ),
@@ -128,6 +185,7 @@ def incrementos_content() -> rx.Component:
             ipc_table(),
         ),
         ipc_modal(),
+        delete_ipc_dialog(),
         spacing="5",
         padding="6",
         width="100%",
