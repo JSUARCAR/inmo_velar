@@ -63,8 +63,9 @@ class CertificadoTemplate(BaseDocumentTemplate):
         Returns:
             Path del PDF generado
         """
-        # Habilitar QR de verificación
-        self.enable_verification_qr("certificado", data["certificado_id"])
+        # Habilitar QR de verificación (excepto para paz y salvo)
+        if data.get("tipo") != "paz_y_salvo":
+            self.enable_verification_qr("certificado", data["certificado_id"])
 
         # Configurar Header/Footer con Membrete
         self.set_header_footer(self._header_footer_with_features, self._header_footer_with_features)
@@ -159,7 +160,7 @@ class CertificadoTemplate(BaseDocumentTemplate):
         """Agrega información de validez"""
         # Fecha y lugar de expedición
         fecha = data.get("fecha", datetime.now().strftime("%Y-%m-%d"))
-        ciudad = data.get("ciudad", "Bogotá D.C.")
+        ciudad = data.get("ciudad", "Armenia, Quindío")
 
         self.add_paragraph(
             f"Se expide en <b>{ciudad}</b>, a los <b>{self._formatear_fecha(fecha)}</b>.",
@@ -183,20 +184,21 @@ class CertificadoTemplate(BaseDocumentTemplate):
         signatures = [
             (
                 "REPRESENTANTE LEGAL",
-                f"{firmante.get('nombre', 'N/A')}\n"
+                f"{firmante.get('nombre', 'Cristian Fernando Jamioy Fonseca')}\n"
                 f"{firmante.get('cargo', 'Gerente')}\n"
-                f"{firmante.get('documento', 'N/A')}",
+                f"{firmante.get('documento', '1.094.959.215')}",
             )
         ]
 
         table = AdvancedTable.create_signature_table(signatures)
         self.story.append(table)
 
-        # Nota de verificación
-        self.add_legal_footer_text(
-            "La autenticidad de este certificado puede ser verificada escaneando el código QR "
-            "o consultando en www.inmovelar.com/verificar"
-        )
+        # Nota de verificación (excepto para paz y salvo)
+        if data.get("tipo") != "paz_y_salvo":
+            self.add_legal_footer_text(
+                "La autenticidad de este certificado puede ser verificada escaneando el código QR "
+                "o consultando en www.inmovelar.com/verificar"
+            )
 
     def _formatear_fecha(self, fecha_str: str) -> str:
         """Formatea fecha en texto elegante"""
