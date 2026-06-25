@@ -276,6 +276,23 @@ def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
                             tooltip_content="Terminar",
                         ),
                     ),
+                    # Paz y Salvo (Para inactivos)
+                    rx.cond(
+                        contrato.estado_contrato != "ACTIVO",
+                        neuro_icon_action_button(
+                            "shield-check",
+                            on_click=lambda: PDFState.generar_certificado_paz_y_salvo(
+                                contrato.id_contrato,
+                                rx.cond(
+                                    contrato.tipo_contrato == "Mandato",
+                                    contrato.propietario_nombre,
+                                    contrato.arrendatario_nombre,
+                                )
+                            ),
+                            color_scheme="teal",
+                            tooltip_content="Generar Paz y Salvo",
+                        ),
+                    ),
                     spacing="2",
                     padding_y="1",
                 ),
