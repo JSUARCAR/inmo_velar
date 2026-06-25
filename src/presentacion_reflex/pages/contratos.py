@@ -17,7 +17,9 @@ from src.presentacion_reflex.components.tablas import header_cell_sortable
 from src.presentacion_reflex.components.contratos.tarjeta_contrato import (
     tarjeta_contrato,
 )
-from src.presentacion_reflex.components.contratos.badge_grupo_pago import badge_grupo_pago
+from src.presentacion_reflex.components.contratos.badge_grupo_pago import (
+    badge_grupo_pago,
+)
 
 from src.presentacion_reflex.components.contratos.formulario_contrato_mandato import (
     formulario_contrato_mandato,
@@ -103,6 +105,24 @@ def render_table_view() -> rx.Component:
                 tooltip_content="Generar Contrato Oficial",
                 on_click=lambda: PDFState.generar_contrato_oficial_elite(
                     c.id_contrato, c.tipo_contrato, False
+                ),
+            ),
+            # Paz y Salvo — solo si está inactivo
+            rx.cond(
+                c.estado_contrato != "ACTIVO",
+                neuro_icon_action_button(
+                    "shield-check",
+                    color_scheme="teal",
+                    size="1",
+                    tooltip_content="Generar Paz y Salvo",
+                    on_click=lambda: PDFState.generar_certificado_paz_y_salvo(
+                        c.id_contrato,
+                        rx.cond(
+                            c.tipo_contrato == "Mandato",
+                            c.propietario_nombre,
+                            c.arrendatario_nombre,
+                        ),
+                    ),
                 ),
             ),
             # Terminar
@@ -307,9 +327,7 @@ def render_table_view() -> rx.Component:
                     rx.table.cell(
                         rx.text("$", c.valor_canon.to_string(), weight="bold")
                     ),
-                    rx.table.cell(
-                        badge_grupo_pago(c.grupo_operativo, c.fecha_pago)
-                    ),
+                    rx.table.cell(badge_grupo_pago(c.grupo_operativo, c.fecha_pago)),
                     rx.table.cell(
                         rx.vstack(
                             rx.text("Inicia: ", c.fecha_inicio, size="1"),

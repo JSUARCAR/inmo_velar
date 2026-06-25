@@ -10,7 +10,9 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_divider,
     neuro_panel,
 )
-from src.presentacion_reflex.components.contratos.badge_grupo_pago import badge_grupo_pago
+from src.presentacion_reflex.components.contratos.badge_grupo_pago import (
+    badge_grupo_pago,
+)
 
 
 def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
@@ -287,7 +289,7 @@ def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
                                     contrato.tipo_contrato == "Mandato",
                                     contrato.propietario_nombre,
                                     contrato.arrendatario_nombre,
-                                )
+                                ),
                             ),
                             color_scheme="teal",
                             tooltip_content="Generar Paz y Salvo",
