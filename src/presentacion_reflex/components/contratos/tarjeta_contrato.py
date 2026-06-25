@@ -290,6 +290,12 @@ def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
                                     contrato.propietario_nombre,
                                     contrato.arrendatario_nombre,
                                 ),
+                                rx.cond(
+                                    contrato.tipo_contrato == "Mandato",
+                                    contrato.propietario_documento,
+                                    contrato.arrendatario_documento,
+                                ),
+                                contrato.propiedad_direccion,
                             ),
                             color_scheme="teal",
                             tooltip_content="Generar Paz y Salvo",

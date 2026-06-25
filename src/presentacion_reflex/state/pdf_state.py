@@ -26,7 +26,9 @@ logger.setLevel(logging.DEBUG)
 if not logger.handlers:
     handler = logging.StreamHandler()
     handler.setFormatter(
-        logging.Formatter("\n[SEARCH] [PDF-ELITE] %(asctime)s - %(levelname)s\n%(message)s\n")
+        logging.Formatter(
+            "\n[SEARCH] [PDF-ELITE] %(asctime)s - %(levelname)s\n%(message)s\n"
+        )
     )
     logger.addHandler(handler)
 
@@ -55,25 +57,22 @@ class PDFState(rx.State):
     last_pdf_path: str = ""
     error_message: str = ""
     success_message: str = ""
-    
+
     @rx.event
     def descargar_pdf_script(self, pdf_path: str):
         """Script del lado del cliente para descargar el PDF."""
-        import rxconfig
         from pathlib import Path
-        
+
         filename = Path(pdf_path).name
         # Fallback para desarrollo local si api_url no está configurado correctamente
         api_url = rxconfig.api_url if rxconfig.api_url else "http://127.0.0.1:8000"
-        
+
         logger.debug(f"[DOWNLOAD-SCRIPT] Iniciando para: {filename}")
         logger.debug(f"[DOWNLOAD-SCRIPT] API URL: {api_url}")
 
         # Preparar script de descarga
 
-
-        return rx.call_script(
-            f"""
+        return rx.call_script(f"""
             (async () => {{
                 const filename = "{filename}";
                 const apiUrl = "{api_url}";
@@ -108,8 +107,7 @@ class PDFState(rx.State):
                     alert("Error crítico al procesar la descarga del PDF. Revise la consola.");
                 }}
             }})();
-            """
-        )
+            """)
 
     # ========================================================================
     # EVENT HANDLERS - DOCUMENTOS LEGACY
@@ -205,7 +203,9 @@ class PDFState(rx.State):
             f"[PARAM] Parameters received: contrato_id={contrato_id}, es_borrador={es_borrador}"
         )
         logger.info(f"[TIME]  Timestamp: {datetime.now().isoformat()}")
-        logger.info("[LOC] Call stack entry point: generar_contrato_arrendamiento_elite")
+        logger.info(
+            "[LOC] Call stack entry point: generar_contrato_arrendamiento_elite"
+        )
         logger.info("[START] INICIANDO GENERACIN DE CONTRATO LITE")
         logger.info(f"Contrato ID: {contrato_id}")
         logger.info(f"Es Borrador: {es_borrador}")
@@ -236,9 +236,13 @@ class PDFState(rx.State):
             yield type(self).descargar_pdf_script(pdf_path)
 
         except ExpatError as e:
-            logger.error("[ERROR] [PDF_ENGINE] Falla en parsing XML. Motivo: ExpatError.")
+            logger.error(
+                "[ERROR] [PDF_ENGINE] Falla en parsing XML. Motivo: ExpatError."
+            )
             logger.error(f"Detalle: {str(e)}")
-            self.error_message = "Error en generación de PDF por caracteres especiales no válidos."
+            self.error_message = (
+                "Error en generación de PDF por caracteres especiales no válidos."
+            )
             yield rx.toast.error(self.error_message)
         except Exception as e:
             logger.error("[ERROR] ERROR EN GENERACIN DE CONTRATO")
@@ -312,7 +316,11 @@ class PDFState(rx.State):
 
     @rx.event
     def generar_certificado_paz_y_salvo(
-        self, contrato_id: int, beneficiario_nombre: str
+        self,
+        contrato_id: int,
+        beneficiario_nombre: str,
+        beneficiario_documento: str,
+        propiedad_direccion: str,
     ):
         """
         Genera certificado de paz y salvo
@@ -320,6 +328,8 @@ class PDFState(rx.State):
         Args:
             contrato_id: ID del contrato
             beneficiario_nombre: Nombre del beneficiario
+            beneficiario_documento: Documento de identidad del beneficiario
+            propiedad_direccion: Dirección de la propiedad
         """
         self.generating = True
 
@@ -330,14 +340,14 @@ class PDFState(rx.State):
                 "fecha": datetime.now().strftime("%Y-%m-%d"),
                 "beneficiario": {
                     "nombre": beneficiario_nombre,
-                    "documento": "N/A",  # TODO: obtener de DB
+                    "documento": beneficiario_documento,
                 },
                 "contenido": (
-                    f"El seor(a) {beneficiario_nombre} se encuentra a PAZ Y SALVO "
-                    f"con la INMOBILIARIA VELAR SAS por concepto de arrendamiento "
-                    f"del inmueble objeto del contrato No. {contrato_id}.\n\n"
+                    f"El señor(a) {beneficiario_nombre} identificado(a) con documento No. {beneficiario_documento} "
+                    f"se encuentra a PAZ Y SALVO con la INMOBILIARIA VELAR SAS en relación con el "
+                    f"inmueble ubicado en {propiedad_direccion} objeto del contrato No. {contrato_id}.\n\n"
                     f"No presenta deudas pendientes por canon de arrendamiento, "
-                    f"servicios pblicos, ni otras obligaciones contractuales."
+                    f"servicios públicos, ni otras obligaciones contractuales."
                 ),
                 "firmante": {
                     "nombre": "Gerencia General",
@@ -397,7 +407,9 @@ class PDFState(rx.State):
             logger.info("[OK] LIQUIDACIN PDF GENERADO EXITOSAMENTE")
             logger.info(f"Path: {pdf_path}")
 
-            yield rx.toast.success("Estado de cuenta generado exitosamente (Modo Élite)")
+            yield rx.toast.success(
+                "Estado de cuenta generado exitosamente (Modo Élite)"
+            )
 
             # ESTRATEGIA EXPERTA: API Backend Directa
             yield type(self).descargar_pdf_script(pdf_path)
@@ -557,15 +569,33 @@ class PDFState(rx.State):
         servicio_config = ServicioConfiguracion(db_manager)
         config_empresa = servicio_config.obtener_configuracion_empresa()
         logo_data = config_empresa.logo_base64 if config_empresa else None
-        
+
         # Datos Inmobiliaria (Arrendador) desde config o fallback
-        nombre_inmo = config_empresa.nombre_empresa if config_empresa else "INMOBILIARIA VELAR S.A.S."
+        nombre_inmo = (
+            config_empresa.nombre_empresa
+            if config_empresa
+            else "INMOBILIARIA VELAR S.A.S."
+        )
         nit_inmo = config_empresa.nit if config_empresa else "901703515-7"
-        direccion_inmo = config_empresa.direccion if config_empresa else "Calle 19 No. 16 – 44 Centro Comercial Manhatan Local 15"
+        direccion_inmo = (
+            config_empresa.direccion
+            if config_empresa
+            else "Calle 19 No. 16 – 44 Centro Comercial Manhatan Local 15"
+        )
         telefono_inmo = config_empresa.telefono if config_empresa else "3011281684"
-        email_inmo = config_empresa.email if config_empresa else "inmobiliariavelarsasaxm@gmail.com"
-        rep_legal = config_empresa.representante_legal if config_empresa else "CRISTIAN FERNANDO JAMIOY FONSECA"
-        rep_legal_cc = config_empresa.cedula_representante if config_empresa else "1.094.959.215"
+        email_inmo = (
+            config_empresa.email
+            if config_empresa
+            else "inmobiliariavelarsasaxm@gmail.com"
+        )
+        rep_legal = (
+            config_empresa.representante_legal
+            if config_empresa
+            else "CRISTIAN FERNANDO JAMIOY FONSECA"
+        )
+        rep_legal_cc = (
+            config_empresa.cedula_representante if config_empresa else "1.094.959.215"
+        )
 
         # Transformar el formato de la BD al formato esperado por el generador PDF
         return {
@@ -859,7 +889,7 @@ class PDFState(rx.State):
 
         # 3. Detalle (Fila única)
         prop_id = datos.get("id_contrato", 1)
-        
+
         # Calcular incidentes (agrupados)
         gastos_rep = datos.get("gastos_rep", 0) or 0
         otros_egr = datos.get("otros_egr", 0) or 0
@@ -884,9 +914,10 @@ class PDFState(rx.State):
             "total_ingresos": datos.get("total_ingresos", 0) or 0,
             "total_egresos": datos.get("total_egresos", 0) or 0,
             "honorarios": datos.get("comision_monto", 0) or 0,
-            "otros_descuentos": (datos.get("total_egresos", 0) or 0) - (datos.get("comision_monto", 0) or 0),
+            "otros_descuentos": (datos.get("total_egresos", 0) or 0)
+            - (datos.get("comision_monto", 0) or 0),
             "valor_neto": datos.get("neto_pagar", 0) or 0,
-            "cuenta_bancaria": f"{datos.get('banco', 'N/A')} - {datos.get('tipo_cuenta', '')} {datos.get('numero_cuenta', '')}"
+            "cuenta_bancaria": f"{datos.get('banco', 'N/A')} - {datos.get('tipo_cuenta', '')} {datos.get('numero_cuenta', '')}",
         }
 
         # 5. Formato Final
@@ -899,7 +930,7 @@ class PDFState(rx.State):
             "lista_propiedades": [{"id": prop_id, "direccion": inmueble["direccion"]}],
             "detalle_propiedades": [detalle],
             "resumen": resumen,
-            "observaciones": datos.get("observaciones"), # Propagación vital
+            "observaciones": datos.get("observaciones"),  # Propagación vital
             "empresa": datos.get("empresa", {}),
             "modo": "individual",
         }
@@ -1001,7 +1032,8 @@ class PDFState(rx.State):
             "total_ingresos": datos["total_ingresos"],
             "total_egresos": datos["total_egresos"],
             "honorarios": datos["comision_monto"],
-            "otros_descuentos": (datos["total_egresos"] or 0) - (datos["comision_monto"] or 0),
+            "otros_descuentos": (datos["total_egresos"] or 0)
+            - (datos["comision_monto"] or 0),
             "valor_neto": datos["neto_pagar"],
             "cuenta_bancaria": f"{datos['banco']} - {datos['tipo_cuenta']} {datos['cuenta_bancaria']}",
         }
@@ -1018,7 +1050,9 @@ class PDFState(rx.State):
             "detalle_propiedades": detalle_propiedades,
             "resumen": resumen,
             "empresa": datos.get("empresa", {}),
-            "observaciones": datos.get("observaciones"), # Usar la nueva clave unificada
+            "observaciones": datos.get(
+                "observaciones"
+            ),  # Usar la nueva clave unificada
             "notas": [
                 f"Estado de cuenta consolidado - {datos['cantidad_propiedades']} propiedades",
             ],

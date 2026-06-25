@@ -122,6 +122,12 @@ def render_table_view() -> rx.Component:
                             c.propietario_nombre,
                             c.arrendatario_nombre,
                         ),
+                        rx.cond(
+                            c.tipo_contrato == "Mandato",
+                            c.propietario_documento,
+                            c.arrendatario_documento,
+                        ),
+                        c.propiedad_direccion,
                     ),
                 ),
             ),
