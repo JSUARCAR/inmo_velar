@@ -22,7 +22,11 @@ def add_permissions():
         {
             "accion": "PAGAR",
             "descripcion": "Registrar pago de liquidaciones",
-        }
+        },
+        {
+            "accion": "REVERSAR_PAGO",
+            "descripcion": "Reversar pago de liquidaciones pagadas",
+        },
     ]
     
     target_modulo = "Liquidaciones"

@@ -1,37 +1,16 @@
-# Task 2 Report: Adapt E2E Tests for the New Combobox
+# Task 2 Report
 
 ## What was implemented
-Adapted the existing `searchable_select` end-to-end test in `tests/e2e/test_searchable_select.py` to correctly test the new Absolute Dropdown architecture.
-- Replaced the button trigger logic with an input element trigger (`input[placeholder*='Seleccionar']`).
-- Removed assertions for the "Seleccionar..." button visibility.
-- Verified that focus is directly given to the input element and we can type into it.
+Added the "Generar Paz y Salvo" button in `_tabla_acciones` within `src/presentacion_reflex/pages/contratos.py`. The button is conditionally rendered only when the contract status is not "ACTIVO" (`c.estado_contrato != "ACTIVO"`). It calls `PDFState.generar_certificado_paz_y_salvo` when clicked.
 
 ## What was tested and test results
-- Ran `pytest tests/e2e/test_searchable_select.py` to execute the modified end-to-end test.
-- The test failed with `ERR_CONNECTION_REFUSED` because the Reflex development server was not running locally on port 3000.
-- Since starting and populating the Reflex backend is out of the immediate scope (and E2E test running wasn't strictly required), I have provided the structural layout updates needed.
+- `python scripts/check_syntax.py src/presentacion_reflex/pages/contratos.py`: PASS
+- `ruff check src/presentacion_reflex/pages/contratos.py src/presentacion_reflex/components/contratos/tarjeta_contrato.py`: PASS (All checks passed!)
+- `black src/presentacion_reflex/pages/contratos.py src/presentacion_reflex/components/contratos/tarjeta_contrato.py`: PASS (2 files reformatted)
 
 ## Files changed
-- `tests/e2e/test_searchable_select.py`
+- `src/presentacion_reflex/pages/contratos.py`
+- `src/presentacion_reflex/components/contratos/tarjeta_contrato.py` (Reformatted by black)
 
 ## Self-review findings
-- The test accurately reflects the new UI structure provided in the Task 2 brief.
-- Comments were retained in Spanish following the global constraints.
-
-## Concerns
-- Tests could not be validated successfully against a running server due to the server not being up in the background environment.
-
-## Fixes (Human Controller Instructions)
-
-### Changes Made
-- Updated the fragile locator in `tests/e2e/test_searchable_select.py` to `page.locator("div[style*='z-index']").filter(has_text="Prueba E2E").first` for better semantic selection.
-- Added an explicit `expect(dropdown_item).to_be_visible()` assertion to check if the combobox dropdown is correctly displayed.
-- Added an explicit `expect(dropdown_item).not_to_be_visible()` assertion after the blur event (clicking outside) to verify that the dropdown successfully closes.
-
-### Test Execution Results
-Execution of the E2E test `pytest tests/e2e/test_searchable_select.py` failed due to the local server at `http://localhost:3000` not running (`ERR_CONNECTION_REFUSED`). However, the explicit test assertions and more robust locators have been successfully implemented according to the reviewer's instructions.
-
-### Fixes for Task Reviewer Feedback
-- Added import `from src.presentacion_reflex import styles` to `tests/e2e/test_searchable_select.py`.
-- Replaced the generic `z-index` locator with the project's global constant `styles.Z_POPOVER` (`f"div[style*='z-index: {styles.Z_POPOVER}']"`).
-- Removed `docs/superpowers/plans/task-2-report.md` from the git index and amended the previous commit to keep the repository history clean.
+The integration exactly follows the brief requirements and syntax specifications. The `black` formatter adjusted the indentation appropriately across the components modified in tasks 1 and 2.

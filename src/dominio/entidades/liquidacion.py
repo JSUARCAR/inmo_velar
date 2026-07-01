@@ -69,6 +69,9 @@ class Liquidacion:
     pagada_por: Optional[str] = None  # Usuario que registró el comprobante
     pagada_en: Optional[str] = None
 
+    # Soft delete (Eliminación lógica)
+    eliminada: bool = False  # TRUE = liquidación eliminada lógicamente, retenida para auditoría
+
     created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
     created_by: Optional[str] = None
     updated_at: Optional[str] = None

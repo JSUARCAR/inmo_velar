@@ -91,7 +91,19 @@ class LiquidacionesState(DocumentosStateMixin):
     show_bulk_create_modal: bool = False  # Modal para generar masivas
     show_cancel_modal: bool = False  # Modal para cancelar individual
     show_reverse_confirm: bool = False  # Confirmación para reversar
+    show_reverse_pago_confirm: bool = False  # Confirmación para reversar pago
+    reverse_pago_liquidacion_id: int = 0  # ID de liquidación para reversar pago
+    reverse_pago_motivo: str = ""  # Motivo de reversión de pago
     show_export_modal: bool = False  # Modal para seleccionar periodo de exportación
+    show_delete_modal: bool = False  # Modal para eliminar liquidación
+    liquidacion_id_for_delete: int = 0  # ID de liquidación a eliminar
+    delete_confirmed: bool = False  # Checkbox de confirmación de eliminación
+    
+    # Eliminación agrupada
+    show_group_delete_modal: bool = False  # Modal para eliminar grupo de liquidaciones
+    group_delete_id_propietario: int = 0  # ID del propietario del grupo
+    group_delete_periodo: str = ""  # Período del grupo a eliminar
+    group_delete_confirmed: bool = False  # Checkbox de confirmación de eliminación agrupada
 
     # Exportación
     exportando_periodo: bool = False
@@ -1279,6 +1291,118 @@ class LiquidacionesState(DocumentosStateMixin):
     def set_cancel_motivo(self, value: str):
         self.cancel_motivo = value
 
+    # =========================================================================
+    # REVERSAR PAGO DE LIQUIDACIONES (Pagada → Aprobada)
+    # =========================================================================
+
+    def open_reverse_pago_confirm(self, id_liquidacion: int):
+        """Abre modal de confirmación para reversar pago de liquidación."""
+        self.reverse_pago_liquidacion_id = id_liquidacion
+        self.reverse_pago_motivo = ""
+        self.error_message = ""
+        self.show_reverse_pago_confirm = True
+
+    def close_reverse_pago_confirm(self):
+        """Cierra modal de confirmación de reversión de pago."""
+        self.show_reverse_pago_confirm = False
+        self.reverse_pago_liquidacion_id = 0
+        self.reverse_pago_motivo = ""
+        self.error_message = ""
+
+    def set_reverse_pago_motivo(self, value: str):
+        """Actualiza el motivo de reversión de pago."""
+        self.reverse_pago_motivo = value
+
+    @rx.event(background=True)
+    async def confirmar_reversar_pago(self):
+        """Ejecuta la reversión de pago de una liquidación individual."""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+
+        try:
+            if not self.reverse_pago_motivo or len(self.reverse_pago_motivo.strip()) < 10:
+                async with self:
+                    self.error_message = "El motivo debe tener al menos 10 caracteres"
+                    self.is_loading = False
+                yield rx.toast.warning(
+                    "El motivo es muy corto", position="bottom-right"
+                )
+                return
+
+            servicio = ServicioFinanciero(db_manager)
+            result = servicio.reversar_pago_liquidacion(
+                self.reverse_pago_liquidacion_id, "admin", self.reverse_pago_motivo
+            )
+
+            async with self:
+                self.show_reverse_pago_confirm = False
+                self.show_detail_modal = False
+                self.reverse_pago_liquidacion_id = 0
+                self.reverse_pago_motivo = ""
+                self.is_loading = False
+
+            yield LiquidacionesState.load_liquidaciones()
+
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al reversar pago: {str(e)}"
+                self.is_loading = False
+            yield rx.toast.error(self.error_message, position="bottom-right")
+            return
+
+        yield rx.toast.success(
+            "Pago reversado exitosamente", position="bottom-right"
+        )
+
+    @rx.event(background=True)
+    async def confirmar_reversar_pago_masivo(self):
+        """Ejecuta la reversión de pagos de liquidaciones de un propietario para un período."""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+
+        try:
+            if not self.reverse_pago_motivo or len(self.reverse_pago_motivo.strip()) < 10:
+                async with self:
+                    self.error_message = "El motivo debe tener al menos 10 caracteres"
+                    self.is_loading = False
+                yield rx.toast.warning(
+                    "El motivo es muy corto", position="bottom-right"
+                )
+                return
+
+            servicio = ServicioFinanciero(db_manager)
+            result = servicio.reversar_pago_propietario(
+                self.form_data.get("id_propietario"),
+                self.form_data.get("periodo"),
+                "admin",
+                self.reverse_pago_motivo,
+            )
+
+            async with self:
+                self.show_reverse_pago_confirm = False
+                self.reverse_pago_motivo = ""
+                self.is_loading = False
+
+            yield LiquidacionesState.load_liquidaciones()
+
+            total = result.get("total_reversadas", 0)
+            if total > 0:
+                yield rx.toast.success(
+                    f"Se reversaron {total} pagos exitosamente", position="bottom-right"
+                )
+            else:
+                yield rx.toast.info(
+                    "No se encontraron pagos para reversar", position="bottom-right"
+                )
+
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al reversar pagos: {str(e)}"
+                self.is_loading = False
+            yield rx.toast.error(self.error_message, position="bottom-right")
+
     def open_cancel_modal(self, id_liquidacion: int):
         """Abre modal para cancelar liquidación"""
         self.liquidacion_id_for_action = id_liquidacion
@@ -1333,6 +1457,230 @@ class LiquidacionesState(DocumentosStateMixin):
         yield rx.toast.success(
             "Liquidación cancelada correctamente", position="bottom-right"
         )
+
+    # =========================================================================
+    # ELIMINAR LIQUIDACIONES (Soft Delete)
+    # =========================================================================
+
+    def open_delete_modal(self, id_liquidacion: int):
+        """Abre modal para eliminar liquidación"""
+        self.liquidacion_id_for_delete = id_liquidacion
+        self.delete_confirmed = False
+        self.error_message = ""
+        
+        # Buscar la liquidación en la lista actual para mostrar datos en el diálogo
+        for liq in self.liquidaciones:
+            if liq.get("id") == id_liquidacion:
+                self.liquidacion_actual = liq
+                break
+        
+        self.show_delete_modal = True
+
+    def close_delete_modal(self):
+        """Cierra modal de eliminación"""
+        self.show_delete_modal = False
+        self.liquidacion_id_for_delete = 0
+        self.delete_confirmed = False
+        self.error_message = ""
+
+    def set_delete_confirmed(self, value: bool):
+        """Actualiza el estado del checkbox de confirmación"""
+        self.delete_confirmed = value
+
+    # =========================================================================
+    # ELIMINACIÓN AGRUPADA
+    # =========================================================================
+
+    def open_group_delete_modal(self, id_propietario: int, periodo: str):
+        """Abre modal para eliminar grupo de liquidaciones"""
+        self.group_delete_id_propietario = id_propietario
+        self.group_delete_periodo = periodo
+        self.group_delete_confirmed = False
+        self.error_message = ""
+        
+        # Buscar datos del propietario para mostrar en el diálogo
+        for liq in self.liquidaciones:
+            if liq.get("id_propietario") == id_propietario and liq.get("periodo") == periodo:
+                self.liquidacion_actual = liq
+                break
+        
+        self.show_group_delete_modal = True
+
+    def close_group_delete_modal(self):
+        """Cierra modal de eliminación agrupada"""
+        self.show_group_delete_modal = False
+        self.group_delete_id_propietario = 0
+        self.group_delete_periodo = ""
+        self.group_delete_confirmed = False
+        self.error_message = ""
+
+    def set_group_delete_confirmed(self, value: bool):
+        """Actualiza el estado del checkbox de confirmación de eliminación agrupada"""
+        self.group_delete_confirmed = value
+
+    @rx.event(background=True)
+    async def confirmar_eliminar_agrupadas(self):
+        """Ejecuta eliminación de liquidaciones agrupadas"""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+
+        try:
+            if not self.group_delete_confirmed:
+                async with self:
+                    self.error_message = "Debe confirmar la eliminación marcando el checkbox"
+                    self.is_loading = False
+                return
+
+            # Llamar al método de eliminación agrupada
+            async for _ in LiquidacionesState.eliminar_liquidaciones_agrupadas(
+                self.group_delete_id_propietario, self.group_delete_periodo
+            ):
+                pass
+
+            async with self:
+                self.show_group_delete_modal = False
+                self.group_delete_id_propietario = 0
+                self.group_delete_periodo = ""
+                self.group_delete_confirmed = False
+                self.is_loading = False
+
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al eliminar liquidaciones agrupadas: {str(e)}"
+                self.is_loading = False
+            yield rx.toast.error(self.error_message, position="bottom-right")
+
+    @rx.event(background=True)
+    async def confirmar_eliminar(self):
+        """Ejecuta eliminación de liquidación individual"""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+
+        try:
+            if not self.delete_confirmed:
+                async with self:
+                    self.error_message = "Debe confirmar la eliminación marcando el checkbox"
+                    self.is_loading = False
+                return
+
+            servicio = ServicioFinanciero(db_manager)
+            usuario_sistema = "admin"  # TODO: Obtener de AuthState
+
+            result = servicio.eliminar_liquidacion(
+                self.liquidacion_id_for_delete, usuario_sistema
+            )
+
+            async with self:
+                self.show_delete_modal = False
+                self.show_detail_modal = False
+                self.liquidacion_id_for_delete = 0
+                self.delete_confirmed = False
+                self.is_loading = False
+
+            # Recargar lista
+            yield LiquidacionesState.load_liquidaciones()
+
+            if result.get("exitosa"):
+                yield rx.toast.success(
+                    result.get("mensaje", "Liquidación eliminada correctamente"),
+                    position="bottom-right",
+                )
+            else:
+                yield rx.toast.info(
+                    result.get("mensaje", "Operación completada"),
+                    position="bottom-right",
+                )
+
+        except ValueError as e:
+            async with self:
+                self.error_message = str(e)
+                self.is_loading = False
+            yield rx.toast.error(str(e), position="bottom-right")
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al eliminar: {str(e)}"
+                self.is_loading = False
+            yield rx.toast.error(self.error_message, position="bottom-right")
+
+    # =========================================================================
+    # ELIMINACIÓN MASIVA (VISTA AGRUPADA)
+    # =========================================================================
+
+    @rx.event(background=True)
+    async def eliminar_liquidaciones_agrupadas(self, id_propietario: int, periodo: str):
+        """
+        Elimina todas las liquidaciones no pagadas de un propietario para un período.
+        Muestra diálogo de confirmación antes de ejecutar.
+        """
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+
+        try:
+            servicio = ServicioFinanciero(db_manager)
+            usuario_sistema = "admin"  # TODO: Obtener de AuthState
+
+            # Obtener liquidaciones del grupo
+            liquidaciones_grupo = servicio.repo_liquidacion.listar_por_propietario_y_periodo(
+                id_propietario, periodo
+            )
+
+            if not liquidaciones_grupo:
+                async with self:
+                    self.is_loading = False
+                yield rx.toast.info("No se encontraron liquidaciones para eliminar", position="bottom-right")
+                return
+
+            # Filtrar solo las que no están pagadas
+            liquidaciones_eliminables = [
+                liq for liq in liquidaciones_grupo
+                if liq.estado_liquidacion != "Pagada" and not liq.eliminada
+            ]
+
+            if not liquidaciones_eliminables:
+                async with self:
+                    self.is_loading = False
+                yield rx.toast.info(
+                    "No hay liquidaciones para eliminar (todas están pagadas o ya fueron eliminadas)",
+                    position="bottom-right"
+                )
+                return
+
+            # Eliminar cada liquidación
+            eliminadas = 0
+            errores = []
+            for liq in liquidaciones_eliminables:
+                try:
+                    servicio.eliminar_liquidacion(liq.id_liquidacion, usuario_sistema)
+                    eliminadas += 1
+                except Exception as e:
+                    errores.append(f"ID {liq.id_liquidacion}: {str(e)}")
+
+            async with self:
+                self.is_loading = False
+
+            # Recargar lista
+            yield LiquidacionesState.load_liquidaciones()
+
+            if eliminadas > 0:
+                yield rx.toast.success(
+                    f"Se eliminaron {eliminadas} liquidaciones del período {periodo}",
+                    position="bottom-right"
+                )
+
+            if errores:
+                yield rx.toast.warning(
+                    f"Se omitieron {len(errores)} liquidaciones (posiblemente pagadas)",
+                    position="bottom-right"
+                )
+
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al eliminar liquidaciones agrupadas: {str(e)}"
+                self.is_loading = False
+            yield rx.toast.error(self.error_message, position="bottom-right")
 
     # =========================================================================
     # EXPORTACIÓN MASIVA

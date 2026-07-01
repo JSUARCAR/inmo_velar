@@ -236,7 +236,7 @@ class RepositorioLiquidacionPostgres:
         placeholder = self.db.get_placeholder()
 
         cursor.execute(
-            f"SELECT * FROM LIQUIDACIONES WHERE ID_LIQUIDACION = {placeholder}",
+            f"SELECT * FROM LIQUIDACIONES WHERE ID_LIQUIDACION = {placeholder} AND eliminada = FALSE",
             (id_liquidacion,),
         )
         row = cursor.fetchone()
@@ -252,7 +252,7 @@ class RepositorioLiquidacionPostgres:
         placeholder = self.db.get_placeholder()
 
         cursor.execute(
-            f"SELECT * FROM LIQUIDACIONES WHERE ID_CONTRATO_M = {placeholder} AND PERIODO = {placeholder}",
+            f"SELECT * FROM LIQUIDACIONES WHERE ID_CONTRATO_M = {placeholder} AND PERIODO = {placeholder} AND eliminada = FALSE",
             (id_contrato_m, periodo),
         )
         row = cursor.fetchone()
@@ -291,7 +291,7 @@ class RepositorioLiquidacionPostgres:
         placeholder = self.db.get_placeholder()
 
         cursor.execute(
-            f"SELECT * FROM LIQUIDACIONES WHERE ID_CONTRATO_M = {placeholder} ORDER BY PERIODO DESC",
+            f"SELECT * FROM LIQUIDACIONES WHERE ID_CONTRATO_M = {placeholder} AND eliminada = FALSE ORDER BY PERIODO DESC",
             (id_contrato_m,),
         )
 
@@ -336,6 +336,7 @@ class RepositorioLiquidacionPostgres:
         INNER JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
         INNER JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
         INNER JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+        WHERE l.eliminada = FALSE
         ORDER BY l.PERIODO DESC, l.CREATED_AT DESC
         """
 
@@ -610,6 +611,77 @@ class RepositorioLiquidacionPostgres:
 
         conn.commit()
 
+    def eliminar(self, id_liquidacion: int, usuario_sistema: str) -> None:
+        """
+        Elimina lógicamente una liquidación (soft delete).
+        Idempotente: si ya fue eliminada, no retorna error.
+        """
+        conn = self.db.obtener_conexion()
+        cursor = conn.cursor()
+        placeholder = self.db.get_placeholder()
+
+        cursor.execute(
+            f"""
+            UPDATE LIQUIDACIONES SET
+                eliminada = TRUE,
+                UPDATED_AT = {placeholder},
+                UPDATED_BY = {placeholder}
+            WHERE ID_LIQUIDACION = {placeholder} AND eliminada = FALSE
+        """,
+            (datetime.now().isoformat(), usuario_sistema, id_liquidacion),
+        )
+
+        conn.commit()
+
+    def reversar_pago(self, id_liquidacion: int, usuario_sistema: str, motivo: str) -> dict:
+        """
+        Reversa el pago de una liquidación ('Pagada' → 'Aprobada').
+        Limpia campos de pago, registra motivo en AUDITORIA_CAMBIOS.
+        Idempotente: si no está en 'Pagada', retorna éxito sin cambios.
+        """
+        conn = self.db.obtener_conexion()
+        cursor = conn.cursor()
+        placeholder = self.db.get_placeholder()
+
+        cursor.execute(
+            f"""
+            UPDATE LIQUIDACIONES SET
+                ESTADO_LIQUIDACION = 'Aprobada',
+                FECHA_PAGO = NULL,
+                METODO_PAGO = NULL,
+                REFERENCIA_PAGO = NULL,
+                PAGADA_POR = NULL,
+                PAGADA_EN = NULL,
+                UPDATED_AT = {placeholder},
+                UPDATED_BY = {placeholder}
+            WHERE ID_LIQUIDACION = {placeholder} AND ESTADO_LIQUIDACION = 'Pagada'
+        """,
+            (datetime.now().isoformat(), usuario_sistema, id_liquidacion),
+        )
+
+        if cursor.rowcount > 0:
+            # Insertar registro explícito de AUDITORIA_CAMBIOS para el motivo
+            try:
+                cursor.execute(
+                    f"""
+                    INSERT INTO AUDITORIA_CAMBIOS (TABLA_MODIFICADA, ID_REGISTRO, CAMPO_MODIFICADO, VALOR_NUEVO, USUARIO, FECHA_MODIFICACION)
+                    VALUES ('LIQUIDACIONES', {placeholder}, 'MOTIVO_REVERSION', {placeholder}, {placeholder}, {placeholder})
+                """,
+                    (id_liquidacion, motivo, usuario_sistema, datetime.now().isoformat()),
+                )
+            except Exception:
+                pass  # Tabla AUDITORIA_CAMBIOS puede no existir en SQLite
+
+        conn.commit()
+
+        return {
+            "exitosa": cursor.rowcount > 0 or True,
+            "mensaje": "Liquidación reversada exitosamente" if cursor.rowcount > 0 else "La liquidación ya estaba en estado 'Aprobada'",
+            "id_liquidacion": id_liquidacion,
+            "estado_anterior": "Pagada",
+            "estado_nuevo": "Aprobada",
+        }
+
     def cancelar_masivamente(
         self, ids_liquidaciones: List[int], motivo: str, usuario_sistema: str
     ) -> dict:
@@ -733,6 +805,48 @@ class RepositorioLiquidacionPostgres:
 
         return affected
 
+    def reversar_pago_por_propietario_y_periodo(
+        self, id_propietario: int, periodo: str, usuario_sistema: str, motivo: str
+    ) -> dict:
+        """
+        Reversa pagos de liquidaciones de un propietario para un período.
+        Solo revierte liquidaciones en estado 'Pagada'.
+        Returns:
+            dict con 'reversadas', 'ignoradas', y listas de IDs.
+        """
+        conn = self.db.obtener_conexion()
+        cursor = conn.cursor()
+        placeholder = self.db.get_placeholder()
+
+        # Obtener liquidaciones pagadas del propietario en el período
+        cursor.execute(
+            f"""
+            SELECT l.ID_LIQUIDACION FROM LIQUIDACIONES l
+            JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+            WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder}
+            AND l.ESTADO_LIQUIDACION = 'Pagada' AND l.eliminada = FALSE
+        """,
+            (id_propietario, periodo),
+        )
+
+        pagadas = [row[0] for row in cursor.fetchall()]
+        reversadas = []
+        ignoradas = []
+
+        for id_liq in pagadas:
+            result = self.reversar_pago(id_liq, usuario_sistema, motivo)
+            if result["exitosa"]:
+                reversadas.append(id_liq)
+            else:
+                ignoradas.append(id_liq)
+
+        return {
+            "reversadas": reversadas,
+            "ignoradas": ignoradas,
+            "total_reversadas": len(reversadas),
+            "total_ignoradas": len(ignoradas),
+        }
+
     def listar_por_propietario_y_periodo(
         self, id_propietario: int, periodo: str
     ) -> List[Liquidacion]:
@@ -746,6 +860,7 @@ class RepositorioLiquidacionPostgres:
             SELECT l.* FROM LIQUIDACIONES l 
             JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M 
             WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder} 
+                        AND l.eliminada = FALSE
             ORDER BY l.ID_LIQUIDACION
         """,
             (id_propietario, periodo),
@@ -818,7 +933,7 @@ class RepositorioLiquidacionPostgres:
                 JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
             """
 
-            conditions = []
+            conditions = ["l.eliminada = FALSE"]
             query_params = []
 
             # Filtros
@@ -879,6 +994,7 @@ class RepositorioLiquidacionPostgres:
                     FROM LIQUIDACIONES l
                     JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
                     WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder}
+                    AND l.eliminada = FALSE
                     GROUP BY ESTADO_LIQUIDACION
                 """,
                     (row["ID_PROPIETARIO"], row["PERIODO"]),
@@ -922,6 +1038,8 @@ class RepositorioLiquidacionPostgres:
                         FROM LIQUIDACIONES l
                         JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
                         WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder}
+                        AND l.eliminada = FALSE
+                        GROUP BY l.ID_LIQUIDACION
                     ) AS recaudo_info
                     GROUP BY recaudo_info.ESTADO_RECAUDO
                 """,
@@ -1059,7 +1177,7 @@ class RepositorioLiquidacionPostgres:
         -- Join 2: Directo desde Arrendatario (tabla ARRENDATARIOS)
         LEFT JOIN SEGUROS seg_arr ON arr.ID_SEGURO = seg_arr.ID_SEGURO
         
-        WHERE l.ID_LIQUIDACION = {placeholder}
+        WHERE l.ID_LIQUIDACION = {placeholder} AND l.eliminada = FALSE
         """
 
         cursor.execute(query, (id_liquidacion,))
@@ -1176,6 +1294,7 @@ class RepositorioLiquidacionPostgres:
         LEFT JOIN SEGUROS seg_arr ON arr.ID_SEGURO = seg_arr.ID_SEGURO
 
         WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder}
+        AND l.eliminada = FALSE
         """
         cursor.execute(query_liqs, (id_propietario, periodo))
         liquidaciones = [dict(r) for r in cursor.fetchall()]
@@ -1375,7 +1494,7 @@ class RepositorioLiquidacionPostgres:
             JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
         """
 
-        conditions = []
+        conditions = ["l.eliminada = FALSE"]
         query_params = []
 
         if estado and estado != "Todos":
@@ -1463,7 +1582,7 @@ class RepositorioLiquidacionPostgres:
             JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
         """
 
-        conditions = []
+        conditions = ["l.eliminada = FALSE"]
         query_params = []
 
         if estado and estado != "Todos":

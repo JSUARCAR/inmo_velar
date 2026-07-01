@@ -6,6 +6,7 @@ Muestra el breakdown completo de ingresos y egresos y gestión de documentos.
 import reflex as rx
 
 from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 
 
@@ -351,6 +352,19 @@ def liquidacion_detail_modal() -> rx.Component:
                             ),
                             rx.box(),
                         ),
+                        # Reversar Pago (solo Pagada)
+                        rx.cond(
+                            LiquidacionesState.liquidacion_actual["estado"] == "Pagada",
+                            rx.button(
+                                rx.icon("rotate_ccw"),
+                                "Reversar Pago",
+                                on_click=lambda: LiquidacionesState.open_reverse_pago_confirm(
+                                    LiquidacionesState.liquidacion_actual["id"]
+                                ),
+                                color_scheme="orange",
+                            ),
+                            rx.box(),
+                        ),
                         # Cancelar (solo En Proceso o Aprobada)
                         rx.cond(
                             (LiquidacionesState.liquidacion_actual["estado"] == "En Proceso")
@@ -363,6 +377,20 @@ def liquidacion_detail_modal() -> rx.Component:
                                 ),
                                 color_scheme="red",
                                 variant="soft",
+                            ),
+                            rx.box(),
+                        ),
+                        # Eliminar (no Pagada, con permiso)
+                        rx.cond(
+                            (LiquidacionesState.liquidacion_actual["estado"] != "Pagada")
+                            & AuthState.check_action("Liquidaciones", "ELIMINAR"),
+                            rx.button(
+                                rx.icon("trash-2"),
+                                "Eliminar",
+                                on_click=lambda: LiquidacionesState.open_delete_modal(
+                                    LiquidacionesState.liquidacion_actual["id"]
+                                ),
+                                color_scheme="red",
                             ),
                             rx.box(),
                         ),

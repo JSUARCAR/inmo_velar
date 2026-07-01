@@ -1,66 +1,44 @@
-### Task 1: Corrección de Case-Sensitivity en `servicio_contratos.py`
+### Task 1: Modificar Tarjeta Contrato (Vista Cuadrícula)
 
 **Files:**
-- Modify: `C:/Users/PC/OneDrive/Desktop/inmobiliaria velar/PYTHON-REFLEX/src/aplicacion/servicios/servicio_contratos.py`
+- Modify: `src/presentacion_reflex/components/contratos/tarjeta_contrato.py`
 
 **Interfaces:**
-- Consumes: PostgreSQL DB queries for `CONTRATOS_MANDATOS` and `CONTRATOS_ARRENDAMIENTOS`.
-- Produces: `{"mandatos": {"total": int, "activos": int, "inactivos": int}, "arriendos": ...}` para `ContratosState.load_kpis()`.
+- Consumes: `PDFState.generar_certificado_paz_y_salvo`
+- Produces: Botón en la interfaz de tarjeta.
 
-- [ ] **Step 1: Write the minimal implementation**
+- [ ] **Step 1: Agregar el botón en tarjeta_contrato.py**
 
-Aplica las correcciones en el archivo `servicio_contratos.py` en el método `obtener_kpis()` cambiando las mayúsculas en `ACTIVOs` y `inACTIVOs` por `activos` e `inactivos` en los queries SQL:
-
-```python
-        query_mandatos = f"""
-        SELECT 
-            COUNT(*) as total,
-            SUM(CASE WHEN ESTADO_CONTRATO_M = 'ACTIVO' THEN 1 ELSE 0 END) as activos,
-            SUM(CASE WHEN ESTADO_CONTRATO_M != 'ACTIVO' THEN 1 ELSE 0 END) as inactivos
-        FROM CONTRATOS_MANDATOS
-        {asesor_where_mandatos}
-        """
-
-        query_arriendos = f"""
-        SELECT 
-            COUNT(*) as total,
-            SUM(CASE WHEN ESTADO_CONTRATO_A = 'ACTIVO' THEN 1 ELSE 0 END) as activos,
-            SUM(CASE WHEN ESTADO_CONTRATO_A != 'ACTIVO' THEN 1 ELSE 0 END) as inactivos
-        FROM CONTRATOS_ARRENDAMIENTOS
-        {asesor_where_arriendos}
-        """
-```
-
-Y en el retorno del diccionario:
+Modificar el `rx.scroll_area` de las acciones (alrededor de la línea 265, después del botón de terminar o antes).
 
 ```python
-            return {
-                "mandatos": {
-                    "total": _get_val(r_mandato, "total"),
-                    "activos": _get_val(r_mandato, "activos"),
-                    "inactivos": _get_val(r_mandato, "inactivos"),
-                },
-                "arriendos": {
-                    "total": _get_val(r_arriendo, "total"),
-                    "activos": _get_val(r_arriendo, "activos"),
-                    "inactivos": _get_val(r_arriendo, "inactivos"),
-                },
-            }
+                    # Paz y Salvo (Para inactivos)
+                    rx.cond(
+                        contrato.estado_contrato != "ACTIVO",
+                        neuro_icon_action_button(
+                            "shield-check",
+                            on_click=lambda: PDFState.generar_certificado_paz_y_salvo(
+                                contrato.id_contrato,
+                                rx.cond(
+                                    contrato.tipo_contrato == "Mandato",
+                                    contrato.propietario_nombre,
+                                    contrato.arrendatario_nombre,
+                                )
+                            ),
+                            color_scheme="teal",
+                            tooltip_content="Generar Paz y Salvo",
+                        ),
+                    ),
 ```
 
-- [ ] **Step 2: Run verification scripts**
+- [ ] **Step 2: Verificar la sintaxis**
 
-```pwsh
-python scripts/check_syntax.py
-python -m mypy src/aplicacion/servicios/servicio_contratos.py
-python -m ruff check src/aplicacion/servicios/servicio_contratos.py
-python -m black src/aplicacion/servicios/servicio_contratos.py
-```
-Expected: All checks pass, syntax is valid.
+Run: `python scripts/check_syntax.py src/presentacion_reflex/components/contratos/tarjeta_contrato.py`
+Expected: PASS
 
 - [ ] **Step 3: Commit**
 
-```pwsh
-git add src/aplicacion/servicios/servicio_contratos.py
-git commit -m "fix(contratos): corregir calculo de KPIs por error de case-sensitivity"
+```bash
+git add src/presentacion_reflex/components/contratos/tarjeta_contrato.py
+git commit -m "feat(presentacion): agregar boton de paz y salvo en tarjeta de contrato inactivo"
 ```

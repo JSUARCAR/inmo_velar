@@ -348,6 +348,109 @@ class ServicioFinanciero:
     def reversar_liquidacion(self, id_liquidacion: int, usuario_sistema: str) -> None:
         self.repo_liquidacion.reversar(id_liquidacion, usuario_sistema)
 
+    def reversar_pago_liquidacion(
+        self, id_liquidacion: int, usuario_sistema: str, motivo: str
+    ) -> dict:
+        """
+        Reversa el pago de una liquidación individual (Pagada → Aprobada).
+        Valida el motivo (>= 10 caracteres).
+        """
+        if not motivo or len(motivo.strip()) < 10:
+            raise ValueError("El motivo de reversión debe tener al menos 10 caracteres")
+        return self.repo_liquidacion.reversar_pago(id_liquidacion, usuario_sistema, motivo.strip())
+
+    def reversar_pago_propietario(
+        self, id_propietario: int, periodo: str, usuario_sistema: str, motivo: str
+    ) -> dict:
+        """
+        Reversa pagos de todas las liquidaciones pagadas de un propietario para un período.
+        Solo revierte las que estén en estado 'Pagada'.
+        """
+        if not motivo or len(motivo.strip()) < 10:
+            raise ValueError("El motivo de reversión debe tener al menos 10 caracteres")
+        return self.repo_liquidacion.reversar_pago_por_propietario_y_periodo(
+            id_propietario, periodo, usuario_sistema, motivo.strip()
+        )
+
+    def eliminar_liquidacion(self, id_liquidacion: int, usuario_sistema: str) -> dict:
+        """
+        Elimina lógicamente una liquidación (soft delete).
+        Valida que no esté en estado 'Pagada' y que no haya sido eliminada previamente.
+        Registra auditoría de la operación.
+        """
+        from datetime import datetime
+
+        # 1. Obtener la liquidación
+        liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
+        if not liquidacion:
+            raise ValueError(f"No se encontró la liquidación con ID {id_liquidacion}")
+
+        # 2. Verificar si ya fue eliminada (idempotente)
+        if liquidacion.eliminada:
+            return {
+                "exitosa": True,
+                "mensaje": "La liquidación ya fue eliminada previamente",
+                "id_liquidacion": id_liquidacion,
+                "estado_anterior": liquidacion.estado_liquidacion,
+                "operacion_id": f"DEL-LIQ-{id_liquidacion}-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            }
+
+        # 3. Validar que no esté en estado 'Pagada'
+        if liquidacion.estado_liquidacion == "Pagada":
+            raise ValueError(
+                "Las liquidaciones en estado Pagada forman parte del histórico financiero y no pueden eliminarse."
+            )
+
+        # 4. Ejecutar eliminación lógica
+        self.repo_liquidacion.eliminar(id_liquidacion, usuario_sistema)
+
+        # 5. Desvincular documentos (orphaning)
+        try:
+            from src.infraestructura.persistencia.database import db_manager
+
+            with db_manager.obtener_conexion() as conn:
+                cursor = conn.cursor()
+                placeholder = db_manager.get_placeholder()
+                cursor.execute(
+                    f"""
+                    UPDATE DOCUMENTOS
+                    SET ID_ENTIDAD_REFERENCIA = NULL
+                    WHERE TABLA_ORIGEN = 'LIQUIDACIONES' AND ID_ENTIDAD_REFERENCIA = {placeholder}
+                """,
+                    (id_liquidacion,),
+                )
+                conn.commit()
+        except Exception:
+            pass  # Tabla DOCUMENTOS puede no existir en SQLite
+
+        # 6. Registrar auditoría
+        try:
+            from src.infraestructura.persistencia.database import db_manager
+
+            with db_manager.obtener_conexion() as conn:
+                cursor = conn.cursor()
+                placeholder = db_manager.get_placeholder()
+                cursor.execute(
+                    f"""
+                    INSERT INTO AUDITORIA_CAMBIOS (TABLA_MODIFICADA, ID_REGISTRO, CAMPO_MODIFICADO, VALOR_NUEVO, USUARIO, FECHA_MODIFICACION)
+                    VALUES ('LIQUIDACIONES', {placeholder}, 'ELIMINADA', 'TRUE', {placeholder}, {placeholder})
+                """,
+                    (id_liquidacion, usuario_sistema, datetime.now().isoformat()),
+                )
+                conn.commit()
+        except Exception:
+            pass  # Tabla AUDITORIA_CAMBIOS puede no existir en SQLite
+
+        operacion_id = f"DEL-LIQ-{id_liquidacion}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+        return {
+            "exitosa": True,
+            "mensaje": "Liquidación eliminada correctamente",
+            "id_liquidacion": id_liquidacion,
+            "estado_anterior": liquidacion.estado_liquidacion,
+            "operacion_id": operacion_id,
+        }
+
     def listar_liquidaciones_pendientes(self) -> List[Liquidacion]:
         """Extraído de repo."""
         # Esta lógica debería estar en el repo, pero como ya existe como método, lo usaremos

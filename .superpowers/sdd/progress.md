@@ -12,3 +12,5 @@
 - [ ] Task 6: Corregir in_managed_transaction, desocupación y documental
 - [ ] Task 7: Corregir Dashboard UI — "0 días" y duplicados remanentes
 - [ ] Task 8: Verificación Final Global
+Task 1: complete (commits 80a2219..HEAD, review clean)
+Task 2: complete (commits 25d6d5e..HEAD, review clean)
