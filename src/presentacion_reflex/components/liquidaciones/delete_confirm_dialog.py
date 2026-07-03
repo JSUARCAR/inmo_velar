@@ -6,6 +6,7 @@ Muestra resumen de la liquidación y desglose financiero antes de confirmar.
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
+from src.presentacion_reflex.styles import Z_MODAL
 
 
 def info_row(label: str, value) -> rx.Component:
@@ -217,6 +218,8 @@ def delete_confirm_dialog() -> rx.Component:
             max_width="600px",
             max_height="80vh",
             overflow_y="auto",
+            pointer_events="auto",
+            z_index=Z_MODAL,
         ),
         open=LiquidacionesState.show_delete_modal,
     )
