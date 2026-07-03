@@ -235,11 +235,6 @@ def bell_icon() -> rx.Component:
                     border="1px solid #e5e7eb",
                     overflow="hidden",
                 ),
-                side_offset=15,
-                style={
-                    "pointer_events": "auto",
-                    "z_index": styles.Z_POPOVER,
-                },
             ),
         ),
     )

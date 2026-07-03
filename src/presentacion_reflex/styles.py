@@ -240,6 +240,10 @@ BASE_STYLE = {
         "pointer_events": "auto",
         "z_index": Z_MODAL,
     },
+    rx.alert_dialog.content: {
+        "pointer_events": "auto",
+        "z_index": Z_MODAL,
+    },
     rx.popover.content: {
         "pointer_events": "auto",
         "z_index": Z_POPOVER,

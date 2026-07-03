@@ -133,8 +133,6 @@ def group_delete_confirm_dialog() -> rx.Component:
             max_width="500px",
             max_height="80vh",
             overflow_y="auto",
-            pointer_events="auto",
-            z_index=Z_MODAL,
         ),
         open=LiquidacionesState.show_group_delete_modal,
     )

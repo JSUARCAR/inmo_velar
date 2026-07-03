@@ -71,7 +71,7 @@ class IncidentesState(DocumentosStateMixin):
     # Pagination
     page: int = 1
     total_pages: int = 1
-    items_per_page: int = 12
+    items_per_page: int = 50
 
     estado_options: List[str] = [
         "Todos",
@@ -461,10 +461,9 @@ class IncidentesState(DocumentosStateMixin):
             )
             estado = self.filter_estado if self.filter_estado != "Todos" else None
 
-            # Kanban carga con un tope razonable; Lista mantiene paginación
-            es_kanban = self.view_mode == "kanban"
-            pagina = None if es_kanban else self.page
-            tamano_pagina = 100 if es_kanban else self.items_per_page
+            # Pagination server-side enforced (US1) to prevent websocket crashes
+            pagina = self.page
+            tamano_pagina = self.items_per_page
 
             resultado = servicio.listar_con_filtros(
                 busqueda=self.search_text if self.search_text else None,

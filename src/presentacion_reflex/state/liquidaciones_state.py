@@ -14,17 +14,17 @@ class LiquidacionDict(pydantic.BaseModel):
 
     id: int
     periodo: str
-    contrato: str
-    propiedad: str
-    propietario: str
-    documento: str
-    id_propietario: int
-    estado: str
-    canon: float
-    neto: float
-    canon_view: str
-    neto_view: str
-    cantidad_propiedades: Optional[int]
+    contrato: Optional[str] = "N/D"
+    propiedad: Optional[str] = "N/D"
+    propietario: Optional[str] = "N/D"
+    documento: Optional[str] = "N/D"
+    id_propietario: Optional[int] = 0
+    estado: Optional[str] = "Desconocido"
+    canon: Optional[float] = 0.0
+    neto: Optional[float] = 0.0
+    canon_view: Optional[str] = "$0"
+    neto_view: Optional[str] = "$0"
+    cantidad_propiedades: Optional[int] = 1
     grupo_operativo: int = 0
     estado_recaudo: str = "Sin Recaudo"
 
