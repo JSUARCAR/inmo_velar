@@ -7,11 +7,9 @@ Date: 2026-06-30
 """
 
 import logging
-from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Dict, Optional, Any
 
 from src.dominio.entidades.incidente_liquidacion import IncidenteLiquidacion
-from src.dominio.entidades.cuota_incidente import CuotaIncidente
 from src.dominio.interfaces.repositorio_incidente_liq import RepositorioIncidenteLiquidacion
 from src.dominio.interfaces.repositorio_cuota import RepositorioCuota
 from src.dominio.interfaces.repositorio_plan_pago import RepositorioPlanPago
@@ -19,6 +17,114 @@ from src.dominio.interfaces.repositorio_liquidacion import IRepositorioLiquidaci
 from src.dominio.interfaces.repositorio_incidentes import RepositorioIncidentes
 
 logger = logging.getLogger(__name__)
+
+# Constantes para manejo de observaciones
+MAX_LONGITUD_OBSERVACIONES = 500
+PREFIJO_INCIDENTE = "Inc #"
+
+
+def agregar_id_incidente_observaciones(
+    observaciones: Optional[str],
+    id_incidente: int,
+) -> str:
+    """
+    Agrega ID de incidente a observaciones existentes.
+    
+    Args:
+        observaciones: Observaciones actuales (puede ser None o vacío)
+        id_incidente: ID del incidente a agregar
+    
+    Returns:
+        str con observaciones actualizadas
+    
+    Note:
+        - Preserva observaciones existentes del usuario
+        - No duplica IDs ya existentes
+        - Formato: "Inc #{id}"
+    """
+    nuevo_id = f"{PREFIJO_INCIDENTE}{id_incidente}"
+    
+    if not observaciones:
+        return nuevo_id
+    
+    # Verificar si el ID ya existe
+    if nuevo_id in observaciones:
+        return observaciones
+    
+    # Append con newline
+    return f"{observaciones}\n{nuevo_id}"
+
+
+def remover_id_incidente_observaciones(
+    observaciones: str,
+    id_incidente: int,
+) -> str:
+    """
+    Remueve ID de incidente de observaciones.
+    
+    Args:
+        observaciones: Observaciones actuales
+        id_incidente: ID del incidente a remover
+    
+    Returns:
+        str con observaciones actualizadas
+    
+    Note:
+        - Solo remueve la línea específica del incidente
+        - Preserva otras observaciones
+        - Si no quedan IDs, retorna observaciones originales sin la línea
+    """
+    if not observaciones:
+        return ""
+    
+    id_a_remover = f"{PREFIJO_INCIDENTE}{id_incidente}"
+    lineas = observaciones.split('\n')
+    
+    # Filtrar la línea del incidente a remover
+    lineas_filtradas = [linea for linea in lineas if linea.strip() != id_a_remover]
+    
+    return '\n'.join(lineas_filtradas) if lineas_filtradas else ""
+
+
+def truncar_observaciones(
+    observaciones: str,
+    max_longitud: int = MAX_LONGITUD_OBSERVACIONES,
+) -> str:
+    """
+    Trunca observaciones manteniendo IDs más recientes.
+    
+    Args:
+        observaciones: Observaciones a truncar
+        max_longitud: Longitud máxima permitida
+    
+    Returns:
+        str con observaciones truncadas
+    
+    Note:
+        - Mantiene observaciones del usuario
+        - Mantiene IDs de incidentes más recientes
+        - Descarta IDs más antiguos si es necesario
+    """
+    if not observaciones or len(observaciones) <= max_longitud:
+        return observaciones
+    
+    lineas = observaciones.split('\n')
+    
+    # Separar IDs de incidentes de otras observaciones
+    ids_incidentes = [linea for linea in lineas if linea.strip().startswith(PREFIJO_INCIDENTE)]
+    otros = [linea for linea in lineas if not linea.strip().startswith(PREFIJO_INCIDENTE)]
+    
+    # Reconstruir con IDs más recientes primero
+    resultado = '\n'.join(otros)
+    
+    for id_inc in reversed(ids_incidentes):
+        candidato = f"{id_inc}\n{resultado}" if resultado else id_inc
+        if len(candidato) <= max_longitud:
+            resultado = candidato
+        else:
+            break
+    
+    return resultado
 
 
 class ServicioIncidenteLiquidacion:
@@ -175,15 +281,23 @@ class ServicioIncidenteLiquidacion:
             cuota.asociar_a_liquidacion(id_liquidacion)
             self.repositorio_cuota.actualizar(cuota)
             
-            # 9b. Actualizar observaciones con ID del incidente (reemplazo completo)
-            liquidacion.observaciones = f"Inc #{id_incidente}"
-            self.repositorio_liquidacion.actualizar(liquidacion)
+            # 9. Actualizar observaciones con ID del incidente (append, no reemplazo)
+            liquidacion.observaciones = agregar_id_incidente_observaciones(
+                liquidacion.observaciones,
+                id_incidente,
+            )
             
-            # 9. Actualizar valor_incidentes de la liquidación
+            # 10. Obtener VALOR_INCIDENTES fresco de BD (post-trigger)
             total_descuentos = self.repositorio_relacion.calcular_total_descuentos(
                 id_liquidacion
             )
-            # Nota: La liquidación se actualizará con el trigger de BD
+            
+            # 11. Asignar valor fresco y recalcular totales
+            liquidacion.valor_incidentes = total_descuentos
+            liquidacion.calcular_totales()
+            
+            # 12. Persistir cambios en liquidación
+            self.repositorio_liquidacion.actualizar(liquidacion, asociado_por)
             
             logger.info(
                 f"Incidente {id_incidente} asociado a liquidación {id_liquidacion} "
@@ -275,17 +389,25 @@ class ServicioIncidenteLiquidacion:
             # 4. Eliminar la relación
             self.repositorio_relacion.eliminar(id_relacion)
             
-            # 5b. Actualizar observaciones (reemplazo completo)
+            # 5. Actualizar observaciones (remover solo el ID del incidente)
             if liquidacion:
-                liquidacion.observaciones = ""
-                self.repositorio_liquidacion.actualizar(liquidacion)
+                liquidacion.observaciones = remover_id_incidente_observaciones(
+                    liquidacion.observaciones,
+                    relacion.id_incidente,
+                )
             
-            # 5. Actualizar valor_incidentes de la liquidación
+            # 6. Obtener VALOR_INCIDENTES fresco de BD (post-trigger)
             if liquidacion:
                 total_descuentos = self.repositorio_relacion.calcular_total_descuentos(
                     relacion.id_liquidacion
                 )
-                # Nota: La liquidación se actualizará con el trigger de BD
+                
+                # 7. Asignar valor fresco y recalcular totales
+                liquidacion.valor_incidentes = total_descuentos
+                liquidacion.calcular_totales()
+                
+                # 8. Persistir cambios en liquidación
+                self.repositorio_liquidacion.actualizar(liquidacion, desasociado_por)
             
             logger.info(
                 f"Relación {id_relacion} eliminada por {desasociado_por}"

@@ -1107,7 +1107,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 "otros_ingresos": LiquidacionesState.parse_int_safe(form_data.get("otros_ingresos")),
                 "gastos_administracion": LiquidacionesState.parse_int_safe(form_data.get("gastos_administracion")),
                 "gastos_servicios": LiquidacionesState.parse_int_safe(form_data.get("gastos_servicios")),
-                "gastos_reparaciones": LiquidacionesState.parse_int_safe(form_data.get("gastos_reparaciones")),
+                "valor_incidentes": LiquidacionesState.parse_int_safe(form_data.get("valor_incidentes")),
                 "pago_predial": LiquidacionesState.parse_int_safe(form_data.get("pago_predial")),
                 "otros_egresos": LiquidacionesState.parse_int_safe(form_data.get("otros_egresos")),
                 "observaciones": form_data.get("observaciones", ""),

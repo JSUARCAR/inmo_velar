@@ -1,0 +1,110 @@
+- generic [active] [ref=f18e1]:
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=f18e152]:
+        - button "Close toast" [ref=f18e153] [cursor=pointer]:
+          - img [ref=f18e154]
+        - img [ref=f18e158]
+        - generic [ref=f18e160]:
+          - generic [ref=f18e161]: "Cannot connect to server: timeout."
+          - generic [ref=f18e162]: Check if server is reachable at ws://localhost:8000/_event
+  - generic [ref=f18e2]:
+    - 'generic "Connection Error: timeout"':
+      - img [ref=f18e145]
+    - generic [ref=f18e4]:
+      - generic [ref=f18e5]:
+        - generic [ref=f18e6]:
+          - generic [ref=f18e7]:
+            - img [ref=f18e9] [cursor=pointer]
+            - heading "Inmobiliaria Velar" [level=1] [ref=f18e12]
+          - generic [ref=f18e15]:
+            - paragraph [ref=f18e18]: PRINCIPAL
+            - paragraph [ref=f18e21]: GESTIÓN
+            - paragraph [ref=f18e24]: OPERACIONES
+            - paragraph [ref=f18e27]: ADMINISTRACIÓN
+          - generic [ref=f18e28]:
+            - img [ref=f18e29]
+            - generic:
+              - paragraph
+              - paragraph
+            - generic [ref=f18e34]:
+              - button [ref=f18e35]:
+                - img [ref=f18e36]
+              - button [ref=f18e40]:
+                - img [ref=f18e43]
+              - button [ref=f18e46]:
+                - img [ref=f18e47]
+        - generic [ref=f18e51]:
+          - generic [ref=f18e52]:
+            - heading "Liquidaciones de Propietarios" [level=1] [ref=f18e53]
+            - paragraph [ref=f18e54]: Gestión de estados de cuenta mensuales y pagos a propietarios
+          - generic [ref=f18e55]:
+            - generic [ref=f18e56]:
+              - switch [ref=f18e57]
+              - paragraph [ref=f18e59]: Vista Individual
+            - textbox "Buscar..." [ref=f18e61]
+            - combobox [ref=f18e62]:
+              - generic [ref=f18e63]: Período
+              - img [ref=f18e64]
+            - combobox [ref=f18e66]:
+              - generic [ref=f18e67]: Todos
+              - img [ref=f18e68]
+            - combobox [ref=f18e70]:
+              - generic [ref=f18e71]: Todos
+              - img [ref=f18e72]
+            - button [ref=f18e75] [cursor=pointer]:
+              - img [ref=f18e76]
+          - generic [ref=f18e81]:
+            - table [ref=f18e86]:
+              - rowgroup [ref=f18e87]:
+                - row "ID Período Propiedad Ciclo Operativo Canon Neto a Pagar Estado Recaudo Estado Acciones" [ref=f18e88]:
+                  - columnheader "ID" [ref=f18e89]:
+                    - generic [ref=f18e90] [cursor=pointer]:
+                      - paragraph [ref=f18e91]: ID
+                      - img [ref=f18e92]
+                  - columnheader "Período" [ref=f18e95]:
+                    - generic [ref=f18e96] [cursor=pointer]:
+                      - paragraph [ref=f18e97]: Período
+                      - img [ref=f18e98]
+                  - columnheader "Propiedad" [ref=f18e100]:
+                    - generic [ref=f18e101] [cursor=pointer]:
+                      - paragraph [ref=f18e102]: Propiedad
+                      - img [ref=f18e103]
+                  - columnheader "Ciclo Operativo" [ref=f18e106]
+                  - columnheader "Canon" [ref=f18e107]:
+                    - generic [ref=f18e108] [cursor=pointer]:
+                      - paragraph [ref=f18e109]: Canon
+                      - img [ref=f18e110]
+                  - columnheader "Neto a Pagar" [ref=f18e113]:
+                    - generic [ref=f18e114] [cursor=pointer]:
+                      - paragraph [ref=f18e115]: Neto a Pagar
+                      - img [ref=f18e116]
+                  - columnheader "Estado Recaudo" [ref=f18e119]:
+                    - generic [ref=f18e120] [cursor=pointer]:
+                      - paragraph [ref=f18e121]: Estado Recaudo
+                      - img [ref=f18e122]
+                  - columnheader "Estado" [ref=f18e125]:
+                    - generic [ref=f18e126] [cursor=pointer]:
+                      - paragraph [ref=f18e127]: Estado
+                      - img [ref=f18e128]
+                  - columnheader "Acciones" [ref=f18e131]
+              - rowgroup
+            - generic [ref=f18e133]:
+              - button "Anterior" [disabled] [ref=f18e134] [cursor=pointer]:
+                - img [ref=f18e135]
+                - paragraph [ref=f18e137]: Anterior
+              - generic [ref=f18e138]:
+                - paragraph [ref=f18e139]: Página 1
+                - paragraph [ref=f18e140]: Mostrando 1-0 de 0
+              - button "Siguiente" [disabled] [ref=f18e141] [cursor=pointer]:
+                - paragraph [ref=f18e142]: Siguiente
+                - img [ref=f18e143]
+      - region "Notifications alt+T":
+        - list:
+          - listitem [ref=f18e163]:
+            - button "Close toast" [ref=f18e164] [cursor=pointer]:
+              - img [ref=f18e165]
+            - img [ref=f18e169]
+            - generic [ref=f18e171]:
+              - generic [ref=f18e172]: "Cannot connect to server: timeout."
+              - generic [ref=f18e173]: Check if server is reachable at ws://localhost:8000/_event

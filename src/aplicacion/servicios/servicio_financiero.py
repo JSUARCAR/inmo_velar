@@ -760,8 +760,8 @@ class ServicioFinanciero:
         liquidacion.gastos_servicios = datos_actualizados.get(
             "gastos_servicios", liquidacion.gastos_servicios
         )
-        liquidacion.gastos_reparaciones = datos_actualizados.get(
-            "gastos_reparaciones", liquidacion.gastos_reparaciones
+        liquidacion.valor_incidentes = datos_actualizados.get(
+            "valor_incidentes", liquidacion.valor_incidentes
         )
         liquidacion.pago_predial = datos_actualizados.get(
             "pago_predial", liquidacion.pago_predial

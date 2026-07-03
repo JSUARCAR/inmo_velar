@@ -1,0 +1,423 @@
+ .../state/liquidaciones_state.py                   | 364 +++++++++++++++++++++
+ 1 file changed, 364 insertions(+)
+diff --git a/src/presentacion_reflex/state/liquidaciones_state.py b/src/presentacion_reflex/state/liquidaciones_state.py
+index db5734c..55dd7f2 100644
+--- a/src/presentacion_reflex/state/liquidaciones_state.py
++++ b/src/presentacion_reflex/state/liquidaciones_state.py
+@@ -105,6 +105,15 @@ class LiquidacionesState(DocumentosStateMixin):
+     group_delete_periodo: str = ""  # Período del grupo a eliminar
+     group_delete_confirmed: bool = False  # Checkbox de confirmación de eliminación agrupada
+ 
++    # --- INCIDENT ASSOCIATION MODAL (US2) ---
++    show_seleccion_incidentes_modal: bool = False
++    seleccion_incidentes_liquidacion_id: Optional[int] = None
++    seleccion_incidentes_disponibles: List[Dict[str, Any]] = []
++    seleccion_incidentes_seleccionados: List[Dict[str, Any]] = []
++    seleccion_incidentes_total_descuentos: int = 0
++    seleccion_incidentes_error: str = ""
++    seleccion_incidentes_loading: bool = False
++
+     # Exportación
+     exportando_periodo: bool = False
+ 
+@@ -427,6 +436,7 @@ class LiquidacionesState(DocumentosStateMixin):
+             "pago_predial": "0",
+             "otros_egresos": "0",
+             "observaciones": "",
++            "estado": "",
+         }
+         self.error_message = ""
+         # Reset combobox propiedad
+@@ -603,6 +613,8 @@ class LiquidacionesState(DocumentosStateMixin):
+                         "pago_predial": str(liquidacion.get("pago_predial", 0)),
+                         "otros_egresos": str(liquidacion.get("otros_egr", 0)),
+                         "observaciones": str(liquidacion.get("observaciones", "")),
++                        "valor_incidentes": str(liquidacion.get("valor_incidentes", 0)),
++                        "estado": str(liquidacion.get("estado", "")),
+                     }
+                     self.show_edit_modal = True
+                     self.show_create_modal = False
+@@ -670,6 +682,9 @@ class LiquidacionesState(DocumentosStateMixin):
+                 l_fmt["otros_egr_view"] = format_currency(
+                     liquidacion.get("otros_egr", 0)
+                 )
++                l_fmt["valor_incidentes_view"] = format_currency(
++                    liquidacion.get("valor_incidentes", 0)
++                )
+ 
+                 # Formatear listas internas si existen
+                 if "propiedades_detalle" in l_fmt:
+@@ -1197,6 +1212,41 @@ class LiquidacionesState(DocumentosStateMixin):
+                 usuario_sistema=usuario_sistema,
+             )
+ 
++            # US4: Actualizar estado de pago de incidentes asociados
++            try:
++                from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
++                    RepositorioPlanPagoPostgres,
++                )
++                from src.infraestructura.persistencia.repositorio_cuota_postgres import (
++                    RepositorioCuotaPostgres,
++                )
++                from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import (
++                    RepositorioIncidenteLiquidacionPostgres,
++                )
++                from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
++                    RepositorioIncidentesPostgres,
++                )
++                from src.aplicacion.servicios.servicio_estado_pago import (
++                    ServicioEstadoPagoAutomatico,
++                )
++
++                servicio_estado = ServicioEstadoPagoAutomatico(
++                    repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
++                    repositorio_cuota=RepositorioCuotaPostgres(db_manager),
++                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(db_manager),
++                    repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
++                )
++                servicio_estado.actualizar_estado_pago_por_liquidacion(
++                    id_liquidacion=int(form_data["id_liquidacion"]),
++                    usuario=usuario_sistema,
++                )
++            except Exception as e_estado:
++                # No fallar el pago principal por error en actualización de estado
++                import logging
++                logging.getLogger(__name__).warning(
++                    f"Error al actualizar estado de pago de incidentes: {e_estado}"
++                )
++
+             async with self:
+                 self.show_payment_modal = False
+                 self.form_data = {}
+@@ -1335,6 +1385,40 @@ class LiquidacionesState(DocumentosStateMixin):
+                 self.reverse_pago_liquidacion_id, "admin", self.reverse_pago_motivo
+             )
+ 
++            # US5: Revertir estado de pago de incidentes asociados
++            try:
++                from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
++                    RepositorioPlanPagoPostgres,
++                )
++                from src.infraestructura.persistencia.repositorio_cuota_postgres import (
++                    RepositorioCuotaPostgres,
++                )
++                from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import (
++                    RepositorioIncidenteLiquidacionPostgres,
++                )
++                from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
++                    RepositorioIncidentesPostgres,
++                )
++                from src.aplicacion.servicios.servicio_estado_pago import (
++                    ServicioEstadoPagoAutomatico,
++                )
++
++                servicio_estado = ServicioEstadoPagoAutomatico(
++                    repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
++                    repositorio_cuota=RepositorioCuotaPostgres(db_manager),
++                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(db_manager),
++                    repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
++                )
++                servicio_estado.revertir_estado_pago_por_liquidacion(
++                    id_liquidacion=self.reverse_pago_liquidacion_id,
++                    usuario="admin",
++                )
++            except Exception as e_estado:
++                import logging
++                logging.getLogger(__name__).warning(
++                    f"Error al revertir estado de pago de incidentes: {e_estado}"
++                )
++
+             async with self:
+                 self.show_reverse_pago_confirm = False
+                 self.show_detail_modal = False
+@@ -1380,6 +1464,43 @@ class LiquidacionesState(DocumentosStateMixin):
+                 self.reverse_pago_motivo,
+             )
+ 
++            # US5: Revertir estado de pago de incidentes asociados a todas las liquidaciones revertidas
++            try:
++                from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
++                    RepositorioPlanPagoPostgres,
++                )
++                from src.infraestructura.persistencia.repositorio_cuota_postgres import (
++                    RepositorioCuotaPostgres,
++                )
++                from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import (
++                    RepositorioIncidenteLiquidacionPostgres,
++                )
++                from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
++                    RepositorioIncidentesPostgres,
++                )
++                from src.aplicacion.servicios.servicio_estado_pago import (
++                    ServicioEstadoPagoAutomatico,
++                )
++
++                servicio_estado = ServicioEstadoPagoAutomatico(
++                    repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
++                    repositorio_cuota=RepositorioCuotaPostgres(db_manager),
++                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(db_manager),
++                    repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
++                )
++                # Actualizar estados de pago para cada liquidación revertida
++                if result and "liquidaciones_revertidas" in result:
++                    for liq in result["liquidaciones_revertidas"]:
++                        servicio_estado.revertir_estado_pago_por_liquidacion(
++                            id_liquidacion=liq["id"],
++                            usuario="admin",
++                        )
++            except Exception as e_estado:
++                import logging
++                logging.getLogger(__name__).warning(
++                    f"Error al revertir estados de pago de incidentes: {e_estado}"
++                )
++
+             async with self:
+                 self.show_reverse_pago_confirm = False
+                 self.reverse_pago_motivo = ""
+@@ -1735,3 +1856,246 @@ class LiquidacionesState(DocumentosStateMixin):
+         finally:
+             async with self:
+                 self.exportando_periodo = False
++
++    # -------------------------------------------------------------------------
++    # INCIDENT ASSOCIATION MODAL (US2) - T043-T045
++    # -------------------------------------------------------------------------
++    def set_show_seleccion_incidentes_modal(self, value: bool):
++        """Setter para el estado del modal de selección de incidentes."""
++        self.show_seleccion_incidentes_modal = value
++
++    @rx.event(background=True)
++    async def open_seleccion_incidentes_modal(self, id_liquidacion: int):
++        """Abre el modal de selección de incidentes para una liquidación."""
++        async with self:
++            self.seleccion_incidentes_liquidacion_id = id_liquidacion
++            self.seleccion_incidentes_error = ""
++            self.seleccion_incidentes_seleccionados = []
++            self.seleccion_incidentes_total_descuentos = 0
++            self.seleccion_incidentes_loading = True
++            self.show_seleccion_incidentes_modal = True
++
++        try:
++            from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
++                RepositorioIncidentesPostgres,
++            )
++            from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
++                RepositorioPlanPagoPostgres,
++            )
++            from src.infraestructura.persistencia.repositorio_cuota_postgres import (
++                RepositorioCuotaPostgres,
++            )
++            from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import (
++                RepositorioIncidenteLiquidacionPostgres,
++            )
++            from src.infraestructura.persistencia.database import db_manager as dm
++
++            repo_incidentes = RepositorioIncidentesPostgres(dm)
++            repo_plan = RepositorioPlanPagoPostgres(dm)
++            repo_cuota = RepositorioCuotaPostgres(dm)
++            repo_relacion = RepositorioIncidenteLiquidacionPostgres(dm)
++
++            # 1. Obtener relaciones existentes para esta liquidación
++            relaciones_existentes = repo_relacion.obtener_por_liquidacion(id_liquidacion)
++            ids_ya_asociados = {r.id_incidente for r in relaciones_existentes}
++
++            # 2. Buscar incidentes elegibles: estado en [Aprobado, En Reparacion, Finalizado]
++            #    y estado_pago != Pagado
++            incidentes_elegibles = []
++            # Usar búsqueda directa con filtros SQL
++            conn = dm.obtener_conexion()
++            cursor = dm.get_dict_cursor(conn)
++            placeholder = dm.get_placeholder()
++
++            query = f"""
++                SELECT i.ID_INCIDENTE, i.DESCRIPCION_INCIDENTE, i.COSTO_INCIDENTE,
++                       i.ESTADO, i.ESTADO_PAGO,
++                       p.DIRECCION_PROPIEDAD as PROPIEDAD,
++                       per.NOMBRE_COMPLETO as PROPIETARIO
++                FROM INCIDENTES i
++                LEFT JOIN PROPIEDADES p ON i.ID_PROPIEDAD = p.ID_PROPIEDAD
++                LEFT JOIN CONTRATOS_MANDATOS cm ON (
++                    i.ID_CONTRATO_M = cm.ID_CONTRATO_M
++                    OR (i.ID_CONTRATO_M IS NULL AND i.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'ACTIVO')
++                )
++                LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
++                LEFT JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
++                WHERE i.ESTADO IN ({placeholder}, {placeholder}, {placeholder})
++                  AND i.ESTADO_PAGO != {placeholder}
++                ORDER BY i.ID_INCIDENTE DESC
++            """
++            cursor.execute(
++                query,
++                ("Aprobado", "En Reparacion", "Finalizado", "Pagado"),
++            )
++            rows = cursor.fetchall()
++
++            for row in rows:
++                id_inc = row["ID_INCIDENTE"]
++                # Obtener plan activo y cuota disponible
++                plan = repo_plan.obtener_por_incidente(id_inc)
++                if not plan:
++                    continue  # Sin plan activo, no se puede asociar
++
++                cuotas = repo_cuota.obtener_por_plan(plan.id_plan_pago)
++                # Buscar primera cuota que pueda asociarse
++                cuota_disponible = None
++                for cuota in cuotas:
++                    if cuota.puede_asociarse() and cuota.id_liquidacion != id_liquidacion:
++                        cuota_disponible = cuota
++                        break
++
++                if cuota_disponible is None:
++                    continue  # No hay cuotas disponibles
++
++                ya_asociado = id_inc in ids_ya_asociados
++                incidentes_elegibles.append({
++                    "id": id_inc,
++                    "descripcion": row["DESCRIPCION_INCIDENTE"] or f"Incidente #{id_inc}",
++                    "costo": row["COSTO_INCIDENTE"] or 0,
++                    "costo_view": format_currency(row["COSTO_INCIDENTE"] or 0),
++                    "estado": row["ESTADO"],
++                    "estado_pago": row["ESTADO_PAGO"] or "Pendiente",
++                    "propiedad": row["PROPIEDAD"] or "N/A",
++                    "propietario": row["PROPIETARIO"] or "N/A",
++                    "num_cuota": cuota_disponible.numero_cuota,
++                    "valor_cuota": plan.valor_cuota,
++                    "valor_cuota_view": format_currency(plan.valor_cuota),
++                    "ya_asociado": ya_asociado,
++                })
++
++            async with self:
++                self.seleccion_incidentes_disponibles = incidentes_elegibles
++                self.seleccion_incidentes_loading = False
++
++        except Exception as e:
++            async with self:
++                self.seleccion_incidentes_error = f"Error al cargar incidentes: {str(e)}"
++                self.seleccion_incidentes_loading = False
++
++    def toggle_seleccion_incidente(self, id_incidente: int):
++        """Alterna la selección de un incidente en el modal."""
++        seleccionados = list(self.seleccion_incidentes_seleccionados)
++        disponibles = self.seleccion_incidentes_disponibles
++
++        # Verificar si ya está seleccionado
++        idx = next(
++            (i for i, s in enumerate(seleccionados) if s["id"] == id_incidente),
++            None,
++        )
++
++        if idx is not None:
++            # Quitar de selección
++            seleccionados.pop(idx)
++        else:
++            # Agregar a selección
++            incidente = next(
++                (inc for inc in disponibles if inc["id"] == id_incidente),
++                None,
++            )
++            if incidente and not incidente.get("ya_asociado", False):
++                seleccionados.append(incidente)
++
++        # Recalcular total de descuentos
++        total = sum(s.get("valor_cuota", 0) for s in seleccionados)
++
++        self.seleccion_incidentes_seleccionados = seleccionados
++        self.seleccion_incidentes_total_descuentos = total
++
++    @rx.event(background=True)
++    async def asociar_incidentes_seleccionados(self):
++        """Asocia los incidentes seleccionados a la liquidación."""
++        if not self.seleccion_incidentes_seleccionados:
++            async with self:
++                self.seleccion_incidentes_error = "Debe seleccionar al menos un incidente"
++            return
++
++        async with self:
++            self.seleccion_incidentes_loading = True
++            self.seleccion_incidentes_error = ""
++
++        try:
++            from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
++                RepositorioIncidentesPostgres,
++            )
++            from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
++                RepositorioPlanPagoPostgres,
++            )
++            from src.infraestructura.persistencia.repositorio_cuota_postgres import (
++                RepositorioCuotaPostgres,
++            )
++            from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import (
++                RepositorioIncidenteLiquidacionPostgres,
++            )
++            from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
++                RepositorioLiquidacionPostgres,
++            )
++            from src.infraestructura.persistencia.database import db_manager as dm
++            from src.core.auth import obtener_usuario_actual_async
++            from src.aplicacion.servicios.servicio_incidente_liquidacion import (
++                ServicioIncidenteLiquidacion,
++            )
++
++            repo_relacion = RepositorioIncidenteLiquidacionPostgres(dm)
++            repo_cuota = RepositorioCuotaPostgres(dm)
++            repo_plan = RepositorioPlanPagoPostgres(dm)
++            repo_liquidacion = RepositorioLiquidacionPostgres(dm)
++            repo_incidentes = RepositorioIncidentesPostgres(dm)
++
++            servicio = ServicioIncidenteLiquidacion(
++                repositorio_relacion=repo_relacion,
++                repositorio_cuota=repo_cuota,
++                repositorio_plan=repo_plan,
++                repositorio_liquidacion=repo_liquidacion,
++                repositorio_incidentes=repo_incidentes,
++            )
++
++            usuario = await obtener_usuario_actual_async()
++            id_liquidacion = self.seleccion_incidentes_liquidacion_id
++            exitosos = 0
++            errores = []
++
++            for incidente in self.seleccion_incidentes_seleccionados:
++                resultado = servicio.asociar_incidente(
++                    id_incidente=incidente["id"],
++                    id_liquidacion=id_liquidacion,
++                    numero_cuota=incidente["num_cuota"],
++                    valor_descuento=incidente["valor_cuota"],
++                    asociado_por=usuario,
++                )
++
++                if resultado.get("success"):
++                    exitosos += 1
++                else:
++                    errores.append(
++                        f"Incidente #{incidente['id']}: {resultado.get('message', 'Error desconocido')}"
++                    )
++
++            async with self:
++                if errores:
++                    self.seleccion_incidentes_error = (
++                        f"Asociados: {exitosos}. Errores: {'; '.join(errores)}"
++                    )
++                else:
++                    self.show_seleccion_incidentes_modal = False
++                    yield rx.toast.success(
++                        f"{exitosos} incidente(s) asociado(s) exitosamente",
++                        position="bottom-right",
++                    )
++                    yield LiquidacionesState.load_liquidaciones()
++
++                self.seleccion_incidentes_loading = False
++
++        except Exception as e:
++            async with self:
++                self.seleccion_incidentes_error = f"Error al asociar incidentes: {str(e)}"
++                self.seleccion_incidentes_loading = False
++
++    def close_seleccion_incidentes_modal(self):
++        """Cierra el modal de selección de incidentes."""
++        self.show_seleccion_incidentes_modal = False
++        self.seleccion_incidentes_liquidacion_id = None
++        self.seleccion_incidentes_disponibles = []
++        self.seleccion_incidentes_seleccionados = []
++        self.seleccion_incidentes_total_descuentos = 0
++        self.seleccion_incidentes_error = ""

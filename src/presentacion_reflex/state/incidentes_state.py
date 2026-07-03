@@ -12,7 +12,7 @@ from src.infraestructura.servicios.pdf_elite.templates.incidente_template_elite 
     IncidenteTemplateElite,
 )
 from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
-from src.core.auth import obtener_usuario_actual
+from src.core.auth import obtener_usuario_actual, obtener_usuario_actual_async
 from pathlib import Path
 
 
@@ -38,6 +38,7 @@ class IncidenteDict(pydantic.BaseModel):
     fecha_arreglo: Optional[str] = None
     nombre_proveedor: Optional[str] = None
     cotizaciones_resumen: List[Dict[str, Any]] = []
+    estado_pago: str = "Pendiente"
 
 
 class IncidentesState(DocumentosStateMixin):
@@ -203,6 +204,16 @@ class IncidentesState(DocumentosStateMixin):
     direct_finish_proveedor: Optional[str] = None
     direct_finish_error: str = ""
 
+    # --- PAYMENT PLAN MODAL (US1) ---
+    show_plan_pago_modal: bool = False
+    plan_pago_incidente_id: Optional[int] = None
+    plan_pago_data: Dict[str, Any] = {}
+    plan_pago_cuotas: List[Dict[str, Any]] = []
+    plan_pago_num_cuotas: int = 1
+    plan_pago_valor_cuota: int = 0
+    plan_pago_error: str = ""
+    plan_pago_loading: bool = False
+
     # Setters explícitos para modales requeridos por Reflex en build
     def set_modal_open(self, value: bool):
         self.modal_open = value
@@ -218,6 +229,159 @@ class IncidentesState(DocumentosStateMixin):
 
     def close_cancel_modal(self, value: bool = False):
         self.cancel_modal_open = value
+
+    # --- PAYMENT PLAN METHODS (US1) ---
+    def set_show_plan_pago_modal(self, value: bool):
+        self.show_plan_pago_modal = value
+
+    def set_plan_pago_num_cuotas(self, value: str):
+        try:
+            self.plan_pago_num_cuotas = int(value) if value else 0
+        except (ValueError, TypeError):
+            self.plan_pago_num_cuotas = 0
+        self._recalcular_valor_cuota()
+
+    def _recalcular_valor_cuota(self):
+        """Recalcular valor por cuota basado en el costo del incidente y número de cuotas."""
+        if self.plan_pago_incidente_id and self.plan_pago_num_cuotas > 0:
+            incidente = next(
+                (i for i in self.incidentes if i.id == self.plan_pago_incidente_id),
+                None,
+            )
+            if incidente and incidente.costo_incidente:
+                self.plan_pago_valor_cuota = (
+                    incidente.costo_incidente // self.plan_pago_num_cuotas
+                )
+
+    @rx.event(background=True)
+    async def open_plan_pago_modal(self, id_incidente: int):
+        """Abre el modal de plan de pago para un incidente."""
+        async with self:
+            self.plan_pago_incidente_id = id_incidente
+            self.plan_pago_error = ""
+            self.plan_pago_loading = True
+            self.show_plan_pago_modal = True
+
+        try:
+            from src.aplicacion.servicios.servicio_plan_pago import (
+                ServicioPlanPagoIncidente,
+            )
+            from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
+                RepositorioPlanPagoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_cuota_postgres import (
+                RepositorioCuotaPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
+                RepositorioIncidentesPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_bloqueos import (
+                RepositorioBloqueos,
+            )
+
+            repo_plan = RepositorioPlanPagoPostgres(db_manager)
+            repo_cuota = RepositorioCuotaPostgres(db_manager)
+            repo_incidentes = RepositorioIncidentesPostgres(db_manager)
+            repo_bloqueos = RepositorioBloqueos(db_manager)
+
+            servicio = ServicioPlanPagoIncidente(
+                repo_plan, repo_cuota, repo_incidentes, repo_bloqueos
+            )
+
+            # Verificar si ya existe un plan
+            resultado = servicio.obtener_plan_por_incidente(id_incidente)
+
+            async with self:
+                if resultado.get("success"):
+                    self.plan_pago_data = resultado["data"]["plan"]
+                    self.plan_pago_cuotas = resultado["data"]["cuotas"]
+                    self.plan_pago_num_cuotas = self.plan_pago_data.get("num_cuotas", 1)
+                    self.plan_pago_valor_cuota = self.plan_pago_data.get("valor_cuota", 0)
+                else:
+                    # Nuevo plan - calcular valor basado en costo del incidente
+                    incidente = next(
+                        (i for i in self.incidentes if i.id == id_incidente),
+                        None,
+                    )
+                    if incidente and incidente.costo_incidente:
+                        self.plan_pago_valor_cuota = (
+                            incidente.costo_incidente // self.plan_pago_num_cuotas
+                        )
+                self.plan_pago_loading = False
+
+        except Exception as e:
+            async with self:
+                self.plan_pago_error = f"Error al cargar plan: {str(e)}"
+                self.plan_pago_loading = False
+
+    @rx.event(background=True)
+    async def crear_plan_pago(self, form_data: dict):
+        """Crea un nuevo plan de pago."""
+        async with self:
+            self.plan_pago_loading = True
+            self.plan_pago_error = ""
+
+        try:
+            from src.aplicacion.servicios.servicio_plan_pago import (
+                ServicioPlanPagoIncidente,
+            )
+            from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
+                RepositorioPlanPagoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_cuota_postgres import (
+                RepositorioCuotaPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
+                RepositorioIncidentesPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_bloqueos import (
+                RepositorioBloqueos,
+            )
+
+            repo_plan = RepositorioPlanPagoPostgres(db_manager)
+            repo_cuota = RepositorioCuotaPostgres(db_manager)
+            repo_incidentes = RepositorioIncidentesPostgres(db_manager)
+            repo_bloqueos = RepositorioBloqueos(db_manager)
+
+            servicio = ServicioPlanPagoIncidente(
+                repo_plan, repo_cuota, repo_incidentes, repo_bloqueos
+            )
+
+            usuario = await obtener_usuario_actual_async()
+            num_cuotas = form_data.get("num_cuotas", self.plan_pago_num_cuotas)
+            valor_cuota = form_data.get("valor_cuota", self.plan_pago_valor_cuota)
+
+            resultado = servicio.crear_plan(
+                id_incidente=self.plan_pago_incidente_id,
+                num_cuotas=int(num_cuotas),
+                valor_cuota=int(valor_cuota),
+                creado_por=usuario,
+            )
+
+            async with self:
+                if resultado.get("success"):
+                    self.plan_pago_data = resultado["data"]["plan"]
+                    self.plan_pago_cuotas = resultado["data"]["cuotas"]
+                    self.show_plan_pago_modal = False
+                    yield IncidentesState.load_incidentes()
+                else:
+                    self.plan_pago_error = resultado.get(
+                        "message", "Error al crear plan de pago"
+                    )
+                self.plan_pago_loading = False
+
+        except Exception as e:
+            async with self:
+                self.plan_pago_error = f"Error al crear plan: {str(e)}"
+                self.plan_pago_loading = False
+
+    def close_plan_pago_modal(self):
+        """Cierra el modal de plan de pago."""
+        self.show_plan_pago_modal = False
+        self.plan_pago_incidente_id = None
+        self.plan_pago_data = {}
+        self.plan_pago_cuotas = []
+        self.plan_pago_error = ""
 
     @rx.var
     def incidentes_reportado(self) -> List[IncidenteDict]:
@@ -351,6 +515,7 @@ class IncidentesState(DocumentosStateMixin):
                     "fecha_arreglo": fecha_arreglo_str,
                     "nombre_proveedor": inc.nombre_proveedor,
                     "cotizaciones_resumen": inc.cotizaciones_resumen or [],
+                    "estado_pago": getattr(inc, "estado_pago", "Pendiente"),
                 }
                 incidente_dict_obj = IncidenteDict(**item)
                 items.append(incidente_dict_obj)
@@ -555,6 +720,7 @@ class IncidentesState(DocumentosStateMixin):
                 current_inc["estado"] = inc_obj.estado
                 current_inc["prioridad"] = inc_obj.prioridad
                 current_inc["costo_incidente"] = inc_obj.costo_incidente
+                current_inc["estado_pago"] = getattr(inc_obj, "estado_pago", "Pendiente")
 
                 # Manejo robusto de fecha_arreglo (str o datetime)
                 fecha_val = inc_obj.fecha_arreglo

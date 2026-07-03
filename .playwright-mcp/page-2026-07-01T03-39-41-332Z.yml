@@ -1,0 +1,27 @@
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - generic [ref=e2]:
+    - generic "Connection Error:"
+    - generic [ref=e3]:
+      - img [ref=e5]
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - heading "INMOBILIARIA VELAR S.A.S" [level=1] [ref=e12]
+          - paragraph [ref=e13]: ¡BIENVENIDOS!
+        - generic [ref=e14]:
+          - generic [ref=e15]:
+            - paragraph [ref=e16]: Usuario
+            - textbox "Usuario" [ref=e18]:
+              - /placeholder: nombre.usuario
+              - text: admin
+          - generic [ref=e19]:
+            - paragraph [ref=e20]: Contraseña
+            - generic [ref=e21]:
+              - textbox "Contraseña" [ref=e23]:
+                - /placeholder: ••••••••
+                - text: admin0123
+              - img [ref=e25] [cursor=pointer]
+          - button "Acceder al Panel Acceder al Panel" [disabled] [ref=e30] [cursor=pointer]:
+            - text: Acceder al Panel
+            - generic [ref=e31]: Acceder al Panel
+        - paragraph [ref=e29]: © 2026 Velar Inmobiliaria SAS

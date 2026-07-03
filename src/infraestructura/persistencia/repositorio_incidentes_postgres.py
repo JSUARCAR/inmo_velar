@@ -57,6 +57,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             telefono_inquilino=row.get("TELEFONO_INQUILINO"),
             nombre_habitante=row.get("NOMBRE_HABITANTE"),
             telefono_habitante=row.get("TELEFONO_HABITANTE"),
+            estado_pago=row.get("ESTADO_PAGO", "Pendiente"),
         )
 
     def _mapear_cotizacion(self, row: dict) -> Optional[Cotizacion]:
@@ -117,7 +118,8 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         SET DESCRIPCION_INCIDENTE=%s, COSTO_INCIDENTE=%s, FECHA_INCIDENTE=%s, PRIORIDAD=%s,
             ORIGEN_REPORTE=%s, RESPONSABLE_PAGO=%s, ID_PROVEEDOR_ASIGNADO=%s,
             ID_COTIZACION_APROBADA=%s, QUIEN_ARREGLA=%s, APROBADO_POR=%s,
-            FECHA_ARREGLO=%s, ESTADO=%s, MOTIVO_CANCELACION=%s, UPDATED_AT=%s, UPDATED_BY=%s
+            FECHA_ARREGLO=%s, ESTADO=%s, MOTIVO_CANCELACION=%s, ESTADO_PAGO=%s,
+            UPDATED_AT=%s, UPDATED_BY=%s
         WHERE ID_INCIDENTE=%s
         """
         params = (
@@ -134,6 +136,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             incidente.fecha_arreglo,
             incidente.estado,
             incidente.motivo_cancelacion,
+            incidente.estado_pago,
             incidente.updated_at,
             incidente.updated_by,
             incidente.id_incidente,

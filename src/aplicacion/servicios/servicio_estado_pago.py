@@ -1,0 +1,213 @@
+"""
+Servicio para actualización automática del estado de pago de incidentes.
+Se ejecuta cuando una liquidación cambia de estado (Pagada o Reversión).
+
+Feature: 003-integracion-incidentes-liquidaciones
+Date: 2026-06-30
+"""
+
+import logging
+from typing import Dict, List, Optional
+
+from src.dominio.interfaces.repositorio_plan_pago import RepositorioPlanPago
+from src.dominio.interfaces.repositorio_cuota import RepositorioCuota
+from src.dominio.interfaces.repositorio_incidente_liq import RepositorioIncidenteLiquidacion
+from src.dominio.interfaces.repositorio_incidentes import RepositorioIncidentes
+
+logger = logging.getLogger(__name__)
+
+
+class ServicioEstadoPagoAutomatico:
+    """
+    Servicio para actualizar automáticamente el estado de pago de incidentes
+    cuando el estado de una liquidación cambia.
+    
+    Responsibilities:
+    - Recalcular estado_pago de incidentes cuando liquidación se marca como Pagada
+    - Recalcular estado_pago de incidentes cuando liquidación se revierte
+    - Mantener consistencia entre liquidaciones pagadas y estado de incidentes
+    """
+
+    def __init__(
+        self,
+        repositorio_plan: RepositorioPlanPago,
+        repositorio_cuota: RepositorioCuota,
+        repositorio_relacion: RepositorioIncidenteLiquidacion,
+        repositorio_incidentes: RepositorioIncidentes,
+    ):
+        self.repositorio_plan = repositorio_plan
+        self.repositorio_cuota = repositorio_cuota
+        self.repositorio_relacion = repositorio_relacion
+        self.repositorio_incidentes = repositorio_incidentes
+
+    def actualizar_estado_pago_por_liquidacion(
+        self,
+        id_liquidacion: int,
+        usuario: str,
+    ) -> Dict[str, any]:
+        """
+        Actualiza el estado de pago de todos los incidentes asociados a una liquidación.
+        Se llama cuando la liquidación cambia de estado (Pagada o Reversión).
+        
+        Args:
+            id_liquidacion: ID de la liquidación que cambió de estado
+            usuario: Usuario que realizó la operación
+            
+        Returns:
+            Dict con resultado de la operación
+        """
+        try:
+            # 1. Obtener todas las relaciones de esta liquidación
+            relaciones = self.repositorio_relacion.obtener_por_liquidacion(id_liquidacion)
+            
+            if not relaciones:
+                return {
+                    "success": True,
+                    "data": {"incidentes_actualizados": 0},
+                    "message": "No hay incidentes asociados a esta liquidación",
+                }
+            
+            # 2. Para cada incidente asociado, recalcular su estado de pago
+            incidentes_actualizados = 0
+            for relacion in relaciones:
+                resultado = self.recalcular_estado_pago_incidente(
+                    relacion.id_incidente, usuario
+                )
+                if resultado.get("success"):
+                    incidentes_actualizados += 1
+            
+            logger.info(
+                f"Estados de pago actualizados para liquidación {id_liquidacion}: "
+                f"{incidentes_actualizados} incidentes"
+            )
+            
+            return {
+                "success": True,
+                "data": {"incidentes_actualizados": incidentes_actualizados},
+                "message": f"{incidentes_actualizados} incidente(s) actualizado(s)",
+            }
+            
+        except Exception as e:
+            logger.error(f"Error al actualizar estados de pago: {e}")
+            return {
+                "success": False,
+                "error": "ERROR_INESPERADO",
+                "message": f"Error al actualizar estados: {str(e)}",
+            }
+
+    def recalcular_estado_pago_incidente(
+        self,
+        id_incidente: int,
+        usuario: str,
+    ) -> Dict[str, any]:
+        """
+        Recalcula el estado de pago de un incidente específico.
+        
+        Lógica:
+        - Si tiene plan activo y todas sus cuotas asociadas a liquidaciones Pagadas → "Pagado"
+        - Si tiene plan activo y algunas cuotas asociadas a liquidaciones Pagadas → "Parcialmente Pagado"
+        - Si tiene plan activo pero ninguna cuota a liquidación Pagada → "Pendiente"
+        - Si no tiene plan activo → "Pendiente"
+        
+        Args:
+            id_incidente: ID del incidente
+            usuario: Usuario que realizó la operación
+            
+        Returns:
+            Dict con resultado de la operación
+        """
+        try:
+            # 1. Obtener el plan activo del incidente
+            plan = self.repositorio_plan.obtener_por_incidente(id_incidente)
+            
+            if not plan:
+                # Sin plan activo, estado sigue pendiente
+                return {
+                    "success": True,
+                    "data": {"estado_pago": "Pendiente"},
+                }
+            
+            # 2. Obtener todas las cuotas del plan
+            cuotas = self.repositorio_cuota.obtener_por_plan(plan.id_plan_pago)
+            
+            if not cuotas:
+                return {
+                    "success": True,
+                    "data": {"estado_pago": "Pendiente"},
+                }
+            
+            # 3. Filtrar cuotas que tienen liquidación asociada
+            cuotas_con_liq = [c for c in cuotas if c.id_liquidacion is not None]
+            
+            if not cuotas_con_liq:
+                # No hay cuotas asociadas a liquidaciones
+                nuevo_estado = "Pendiente"
+            else:
+                # 4. Verificar cuántas de estas liquidaciones están Pagadas
+                # Necesitamos obtener el estado de cada liquidación asociada
+                from src.infraestructura.persistencia.database import db_manager
+                from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
+                    RepositorioLiquidacionPostgres,
+                )
+                
+                repo_liq = RepositorioLiquidacionPostgres(db_manager)
+                cuotas_pagadas = 0
+                
+                for cuota in cuotas_con_liq:
+                    liquidacion = repo_liq.obtener_por_id(cuota.id_liquidacion)
+                    if liquidacion and liquidacion.estado_liquidacion == "Pagada":
+                        cuotas_pagadas += 1
+                
+                total_con_liq = len(cuotas_con_liq)
+                
+                # 5. Determinar estado de pago
+                if cuotas_pagadas == total_con_liq:
+                    nuevo_estado = "Pagado"
+                elif cuotas_pagadas > 0:
+                    nuevo_estado = "Parcialmente Pagado"
+                else:
+                    nuevo_estado = "Pendiente"
+            
+            # 6. Actualizar estado del incidente
+            incidente = self.repositorio_incidentes.obtener_por_id(id_incidente)
+            if incidente:
+                estado_anterior = incidente.estado_pago
+                if estado_anterior != nuevo_estado:
+                    incidente.estado_pago = nuevo_estado
+                    self.repositorio_incidentes.actualizar(incidente)
+                    
+                    logger.info(
+                        f"Incidente {id_incidente}: estado_pago cambiado "
+                        f"de '{estado_anterior}' a '{nuevo_estado}' por {usuario}"
+                    )
+            
+            return {
+                "success": True,
+                "data": {"estado_pago": nuevo_estado},
+            }
+            
+        except Exception as e:
+            logger.error(f"Error al recalculcar estado de pago del incidente {id_incidente}: {e}")
+            return {
+                "success": False,
+                "error": "ERROR_INESPERADO",
+                "message": f"Error al recalcular: {str(e)}",
+            }
+
+    def revertir_estado_pago_por_liquidacion(
+        self,
+        id_liquidacion: int,
+        usuario: str,
+    ) -> Dict[str, any]:
+        """
+        Revierte el estado de pago de incidentes cuando una liquidación se revierte de Pagada.
+        Actualiza los estados de pago de todos los incidentes asociados.
+        
+        Args:
+            id_liquidacion: ID de la liquidación que se revirtió
+            usuario: Usuario que realizó la reversión
+            
+        Returns:
+            Dict con resultado de la operación
+        """
+        return self.actualizar_estado_pago_por_liquidacion(id_liquidacion, usuario)

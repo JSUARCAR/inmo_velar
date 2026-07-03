@@ -20,6 +20,9 @@ from src.presentacion_reflex.components.liquidaciones import (
     reverse_pago_confirm_dialog,
     modal_exportar_liquidaciones_periodo,
 )
+from src.presentacion_reflex.components.liquidaciones.modal_seleccion_incidentes import (
+    modal_seleccion_incidentes,
+)
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 from src.presentacion_reflex.state.pdf_state import PDFState
@@ -694,6 +697,7 @@ def liquidaciones_page() -> rx.Component:
         reverse_confirm_dialog(),
         reverse_pago_confirm_dialog(),
         modal_exportar_liquidaciones_periodo(),
+        modal_seleccion_incidentes(),
         width="100%",
         spacing="4",
         padding="2em",

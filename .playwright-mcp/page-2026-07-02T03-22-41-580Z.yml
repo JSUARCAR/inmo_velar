@@ -1,0 +1,1716 @@
+- generic [active] [ref=f4e1]:
+  - region "Notifications alt+T"
+  - generic [ref=f4e2]:
+    - generic "Connection Error:"
+    - generic [ref=f4e3]:
+      - generic [ref=f4e4]:
+        - generic [ref=f4e5]:
+          - generic [ref=f4e6]:
+            - img "Logo" [ref=f4e8] [cursor=pointer]
+            - heading "INMOBILIARIA VELAR SAS" [level=1] [ref=f4e9]
+          - generic [ref=f4e12]:
+            - generic [ref=f4e13]:
+              - paragraph [ref=f4e15]: PRINCIPAL
+              - link "Dashboard" [ref=f4e16] [cursor=pointer]:
+                - /url: /dashboard
+                - generic [ref=f4e18]:
+                  - img [ref=f4e19]
+                  - paragraph [ref=f4e24]: Dashboard
+              - link "Alertas Tempranas" [ref=f4e25] [cursor=pointer]:
+                - /url: /alertas
+                - generic [ref=f4e27]:
+                  - img [ref=f4e28]
+                  - paragraph [ref=f4e33]: Alertas Tempranas
+            - generic [ref=f4e34]:
+              - paragraph [ref=f4e36]: GESTIÓN
+              - link "Personas" [ref=f4e37] [cursor=pointer]:
+                - /url: /personas
+                - generic [ref=f4e39]:
+                  - img [ref=f4e40]
+                  - paragraph [ref=f4e45]: Personas
+              - link "Propiedades" [ref=f4e46] [cursor=pointer]:
+                - /url: /propiedades
+                - generic [ref=f4e48]:
+                  - img [ref=f4e49]
+                  - paragraph [ref=f4e52]: Propiedades
+              - link "Contratos" [ref=f4e53] [cursor=pointer]:
+                - /url: /contratos
+                - generic [ref=f4e55]:
+                  - img [ref=f4e56]
+                  - paragraph [ref=f4e59]: Contratos
+              - link "Prop. Horizontal" [ref=f4e60] [cursor=pointer]:
+                - /url: /propiedad-horizontal
+                - generic [ref=f4e62]:
+                  - img [ref=f4e63]
+                  - paragraph [ref=f4e66]: Prop. Horizontal
+              - link "Proveedores" [ref=f4e67] [cursor=pointer]:
+                - /url: /proveedores
+                - generic [ref=f4e69]:
+                  - img [ref=f4e70]
+                  - paragraph [ref=f4e72]: Proveedores
+            - generic [ref=f4e73]:
+              - paragraph [ref=f4e75]: OPERACIONES
+              - link "Liquidaciones" [ref=f4e76] [cursor=pointer]:
+                - /url: /liquidaciones
+                - generic [ref=f4e78]:
+                  - img [ref=f4e79]
+                  - paragraph [ref=f4e81]: Liquidaciones
+              - link "Liquidación Asesores" [ref=f4e82] [cursor=pointer]:
+                - /url: /liquidacion-asesores
+                - generic [ref=f4e84]:
+                  - img [ref=f4e85]
+                  - paragraph [ref=f4e89]: Liquidación Asesores
+              - link "Recaudos" [ref=f4e90] [cursor=pointer]:
+                - /url: /recaudos
+                - generic [ref=f4e92]:
+                  - img [ref=f4e93]
+                  - paragraph [ref=f4e98]: Recaudos
+              - link "Desocupaciones" [ref=f4e99] [cursor=pointer]:
+                - /url: /desocupaciones
+                - generic [ref=f4e101]:
+                  - img [ref=f4e102]
+                  - paragraph [ref=f4e105]: Desocupaciones
+              - link "Incidentes" [ref=f4e106] [cursor=pointer]:
+                - /url: /incidentes
+                - generic [ref=f4e108]:
+                  - img [ref=f4e109]
+                  - paragraph [ref=f4e111]: Incidentes
+              - link "Seguros" [ref=f4e112] [cursor=pointer]:
+                - /url: /seguros
+                - generic [ref=f4e114]:
+                  - img [ref=f4e115]
+                  - paragraph [ref=f4e117]: Seguros
+              - link "Recibos Públicos" [ref=f4e118] [cursor=pointer]:
+                - /url: /recibos-publicos
+                - generic [ref=f4e120]:
+                  - img [ref=f4e121]
+                  - paragraph [ref=f4e123]: Recibos Públicos
+              - link "Saldos a Favor" [ref=f4e124] [cursor=pointer]:
+                - /url: /saldos-favor
+                - generic [ref=f4e126]:
+                  - img [ref=f4e127]
+                  - paragraph [ref=f4e130]: Saldos a Favor
+            - generic [ref=f4e131]:
+              - paragraph [ref=f4e133]: ADMINISTRACIÓN
+              - link "Usuarios" [ref=f4e134] [cursor=pointer]:
+                - /url: /usuarios
+                - generic [ref=f4e136]:
+                  - img [ref=f4e137]
+                  - paragraph [ref=f4e141]: Usuarios
+              - link "Configuración" [ref=f4e142] [cursor=pointer]:
+                - /url: /configuracion
+                - generic [ref=f4e144]:
+                  - img [ref=f4e145]
+                  - paragraph [ref=f4e148]: Configuración
+              - link "IPC / Incrementos" [ref=f4e149] [cursor=pointer]:
+                - /url: /incrementos
+                - generic [ref=f4e151]:
+                  - img [ref=f4e152]
+                  - paragraph [ref=f4e155]: IPC / Incrementos
+              - link "Auditoría" [ref=f4e156] [cursor=pointer]:
+                - /url: /auditoria
+                - generic [ref=f4e158]:
+                  - img [ref=f4e159]
+                  - paragraph [ref=f4e162]: Auditoría
+              - link "Reportes" [ref=f4e163] [cursor=pointer]:
+                - /url: /reportes
+                - generic [ref=f4e165]:
+                  - img [ref=f4e166]
+                  - paragraph [ref=f4e169]: Reportes
+          - generic [ref=f4e170]:
+            - img [ref=f4e171]
+            - generic [ref=f4e175]:
+              - paragraph [ref=f4e176]: admin
+              - paragraph [ref=f4e177]: Administrador
+            - generic [ref=f4e179]:
+              - button [ref=f4e180]:
+                - img [ref=f4e181]
+              - button [ref=f4e185]:
+                - img [ref=f4e188]
+              - button [ref=f4e191]:
+                - img [ref=f4e192]
+        - generic [ref=f4e196]:
+          - heading "Gestión de Incidentes" [level=1] [ref=f4e197]
+          - generic [ref=f4e198]:
+            - textbox "Buscar incidente..." [ref=f4e200]
+            - combobox [ref=f4e201]:
+              - generic [ref=f4e202]: Todas
+              - img [ref=f4e203]
+            - combobox [ref=f4e205]:
+              - generic [ref=f4e206]: Todos
+              - img [ref=f4e207]
+            - group [ref=f4e210]:
+              - radio "Kanban" [checked] [ref=f4e211]:
+                - generic [ref=f4e213]:
+                  - generic [ref=f4e214]: Kanban
+                  - generic [ref=f4e215]: Kanban
+              - radio "Lista" [ref=f4e216]:
+                - generic [ref=f4e218]:
+                  - generic [ref=f4e219]: Lista
+                  - generic [ref=f4e220]: Lista
+            - button "Reportar" [ref=f4e221] [cursor=pointer]:
+              - generic [ref=f4e222]:
+                - img [ref=f4e223]
+                - paragraph [ref=f4e224]: Reportar
+          - generic [ref=f4e229]:
+            - generic [ref=f4e230]:
+              - generic [ref=f4e231]:
+                - generic [ref=f4e232]:
+                  - img [ref=f4e233]
+                  - paragraph [ref=f4e236]: Reportado
+                - generic [ref=f4e237]: "7"
+              - generic [ref=f4e241]:
+                - generic [ref=f4e245] [cursor=pointer]:
+                  - generic [ref=f4e246]:
+                    - paragraph [ref=f4e247]: INC-48
+                    - generic [ref=f4e249]:
+                      - img [ref=f4e250]
+                      - paragraph [ref=f4e252]: 2026-06-07
+                    - generic [ref=f4e253]: Alta
+                  - generic [ref=f4e254]:
+                    - img [ref=f4e255]
+                    - paragraph [ref=f4e258]: BRR ROJAS PINILLA ET 1 MZ 2 CS 28
+                  - generic [ref=f4e259]:
+                    - generic "Propietario" [ref=f4e260]:
+                      - img [ref=f4e261]
+                      - paragraph [ref=f4e264]: JOSE LUIS BOTERO PEREZ
+                      - generic [ref=f4e265]:
+                        - paragraph [ref=f4e266]: /
+                        - img [ref=f4e267]
+                        - paragraph [ref=f4e269]: "3117549594"
+                    - generic "Inquilino" [ref=f4e270]:
+                      - img [ref=f4e271]
+                      - paragraph [ref=f4e275]: DIEGO MAURICIO CASAS FLORES
+                      - generic [ref=f4e276]:
+                        - paragraph [ref=f4e277]: /
+                        - img [ref=f4e278]
+                        - paragraph [ref=f4e280]: "3148952352"
+                    - generic "Habitante" [ref=f4e281]:
+                      - img [ref=f4e282]
+                      - paragraph [ref=f4e287]: DIEGO MAURICIO CASAS FLORES
+                      - generic [ref=f4e288]:
+                        - paragraph [ref=f4e289]: /
+                        - img [ref=f4e290]
+                        - paragraph [ref=f4e292]: "3148952352"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e293]:
+                    - generic [ref=f4e295]:
+                      - img [ref=f4e296]
+                      - paragraph [ref=f4e299]: Inquilino
+                    - paragraph
+                - generic [ref=f4e304] [cursor=pointer]:
+                  - generic [ref=f4e305]:
+                    - paragraph [ref=f4e306]: INC-46
+                    - generic [ref=f4e308]:
+                      - img [ref=f4e309]
+                      - paragraph [ref=f4e311]: 2026-06-04
+                    - generic [ref=f4e312]: Media
+                  - generic [ref=f4e313]:
+                    - img [ref=f4e314]
+                    - paragraph [ref=f4e317]: EDF LA PATRIA AP 101
+                  - generic [ref=f4e318]:
+                    - generic "Propietario" [ref=f4e319]:
+                      - img [ref=f4e320]
+                      - paragraph [ref=f4e323]: HEMAY ANDRES ORTIZ MORALES
+                      - generic [ref=f4e324]:
+                        - paragraph [ref=f4e325]: /
+                        - img [ref=f4e326]
+                        - paragraph [ref=f4e328]: "447539328419"
+                    - generic "Inquilino" [ref=f4e329]:
+                      - img [ref=f4e330]
+                      - paragraph [ref=f4e334]: MARIANA ORTIZ CASTRO
+                      - generic [ref=f4e335]:
+                        - paragraph [ref=f4e336]: /
+                        - img [ref=f4e337]
+                        - paragraph [ref=f4e339]: "3143353568"
+                    - generic "Habitante" [ref=f4e340]:
+                      - img [ref=f4e341]
+                      - paragraph [ref=f4e346]: MARIANA ORTIZ CASTRO
+                      - generic [ref=f4e347]:
+                        - paragraph [ref=f4e348]: /
+                        - img [ref=f4e349]
+                        - paragraph [ref=f4e351]: "3143353568"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e352]:
+                    - generic [ref=f4e354]:
+                      - img [ref=f4e355]
+                      - paragraph [ref=f4e358]: Inquilino
+                    - paragraph
+                - generic [ref=f4e363] [cursor=pointer]:
+                  - generic [ref=f4e364]:
+                    - paragraph [ref=f4e365]: INC-49
+                    - generic [ref=f4e367]:
+                      - img [ref=f4e368]
+                      - paragraph [ref=f4e370]: 2026-05-25
+                    - generic [ref=f4e371]: Media
+                  - generic [ref=f4e372]:
+                    - img [ref=f4e373]
+                    - paragraph [ref=f4e376]: BRR LAS AMERICAS PI 1
+                  - generic [ref=f4e377]:
+                    - generic "Propietario" [ref=f4e378]:
+                      - img [ref=f4e379]
+                      - paragraph [ref=f4e382]: ALBA GABRIELA GARCÍA URIBE
+                      - generic [ref=f4e383]:
+                        - paragraph [ref=f4e384]: /
+                        - img [ref=f4e385]
+                        - paragraph [ref=f4e387]: "3203318684"
+                    - generic "Inquilino" [ref=f4e388]:
+                      - img [ref=f4e389]
+                      - paragraph [ref=f4e393]: ANGIE JOHANA PEREZ OSUNA
+                      - generic [ref=f4e394]:
+                        - paragraph [ref=f4e395]: /
+                        - img [ref=f4e396]
+                        - paragraph [ref=f4e398]: "3222921413"
+                    - generic "Habitante" [ref=f4e399]:
+                      - img [ref=f4e400]
+                      - paragraph [ref=f4e405]: ANGIE JOHANA PEREZ OSUNA
+                      - generic [ref=f4e406]:
+                        - paragraph [ref=f4e407]: /
+                        - img [ref=f4e408]
+                        - paragraph [ref=f4e410]: "3222921413"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e411]:
+                    - generic [ref=f4e413]:
+                      - img [ref=f4e414]
+                      - paragraph [ref=f4e417]: Inquilino
+                    - paragraph
+                - generic [ref=f4e422] [cursor=pointer]:
+                  - generic [ref=f4e423]:
+                    - paragraph [ref=f4e424]: INC-41
+                    - generic [ref=f4e426]:
+                      - img [ref=f4e427]
+                      - paragraph [ref=f4e429]: 2026-04-30
+                    - generic [ref=f4e430]: Alta
+                  - generic [ref=f4e431]:
+                    - img [ref=f4e432]
+                    - paragraph [ref=f4e435]: BRR VILLA LILIANA MZ N CS 20 PI 2
+                  - generic [ref=f4e436]:
+                    - generic "Propietario" [ref=f4e437]:
+                      - img [ref=f4e438]
+                      - paragraph [ref=f4e441]: JORGE ELIECER ECHEVERRI GOMEZ
+                      - generic [ref=f4e442]:
+                        - paragraph [ref=f4e443]: /
+                        - img [ref=f4e444]
+                        - paragraph [ref=f4e446]: "57663707292"
+                    - generic "Inquilino" [ref=f4e447]:
+                      - img [ref=f4e448]
+                      - paragraph [ref=f4e452]: DOLLY VELÁSQUEZ QUINTERO
+                      - generic [ref=f4e453]:
+                        - paragraph [ref=f4e454]: /
+                        - img [ref=f4e455]
+                        - paragraph [ref=f4e457]: "3128118999"
+                    - generic "Habitante" [ref=f4e458]:
+                      - img [ref=f4e459]
+                      - paragraph [ref=f4e464]: DOLLY VELÁSQUEZ QUINTERO
+                      - generic [ref=f4e465]:
+                        - paragraph [ref=f4e466]: /
+                        - img [ref=f4e467]
+                        - paragraph [ref=f4e469]: "3128118999"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e470]:
+                    - generic [ref=f4e472]:
+                      - img [ref=f4e473]
+                      - paragraph [ref=f4e476]: Inquilino
+                    - paragraph
+                - generic [ref=f4e481] [cursor=pointer]:
+                  - generic [ref=f4e482]:
+                    - paragraph [ref=f4e483]: INC-38
+                    - generic [ref=f4e485]:
+                      - img [ref=f4e486]
+                      - paragraph [ref=f4e488]: 2026-04-26
+                    - generic [ref=f4e489]: Baja
+                  - generic [ref=f4e490]:
+                    - img [ref=f4e491]
+                    - paragraph [ref=f4e494]: EDF LA PATRIA AP 402
+                  - generic [ref=f4e495]:
+                    - generic "Propietario" [ref=f4e496]:
+                      - img [ref=f4e497]
+                      - paragraph [ref=f4e500]: STEVEN RAMÍREZ CORREA
+                      - generic [ref=f4e501]:
+                        - paragraph [ref=f4e502]: /
+                        - img [ref=f4e503]
+                        - paragraph [ref=f4e505]: +44 7751 718697
+                    - generic "Inquilino" [ref=f4e506]:
+                      - img [ref=f4e507]
+                      - paragraph [ref=f4e511]: MARIA DEL ROSARIO MONTES
+                      - generic [ref=f4e512]:
+                        - paragraph [ref=f4e513]: /
+                        - img [ref=f4e514]
+                        - paragraph [ref=f4e516]: "3117431027"
+                    - generic "Habitante" [ref=f4e517]:
+                      - img [ref=f4e518]
+                      - paragraph [ref=f4e523]: MARIA DEL ROSARIO MONTES
+                      - generic [ref=f4e524]:
+                        - paragraph [ref=f4e525]: /
+                        - img [ref=f4e526]
+                        - paragraph [ref=f4e528]: "3117431027"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e529]:
+                    - generic [ref=f4e531]:
+                      - img [ref=f4e532]
+                      - paragraph [ref=f4e535]: Inquilino
+                    - paragraph
+                - generic [ref=f4e540] [cursor=pointer]:
+                  - generic [ref=f4e541]:
+                    - paragraph [ref=f4e542]: INC-33
+                    - generic [ref=f4e544]:
+                      - img [ref=f4e545]
+                      - paragraph [ref=f4e547]: 2026-04-15
+                    - generic [ref=f4e548]: Alta
+                  - generic [ref=f4e549]:
+                    - img [ref=f4e550]
+                    - paragraph [ref=f4e553]: BRR VILLA SOFIA MZ C CS 10
+                  - generic [ref=f4e554]:
+                    - generic "Propietario" [ref=f4e555]:
+                      - img [ref=f4e556]
+                      - paragraph [ref=f4e559]: MAGNA PATRICIA ESCARRAGA SERNA
+                      - generic [ref=f4e560]:
+                        - paragraph [ref=f4e561]: /
+                        - img [ref=f4e562]
+                        - paragraph [ref=f4e564]: "3106391187"
+                    - generic "Inquilino" [ref=f4e565]:
+                      - img [ref=f4e566]
+                      - paragraph [ref=f4e570]: THAIWILL ANYELI ESTWIK RUIZ
+                      - generic [ref=f4e571]:
+                        - paragraph [ref=f4e572]: /
+                        - img [ref=f4e573]
+                        - paragraph [ref=f4e575]: "3127408952"
+                    - generic "Habitante" [ref=f4e576]:
+                      - img [ref=f4e577]
+                      - paragraph [ref=f4e582]: THAIWILL ANYELI ESTWIK RUIZ
+                      - generic [ref=f4e583]:
+                        - paragraph [ref=f4e584]: /
+                        - img [ref=f4e585]
+                        - paragraph [ref=f4e587]: "3127408952"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e588]:
+                    - generic [ref=f4e590]:
+                      - img [ref=f4e591]
+                      - paragraph [ref=f4e594]: Inquilino
+                    - paragraph
+                - generic [ref=f4e599] [cursor=pointer]:
+                  - generic [ref=f4e600]:
+                    - paragraph [ref=f4e601]: INC-16
+                    - generic [ref=f4e603]:
+                      - img [ref=f4e604]
+                      - paragraph [ref=f4e606]: 2026-03-14
+                    - generic [ref=f4e607]: Alta
+                  - generic [ref=f4e608]:
+                    - img [ref=f4e609]
+                    - paragraph [ref=f4e612]: CND MATTIZ TO B AP 906 PQ 153
+                  - generic [ref=f4e613]:
+                    - generic "Propietario" [ref=f4e614]:
+                      - img [ref=f4e615]
+                      - paragraph [ref=f4e618]: JHON FREDY ARIAS
+                      - generic [ref=f4e619]:
+                        - paragraph [ref=f4e620]: /
+                        - img [ref=f4e621]
+                        - paragraph [ref=f4e623]: "3108349697"
+                    - generic "Inquilino" [ref=f4e624]:
+                      - img [ref=f4e625]
+                      - paragraph [ref=f4e629]: JUAN CARLOS LÓPEZ BARRERA
+                      - generic [ref=f4e630]:
+                        - paragraph [ref=f4e631]: /
+                        - img [ref=f4e632]
+                        - paragraph [ref=f4e634]: "3226928621"
+                    - generic "Habitante" [ref=f4e635]:
+                      - img [ref=f4e636]
+                      - paragraph [ref=f4e641]: JUAN CARLOS LÓPEZ BARRERA
+                      - generic [ref=f4e642]:
+                        - paragraph [ref=f4e643]: /
+                        - img [ref=f4e644]
+                        - paragraph [ref=f4e646]: "3226928621"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e647]:
+                    - generic [ref=f4e649]:
+                      - img [ref=f4e650]
+                      - paragraph [ref=f4e653]: Inquilino
+                    - paragraph
+            - generic [ref=f4e657]:
+              - generic [ref=f4e658]:
+                - generic [ref=f4e659]:
+                  - img [ref=f4e660]
+                  - paragraph [ref=f4e662]: Cotizado
+                - generic [ref=f4e663]: "1"
+              - generic [ref=f4e671] [cursor=pointer]:
+                - generic [ref=f4e672]:
+                  - paragraph [ref=f4e673]: INC-47
+                  - generic [ref=f4e675]:
+                    - img [ref=f4e676]
+                    - paragraph [ref=f4e678]: 2026-05-28
+                  - generic [ref=f4e679]: Alta
+                - generic [ref=f4e680]:
+                  - img [ref=f4e681]
+                  - paragraph [ref=f4e684]: CL 49 CR 56-65 TO 1 AP 101, VERDU II
+                - generic [ref=f4e685]:
+                  - generic "Propietario" [ref=f4e686]:
+                    - img [ref=f4e687]
+                    - paragraph [ref=f4e690]: BRAYAN ANDRES CEBALLOS
+                    - generic [ref=f4e691]:
+                      - paragraph [ref=f4e692]: /
+                      - img [ref=f4e693]
+                      - paragraph [ref=f4e695]: "85998010959"
+                  - generic "Inquilino" [ref=f4e696]:
+                    - img [ref=f4e697]
+                    - paragraph [ref=f4e701]: EISENHOWER ARIZA PENAGOS
+                    - generic [ref=f4e702]:
+                      - paragraph [ref=f4e703]: /
+                      - img [ref=f4e704]
+                      - paragraph [ref=f4e706]: "3045660085"
+                  - generic "Habitante" [ref=f4e707]:
+                    - img [ref=f4e708]
+                    - paragraph [ref=f4e713]: EISENHOWER ARIZA PENAGOS
+                    - generic [ref=f4e714]:
+                      - paragraph [ref=f4e715]: /
+                      - img [ref=f4e716]
+                      - paragraph [ref=f4e718]: "3045660085"
+                - generic [ref=f4e719]:
+                  - paragraph [ref=f4e720]: Cotizaciones
+                  - generic [ref=f4e722]:
+                    - img [ref=f4e723]
+                    - paragraph [ref=f4e726]: "226000"
+                - paragraph
+                - paragraph
+                - generic [ref=f4e727]:
+                  - generic [ref=f4e729]:
+                    - img [ref=f4e730]
+                    - paragraph [ref=f4e733]: Inquilino
+                  - paragraph
+            - generic [ref=f4e736]:
+              - generic [ref=f4e737]:
+                - generic [ref=f4e738]:
+                  - img [ref=f4e739]
+                  - paragraph [ref=f4e741]: Aprobado
+                - generic [ref=f4e742]: "2"
+              - generic [ref=f4e746]:
+                - generic [ref=f4e750] [cursor=pointer]:
+                  - generic [ref=f4e751]:
+                    - paragraph [ref=f4e752]: INC-52
+                    - generic [ref=f4e754]:
+                      - img [ref=f4e755]
+                      - paragraph [ref=f4e757]: 2026-07-01
+                    - generic [ref=f4e758]: Media
+                  - generic [ref=f4e759]:
+                    - img [ref=f4e760]
+                    - paragraph [ref=f4e763]: Calle Falsa 123 - Test Renov
+                  - generic [ref=f4e764]:
+                    - generic "Propietario" [ref=f4e765]:
+                      - img [ref=f4e766]
+                      - paragraph [ref=f4e769]: SANTIAGO GÓMEZ PEÑA
+                      - generic [ref=f4e770]:
+                        - paragraph [ref=f4e771]: /
+                        - img [ref=f4e772]
+                        - paragraph [ref=f4e774]: "3106272823"
+                    - generic "Inquilino" [ref=f4e775]:
+                      - img [ref=f4e776]
+                      - paragraph [ref=f4e780]: Juan Test Renov
+                      - paragraph
+                    - generic "Habitante" [ref=f4e781]:
+                      - img [ref=f4e782]
+                      - paragraph [ref=f4e787]: Juan Test Renov
+                      - paragraph
+                  - paragraph
+                  - generic [ref=f4e788]:
+                    - img [ref=f4e789]
+                    - paragraph [ref=f4e793]: YEISON MAESTRO
+                    - paragraph [ref=f4e794]: $70000
+                  - paragraph
+                  - generic [ref=f4e795]:
+                    - generic [ref=f4e797]:
+                      - img [ref=f4e798]
+                      - paragraph [ref=f4e801]: Inquilino
+                    - generic [ref=f4e803]:
+                      - img [ref=f4e804]
+                      - paragraph [ref=f4e806]: Pendiente
+                - generic [ref=f4e811] [cursor=pointer]:
+                  - generic [ref=f4e812]:
+                    - paragraph [ref=f4e813]: INC-45
+                    - generic [ref=f4e815]:
+                      - img [ref=f4e816]
+                      - paragraph [ref=f4e818]: 2026-04-29
+                    - generic [ref=f4e819]: Alta
+                  - generic [ref=f4e820]:
+                    - img [ref=f4e821]
+                    - paragraph [ref=f4e824]: CONJ CIUDADELA COMFENALCO MZ H CS 29
+                  - generic [ref=f4e825]:
+                    - generic "Propietario" [ref=f4e826]:
+                      - img [ref=f4e827]
+                      - paragraph [ref=f4e830]: JHON JAMES MENDOZA RENDON
+                      - generic [ref=f4e831]:
+                        - paragraph [ref=f4e832]: /
+                        - img [ref=f4e833]
+                        - paragraph [ref=f4e835]: "3186457734"
+                    - generic "Inquilino" [ref=f4e836]:
+                      - img [ref=f4e837]
+                      - paragraph [ref=f4e841]: ARIF BEDOYA LOPEZ
+                      - generic [ref=f4e842]:
+                        - paragraph [ref=f4e843]: /
+                        - img [ref=f4e844]
+                        - paragraph [ref=f4e846]: "3208265710"
+                    - generic "Habitante" [ref=f4e847]:
+                      - img [ref=f4e848]
+                      - paragraph [ref=f4e853]: ARIF BEDOYA LOPEZ
+                      - generic [ref=f4e854]:
+                        - paragraph [ref=f4e855]: /
+                        - img [ref=f4e856]
+                        - paragraph [ref=f4e858]: "3208265710"
+                  - paragraph
+                  - generic [ref=f4e859]:
+                    - img [ref=f4e860]
+                    - paragraph [ref=f4e864]: YEISON MAESTRO
+                    - paragraph [ref=f4e865]: $285000
+                  - paragraph
+                  - generic [ref=f4e866]:
+                    - generic [ref=f4e868]:
+                      - img [ref=f4e869]
+                      - paragraph [ref=f4e872]: Inquilino
+                    - generic [ref=f4e874]:
+                      - img [ref=f4e875]
+                      - paragraph [ref=f4e877]: Pendiente
+            - generic [ref=f4e880]:
+              - generic [ref=f4e881]:
+                - generic [ref=f4e882]:
+                  - img [ref=f4e883]
+                  - paragraph [ref=f4e885]: En Reparación
+                - generic [ref=f4e886]: "0"
+              - generic [ref=f4e890]:
+                - img [ref=f4e891]
+                - paragraph [ref=f4e893]: Sin incidentes
+            - generic [ref=f4e895]:
+              - generic [ref=f4e896]:
+                - generic [ref=f4e897]:
+                  - img [ref=f4e898]
+                  - paragraph [ref=f4e900]: Finalizado
+                - generic [ref=f4e901]: "24"
+              - generic [ref=f4e905]:
+                - generic [ref=f4e909] [cursor=pointer]:
+                  - generic [ref=f4e910]:
+                    - paragraph [ref=f4e911]: INC-51
+                    - generic [ref=f4e913]:
+                      - img [ref=f4e914]
+                      - paragraph [ref=f4e916]: 2026-06-19
+                    - generic [ref=f4e917]: Alta
+                  - generic [ref=f4e918]:
+                    - img [ref=f4e919]
+                    - paragraph [ref=f4e922]: Calle Falsa 123 - Test Renov
+                  - generic [ref=f4e923]:
+                    - generic "Propietario" [ref=f4e924]:
+                      - img [ref=f4e925]
+                      - paragraph [ref=f4e928]: SANTIAGO GÓMEZ PEÑA
+                      - generic [ref=f4e929]:
+                        - paragraph [ref=f4e930]: /
+                        - img [ref=f4e931]
+                        - paragraph [ref=f4e933]: "3106272823"
+                    - generic "Inquilino" [ref=f4e934]:
+                      - img [ref=f4e935]
+                      - paragraph [ref=f4e939]: Juan Test Renov
+                      - paragraph
+                    - generic "Habitante" [ref=f4e940]:
+                      - img [ref=f4e941]
+                      - paragraph [ref=f4e946]: Juan Test Renov
+                      - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e947]:
+                    - img [ref=f4e948]
+                    - paragraph [ref=f4e951]: ALBERTO GOMEZ
+                    - paragraph [ref=f4e952]: $150000
+                    - generic [ref=f4e953]:
+                      - paragraph [ref=f4e954]: (
+                      - paragraph [ref=f4e955]: 2026-06-19
+                      - paragraph [ref=f4e956]: )
+                  - generic [ref=f4e957]:
+                    - generic [ref=f4e959]:
+                      - img [ref=f4e960]
+                      - paragraph [ref=f4e963]: Inquilino
+                    - generic [ref=f4e965]:
+                      - img [ref=f4e966]
+                      - paragraph [ref=f4e968]: Pendiente
+                - generic [ref=f4e973] [cursor=pointer]:
+                  - generic [ref=f4e974]:
+                    - paragraph [ref=f4e975]: INC-50
+                    - generic [ref=f4e977]:
+                      - img [ref=f4e978]
+                      - paragraph [ref=f4e980]: 2026-06-19
+                    - generic [ref=f4e981]: Media
+                  - generic [ref=f4e982]:
+                    - img [ref=f4e983]
+                    - paragraph [ref=f4e986]: BRR VILLA LILIANA AP 201, EDF FILIPINAS
+                  - generic [ref=f4e987]:
+                    - generic "Propietario" [ref=f4e988]:
+                      - img [ref=f4e989]
+                      - paragraph [ref=f4e992]: MAIRA ALEXANDRA ROMERO MARIN
+                      - generic [ref=f4e993]:
+                        - paragraph [ref=f4e994]: /
+                        - img [ref=f4e995]
+                        - paragraph [ref=f4e997]: "3135456965"
+                    - generic "Inquilino" [ref=f4e998]:
+                      - img [ref=f4e999]
+                      - paragraph [ref=f4e1003]: CARLOS ALBERTO PORRAS VALENCIA
+                      - generic [ref=f4e1004]:
+                        - paragraph [ref=f4e1005]: /
+                        - img [ref=f4e1006]
+                        - paragraph [ref=f4e1008]: "3234702231"
+                    - generic "Habitante" [ref=f4e1009]:
+                      - img [ref=f4e1010]
+                      - paragraph [ref=f4e1015]: CARLOS ALBERTO PORRAS VALENCIA
+                      - generic [ref=f4e1016]:
+                        - paragraph [ref=f4e1017]: /
+                        - img [ref=f4e1018]
+                        - paragraph [ref=f4e1020]: "3234702231"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1021]:
+                    - generic [ref=f4e1023]:
+                      - img [ref=f4e1024]
+                      - paragraph [ref=f4e1027]: Inquilino
+                    - paragraph
+                - generic [ref=f4e1032] [cursor=pointer]:
+                  - generic [ref=f4e1033]:
+                    - paragraph [ref=f4e1034]: INC-44
+                    - generic [ref=f4e1036]:
+                      - img [ref=f4e1037]
+                      - paragraph [ref=f4e1039]: 2026-05-28
+                    - generic [ref=f4e1040]: Alta
+                  - generic [ref=f4e1041]:
+                    - img [ref=f4e1042]
+                    - paragraph [ref=f4e1045]: CL 49 CR 56-65 TO 1 AP 101, VERDU II
+                  - generic [ref=f4e1046]:
+                    - generic "Propietario" [ref=f4e1047]:
+                      - img [ref=f4e1048]
+                      - paragraph [ref=f4e1051]: BRAYAN ANDRES CEBALLOS
+                      - generic [ref=f4e1052]:
+                        - paragraph [ref=f4e1053]: /
+                        - img [ref=f4e1054]
+                        - paragraph [ref=f4e1056]: "85998010959"
+                    - generic "Inquilino" [ref=f4e1057]:
+                      - img [ref=f4e1058]
+                      - paragraph [ref=f4e1062]: EISENHOWER ARIZA PENAGOS
+                      - generic [ref=f4e1063]:
+                        - paragraph [ref=f4e1064]: /
+                        - img [ref=f4e1065]
+                        - paragraph [ref=f4e1067]: "3045660085"
+                    - generic "Habitante" [ref=f4e1068]:
+                      - img [ref=f4e1069]
+                      - paragraph [ref=f4e1074]: EISENHOWER ARIZA PENAGOS
+                      - generic [ref=f4e1075]:
+                        - paragraph [ref=f4e1076]: /
+                        - img [ref=f4e1077]
+                        - paragraph [ref=f4e1079]: "3045660085"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1080]:
+                    - generic [ref=f4e1082]:
+                      - img [ref=f4e1083]
+                      - paragraph [ref=f4e1086]: Inquilino
+                    - paragraph
+                - generic [ref=f4e1091] [cursor=pointer]:
+                  - generic [ref=f4e1092]:
+                    - paragraph [ref=f4e1093]: INC-42
+                    - generic [ref=f4e1095]:
+                      - img [ref=f4e1096]
+                      - paragraph [ref=f4e1098]: 2026-05-20
+                    - generic [ref=f4e1099]: Media
+                  - generic [ref=f4e1100]:
+                    - img [ref=f4e1101]
+                    - paragraph [ref=f4e1104]: CR 40 CL 51-41 TO 5 AP 1A, CJT RES CIBELES
+                  - generic [ref=f4e1105]:
+                    - generic "Propietario" [ref=f4e1106]:
+                      - img [ref=f4e1107]
+                      - paragraph [ref=f4e1110]: CARLOS ARTURO MUÑOZ MUÑOZ
+                      - generic [ref=f4e1111]:
+                        - paragraph [ref=f4e1112]: /
+                        - img [ref=f4e1113]
+                        - paragraph [ref=f4e1115]: "3146720999"
+                    - generic "Inquilino" [ref=f4e1116]:
+                      - img [ref=f4e1117]
+                      - paragraph [ref=f4e1121]: MARIANA BERMÚDEZ RAMÍREZ
+                      - generic [ref=f4e1122]:
+                        - paragraph [ref=f4e1123]: /
+                        - img [ref=f4e1124]
+                        - paragraph [ref=f4e1126]: "3019691908"
+                    - generic "Habitante" [ref=f4e1127]:
+                      - img [ref=f4e1128]
+                      - paragraph [ref=f4e1133]: MARIANA BERMÚDEZ RAMÍREZ
+                      - generic [ref=f4e1134]:
+                        - paragraph [ref=f4e1135]: /
+                        - img [ref=f4e1136]
+                        - paragraph [ref=f4e1138]: "3019691908"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1139]:
+                    - img [ref=f4e1140]
+                    - paragraph [ref=f4e1143]: ALEXANDER JIMENEZ
+                    - paragraph [ref=f4e1144]: $50000
+                    - generic [ref=f4e1145]:
+                      - paragraph [ref=f4e1146]: (
+                      - paragraph [ref=f4e1147]: 2026-05-20
+                      - paragraph [ref=f4e1148]: )
+                  - generic [ref=f4e1149]:
+                    - generic [ref=f4e1151]:
+                      - img [ref=f4e1152]
+                      - paragraph [ref=f4e1155]: Inquilino
+                    - generic [ref=f4e1157]:
+                      - img [ref=f4e1158]
+                      - paragraph [ref=f4e1160]: Pendiente
+                - generic [ref=f4e1165] [cursor=pointer]:
+                  - generic [ref=f4e1166]:
+                    - paragraph [ref=f4e1167]: INC-43
+                    - generic [ref=f4e1169]:
+                      - img [ref=f4e1170]
+                      - paragraph [ref=f4e1172]: 2026-05-15
+                    - generic [ref=f4e1173]: Baja
+                  - generic [ref=f4e1174]:
+                    - img [ref=f4e1175]
+                    - paragraph [ref=f4e1178]: CR 19 CL 11N-33 ET 1 BQ 1 AP 302, CJT RES LA ABADIA
+                  - generic [ref=f4e1179]:
+                    - generic "Propietario" [ref=f4e1180]:
+                      - img [ref=f4e1181]
+                      - paragraph [ref=f4e1184]: YULIANA CAÑON ORTEGA
+                      - generic [ref=f4e1185]:
+                        - paragraph [ref=f4e1186]: /
+                        - img [ref=f4e1187]
+                        - paragraph [ref=f4e1189]: "3123747732"
+                    - generic "Inquilino" [ref=f4e1190]:
+                      - img [ref=f4e1191]
+                      - paragraph [ref=f4e1195]: CARLOS ANDRÉS RESTREPO
+                      - generic [ref=f4e1196]:
+                        - paragraph [ref=f4e1197]: /
+                        - img [ref=f4e1198]
+                        - paragraph [ref=f4e1200]: "3045611294"
+                    - generic "Habitante" [ref=f4e1201]:
+                      - img [ref=f4e1202]
+                      - paragraph [ref=f4e1207]: CARLOS ANDRÉS RESTREPO
+                      - generic [ref=f4e1208]:
+                        - paragraph [ref=f4e1209]: /
+                        - img [ref=f4e1210]
+                        - paragraph [ref=f4e1212]: "3045611294"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1213]:
+                    - img [ref=f4e1214]
+                    - paragraph [ref=f4e1217]: YEISON MAESTRO
+                    - paragraph [ref=f4e1218]: $65000
+                    - generic [ref=f4e1219]:
+                      - paragraph [ref=f4e1220]: (
+                      - paragraph [ref=f4e1221]: 2026-05-17
+                      - paragraph [ref=f4e1222]: )
+                  - generic [ref=f4e1223]:
+                    - generic [ref=f4e1225]:
+                      - img [ref=f4e1226]
+                      - paragraph [ref=f4e1229]: Inquilino
+                    - generic [ref=f4e1231]:
+                      - img [ref=f4e1232]
+                      - paragraph [ref=f4e1234]: Pendiente
+                - generic [ref=f4e1239] [cursor=pointer]:
+                  - generic [ref=f4e1240]:
+                    - paragraph [ref=f4e1241]: INC-40
+                    - generic [ref=f4e1243]:
+                      - img [ref=f4e1244]
+                      - paragraph [ref=f4e1246]: 2026-05-04
+                    - generic [ref=f4e1247]: Alta
+                  - generic [ref=f4e1248]:
+                    - img [ref=f4e1249]
+                    - paragraph [ref=f4e1252]: CRR 14 CLL 50N-03 TRES NEVADOS TRR A AP 402
+                  - generic [ref=f4e1253]:
+                    - generic "Propietario" [ref=f4e1254]:
+                      - img [ref=f4e1255]
+                      - paragraph [ref=f4e1258]: GIOVANNA ARANGO ORREGO
+                      - generic [ref=f4e1259]:
+                        - paragraph [ref=f4e1260]: /
+                        - img [ref=f4e1261]
+                        - paragraph [ref=f4e1263]: "3182887155"
+                    - generic "Inquilino" [ref=f4e1264]:
+                      - img [ref=f4e1265]
+                      - paragraph [ref=f4e1269]: N/D
+                      - paragraph
+                    - generic "Habitante" [ref=f4e1270]:
+                      - img [ref=f4e1271]
+                      - paragraph [ref=f4e1276]: N/D
+                      - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1277]:
+                    - img [ref=f4e1278]
+                    - paragraph [ref=f4e1281]: ALEXANDER JIMENEZ
+                    - paragraph [ref=f4e1282]: $150000
+                    - generic [ref=f4e1283]:
+                      - paragraph [ref=f4e1284]: (
+                      - paragraph [ref=f4e1285]: 2026-05-08
+                      - paragraph [ref=f4e1286]: )
+                  - generic [ref=f4e1287]:
+                    - generic [ref=f4e1289]:
+                      - img [ref=f4e1290]
+                      - paragraph [ref=f4e1293]: Inquilino
+                    - generic [ref=f4e1295]:
+                      - img [ref=f4e1296]
+                      - paragraph [ref=f4e1298]: Pendiente
+                - generic [ref=f4e1303] [cursor=pointer]:
+                  - generic [ref=f4e1304]:
+                    - paragraph [ref=f4e1305]: INC-39
+                    - generic [ref=f4e1307]:
+                      - img [ref=f4e1308]
+                      - paragraph [ref=f4e1310]: 2026-05-04
+                    - generic [ref=f4e1311]: Media
+                  - generic [ref=f4e1312]:
+                    - img [ref=f4e1313]
+                    - paragraph [ref=f4e1316]: EDF LA PATRIA AP 402
+                  - generic [ref=f4e1317]:
+                    - generic "Propietario" [ref=f4e1318]:
+                      - img [ref=f4e1319]
+                      - paragraph [ref=f4e1322]: STEVEN RAMÍREZ CORREA
+                      - generic [ref=f4e1323]:
+                        - paragraph [ref=f4e1324]: /
+                        - img [ref=f4e1325]
+                        - paragraph [ref=f4e1327]: +44 7751 718697
+                    - generic "Inquilino" [ref=f4e1328]:
+                      - img [ref=f4e1329]
+                      - paragraph [ref=f4e1333]: MARIA DEL ROSARIO MONTES
+                      - generic [ref=f4e1334]:
+                        - paragraph [ref=f4e1335]: /
+                        - img [ref=f4e1336]
+                        - paragraph [ref=f4e1338]: "3117431027"
+                    - generic "Habitante" [ref=f4e1339]:
+                      - img [ref=f4e1340]
+                      - paragraph [ref=f4e1345]: MARIA DEL ROSARIO MONTES
+                      - generic [ref=f4e1346]:
+                        - paragraph [ref=f4e1347]: /
+                        - img [ref=f4e1348]
+                        - paragraph [ref=f4e1350]: "3117431027"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1351]:
+                    - generic [ref=f4e1353]:
+                      - img [ref=f4e1354]
+                      - paragraph [ref=f4e1357]: Inquilino
+                    - paragraph
+                - generic [ref=f4e1362] [cursor=pointer]:
+                  - generic [ref=f4e1363]:
+                    - paragraph [ref=f4e1364]: INC-36
+                    - generic [ref=f4e1366]:
+                      - img [ref=f4e1367]
+                      - paragraph [ref=f4e1369]: 2026-04-27
+                    - generic [ref=f4e1370]: Media
+                  - generic [ref=f4e1371]:
+                    - img [ref=f4e1372]
+                    - paragraph [ref=f4e1375]: CR 14 CL 27N-80 LC 6, EDI MALL LA AVENIDA
+                  - generic [ref=f4e1376]:
+                    - generic "Propietario" [ref=f4e1377]:
+                      - img [ref=f4e1378]
+                      - paragraph [ref=f4e1381]: YULIANA CAÑON ORTEGA
+                      - generic [ref=f4e1382]:
+                        - paragraph [ref=f4e1383]: /
+                        - img [ref=f4e1384]
+                        - paragraph [ref=f4e1386]: "3123747732"
+                    - generic "Inquilino" [ref=f4e1387]:
+                      - img [ref=f4e1388]
+                      - paragraph [ref=f4e1392]: DIEGO FERNANDO SAAVEDRA VERGARA
+                      - generic [ref=f4e1393]:
+                        - paragraph [ref=f4e1394]: /
+                        - img [ref=f4e1395]
+                        - paragraph [ref=f4e1397]: "3102834737"
+                    - generic "Habitante" [ref=f4e1398]:
+                      - img [ref=f4e1399]
+                      - paragraph [ref=f4e1404]: DIEGO FERNANDO SAAVEDRA VERGARA
+                      - generic [ref=f4e1405]:
+                        - paragraph [ref=f4e1406]: /
+                        - img [ref=f4e1407]
+                        - paragraph [ref=f4e1409]: "3102834737"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1410]:
+                    - img [ref=f4e1411]
+                    - paragraph [ref=f4e1414]: YEISON MAESTRO
+                    - paragraph [ref=f4e1415]: $250
+                    - generic [ref=f4e1416]:
+                      - paragraph [ref=f4e1417]: (
+                      - paragraph [ref=f4e1418]: 2026-05-06
+                      - paragraph [ref=f4e1419]: )
+                  - generic [ref=f4e1420]:
+                    - generic [ref=f4e1422]:
+                      - img [ref=f4e1423]
+                      - paragraph [ref=f4e1426]: Inquilino
+                    - generic [ref=f4e1428]:
+                      - img [ref=f4e1429]
+                      - paragraph [ref=f4e1431]: Pendiente
+                - generic [ref=f4e1436] [cursor=pointer]:
+                  - generic [ref=f4e1437]:
+                    - paragraph [ref=f4e1438]: INC-37
+                    - generic [ref=f4e1440]:
+                      - img [ref=f4e1441]
+                      - paragraph [ref=f4e1443]: 2026-04-20
+                    - generic [ref=f4e1444]: Baja
+                  - generic [ref=f4e1445]:
+                    - img [ref=f4e1446]
+                    - paragraph [ref=f4e1449]: BRR LA PATRIA MZ 29 CS 38
+                  - generic [ref=f4e1450]:
+                    - generic "Propietario" [ref=f4e1451]:
+                      - img [ref=f4e1452]
+                      - paragraph [ref=f4e1455]: YESID BEDOYA RAMIREZ
+                      - generic [ref=f4e1456]:
+                        - paragraph [ref=f4e1457]: /
+                        - img [ref=f4e1458]
+                        - paragraph [ref=f4e1460]: "3183864675"
+                    - generic "Inquilino" [ref=f4e1461]:
+                      - img [ref=f4e1462]
+                      - paragraph [ref=f4e1466]: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                      - generic [ref=f4e1467]:
+                        - paragraph [ref=f4e1468]: /
+                        - img [ref=f4e1469]
+                        - paragraph [ref=f4e1471]: "3203717698"
+                    - generic "Habitante" [ref=f4e1472]:
+                      - img [ref=f4e1473]
+                      - paragraph [ref=f4e1478]: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                      - generic [ref=f4e1479]:
+                        - paragraph [ref=f4e1480]: /
+                        - img [ref=f4e1481]
+                        - paragraph [ref=f4e1483]: "3203717698"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1484]:
+                    - img [ref=f4e1485]
+                    - paragraph [ref=f4e1488]: ALBERTO GOMEZ
+                    - paragraph [ref=f4e1489]: $0
+                    - generic [ref=f4e1490]:
+                      - paragraph [ref=f4e1491]: (
+                      - paragraph [ref=f4e1492]: 2026-05-30
+                      - paragraph [ref=f4e1493]: )
+                  - generic [ref=f4e1494]:
+                    - generic [ref=f4e1496]:
+                      - img [ref=f4e1497]
+                      - paragraph [ref=f4e1500]: Inquilino
+                    - generic [ref=f4e1502]:
+                      - img [ref=f4e1503]
+                      - paragraph [ref=f4e1505]: Pendiente
+                - generic [ref=f4e1510] [cursor=pointer]:
+                  - generic [ref=f4e1511]:
+                    - paragraph [ref=f4e1512]: INC-34
+                    - generic [ref=f4e1514]:
+                      - img [ref=f4e1515]
+                      - paragraph [ref=f4e1517]: 2026-04-17
+                    - generic [ref=f4e1518]: Alta
+                  - generic [ref=f4e1519]:
+                    - img [ref=f4e1520]
+                    - paragraph [ref=f4e1523]: BRR EL SILENCIO ET 2 MZ D CS 4
+                  - generic [ref=f4e1524]:
+                    - generic "Propietario" [ref=f4e1525]:
+                      - img [ref=f4e1526]
+                      - paragraph [ref=f4e1529]: N/D
+                      - paragraph
+                    - generic "Inquilino" [ref=f4e1530]:
+                      - img [ref=f4e1531]
+                      - paragraph [ref=f4e1535]: DANIEL STEVEN MARTINEZ CEBALLOS
+                      - generic [ref=f4e1536]:
+                        - paragraph [ref=f4e1537]: /
+                        - img [ref=f4e1538]
+                        - paragraph [ref=f4e1540]: "3206868086"
+                    - generic "Habitante" [ref=f4e1541]:
+                      - img [ref=f4e1542]
+                      - paragraph [ref=f4e1547]: DANIEL STEVEN MARTINEZ CEBALLOS
+                      - generic [ref=f4e1548]:
+                        - paragraph [ref=f4e1549]: /
+                        - img [ref=f4e1550]
+                        - paragraph [ref=f4e1552]: "3206868086"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1553]:
+                    - img [ref=f4e1554]
+                    - paragraph [ref=f4e1557]: ALEXANDER JIMENEZ
+                    - paragraph [ref=f4e1558]: $350000
+                    - generic [ref=f4e1559]:
+                      - paragraph [ref=f4e1560]: (
+                      - paragraph [ref=f4e1561]: 2026-05-31
+                      - paragraph [ref=f4e1562]: )
+                  - generic [ref=f4e1563]:
+                    - generic [ref=f4e1565]:
+                      - img [ref=f4e1566]
+                      - paragraph [ref=f4e1569]: Inquilino
+                    - generic [ref=f4e1571]:
+                      - img [ref=f4e1572]
+                      - paragraph [ref=f4e1574]: Pendiente
+                - generic [ref=f4e1579] [cursor=pointer]:
+                  - generic [ref=f4e1580]:
+                    - paragraph [ref=f4e1581]: INC-35
+                    - generic [ref=f4e1583]:
+                      - img [ref=f4e1584]
+                      - paragraph [ref=f4e1586]: 2026-04-16
+                    - generic [ref=f4e1587]: Alta
+                  - generic [ref=f4e1588]:
+                    - img [ref=f4e1589]
+                    - paragraph [ref=f4e1592]: BRR LA PATRIA MZ 42 CS 33
+                  - generic [ref=f4e1593]:
+                    - generic "Propietario" [ref=f4e1594]:
+                      - img [ref=f4e1595]
+                      - paragraph [ref=f4e1598]: MARTHA CECILIA HOLGUIN
+                      - generic [ref=f4e1599]:
+                        - paragraph [ref=f4e1600]: /
+                        - img [ref=f4e1601]
+                        - paragraph [ref=f4e1603]: "3113977020"
+                    - generic "Inquilino" [ref=f4e1604]:
+                      - img [ref=f4e1605]
+                      - paragraph [ref=f4e1609]: HECTOR ALFONSO RAMIREZ
+                      - generic [ref=f4e1610]:
+                        - paragraph [ref=f4e1611]: /
+                        - img [ref=f4e1612]
+                        - paragraph [ref=f4e1614]: "3115573253"
+                    - generic "Habitante" [ref=f4e1615]:
+                      - img [ref=f4e1616]
+                      - paragraph [ref=f4e1621]: HECTOR ALFONSO RAMIREZ
+                      - generic [ref=f4e1622]:
+                        - paragraph [ref=f4e1623]: /
+                        - img [ref=f4e1624]
+                        - paragraph [ref=f4e1626]: "3115573253"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1627]:
+                    - generic [ref=f4e1629]:
+                      - img [ref=f4e1630]
+                      - paragraph [ref=f4e1633]: Inquilino
+                    - paragraph
+                - generic [ref=f4e1638] [cursor=pointer]:
+                  - generic [ref=f4e1639]:
+                    - paragraph [ref=f4e1640]: INC-29
+                    - generic [ref=f4e1642]:
+                      - img [ref=f4e1643]
+                      - paragraph [ref=f4e1645]: 2026-04-09
+                    - generic [ref=f4e1646]: Media
+                  - generic [ref=f4e1647]:
+                    - img [ref=f4e1648]
+                    - paragraph [ref=f4e1651]: CL 58 CR 48-39 TO 15 AP 201, CJT CER ZAZACUARI
+                  - generic [ref=f4e1652]:
+                    - generic "Propietario" [ref=f4e1653]:
+                      - img [ref=f4e1654]
+                      - paragraph [ref=f4e1657]: JUAN CARLOS OSPINA GOMEZ
+                      - generic [ref=f4e1658]:
+                        - paragraph [ref=f4e1659]: /
+                        - img [ref=f4e1660]
+                        - paragraph [ref=f4e1662]: "3142753748"
+                    - generic "Inquilino" [ref=f4e1663]:
+                      - img [ref=f4e1664]
+                      - paragraph [ref=f4e1668]: LAURA CAMILA LONDOÑO POVEDA
+                      - generic [ref=f4e1669]:
+                        - paragraph [ref=f4e1670]: /
+                        - img [ref=f4e1671]
+                        - paragraph [ref=f4e1673]: "3154920788"
+                    - generic "Habitante" [ref=f4e1674]:
+                      - img [ref=f4e1675]
+                      - paragraph [ref=f4e1680]: LAURA CAMILA LONDOÑO POVEDA
+                      - generic [ref=f4e1681]:
+                        - paragraph [ref=f4e1682]: /
+                        - img [ref=f4e1683]
+                        - paragraph [ref=f4e1685]: "3154920788"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1686]:
+                    - img [ref=f4e1687]
+                    - paragraph [ref=f4e1690]: Sin proveedor
+                    - paragraph [ref=f4e1691]: $0
+                    - generic [ref=f4e1692]:
+                      - paragraph [ref=f4e1693]: (
+                      - paragraph [ref=f4e1694]: 2026-05-30
+                      - paragraph [ref=f4e1695]: )
+                  - generic [ref=f4e1696]:
+                    - generic [ref=f4e1698]:
+                      - img [ref=f4e1699]
+                      - paragraph [ref=f4e1702]: Inquilino
+                    - generic [ref=f4e1704]:
+                      - img [ref=f4e1705]
+                      - paragraph [ref=f4e1707]: Pendiente
+                - generic [ref=f4e1712] [cursor=pointer]:
+                  - generic [ref=f4e1713]:
+                    - paragraph [ref=f4e1714]: INC-31
+                    - generic [ref=f4e1716]:
+                      - img [ref=f4e1717]
+                      - paragraph [ref=f4e1719]: 2026-04-09
+                    - generic [ref=f4e1720]: Media
+                  - generic [ref=f4e1721]:
+                    - img [ref=f4e1722]
+                    - paragraph [ref=f4e1725]: CR 23E CL 42-15 AP 605, EDF ALAMOS 23
+                  - generic [ref=f4e1726]:
+                    - generic "Propietario" [ref=f4e1727]:
+                      - img [ref=f4e1728]
+                      - paragraph [ref=f4e1731]: EIBIYOMAR OLMOS CASTRILLON
+                      - generic [ref=f4e1732]:
+                        - paragraph [ref=f4e1733]: /
+                        - img [ref=f4e1734]
+                        - paragraph [ref=f4e1736]: "3332715120"
+                    - generic "Inquilino" [ref=f4e1737]:
+                      - img [ref=f4e1738]
+                      - paragraph [ref=f4e1742]: YENNY GARCIA HERNANDEZ
+                      - generic [ref=f4e1743]:
+                        - paragraph [ref=f4e1744]: /
+                        - img [ref=f4e1745]
+                        - paragraph [ref=f4e1747]: "3128066980"
+                    - generic "Habitante" [ref=f4e1748]:
+                      - img [ref=f4e1749]
+                      - paragraph [ref=f4e1754]: YENNY GARCIA HERNANDEZ
+                      - generic [ref=f4e1755]:
+                        - paragraph [ref=f4e1756]: /
+                        - img [ref=f4e1757]
+                        - paragraph [ref=f4e1759]: "3128066980"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1760]:
+                    - img [ref=f4e1761]
+                    - paragraph [ref=f4e1764]: ALBERTO GOMEZ
+                    - paragraph [ref=f4e1765]: $100000
+                    - generic [ref=f4e1766]:
+                      - paragraph [ref=f4e1767]: (
+                      - paragraph [ref=f4e1768]: 2026-04-10
+                      - paragraph [ref=f4e1769]: )
+                  - generic [ref=f4e1770]:
+                    - generic [ref=f4e1772]:
+                      - img [ref=f4e1773]
+                      - paragraph [ref=f4e1776]: Inquilino
+                    - generic [ref=f4e1778]:
+                      - img [ref=f4e1779]
+                      - paragraph [ref=f4e1781]: Pendiente
+                - generic [ref=f4e1786] [cursor=pointer]:
+                  - generic [ref=f4e1787]:
+                    - paragraph [ref=f4e1788]: INC-32
+                    - generic [ref=f4e1790]:
+                      - img [ref=f4e1791]
+                      - paragraph [ref=f4e1793]: 2026-04-08
+                    - generic [ref=f4e1794]: Alta
+                  - generic [ref=f4e1795]:
+                    - img [ref=f4e1796]
+                    - paragraph [ref=f4e1799]: BRR LA PATRIA MZ 29 CS 38
+                  - generic [ref=f4e1800]:
+                    - generic "Propietario" [ref=f4e1801]:
+                      - img [ref=f4e1802]
+                      - paragraph [ref=f4e1805]: YESID BEDOYA RAMIREZ
+                      - generic [ref=f4e1806]:
+                        - paragraph [ref=f4e1807]: /
+                        - img [ref=f4e1808]
+                        - paragraph [ref=f4e1810]: "3183864675"
+                    - generic "Inquilino" [ref=f4e1811]:
+                      - img [ref=f4e1812]
+                      - paragraph [ref=f4e1816]: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                      - generic [ref=f4e1817]:
+                        - paragraph [ref=f4e1818]: /
+                        - img [ref=f4e1819]
+                        - paragraph [ref=f4e1821]: "3203717698"
+                    - generic "Habitante" [ref=f4e1822]:
+                      - img [ref=f4e1823]
+                      - paragraph [ref=f4e1828]: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                      - generic [ref=f4e1829]:
+                        - paragraph [ref=f4e1830]: /
+                        - img [ref=f4e1831]
+                        - paragraph [ref=f4e1833]: "3203717698"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1834]:
+                    - img [ref=f4e1835]
+                    - paragraph [ref=f4e1838]: ALBERTO GOMEZ
+                    - paragraph [ref=f4e1839]: $220000
+                    - generic [ref=f4e1840]:
+                      - paragraph [ref=f4e1841]: (
+                      - paragraph [ref=f4e1842]: 2026-04-15
+                      - paragraph [ref=f4e1843]: )
+                  - generic [ref=f4e1844]:
+                    - generic [ref=f4e1846]:
+                      - img [ref=f4e1847]
+                      - paragraph [ref=f4e1850]: Inquilino
+                    - generic [ref=f4e1852]:
+                      - img [ref=f4e1853]
+                      - paragraph [ref=f4e1855]: Pendiente
+                - generic [ref=f4e1860] [cursor=pointer]:
+                  - generic [ref=f4e1861]:
+                    - paragraph [ref=f4e1862]: INC-30
+                    - generic [ref=f4e1864]:
+                      - img [ref=f4e1865]
+                      - paragraph [ref=f4e1867]: 2026-04-08
+                    - generic [ref=f4e1868]: Baja
+                  - generic [ref=f4e1869]:
+                    - img [ref=f4e1870]
+                    - paragraph [ref=f4e1873]: CR 19 CL 11N-33 ET 1 BQ 1 AP 302, CJT RES LA ABADIA
+                  - generic [ref=f4e1874]:
+                    - generic "Propietario" [ref=f4e1875]:
+                      - img [ref=f4e1876]
+                      - paragraph [ref=f4e1879]: YULIANA CAÑON ORTEGA
+                      - generic [ref=f4e1880]:
+                        - paragraph [ref=f4e1881]: /
+                        - img [ref=f4e1882]
+                        - paragraph [ref=f4e1884]: "3123747732"
+                    - generic "Inquilino" [ref=f4e1885]:
+                      - img [ref=f4e1886]
+                      - paragraph [ref=f4e1890]: CARLOS ANDRÉS RESTREPO
+                      - generic [ref=f4e1891]:
+                        - paragraph [ref=f4e1892]: /
+                        - img [ref=f4e1893]
+                        - paragraph [ref=f4e1895]: "3045611294"
+                    - generic "Habitante" [ref=f4e1896]:
+                      - img [ref=f4e1897]
+                      - paragraph [ref=f4e1902]: CARLOS ANDRÉS RESTREPO
+                      - generic [ref=f4e1903]:
+                        - paragraph [ref=f4e1904]: /
+                        - img [ref=f4e1905]
+                        - paragraph [ref=f4e1907]: "3045611294"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1908]:
+                    - img [ref=f4e1909]
+                    - paragraph [ref=f4e1912]: YEISON MAESTRO
+                    - paragraph [ref=f4e1913]: $260000
+                    - generic [ref=f4e1914]:
+                      - paragraph [ref=f4e1915]: (
+                      - paragraph [ref=f4e1916]: 2026-05-20
+                      - paragraph [ref=f4e1917]: )
+                  - generic [ref=f4e1918]:
+                    - generic [ref=f4e1920]:
+                      - img [ref=f4e1921]
+                      - paragraph [ref=f4e1924]: Inquilino
+                    - generic [ref=f4e1926]:
+                      - img [ref=f4e1927]
+                      - paragraph [ref=f4e1929]: Pendiente
+                - generic [ref=f4e1934] [cursor=pointer]:
+                  - generic [ref=f4e1935]:
+                    - paragraph [ref=f4e1936]: INC-24
+                    - generic [ref=f4e1938]:
+                      - img [ref=f4e1939]
+                      - paragraph [ref=f4e1941]: 2026-04-08
+                    - generic [ref=f4e1942]: Alta
+                  - generic [ref=f4e1943]:
+                    - img [ref=f4e1944]
+                    - paragraph [ref=f4e1947]: BRR LA PATRIA MZ 29 CS 38
+                  - generic [ref=f4e1948]:
+                    - generic "Propietario" [ref=f4e1949]:
+                      - img [ref=f4e1950]
+                      - paragraph [ref=f4e1953]: YESID BEDOYA RAMIREZ
+                      - generic [ref=f4e1954]:
+                        - paragraph [ref=f4e1955]: /
+                        - img [ref=f4e1956]
+                        - paragraph [ref=f4e1958]: "3183864675"
+                    - generic "Inquilino" [ref=f4e1959]:
+                      - img [ref=f4e1960]
+                      - paragraph [ref=f4e1964]: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                      - generic [ref=f4e1965]:
+                        - paragraph [ref=f4e1966]: /
+                        - img [ref=f4e1967]
+                        - paragraph [ref=f4e1969]: "3203717698"
+                    - generic "Habitante" [ref=f4e1970]:
+                      - img [ref=f4e1971]
+                      - paragraph [ref=f4e1976]: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                      - generic [ref=f4e1977]:
+                        - paragraph [ref=f4e1978]: /
+                        - img [ref=f4e1979]
+                        - paragraph [ref=f4e1981]: "3203717698"
+                  - paragraph
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e1982]:
+                    - generic [ref=f4e1984]:
+                      - img [ref=f4e1985]
+                      - paragraph [ref=f4e1988]: Inquilino
+                    - paragraph
+                - generic [ref=f4e1993] [cursor=pointer]:
+                  - generic [ref=f4e1994]:
+                    - paragraph [ref=f4e1995]: INC-23
+                    - generic [ref=f4e1997]:
+                      - img [ref=f4e1998]
+                      - paragraph [ref=f4e2000]: 2026-04-08
+                    - generic [ref=f4e2001]: Alta
+                  - generic [ref=f4e2002]:
+                    - img [ref=f4e2003]
+                    - paragraph [ref=f4e2006]: CRA 44 CL 26-80 ET3 TO J AP 102, CJT RES PARQUES DE BOLIVAR
+                  - generic [ref=f4e2007]:
+                    - generic "Propietario" [ref=f4e2008]:
+                      - img [ref=f4e2009]
+                      - paragraph [ref=f4e2012]: JENIFER HURTADO
+                      - generic [ref=f4e2013]:
+                        - paragraph [ref=f4e2014]: /
+                        - img [ref=f4e2015]
+                        - paragraph [ref=f4e2017]: "3105595949"
+                    - generic "Inquilino" [ref=f4e2018]:
+                      - img [ref=f4e2019]
+                      - paragraph [ref=f4e2023]: CÉSAR AUGUSTO LONDOÑO GIRALDO
+                      - generic [ref=f4e2024]:
+                        - paragraph [ref=f4e2025]: /
+                        - img [ref=f4e2026]
+                        - paragraph [ref=f4e2028]: "3208578346"
+                    - generic "Habitante" [ref=f4e2029]:
+                      - img [ref=f4e2030]
+                      - paragraph [ref=f4e2035]: CÉSAR AUGUSTO LONDOÑO GIRALDO
+                      - generic [ref=f4e2036]:
+                        - paragraph [ref=f4e2037]: /
+                        - img [ref=f4e2038]
+                        - paragraph [ref=f4e2040]: "3208578346"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e2041]:
+                    - img [ref=f4e2042]
+                    - paragraph [ref=f4e2045]: ALBERTO GOMEZ
+                    - paragraph [ref=f4e2046]: $100000
+                    - generic [ref=f4e2047]:
+                      - paragraph [ref=f4e2048]: (
+                      - paragraph [ref=f4e2049]: 2026-04-14
+                      - paragraph [ref=f4e2050]: )
+                  - generic [ref=f4e2051]:
+                    - generic [ref=f4e2053]:
+                      - img [ref=f4e2054]
+                      - paragraph [ref=f4e2057]: Inquilino
+                    - generic [ref=f4e2059]:
+                      - img [ref=f4e2060]
+                      - paragraph [ref=f4e2062]: Pendiente
+                - generic [ref=f4e2067] [cursor=pointer]:
+                  - generic [ref=f4e2068]:
+                    - paragraph [ref=f4e2069]: INC-21
+                    - generic [ref=f4e2071]:
+                      - img [ref=f4e2072]
+                      - paragraph [ref=f4e2074]: 2026-04-08
+                    - generic [ref=f4e2075]: Alta
+                  - generic [ref=f4e2076]:
+                    - img [ref=f4e2077]
+                    - paragraph [ref=f4e2080]: CR 20 CL 3N-00 ET 3 TO 6 AP 404, CJT PQ RES DEL CAFE
+                  - generic [ref=f4e2081]:
+                    - generic "Propietario" [ref=f4e2082]:
+                      - img [ref=f4e2083]
+                      - paragraph [ref=f4e2086]: ANA MARIA RODRIGUEZ HURTADO
+                      - generic [ref=f4e2087]:
+                        - paragraph [ref=f4e2088]: /
+                        - img [ref=f4e2089]
+                        - paragraph [ref=f4e2091]: "+1347723817"
+                    - generic "Inquilino" [ref=f4e2092]:
+                      - img [ref=f4e2093]
+                      - paragraph [ref=f4e2097]: MAGDA LORENA ARIAS ALONSO
+                      - generic [ref=f4e2098]:
+                        - paragraph [ref=f4e2099]: /
+                        - img [ref=f4e2100]
+                        - paragraph [ref=f4e2102]: "3113076118"
+                    - generic "Habitante" [ref=f4e2103]:
+                      - img [ref=f4e2104]
+                      - paragraph [ref=f4e2109]: MAGDA LORENA ARIAS ALONSO
+                      - generic [ref=f4e2110]:
+                        - paragraph [ref=f4e2111]: /
+                        - img [ref=f4e2112]
+                        - paragraph [ref=f4e2114]: "3113076118"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e2115]:
+                    - img [ref=f4e2116]
+                    - paragraph [ref=f4e2119]: ALBERTO GOMEZ
+                    - paragraph [ref=f4e2120]: $120000
+                    - generic [ref=f4e2121]:
+                      - paragraph [ref=f4e2122]: (
+                      - paragraph [ref=f4e2123]: 2026-04-10
+                      - paragraph [ref=f4e2124]: )
+                  - generic [ref=f4e2125]:
+                    - generic [ref=f4e2127]:
+                      - img [ref=f4e2128]
+                      - paragraph [ref=f4e2131]: Inquilino
+                    - generic [ref=f4e2133]:
+                      - img [ref=f4e2134]
+                      - paragraph [ref=f4e2136]: Pendiente
+                - generic [ref=f4e2141] [cursor=pointer]:
+                  - generic [ref=f4e2142]:
+                    - paragraph [ref=f4e2143]: INC-20
+                    - generic [ref=f4e2145]:
+                      - img [ref=f4e2146]
+                      - paragraph [ref=f4e2148]: 2026-04-07
+                    - generic [ref=f4e2149]: Media
+                  - generic [ref=f4e2150]:
+                    - img [ref=f4e2151]
+                    - paragraph [ref=f4e2154]: EDF JOSELINO GOMEZ AP 401, CENTRO
+                  - generic [ref=f4e2155]:
+                    - generic "Propietario" [ref=f4e2156]:
+                      - img [ref=f4e2157]
+                      - paragraph [ref=f4e2160]: ARBEY MENDEZ
+                      - generic [ref=f4e2161]:
+                        - paragraph [ref=f4e2162]: /
+                        - img [ref=f4e2163]
+                        - paragraph [ref=f4e2165]: "3002117194"
+                    - generic "Inquilino" [ref=f4e2166]:
+                      - img [ref=f4e2167]
+                      - paragraph [ref=f4e2171]: JULIO HERNANDEZ LARA
+                      - generic [ref=f4e2172]:
+                        - paragraph [ref=f4e2173]: /
+                        - img [ref=f4e2174]
+                        - paragraph [ref=f4e2176]: "3154817886"
+                    - generic "Habitante" [ref=f4e2177]:
+                      - img [ref=f4e2178]
+                      - paragraph [ref=f4e2183]: JULIO HERNANDEZ LARA
+                      - generic [ref=f4e2184]:
+                        - paragraph [ref=f4e2185]: /
+                        - img [ref=f4e2186]
+                        - paragraph [ref=f4e2188]: "3154817886"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e2189]:
+                    - img [ref=f4e2190]
+                    - paragraph [ref=f4e2193]: LEONARDO GAS
+                    - paragraph [ref=f4e2194]: $0
+                    - generic [ref=f4e2195]:
+                      - paragraph [ref=f4e2196]: (
+                      - paragraph [ref=f4e2197]: 2026-04-17
+                      - paragraph [ref=f4e2198]: )
+                  - generic [ref=f4e2199]:
+                    - generic [ref=f4e2201]:
+                      - img [ref=f4e2202]
+                      - paragraph [ref=f4e2205]: Inquilino
+                    - generic [ref=f4e2207]:
+                      - img [ref=f4e2208]
+                      - paragraph [ref=f4e2210]: Pendiente
+                - generic [ref=f4e2215] [cursor=pointer]:
+                  - generic [ref=f4e2216]:
+                    - paragraph [ref=f4e2217]: INC-25
+                    - generic [ref=f4e2219]:
+                      - img [ref=f4e2220]
+                      - paragraph [ref=f4e2222]: 2026-03-31
+                    - generic [ref=f4e2223]: Media
+                  - generic [ref=f4e2224]:
+                    - img [ref=f4e2225]
+                    - paragraph [ref=f4e2228]: CJT EL CAMINO DE COCORA MZ 1 BQ 6 CS 5 VIS
+                  - generic [ref=f4e2229]:
+                    - generic "Propietario" [ref=f4e2230]:
+                      - img [ref=f4e2231]
+                      - paragraph [ref=f4e2234]: LUIS MATEO TORO OSORIO
+                      - generic [ref=f4e2235]:
+                        - paragraph [ref=f4e2236]: /
+                        - img [ref=f4e2237]
+                        - paragraph [ref=f4e2239]: "3006382740"
+                    - generic "Inquilino" [ref=f4e2240]:
+                      - img [ref=f4e2241]
+                      - paragraph [ref=f4e2245]: JORGE ISAAC BOTINA PABON
+                      - generic [ref=f4e2246]:
+                        - paragraph [ref=f4e2247]: /
+                        - img [ref=f4e2248]
+                        - paragraph [ref=f4e2250]: 315 5431617
+                    - generic "Habitante" [ref=f4e2251]:
+                      - img [ref=f4e2252]
+                      - paragraph [ref=f4e2257]: JORGE ISAAC BOTINA PABON
+                      - generic [ref=f4e2258]:
+                        - paragraph [ref=f4e2259]: /
+                        - img [ref=f4e2260]
+                        - paragraph [ref=f4e2262]: 315 5431617
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e2263]:
+                    - img [ref=f4e2264]
+                    - paragraph [ref=f4e2267]: ALBERTO GOMEZ
+                    - paragraph [ref=f4e2268]: $700000
+                    - generic [ref=f4e2269]:
+                      - paragraph [ref=f4e2270]: (
+                      - paragraph [ref=f4e2271]: 2026-04-11
+                      - paragraph [ref=f4e2272]: )
+                  - generic [ref=f4e2273]:
+                    - generic [ref=f4e2275]:
+                      - img [ref=f4e2276]
+                      - paragraph [ref=f4e2279]: Inquilino
+                    - generic [ref=f4e2281]:
+                      - img [ref=f4e2282]
+                      - paragraph [ref=f4e2284]: Pendiente
+                - generic [ref=f4e2289] [cursor=pointer]:
+                  - generic [ref=f4e2290]:
+                    - paragraph [ref=f4e2291]: INC-28
+                    - generic [ref=f4e2293]:
+                      - img [ref=f4e2294]
+                      - paragraph [ref=f4e2296]: 2026-03-28
+                    - generic [ref=f4e2297]: Media
+                  - generic [ref=f4e2298]:
+                    - img [ref=f4e2299]
+                    - paragraph [ref=f4e2302]: CR 6 CL 03-40 CS 54, CJT LA ALQUERIA
+                  - generic [ref=f4e2303]:
+                    - generic "Propietario" [ref=f4e2304]:
+                      - img [ref=f4e2305]
+                      - paragraph [ref=f4e2308]: AMPARO SEGOVIA
+                      - generic [ref=f4e2309]:
+                        - paragraph [ref=f4e2310]: /
+                        - img [ref=f4e2311]
+                        - paragraph [ref=f4e2313]: "3117716124"
+                    - generic "Inquilino" [ref=f4e2314]:
+                      - img [ref=f4e2315]
+                      - paragraph [ref=f4e2319]: ADRIANA GARCIA
+                      - generic [ref=f4e2320]:
+                        - paragraph [ref=f4e2321]: /
+                        - img [ref=f4e2322]
+                        - paragraph [ref=f4e2324]: "3118383430"
+                    - generic "Habitante" [ref=f4e2325]:
+                      - img [ref=f4e2326]
+                      - paragraph [ref=f4e2331]: ADRIANA GARCIA
+                      - generic [ref=f4e2332]:
+                        - paragraph [ref=f4e2333]: /
+                        - img [ref=f4e2334]
+                        - paragraph [ref=f4e2336]: "3118383430"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e2337]:
+                    - img [ref=f4e2338]
+                    - paragraph [ref=f4e2341]: COTIZACIÓN EXTERNA
+                    - paragraph [ref=f4e2342]: $0
+                    - generic [ref=f4e2343]:
+                      - paragraph [ref=f4e2344]: (
+                      - paragraph [ref=f4e2345]: 2026-04-27
+                      - paragraph [ref=f4e2346]: )
+                  - generic [ref=f4e2347]:
+                    - generic [ref=f4e2349]:
+                      - img [ref=f4e2350]
+                      - paragraph [ref=f4e2353]: Inquilino
+                    - generic [ref=f4e2355]:
+                      - img [ref=f4e2356]
+                      - paragraph [ref=f4e2358]: Pendiente
+                - generic [ref=f4e2363] [cursor=pointer]:
+                  - generic [ref=f4e2364]:
+                    - paragraph [ref=f4e2365]: INC-19
+                    - generic [ref=f4e2367]:
+                      - img [ref=f4e2368]
+                      - paragraph [ref=f4e2370]: 2026-03-27
+                    - generic [ref=f4e2371]: Alta
+                  - generic [ref=f4e2372]:
+                    - img [ref=f4e2373]
+                    - paragraph [ref=f4e2376]: BRR VILLA LILIANA MZ LL CS 327 PI 1
+                  - generic [ref=f4e2377]:
+                    - generic "Propietario" [ref=f4e2378]:
+                      - img [ref=f4e2379]
+                      - paragraph [ref=f4e2382]: NATALIA ANDREA BOJACA MONTILLA
+                      - generic [ref=f4e2383]:
+                        - paragraph [ref=f4e2384]: /
+                        - img [ref=f4e2385]
+                        - paragraph [ref=f4e2387]: "3216245700"
+                    - generic "Inquilino" [ref=f4e2388]:
+                      - img [ref=f4e2389]
+                      - paragraph [ref=f4e2393]: ARACELLY AGUIRRE BETANCOURT
+                      - generic [ref=f4e2394]:
+                        - paragraph [ref=f4e2395]: /
+                        - img [ref=f4e2396]
+                        - paragraph [ref=f4e2398]: "3113811274"
+                    - generic "Habitante" [ref=f4e2399]:
+                      - img [ref=f4e2400]
+                      - paragraph [ref=f4e2405]: ARACELLY AGUIRRE BETANCOURT
+                      - generic [ref=f4e2406]:
+                        - paragraph [ref=f4e2407]: /
+                        - img [ref=f4e2408]
+                        - paragraph [ref=f4e2410]: "3113811274"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e2411]:
+                    - img [ref=f4e2412]
+                    - paragraph [ref=f4e2415]: ALBERTO GOMEZ
+                    - paragraph [ref=f4e2416]: $250000
+                    - generic [ref=f4e2417]:
+                      - paragraph [ref=f4e2418]: (
+                      - paragraph [ref=f4e2419]: 2026-04-17
+                      - paragraph [ref=f4e2420]: )
+                  - generic [ref=f4e2421]:
+                    - generic [ref=f4e2423]:
+                      - img [ref=f4e2424]
+                      - paragraph [ref=f4e2427]: Inquilino
+                    - generic [ref=f4e2429]:
+                      - img [ref=f4e2430]
+                      - paragraph [ref=f4e2432]: Pendiente
+                - generic [ref=f4e2437] [cursor=pointer]:
+                  - generic [ref=f4e2438]:
+                    - paragraph [ref=f4e2439]: INC-18
+                    - generic [ref=f4e2441]:
+                      - img [ref=f4e2442]
+                      - paragraph [ref=f4e2444]: 2026-03-26
+                    - generic [ref=f4e2445]: Media
+                  - generic [ref=f4e2446]:
+                    - img [ref=f4e2447]
+                    - paragraph [ref=f4e2450]: CJT RES CERROS DEL VIENTO TO F AP 304
+                  - generic [ref=f4e2451]:
+                    - generic "Propietario" [ref=f4e2452]:
+                      - img [ref=f4e2453]
+                      - paragraph [ref=f4e2456]: LEISY YURANY HURTADO MACETA
+                      - generic [ref=f4e2457]:
+                        - paragraph [ref=f4e2458]: /
+                        - img [ref=f4e2459]
+                        - paragraph [ref=f4e2461]: "3205271092"
+                    - generic "Inquilino" [ref=f4e2462]:
+                      - img [ref=f4e2463]
+                      - paragraph [ref=f4e2467]: JULIÁN FERNANDO GUZMÁN VELA
+                      - generic [ref=f4e2468]:
+                        - paragraph [ref=f4e2469]: /
+                        - img [ref=f4e2470]
+                        - paragraph [ref=f4e2472]: "3113197843"
+                    - generic "Habitante" [ref=f4e2473]:
+                      - img [ref=f4e2474]
+                      - paragraph [ref=f4e2479]: JULIÁN FERNANDO GUZMÁN VELA
+                      - generic [ref=f4e2480]:
+                        - paragraph [ref=f4e2481]: /
+                        - img [ref=f4e2482]
+                        - paragraph [ref=f4e2484]: "3113197843"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e2485]:
+                    - img [ref=f4e2486]
+                    - paragraph [ref=f4e2489]: LEONARDO GAS
+                    - paragraph [ref=f4e2490]: $132000
+                    - generic [ref=f4e2491]:
+                      - paragraph [ref=f4e2492]: (
+                      - paragraph [ref=f4e2493]: 2026-03-27
+                      - paragraph [ref=f4e2494]: )
+                  - generic [ref=f4e2495]:
+                    - generic [ref=f4e2497]:
+                      - img [ref=f4e2498]
+                      - paragraph [ref=f4e2501]: Inquilino
+                    - generic [ref=f4e2503]:
+                      - img [ref=f4e2504]
+                      - paragraph [ref=f4e2506]: Pendiente
+                - generic [ref=f4e2511] [cursor=pointer]:
+                  - generic [ref=f4e2512]:
+                    - paragraph [ref=f4e2513]: INC-17
+                    - generic [ref=f4e2515]:
+                      - img [ref=f4e2516]
+                      - paragraph [ref=f4e2518]: 2026-03-24
+                    - generic [ref=f4e2519]: Alta
+                  - generic [ref=f4e2520]:
+                    - img [ref=f4e2521]
+                    - paragraph [ref=f4e2524]: CR 20 CL 3N-00 TO 6 AP 803, CJT PQ RES DEL CAFE
+                  - generic [ref=f4e2525]:
+                    - generic "Propietario" [ref=f4e2526]:
+                      - img [ref=f4e2527]
+                      - paragraph [ref=f4e2530]: LINA MARIA IDARRAGA RAMIREZ
+                      - generic [ref=f4e2531]:
+                        - paragraph [ref=f4e2532]: /
+                        - img [ref=f4e2533]
+                        - paragraph [ref=f4e2535]: +1(347)8198083
+                    - generic "Inquilino" [ref=f4e2536]:
+                      - img [ref=f4e2537]
+                      - paragraph [ref=f4e2541]: MARÍA JOSÉ CORREA NORIEGA
+                      - generic [ref=f4e2542]:
+                        - paragraph [ref=f4e2543]: /
+                        - img [ref=f4e2544]
+                        - paragraph [ref=f4e2546]: "3106551583"
+                    - generic "Habitante" [ref=f4e2547]:
+                      - img [ref=f4e2548]
+                      - paragraph [ref=f4e2553]: MARÍA JOSÉ CORREA NORIEGA
+                      - generic [ref=f4e2554]:
+                        - paragraph [ref=f4e2555]: /
+                        - img [ref=f4e2556]
+                        - paragraph [ref=f4e2558]: "3106551583"
+                  - paragraph
+                  - paragraph
+                  - generic [ref=f4e2559]:
+                    - img [ref=f4e2560]
+                    - paragraph [ref=f4e2563]: Sin proveedor
+                    - paragraph [ref=f4e2564]: $0
+                    - generic [ref=f4e2565]:
+                      - paragraph [ref=f4e2566]: (
+                      - paragraph [ref=f4e2567]: 2026-05-11
+                      - paragraph [ref=f4e2568]: )
+                  - generic [ref=f4e2569]:
+                    - generic [ref=f4e2571]:
+                      - img [ref=f4e2572]
+                      - paragraph [ref=f4e2575]: Inquilino
+                    - generic [ref=f4e2577]:
+                      - img [ref=f4e2578]
+                      - paragraph [ref=f4e2580]: Pendiente
+      - region "Notifications alt+T"

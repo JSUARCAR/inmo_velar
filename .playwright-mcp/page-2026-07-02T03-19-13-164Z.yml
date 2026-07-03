@@ -1,0 +1,254 @@
+- generic [ref=f1e1]:
+  - region "Notifications alt+T"
+  - generic [ref=f1e2]:
+    - generic "Connection Error:"
+    - generic [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - generic [ref=f1e6]:
+          - generic [ref=f1e7]:
+            - img "Logo" [ref=f1e9] [cursor=pointer]
+            - heading "INMOBILIARIA VELAR SAS" [level=1] [ref=f1e10]
+          - generic [ref=f1e13]:
+            - generic [ref=f1e14]:
+              - paragraph [ref=f1e16]: PRINCIPAL
+              - link "Dashboard" [ref=f1e17] [cursor=pointer]:
+                - /url: /dashboard
+                - generic [ref=f1e19]:
+                  - img [ref=f1e20]
+                  - paragraph [ref=f1e25]: Dashboard
+              - link "Alertas Tempranas" [ref=f1e26] [cursor=pointer]:
+                - /url: /alertas
+                - generic [ref=f1e28]:
+                  - img [ref=f1e29]
+                  - paragraph [ref=f1e34]: Alertas Tempranas
+            - generic [ref=f1e35]:
+              - paragraph [ref=f1e37]: GESTIÓN
+              - link "Personas" [ref=f1e38] [cursor=pointer]:
+                - /url: /personas
+                - generic [ref=f1e40]:
+                  - img [ref=f1e41]
+                  - paragraph [ref=f1e46]: Personas
+              - link "Propiedades" [ref=f1e47] [cursor=pointer]:
+                - /url: /propiedades
+                - generic [ref=f1e49]:
+                  - img [ref=f1e50]
+                  - paragraph [ref=f1e53]: Propiedades
+              - link "Contratos" [ref=f1e54] [cursor=pointer]:
+                - /url: /contratos
+                - generic [ref=f1e56]:
+                  - img [ref=f1e57]
+                  - paragraph [ref=f1e60]: Contratos
+              - link "Prop. Horizontal" [ref=f1e61] [cursor=pointer]:
+                - /url: /propiedad-horizontal
+                - generic [ref=f1e63]:
+                  - img [ref=f1e64]
+                  - paragraph [ref=f1e67]: Prop. Horizontal
+              - link "Proveedores" [ref=f1e68] [cursor=pointer]:
+                - /url: /proveedores
+                - generic [ref=f1e70]:
+                  - img [ref=f1e71]
+                  - paragraph [ref=f1e73]: Proveedores
+            - generic [ref=f1e74]:
+              - paragraph [ref=f1e76]: OPERACIONES
+              - link "Liquidaciones" [ref=f1e77] [cursor=pointer]:
+                - /url: /liquidaciones
+                - generic [ref=f1e79]:
+                  - img [ref=f1e80]
+                  - paragraph [ref=f1e82]: Liquidaciones
+              - link "Liquidación Asesores" [ref=f1e83] [cursor=pointer]:
+                - /url: /liquidacion-asesores
+                - generic [ref=f1e85]:
+                  - img [ref=f1e86]
+                  - paragraph [ref=f1e90]: Liquidación Asesores
+              - link "Recaudos" [ref=f1e91] [cursor=pointer]:
+                - /url: /recaudos
+                - generic [ref=f1e93]:
+                  - img [ref=f1e94]
+                  - paragraph [ref=f1e99]: Recaudos
+              - link "Desocupaciones" [ref=f1e100] [cursor=pointer]:
+                - /url: /desocupaciones
+                - generic [ref=f1e102]:
+                  - img [ref=f1e103]
+                  - paragraph [ref=f1e106]: Desocupaciones
+              - link "Incidentes" [ref=f1e107] [cursor=pointer]:
+                - /url: /incidentes
+                - generic [ref=f1e109]:
+                  - img [ref=f1e110]
+                  - paragraph [ref=f1e112]: Incidentes
+              - link "Seguros" [ref=f1e113] [cursor=pointer]:
+                - /url: /seguros
+                - generic [ref=f1e115]:
+                  - img [ref=f1e116]
+                  - paragraph [ref=f1e118]: Seguros
+              - link "Recibos Públicos" [ref=f1e119] [cursor=pointer]:
+                - /url: /recibos-publicos
+                - generic [ref=f1e121]:
+                  - img [ref=f1e122]
+                  - paragraph [ref=f1e124]: Recibos Públicos
+              - link "Saldos a Favor" [ref=f1e125] [cursor=pointer]:
+                - /url: /saldos-favor
+                - generic [ref=f1e127]:
+                  - img [ref=f1e128]
+                  - paragraph [ref=f1e131]: Saldos a Favor
+            - generic [ref=f1e132]:
+              - paragraph [ref=f1e134]: ADMINISTRACIÓN
+              - link "Usuarios" [ref=f1e135] [cursor=pointer]:
+                - /url: /usuarios
+                - generic [ref=f1e137]:
+                  - img [ref=f1e138]
+                  - paragraph [ref=f1e142]: Usuarios
+              - link "Configuración" [ref=f1e143] [cursor=pointer]:
+                - /url: /configuracion
+                - generic [ref=f1e145]:
+                  - img [ref=f1e146]
+                  - paragraph [ref=f1e149]: Configuración
+              - link "IPC / Incrementos" [ref=f1e150] [cursor=pointer]:
+                - /url: /incrementos
+                - generic [ref=f1e152]:
+                  - img [ref=f1e153]
+                  - paragraph [ref=f1e156]: IPC / Incrementos
+              - link "Auditoría" [ref=f1e157] [cursor=pointer]:
+                - /url: /auditoria
+                - generic [ref=f1e159]:
+                  - img [ref=f1e160]
+                  - paragraph [ref=f1e163]: Auditoría
+              - link "Reportes" [ref=f1e164] [cursor=pointer]:
+                - /url: /reportes
+                - generic [ref=f1e166]:
+                  - img [ref=f1e167]
+                  - paragraph [ref=f1e170]: Reportes
+          - generic [ref=f1e171]:
+            - img [ref=f1e172]
+            - generic [ref=f1e176]:
+              - paragraph [ref=f1e177]: admin
+              - paragraph [ref=f1e178]: Administrador
+            - generic [ref=f1e180]:
+              - button [ref=f1e181]:
+                - img [ref=f1e182]
+              - button [ref=f1e186]:
+                - img [ref=f1e189]
+              - button [ref=f1e192]:
+                - img [ref=f1e193]
+        - generic [ref=f1e197]:
+          - generic [ref=f1e198]:
+            - heading "Liquidaciones de Propietarios" [level=1] [ref=f1e199]
+            - paragraph [ref=f1e200]: Gestión de estados de cuenta mensuales y pagos a propietarios
+          - generic [ref=f1e201]:
+            - button [ref=f1e202] [cursor=pointer]:
+              - img [ref=f1e203]
+            - generic [ref=f1e207]:
+              - switch [ref=f1e208]
+              - paragraph [ref=f1e210]: Vista Individual
+            - textbox "Buscar..." [active] [ref=f1e212]: comfe
+            - combobox [ref=f1e213]:
+              - generic [ref=f1e214]: Período
+              - img [ref=f1e215]
+            - combobox [ref=f1e217]:
+              - generic [ref=f1e218]: Todos
+              - img [ref=f1e219]
+            - combobox [ref=f1e221]:
+              - generic [ref=f1e222]: Todos
+              - img [ref=f1e223]
+            - generic [ref=f1e225]:
+              - button "Nueva Liquidación" [ref=f1e226] [cursor=pointer]:
+                - generic [ref=f1e227]:
+                  - img [ref=f1e228]
+                  - paragraph [ref=f1e229]: Nueva Liquidación
+              - button [ref=f1e230] [cursor=pointer]:
+                - img [ref=f1e231]
+          - generic [ref=f1e236]:
+            - table [ref=f1e241]:
+              - rowgroup [ref=f1e242]:
+                - row "ID Período Propiedad Ciclo Operativo Canon Neto a Pagar Estado Recaudo Estado Acciones" [ref=f1e243]:
+                  - columnheader "ID" [ref=f1e244]:
+                    - generic [ref=f1e245] [cursor=pointer]:
+                      - paragraph [ref=f1e246]: ID
+                      - img [ref=f1e247]
+                  - columnheader "Período" [ref=f1e250]:
+                    - generic [ref=f1e251] [cursor=pointer]:
+                      - paragraph [ref=f1e252]: Período
+                      - img [ref=f1e253]
+                  - columnheader "Propiedad" [ref=f1e255]:
+                    - generic [ref=f1e256] [cursor=pointer]:
+                      - paragraph [ref=f1e257]: Propiedad
+                      - img [ref=f1e258]
+                  - columnheader "Ciclo Operativo" [ref=f1e261]
+                  - columnheader "Canon" [ref=f1e262]:
+                    - generic [ref=f1e263] [cursor=pointer]:
+                      - paragraph [ref=f1e264]: Canon
+                      - img [ref=f1e265]
+                  - columnheader "Neto a Pagar" [ref=f1e268]:
+                    - generic [ref=f1e269] [cursor=pointer]:
+                      - paragraph [ref=f1e270]: Neto a Pagar
+                      - img [ref=f1e271]
+                  - columnheader "Estado Recaudo" [ref=f1e274]:
+                    - generic [ref=f1e275] [cursor=pointer]:
+                      - paragraph [ref=f1e276]: Estado Recaudo
+                      - img [ref=f1e277]
+                  - columnheader "Estado" [ref=f1e280]:
+                    - generic [ref=f1e281] [cursor=pointer]:
+                      - paragraph [ref=f1e282]: Estado
+                      - img [ref=f1e283]
+                  - columnheader "Acciones" [ref=f1e286]
+              - rowgroup [ref=f1e287]:
+                - row "562 2026-06 CONJ CIUDADELA COMFENALCO MZ H CS 29 Grupo 3 $747.000 $658.107 Pendiente En Proceso" [ref=f1e288]:
+                  - cell "562" [ref=f1e289]
+                  - cell "2026-06" [ref=f1e290]
+                  - cell "CONJ CIUDADELA COMFENALCO MZ H CS 29" [ref=f1e291]
+                  - cell "Grupo 3" [ref=f1e292]:
+                    - generic [ref=f1e293]: Grupo 3
+                  - cell "$747.000" [ref=f1e294]
+                  - cell "$658.107" [ref=f1e295]:
+                    - paragraph [ref=f1e296]: $658.107
+                  - cell "Pendiente" [ref=f1e297]:
+                    - generic [ref=f1e298]: Pendiente
+                  - cell "En Proceso" [ref=f1e299]:
+                    - generic [ref=f1e300]: En Proceso
+                  - cell [ref=f1e301]:
+                    - generic [ref=f1e302]:
+                      - button [ref=f1e303]:
+                        - img [ref=f1e304]
+                      - button [ref=f1e307]:
+                        - img [ref=f1e308]
+                      - button [ref=f1e311]:
+                        - img [ref=f1e312]
+                      - button [ref=f1e315]:
+                        - img [ref=f1e316]
+                      - button [ref=f1e318]:
+                        - img [ref=f1e319]
+                - row "483 2026-05 CONJ CIUDADELA COMFENALCO MZ H CS 29 Grupo 3 $710.000 $625.510 Aplicado En Proceso" [ref=f1e322]:
+                  - cell "483" [ref=f1e323]
+                  - cell "2026-05" [ref=f1e324]
+                  - cell "CONJ CIUDADELA COMFENALCO MZ H CS 29" [ref=f1e325]
+                  - cell "Grupo 3" [ref=f1e326]:
+                    - generic [ref=f1e327]: Grupo 3
+                  - cell "$710.000" [ref=f1e328]
+                  - cell "$625.510" [ref=f1e329]:
+                    - paragraph [ref=f1e330]: $625.510
+                  - cell "Aplicado" [ref=f1e331]:
+                    - generic [ref=f1e332]: Aplicado
+                  - cell "En Proceso" [ref=f1e333]:
+                    - generic [ref=f1e334]: En Proceso
+                  - cell [ref=f1e335]:
+                    - generic [ref=f1e336]:
+                      - button [ref=f1e337]:
+                        - img [ref=f1e338]
+                      - button [ref=f1e341]:
+                        - img [ref=f1e342]
+                      - button [ref=f1e345]:
+                        - img [ref=f1e346]
+                      - button [ref=f1e349]:
+                        - img [ref=f1e350]
+                      - button [ref=f1e352]:
+                        - img [ref=f1e353]
+            - generic [ref=f1e357]:
+              - button "Anterior" [disabled] [ref=f1e358] [cursor=pointer]:
+                - img [ref=f1e359]
+                - paragraph [ref=f1e361]: Anterior
+              - generic [ref=f1e362]:
+                - paragraph [ref=f1e363]: Página 1
+                - paragraph [ref=f1e364]: Mostrando 1-2 de 2
+              - button "Siguiente" [disabled] [ref=f1e365] [cursor=pointer]:
+                - paragraph [ref=f1e366]: Siguiente
+                - img [ref=f1e367]
+      - region "Notifications alt+T"

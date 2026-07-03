@@ -42,6 +42,7 @@ class Liquidacion:
     gastos_administracion: int = 0  # Cuota admin del conjunto pagada por inmob.
     gastos_servicios: int = 0  # Agua, luz común pagada por inmob.
     gastos_reparaciones: int = 0  # Incidentes/mantenimientos del mes
+    valor_incidentes: int = 0  # Descuentos por incidentes (nuevo)
     pago_predial: int = 0  # Pagos prediales
     seguro_monto: int = 0  # Monto del seguro (canon × porcentaje_seguro / 100)
     otros_egresos: int = 0  # Imprevistos
@@ -104,7 +105,7 @@ class Liquidacion:
             + (self.otros_egresos or 0)
         )
 
-        self.neto_a_pagar = self.total_ingresos - self.total_egresos
+        self.neto_a_pagar = self.total_ingresos - self.total_egresos - self.valor_incidentes
 
     @property
     def esta_en_proceso(self) -> bool:

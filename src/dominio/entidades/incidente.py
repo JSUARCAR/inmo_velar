@@ -22,6 +22,9 @@ class Incidente:
     estado: str = (
         "Reportado"  # Reportado, En Revision, Cotizado, Aprobado, En Reparacion, Finalizado, Cancelado
     )
+    estado_pago: str = (
+        "Pendiente"  # Pendiente, Parcialmente Pagado, Pagado
+    )
     dias_sin_resolver: int = 0
     motivo_cancelacion: Optional[str] = None
     created_at: datetime = field(default_factory=datetime.now)

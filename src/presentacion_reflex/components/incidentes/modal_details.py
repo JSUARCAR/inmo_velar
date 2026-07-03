@@ -253,6 +253,44 @@ def modal_details() -> rx.Component:
                             "blue",
                         ),
                     ),
+                    rx.cond(
+                        rx.match(
+                            inc["estado"],
+                            ("Aprobado", True),
+                            ("En Reparacion", True),
+                            ("Finalizado", True),
+                            False,
+                        ),
+                        rx.badge(
+                            rx.hstack(
+                                rx.icon("dollar-sign", size=12),
+                                rx.text(
+                                    rx.cond(
+                                        inc.get("estado_pago", ""),
+                                        inc.get("estado_pago", ""),
+                                        "Pendiente",
+                                    ),
+                                    size="2",
+                                ),
+                                spacing="1",
+                                align_items="center",
+                            ),
+                            size="2",
+                            variant="soft",
+                            color_scheme=rx.match(
+                                rx.cond(
+                                    inc.get("estado_pago", ""),
+                                    inc.get("estado_pago", ""),
+                                    "Pendiente",
+                                ),
+                                ("Pendiente", "gray"),
+                                ("Parcialmente Pagado", "yellow"),
+                                ("Pagado", "green"),
+                                "gray",
+                            ),
+                        ),
+                        rx.text(""),
+                    ),
                     width="100%",
                     align_items="center",
                 ),
@@ -382,6 +420,34 @@ def modal_details() -> rx.Component:
                                                     ),
                                                     variant="soft",
                                                     color_scheme="teal",
+                                                ),
+                                            ),
+                                        ),
+                                        # Botón Definir Plan de Pago (solo para Aprobado, En Reparacion, Finalizado)
+                                        rx.cond(
+                                            rx.match(
+                                                inc["estado"],
+                                                ("Aprobado", True),
+                                                ("En Reparacion", True),
+                                                ("Finalizado", True),
+                                                False,
+                                            ),
+                                            rx.cond(
+                                                AuthState.check_action(
+                                                    "Incidentes", "DEFINIR_PLAN_PAGO"
+                                                ),
+                                                neuro_button(
+                                                    rx.hstack(
+                                                        rx.icon("dollar-sign", size=16),
+                                                        rx.text("Plan de Pago"),
+                                                    ),
+                                                    on_click=lambda: (
+                                                        IncidentesState.open_plan_pago_modal(
+                                                            inc["id"]
+                                                        )
+                                                    ),
+                                                    variant="soft",
+                                                    color_scheme="green",
                                                 ),
                                             ),
                                         ),

@@ -1,0 +1,288 @@
+- generic:
+  - region "Notifications alt+T"
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - img
+            - heading [level=1]: INMOBILIARIA VELAR SAS
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - paragraph: PRINCIPAL
+                - link:
+                  - /url: /dashboard
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Dashboard
+                - link:
+                  - /url: /alertas
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Alertas Tempranas
+              - generic:
+                - generic:
+                  - paragraph: GESTIÓN
+                - link:
+                  - /url: /personas
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Personas
+                - link:
+                  - /url: /propiedades
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Propiedades
+                - link:
+                  - /url: /contratos
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Contratos
+                - link:
+                  - /url: /propiedad-horizontal
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Prop. Horizontal
+                - link:
+                  - /url: /proveedores
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Proveedores
+              - generic:
+                - generic:
+                  - paragraph: OPERACIONES
+                - link:
+                  - /url: /liquidaciones
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Liquidaciones
+                - link:
+                  - /url: /liquidacion-asesores
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Liquidación Asesores
+                - link:
+                  - /url: /recaudos
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Recaudos
+                - link:
+                  - /url: /desocupaciones
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Desocupaciones
+                - link:
+                  - /url: /incidentes
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Incidentes
+                - link:
+                  - /url: /seguros
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Seguros
+                - link:
+                  - /url: /recibos-publicos
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Recibos Públicos
+                - link:
+                  - /url: /saldos-favor
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Saldos a Favor
+              - generic:
+                - generic:
+                  - paragraph: ADMINISTRACIÓN
+                - link:
+                  - /url: /usuarios
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Usuarios
+                - link:
+                  - /url: /configuracion
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Configuración
+                - link:
+                  - /url: /incrementos
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: IPC / Incrementos
+                - link:
+                  - /url: /auditoria
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Auditoría
+                - link:
+                  - /url: /reportes
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Reportes
+          - generic:
+            - img
+            - generic:
+              - paragraph: admin
+              - paragraph: Administrador
+            - generic:
+              - button:
+                - img
+              - generic:
+                - generic:
+                  - button:
+                    - generic:
+                      - generic:
+                        - img
+              - button:
+                - img
+        - generic:
+          - generic:
+            - heading [level=1]: Gestión de Incidentes
+            - generic:
+              - generic:
+                - textbox:
+                  - /placeholder: Buscar incidente...
+              - combobox:
+                - generic: Todas
+                - img
+              - combobox:
+                - generic: Todos
+                - img
+              - group:
+                - radio [checked]:
+                  - generic:
+                    - generic: Kanban
+                    - generic: Kanban
+                - radio:
+                  - generic:
+                    - generic: Lista
+                    - generic: Lista
+              - button:
+                - generic:
+                  - img
+                  - paragraph: Reportar
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                            - paragraph: Reportado
+                          - generic: "7"
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                            - paragraph: Cotizado
+                          - generic: "1"
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                            - paragraph: Aprobado
+                          - generic: "2"
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                            - paragraph: En Reparación
+                          - generic: "0"
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                            - paragraph: Finalizado
+                          - generic: "24"
+      - region "Notifications alt+T"
+  - dialog [ref=f4e4887]:
+    - generic [ref=f4e4888]:
+      - generic [ref=f4e4889]:
+        - 'heading "Incidente #52" [level=1] [ref=f4e4890]'
+        - button "Descargar PDF" [disabled] [ref=f4e4892] [cursor=pointer]:
+          - paragraph [ref=f4e4897]: Descargar PDF
+        - generic [ref=f4e4908]: Aprobado
+        - generic [ref=f4e4910]:
+          - img [ref=f4e4911]
+          - paragraph [ref=f4e4913]: Pendiente
+      - generic [ref=f4e4914]:
+        - tablist [ref=f4e4915]:
+          - tab "General" [active] [selected] [ref=f4e4916]:
+            - generic [ref=f4e4917]: General
+          - tab "Cotizaciones" [ref=f4e4918]:
+            - generic [ref=f4e4919]: Cotizaciones
+          - tab "Documentos / Fotos" [ref=f4e4920]:
+            - generic [ref=f4e4921]: Documentos / Fotos
+        - tabpanel "General" [ref=f4e4922]:
+          - generic [ref=f4e4926]:
+            - generic [ref=f4e4928]:
+              - generic [ref=f4e4929]:
+                - img [ref=f4e4930]
+                - paragraph [ref=f4e4931]: Descripción Detallada
+              - paragraph [ref=f4e4932]: Calle Falsa 123 - Test Renov
+            - generic [ref=f4e4934]:
+              - generic [ref=f4e4935]:
+                - img [ref=f4e4936]
+                - paragraph [ref=f4e4939]: "Propiedad:"
+                - paragraph [ref=f4e4940]: "#100097..."
+              - generic [ref=f4e4941]:
+                - img [ref=f4e4942]
+                - paragraph [ref=f4e4944]: "Prioridad:"
+                - paragraph [ref=f4e4945]: Media
+              - generic [ref=f4e4946]:
+                - img [ref=f4e4947]
+                - paragraph [ref=f4e4949]: "Fecha:"
+                - paragraph [ref=f4e4950]: 2026-07-01
+              - generic [ref=f4e4951]:
+                - img [ref=f4e4952]
+                - paragraph [ref=f4e4955]: "Origen:"
+                - paragraph [ref=f4e4956]: Inquilino
+            - heading "Acciones y Estado" [level=1] [ref=f4e4958]
+            - generic [ref=f4e4959]:
+              - button "Editar" [ref=f4e4960] [cursor=pointer]:
+                - generic [ref=f4e4961]:
+                  - img [ref=f4e4962]
+                  - paragraph [ref=f4e4965]: Editar
+              - button "Cancelar" [ref=f4e4966] [cursor=pointer]:
+                - generic [ref=f4e4967]:
+                  - img [ref=f4e4968]
+                  - paragraph [ref=f4e4971]: Cancelar
+              - button "Finalizar" [ref=f4e4972] [cursor=pointer]:
+                - generic [ref=f4e4973]:
+                  - img [ref=f4e4974]
+                  - paragraph [ref=f4e4977]: Finalizar
+              - button "Plan de Pago" [ref=f4e4978] [cursor=pointer]:
+                - generic [ref=f4e4979]:
+                  - img [ref=f4e4980]
+                  - paragraph [ref=f4e4982]: Plan de Pago
+            - generic [ref=f4e4983]:
+              - generic [ref=f4e4984]:
+                - img [ref=f4e4986]
+                - paragraph [ref=f4e4989]: Incidente aprobado. Puede iniciar la reparación.
+              - button "Iniciar Reparación" [ref=f4e4990] [cursor=pointer]
+      - button "Cerrar" [ref=f4e4993] [cursor=pointer]

@@ -157,6 +157,9 @@ from src.presentacion_reflex.components.incidentes.modal_edit_incidente import (
 from src.presentacion_reflex.components.incidentes.modal_cancel_incidente import (
     modal_cancel_incidente,
 )
+from src.presentacion_reflex.components.incidentes.modal_plan_pago import (
+    modal_plan_pago,
+)
 
 
 @rx.page(
@@ -230,6 +233,7 @@ def incidentes() -> rx.Component:
             modal_details(),
             modal_edit_incidente(),
             modal_cancel_incidente(),
+            modal_plan_pago(),
             width="100%",
             flex="1",
             height="100%",

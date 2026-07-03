@@ -1,0 +1,915 @@
+- generic:
+  - region "Notifications alt+T"
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - img
+              - heading [level=1]: INMOBILIARIA VELAR SAS
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - paragraph: PRINCIPAL
+                  - link:
+                    - /url: /dashboard
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Dashboard
+                  - link:
+                    - /url: /alertas
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Alertas Tempranas
+                - generic:
+                  - generic:
+                    - paragraph: GESTIÓN
+                  - link:
+                    - /url: /personas
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Personas
+                  - link:
+                    - /url: /propiedades
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Propiedades
+                  - link:
+                    - /url: /contratos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Contratos
+                  - link:
+                    - /url: /propiedad-horizontal
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Prop. Horizontal
+                  - link:
+                    - /url: /proveedores
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Proveedores
+                - generic:
+                  - generic:
+                    - paragraph: OPERACIONES
+                  - link:
+                    - /url: /liquidaciones
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Liquidaciones
+                  - link:
+                    - /url: /liquidacion-asesores
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Liquidación Asesores
+                  - link:
+                    - /url: /recaudos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Recaudos
+                  - link:
+                    - /url: /desocupaciones
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Desocupaciones
+                  - link:
+                    - /url: /incidentes
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Incidentes
+                  - link:
+                    - /url: /seguros
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Seguros
+                  - link:
+                    - /url: /recibos-publicos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Recibos Públicos
+                  - link:
+                    - /url: /saldos-favor
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Saldos a Favor
+                - generic:
+                  - generic:
+                    - paragraph: ADMINISTRACIÓN
+                  - link:
+                    - /url: /usuarios
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Usuarios
+                  - link:
+                    - /url: /configuracion
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Configuración
+                  - link:
+                    - /url: /incrementos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: IPC / Incrementos
+                  - link:
+                    - /url: /auditoria
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Auditoría
+                  - link:
+                    - /url: /reportes
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Reportes
+            - generic:
+              - img
+              - generic:
+                - paragraph: admin
+                - paragraph: Administrador
+              - generic:
+                - button:
+                  - img
+                - generic:
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                - button:
+                  - img
+          - generic:
+            - generic:
+              - generic:
+                - heading [level=1]: Liquidaciones de Propietarios
+                - paragraph: Gestión de estados de cuenta mensuales y pagos a propietarios
+              - generic:
+                - button:
+                  - img
+                - generic:
+                  - switch
+                  - paragraph: Vista Individual
+                - generic:
+                  - textbox:
+                    - /placeholder: Buscar...
+                - combobox:
+                  - generic: Período
+                  - img
+                - combobox:
+                  - generic: Todos
+                  - img
+                - combobox:
+                  - generic: Todos
+                  - img
+                - generic:
+                  - button:
+                    - generic:
+                      - img
+                      - paragraph: Nueva Liquidación
+                  - button:
+                    - img
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - table:
+                          - rowgroup:
+                            - row:
+                              - columnheader:
+                                - generic:
+                                  - paragraph: ID
+                                  - img
+                              - columnheader:
+                                - generic:
+                                  - paragraph: Período
+                                  - img
+                              - columnheader:
+                                - generic:
+                                  - paragraph: Propiedad
+                                  - img
+                              - columnheader: Ciclo Operativo
+                              - columnheader:
+                                - generic:
+                                  - paragraph: Canon
+                                  - img
+                              - columnheader:
+                                - generic:
+                                  - paragraph: Neto a Pagar
+                                  - img
+                              - columnheader:
+                                - generic:
+                                  - paragraph: Estado Recaudo
+                                  - img
+                              - columnheader:
+                                - generic:
+                                  - paragraph: Estado
+                                  - img
+                              - columnheader: Acciones
+                          - rowgroup:
+                            - row:
+                              - cell: "572"
+                              - cell: 2026-06
+                              - cell: Calle Falsa 123 - Test Renov
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $1.051.000
+                              - cell:
+                                - paragraph: $925.931
+                              - cell:
+                                - generic: Sin Recaudo
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "571"
+                              - cell: 2026-06
+                              - cell: EDF LA PATRIA AP 301
+                              - cell:
+                                - generic: Grupo 2
+                              - cell: $800.000
+                              - cell:
+                                - paragraph: $704.800
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "570"
+                              - cell: 2026-06
+                              - cell: CR 14 CL 27N-80 LC 6, EDI MALL LA AVENIDA
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $800.000
+                              - cell:
+                                - paragraph: $704.800
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "569"
+                              - cell: 2026-06
+                              - cell: CL 50 CR 55-01 BQ 2 AP 402, CJT OVIEDO
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $800.000
+                              - cell:
+                                - paragraph: $704.800
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "568"
+                              - cell: 2026-06
+                              - cell: CR 15 CL 59-75 TO 1 AP 805, CJT RES ABEDULES
+                              - cell:
+                                - generic: Grupo 3
+                              - cell: $715.400
+                              - cell:
+                                - paragraph: $203.268
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "567"
+                              - cell: 2026-06
+                              - cell: BRR LA ADIELA MZ 9 CS 1 PI 2
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $800.000
+                              - cell:
+                                - paragraph: $704.800
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "566"
+                              - cell: 2026-06
+                              - cell: CR 44 CL 50-86 TO 7 APT 401, CJT RES CAMINO DEL PUERTO
+                              - cell:
+                                - generic: Grupo 2
+                              - cell: $840.800
+                              - cell:
+                                - paragraph: $620.245
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "565"
+                              - cell: 2026-06
+                              - cell: CR 54 CL 30-35 AP 807, BRR QUINTAS DE LA MARINA EDF KOA
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $800.000
+                              - cell:
+                                - paragraph: $704.800
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "564"
+                              - cell: 2026-06
+                              - cell: EDF LA FORET AP 603, BRR LA CASTELLANA
+                              - cell:
+                                - generic: Grupo 3
+                              - cell: $1.300.000
+                              - cell:
+                                - paragraph: $1.145.300
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: Pagada
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "563"
+                              - cell: 2026-06
+                              - cell: EDF GRANADA REAL AP 308
+                              - cell:
+                                - generic: Grupo 2
+                              - cell: $1.000.000
+                              - cell:
+                                - paragraph: $651.000
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "562"
+                              - cell: 2026-06
+                              - cell: CONJ CIUDADELA COMFENALCO MZ H CS 29
+                              - cell:
+                                - generic: Grupo 3
+                              - cell: $747.000
+                              - cell:
+                                - paragraph: $658.107
+                              - cell:
+                                - generic: Pendiente
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "561"
+                              - cell: 2026-06
+                              - cell: CL 50 CRA 55-01 BQ 2 AP 302, CJT OVIEDO
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $900.000
+                              - cell:
+                                - paragraph: $792.900
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "560"
+                              - cell: 2026-06
+                              - cell: CL 23 CR 37-25 TO 3 AP 1005, CJT TESALONICA APARTAMENTOS
+                              - cell:
+                                - generic: Grupo 2
+                              - cell: $850.000
+                              - cell:
+                                - paragraph: $638.850
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "559"
+                              - cell: 2026-06
+                              - cell: CJT MARIA CRISTINA ET 2 TO 1 AP 403
+                              - cell:
+                                - generic: Grupo 2
+                              - cell: $840.800
+                              - cell:
+                                - paragraph: $740.745
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "558"
+                              - cell: 2026-06
+                              - cell: BRR LA GRECIA MZ 34 CS 22
+                              - cell:
+                                - generic: Grupo 3
+                              - cell: $789.000
+                              - cell:
+                                - paragraph: $695.109
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "557"
+                              - cell: 2026-06
+                              - cell: BRR LA PATRIA MZ 23 CS 22
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $650.000
+                              - cell:
+                                - paragraph: $572.650
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "556"
+                              - cell: 2026-06
+                              - cell: CL 46 CR 44-94 ET 2 MZ 1, BRR MANANTIALES
+                              - cell:
+                                - generic: Grupo 3
+                              - cell: $840.000
+                              - cell:
+                                - paragraph: $740.040
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "555"
+                              - cell: 2026-06
+                              - cell: CR 17 CL 59-75 ET 1 AP 504, CJT CIUDADELA MONTECARLO GIRASOLES PROPIEDAD HORIZONTAL
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $550.000
+                              - cell:
+                                - paragraph: $366.550
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "554"
+                              - cell: 2026-06
+                              - cell: BRR VILLA LILIANA MZ LL CS 327 PI 1
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $700.000
+                              - cell:
+                                - paragraph: $616.700
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "553"
+                              - cell: 2026-06
+                              - cell: CR 40 CL 42-18 PI 2 AP 201, BRR VILLA LILIANA
+                              - cell:
+                                - generic: Grupo 2
+                              - cell: $663.391
+                              - cell:
+                                - paragraph: $584.448
+                              - cell:
+                                - generic: Pendiente
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "552"
+                              - cell: 2026-06
+                              - cell: CL 50 CR 55-01 BQ 1 AP 1210, CJT RES OVIEDO
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $1.100.000
+                              - cell:
+                                - paragraph: $969.100
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "551"
+                              - cell: 2026-06
+                              - cell: BRR LA PATRIA AP 201
+                              - cell:
+                                - generic: Grupo 3
+                              - cell: $750.000
+                              - cell:
+                                - paragraph: $660.750
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "550"
+                              - cell: 2026-06
+                              - cell: BRR LA PATRIA MZ 29 CS 38
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $850.000
+                              - cell:
+                                - paragraph: $748.850
+                              - cell:
+                                - generic: Aplicado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "549"
+                              - cell: 2026-06
+                              - cell: BRR VILLA YOLANDA MZ D CS 6
+                              - cell:
+                                - generic: Grupo 1
+                              - cell: $1.200.000
+                              - cell:
+                                - paragraph: $1.057.200
+                              - cell:
+                                - generic: Vencido
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                            - row:
+                              - cell: "548"
+                              - cell: 2026-06
+                              - cell: EDF LA PATRIA AP 101
+                              - cell:
+                                - generic: Grupo 3
+                              - cell: $600.000
+                              - cell:
+                                - paragraph: $378.600
+                              - cell:
+                                - generic: Reversado
+                              - cell:
+                                - generic: En Proceso
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                                  - button:
+                                    - img
+                - generic:
+                  - generic:
+                    - button [disabled]:
+                      - img
+                      - paragraph: Anterior
+                    - generic:
+                      - paragraph: Página 1
+                      - paragraph: Mostrando 1-25 de 155
+                    - button:
+                      - paragraph: Siguiente
+                      - img
+        - region "Notifications alt+T"
+  - dialog "Editar Liquidación" [ref=f8e2054]:
+    - heading "Editar Liquidación" [level=1] [ref=f8e2055]
+    - paragraph [ref=f8e2056]: Modifique los valores variables. El período y contrato no pueden cambiarse.
+    - generic [ref=f8e2058]:
+      - paragraph [ref=f8e2060]: Información General
+      - generic [ref=f8e2061]:
+        - generic [ref=f8e2062]:
+          - generic [ref=f8e2063]:
+            - paragraph [ref=f8e2064]: Propietario
+            - textbox [active] [ref=f8e2066]: SANTIAGO GÓMEZ PEÑA
+          - generic [ref=f8e2067]:
+            - paragraph [ref=f8e2068]: Dirección Inmueble
+            - textbox [ref=f8e2070]: Calle Falsa 123 - Test Renov
+        - generic [ref=f8e2071]:
+          - paragraph [ref=f8e2072]: Canon Mandato
+          - textbox [ref=f8e2074]: "1051000"
+        - generic [ref=f8e2075]:
+          - paragraph [ref=f8e2076]: ID Contrato
+          - textbox [ref=f8e2078]: "103"
+        - generic [ref=f8e2079]:
+          - paragraph [ref=f8e2080]: Período
+          - textbox [ref=f8e2082]: 2026-06
+      - paragraph [ref=f8e2083]: Ingresos
+      - generic [ref=f8e2084]:
+        - paragraph [ref=f8e2085]: Otros Ingresos
+        - spinbutton [ref=f8e2087]: "0"
+      - paragraph [ref=f8e2088]: Egresos Variables
+      - generic [ref=f8e2089]:
+        - generic [ref=f8e2090]:
+          - paragraph [ref=f8e2091]: Gastos Administración
+          - spinbutton [ref=f8e2093]: "0"
+        - generic [ref=f8e2094]:
+          - paragraph [ref=f8e2095]: Gastos Servicios
+          - spinbutton [ref=f8e2097]: "0"
+        - generic [ref=f8e2098]:
+          - paragraph [ref=f8e2099]: Incidentes
+          - spinbutton [ref=f8e2101]: "0"
+        - generic [ref=f8e2102]:
+          - paragraph [ref=f8e2103]: Pago Predial
+          - spinbutton [ref=f8e2105]: "0"
+        - generic [ref=f8e2106]:
+          - paragraph [ref=f8e2107]: Otros Egresos
+          - spinbutton [ref=f8e2109]: "0"
+      - button "Seleccionar Incidentes" [ref=f8e2110]:
+        - generic [ref=f8e2111]:
+          - img [ref=f8e2112]
+          - paragraph [ref=f8e2115]: Seleccionar Incidentes
+      - paragraph [ref=f8e2116]: Observaciones
+      - textbox "Detalles adicionales sobre la liquidación..." [ref=f8e2118]
+      - generic [ref=f8e2120]:
+        - button "Cancelar" [ref=f8e2121]
+        - button "Guardar Cambios" [ref=f8e2123]

@@ -128,7 +128,7 @@ def liquidacion_edit_form() -> rx.Component:
                         ),
                         form_field_editable(
                             "Incidentes",
-                            "gastos_reparaciones",
+                            "valor_incidentes",
                             LiquidacionesState.form_data["valor_incidentes"],
                         ),
                         form_field_editable(
