@@ -5,6 +5,7 @@ Formulario de Edición de Liquidación
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
+from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex import styles
 
 
@@ -128,7 +129,7 @@ def liquidacion_edit_form() -> rx.Component:
                         form_field_editable(
                             "Incidentes",
                             "gastos_reparaciones",
-                            LiquidacionesState.form_data["gastos_reparaciones"],
+                            LiquidacionesState.form_data["valor_incidentes"],
                         ),
                         form_field_editable(
                             "Pago Predial",
@@ -143,6 +144,26 @@ def liquidacion_edit_form() -> rx.Component:
                         columns="2",
                         spacing="3",
                         width="100%",
+                    ),
+                    # Botón Seleccionar Incidentes (solo para liquidaciones en proceso)
+                    rx.cond(
+                        LiquidacionesState.form_data["estado"] == "En Proceso",
+                        rx.cond(
+                            AuthState.check_action("Liquidaciones", "SELECCIONAR_INCIDENTES"),
+                            rx.button(
+                                rx.hstack(
+                                    rx.icon("link", size=16),
+                                    rx.text("Seleccionar Incidentes"),
+                                ),
+                                on_click=LiquidacionesState.open_seleccion_incidentes_modal(
+                                    LiquidacionesState.form_data["id_liquidacion"]
+                                ),
+                                type="button",
+                                variant="soft",
+                                color_scheme="orange",
+                                margin_top="1em",
+                            ),
+                        ),
                     ),
                     section_title("Observaciones"),
                     rx.text_area(
