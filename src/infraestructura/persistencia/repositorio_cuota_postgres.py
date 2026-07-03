@@ -130,6 +130,54 @@ class RepositorioCuotaPostgres(RepositorioCuota):
         )
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
+    def obtener_cuotas_pendientes_por_propiedad(self, id_propiedad: int) -> List[CuotaIncidente]:
+        """Obtiene las cuotas pendientes que no están asociadas a ninguna liquidación para una propiedad."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+
+        query = """
+            SELECT c.*
+            FROM CUOTA_INCIDENTE c
+            JOIN PLAN_PAGO_INCIDENTE p ON c.ID_PLAN_PAGO = p.ID_PLAN_PAGO
+            JOIN INCIDENTES i ON p.ID_INCIDENTE = i.ID_INCIDENTE
+            WHERE i.ID_PROPIEDAD = %s 
+              AND c.ESTADO_PAGO = 'Pendiente' 
+              AND c.ID_LIQUIDACION IS NULL
+            ORDER BY c.ID_CUOTA
+        """
+        cursor.execute(query, (id_propiedad,))
+        return [self._row_to_entity(row) for row in cursor.fetchall()]
+
+    def contar_estado_liquidaciones_por_plan(self, id_plan_pago: int) -> tuple[int, int]:
+        """
+        Calcula la cantidad de cuotas con liquidación y cuántas están pagadas 
+        para un plan de pago específico en una sola consulta optimizada.
+        
+        Returns:
+            Tuple[int, int]: (total_cuotas_con_liq, total_cuotas_pagadas)
+        """
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        
+        query = """
+            SELECT 
+                COUNT(c.ID_CUOTA) as total_con_liq,
+                SUM(CASE WHEN l.ESTADO_LIQUIDACION = 'Pagada' THEN 1 ELSE 0 END) as total_pagadas
+            FROM CUOTA_INCIDENTE c
+            JOIN LIQUIDACIONES l ON c.ID_LIQUIDACION = l.ID_LIQUIDACION
+            WHERE c.ID_PLAN_PAGO = %s
+        """
+        cursor.execute(query, (id_plan_pago,))
+        row = cursor.fetchone()
+        
+        if not row:
+            return 0, 0
+            
+        total_con_liq = row.get("total_con_liq", 0) or row.get("TOTAL_CON_LIQ", 0) or 0
+        total_pagadas = row.get("total_pagadas", 0) or row.get("TOTAL_PAGADAS", 0) or 0
+        
+        return total_con_liq, total_pagadas
+
     def actualizar(self, cuota: CuotaIncidente) -> CuotaIncidente:
         """Actualiza una cuota existente."""
         conn = self.db.obtener_conexion()

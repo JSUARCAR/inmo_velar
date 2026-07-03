@@ -1,0 +1,8 @@
+feat(liquidaciones): integrar sincronización con incidentes
+
+Implementa la vinculación entre incidentes y liquidaciones para el pago de
+cuotas, permitiendo selección de incidentes en el modal de edición de liquidación.
+Incluye entidades de dominio, servicios de aplicación y repositorios de infraestructura
+para cuotas y planes de pago. Migraciones de BD aplicadas para PostgreSQL.
+
+Closes #004

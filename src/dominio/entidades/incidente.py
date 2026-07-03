@@ -36,6 +36,7 @@ class Incidente:
     direccion_propiedad: Optional[str] = None
     nombre_proveedor: Optional[str] = None
     cotizaciones_resumen: Optional[list] = field(default_factory=list)
+    plan_pago: Optional[dict] = None
 
     # Datos adicionales de relaciones (Optimizacion N+1)
     nombre_propietario: Optional[str] = None

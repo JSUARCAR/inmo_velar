@@ -53,11 +53,13 @@ class ServicioFinanciero:
             RepositorioContratoMandatoPostgres,
         )
         from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+        from src.infraestructura.persistencia.repositorio_cuota_postgres import RepositorioCuotaPostgres
 
         self.repo_recaudo = repo_recaudo or RepositorioRecaudo(db_manager)
         self.repo_liquidacion = (
             repo_liquidacion or RepositorioLiquidacionPostgres(db_manager)
         )
+        self.repo_cuota = RepositorioCuotaPostgres(db_manager)
         self.repo_propiedad = repo_propiedad or RepositorioPropiedadPostgres(db_manager)
         self.repo_arriendo = (
             repo_arriendo or RepositorioContratoArrendamientoPostgres(db_manager)
@@ -185,8 +187,8 @@ class ServicioFinanciero:
         impuesto_4x1000 = 0 # Eliminado por política Elite
         seguro_monto = 0 # Eliminado por política Elite
 
-        # Obtención de Valor Administración desde Propiedad
         valor_admin_propiedad = 0
+        id_propiedad_asociada = None
         try:
             from src.infraestructura.persistencia.database import db_manager
 
@@ -208,8 +210,15 @@ class ServicioFinanciero:
 
                 if row_prop:
                     valor_admin_propiedad = row_prop["VALOR_ADMINISTRACION"] or 0
+                    id_propiedad_asociada = row_prop["ID_PROPIEDAD"]
         except Exception:
             valor_admin_propiedad = 0
+            
+        cuotas_pendientes = []
+        valor_incidentes = 0
+        if id_propiedad_asociada:
+            cuotas_pendientes = self.repo_cuota.obtener_cuotas_pendientes_por_propiedad(id_propiedad_asociada)
+            valor_incidentes = sum(c.valor_cuota for c in cuotas_pendientes)
 
         liquidacion = Liquidacion(
             id_contrato_m=id_contrato_m,
@@ -226,13 +235,22 @@ class ServicioFinanciero:
             ),
             gastos_servicios=datos_adicionales.get("gastos_servicios", 0),
             gastos_reparaciones=datos_adicionales.get("gastos_reparaciones", 0),
+            valor_incidentes=datos_adicionales.get("valor_incidentes", valor_incidentes),
             pago_predial=datos_adicionales.get("pago_predial", 0),
             seguro_monto=seguro_monto,
             otros_egresos=datos_adicionales.get("otros_egresos", 0),
             estado_liquidacion="En Proceso",
             observaciones=datos_adicionales.get("observaciones"),
         )
-        return self.repo_liquidacion.crear(liquidacion, usuario_sistema)
+        nueva_liq = self.repo_liquidacion.crear(liquidacion, usuario_sistema)
+        
+        # T008: Asociar las cuotas a la liquidación guardada en borrador
+        if nueva_liq.id_liquidacion and cuotas_pendientes:
+            for cuota in cuotas_pendientes:
+                cuota.id_liquidacion = nueva_liq.id_liquidacion
+                self.repo_cuota.actualizar(cuota)
+                
+        return nueva_liq
 
     def generar_liquidacion_propietario(
         self,
@@ -313,6 +331,11 @@ class ServicioFinanciero:
         self.repo_liquidacion.marcar_como_pagada(
             id_liquidacion, fecha_pago, metodo_pago, referencia_pago, usuario_sistema
         )
+        # Update associated incident quotas to "Pagada"
+        cuotas = self.repo_cuota.obtener_por_liquidacion(id_liquidacion)
+        for cuota in cuotas:
+            cuota.estado_pago = "Pagada"
+            self.repo_cuota.actualizar(cuota)
 
     def marcar_liquidacion_propietario_pagada(
         self,
@@ -330,7 +353,7 @@ class ServicioFinanciero:
         afectadas = 0
         for liq in liquidaciones:
             if liq.estado_liquidacion == "Aprobada":
-                self.repo_liquidacion.marcar_como_pagada(
+                self.marcar_liquidacion_pagada(
                     liq.id_liquidacion,
                     fecha_pago,
                     metodo_pago,

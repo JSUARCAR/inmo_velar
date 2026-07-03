@@ -15,6 +15,7 @@ from src.dominio.interfaces.repositorio_cuota import RepositorioCuota
 from src.dominio.interfaces.repositorio_plan_pago import RepositorioPlanPago
 from src.dominio.interfaces.repositorio_liquidacion import IRepositorioLiquidacion
 from src.dominio.interfaces.repositorio_incidentes import RepositorioIncidentes
+from src.infraestructura.persistencia.database import db_manager
 
 logger = logging.getLogger(__name__)
 
@@ -159,6 +160,7 @@ class ServicioIncidenteLiquidacion:
         numero_cuota: int,
         valor_descuento: int,
         asociado_por: str,
+        justificacion: str,
     ) -> Dict[str, Any]:
         """
         Asocia un incidente a una liquidación.
@@ -169,149 +171,176 @@ class ServicioIncidenteLiquidacion:
             numero_cuota: Número de cuota del incidente
             valor_descuento: Valor del descuento
             asociado_por: Usuario que asocia
+            justificacion: Justificación de la asociación
             
         Returns:
             Dict con resultado de la operación
         """
         try:
-            # 1. Validar que el incidente existe y está calificado
-            incidente = self.repositorio_incidentes.obtener_por_id(id_incidente)
-            if not incidente:
+            with db_manager.transaccion():
+                # 0. Validar justificación
+                if not justificacion or not justificacion.strip():
+                    return {
+                        "success": False,
+                        "error": "JUSTIFICACION_REQUERIDA",
+                        "message": "Se requiere una justificación para asociar el incidente",
+                    }
+                    
+                    # 1. Validar que el incidente existe y está calificado
+                incidente = self.repositorio_incidentes.obtener_por_id(id_incidente)
+                if not incidente:
+                    return {
+                        "success": False,
+                        "error": "INCIDENTE_NO_ENCONTRADO",
+                        "message": "El incidente no existe",
+                    }
+                
+                if incidente.estado not in ["Aprobado", "En Reparacion", "Finalizado"]:
+                    return {
+                        "success": False,
+                        "error": "INCIDENTE_NO_CALIFICADO",
+                        "message": f"El incidente no está en un estado válido (estado actual: {incidente.estado})",
+                    }
+                
+                if incidente.estado_pago == "Pagado":
+                    return {
+                        "success": False,
+                        "error": "INCIDENTE_PAGADO",
+                        "message": "El incidente ya está pagado completamente",
+                    }
+                
+                # 2. Verificar que el incidente tenga un plan de pago activo
+                plan = self.repositorio_plan.obtener_por_incidente(id_incidente)
+                if not plan or not plan.esta_activo():
+                    return {
+                        "success": False,
+                        "error": "PLAN_NO_EXISTE",
+                        "message": "El incidente no tiene un plan de pago activo",
+                    }
+                
+                # 3. Validar que la liquidación existe y está calificada
+                liquidacion = self.repositorio_liquidacion.obtener_por_id(id_liquidacion)
+                if not liquidacion:
+                    return {
+                        "success": False,
+                        "error": "LIQUIDACION_NO_ENCONTRADA",
+                        "message": "La liquidación no existe",
+                    }
+                
+                if liquidacion.estado_liquidacion not in ["En Proceso", "Aprobada"]:
+                    return {
+                        "success": False,
+                        "error": "LIQUIDACION_NO_CALIFICADA",
+                        "message": f"La liquidación no está en un estado válido (estado actual: {liquidacion.estado_liquidacion})",
+                    }
+                
+                # 4. Validar que la cuota exista y esté pendiente
+                cuotas = self.repositorio_cuota.obtener_por_plan(plan.id_plan_pago)
+                cuota = next((c for c in cuotas if c.numero_cuota == numero_cuota), None)
+                
+                if not cuota:
+                    return {
+                        "success": False,
+                        "error": "CUOTA_NO_ENCONTRADA",
+                        "message": f"No se encontró la cuota número {numero_cuota}",
+                    }
+                
+                if not cuota.puede_asociarse():
+                    return {
+                        "success": False,
+                        "error": "CUOTA_YA_ASOCIADA",
+                        "message": "La cuota ya está asociada a una liquidación",
+                    }
+                
+                # 5. Validar que no exista una asociación duplicada
+                relaciones_existentes = self.repositorio_relacion.obtener_por_incidente(id_incidente)
+                duplicado = next(
+                    (
+                        r
+                        for r in relaciones_existentes
+                        if r.id_liquidacion == id_liquidacion
+                        and r.numero_cuota == numero_cuota
+                    ),
+                    None,
+                )
+                
+                if duplicado:
+                    # Idempotency check: Return success if it's already associated
+                    total_descuentos = self.repositorio_relacion.calcular_total_descuentos(id_liquidacion)
+                    return {
+                        "success": True,
+                        "data": {
+                            "relacion": duplicado.to_dict(),
+                            "total_descuentos_liquidacion": total_descuentos,
+                        },
+                        "message": "Esta cuota ya está asociada a esta liquidación",
+                    }
+                
+                # 6. Validar valor del descuento
+                if valor_descuento <= 0:
+                    return {
+                        "success": False,
+                        "error": "VALOR_INVALIDO",
+                        "message": "El valor del descuento debe ser mayor a 0",
+                    }
+                
+                # 7. Crear la relación
+                relacion = IncidenteLiquidacion.crear(
+                    id_incidente=id_incidente,
+                    id_liquidacion=id_liquidacion,
+                    numero_cuota=numero_cuota,
+                    valor_descuento=valor_descuento,
+                    asociado_por=asociado_por,
+                )
+                relacion = self.repositorio_relacion.crear(relacion)
+                
+                # 8. Actualizar estado de la cuota
+                cuota.asociar_a_liquidacion(id_liquidacion)
+                self.repositorio_cuota.actualizar(cuota)
+                
+                # 9. Actualizar observaciones con ID del incidente (append, no reemplazo)
+                liquidacion.observaciones = agregar_id_incidente_observaciones(
+                    liquidacion.observaciones,
+                    id_incidente,
+                )
+                
+                # 10. Obtener VALOR_INCIDENTES fresco de BD (post-trigger)
+                total_descuentos = self.repositorio_relacion.calcular_total_descuentos(
+                    id_liquidacion
+                )
+                
+                # 11. Asignar valor fresco y recalcular totales
+                liquidacion.valor_incidentes = total_descuentos
+                liquidacion.calcular_totales()
+                
+                # 12. Persistir cambios en liquidación
+                self.repositorio_liquidacion.actualizar(liquidacion, asociado_por)
+                
+                # 13. Auditar la acción (T082, T083)
+                if hasattr(self, "servicio_auditoria") and self.servicio_auditoria:
+                    self.servicio_auditoria.auditar_accion(
+                        tabla="INCIDENTE_LIQUIDACION",
+                        id_registro=relacion.id_relacion,
+                        accion="INSERT",
+                        usuario=asociado_por,
+                        valores_nuevos=relacion.to_dict(),
+                        ip_origen="127.0.0.1",
+                        sesion_id="SYSTEM"
+                    )
+                
+                logger.info(
+                    f"Incidente {id_incidente} asociado a liquidación {id_liquidacion} "
+                    f"(cuota {numero_cuota}, descuento ${valor_descuento})"
+                )
+                
                 return {
-                    "success": False,
-                    "error": "INCIDENTE_NO_ENCONTRADO",
-                    "message": "El incidente no existe",
+                    "success": True,
+                    "data": {
+                        "relacion": relacion.to_dict(),
+                        "total_descuentos_liquidacion": total_descuentos,
+                    },
+                    "message": "Incidente asociado exitosamente",
                 }
-            
-            if incidente.estado not in ["Aprobado", "En Reparacion", "Finalizado"]:
-                return {
-                    "success": False,
-                    "error": "INCIDENTE_NO_CALIFICADO",
-                    "message": f"El incidente no está en un estado válido (estado actual: {incidente.estado})",
-                }
-            
-            if incidente.estado_pago == "Pagado":
-                return {
-                    "success": False,
-                    "error": "INCIDENTE_PAGADO",
-                    "message": "El incidente ya está pagado completamente",
-                }
-            
-            # 2. Verificar que el incidente tenga un plan de pago activo
-            plan = self.repositorio_plan.obtener_por_incidente(id_incidente)
-            if not plan or not plan.esta_activo():
-                return {
-                    "success": False,
-                    "error": "PLAN_NO_EXISTE",
-                    "message": "El incidente no tiene un plan de pago activo",
-                }
-            
-            # 3. Validar que la liquidación existe y está calificada
-            liquidacion = self.repositorio_liquidacion.obtener_por_id(id_liquidacion)
-            if not liquidacion:
-                return {
-                    "success": False,
-                    "error": "LIQUIDACION_NO_ENCONTRADA",
-                    "message": "La liquidación no existe",
-                }
-            
-            if liquidacion.estado_liquidacion not in ["En Proceso", "Aprobada"]:
-                return {
-                    "success": False,
-                    "error": "LIQUIDACION_NO_CALIFICADA",
-                    "message": f"La liquidación no está en un estado válido (estado actual: {liquidacion.estado_liquidacion})",
-                }
-            
-            # 4. Validar que la cuota exista y esté pendiente
-            cuotas = self.repositorio_cuota.obtener_por_plan(plan.id_plan_pago)
-            cuota = next((c for c in cuotas if c.numero_cuota == numero_cuota), None)
-            
-            if not cuota:
-                return {
-                    "success": False,
-                    "error": "CUOTA_NO_ENCONTRADA",
-                    "message": f"No se encontró la cuota número {numero_cuota}",
-                }
-            
-            if not cuota.puede_asociarse():
-                return {
-                    "success": False,
-                    "error": "CUOTA_YA_ASOCIADA",
-                    "message": "La cuota ya está asociada a una liquidación",
-                }
-            
-            # 5. Validar que no exista una asociación duplicada
-            relaciones_existentes = self.repositorio_relacion.obtener_por_incidente(id_incidente)
-            duplicado = next(
-                (
-                    r
-                    for r in relaciones_existentes
-                    if r.id_liquidacion == id_liquidacion
-                    and r.numero_cuota == numero_cuota
-                ),
-                None,
-            )
-            
-            if duplicado:
-                return {
-                    "success": False,
-                    "error": "DUPLICADO",
-                    "message": "Esta cuota ya está asociada a esta liquidación",
-                }
-            
-            # 6. Validar valor del descuento
-            if valor_descuento <= 0:
-                return {
-                    "success": False,
-                    "error": "VALOR_INVALIDO",
-                    "message": "El valor del descuento debe ser mayor a 0",
-                }
-            
-            # 7. Crear la relación
-            relacion = IncidenteLiquidacion.crear(
-                id_incidente=id_incidente,
-                id_liquidacion=id_liquidacion,
-                numero_cuota=numero_cuota,
-                valor_descuento=valor_descuento,
-                asociado_por=asociado_por,
-            )
-            relacion = self.repositorio_relacion.crear(relacion)
-            
-            # 8. Actualizar estado de la cuota
-            cuota.asociar_a_liquidacion(id_liquidacion)
-            self.repositorio_cuota.actualizar(cuota)
-            
-            # 9. Actualizar observaciones con ID del incidente (append, no reemplazo)
-            liquidacion.observaciones = agregar_id_incidente_observaciones(
-                liquidacion.observaciones,
-                id_incidente,
-            )
-            
-            # 10. Obtener VALOR_INCIDENTES fresco de BD (post-trigger)
-            total_descuentos = self.repositorio_relacion.calcular_total_descuentos(
-                id_liquidacion
-            )
-            
-            # 11. Asignar valor fresco y recalcular totales
-            liquidacion.valor_incidentes = total_descuentos
-            liquidacion.calcular_totales()
-            
-            # 12. Persistir cambios en liquidación
-            self.repositorio_liquidacion.actualizar(liquidacion, asociado_por)
-            
-            logger.info(
-                f"Incidente {id_incidente} asociado a liquidación {id_liquidacion} "
-                f"(cuota {numero_cuota}, descuento ${valor_descuento})"
-            )
-            
-            return {
-                "success": True,
-                "data": {
-                    "relacion": relacion.to_dict(),
-                    "total_descuentos_liquidacion": total_descuentos,
-                },
-                "message": "Incidente asociado exitosamente",
-            }
             
         except Exception as e:
             logger.error(f"Error al asociar incidente: {e}")
@@ -339,85 +368,111 @@ class ServicioIncidenteLiquidacion:
             Dict con resultado de la operación
         """
         try:
-            # 1. Obtener la relación
-            relacion = self.repositorio_relacion.obtener_por_id(id_relacion)
-            
-            if not relacion:
-                return {
-                    "success": False,
-                    "error": "RELACION_NO_ENCONTRADA",
-                    "message": "La relación no existe",
-                }
-            
-            # 2. Verificar que la liquidación no esté pagada
-            liquidacion = self.repositorio_liquidacion.obtener_por_id(
-                relacion.id_liquidacion
-            )
-            
-            if liquidacion and liquidacion.estado_liquidacion == "Pagada":
-                return {
-                    "success": False,
-                    "error": "LIQUIDACION_PAGADA",
-                    "message": "No se puede desasociar de una liquidación pagada",
-                }
-            
-            if liquidacion and liquidacion.estado_liquidacion == "Cancelada":
-                return {
-                    "success": False,
-                    "error": "LIQUIDACION_ANULADA",
-                    "message": "No se puede desasociar de una liquidación cancelada",
-                }
-            
-            # 3. Obtener y actualizar la cuota
-            plan = self.repositorio_plan.obtener_por_incidente(relacion.id_incidente)
-            if plan:
-                cuotas = self.repositorio_cuota.obtener_por_plan(plan.id_plan_pago)
-                cuota = next(
-                    (
-                        c
-                        for c in cuotas
-                        if c.numero_cuota == relacion.numero_cuota
-                        and c.id_liquidacion == relacion.id_liquidacion
-                    ),
-                    None,
-                )
+            with db_manager.transaccion():
+                # 0. Validar justificación
+                if not justificacion or not justificacion.strip():
+                    return {
+                        "success": False,
+                        "error": "JUSTIFICACION_REQUERIDA",
+                        "message": "Se requiere una justificación para desasociar el incidente",
+                    }
+                    
+                # 1. Obtener la relación
+                relacion = self.repositorio_relacion.obtener_por_id(id_relacion)
                 
-                if cuota:
-                    cuota.desasociar_de_liquidacion()
-                    self.repositorio_cuota.actualizar(cuota)
-            
-            # 4. Eliminar la relación
-            self.repositorio_relacion.eliminar(id_relacion)
-            
-            # 5. Actualizar observaciones (remover solo el ID del incidente)
-            if liquidacion:
-                liquidacion.observaciones = remover_id_incidente_observaciones(
-                    liquidacion.observaciones,
-                    relacion.id_incidente,
-                )
-            
-            # 6. Obtener VALOR_INCIDENTES fresco de BD (post-trigger)
-            if liquidacion:
-                total_descuentos = self.repositorio_relacion.calcular_total_descuentos(
+                if not relacion:
+                    return {
+                        "success": True,
+                        "data": {"id_relacion_eliminada": id_relacion},
+                        "message": "La relación ya no existe o fue desasociada previamente",
+                    }
+                
+                valores_anteriores = relacion.to_dict()
+                
+                # 2. Verificar que la liquidación no esté pagada
+                liquidacion = self.repositorio_liquidacion.obtener_por_id(
                     relacion.id_liquidacion
                 )
                 
-                # 7. Asignar valor fresco y recalcular totales
-                liquidacion.valor_incidentes = total_descuentos
-                liquidacion.calcular_totales()
+                if liquidacion and liquidacion.estado_liquidacion == "Pagada":
+                    return {
+                        "success": False,
+                        "error": "LIQUIDACION_PAGADA",
+                        "message": "No se puede desasociar de una liquidación pagada",
+                    }
                 
-                # 8. Persistir cambios en liquidación
-                self.repositorio_liquidacion.actualizar(liquidacion, desasociado_por)
-            
-            logger.info(
-                f"Relación {id_relacion} eliminada por {desasociado_por}"
-            )
-            
-            return {
-                "success": True,
-                "data": {"id_relacion_eliminada": id_relacion},
-                "message": "Incidente desasociado exitosamente",
-            }
+                if liquidacion and liquidacion.estado_liquidacion == "Cancelada":
+                    return {
+                        "success": False,
+                        "error": "LIQUIDACION_ANULADA",
+                        "message": "No se puede desasociar de una liquidación cancelada",
+                    }
+                
+                # 3. Obtener y actualizar la cuota
+                plan = self.repositorio_plan.obtener_por_incidente(relacion.id_incidente)
+                if plan:
+                    cuotas = self.repositorio_cuota.obtener_por_plan(plan.id_plan_pago)
+                    cuota = next(
+                        (
+                            c
+                            for c in cuotas
+                            if c.numero_cuota == relacion.numero_cuota
+                            and c.id_liquidacion == relacion.id_liquidacion
+                        ),
+                        None,
+                    )
+                    
+                    if cuota:
+                        cuota.desasociar_de_liquidacion()
+                        self.repositorio_cuota.actualizar(cuota)
+                
+                # 4. Eliminar la relación
+                self.repositorio_relacion.eliminar(id_relacion)
+                
+                # 5. Actualizar observaciones (remover solo el ID del incidente)
+                if liquidacion:
+                    liquidacion.observaciones = remover_id_incidente_observaciones(
+                        liquidacion.observaciones,
+                        relacion.id_incidente,
+                    )
+                
+                # 6. Obtener VALOR_INCIDENTES fresco de BD (post-trigger)
+                if liquidacion:
+                    total_descuentos = self.repositorio_relacion.calcular_total_descuentos(
+                        relacion.id_liquidacion
+                    )
+                    
+                    # 7. Asignar valor fresco y recalcular totales
+                    liquidacion.valor_incidentes = total_descuentos
+                    liquidacion.calcular_totales()
+                    
+                    # 8. Persistir cambios en liquidación
+                    self.repositorio_liquidacion.actualizar(liquidacion, desasociado_por)
+                
+                # 9. Auditar (T082)
+                if hasattr(self, "servicio_auditoria") and self.servicio_auditoria:
+                    self.servicio_auditoria.auditar_accion(
+                        tabla="INCIDENTE_LIQUIDACION",
+                        id_registro=id_relacion,
+                        accion="DELETE",
+                        usuario=desasociado_por,
+                        valores_anteriores=valores_anteriores,
+                        ip_origen="127.0.0.1",
+                        sesion_id="SYSTEM"
+                    )
+                
+                logger.info(
+                    f"Relación {id_relacion} eliminada por {desasociado_por}"
+                )
+                
+                return {
+                    "success": True,
+                    "data": {
+                        "id_relacion_eliminada": id_relacion,
+                        "total_descuentos_liquidacion": total_descuentos
+                    },
+                    "message": "Incidente desasociado correctamente",
+                }
             
         except Exception as e:
             logger.error(f"Error al desasociar incidente: {e}")

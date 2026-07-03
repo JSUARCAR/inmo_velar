@@ -16,6 +16,7 @@ from src.dominio.interfaces.repositorio_plan_pago import RepositorioPlanPago
 from src.dominio.interfaces.repositorio_cuota import RepositorioCuota
 from src.dominio.interfaces.repositorio_incidentes import RepositorioIncidentes
 from src.infraestructura.persistencia.repositorio_bloqueos import RepositorioBloqueos
+from src.infraestructura.persistencia.database import db_manager
 
 logger = logging.getLogger(__name__)
 
@@ -65,38 +66,39 @@ class ServicioPlanPagoIncidente:
             Dict con resultado de la operación
         """
         try:
-            # 1. Validar que el incidente existe y está calificado
-            incidente = self.repositorio_incidentes.obtener_por_id(id_incidente)
-            if not incidente:
-                return {
-                    "success": False,
-                    "error": "INCIDENTE_NO_ENCONTRADO",
-                    "message": "El incidente no existe",
-                }
-            
-            if incidente.estado not in ["Aprobado", "En Reparacion", "Finalizado"]:
-                return {
-                    "success": False,
-                    "error": "INCIDENTE_NO_CALIFICADO",
-                    "message": f"El incidente no está en un estado válido para crear plan de pago (estado actual: {incidente.estado})",
-                }
-            
-            # 2. Verificar que no exista un plan activo
-            plan_existente = self.repositorio_plan.obtener_por_incidente(id_incidente)
-            if plan_existente and plan_existente.esta_activo():
-                return {
-                    "success": False,
-                    "error": "PLAN_YA_EXISTE",
-                    "message": "Ya existe un plan de pago activo para este incidente",
-                }
-            
-            # 3. Validar parámetros
-            if num_cuotas < 1:
-                return {
-                    "success": False,
-                    "error": "CUOTAS_INVALIDAS",
-                    "message": "El número de cuotas debe ser mayor a 0",
-                }
+            with db_manager.transaccion():
+                # 1. Validar que el incidente existe y está calificado
+                incidente = self.repositorio_incidentes.obtener_por_id(id_incidente)
+                if not incidente:
+                    return {
+                        "success": False,
+                        "error": "INCIDENTE_NO_ENCONTRADO",
+                        "message": "El incidente no existe",
+                    }
+                
+                if incidente.estado not in ["Aprobado", "En Reparacion", "Finalizado"]:
+                    return {
+                        "success": False,
+                        "error": "INCIDENTE_NO_CALIFICADO",
+                        "message": f"El incidente no está en un estado válido para crear plan de pago (estado actual: {incidente.estado})",
+                    }
+                
+                # 2. Verificar que no exista un plan activo
+                plan_existente = self.repositorio_plan.obtener_por_incidente(id_incidente)
+                if plan_existente and plan_existente.esta_activo():
+                    return {
+                        "success": False,
+                        "error": "PLAN_YA_EXISTE",
+                        "message": "Ya existe un plan de pago activo para este incidente",
+                    }
+                
+                # 3. Validar parámetros
+                if num_cuotas < 1:
+                    return {
+                        "success": False,
+                        "error": "CUOTAS_INVALIDAS",
+                        "message": "El número de cuotas debe ser mayor a 0",
+                    }
             
             if valor_cuota <= 0:
                 return {
@@ -200,6 +202,7 @@ class ServicioPlanPagoIncidente:
         num_cuotas: Optional[int] = None,
         valor_cuota: Optional[int] = None,
         modificado_por: str = "",
+        justificacion: str = "",
     ) -> Dict[str, Any]:
         """
         Modifica un plan de pago existente.
@@ -209,12 +212,22 @@ class ServicioPlanPagoIncidente:
             num_cuotas: Nuevo número de cuotas (opcional)
             valor_cuota: Nuevo valor por cuota (opcional)
             modificado_por: Usuario que modifica
+            justificacion: Justificación de la modificación
             
         Returns:
             Dict con resultado de la operación
         """
         try:
-            # 1. Obtener el plan
+            with db_manager.transaccion():
+                # 0. Validar justificación
+                if not justificacion or not justificacion.strip():
+                    return {
+                        "success": False,
+                        "error": "JUSTIFICACION_REQUERIDA",
+                        "message": "Se requiere una justificación para modificar el plan",
+                    }
+                    
+                # 1. Obtener el plan
             plan = self.repositorio_plan.obtener_por_id(id_plan_pago)
             
             if not plan:
@@ -315,7 +328,16 @@ class ServicioPlanPagoIncidente:
             Dict con resultado de la operación
         """
         try:
-            # 1. Obtener el plan
+            with db_manager.transaccion():
+                # 0. Validar justificación
+                if not justificacion or not justificacion.strip():
+                    return {
+                        "success": False,
+                        "error": "JUSTIFICACION_REQUERIDA",
+                        "message": "Se requiere una justificación para cancelar el plan",
+                    }
+                    
+                # 1. Obtener el plan
             plan = self.repositorio_plan.obtener_por_id(id_plan_pago)
             
             if not plan:

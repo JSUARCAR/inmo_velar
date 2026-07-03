@@ -13,6 +13,7 @@ from src.dominio.interfaces.repositorio_plan_pago import RepositorioPlanPago
 from src.dominio.interfaces.repositorio_cuota import RepositorioCuota
 from src.dominio.interfaces.repositorio_incidente_liq import RepositorioIncidenteLiquidacion
 from src.dominio.interfaces.repositorio_incidentes import RepositorioIncidentes
+from src.infraestructura.persistencia.database import db_manager
 
 logger = logging.getLogger(__name__)
 
@@ -57,26 +58,27 @@ class ServicioEstadoPagoAutomatico:
             Dict con resultado de la operación
         """
         try:
-            # 1. Obtener todas las relaciones de esta liquidación
-            relaciones = self.repositorio_relacion.obtener_por_liquidacion(id_liquidacion)
-            
-            if not relaciones:
-                return {
-                    "success": True,
-                    "data": {"incidentes_actualizados": 0},
-                    "message": "No hay incidentes asociados a esta liquidación",
-                }
-            
-            # 2. Para cada incidente asociado, recalcular su estado de pago
-            incidentes_actualizados = 0
-            for relacion in relaciones:
-                resultado = self.recalcular_estado_pago_incidente(
-                    relacion.id_incidente, usuario
-                )
-                if resultado.get("success"):
-                    incidentes_actualizados += 1
-            
-            logger.info(
+            with db_manager.transaccion():
+                # 1. Obtener todas las relaciones de esta liquidación
+                relaciones = self.repositorio_relacion.obtener_por_liquidacion(id_liquidacion)
+                
+                if not relaciones:
+                    return {
+                        "success": True,
+                        "data": {"incidentes_actualizados": 0},
+                        "message": "No hay incidentes asociados a esta liquidación",
+                    }
+                
+                # 2. Para cada incidente asociado, recalcular su estado de pago
+                incidentes_actualizados = 0
+                for relacion in relaciones:
+                    resultado = self.recalcular_estado_pago_incidente(
+                        relacion.id_incidente, usuario
+                    )
+                    if resultado.get("success"):
+                        incidentes_actualizados += 1
+                
+                logger.info(
                 f"Estados de pago actualizados para liquidación {id_liquidacion}: "
                 f"{incidentes_actualizados} incidentes"
             )
@@ -117,8 +119,9 @@ class ServicioEstadoPagoAutomatico:
             Dict con resultado de la operación
         """
         try:
-            # 1. Obtener el plan activo del incidente
-            plan = self.repositorio_plan.obtener_por_incidente(id_incidente)
+            with db_manager.transaccion():
+                # 1. Obtener el plan activo del incidente
+                plan = self.repositorio_plan.obtener_por_incidente(id_incidente)
             
             if not plan:
                 # Sin plan activo, estado sigue pendiente
@@ -127,39 +130,15 @@ class ServicioEstadoPagoAutomatico:
                     "data": {"estado_pago": "Pendiente"},
                 }
             
-            # 2. Obtener todas las cuotas del plan
-            cuotas = self.repositorio_cuota.obtener_por_plan(plan.id_plan_pago)
+            # 2. Obtener conteo de cuotas asociadas y pagadas optimizado (T080)
+            total_con_liq, cuotas_pagadas = self.repositorio_cuota.contar_estado_liquidaciones_por_plan(
+                plan.id_plan_pago
+            )
             
-            if not cuotas:
-                return {
-                    "success": True,
-                    "data": {"estado_pago": "Pendiente"},
-                }
-            
-            # 3. Filtrar cuotas que tienen liquidación asociada
-            cuotas_con_liq = [c for c in cuotas if c.id_liquidacion is not None]
-            
-            if not cuotas_con_liq:
+            if total_con_liq == 0:
                 # No hay cuotas asociadas a liquidaciones
                 nuevo_estado = "Pendiente"
             else:
-                # 4. Verificar cuántas de estas liquidaciones están Pagadas
-                # Necesitamos obtener el estado de cada liquidación asociada
-                from src.infraestructura.persistencia.database import db_manager
-                from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
-                    RepositorioLiquidacionPostgres,
-                )
-                
-                repo_liq = RepositorioLiquidacionPostgres(db_manager)
-                cuotas_pagadas = 0
-                
-                for cuota in cuotas_con_liq:
-                    liquidacion = repo_liq.obtener_por_id(cuota.id_liquidacion)
-                    if liquidacion and liquidacion.estado_liquidacion == "Pagada":
-                        cuotas_pagadas += 1
-                
-                total_con_liq = len(cuotas_con_liq)
-                
                 # 5. Determinar estado de pago
                 if cuotas_pagadas == total_con_liq:
                     nuevo_estado = "Pagado"

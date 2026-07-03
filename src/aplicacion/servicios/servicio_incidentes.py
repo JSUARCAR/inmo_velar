@@ -42,6 +42,14 @@ class ServicioIncidentes:
         self.repo_proveedores = RepositorioProveedoresPostgres(db_manager)
         self.repo_propiedades = RepositorioPropiedadPostgres(db_manager)
         self.repo_ordenes = RepositorioOrdenTrabajoPostgres(db_manager)
+        
+        from src.infraestructura.persistencia.repositorio_plan_pago_postgres import RepositorioPlanPagoPostgres
+        from src.infraestructura.persistencia.repositorio_cuota_postgres import RepositorioCuotaPostgres
+        from src.infraestructura.persistencia.repositorio_bloqueos import RepositorioBloqueos
+        
+        self.repo_plan_pago = RepositorioPlanPagoPostgres(db_manager)
+        self.repo_cuota = RepositorioCuotaPostgres(db_manager)
+        self.repo_bloqueos = RepositorioBloqueos(db_manager)
         self.repo_idempotencia = repo_idempotencia
 
     @idempotent(key_prefix="incidentes:reportar")
@@ -277,6 +285,26 @@ class ServicioIncidentes:
             incidente = incidente.avanzar_estado("Aprobado", usuario_sistema)
 
             self.repo_incidentes.actualizar(incidente)
+            
+            # Crear plan de pago automáticamente con 1 cuota
+            from src.aplicacion.servicios.servicio_plan_pago import ServicioPlanPagoIncidente
+            servicio_plan = ServicioPlanPagoIncidente(
+                repositorio_plan=self.repo_plan_pago,
+                repositorio_cuota=self.repo_cuota,
+                repositorio_incidentes=self.repo_incidentes,
+                repositorio_bloqueos=self.repo_bloqueos,
+            )
+            
+            # Solo si el responsable de pago es Propietario (o Inquilino, pero esto impacta Liquidaciones de Propietario)
+            if cotizacion_aprobada.valor_total > 0:
+                res = servicio_plan.crear_plan(
+                    id_incidente=id_incidente,
+                    num_cuotas=1,
+                    valor_cuota=cotizacion_aprobada.valor_total,
+                    creado_por=usuario_sistema,
+                )
+                if not res.get("success"):
+                    _log.warning(f"No se pudo crear el plan de pago automáticamente: {res.get('message')}")
 
             self._registrar_historial(
                 id_incidente=id_incidente,

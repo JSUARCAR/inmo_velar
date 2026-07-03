@@ -59,7 +59,7 @@
 - [x] T010 [US1] Modificar `asociar_incidente()` en src/aplicacion/servicios/servicio_incidente_liquidacion.py para obtener VALOR_INCIDENTES fresco de BD después del trigger
 - [x] T011 [US1] Agregar llamada a `calcular_totales()` después de asignar valor_incidentes fresco en src/aplicacion/servicios/servicio_incidente_liquidacion.py
 - [x] T012 [US1] Verificar que `obtener_por_id()` en src/infraestructura/persistencia/repositorio_liquidacion_postgres.py incluye VALOR_INCIDENTES y NETO_A_PAGAR en SELECT
-- [ ] T013 [US1] Ejecutar tests y verificar que pasan
+- [x] T013 [US1] Ejecutar tests y verificar que pasan
 
 **Checkpoint**: User Story 1 fully functional - NETO_A_PAGAR se calcula correctamente
 
@@ -82,7 +82,7 @@
 
 - [x] T016 [US2] Modificar `asociar_incidente()` en src/aplicacion/servicios/servicio_incidente_liquidacion.py para llamar `agregar_id_incidente_observaciones()` antes de persistir
 - [x] T017 [US2] Asegurar que observaciones del usuario se preservan al agregar ID de incidente
-- [ ] T018 [US2] Ejecutar tests y verificar que pasan
+- [x] T018 [US2] Ejecutar tests y verificar que pasan
 
 **Checkpoint**: User Story 2 fully functional - observaciones se actualizan con append
 
@@ -159,12 +159,12 @@
 
 **Purpose**: Tests adicionales, documentación y validación final
 
-- [ ] T033 [P] Crear script de diagnóstico en scripts/diagnostico/verificar_liquidaciones_inconsistentes.py
-- [ ] T034 [P] Ejecutar todos los tests unitarios con cobertura: pytest tests/unit/ --cov=src/aplicacion/servicios --cov-report=html
-- [ ] T035 [P] Ejecutar todos los tests de integración con cobertura: pytest tests/integration/ --cov=src/infraestructura/persistencia --cov-report=html
-- [ ] T036 Ejecutar validación completa según quickstart.md (6 escenarios)
-- [ ] T037 Ejecutar ruff check src/ y mypy src/ para verificar calidad de código
-- [ ] T038 Documentar cambios en CHANGELOG.md o ESTADO_TAREAS.md
+- [x] T033 [P] Crear script de diagnóstico en scripts/diagnostico/verificar_liquidaciones_inconsistentes.py
+- [x] T034 [P] Ejecutar todos los tests unitarios con cobertura: pytest tests/unit/ --cov=src/aplicacion/servicios --cov-report=html
+- [x] T035 [P] Ejecutar todos los tests de integración con cobertura: pytest tests/integration/ --cov=src/infraestructura/persistencia --cov-report=html
+- [x] T036 Ejecutar validación completa según quickstart.md (6 escenarios)
+- [x] T037 Ejecutar ruff check src/ y mypy src/ para verificar calidad de código
+- [x] T038 Documentar cambios en CHANGELOG.md o ESTADO_TAREAS.md
 
 ---
 

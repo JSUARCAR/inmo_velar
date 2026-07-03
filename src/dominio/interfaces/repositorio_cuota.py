@@ -111,3 +111,28 @@ class RepositorioCuota(Protocol):
             True si se eliminó correctamente
         """
         ...
+
+    def contar_estado_liquidaciones_por_plan(self, id_plan_pago: int) -> tuple[int, int]:
+        """
+        Calcula la cantidad de cuotas con liquidación y cuántas están pagadas 
+        para un plan de pago específico en una sola consulta optimizada.
+        
+        Args:
+            id_plan_pago: ID del plan
+            
+        Returns:
+            Tuple[int, int]: (total_cuotas_con_liq, total_cuotas_pagadas)
+        """
+        ...
+
+    def obtener_cuotas_pendientes_por_propiedad(self, id_propiedad: int) -> List[CuotaIncidente]:
+        """
+        Obtiene las cuotas pendientes que no están asociadas a ninguna liquidación para una propiedad dada.
+        
+        Args:
+            id_propiedad: ID de la propiedad
+            
+        Returns:
+            Lista de cuotas pendientes
+        """
+        ...

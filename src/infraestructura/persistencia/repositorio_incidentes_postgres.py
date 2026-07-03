@@ -26,6 +26,13 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             except Exception:
                 pass
 
+        plan_pago_dict = None
+        if row.get("PLAN_PAGO_JSON"):
+            try:
+                plan_pago_dict = row["PLAN_PAGO_JSON"]
+            except Exception:
+                pass
+
         return Incidente(
             id_incidente=row.get("ID_INCIDENTE"),
             id_propiedad=row.get("ID_PROPIEDAD", 0),
@@ -51,6 +58,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             direccion_propiedad=row.get("DIRECCION_PROPIEDAD"),
             nombre_proveedor=row.get("NOMBRE_PROVEEDOR"),
             cotizaciones_resumen=cotizaciones_list,
+            plan_pago=plan_pago_dict,
             nombre_propietario=row.get("NOMBRE_PROPIETARIO"),
             telefono_propietario=row.get("TELEFONO_PROPIETARIO"),
             nombre_inquilino=row.get("NOMBRE_INQUILINO"),
@@ -167,7 +175,15 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
                     ) ORDER BY C.FECHA_COTIZACION DESC
                 ) FROM COTIZACIONES C WHERE C.ID_INCIDENTE = I.ID_INCIDENTE
                 ), '[]'::json
-            ) AS COTIZACIONES_JSON
+            ) AS COTIZACIONES_JSON,
+            (SELECT JSON_BUILD_OBJECT(
+                'id_plan_pago', PPI.ID_PLAN_PAGO,
+                'num_cuotas', PPI.NUM_CUOTAS,
+                'valor_cuota', PPI.VALOR_CUOTA,
+                'total_plan', PPI.TOTAL_PLAN,
+                'estado', PPI.ESTADO
+            ) FROM PLAN_PAGO_INCIDENTE PPI WHERE PPI.ID_INCIDENTE = I.ID_INCIDENTE AND PPI.ESTADO = 'Activo' LIMIT 1
+            ) AS PLAN_PAGO_JSON
         FROM INCIDENTES I
         LEFT JOIN PROVEEDORES PR ON I.ID_PROVEEDOR_ASIGNADO = PR.ID_PROVEEDOR
         LEFT JOIN PERSONAS PER_PROV ON PR.ID_PERSONA = PER_PROV.ID_PERSONA
@@ -237,7 +253,15 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
                     ) ORDER BY C.FECHA_COTIZACION DESC
                 ) FROM COTIZACIONES C WHERE C.ID_INCIDENTE = I.ID_INCIDENTE
                 ), '[]'::json
-            ) AS COTIZACIONES_JSON
+            ) AS COTIZACIONES_JSON,
+            (SELECT JSON_BUILD_OBJECT(
+                'id_plan_pago', PPI.ID_PLAN_PAGO,
+                'num_cuotas', PPI.NUM_CUOTAS,
+                'valor_cuota', PPI.VALOR_CUOTA,
+                'total_plan', PPI.TOTAL_PLAN,
+                'estado', PPI.ESTADO
+            ) FROM PLAN_PAGO_INCIDENTE PPI WHERE PPI.ID_INCIDENTE = I.ID_INCIDENTE AND PPI.ESTADO = 'Activo' LIMIT 1
+            ) AS PLAN_PAGO_JSON
         FROM INCIDENTES I
         LEFT JOIN PROVEEDORES PR ON I.ID_PROVEEDOR_ASIGNADO = PR.ID_PROVEEDOR
         LEFT JOIN PERSONAS PER_PROV ON PR.ID_PERSONA = PER_PROV.ID_PERSONA
