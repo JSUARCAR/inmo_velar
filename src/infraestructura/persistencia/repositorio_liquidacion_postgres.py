@@ -1233,6 +1233,7 @@ class RepositorioLiquidacionPostgres:
             "pago_predial": row.get("PAGO_PREDIAL"),
             "seguro_monto": row.get("SEGURO_MONTO") or 0,
             "otros_egr": row.get("OTROS_EGRESOS") or 0,
+            "valor_incidentes": row.get("VALOR_INCIDENTES") or 0,
             "total_egresos": row.get("TOTAL_EGRESOS"),
             "neto_pagar": row.get("NETO_A_PAGAR"),
             "observaciones": row.get("OBSERVACIONES"),
