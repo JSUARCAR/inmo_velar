@@ -9,7 +9,7 @@ Date: 2026-06-30
 
 import reflex as rx
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
-
+from src.presentacion_reflex import styles
 
 def _badge_estado_pago(estado_pago: str) -> rx.Component:
     """Badge de color para el estado de pago."""
@@ -183,6 +183,8 @@ def modal_seleccion_incidentes() -> rx.Component:
                 margin_top="4",
             ),
             max_width="900px",
+            style={"pointer_events": "auto", "z_index": styles.Z_POPOVER},
         ),
         open=LiquidacionesState.show_seleccion_incidentes_modal,
+        on_open_change=LiquidacionesState.set_show_seleccion_incidentes_modal,
     )

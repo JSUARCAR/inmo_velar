@@ -152,8 +152,8 @@ def liquidacion_edit_form() -> rx.Component:
                             rx.icon("link", size=16),
                             rx.text("Seleccionar Incidentes"),
                         ),
-                        on_click=LiquidacionesState.open_seleccion_incidentes_modal(
-                            LiquidacionesState.form_data["id_liquidacion"]
+                        on_click=lambda: LiquidacionesState.open_seleccion_incidentes_modal(
+                            LiquidacionesState.form_data["id_liquidacion"].to(int)
                         ),
                         type="button",
                         variant="soft",
