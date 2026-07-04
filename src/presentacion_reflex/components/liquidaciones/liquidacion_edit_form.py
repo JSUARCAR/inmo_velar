@@ -150,7 +150,7 @@ def liquidacion_edit_form() -> rx.Component:
                         LiquidacionesState.form_data["estado"] == "En Proceso",
                         rx.cond(
                             AuthState.check_action(
-                                "Liquidaciones", "SELECCIONAR_INCIDENTES"
+                                "Liquidaciones", "SELEC_INCIDENTES"
                             ),
                             rx.button(
                                 rx.hstack(
