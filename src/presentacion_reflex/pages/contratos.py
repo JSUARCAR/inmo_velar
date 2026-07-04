@@ -107,6 +107,20 @@ def render_table_view() -> rx.Component:
                     c.id_contrato, c.tipo_contrato, False
                 ),
             ),
+            # Paz y Salvo — solo si está inactivo
+            rx.cond(
+                c.estado_contrato != "ACTIVO",
+                neuro_icon_action_button(
+                    "shield-check",
+                    color_scheme="teal",
+                    size="1",
+                    tooltip_content="Generar Paz y Salvo",
+                    on_click=lambda: PDFState.generar_certificado_paz_y_salvo(
+                        c.id_contrato,
+                        c.tipo_contrato
+                    ),
+                ),
+            ),
             # Terminar
             rx.cond(
                 AuthState.check_action("Contratos", "TERMINAR"),
