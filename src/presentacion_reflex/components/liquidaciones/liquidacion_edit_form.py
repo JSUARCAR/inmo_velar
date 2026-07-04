@@ -145,22 +145,20 @@ def liquidacion_edit_form() -> rx.Component:
                         spacing="3",
                         width="100%",
                     ),
-                    # Botón Seleccionar Incidentes (solo para liquidaciones en proceso)
-                    rx.cond(
-                        LiquidacionesState.edit_form_is_en_proceso,
-                        rx.button(
-                            rx.hstack(
-                                rx.icon("link", size=16),
-                                rx.text("Seleccionar Incidentes"),
-                            ),
-                            on_click=LiquidacionesState.open_seleccion_incidentes_modal(
-                                LiquidacionesState.form_data["id_liquidacion"]
-                            ),
-                            type="button",
-                            variant="soft",
-                            color_scheme="orange",
-                            margin_top="1em",
+                    # Botón Seleccionar Incidentes (solo aparece en liquidaciones En Proceso
+                    # porque el modal solo se abre para liquidaciones en ese estado)
+                    rx.button(
+                        rx.hstack(
+                            rx.icon("link", size=16),
+                            rx.text("Seleccionar Incidentes"),
                         ),
+                        on_click=LiquidacionesState.open_seleccion_incidentes_modal(
+                            LiquidacionesState.form_data["id_liquidacion"]
+                        ),
+                        type="button",
+                        variant="soft",
+                        color_scheme="orange",
+                        margin_top="1em",
                     ),
                     section_title("Observaciones"),
                     rx.text_area(

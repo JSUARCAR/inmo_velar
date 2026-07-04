@@ -1,0 +1,812 @@
+- generic [active] [ref=f11e1]:
+  - region "Notifications alt+T"
+  - generic [ref=f11e2]:
+    - generic "Connection Error:"
+    - generic [ref=f11e19]:
+      - generic [ref=f11e20]:
+        - generic [ref=f11e21]:
+          - generic [ref=f11e22]:
+            - img "Logo" [ref=f11e24] [cursor=pointer]
+            - heading "INMOBILIARIA VELAR SAS" [level=1] [ref=f11e25]
+          - generic [ref=f11e28]:
+            - generic [ref=f11e29]:
+              - paragraph [ref=f11e31]: PRINCIPAL
+              - link "Dashboard" [ref=f11e32] [cursor=pointer]:
+                - /url: /dashboard
+                - generic [ref=f11e34]:
+                  - img [ref=f11e35]
+                  - paragraph [ref=f11e40]: Dashboard
+              - link "Alertas Tempranas" [ref=f11e41] [cursor=pointer]:
+                - /url: /alertas
+                - generic [ref=f11e43]:
+                  - img [ref=f11e44]
+                  - paragraph [ref=f11e49]: Alertas Tempranas
+            - generic [ref=f11e50]:
+              - paragraph [ref=f11e52]: GESTIÓN
+              - link "Personas" [ref=f11e53] [cursor=pointer]:
+                - /url: /personas
+                - generic [ref=f11e55]:
+                  - img [ref=f11e56]
+                  - paragraph [ref=f11e61]: Personas
+              - link "Propiedades" [ref=f11e62] [cursor=pointer]:
+                - /url: /propiedades
+                - generic [ref=f11e64]:
+                  - img [ref=f11e65]
+                  - paragraph [ref=f11e68]: Propiedades
+              - link "Contratos" [ref=f11e69] [cursor=pointer]:
+                - /url: /contratos
+                - generic [ref=f11e71]:
+                  - img [ref=f11e72]
+                  - paragraph [ref=f11e75]: Contratos
+              - link "Prop. Horizontal" [ref=f11e76] [cursor=pointer]:
+                - /url: /propiedad-horizontal
+                - generic [ref=f11e78]:
+                  - img [ref=f11e79]
+                  - paragraph [ref=f11e82]: Prop. Horizontal
+              - link "Proveedores" [ref=f11e83] [cursor=pointer]:
+                - /url: /proveedores
+                - generic [ref=f11e85]:
+                  - img [ref=f11e86]
+                  - paragraph [ref=f11e88]: Proveedores
+            - generic [ref=f11e89]:
+              - paragraph [ref=f11e91]: OPERACIONES
+              - link "Liquidaciones" [ref=f11e92] [cursor=pointer]:
+                - /url: /liquidaciones
+                - generic [ref=f11e94]:
+                  - img [ref=f11e95]
+                  - paragraph [ref=f11e97]: Liquidaciones
+              - link "Liquidación Asesores" [ref=f11e98] [cursor=pointer]:
+                - /url: /liquidacion-asesores
+                - generic [ref=f11e100]:
+                  - img [ref=f11e101]
+                  - paragraph [ref=f11e105]: Liquidación Asesores
+              - link "Recaudos" [ref=f11e106] [cursor=pointer]:
+                - /url: /recaudos
+                - generic [ref=f11e108]:
+                  - img [ref=f11e109]
+                  - paragraph [ref=f11e114]: Recaudos
+              - link "Desocupaciones" [ref=f11e115] [cursor=pointer]:
+                - /url: /desocupaciones
+                - generic [ref=f11e117]:
+                  - img [ref=f11e118]
+                  - paragraph [ref=f11e121]: Desocupaciones
+              - link "Incidentes" [ref=f11e122] [cursor=pointer]:
+                - /url: /incidentes
+                - generic [ref=f11e124]:
+                  - img [ref=f11e125]
+                  - paragraph [ref=f11e127]: Incidentes
+              - link "Seguros" [ref=f11e128] [cursor=pointer]:
+                - /url: /seguros
+                - generic [ref=f11e130]:
+                  - img [ref=f11e131]
+                  - paragraph [ref=f11e133]: Seguros
+              - link "Recibos Públicos" [ref=f11e134] [cursor=pointer]:
+                - /url: /recibos-publicos
+                - generic [ref=f11e136]:
+                  - img [ref=f11e137]
+                  - paragraph [ref=f11e139]: Recibos Públicos
+              - link "Saldos a Favor" [ref=f11e140] [cursor=pointer]:
+                - /url: /saldos-favor
+                - generic [ref=f11e142]:
+                  - img [ref=f11e143]
+                  - paragraph [ref=f11e146]: Saldos a Favor
+            - generic [ref=f11e147]:
+              - paragraph [ref=f11e149]: ADMINISTRACIÓN
+              - link "Usuarios" [ref=f11e150] [cursor=pointer]:
+                - /url: /usuarios
+                - generic [ref=f11e152]:
+                  - img [ref=f11e153]
+                  - paragraph [ref=f11e157]: Usuarios
+              - link "Configuración" [ref=f11e158] [cursor=pointer]:
+                - /url: /configuracion
+                - generic [ref=f11e160]:
+                  - img [ref=f11e161]
+                  - paragraph [ref=f11e164]: Configuración
+              - link "IPC / Incrementos" [ref=f11e165] [cursor=pointer]:
+                - /url: /incrementos
+                - generic [ref=f11e167]:
+                  - img [ref=f11e168]
+                  - paragraph [ref=f11e171]: IPC / Incrementos
+              - link "Auditoría" [ref=f11e172] [cursor=pointer]:
+                - /url: /auditoria
+                - generic [ref=f11e174]:
+                  - img [ref=f11e175]
+                  - paragraph [ref=f11e178]: Auditoría
+              - link "Reportes" [ref=f11e179] [cursor=pointer]:
+                - /url: /reportes
+                - generic [ref=f11e181]:
+                  - img [ref=f11e182]
+                  - paragraph [ref=f11e185]: Reportes
+          - generic [ref=f11e186]:
+            - img [ref=f11e187]
+            - generic [ref=f11e191]:
+              - paragraph [ref=f11e192]: jsuarcar
+              - paragraph [ref=f11e193]: Administrador
+            - generic [ref=f11e195]:
+              - button [ref=f11e196]:
+                - img [ref=f11e197]
+              - button "50" [ref=f11e201]:
+                - generic [ref=f11e202]:
+                  - img [ref=f11e204]
+                  - paragraph [ref=f11e210]: "50"
+              - button [ref=f11e211]:
+                - img [ref=f11e212]
+        - generic [ref=f11e216]:
+          - generic [ref=f11e217]:
+            - generic [ref=f11e218]:
+              - generic [ref=f11e219]:
+                - heading "Dashboard Ejecutivo" [level=1] [ref=f11e220]
+                - paragraph [ref=f11e221]: Análisis de rendimiento y control de activos
+              - button "Actualizar" [ref=f11e223] [cursor=pointer]:
+                - img [ref=f11e224]
+                - text: Actualizar
+            - generic [ref=f11e231]:
+              - generic [ref=f11e232]:
+                - img [ref=f11e233]
+                - paragraph [ref=f11e235]: "Filtros:"
+              - combobox [ref=f11e237]:
+                - generic [ref=f11e238]: Julio
+                - img [ref=f11e239]
+              - combobox [ref=f11e242]:
+                - generic [ref=f11e243]: "2026"
+                - img [ref=f11e244]
+              - combobox [ref=f11e247]:
+                - generic [ref=f11e248]: Todos
+                - img [ref=f11e249]
+              - button "Aplicar" [ref=f11e251] [cursor=pointer]:
+                - img [ref=f11e252]
+                - text: Aplicar
+              - button [ref=f11e254] [cursor=pointer]:
+                - img [ref=f11e255]
+          - generic [ref=f11e259]:
+            - generic [ref=f11e260]:
+              - generic [ref=f11e262]:
+                - generic [ref=f11e263]:
+                  - generic [ref=f11e264]:
+                    - paragraph [ref=f11e265]: Ocupación Financiera
+                    - paragraph [ref=f11e266]: 94,8%
+                  - img [ref=f11e269]
+                - generic [ref=f11e270]:
+                  - paragraph [ref=f11e271]: Ingresos vs Potencial
+                  - generic [ref=f11e272]: +2.1% MoM
+              - generic [ref=f11e274]:
+                - generic [ref=f11e275]:
+                  - generic [ref=f11e276]:
+                    - paragraph [ref=f11e277]: Eficiencia Recaudo
+                    - paragraph [ref=f11e278]: 19,1%
+                  - img [ref=f11e281]
+                - generic [ref=f11e284]:
+                  - paragraph [ref=f11e285]: Recaudado este mes
+                  - generic [ref=f11e286]: +1.5% YoY
+              - generic [ref=f11e288]:
+                - generic [ref=f11e289]:
+                  - generic [ref=f11e290]:
+                    - paragraph [ref=f11e291]: Potencial Total
+                    - paragraph [ref=f11e292]: $74.138.499
+                  - img [ref=f11e295]
+                - paragraph [ref=f11e299]: Cartera Total Estimada
+            - generic [ref=f11e302]:
+              - generic [ref=f11e303]:
+                - paragraph [ref=f11e304]: PULSO OPERATIVO Y ACCIONES
+                - generic [ref=f11e306]: Tiempo real
+              - generic [ref=f11e307]:
+                - generic [ref=f11e309]:
+                  - generic [ref=f11e310]:
+                    - img [ref=f11e311]
+                    - paragraph [ref=f11e313]: Cartera Mora
+                  - paragraph [ref=f11e314]: $11.058.108
+                  - progressbar
+                  - paragraph [ref=f11e315]: 13 contratos
+                - generic [ref=f11e317]:
+                  - generic [ref=f11e318]:
+                    - img [ref=f11e319]
+                    - paragraph [ref=f11e322]: Recaudo Mes
+                  - paragraph [ref=f11e323]: $13.415.000
+                  - progressbar
+                  - paragraph [ref=f11e324]: 19,1% de meta
+                - generic [ref=f11e326]:
+                  - generic [ref=f11e327]:
+                    - img [ref=f11e328]
+                    - paragraph [ref=f11e331]: Ocupación
+                  - paragraph [ref=f11e332]: 96,3%
+                  - progressbar
+                  - paragraph [ref=f11e333]: 78/3 disp
+                - link "Alertas Activas 105 100% Requieren atención" [ref=f11e334] [cursor=pointer]:
+                  - /url: /alertas
+                  - generic [ref=f11e336]:
+                    - generic [ref=f11e337]:
+                      - img [ref=f11e338]
+                      - paragraph [ref=f11e343]: Alertas Activas
+                    - paragraph [ref=f11e344]: "105"
+                    - progressbar
+                    - paragraph [ref=f11e345]: Requieren atención
+              - generic [ref=f11e346]:
+                - generic [ref=f11e348]:
+                  - img [ref=f11e350]
+                  - generic [ref=f11e352]:
+                    - paragraph [ref=f11e353]: Comisiones
+                    - paragraph [ref=f11e354]: $5.703.627
+                  - paragraph [ref=f11e356]: 5 pend
+                - generic [ref=f11e358]:
+                  - img [ref=f11e360]
+                  - generic [ref=f11e363]:
+                    - paragraph [ref=f11e364]: Contratos
+                    - paragraph [ref=f11e365]: "77"
+                  - paragraph [ref=f11e367]: Activos
+                - generic [ref=f11e369]:
+                  - img [ref=f11e371]
+                  - generic [ref=f11e374]:
+                    - paragraph [ref=f11e375]: Recibos Pend.
+                    - paragraph [ref=f11e376]: "0"
+                  - paragraph [ref=f11e378]: En mora/próximos
+            - generic [ref=f11e379]:
+              - generic [ref=f11e383]:
+                - img:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic: 02/2026
+                        - generic:
+                          - generic: 03/2026
+                        - generic:
+                          - generic: 04/2026
+                        - generic:
+                          - generic: 05/2026
+                        - generic:
+                          - generic: 06/2026
+                        - generic:
+                          - generic: 07/2026
+                      - generic:
+                        - generic:
+                          - generic: "0"
+                        - generic:
+                          - generic: 20M
+                        - generic:
+                          - generic: 40M
+                        - generic:
+                          - generic: 60M
+                - img:
+                  - generic [ref=f11e400]:
+                    - generic [ref=f11e402]: Real
+                    - generic [ref=f11e411]: Target
+                - toolbar [ref=f11e413]:
+                  - button "Download plot as a PNG" [ref=f11e415] [cursor=pointer]:
+                    - img [ref=f11e416]
+                  - generic [ref=f11e418]:
+                    - button "Zoom" [ref=f11e419] [cursor=pointer]:
+                      - img [ref=f11e420]
+                    - button "Pan" [ref=f11e422] [cursor=pointer]:
+                      - img [ref=f11e423]
+                    - button "Box Select" [ref=f11e425] [cursor=pointer]:
+                      - img [ref=f11e426]
+                    - button "Lasso Select" [ref=f11e428] [cursor=pointer]:
+                      - img [ref=f11e429]
+                  - generic [ref=f11e431]:
+                    - button "Zoom in" [ref=f11e432] [cursor=pointer]:
+                      - img [ref=f11e433]
+                    - button "Zoom out" [ref=f11e435] [cursor=pointer]:
+                      - img [ref=f11e436]
+                    - button "Autoscale" [ref=f11e438] [cursor=pointer]:
+                      - img [ref=f11e439]
+                    - button "Reset axes" [ref=f11e441] [cursor=pointer]:
+                      - img [ref=f11e442]
+                  - link "plotly-logomark" [ref=f11e445] [cursor=pointer]:
+                    - /url: https://plotly.com/
+                    - img "plotly-logomark" [ref=f11e446]
+                - img
+              - generic [ref=f11e462]:
+                - img:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic: $8
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic: $5
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic: $9
+                      - generic:
+                        - generic:
+                          - generic: Vencimientos
+                      - generic:
+                        - generic:
+                          - generic: "0"
+                        - generic:
+                          - generic: "5"
+                        - generic:
+                          - generic: "10"
+                        - generic:
+                          - generic: "15"
+                        - generic:
+                          - generic: "20"
+                - img:
+                  - generic [ref=f11e479]:
+                    - generic [ref=f11e481]: 60-90 días
+                    - generic [ref=f11e488]: 30-60 días
+                    - generic [ref=f11e495]: Próximos 30d
+                - toolbar [ref=f11e501]:
+                  - button "Download plot as a PNG" [ref=f11e503] [cursor=pointer]:
+                    - img [ref=f11e504]
+                  - generic [ref=f11e506]:
+                    - button "Zoom" [ref=f11e507] [cursor=pointer]:
+                      - img [ref=f11e508]
+                    - button "Pan" [ref=f11e510] [cursor=pointer]:
+                      - img [ref=f11e511]
+                    - button "Box Select" [ref=f11e513] [cursor=pointer]:
+                      - img [ref=f11e514]
+                    - button "Lasso Select" [ref=f11e516] [cursor=pointer]:
+                      - img [ref=f11e517]
+                  - generic [ref=f11e519]:
+                    - button "Zoom in" [ref=f11e520] [cursor=pointer]:
+                      - img [ref=f11e521]
+                    - button "Zoom out" [ref=f11e523] [cursor=pointer]:
+                      - img [ref=f11e524]
+                    - button "Autoscale" [ref=f11e526] [cursor=pointer]:
+                      - img [ref=f11e527]
+                    - button "Reset axes" [ref=f11e529] [cursor=pointer]:
+                      - img [ref=f11e530]
+                  - link "plotly-logomark" [ref=f11e533] [cursor=pointer]:
+                    - /url: https://plotly.com/
+                    - img "plotly-logomark" [ref=f11e534]
+                - img
+            - generic [ref=f11e547]:
+              - generic [ref=f11e551]:
+                - img:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic: "49"
+                                - generic:
+                                  - generic: "30"
+                                - generic:
+                                  - generic: "2"
+                      - generic:
+                        - generic:
+                          - generic: Apartamento
+                        - generic:
+                          - generic: Casa
+                        - generic:
+                          - generic: Local Comercial
+                      - generic:
+                        - generic:
+                          - generic: "0"
+                        - generic:
+                          - generic: "10"
+                        - generic:
+                          - generic: "20"
+                        - generic:
+                          - generic: "30"
+                        - generic:
+                          - generic: "40"
+                        - generic:
+                          - generic: "50"
+                - img
+                - toolbar [ref=f11e565]:
+                  - button "Download plot as a PNG" [ref=f11e567] [cursor=pointer]:
+                    - img [ref=f11e568]
+                  - generic [ref=f11e570]:
+                    - button "Zoom" [ref=f11e571] [cursor=pointer]:
+                      - img [ref=f11e572]
+                    - button "Pan" [ref=f11e574] [cursor=pointer]:
+                      - img [ref=f11e575]
+                    - button "Box Select" [ref=f11e577] [cursor=pointer]:
+                      - img [ref=f11e578]
+                    - button "Lasso Select" [ref=f11e580] [cursor=pointer]:
+                      - img [ref=f11e581]
+                  - generic [ref=f11e583]:
+                    - button "Zoom in" [ref=f11e584] [cursor=pointer]:
+                      - img [ref=f11e585]
+                    - button "Zoom out" [ref=f11e587] [cursor=pointer]:
+                      - img [ref=f11e588]
+                    - button "Autoscale" [ref=f11e590] [cursor=pointer]:
+                      - img [ref=f11e591]
+                    - button "Reset axes" [ref=f11e593] [cursor=pointer]:
+                      - img [ref=f11e594]
+                  - link "plotly-logomark" [ref=f11e597] [cursor=pointer]:
+                    - /url: https://plotly.com/
+                    - img "plotly-logomark" [ref=f11e598]
+                - img
+              - generic [ref=f11e614]:
+                - img:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic: "19"
+                                - generic:
+                                  - generic: "6"
+                                - generic:
+                                  - generic: "6"
+                                - generic:
+                                  - generic: "1"
+                                - generic:
+                                  - generic: "1"
+                                - generic:
+                                  - generic: "1"
+                      - generic:
+                        - generic:
+                          - generic: "0"
+                        - generic:
+                          - generic: "5"
+                        - generic:
+                          - generic: "10"
+                        - generic:
+                          - generic: "15"
+                        - generic:
+                          - generic: "20"
+                      - generic:
+                        - generic:
+                          - generic: Finalizado
+                        - generic:
+                          - generic: Cancelado
+                        - generic:
+                          - generic: Reportado
+                        - generic:
+                          - generic: Aprobado
+                        - generic:
+                          - generic: Cotizado
+                        - generic:
+                          - generic: En Revision
+                - img
+                - toolbar [ref=f11e628]:
+                  - button "Download plot as a PNG" [ref=f11e630] [cursor=pointer]:
+                    - img [ref=f11e631]
+                  - generic [ref=f11e633]:
+                    - button "Zoom" [ref=f11e634] [cursor=pointer]:
+                      - img [ref=f11e635]
+                    - button "Pan" [ref=f11e637] [cursor=pointer]:
+                      - img [ref=f11e638]
+                    - button "Box Select" [ref=f11e640] [cursor=pointer]:
+                      - img [ref=f11e641]
+                    - button "Lasso Select" [ref=f11e643] [cursor=pointer]:
+                      - img [ref=f11e644]
+                  - generic [ref=f11e646]:
+                    - button "Zoom in" [ref=f11e647] [cursor=pointer]:
+                      - img [ref=f11e648]
+                    - button "Zoom out" [ref=f11e650] [cursor=pointer]:
+                      - img [ref=f11e651]
+                    - button "Autoscale" [ref=f11e653] [cursor=pointer]:
+                      - img [ref=f11e654]
+                    - button "Reset axes" [ref=f11e656] [cursor=pointer]:
+                      - img [ref=f11e657]
+                  - link "plotly-logomark" [ref=f11e660] [cursor=pointer]:
+                    - /url: https://plotly.com/
+                    - img "plotly-logomark" [ref=f11e661]
+                - img
+              - generic [ref=f11e677]:
+                - img:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic: $4.538.300
+                                - generic:
+                                  - generic: $1.645.730
+                                - generic:
+                                  - generic: $1.336.820
+                      - generic:
+                        - generic:
+                          - generic: "0"
+                        - generic:
+                          - generic: 1M
+                        - generic:
+                          - generic: 2M
+                        - generic:
+                          - generic: 3M
+                        - generic:
+                          - generic: 4M
+                      - generic:
+                        - generic:
+                          - generic: SANTIAGO
+                        - generic:
+                          - generic: INMOBILIARIA
+                        - generic:
+                          - generic: CRISTIAN
+                - img
+                - toolbar [ref=f11e691]:
+                  - button "Download plot as a PNG" [ref=f11e693] [cursor=pointer]:
+                    - img [ref=f11e694]
+                  - generic [ref=f11e696]:
+                    - button "Zoom" [ref=f11e697] [cursor=pointer]:
+                      - img [ref=f11e698]
+                    - button "Pan" [ref=f11e700] [cursor=pointer]:
+                      - img [ref=f11e701]
+                    - button "Box Select" [ref=f11e703] [cursor=pointer]:
+                      - img [ref=f11e704]
+                    - button "Lasso Select" [ref=f11e706] [cursor=pointer]:
+                      - img [ref=f11e707]
+                  - generic [ref=f11e709]:
+                    - button "Zoom in" [ref=f11e710] [cursor=pointer]:
+                      - img [ref=f11e711]
+                    - button "Zoom out" [ref=f11e713] [cursor=pointer]:
+                      - img [ref=f11e714]
+                    - button "Autoscale" [ref=f11e716] [cursor=pointer]:
+                      - img [ref=f11e717]
+                    - button "Reset axes" [ref=f11e719] [cursor=pointer]:
+                      - img [ref=f11e720]
+                  - link "plotly-logomark" [ref=f11e723] [cursor=pointer]:
+                    - /url: https://plotly.com/
+                    - img "plotly-logomark" [ref=f11e724]
+                - img
+            - generic [ref=f11e737]:
+              - generic [ref=f11e741]:
+                - img:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic: $5.047.000
+                                - generic:
+                                  - generic: $3.970.000
+                                - generic:
+                                  - generic: $10.719.200
+                                - generic:
+                                  - generic: $7.664.000
+                                - generic:
+                                  - generic: $5.435.000
+                                - generic:
+                                  - generic: $5.128.000
+                                - generic:
+                                  - generic: $1.369.000
+                                - generic:
+                                  - generic: $6.301.000
+                                - generic:
+                                  - generic: $5.790.800
+                                - generic:
+                                  - generic: $4.598.908
+                                - generic:
+                                  - generic: $5.113.391
+                                - generic:
+                                  - generic: $5.111.200
+                                - generic:
+                                  - generic: $720.000
+                      - generic:
+                        - generic:
+                          - generic: "0"
+                        - generic:
+                          - generic: 2M
+                        - generic:
+                          - generic: 4M
+                        - generic:
+                          - generic: 6M
+                        - generic:
+                          - generic: 8M
+                        - generic:
+                          - generic: 10M
+                      - generic:
+                        - generic:
+                          - generic: Jul 2026
+                        - generic:
+                          - generic: Sep 2026
+                        - generic:
+                          - generic: Nov 2026
+                        - generic:
+                          - generic: Jan 2027
+                        - generic:
+                          - generic: Mar 2027
+                        - generic:
+                          - generic: May 2027
+                        - generic:
+                          - generic: Jul 2027
+                - img
+                - toolbar [ref=f11e755]:
+                  - button "Download plot as a PNG" [ref=f11e757] [cursor=pointer]:
+                    - img [ref=f11e758]
+                  - generic [ref=f11e760]:
+                    - button "Zoom" [ref=f11e761] [cursor=pointer]:
+                      - img [ref=f11e762]
+                    - button "Pan" [ref=f11e764] [cursor=pointer]:
+                      - img [ref=f11e765]
+                    - button "Box Select" [ref=f11e767] [cursor=pointer]:
+                      - img [ref=f11e768]
+                    - button "Lasso Select" [ref=f11e770] [cursor=pointer]:
+                      - img [ref=f11e771]
+                  - generic [ref=f11e773]:
+                    - button "Zoom in" [ref=f11e774] [cursor=pointer]:
+                      - img [ref=f11e775]
+                    - button "Zoom out" [ref=f11e777] [cursor=pointer]:
+                      - img [ref=f11e778]
+                    - button "Autoscale" [ref=f11e780] [cursor=pointer]:
+                      - img [ref=f11e781]
+                    - button "Reset axes" [ref=f11e783] [cursor=pointer]:
+                      - img [ref=f11e784]
+                  - link "plotly-logomark" [ref=f11e787] [cursor=pointer]:
+                    - /url: https://plotly.com/
+                    - img "plotly-logomark" [ref=f11e788]
+                - img
+              - generic [ref=f11e803]:
+                - generic [ref=f11e804]:
+                  - img [ref=f11e805]
+                  - paragraph [ref=f11e808]: Vencimientos Próximos (90 Días)
+                - table [ref=f11e815]:
+                  - rowgroup [ref=f11e816]:
+                    - row "Propiedad Fecha Fin" [ref=f11e817]:
+                      - columnheader "Propiedad" [ref=f11e818]
+                      - columnheader "Fecha Fin" [ref=f11e819]
+                  - rowgroup [ref=f11e820]:
+                    - row "BRR LAS AMERICAS PI 1 2026-07-05 1 días" [ref=f11e821]:
+                      - cell "BRR LAS AMERICAS PI 1" [ref=f11e822]:
+                        - paragraph [ref=f11e823]: BRR LAS AMERICAS PI 1
+                      - cell "2026-07-05 1 días" [ref=f11e824]:
+                        - generic [ref=f11e825]:
+                          - paragraph [ref=f11e826]: 2026-07-05
+                          - generic [ref=f11e827]: 1 días
+                    - row "CL 50 CR 55-01 BQ 1 AP 1210, CJT RES OVIEDO 2026-07-10 6 días" [ref=f11e828]:
+                      - cell "CL 50 CR 55-01 BQ 1 AP 1210, CJT RES OVIEDO" [ref=f11e829]:
+                        - paragraph [ref=f11e830]: CL 50 CR 55-01 BQ 1 AP 1210, CJT RES OVIEDO
+                      - cell "2026-07-10 6 días" [ref=f11e831]:
+                        - generic [ref=f11e832]:
+                          - paragraph [ref=f11e833]: 2026-07-10
+                          - generic [ref=f11e834]: 6 días
+                    - row "CL 23 CR 37-25 TO 3 AP 1005, CJT TESALONICA APARTAMENTOS 2026-07-14 10 días" [ref=f11e835]:
+                      - cell "CL 23 CR 37-25 TO 3 AP 1005, CJT TESALONICA APARTAMENTOS" [ref=f11e836]:
+                        - paragraph [ref=f11e837]: CL 23 CR 37-25 TO 3 AP 1005, CJT TESALONICA APARTAMENTOS
+                      - cell "2026-07-14 10 días" [ref=f11e838]:
+                        - generic [ref=f11e839]:
+                          - paragraph [ref=f11e840]: 2026-07-14
+                          - generic [ref=f11e841]: 10 días
+                    - row "EDF GRANADA REAL AP 308 2026-07-15 11 días" [ref=f11e842]:
+                      - cell "EDF GRANADA REAL AP 308" [ref=f11e843]:
+                        - paragraph [ref=f11e844]: EDF GRANADA REAL AP 308
+                      - cell "2026-07-15 11 días" [ref=f11e845]:
+                        - generic [ref=f11e846]:
+                          - paragraph [ref=f11e847]: 2026-07-15
+                          - generic [ref=f11e848]: 11 días
+                    - row "BRR BOSQUES DE PINARES MZ 4 CS 144 PI 1 2026-07-30 26 días" [ref=f11e849]:
+                      - cell "BRR BOSQUES DE PINARES MZ 4 CS 144 PI 1" [ref=f11e850]:
+                        - paragraph [ref=f11e851]: BRR BOSQUES DE PINARES MZ 4 CS 144 PI 1
+                      - cell "2026-07-30 26 días" [ref=f11e852]:
+                        - generic [ref=f11e853]:
+                          - paragraph [ref=f11e854]: 2026-07-30
+                          - generic [ref=f11e855]: 26 días
+                    - row "CJT ENTRE LOMAS TO 3 AP 404 2026-07-30 26 días" [ref=f11e856]:
+                      - cell "CJT ENTRE LOMAS TO 3 AP 404" [ref=f11e857]:
+                        - paragraph [ref=f11e858]: CJT ENTRE LOMAS TO 3 AP 404
+                      - cell "2026-07-30 26 días" [ref=f11e859]:
+                        - generic [ref=f11e860]:
+                          - paragraph [ref=f11e861]: 2026-07-30
+                          - generic [ref=f11e862]: 26 días
+                    - row "CL 22 CR 34-60 LC PI 1, BRR LAS AMERICAS 2026-08-01 28 días" [ref=f11e863]:
+                      - cell "CL 22 CR 34-60 LC PI 1, BRR LAS AMERICAS" [ref=f11e864]:
+                        - paragraph [ref=f11e865]: CL 22 CR 34-60 LC PI 1, BRR LAS AMERICAS
+                      - cell "2026-08-01 28 días" [ref=f11e866]:
+                        - generic [ref=f11e867]:
+                          - paragraph [ref=f11e868]: 2026-08-01
+                          - generic [ref=f11e869]: 28 días
+                    - row "CR 18 CL 25-26 TO 7 AP 504, EDF ALAMOS DE POPORO 2026-08-01 28 días" [ref=f11e870]:
+                      - cell "CR 18 CL 25-26 TO 7 AP 504, EDF ALAMOS DE POPORO" [ref=f11e871]:
+                        - paragraph [ref=f11e872]: CR 18 CL 25-26 TO 7 AP 504, EDF ALAMOS DE POPORO
+                      - cell "2026-08-01 28 días" [ref=f11e873]:
+                        - generic [ref=f11e874]:
+                          - paragraph [ref=f11e875]: 2026-08-01
+                          - generic [ref=f11e876]: 28 días
+                    - row "CR 19 CL 11N-33 ET 1 BQ 1 AP 302, CJT RES LA ABADIA 2026-08-04 31 días" [ref=f11e877]:
+                      - cell "CR 19 CL 11N-33 ET 1 BQ 1 AP 302, CJT RES LA ABADIA" [ref=f11e878]:
+                        - paragraph [ref=f11e879]: CR 19 CL 11N-33 ET 1 BQ 1 AP 302, CJT RES LA ABADIA
+                      - cell "2026-08-04 31 días" [ref=f11e880]:
+                        - generic [ref=f11e881]:
+                          - paragraph [ref=f11e882]: 2026-08-04
+                          - generic [ref=f11e883]: 31 días
+                    - row "CL 22N CR 19-170 TO 6 AP 401, CJT BOSQUES DE PALERMO 2026-08-06 33 días" [ref=f11e884]:
+                      - cell "CL 22N CR 19-170 TO 6 AP 401, CJT BOSQUES DE PALERMO" [ref=f11e885]:
+                        - paragraph [ref=f11e886]: CL 22N CR 19-170 TO 6 AP 401, CJT BOSQUES DE PALERMO
+                      - cell "2026-08-06 33 días" [ref=f11e887]:
+                        - generic [ref=f11e888]:
+                          - paragraph [ref=f11e889]: 2026-08-06
+                          - generic [ref=f11e890]: 33 días
+                    - row "CL 4N CR 24A-27 T 2 AP 1104, CJT CERROS VERDES 2026-09-01 59 días" [ref=f11e891]:
+                      - cell "CL 4N CR 24A-27 T 2 AP 1104, CJT CERROS VERDES" [ref=f11e892]:
+                        - paragraph [ref=f11e893]: CL 4N CR 24A-27 T 2 AP 1104, CJT CERROS VERDES
+                      - cell "2026-09-01 59 días" [ref=f11e894]:
+                        - generic [ref=f11e895]:
+                          - paragraph [ref=f11e896]: 2026-09-01
+                          - generic [ref=f11e897]: 59 días
+                    - row "CL 49 CR 56-65 TO 1 AP 101, VERDU II 2026-09-01 59 días" [ref=f11e898]:
+                      - cell "CL 49 CR 56-65 TO 1 AP 101, VERDU II" [ref=f11e899]:
+                        - paragraph [ref=f11e900]: CL 49 CR 56-65 TO 1 AP 101, VERDU II
+                      - cell "2026-09-01 59 días" [ref=f11e901]:
+                        - generic [ref=f11e902]:
+                          - paragraph [ref=f11e903]: 2026-09-01
+                          - generic [ref=f11e904]: 59 días
+                    - row "BRR VILLA CAROLINA ET 1 MZ Ñ CS 16 PI 1 2026-09-01 59 días" [ref=f11e905]:
+                      - cell "BRR VILLA CAROLINA ET 1 MZ Ñ CS 16 PI 1" [ref=f11e906]:
+                        - paragraph [ref=f11e907]: BRR VILLA CAROLINA ET 1 MZ Ñ CS 16 PI 1
+                      - cell "2026-09-01 59 días" [ref=f11e908]:
+                        - generic [ref=f11e909]:
+                          - paragraph [ref=f11e910]: 2026-09-01
+                          - generic [ref=f11e911]: 59 días
+                    - row "CR 19 CL 32N-11 CS 31,CJT RES BOSQUES DE VIENA I 2026-09-15 73 días" [ref=f11e912]:
+                      - cell "CR 19 CL 32N-11 CS 31,CJT RES BOSQUES DE VIENA I" [ref=f11e913]:
+                        - paragraph [ref=f11e914]: CR 19 CL 32N-11 CS 31,CJT RES BOSQUES DE VIENA I
+                      - cell "2026-09-15 73 días" [ref=f11e915]:
+                        - generic [ref=f11e916]:
+                          - paragraph [ref=f11e917]: 2026-09-15
+                          - generic [ref=f11e918]: 73 días
+                    - row "BRR VILLA LILIANA MZ N CS 20 2026-09-16 74 días" [ref=f11e919]:
+                      - cell "BRR VILLA LILIANA MZ N CS 20" [ref=f11e920]:
+                        - paragraph [ref=f11e921]: BRR VILLA LILIANA MZ N CS 20
+                      - cell "2026-09-16 74 días" [ref=f11e922]:
+                        - generic [ref=f11e923]:
+                          - paragraph [ref=f11e924]: 2026-09-16
+                          - generic [ref=f11e925]: 74 días
+                    - row "CL 50 CR 55-01 ET 7 TO 1 PI 14 AP 1402, CJT RES OVIEDO 2026-09-17 75 días" [ref=f11e926]:
+                      - cell "CL 50 CR 55-01 ET 7 TO 1 PI 14 AP 1402, CJT RES OVIEDO" [ref=f11e927]:
+                        - paragraph [ref=f11e928]: CL 50 CR 55-01 ET 7 TO 1 PI 14 AP 1402, CJT RES OVIEDO
+                      - cell "2026-09-17 75 días" [ref=f11e929]:
+                        - generic [ref=f11e930]:
+                          - paragraph [ref=f11e931]: 2026-09-17
+                          - generic [ref=f11e932]: 75 días
+                    - row "BRR GIRASOLES MZ Z CS 23A 2026-09-17 75 días" [ref=f11e933]:
+                      - cell "BRR GIRASOLES MZ Z CS 23A" [ref=f11e934]:
+                        - paragraph [ref=f11e935]: BRR GIRASOLES MZ Z CS 23A
+                      - cell "2026-09-17 75 días" [ref=f11e936]:
+                        - generic [ref=f11e937]:
+                          - paragraph [ref=f11e938]: 2026-09-17
+                          - generic [ref=f11e939]: 75 días
+                    - row "EDF LA FORET AP 603, BRR LA CASTELLANA 2026-09-20 78 días" [ref=f11e940]:
+                      - cell "EDF LA FORET AP 603, BRR LA CASTELLANA" [ref=f11e941]:
+                        - paragraph [ref=f11e942]: EDF LA FORET AP 603, BRR LA CASTELLANA
+                      - cell "2026-09-20 78 días" [ref=f11e943]:
+                        - generic [ref=f11e944]:
+                          - paragraph [ref=f11e945]: 2026-09-20
+                          - generic [ref=f11e946]: 78 días
+                    - row "CONJ CIUDADELA COMFENALCO MZ H CS 29 2026-09-23 81 días" [ref=f11e947]:
+                      - cell "CONJ CIUDADELA COMFENALCO MZ H CS 29" [ref=f11e948]:
+                        - paragraph [ref=f11e949]: CONJ CIUDADELA COMFENALCO MZ H CS 29
+                      - cell "2026-09-23 81 días" [ref=f11e950]:
+                        - generic [ref=f11e951]:
+                          - paragraph [ref=f11e952]: 2026-09-23
+                          - generic [ref=f11e953]: 81 días
+                    - row "CR 20 CL 3N-00 TO 6 AP 803, CJT PQ RES DEL CAFE 2026-09-28 86 días" [ref=f11e954]:
+                      - cell "CR 20 CL 3N-00 TO 6 AP 803, CJT PQ RES DEL CAFE" [ref=f11e955]:
+                        - paragraph [ref=f11e956]: CR 20 CL 3N-00 TO 6 AP 803, CJT PQ RES DEL CAFE
+                      - cell "2026-09-28 86 días" [ref=f11e957]:
+                        - generic [ref=f11e958]:
+                          - paragraph [ref=f11e959]: 2026-09-28
+                          - generic [ref=f11e960]: 86 días
+                    - row "BRR LA PATRIA MZ 42 CS 33 2026-10-01 89 días" [ref=f11e961]:
+                      - cell "BRR LA PATRIA MZ 42 CS 33" [ref=f11e962]:
+                        - paragraph [ref=f11e963]: BRR LA PATRIA MZ 42 CS 33
+                      - cell "2026-10-01 89 días" [ref=f11e964]:
+                        - generic [ref=f11e965]:
+                          - paragraph [ref=f11e966]: 2026-10-01
+                          - generic [ref=f11e967]: 89 días
+                    - row "BRR CASA BLANCA MZ A CS 14 PI 2 2026-10-01 89 días" [ref=f11e968]:
+                      - cell "BRR CASA BLANCA MZ A CS 14 PI 2" [ref=f11e969]:
+                        - paragraph [ref=f11e970]: BRR CASA BLANCA MZ A CS 14 PI 2
+                      - cell "2026-10-01 89 días" [ref=f11e971]:
+                        - generic [ref=f11e972]:
+                          - paragraph [ref=f11e973]: 2026-10-01
+                          - generic [ref=f11e974]: 89 días
+      - region "Notifications alt+T"
+    - link "Built with Reflex" [ref=f11e13] [cursor=pointer]:
+      - /url: https://reflex.dev
+      - img [ref=f11e14]
+      - generic [ref=f11e18]: Built with Reflex
+  - img [ref=f11e975]
