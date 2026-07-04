@@ -58,7 +58,7 @@ def setup_permissions():
             {
                 "modulo": "Liquidaciones",
                 "ruta": "/liquidaciones",
-                "accion": "SELECCIONAR_INCIDENTES",
+                "accion": "SELEC_INCIDENTES",
                 "descripcion": "Seleccionar incidentes para asociar a liquidaciones",
                 "categoria": "Gestión"
             },
@@ -118,6 +118,41 @@ def setup_permissions():
             except Exception as e:
                 logger.error(f"  ✗ Error con {perm['modulo']}:{perm['accion']}: {e}")
                 errors += 1
+        
+        # Asignar permisos al rol Administrador
+        logger.info("\n--- Asignando permisos al rol Administrador ---")
+        cursor.execute("""
+            SELECT ID_PERMISO FROM PERMISOS 
+            WHERE MODULO IN ('Liquidaciones', 'Incidentes')
+            AND ACCION IN ('ELIMINAR', 'SELEC_INCIDENTES', 'DEFINIR_PLAN_PAGO', 'VER_ESTADO_PAGO')
+        """)
+        
+        permisos_ids = [r[0] for r in cursor.fetchall()]
+        assigned = 0
+        
+        for permiso_id in permisos_ids:
+            try:
+                # Verificar si ya está asignado
+                cursor.execute("""
+                    SELECT COUNT(*) FROM ROL_PERMISOS 
+                    WHERE ROL = 'Administrador' AND ID_PERMISO = %s
+                """, (permiso_id,))
+                
+                count = cursor.fetchone()[0]
+                if count > 0:
+                    continue
+                
+                # Asignar permiso
+                cursor.execute("""
+                    INSERT INTO ROL_PERMISOS (ROL, ID_PERMISO, ACTIVO, CREATED_BY)
+                    VALUES ('Administrador', %s, True, 'SYSTEM')
+                """, (permiso_id,))
+                assigned += 1
+                
+            except Exception as e:
+                logger.error(f"  Error assigning permission {permiso_id}: {e}")
+        
+        logger.info(f"Permisos asignados al Administrador: {assigned}")
         
         # Verificar permisos registrados
         logger.info("\n--- Verificación de Permisos ---")
