@@ -67,6 +67,7 @@ class IRepositorioLiquidacion(Protocol):
         id_asesor: Optional[int] = None,
         sort_by: str = "periodo",
         sort_order: str = "desc",
+        ciclo_operativo: Optional[str] = None,
     ) -> Any: ...
 
     def listar_paginado(
@@ -79,11 +80,14 @@ class IRepositorioLiquidacion(Protocol):
         id_asesor: Optional[int] = None,
         sort_by: str = "periodo",
         sort_order: str = "desc",
+        ciclo_operativo: Optional[str] = None,
     ) -> List[Dict[str, Any]]: ...
     def contar_con_filtros(
         self,
         estado: Optional[str] = None,
         periodo: Optional[str] = None,
         busqueda: Optional[str] = None,
+        id_asesor: Optional[int] = None,
+        ciclo_operativo: Optional[str] = None,
     ) -> int: ...
     def _row_to_entity(self, row: Any) -> Liquidacion: ...

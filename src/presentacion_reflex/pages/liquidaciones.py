@@ -68,93 +68,112 @@ def render_estado_recaudo_badge(estado_recaudo: rx.Var) -> rx.Component:
 def liquidaciones_toolbar() -> rx.Component:
     """Barra de herramientas con filtros y búsqueda con diseño neumórfico."""
     return rx.flex(
-        # Botón Exportar Lote Periodo ZIP
-        rx.cond(
-            AuthState.check_action("Liquidaciones", "CREAR"),
-            rx.tooltip(
-                neuro_button(
-                    rx.icon("file-archive", size=20),
-                    on_click=LiquidacionesState.open_export_modal,
-                    loading=LiquidacionesState.exportando_periodo,
-                ),
-                content="Exportar Periodo (ZIP)",
-            ),
-        ),
-        # Toggle Vista Agrupada
+        # --- GRUPO FILTROS (Search y Selects) ---
         rx.flex(
-            rx.switch(
-                checked=LiquidacionesState.vista_agrupada,
-                on_change=LiquidacionesState.toggle_vista_agrupada,
-                color_scheme="blue",
+            # Búsqueda
+            neuro_input(
+                placeholder="Buscar...",
+                value=LiquidacionesState.search_text,
+                on_change=LiquidacionesState.set_search,
+                on_key_down=lambda key: LiquidacionesState.handle_search_key_down(key),
+                width=["100%", "100%", "250px"],
             ),
-            rx.text(
-                rx.cond(
-                    LiquidacionesState.vista_agrupada,
-                    "Vista Por Propietario",
-                    "Vista Individual",
+            # Filtro Período
+            neuro_select_root(
+                rx.foreach(
+                    LiquidacionesState.periodos_select_options,
+                    lambda opt: rx.select.item(opt, value=opt),
                 ),
-                weight="medium",
-                size="2",
-                color=styles.TEXT_PRIMARY,
+                placeholder="Período",
+                value=LiquidacionesState.filter_periodo,
+                on_change=LiquidacionesState.set_filter_periodo,
+                width=["100%", "100%", "130px"],
             ),
-            gap="2",
+            # Filtro Estado
+            neuro_select_root(
+                rx.foreach(
+                    LiquidacionesState.estado_options,
+                    lambda opt: rx.select.item(opt, value=opt),
+                ),
+                placeholder="Estado",
+                value=LiquidacionesState.filter_estado,
+                on_change=LiquidacionesState.set_filter_estado,
+                width=["100%", "100%", "140px"],
+            ),
+            # Filtro Ciclo Operativo
+            neuro_select_root(
+                rx.foreach(
+                    LiquidacionesState.ciclos_operativos_options,
+                    lambda opt: rx.select.item(opt, value=opt),
+                ),
+                placeholder="Ciclo",
+                value=LiquidacionesState.filter_ciclo_operativo,
+                on_change=LiquidacionesState.set_filter_ciclo_operativo,
+                width=["100%", "100%", "120px"],
+            ),
+            # Filtro Asesor
+            neuro_select_root(
+                rx.foreach(
+                    LiquidacionesState.asesores_select_options,
+                    lambda opt: rx.select.item(opt, value=opt),
+                ),
+                placeholder="Asesor",
+                value=LiquidacionesState.filter_asesor_id,
+                on_change=LiquidacionesState.set_filter_asesor,
+                width=["100%", "100%", "180px"],
+            ),
+            gap="3",
             align="center",
-            padding="0.5em",
-            background=styles.BG_PANEL,
-            border_radius="10px",
-            style={"box_shadow": styles.NEU_INSET},
-            flex_shrink="0",
+            flex_wrap="wrap",
+            flex="1",
         ),
-        # Búsqueda
-        neuro_input(
-            placeholder="Buscar...",
-            value=LiquidacionesState.search_text,
-            on_change=LiquidacionesState.set_search,
-            on_key_down=lambda key: LiquidacionesState.handle_search_key_down(key),
-            width=["100%", "100%", "250px"],
-        ),
-        # Filtro Período
-        neuro_select_root(
-            rx.foreach(
-                LiquidacionesState.periodos_select_options,
-                lambda opt: rx.select.item(opt, value=opt),
-            ),
-            placeholder="Período",
-            value=LiquidacionesState.filter_periodo,
-            on_change=LiquidacionesState.set_filter_periodo,
-            width=["100%", "100%", "150px"],
-        ),
-        # Filtro Estado
-        neuro_select_root(
-            rx.foreach(
-                LiquidacionesState.estado_options,
-                lambda opt: rx.select.item(opt, value=opt),
-            ),
-            placeholder="Estado",
-            value=LiquidacionesState.filter_estado,
-            on_change=LiquidacionesState.set_filter_estado,
-            width=["100%", "100%", "150px"],
-        ),
-        # Filtro Asesor
-        neuro_select_root(
-            rx.foreach(
-                LiquidacionesState.asesores_select_options,
-                lambda opt: rx.select.item(opt, value=opt),
-            ),
-            placeholder="Asesor",
-            value=LiquidacionesState.filter_asesor_id,
-            on_change=LiquidacionesState.set_filter_asesor,
-            width=["100%", "100%", "200px"],
-        ),
-        # Grupo de acciones (sin rx.spacer)
+        
+        # --- GRUPO ACCIONES Y VISTAS ---
         rx.flex(
+            # Toggle Vista Agrupada
+            rx.flex(
+                rx.switch(
+                    checked=LiquidacionesState.vista_agrupada,
+                    on_change=LiquidacionesState.toggle_vista_agrupada,
+                    color_scheme="blue",
+                ),
+                rx.text(
+                    rx.cond(
+                        LiquidacionesState.vista_agrupada,
+                        "Por Propietario",
+                        "Individual",
+                    ),
+                    weight="medium",
+                    size="2",
+                    color=styles.TEXT_PRIMARY,
+                ),
+                gap="2",
+                align="center",
+                padding="0.5em",
+                background=styles.BG_PANEL,
+                border_radius="10px",
+                style={"box_shadow": styles.NEU_INSET},
+                flex_shrink="0",
+            ),
+            # Botón Exportar Lote Periodo ZIP
+            rx.cond(
+                AuthState.check_action("Liquidaciones", "CREAR"),
+                rx.tooltip(
+                    neuro_button(
+                        rx.icon("file-archive", size=20),
+                        on_click=LiquidacionesState.open_export_modal,
+                        loading=LiquidacionesState.exportando_periodo,
+                    ),
+                    content="Exportar Periodo (ZIP)",
+                ),
+            ),
             # Botón Nueva Liquidación Individual o Masiva
             rx.cond(
                 LiquidacionesState.vista_agrupada,
                 rx.cond(
                     AuthState.check_action("Liquidaciones", "CREAR"),
                     neuro_button(
-                        rx.hstack(rx.icon("users"), rx.text("Liquidación Masiva")),
+                        rx.hstack(rx.icon("users"), rx.text("Masiva")),
                         on_click=LiquidacionesState.open_bulk_create_modal,
                         width=rx.breakpoints(initial="100%", md="auto"),
                     ),
@@ -162,7 +181,7 @@ def liquidaciones_toolbar() -> rx.Component:
                 rx.cond(
                     AuthState.check_action("Liquidaciones", "CREAR"),
                     neuro_button(
-                        rx.hstack(rx.icon("plus"), rx.text("Nueva Liquidación")),
+                        rx.hstack(rx.icon("plus"), rx.text("Nueva")),
                         on_click=LiquidacionesState.open_create_modal,
                         width=rx.breakpoints(initial="100%", md="auto"),
                     ),
@@ -177,17 +196,16 @@ def liquidaciones_toolbar() -> rx.Component:
             align="center",
             flex_wrap="wrap",
             justify=rx.breakpoints(initial="start", md="end"),
-            width=rx.breakpoints(initial="100%", md="auto"),
         ),
         width="100%",
         padding="1em",
         background=styles.BG_PANEL,
         border_radius="16px",
         style={"box_shadow": styles.NEU_SHADOW},
-        gap="3",
-        flex_direction=rx.breakpoints(initial="column", md="row"),
-        flex_wrap="wrap",
-        align=rx.breakpoints(initial="stretch", md="center"),
+        gap="4",
+        flex_direction=rx.breakpoints(initial="column", lg="row"),
+        align=rx.breakpoints(initial="stretch", lg="center"),
+        justify="between",
     )
 
 
@@ -291,9 +309,7 @@ def liquidaciones_table() -> rx.Component:
                 header_cell_sortable("ID", "id"),
                 header_cell_sortable("Período", "periodo"),
                 header_cell_sortable("Propiedad", "contrato"),
-                rx.table.column_header_cell(
-                    "Ciclo Operativo", style={"font-weight": "600"}
-                ),
+                header_cell_sortable("Ciclo Operativo", "grupo_operativo"),
                 header_cell_sortable("Canon", "canon"),
                 header_cell_sortable("Neto a Pagar", "neto"),
                 header_cell_sortable("Estado Recaudo", "estado_recaudo"),
@@ -475,9 +491,7 @@ def liquidaciones_table_agrupada() -> rx.Component:
                     header_cell_sortable("Propiedades", "cantidad_propiedades"),
                     header_cell_sortable("Canon Total", "canon"),
                     header_cell_sortable("Neto Total", "neto"),
-                    rx.table.column_header_cell(
-                        "Estado Recaudo", style={"font-weight": "600"}
-                    ),
+                    header_cell_sortable("Estado Recaudo", "estado_recaudo"),
                     header_cell_sortable("Estado", "estado"),
                     rx.table.column_header_cell(
                         "Acciones", width="200px", style={"font-weight": "600"}

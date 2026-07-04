@@ -52,6 +52,7 @@ class LiquidacionesState(DocumentosStateMixin):
     filter_asesor_id: str = "Todos"
     filter_propiedad_id: str = ""
     filter_propietario_id: str = ""
+    filter_ciclo_operativo: str = "Todos"
 
     # Opciones de filtros (para dropdowns)
     estado_options: List[str] = [
@@ -61,6 +62,7 @@ class LiquidacionesState(DocumentosStateMixin):
         "Pagada",
         "Cancelada",
     ]
+    ciclos_operativos_options: List[str] = ["Todos", "1", "2", "3", "4", "5"]
     periodos_options: List[str] = []  # Se llenarán dinámicamente
     propiedades_options: List[Dict[str, Any]] = []
     propietarios_options: List[Dict[str, Any]] = []
@@ -296,6 +298,8 @@ class LiquidacionesState(DocumentosStateMixin):
                     pass
 
             # Llamar al servicio según el modo de vista
+            ciclo_op = self.filter_ciclo_operativo if hasattr(self, "filter_ciclo_operativo") and self.filter_ciclo_operativo != "Todos" else None
+
             if self.vista_agrupada:
                 # Vista consolidada por propietario
                 resultado = servicio.listar_liquidaciones_propietarios_paginado(
@@ -307,6 +311,7 @@ class LiquidacionesState(DocumentosStateMixin):
                     id_asesor=id_asesor_filt,
                     sort_by=self.sort_by,
                     sort_order=self.sort_order,
+                    ciclo_operativo=ciclo_op,
                 )
             else:
                 # Vista individual por propiedad
@@ -319,6 +324,7 @@ class LiquidacionesState(DocumentosStateMixin):
                     id_asesor=id_asesor_filt,
                     sort_by=self.sort_by,
                     sort_order=self.sort_order,
+                    ciclo_operativo=ciclo_op,
                 )
 
             async with self:
@@ -415,6 +421,12 @@ class LiquidacionesState(DocumentosStateMixin):
     def set_filter_propietario(self, value: str):
         """Cambia filtro de propietario."""
         self.filter_propietario_id = value
+        self.current_page = 1
+        return LiquidacionesState.load_liquidaciones
+
+    def set_filter_ciclo_operativo(self, value: str):
+        """Cambia filtro de ciclo operativo."""
+        self.filter_ciclo_operativo = value
         self.current_page = 1
         return LiquidacionesState.load_liquidaciones
 
