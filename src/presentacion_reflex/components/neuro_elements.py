@@ -405,7 +405,7 @@ def neuro_card_footer(*children, **kwargs) -> rx.Component:
         "padding_top": "1rem",
         "margin_top": "0.75rem",
         # Divisor superior tallado (neumorfismo inset)
-        "border_top": f"1.5px solid transparent",
+        "border_top": "1.5px solid transparent",
         "background_image": (
             "linear-gradient(var(--bg-panel), var(--bg-panel)), "
             "linear-gradient(to right, rgba(163,177,198,0.5), rgba(255,255,255,0.9), rgba(163,177,198,0.5))"
@@ -548,15 +548,34 @@ def neuro_pulse_card(
         rx.vstack(
             rx.hstack(
                 rx.icon(icono, size=18, color=f"var(--{color_scheme}-9)"),
-                rx.text(titulo, size="1", weight="bold", color=styles.TEXT_TERTIARY, text_transform="uppercase"),
+                rx.text(
+                    titulo,
+                    size="1",
+                    weight="bold",
+                    color=styles.TEXT_TERTIARY,
+                    text_transform="uppercase",
+                ),
                 spacing="2",
             ),
-            rx.text(valor, size="6", weight="bold", color=styles.TEXT_PRIMARY, letter_spacing="-0.02em"),
-            rx.cond(progreso_var > 0,
-                neuro_progress(value=progreso, size="1", color_scheme=progress_color, width="100%"),
+            rx.text(
+                valor,
+                size="6",
+                weight="bold",
+                color=styles.TEXT_PRIMARY,
+                letter_spacing="-0.02em",
             ),
-            rx.cond(subtitulo, rx.text(subtitulo, size="1", color=styles.TEXT_SECONDARY)),
-            spacing="2", align="start", width="100%",
+            rx.cond(
+                progreso_var > 0,
+                neuro_progress(
+                    value=progreso, size="1", color_scheme=progress_color, width="100%"
+                ),
+            ),
+            rx.cond(
+                subtitulo, rx.text(subtitulo, size="1", color=styles.TEXT_SECONDARY)
+            ),
+            spacing="2",
+            align="start",
+            width="100%",
         ),
         style={
             "background": styles.BG_PANEL,
@@ -566,7 +585,10 @@ def neuro_pulse_card(
             "padding": "1.25rem",
             "box_shadow": styles.SHADOW_WHISPER,
             "transition": styles.GLOBAL_TRANSITION,
-            "_hover": {"box_shadow": styles.SHADOW_ELEVATED, "transform": "translateY(-2px)"},
+            "_hover": {
+                "box_shadow": styles.SHADOW_ELEVATED,
+                "transform": "translateY(-2px)",
+            },
         },
     )
     if href:

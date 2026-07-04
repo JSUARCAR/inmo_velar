@@ -36,7 +36,8 @@ def finalize_confirm_modal() -> rx.Component:
                                 font_size="0.85em",
                             ),
                             rx.text(
-                                DesocupacionesState.finalize_info["direccion"], font_weight="medium"
+                                DesocupacionesState.finalize_info["direccion"],
+                                font_weight="medium",
                             ),
                             rx.text(
                                 DesocupacionesState.finalize_info["inquilino"],
@@ -57,16 +58,27 @@ def finalize_confirm_modal() -> rx.Component:
                         ~DesocupacionesState.finalize_info["puede_finalizar"],
                         rx.callout(
                             rx.vstack(
-                                rx.text("⚠️ ADVERTENCIA: Tareas pendientes", font_weight="bold"),
-                                rx.text("Hay tareas sin completar. Si continúa, el sistema:"),
+                                rx.text(
+                                    "⚠️ ADVERTENCIA: Tareas pendientes",
+                                    font_weight="bold",
+                                ),
+                                rx.text(
+                                    "Hay tareas sin completar. Si continúa, el sistema:"
+                                ),
                                 rx.unordered_list(
-                                    rx.list_item("Autocompletará todas las tareas pendientes"),
-                                    rx.list_item("Finalizará el contrato inmediatamente"),
+                                    rx.list_item(
+                                        "Autocompletará todas las tareas pendientes"
+                                    ),
+                                    rx.list_item(
+                                        "Finalizará el contrato inmediatamente"
+                                    ),
                                     rx.list_item("Liberará la propiedad"),
                                     padding_left="1.5em",
                                 ),
                                 rx.text(
-                                    DesocupacionesState.finalize_info["mensaje_validacion"],
+                                    DesocupacionesState.finalize_info[
+                                        "mensaje_validacion"
+                                    ],
                                     font_weight="medium",
                                 ),
                                 spacing="2",
@@ -81,7 +93,9 @@ def finalize_confirm_modal() -> rx.Component:
                                 rx.text("Esta acción realizará lo siguiente:"),
                                 rx.unordered_list(
                                     rx.list_item("Marcará el contrato como Finalizado"),
-                                    rx.list_item("Liberará la propiedad para nuevos arriendos"),
+                                    rx.list_item(
+                                        "Liberará la propiedad para nuevos arriendos"
+                                    ),
                                     rx.list_item("Cerrará el proceso de desocupación"),
                                     padding_left="1.5em",
                                 ),
@@ -110,7 +124,9 @@ def finalize_confirm_modal() -> rx.Component:
                     rx.button(
                         "Confirmar y Finalizar",
                         color_scheme=rx.cond(
-                            ~DesocupacionesState.finalize_info["puede_finalizar"], "orange", "green"
+                            ~DesocupacionesState.finalize_info["puede_finalizar"],
+                            "orange",
+                            "green",
                         ),
                         on_click=DesocupacionesState.confirm_finalize_process,
                     )

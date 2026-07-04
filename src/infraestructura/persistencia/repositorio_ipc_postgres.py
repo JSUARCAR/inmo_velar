@@ -3,7 +3,6 @@ Repositorio Postgres para IPC.
 Implementa mapeo 1:1 estricto con tabla IPC.
 """
 
-import psycopg2
 from datetime import datetime
 from typing import List, Optional
 
@@ -43,7 +42,9 @@ class RepositorioIPCPostgres:
             fecha_publicacion=(
                 row_dict.get("fecha_publicacion") or row_dict.get("FECHA_PUBLICACION")
             ),
-            estado_registro=(row_dict.get("estado_registro") or row_dict.get("ESTADO_REGISTRO")),
+            estado_registro=(
+                row_dict.get("estado_registro") or row_dict.get("ESTADO_REGISTRO")
+            ),
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
         )
@@ -76,14 +77,12 @@ class RepositorioIPCPostgres:
         cursor = self.db.get_dict_cursor(conn)
         self.db.get_placeholder()
 
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT * FROM IPC 
             WHERE ESTADO_REGISTRO = TRUE
             ORDER BY ANIO DESC 
             LIMIT 1
-            """
-        )
+            """)
 
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
@@ -94,13 +93,11 @@ class RepositorioIPCPostgres:
         cursor = self.db.get_dict_cursor(conn)
         self.db.get_placeholder()
 
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT * FROM IPC 
             WHERE ESTADO_REGISTRO = TRUE
             ORDER BY ANIO DESC
-            """
-        )
+            """)
 
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
@@ -125,7 +122,11 @@ class RepositorioIPCPostgres:
                     ipc.anio,
                     ipc.valor_ipc,
                     ipc.fecha_publicacion or datetime.now().isoformat(),
-                    bool(ipc.estado_registro) if ipc.estado_registro is not None else True,
+                    (
+                        bool(ipc.estado_registro)
+                        if ipc.estado_registro is not None
+                        else True
+                    ),
                     datetime.now().isoformat(),
                     usuario_sistema,
                 ),
@@ -185,4 +186,3 @@ class RepositorioIPCPostgres:
 
             conn.commit()
             return cursor.rowcount > 0
-

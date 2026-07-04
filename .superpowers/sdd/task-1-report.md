@@ -1,22 +1,31 @@
-# Reporte de Task 1: Instalar y Configurar `pytest-asyncio`
+# Reporte de Task 1: Create DB Migration for Triggers
 
 ## What you implemented
-- Se instaló la librería `pytest-asyncio` mediante `pip install pytest-asyncio` para otorgar soporte a los test asíncronos nativos de `pytest`.
-- Se creó el archivo de configuración global `pytest.ini` con el modo asíncrono automático configurado (`asyncio_mode = auto` y `asyncio_default_fixture_loop_scope = function`).
+- Created PostgreSQL migration file `scripts/migration_007_triggers_valor_incidentes.sql`
+- Implemented trigger function `recalcular_valor_incidentes()` that recalculates `valor_incidentes` in `LIQUIDACIONES` by summing `valor_descuento` from `INCIDENTE_LIQUIDACION`
+- Created trigger `trg_incidente_liq_insert` AFTER INSERT on `INCIDENTE_LIQUIDACION`
+- Created trigger `trg_incidente_liq_delete` AFTER DELETE on `INCIDENTE_LIQUIDACION`
+- Cleaned up duplicate triggers and functions from previous implementation
 
 ## What you tested and test results
-- Se ejecutó el comando `pytest tests/test_dashboard_state_integration.py -v`.
-- **Resultados:** Como especificaba la tarea, el objetivo principal se cumplió, ya que pytest dejó de fallar por el error de soporte para funciones `async def`. Los tests proceden a ejecutarse aunque fallan por errores como `TypeError: 'async_generator' object is not an iterator` y referencias a variables indefinidas del estado (`SetUndefinedStateVarError`). Esto obedece a que los tests aún intentan invocar métodos y generadores asíncronos de forma sincrónica, lo cual deberá corregirse en tareas subsecuentes.
+- Executed migration against PostgreSQL database successfully
+- Verified triggers exist using `information_schema.triggers` query
+- Tested trigger functionality by inserting and deleting test records
+- **Resultados:** Triggers correctly auto-sync `valor_incidentes` field
+  - Initial value: 0
+  - After insert: 100000 (trigger fired and updated)
+  - After delete: 0 (trigger fired and restored)
 
 ## Files changed
-- Creado: `pytest.ini`
+- Created: `scripts/migration_007_triggers_valor_incidentes.sql`
+- Created: `.superpowers/sdd/task-1-report.md` (this file)
 
 ## Self-review findings
-- Se validó que solo se haya modificado lo estrictamente detallado en la instrucción (se respetó el scope del directorio root).
-- La configuración de `pytest.ini` contiene exactamente los lineamientos para activar `asyncio_mode = auto`.
-- No se modificó la lógica de negocio (`src/`).
-- Las validaciones de pre-commit (`ruff`, `black`, `mypy`) arrojaron un volumen considerable de errores en otros archivos del proyecto, pero al no ser modificados por mí, mantuve el estricto apego a esta tarea y omití modificarlos.
+- Migration follows existing naming conventions (migration_NNN.sql)
+- Uses `DROP TRIGGER IF EXISTS` and `DROP FUNCTION IF EXISTS` for idempotency
+- Uses `COALESCE` to handle NULL values for NEW/OLD records
+- Trigger function is atomic and handles both INSERT and DELETE operations
+- Cleaned up duplicate triggers from previous implementation
 
 ## Any issues or concerns
-- **Tests con fallos reales:** Será indispensable en una tarea posterior refactorizar `tests/test_dashboard_state_integration.py` a funciones de prueba `async def` y usar iteradores asíncronos (e.g., usando constructos `async for` o `anext()`), para que estas pruebas sean verdaderamente efectivas y pasen.
-- No se añadió la dependencia `pytest-asyncio` explícitamente a `requirements.txt` dado que la instrucción del "Task 1" se ciñó a correr un `pip install` local y un `git commit` del archivo `pytest.ini`. Tal vez se requiera agregarlo en el futuro a los requerimientos del proyecto.
+- None identified. The implementation is straightforward and follows PostgreSQL best practices.

@@ -86,7 +86,9 @@ class LiquidacionPropietario:
 
         # Validar formato de período (YYYY-MM)
         if len(self.periodo) != 7 or self.periodo[4] != "-":
-            raise ValueError(f"Formato de período inválido: {self.periodo}. Use YYYY-MM")
+            raise ValueError(
+                f"Formato de período inválido: {self.periodo}. Use YYYY-MM"
+            )
 
     def consolidar(self):
         """
@@ -133,7 +135,7 @@ class LiquidacionPropietario:
             self.total_gastos_servicios += liq.gastos_servicios
             self.total_gastos_reparaciones += liq.gastos_reparaciones
             self.total_pago_predial += liq.pago_predial
-            self.total_otros_egresos += (liq.otros_egresos or 0)
+            self.total_otros_egresos += liq.otros_egresos or 0
             self.total_egresos += liq.total_egresos
 
             # Sumar neto

@@ -41,7 +41,9 @@ class Arrendatario:
     nombre_habitante: Optional[str] = None
     telefono_habitante: Optional[str] = None
 
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None

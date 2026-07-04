@@ -99,7 +99,9 @@ class UsuariosState(rx.State):
                 item = UsuarioDisplayModel(
                     id_usuario=u.id_usuario,
                     nombre_usuario=u.nombre_usuario,
-                    nombre_fallback=u.nombre_usuario[:2].upper() if u.nombre_usuario else "US",
+                    nombre_fallback=(
+                        u.nombre_usuario[:2].upper() if u.nombre_usuario else "US"
+                    ),
                     rol=u.rol,
                     estado_usuario=u.es_activo(),
                     estado_label="ACTIVO" if u.es_activo() else "Inactivo",
@@ -179,7 +181,11 @@ class UsuariosState(rx.State):
             self.is_loading = True
             self.error_message = ""
             current_admin = await self.get_state(AuthState)
-            admin_user = current_admin.user_nombre if current_admin.is_authenticated else "sistema"
+            admin_user = (
+                current_admin.user_nombre
+                if current_admin.is_authenticated
+                else "sistema"
+            )
 
         try:
             servicio = ServicioUsuarios(db_manager)
@@ -196,7 +202,9 @@ class UsuariosState(rx.State):
                 # Update password if provided
                 if datos["contrasena"]:
                     if len(datos["contrasena"]) < 6:
-                        raise ValueError("La contraseña debe tener al menos 6 caracteres.")
+                        raise ValueError(
+                            "La contraseña debe tener al menos 6 caracteres."
+                        )
                     servicio.restablecer_contrasena(
                         datos["id_usuario"], datos["contrasena"], admin_user
                     )
@@ -216,7 +224,10 @@ class UsuariosState(rx.State):
                     raise ValueError("La contraseña debe tener al menos 6 caracteres.")
 
                 servicio.crear_usuario(
-                    datos["nombre_usuario"], datos["contrasena"], datos["rol"], admin_user
+                    datos["nombre_usuario"],
+                    datos["contrasena"],
+                    datos["rol"],
+                    admin_user,
                 )
 
                 # Mostrar toast de éxito
@@ -245,13 +256,19 @@ class UsuariosState(rx.State):
 
             # Traducir errores comunes de PostgreSQL
             # Traducir errores comunes de PostgreSQL
-            if "duplicate key" in error_msg.lower() or "already exists" in error_msg.lower():
+            if (
+                "duplicate key" in error_msg.lower()
+                or "already exists" in error_msg.lower()
+            ):
                 if "usuarios_pkey" in error_msg.lower():
                     error_msg = f"Error interno: ID duplicado (Secuencia desincronizada). Contacte soporte. Detalles: {error_msg}"
-                elif "usuarios_nombre_usuario_key" in error_msg.lower() or "nombre_usuario" in error_msg.lower():
+                elif (
+                    "usuarios_nombre_usuario_key" in error_msg.lower()
+                    or "nombre_usuario" in error_msg.lower()
+                ):
                     error_msg = f"El usuario '{datos['nombre_usuario']}' ya existe en el sistema."
                 else:
-                     error_msg = f"Error de duplicidad: {error_msg}"
+                    error_msg = f"Error de duplicidad: {error_msg}"
             elif "foreign key" in error_msg.lower():
                 error_msg = "Error de integridad de datos. Verifique las relaciones."
             else:
@@ -268,7 +285,11 @@ class UsuariosState(rx.State):
         """Alterna el estado activo/inactivo."""
         async with self:
             current_admin = await self.get_state(AuthState)
-            admin_user = current_admin.user_nombre if current_admin.is_authenticated else "sistema"
+            admin_user = (
+                current_admin.user_nombre
+                if current_admin.is_authenticated
+                else "sistema"
+            )
 
         try:
             servicio = ServicioUsuarios(db_manager)
@@ -278,14 +299,18 @@ class UsuariosState(rx.State):
             # Mostrar toast de éxito
             status_text = "activado" if new_status else "desactivado"
             yield rx.toast.success(
-                f"Usuario {status_text} exitosamente", position="top-right", duration=2500
+                f"Usuario {status_text} exitosamente",
+                position="top-right",
+                duration=2500,
             )
 
             yield UsuariosState.load_users
         except Exception as e:
             # Mostrar toast de error
             yield rx.toast.error(
-                f"Error al cambiar estado: {str(e)}", position="top-right", duration=4000
+                f"Error al cambiar estado: {str(e)}",
+                position="top-right",
+                duration=4000,
             )
 
     # Setters filters
@@ -369,13 +394,19 @@ class UsuariosState(rx.State):
                 # Crear lista de módulos para esta categoría
                 modules_list = []
                 for mod_name, mod_perms in modulos_map.items():
-                    modules_list.append(PermissionModule(name=mod_name, permissions=mod_perms))
+                    modules_list.append(
+                        PermissionModule(name=mod_name, permissions=mod_perms)
+                    )
 
                 # Agregar a la jerarquía
-                hierarchy.append(PermissionCategory(category=categoria, modules=modules_list))
+                hierarchy.append(
+                    PermissionCategory(category=categoria, modules=modules_list)
+                )
 
             # 3. Obtener IDs de permisos actuales del rol
-            ids_rol = servicio.obtener_ids_permisos_rol(self.selected_role_for_permissions)
+            ids_rol = servicio.obtener_ids_permisos_rol(
+                self.selected_role_for_permissions
+            )
 
             async with self:
                 self.all_permissions = all_formatted
@@ -405,12 +436,16 @@ class UsuariosState(rx.State):
         ]
 
         # Verificar si todos están seleccionados
-        all_selected = all(pid in self.role_permissions_ids for pid in module_permission_ids)
+        all_selected = all(
+            pid in self.role_permissions_ids for pid in module_permission_ids
+        )
 
         if all_selected:
             # Deseleccionar todos
             self.role_permissions_ids = [
-                pid for pid in self.role_permissions_ids if pid not in module_permission_ids
+                pid
+                for pid in self.role_permissions_ids
+                if pid not in module_permission_ids
             ]
         else:
             # Seleccionar todos
@@ -424,14 +459,20 @@ class UsuariosState(rx.State):
             self.is_loading_permissions = True
             self.permissions_error = ""
             current_admin = await self.get_state(AuthState)
-            admin_user = current_admin.user_nombre if current_admin.is_authenticated else "sistema"
+            admin_user = (
+                current_admin.user_nombre
+                if current_admin.is_authenticated
+                else "sistema"
+            )
 
         try:
             servicio = ServicioPermisos(db_manager)
 
             # Actualizar permisos del rol
             servicio.actualizar_permisos_rol(
-                self.selected_role_for_permissions, self.role_permissions_ids, admin_user
+                self.selected_role_for_permissions,
+                self.role_permissions_ids,
+                admin_user,
             )
 
             # Mostrar toast de éxito
@@ -465,7 +506,11 @@ class UsuariosState(rx.State):
         async with self:
             self.is_loading_permissions = True
             current_admin = await self.get_state(AuthState)
-            admin_user = current_admin.user_nombre if current_admin.is_authenticated else "sistema"
+            admin_user = (
+                current_admin.user_nombre
+                if current_admin.is_authenticated
+                else "sistema"
+            )
 
         try:
             servicio = ServicioPermisos(db_manager)
@@ -475,10 +520,14 @@ class UsuariosState(rx.State):
             elif preset_name == "operativo":
                 servicio.aplicar_preset_operativo(admin_user)
             elif preset_name == "solo_lectura":
-                servicio.aplicar_preset_solo_lectura(self.selected_role_for_permissions, admin_user)
+                servicio.aplicar_preset_solo_lectura(
+                    self.selected_role_for_permissions, admin_user
+                )
 
             yield rx.toast.success(
-                f"Preset '{preset_name}' aplicado exitosamente", position="top-right", duration=3000
+                f"Preset '{preset_name}' aplicado exitosamente",
+                position="top-right",
+                duration=3000,
             )
 
             # Recargar permisos para mostrar los cambios
@@ -486,7 +535,9 @@ class UsuariosState(rx.State):
 
         except Exception as e:
             yield rx.toast.error(
-                f"Error al aplicar preset: {str(e)}", position="top-right", duration=4000
+                f"Error al aplicar preset: {str(e)}",
+                position="top-right",
+                duration=4000,
             )
 
             async with self:

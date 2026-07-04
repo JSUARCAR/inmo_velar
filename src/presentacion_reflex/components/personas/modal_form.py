@@ -1,8 +1,12 @@
 import reflex as rx
 
 from src.presentacion_reflex import styles
-from src.presentacion_reflex.components.personas.role_selector_card import tarjeta_selector_rol
-from src.presentacion_reflex.components.personas.wizard_progress import progreso_asistente
+from src.presentacion_reflex.components.personas.role_selector_card import (
+    tarjeta_selector_rol,
+)
+from src.presentacion_reflex.components.personas.wizard_progress import (
+    progreso_asistente,
+)
 from src.presentacion_reflex.state.personas_state import PersonasState
 
 
@@ -49,8 +53,8 @@ def selector_busqueda(
                         style=styles.NEU_INPUT_STYLE,
                     ),
                     rx.scroll_area(
-                         rx.vstack(
-                             rx.foreach(
+                        rx.vstack(
+                            rx.foreach(
                                 opciones_filtradas,
                                 lambda opt: rx.cond(
                                     opt[0] != "",
@@ -60,13 +64,17 @@ def selector_busqueda(
                                         padding_x="3",
                                         padding_y="2",
                                         transition=styles.GLOBAL_TRANSITION,
-                                        _hover={"bg": styles.BG_HOVER, "color": styles.TEXT_PRIMARY, "cursor": "pointer"},
+                                        _hover={
+                                            "bg": styles.BG_HOVER,
+                                            "color": styles.TEXT_PRIMARY,
+                                            "cursor": "pointer",
+                                        },
                                         on_click=lambda: al_seleccionar(opt[1], opt[0]),
-                                    )
-                                )
-                             ),
-                             width="100%",
-                             spacing="0",
+                                    ),
+                                ),
+                            ),
+                            width="100%",
+                            spacing="0",
                         ),
                         type="auto",
                         scrollbars="vertical",
@@ -99,7 +107,7 @@ def campo_formulario(
     al_cambiar: str = None,
 ) -> rx.Component:
     """Campo de formulario elite con icono y estética editorial."""
-    
+
     input_props = {
         "name": nombre,
         "placeholder": marcador,
@@ -111,10 +119,10 @@ def campo_formulario(
             **styles.NEU_INPUT_STYLE,
             "_invalid": {
                 "box_shadow": f"{styles.SHADOW_INSET}, 0 0 0 2px rgba(220, 38, 38, 0.4)",
-            }
-        }
+            },
+        },
     }
-    
+
     if valor is not None:
         input_props["value"] = valor
         if al_cambiar is not None:
@@ -126,7 +134,7 @@ def campo_formulario(
         rx.text(etiqueta, size="2", weight="bold", color=styles.TEXT_PRIMARY),
         rx.input(
             rx.cond(icono != "", rx.input.slot(rx.icon(icono, size=16)), rx.fragment()),
-            **input_props
+            **input_props,
         ),
         spacing="1",
         width="100%",
@@ -134,15 +142,15 @@ def campo_formulario(
 
 
 def area_texto_formulario(
-    etiqueta: str, 
-    nombre: str, 
-    marcador: str, 
+    etiqueta: str,
+    nombre: str,
+    marcador: str,
     valor_defecto: str = "",
     valor: str = None,
     al_cambiar: str = None,
 ) -> rx.Component:
     """Campo de área de texto editorial."""
-    
+
     input_props = {
         "name": nombre,
         "placeholder": marcador,
@@ -150,9 +158,9 @@ def area_texto_formulario(
         "style": {
             **styles.NEU_INPUT_STYLE,
             "min_height": "120px",
-        }
+        },
     }
-    
+
     if valor is not None:
         input_props["value"] = valor
         if al_cambiar is not None:
@@ -168,14 +176,18 @@ def area_texto_formulario(
     )
 
 
-
 def campos_codeudor() -> rx.Component:
     """Campos específicos de Codeudor - Versión Editorial."""
     return rx.box(
         rx.vstack(
             rx.hstack(
                 rx.icon("shield_check", size=18, color=styles.BRAND_PRIMARY),
-                rx.text("Información de Garantía", size="3", weight="bold", color=styles.BRAND_PRIMARY),
+                rx.text(
+                    "Información de Garantía",
+                    size="3",
+                    weight="bold",
+                    color=styles.BRAND_PRIMARY,
+                ),
                 spacing="2",
             ),
             rx.text(
@@ -188,7 +200,9 @@ def campos_codeudor() -> rx.Component:
                 "observaciones_codeudor",
                 "Ej: Propietario de finca raíz, etc.",
                 valor=PersonasState.form_data["observaciones_codeudor"],
-                al_cambiar=lambda val: PersonasState.set_upper("observaciones_codeudor", val),
+                al_cambiar=lambda val: PersonasState.set_upper(
+                    "observaciones_codeudor", val
+                ),
             ),
             spacing="4",
             width="100%",
@@ -203,7 +217,12 @@ def campos_propietario() -> rx.Component:
         rx.vstack(
             rx.hstack(
                 rx.icon("landmark", size=18, color=styles.BRAND_PRIMARY),
-                rx.text("Información General Propietario", size="3", weight="bold", color=styles.BRAND_PRIMARY),
+                rx.text(
+                    "Información General Propietario",
+                    size="3",
+                    weight="bold",
+                    color=styles.BRAND_PRIMARY,
+                ),
                 spacing="2",
             ),
             rx.text(
@@ -217,7 +236,9 @@ def campos_propietario() -> rx.Component:
                 "observaciones_propietario",
                 "Notas adicionales sobre el propietario...",
                 valor=PersonasState.form_data["observaciones_propietario"],
-                al_cambiar=lambda val: PersonasState.set_upper("observaciones_propietario", val),
+                al_cambiar=lambda val: PersonasState.set_upper(
+                    "observaciones_propietario", val
+                ),
             ),
             spacing="4",
             width="100%",
@@ -232,7 +253,12 @@ def campos_arrendatario() -> rx.Component:
         rx.vstack(
             rx.hstack(
                 rx.icon("shield-check", size=18, color=styles.BRAND_PRIMARY),
-                rx.text("Información de Seguro", size="3", weight="bold", color=styles.TEXT_PRIMARY),
+                rx.text(
+                    "Información de Seguro",
+                    size="3",
+                    weight="bold",
+                    color=styles.TEXT_PRIMARY,
+                ),
                 spacing="2",
             ),
             rx.grid(
@@ -241,7 +267,9 @@ def campos_arrendatario() -> rx.Component:
                     "codigo_aprobacion_seguro",
                     "Ej: AB-123",
                     valor=PersonasState.form_data["codigo_aprobacion_seguro"],
-                    al_cambiar=lambda val: PersonasState.set_upper("codigo_aprobacion_seguro", val),
+                    al_cambiar=lambda val: PersonasState.set_upper(
+                        "codigo_aprobacion_seguro", val
+                    ),
                     icono="file_check",
                 ),
                 selector_busqueda(
@@ -265,7 +293,9 @@ def campos_arrendatario() -> rx.Component:
                     "nombre_habitante",
                     "Ej: JOSE MARÍA VACA",
                     valor=PersonasState.form_data["nombre_habitante"],
-                    al_cambiar=lambda val: PersonasState.set_upper("nombre_habitante", val),
+                    al_cambiar=lambda val: PersonasState.set_upper(
+                        "nombre_habitante", val
+                    ),
                     icono="user",
                 ),
                 campo_formulario(
@@ -293,7 +323,9 @@ def campos_asesor() -> rx.Component:
         rx.vstack(
             rx.hstack(
                 rx.icon("percent", size=18, color=styles.BRAND_PRIMARY),
-                rx.text("Comisiones", size="3", weight="bold", color=styles.BRAND_PRIMARY),
+                rx.text(
+                    "Comisiones", size="3", weight="bold", color=styles.BRAND_PRIMARY
+                ),
                 spacing="2",
             ),
             rx.grid(
@@ -303,7 +335,9 @@ def campos_asesor() -> rx.Component:
                     "Ej: 10",
                     tipo="number",
                     valor=PersonasState.form_data["comision_porcentaje_arriendo"],
-                    al_cambiar=lambda val: PersonasState.set_form_value("comision_porcentaje_arriendo", val),
+                    al_cambiar=lambda val: PersonasState.set_form_value(
+                        "comision_porcentaje_arriendo", val
+                    ),
                     icono="percent",
                 ),
                 campo_formulario(
@@ -312,7 +346,9 @@ def campos_asesor() -> rx.Component:
                     "Ej: 3",
                     tipo="number",
                     valor=PersonasState.form_data["comision_porcentaje_venta"],
-                    al_cambiar=lambda val: PersonasState.set_form_value("comision_porcentaje_venta", val),
+                    al_cambiar=lambda val: PersonasState.set_form_value(
+                        "comision_porcentaje_venta", val
+                    ),
                     icono="percent",
                 ),
                 columns=rx.breakpoints(initial="1", sm="2"),
@@ -325,7 +361,9 @@ def campos_asesor() -> rx.Component:
                 "YYYY-MM-DD",
                 tipo="date",
                 valor=PersonasState.form_data["fecha_vinculacion"],
-                al_cambiar=lambda val: PersonasState.set_form_value("fecha_vinculacion", val),
+                al_cambiar=lambda val: PersonasState.set_form_value(
+                    "fecha_vinculacion", val
+                ),
                 icono="calendar",
             ),
             spacing="4",
@@ -341,7 +379,12 @@ def campos_proveedor() -> rx.Component:
         rx.vstack(
             rx.hstack(
                 rx.icon("wrench", size=18, color=styles.BRAND_PRIMARY),
-                rx.text("Información Profesional", size="3", weight="bold", color=styles.BRAND_PRIMARY),
+                rx.text(
+                    "Información Profesional",
+                    size="3",
+                    weight="bold",
+                    color=styles.BRAND_PRIMARY,
+                ),
                 spacing="2",
             ),
             campo_formulario(
@@ -358,7 +401,9 @@ def campos_proveedor() -> rx.Component:
                 "Ej: 5",
                 tipo="number",
                 valor=PersonasState.form_data["calificacion"],
-                al_cambiar=lambda val: PersonasState.set_form_value("calificacion", val),
+                al_cambiar=lambda val: PersonasState.set_form_value(
+                    "calificacion", val
+                ),
                 icono="star",
             ),
             area_texto_formulario(
@@ -373,7 +418,6 @@ def campos_proveedor() -> rx.Component:
         ),
         style=styles.NEU_PANEL_STYLE,
     )
-
 
 
 # Pasos del Asistente (Wizard)
@@ -402,7 +446,9 @@ def paso_1_info_basica() -> rx.Component:
                     ),
                     name="tipo_documento",
                     value=rx.cond(
-                        PersonasState.is_editing, PersonasState.form_data["tipo_documento"], "CC"
+                        PersonasState.is_editing,
+                        PersonasState.form_data["tipo_documento"],
+                        "CC",
                     ),
                 ),
                 width=["100%", "25%"],
@@ -439,7 +485,9 @@ def paso_1_info_basica() -> rx.Component:
                 "Ej: 3001234567",
                 obligatorio=True,
                 valor=PersonasState.form_data["telefono_principal"],
-                al_cambiar=lambda val: PersonasState.set_form_value("telefono_principal", val),
+                al_cambiar=lambda val: PersonasState.set_form_value(
+                    "telefono_principal", val
+                ),
                 icono="phone",
             ),
             campo_formulario(
@@ -448,7 +496,9 @@ def paso_1_info_basica() -> rx.Component:
                 "Ej: contacto@empresa.com",
                 tipo="email",
                 valor=PersonasState.form_data["correo_electronico"],
-                al_cambiar=lambda val: PersonasState.set_upper("correo_electronico", val),
+                al_cambiar=lambda val: PersonasState.set_upper(
+                    "correo_electronico", val
+                ),
                 icono="mail",
             ),
             columns=rx.breakpoints(initial="1", sm="2"),
@@ -567,7 +617,11 @@ def modal_persona() -> rx.Component:
                             color=styles.BRAND_PRIMARY,
                         ),
                         rx.text(
-                            rx.cond(PersonasState.is_editing, "Editar Persona", "Nueva Persona"),
+                            rx.cond(
+                                PersonasState.is_editing,
+                                "Editar Persona",
+                                "Nueva Persona",
+                            ),
                             size="6",
                             weight="bold",
                         ),
@@ -604,7 +658,7 @@ def modal_persona() -> rx.Component:
                             max_height="60vh",
                             overflow_y="auto",
                             width="100%",
-                            padding_right="2", # evitar solapamiento de scroll
+                            padding_right="2",  # evitar solapamiento de scroll
                         ),
                         # Botones de Navegación
                         rx.hstack(
@@ -612,7 +666,10 @@ def modal_persona() -> rx.Component:
                             rx.cond(
                                 PersonasState.modal_step > 1,
                                 rx.button(
-                                    rx.hstack(rx.icon("chevron_left", size=16), rx.text("Anterior")),
+                                    rx.hstack(
+                                        rx.icon("chevron_left", size=16),
+                                        rx.text("Anterior"),
+                                    ),
                                     type="button",
                                     on_click=PersonasState.prev_modal_step,
                                     size="3",
@@ -634,13 +691,18 @@ def modal_persona() -> rx.Component:
                             rx.cond(
                                 PersonasState.modal_step < 3,
                                 rx.button(
-                                    rx.hstack(rx.text("Siguiente"), rx.icon("chevron_right", size=16)),
+                                    rx.hstack(
+                                        rx.text("Siguiente"),
+                                        rx.icon("chevron_right", size=16),
+                                    ),
                                     type="submit",
                                     size="3",
                                     style=styles.NEU_BUTTON_PRIMARY_STYLE,
                                 ),
                                 rx.button(
-                                    rx.hstack(rx.icon("save", size=16), rx.text("Guardar")),
+                                    rx.hstack(
+                                        rx.icon("save", size=16), rx.text("Guardar")
+                                    ),
                                     type="submit",
                                     loading=PersonasState.is_loading,
                                     size="3",

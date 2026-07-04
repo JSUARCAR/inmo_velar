@@ -24,10 +24,12 @@ class PDFConfig(BaseModel):
 
     # === Directorios ===
     output_dir: Path = Field(
-        default=Path("documentos_generados"), description="Directorio de salida para PDFs generados"
+        default=Path("documentos_generados"),
+        description="Directorio de salida para PDFs generados",
     )
     fonts_dir: Path = Field(
-        default=Path("assets/fonts"), description="Directorio para fuentes personalizadas"
+        default=Path("assets/fonts"),
+        description="Directorio para fuentes personalizadas",
     )
     temp_dir: Path = Field(
         default=Path("temp/pdf"), description="Directorio temporal para procesamiento"
@@ -55,13 +57,22 @@ class PDFConfig(BaseModel):
     enable_encryption: bool = Field(default=False, description="Encriptación de PDFs")
 
     # === Performance ===
-    cache_enabled: bool = Field(default=True, description="Habilitar cache de templates")
-    max_cache_size_mb: int = Field(default=100, description="Tamaño máximo de cache en MB")
+    cache_enabled: bool = Field(
+        default=True, description="Habilitar cache de templates"
+    )
+    max_cache_size_mb: int = Field(
+        default=100, description="Tamaño máximo de cache en MB"
+    )
 
     @property
     def margins(self) -> Tuple[int, int, int, int]:
         """Retorna márgenes como tupla (top, right, bottom, left)"""
-        return (self.margins_top, self.margins_right, self.margins_bottom, self.margins_left)
+        return (
+            self.margins_top,
+            self.margins_right,
+            self.margins_bottom,
+            self.margins_left,
+        )
 
     class Config:
         """Configuración de Pydantic"""

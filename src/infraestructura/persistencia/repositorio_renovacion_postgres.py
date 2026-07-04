@@ -2,7 +2,6 @@
 Repositorio Postgres: RenovacionContrato
 """
 
-import psycopg2
 from typing import List
 
 from src.dominio.entidades.renovacion_contrato import RenovacionContrato
@@ -47,11 +46,17 @@ class RepositorioRenovacionPostgres:
             cursor.execute(query, params)
             row = cursor.fetchone()
             if row:
-                renovacion.id_renovacion = row[0] if isinstance(row, tuple) else list(row.values())[0] if isinstance(row, dict) else row[0]
+                renovacion.id_renovacion = (
+                    row[0]
+                    if isinstance(row, tuple)
+                    else list(row.values())[0] if isinstance(row, dict) else row[0]
+                )
             conn.commit()
             return renovacion
 
-    def listar_por_contrato_arrendamiento(self, id_contrato_a: int) -> List[RenovacionContrato]:
+    def listar_por_contrato_arrendamiento(
+        self, id_contrato_a: int
+    ) -> List[RenovacionContrato]:
         placeholder = self.db.get_placeholder()
         query = f"""
         SELECT * FROM RENOVACIONES_CONTRATOS 
@@ -75,32 +80,47 @@ class RepositorioRenovacionPostgres:
             row_dict = row
 
         return RenovacionContrato(
-            id_renovacion=(row_dict.get("id_renovacion") or row_dict.get("ID_RENOVACION")),
-            id_contrato_m=(row_dict.get("id_contrato_m") or row_dict.get("ID_CONTRATO_M")),
-            id_contrato_a=(row_dict.get("id_contrato_a") or row_dict.get("ID_CONTRATO_A")),
-            tipo_contrato=(row_dict.get("tipo_contrato") or row_dict.get("TIPO_CONTRATO")),
+            id_renovacion=(
+                row_dict.get("id_renovacion") or row_dict.get("ID_RENOVACION")
+            ),
+            id_contrato_m=(
+                row_dict.get("id_contrato_m") or row_dict.get("ID_CONTRATO_M")
+            ),
+            id_contrato_a=(
+                row_dict.get("id_contrato_a") or row_dict.get("ID_CONTRATO_A")
+            ),
+            tipo_contrato=(
+                row_dict.get("tipo_contrato") or row_dict.get("TIPO_CONTRATO")
+            ),
             fecha_inicio_original=(
-                row_dict.get("fecha_inicio_original") or row_dict.get("FECHA_INICIO_ORIGINAL")
+                row_dict.get("fecha_inicio_original")
+                or row_dict.get("FECHA_INICIO_ORIGINAL")
             ),
             fecha_fin_original=(
                 row_dict.get("fecha_fin_original") or row_dict.get("FECHA_FIN_ORIGINAL")
             ),
             fecha_inicio_renovacion=(
-                row_dict.get("fecha_inicio_renovacion") or row_dict.get("FECHA_INICIO_RENOVACION")
+                row_dict.get("fecha_inicio_renovacion")
+                or row_dict.get("FECHA_INICIO_RENOVACION")
             ),
             fecha_fin_renovacion=(
-                row_dict.get("fecha_fin_renovacion") or row_dict.get("FECHA_FIN_RENOVACION")
+                row_dict.get("fecha_fin_renovacion")
+                or row_dict.get("FECHA_FIN_RENOVACION")
             ),
-            canon_anterior=(row_dict.get("canon_anterior") or row_dict.get("CANON_ANTERIOR")),
+            canon_anterior=(
+                row_dict.get("canon_anterior") or row_dict.get("CANON_ANTERIOR")
+            ),
             canon_nuevo=(row_dict.get("canon_nuevo") or row_dict.get("CANON_NUEVO")),
             porcentaje_incremento=(
-                row_dict.get("porcentaje_incremento") or row_dict.get("PORCENTAJE_INCREMENTO")
+                row_dict.get("porcentaje_incremento")
+                or row_dict.get("PORCENTAJE_INCREMENTO")
             ),
             motivo_renovacion=(
                 row_dict.get("motivo_renovacion") or row_dict.get("MOTIVO_RENOVACION")
             ),
-            fecha_renovacion=(row_dict.get("fecha_renovacion") or row_dict.get("FECHA_RENOVACION")),
+            fecha_renovacion=(
+                row_dict.get("fecha_renovacion") or row_dict.get("FECHA_RENOVACION")
+            ),
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
         )
-

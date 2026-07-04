@@ -5,6 +5,7 @@ Formulario de Edición de Liquidación
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
+from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex import styles
 
 
@@ -127,8 +128,8 @@ def liquidacion_edit_form() -> rx.Component:
                         ),
                         form_field_editable(
                             "Incidentes",
-                            "gastos_reparaciones",
-                            LiquidacionesState.form_data["gastos_reparaciones"],
+                            "valor_incidentes",
+                            LiquidacionesState.form_data["valor_incidentes"],
                         ),
                         form_field_editable(
                             "Pago Predial",
@@ -143,6 +144,21 @@ def liquidacion_edit_form() -> rx.Component:
                         columns="2",
                         spacing="3",
                         width="100%",
+                    ),
+                    # Botón Seleccionar Incidentes (solo aparece en liquidaciones En Proceso
+                    # porque el modal solo se abre para liquidaciones en ese estado)
+                    rx.button(
+                        rx.hstack(
+                            rx.icon("link", size=16),
+                            rx.text("Seleccionar Incidentes"),
+                        ),
+                        on_click=lambda: LiquidacionesState.open_seleccion_incidentes_modal(
+                            LiquidacionesState.form_data["id_liquidacion"].to(int)
+                        ),
+                        type="button",
+                        variant="soft",
+                        color_scheme="orange",
+                        margin_top="1em",
                     ),
                     section_title("Observaciones"),
                     rx.text_area(

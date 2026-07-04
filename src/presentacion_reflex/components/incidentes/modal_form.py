@@ -4,7 +4,9 @@ from src.presentacion_reflex.state.incidentes_state import IncidentesState
 from src.presentacion_reflex import styles
 
 
-from src.presentacion_reflex.components.shared.searchable_select import searchable_select
+from src.presentacion_reflex.components.shared.searchable_select import (
+    searchable_select,
+)
 
 
 def _form_field(label: str, control: rx.Component, icon: str = None) -> rx.Component:
@@ -27,7 +29,9 @@ def modal_form() -> rx.Component:
     return rx.dialog.root(
         rx.dialog.content(
             rx.vstack(
-                rx.dialog.title("Reportar Nuevo Incidente", size="6", margin_bottom="0.5em"),
+                rx.dialog.title(
+                    "Reportar Nuevo Incidente", size="6", margin_bottom="0.5em"
+                ),
                 rx.dialog.description(
                     "Complete la información detallada para registrar el incidente en el sistema.",
                     size="2",
@@ -146,7 +150,9 @@ def modal_form() -> rx.Component:
                         )
                     ),
                     rx.button(
-                        rx.hstack(rx.icon("send", size=16), rx.text("Reportar Incidente")),
+                        rx.hstack(
+                            rx.icon("send", size=16), rx.text("Reportar Incidente")
+                        ),
                         on_click=IncidentesState.save_incidente,
                         loading=IncidentesState.is_loading,
                         radius="full",

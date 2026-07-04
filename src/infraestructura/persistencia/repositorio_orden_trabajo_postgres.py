@@ -23,9 +23,11 @@ class RepositorioOrdenTrabajoPostgres(RepositorioOrdenTrabajo):
             orden.id_incidente,
             orden.id_proveedor,
             orden.fecha_creacion.isoformat() if orden.fecha_creacion else None,
-            orden.fecha_inicio_estimada.isoformat()
-            if orden.fecha_inicio_estimada
-            else None,
+            (
+                orden.fecha_inicio_estimada.isoformat()
+                if orden.fecha_inicio_estimada
+                else None
+            ),
             orden.fecha_fin_estimada.isoformat() if orden.fecha_fin_estimada else None,
             orden.estado,
             orden.costo_mano_obra,
@@ -72,9 +74,11 @@ class RepositorioOrdenTrabajoPostgres(RepositorioOrdenTrabajo):
             """
         params = (
             orden.estado,
-            orden.fecha_inicio_estimada.isoformat()
-            if orden.fecha_inicio_estimada
-            else None,
+            (
+                orden.fecha_inicio_estimada.isoformat()
+                if orden.fecha_inicio_estimada
+                else None
+            ),
             orden.fecha_fin_estimada.isoformat() if orden.fecha_fin_estimada else None,
             datetime.now().isoformat(),
             orden.id_orden,
@@ -110,10 +114,14 @@ class RepositorioOrdenTrabajoPostgres(RepositorioOrdenTrabajo):
             costo_mano_obra=row.get("COSTO_MANO_OBRA"),
             costo_materiales=row.get("COSTO_MATERIALES"),
             descripcion_trabajo=row.get("DESCRIPCION_TRABAJO"),
-            created_at=datetime.fromisoformat(row["CREATED_AT"])
-            if row.get("CREATED_AT")
-            else None,
-            updated_at=datetime.fromisoformat(row["UPDATED_AT"])
-            if row.get("UPDATED_AT")
-            else None,
+            created_at=(
+                datetime.fromisoformat(row["CREATED_AT"])
+                if row.get("CREATED_AT")
+                else None
+            ),
+            updated_at=(
+                datetime.fromisoformat(row["UPDATED_AT"])
+                if row.get("UPDATED_AT")
+                else None
+            ),
         )

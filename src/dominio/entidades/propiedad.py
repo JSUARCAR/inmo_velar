@@ -73,7 +73,7 @@ class Propiedad:
 
     # === NUEVOS CAMPOS ===
     fecha_pago_administracion: Optional[int] = None  # Día 1-28 del mes para pago
-    link_pago_administracion: Optional[str] = None   # URL portal de pago en línea
+    link_pago_administracion: Optional[str] = None  # URL portal de pago en línea
     cuota_extra_ordinaria: Optional[Decimal] = None  # Valor cuota extraordinaria (COP)
     observaciones_admin_ph: Optional[str] = None  # Notas específicas de la admin del PH
 
@@ -82,7 +82,9 @@ class Propiedad:
     estado_registro: Optional[int] = 1
     motivo_inactivacion: Optional[str] = None
 
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None

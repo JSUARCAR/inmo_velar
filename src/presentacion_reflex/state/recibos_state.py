@@ -6,7 +6,9 @@ import reflex as rx
 from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
 from src.aplicacion.servicios.servicio_recibos_publicos import ServicioRecibosPublicos
 from src.infraestructura.persistencia.database import db_manager
-from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+    RepositorioPropiedadPostgres,
+)
 from src.infraestructura.repositorios.repositorio_recibo_publico import (
     RepositorioReciboPublico,
 )
@@ -16,6 +18,7 @@ import pydantic
 
 class ReciboDict(pydantic.BaseModel):
     """Estructura tipada para Recibo Público."""
+
     id_recibo_publico: int
     id_propiedad: int
     propiedad_nombre: str
@@ -77,7 +80,9 @@ class RecibosState(DocumentosStateMixin):
     }
 
     # Datos Auxiliares
-    propiedades_disponibles: List[Dict] = []  # Para selects: {label: "Calle 123", value: "1"}
+    propiedades_disponibles: List[Dict] = (
+        []
+    )  # Para selects: {label: "Calle 123", value: "1"}
 
     @rx.event(background=True)
     async def on_load(self):
@@ -148,7 +153,11 @@ class RecibosState(DocumentosStateMixin):
                 # Optimización: Podríamos hacer un join en repo, pero por ahora buscamos en lista cargada o repo
                 # Buscar en self.propiedades_disponibles es más rápido si ya se cargaron
                 prop_item = next(
-                    (p for p in self.propiedades_disponibles if p["value"] == str(r.id_propiedad)),
+                    (
+                        p
+                        for p in self.propiedades_disponibles
+                        if p["value"] == str(r.id_propiedad)
+                    ),
                     None,
                 )
                 if prop_item:
@@ -185,7 +194,8 @@ class RecibosState(DocumentosStateMixin):
                 recibos_ui = [
                     r
                     for r in recibos_ui
-                    if st in db_manager.normalize_search_term(r.propiedad_nombre) or st in db_manager.normalize_search_term(r.comprobante or "")
+                    if st in db_manager.normalize_search_term(r.propiedad_nombre)
+                    or st in db_manager.normalize_search_term(r.comprobante or "")
                 ]
 
             async with self:
@@ -354,7 +364,9 @@ class RecibosState(DocumentosStateMixin):
             self.is_loading = True
 
             # Contexto Documental
-            self.iniciar_contexto_documental("RECIBO_PUBLICO", str(recibo["id_recibo_publico"]))
+            self.iniciar_contexto_documental(
+                "RECIBO_PUBLICO", str(recibo["id_recibo_publico"])
+            )
 
             self.show_detail_modal = True
             self.is_loading = False

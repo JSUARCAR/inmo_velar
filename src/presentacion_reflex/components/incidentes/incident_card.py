@@ -1,4 +1,3 @@
-from typing import Any, Dict
 
 import reflex as rx
 
@@ -333,6 +332,45 @@ def incident_card(incident: rx.Var) -> rx.Component:
                                 color_scheme="gray",
                                 size="1",
                                 radius="medium",
+                            ),
+                            rx.cond(
+                                rx.match(
+                                    incident.estado,
+                                    ("Aprobado", True),
+                                    ("En Reparacion", True),
+                                    ("Finalizado", True),
+                                    False,
+                                ),
+                                rx.badge(
+                                    rx.hstack(
+                                        rx.icon("dollar-sign", size=10),
+                                        rx.text(
+                                            rx.cond(
+                                                incident.estado_pago,
+                                                incident.estado_pago,
+                                                "Pendiente",
+                                            ),
+                                            size="1",
+                                        ),
+                                        spacing="1",
+                                        align_items="center",
+                                    ),
+                                    variant="soft",
+                                    color_scheme=rx.match(
+                                        rx.cond(
+                                            incident.estado_pago,
+                                            incident.estado_pago,
+                                            "Pendiente",
+                                        ),
+                                        ("Pendiente", "gray"),
+                                        ("Parcialmente Pagado", "yellow"),
+                                        ("Pagado", "green"),
+                                        "gray",
+                                    ),
+                                    size="1",
+                                    radius="medium",
+                                ),
+                                rx.text(""),
                             ),
                             rx.spacer(),
                             width="100%",

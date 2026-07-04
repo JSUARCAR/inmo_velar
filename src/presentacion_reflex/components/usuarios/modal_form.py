@@ -1,7 +1,11 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.usuarios_state import UsuariosState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_button,
+    neuro_select_root,
+)
 from src.presentacion_reflex import styles
 
 
@@ -17,14 +21,18 @@ def modal_form() -> rx.Component:
                 ),
                 color=styles.TEXT_PRIMARY,
             ),
-            rx.dialog.description("Gestione el acceso y roles del usuario.", color=styles.TEXT_SECONDARY),
+            rx.dialog.description(
+                "Gestione el acceso y roles del usuario.", color=styles.TEXT_SECONDARY
+            ),
             rx.flex(
                 rx.vstack(
                     rx.text("Usuario", weight="bold", color=styles.TEXT_PRIMARY),
                     neuro_input(
                         placeholder="nombre.apellido",
                         value=UsuariosState.form_data["nombre_usuario"],
-                        on_change=lambda val: UsuariosState.set_form_field("nombre_usuario", val),
+                        on_change=lambda val: UsuariosState.set_form_field(
+                            "nombre_usuario", val
+                        ),
                         disabled=UsuariosState.is_editing,  # No cambiar username al editar
                         width="100%",
                     ),
@@ -41,13 +49,17 @@ def modal_form() -> rx.Component:
                             "Contraseña segura",
                         ),
                         value=UsuariosState.form_data["contrasena"],
-                        on_change=lambda val: UsuariosState.set_form_field("contrasena", val),
+                        on_change=lambda val: UsuariosState.set_form_field(
+                            "contrasena", val
+                        ),
                         width="100%",
                     ),
                     rx.cond(
                         UsuariosState.is_editing,
                         rx.text(
-                            "Solo ingrese si desea cambiar la contraseña.", size="1", color=styles.TEXT_TERTIARY
+                            "Solo ingrese si desea cambiar la contraseña.",
+                            size="1",
+                            color=styles.TEXT_TERTIARY,
                         ),
                     ),
                     width="100%",

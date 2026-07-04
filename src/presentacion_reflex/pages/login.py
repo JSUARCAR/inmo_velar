@@ -197,7 +197,10 @@ def login_page() -> rx.Component:
             width=["100%", "100%", "50%", "40%"],
             height="100vh",
             background_color=[
-                "transparent", "transparent", styles.BG_APP, styles.BG_APP
+                "transparent",
+                "transparent",
+                styles.BG_APP,
+                styles.BG_APP,
             ],
             z_index="1",
             position="relative",

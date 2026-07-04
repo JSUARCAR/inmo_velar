@@ -3,7 +3,7 @@ Repositorio Postgres: ContratoMandato
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from src.dominio.entidades.contrato_mandato import ContratoMandato
 from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
@@ -170,13 +170,11 @@ class RepositorioContratoMandatoPostgres:
                 query_params.append(int(id_asesor))
 
             if sin_arrendamiento:
-                conditions.append(
-                    """NOT EXISTS (
+                conditions.append("""NOT EXISTS (
                         SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca
                         WHERE ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
                           AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
-                    )"""
-                )
+                    )""")
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
@@ -392,12 +390,24 @@ class RepositorioContratoMandatoPostgres:
                 or row_dict.get("FECHA_RENOVACION_CONTRATO_M")
             ),
             fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
-            grupo_operativo=(row_dict.get("grupo_operativo") or row_dict.get("GRUPO_OPERATIVO") or 0),
-            banco_propietario=(row_dict.get("banco_propietario") or row_dict.get("BANCO_PROPIETARIO")),
-            numero_cuenta_propietario=(row_dict.get("numero_cuenta_propietario") or row_dict.get("NUMERO_CUENTA_PROPIETARIO")),
+            grupo_operativo=(
+                row_dict.get("grupo_operativo") or row_dict.get("GRUPO_OPERATIVO") or 0
+            ),
+            banco_propietario=(
+                row_dict.get("banco_propietario") or row_dict.get("BANCO_PROPIETARIO")
+            ),
+            numero_cuenta_propietario=(
+                row_dict.get("numero_cuenta_propietario")
+                or row_dict.get("NUMERO_CUENTA_PROPIETARIO")
+            ),
             tipo_cuenta=(row_dict.get("tipo_cuenta") or row_dict.get("TIPO_CUENTA")),
-            consignatario=(row_dict.get("consignatario") or row_dict.get("CONSIGNATARIO")),
-            documento_consignatario=(row_dict.get("documento_consignatario") or row_dict.get("DOCUMENTO_CONSIGNATARIO")),
+            consignatario=(
+                row_dict.get("consignatario") or row_dict.get("CONSIGNATARIO")
+            ),
+            documento_consignatario=(
+                row_dict.get("documento_consignatario")
+                or row_dict.get("DOCUMENTO_CONSIGNATARIO")
+            ),
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),

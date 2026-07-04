@@ -1,7 +1,10 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.desocupaciones_state import DesocupacionesState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_select_root,
+)
 from src.presentacion_reflex import styles
 
 

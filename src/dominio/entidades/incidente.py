@@ -22,6 +22,7 @@ class Incidente:
     estado: str = (
         "Reportado"  # Reportado, En Revision, Cotizado, Aprobado, En Reparacion, Finalizado, Cancelado
     )
+    estado_pago: str = "Pendiente"  # Pendiente, Parcialmente Pagado, Pagado
     dias_sin_resolver: int = 0
     motivo_cancelacion: Optional[str] = None
     created_at: datetime = field(default_factory=datetime.now)
@@ -33,6 +34,7 @@ class Incidente:
     direccion_propiedad: Optional[str] = None
     nombre_proveedor: Optional[str] = None
     cotizaciones_resumen: Optional[list] = field(default_factory=list)
+    plan_pago: Optional[dict] = None
 
     # Datos adicionales de relaciones (Optimizacion N+1)
     nombre_propietario: Optional[str] = None

@@ -9,6 +9,7 @@ from typing import List, Optional
 from src.dominio.entidades.desocupacion import Desocupacion, TareaDesocupacion
 from src.infraestructura.persistencia.database import DatabaseManager
 
+
 class RepositorioDesocupacionPostgres:
     """Repositorio para gestionar desocupaciones en PostgreSQL."""
 
@@ -249,7 +250,9 @@ class RepositorioDesocupacionPostgres:
 
             return tareas
 
-    def completar_tarea(self, id_tarea: int, usuario: str, observaciones: Optional[str] = None):
+    def completar_tarea(
+        self, id_tarea: int, usuario: str, observaciones: Optional[str] = None
+    ):
         """Marca una tarea como completada."""
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
@@ -262,7 +265,9 @@ class RepositorioDesocupacionPostgres:
                     OBSERVACIONES = {placeholder}
                 WHERE ID_TAREA = {placeholder}
             """
-            cursor.execute(query, (datetime.now().isoformat(), usuario, observaciones, id_tarea))
+            cursor.execute(
+                query, (datetime.now().isoformat(), usuario, observaciones, id_tarea)
+            )
             conn.commit()
 
     def actualizar_estado(
@@ -286,7 +291,13 @@ class RepositorioDesocupacionPostgres:
             """
             cursor.execute(
                 query,
-                (nuevo_estado, fecha_real, datetime.now().isoformat(), usuario, id_desocupacion),
+                (
+                    nuevo_estado,
+                    fecha_real,
+                    datetime.now().isoformat(),
+                    usuario,
+                    id_desocupacion,
+                ),
             )
             conn.commit()
 

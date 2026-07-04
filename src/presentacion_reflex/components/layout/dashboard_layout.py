@@ -9,7 +9,6 @@ def dashboard_layout(content: rx.Component) -> rx.Component:
     from src.presentacion_reflex import styles
     from src.presentacion_reflex.components.layout.mobile_nav import mobile_nav
     from src.presentacion_reflex.components.layout.sidebar import sidebar
-    from src.presentacion_reflex.state.alertas_state import AlertasState
 
     return rx.flex(
         mobile_nav(),

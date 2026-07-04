@@ -27,12 +27,10 @@ class RepositorioPermisos:
         try:
             cursor = self.db.get_dict_cursor(conn)
 
-            cursor.execute(
-                """
+            cursor.execute("""
                 SELECT * FROM PERMISOS 
                 ORDER BY CATEGORIA, MODULO, ACCION
-            """
-            )
+            """)
 
             permisos = []
             for row in cursor.fetchall():
@@ -40,13 +38,17 @@ class RepositorioPermisos:
                 row_dict = dict(row) if hasattr(row, "keys") else row
                 permisos.append(
                     Permiso(
-                        id_permiso=row_dict.get("id_permiso") or row_dict.get("ID_PERMISO"),
+                        id_permiso=row_dict.get("id_permiso")
+                        or row_dict.get("ID_PERMISO"),
                         modulo=row_dict.get("modulo") or row_dict.get("MODULO"),
                         ruta=row_dict.get("ruta") or row_dict.get("RUTA"),
                         accion=row_dict.get("accion") or row_dict.get("ACCION"),
-                        descripcion=row_dict.get("descripcion") or row_dict.get("DESCRIPCION"),
-                        categoria=row_dict.get("categoria") or row_dict.get("CATEGORIA"),
-                        created_at=row_dict.get("created_at") or row_dict.get("CREATED_AT"),
+                        descripcion=row_dict.get("descripcion")
+                        or row_dict.get("DESCRIPCION"),
+                        categoria=row_dict.get("categoria")
+                        or row_dict.get("CATEGORIA"),
+                        created_at=row_dict.get("created_at")
+                        or row_dict.get("CREATED_AT"),
                     )
                 )
 
@@ -61,7 +63,9 @@ class RepositorioPermisos:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(f"SELECT * FROM PERMISOS WHERE ID_PERMISO = {placeholder}", (id_permiso,))
+        cursor.execute(
+            f"SELECT * FROM PERMISOS WHERE ID_PERMISO = {placeholder}", (id_permiso,)
+        )
 
         row = cursor.fetchone()
         if not row:
@@ -100,7 +104,9 @@ class RepositorioPermisos:
             )
 
             conn.commit()
-            permiso.id_permiso = self.db.get_last_insert_id(cursor, "PERMISOS", "ID_PERMISO")
+            permiso.id_permiso = self.db.get_last_insert_id(
+                cursor, "PERMISOS", "ID_PERMISO"
+            )
             return permiso
         except Exception as e:
             conn.rollback()
@@ -132,13 +138,17 @@ class RepositorioPermisos:
                 row_dict = dict(row) if hasattr(row, "keys") else row
                 permisos.append(
                     Permiso(
-                        id_permiso=row_dict.get("id_permiso") or row_dict.get("ID_PERMISO"),
+                        id_permiso=row_dict.get("id_permiso")
+                        or row_dict.get("ID_PERMISO"),
                         modulo=row_dict.get("modulo") or row_dict.get("MODULO"),
                         ruta=row_dict.get("ruta") or row_dict.get("RUTA"),
                         accion=row_dict.get("accion") or row_dict.get("ACCION"),
-                        descripcion=row_dict.get("descripcion") or row_dict.get("DESCRIPCION"),
-                        categoria=row_dict.get("categoria") or row_dict.get("CATEGORIA"),
-                        created_at=row_dict.get("created_at") or row_dict.get("CREATED_AT"),
+                        descripcion=row_dict.get("descripcion")
+                        or row_dict.get("DESCRIPCION"),
+                        categoria=row_dict.get("categoria")
+                        or row_dict.get("CATEGORIA"),
+                        created_at=row_dict.get("created_at")
+                        or row_dict.get("CREATED_AT"),
                     )
                 )
 
@@ -147,7 +157,9 @@ class RepositorioPermisos:
             conn.rollback()
             raise e
 
-    def asignar_permiso_a_rol(self, rol: str, id_permiso: int, usuario: str) -> RolPermiso:
+    def asignar_permiso_a_rol(
+        self, rol: str, id_permiso: int, usuario: str
+    ) -> RolPermiso:
         """Asigna un permiso a un rol."""
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
@@ -213,7 +225,9 @@ class RepositorioPermisos:
         placeholder = self.db.get_placeholder()
 
         try:
-            cursor.execute(f"DELETE FROM public.ROL_PERMISOS WHERE ROL = {placeholder}", (rol,))
+            cursor.execute(
+                f"DELETE FROM public.ROL_PERMISOS WHERE ROL = {placeholder}", (rol,)
+            )
 
             conn.commit()
             return True

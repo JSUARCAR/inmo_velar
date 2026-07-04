@@ -26,7 +26,9 @@ class LiquidacionAsesor:
 
     # Identificación
     id_liquidacion_asesor: Optional[int] = None
-    id_contrato_a: Optional[int] = None  # FK a CONTRATOS_ARRENDAMIENTOS_OLD (Opcional para multi-contrato)
+    id_contrato_a: Optional[int] = (
+        None  # FK a CONTRATOS_ARRENDAMIENTOS_OLD (Opcional para multi-contrato)
+    )
     id_asesor: int = 0  # FK a ASESORES
 
     # Período y Cálculo
@@ -36,7 +38,9 @@ class LiquidacionAsesor:
     comision_bruta: int = 0  # Calculada: canon × (porcentaje/100)
     total_descuentos: int = 0  # Suma de descuentos aplicados
     total_bonificaciones: int = 0  # Suma de ingresos adicionales/bonificaciones
-    valor_neto_asesor: int = 0  # comision_bruta + total_bonificaciones - total_descuentos
+    valor_neto_asesor: int = (
+        0  # comision_bruta + total_bonificaciones - total_descuentos
+    )
 
     # Estado y Flujo
     estado_liquidacion: str = "Pendiente"  # Pendiente, Aprobada, Pagada, Anulada
@@ -51,7 +55,9 @@ class LiquidacionAsesor:
     motivo_anulacion: Optional[str] = None
 
     # Auditoría
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
@@ -168,7 +174,9 @@ class LiquidacionAsesor:
         """
         return int((canon * porcentaje_10000) / 10000)
 
-    def calcular_valor_neto(self, total_descuentos: int, total_bonificaciones: int = 0) -> int:
+    def calcular_valor_neto(
+        self, total_descuentos: int, total_bonificaciones: int = 0
+    ) -> int:
         """
         Calcula el valor neto a pagar al asesor.
 
@@ -186,7 +194,9 @@ class LiquidacionAsesor:
         return max(0, comision_base + total_bonificaciones - total_descuentos)
 
     def recalcular_valor_neto(
-        self, nuevo_total_descuentos: int, nuevo_total_bonificaciones: Optional[int] = None
+        self,
+        nuevo_total_descuentos: int,
+        nuevo_total_bonificaciones: Optional[int] = None,
     ) -> None:
         """
         Recalcula el valor neto con un nuevo total de descuentos y/o bonificaciones.
@@ -243,7 +253,9 @@ class LiquidacionAsesor:
             ValueError: Si la liquidación no está aprobada
         """
         if not self.esta_aprobada:
-            raise ValueError("Solo se pueden marcar como pagadas las liquidaciones aprobadas")
+            raise ValueError(
+                "Solo se pueden marcar como pagadas las liquidaciones aprobadas"
+            )
 
         self.estado_liquidacion = "Pagada"
         self.updated_at = datetime.now().isoformat()

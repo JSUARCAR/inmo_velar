@@ -3,7 +3,6 @@ Repositorio Postgres para Arrendatario.
 Implementa mapeo 1:1 estricto con tabla ARRENDATARIOS.
 """
 
-import psycopg2
 from datetime import datetime
 from typing import Optional
 
@@ -37,24 +36,33 @@ class RepositorioArrendatarioPostgres:
             row_dict = row
 
         return Arrendatario(
-            id_arrendatario=(row_dict.get("id_arrendatario") or row_dict.get("ID_ARRENDATARIO")),
+            id_arrendatario=(
+                row_dict.get("id_arrendatario") or row_dict.get("ID_ARRENDATARIO")
+            ),
             id_persona=(row_dict.get("id_persona") or row_dict.get("ID_PERSONA")),
             id_seguro=(row_dict.get("id_seguro") or row_dict.get("ID_SEGURO")),
             codigo_aprobacion_seguro=(
-                row_dict.get("codigo_aprobacion_seguro") or row_dict.get("CODIGO_APROBACION_SEGURO")
+                row_dict.get("codigo_aprobacion_seguro")
+                or row_dict.get("CODIGO_APROBACION_SEGURO")
             ),
             estado_arrendatario=(
-                row_dict.get("estado_arrendatario") or row_dict.get("ESTADO_ARRENDATARIO")
+                row_dict.get("estado_arrendatario")
+                or row_dict.get("ESTADO_ARRENDATARIO")
             ),
             fecha_ingreso_arrendatario=(
                 row_dict.get("fecha_ingreso_arrendatario")
                 or row_dict.get("FECHA_INGRESO_ARRENDATARIO")
             ),
             motivo_inactivacion=(
-                row_dict.get("motivo_inactivacion") or row_dict.get("MOTIVO_INACTIVACION")
+                row_dict.get("motivo_inactivacion")
+                or row_dict.get("MOTIVO_INACTIVACION")
             ),
-            nombre_habitante=(row_dict.get("nombre_habitante") or row_dict.get("NOMBRE_HABITANTE")),
-            telefono_habitante=(row_dict.get("telefono_habitante") or row_dict.get("TELEFONO_HABITANTE")),
+            nombre_habitante=(
+                row_dict.get("nombre_habitante") or row_dict.get("NOMBRE_HABITANTE")
+            ),
+            telefono_habitante=(
+                row_dict.get("telefono_habitante") or row_dict.get("TELEFONO_HABITANTE")
+            ),
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),
@@ -68,7 +76,8 @@ class RepositorioArrendatarioPostgres:
         placeholder = self.db.get_placeholder()
 
         cursor.execute(
-            f"SELECT * FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = {placeholder}", (id_arrendatario,)
+            f"SELECT * FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = {placeholder}",
+            (id_arrendatario,),
         )
 
         row = cursor.fetchone()
@@ -81,7 +90,8 @@ class RepositorioArrendatarioPostgres:
         placeholder = self.db.get_placeholder()
 
         cursor.execute(
-            f"SELECT * FROM ARRENDATARIOS WHERE ID_PERSONA = {placeholder}", (id_persona,)
+            f"SELECT * FROM ARRENDATARIOS WHERE ID_PERSONA = {placeholder}",
+            (id_persona,),
         )
 
         row = cursor.fetchone()
@@ -116,7 +126,8 @@ class RepositorioArrendatarioPostgres:
                         if arrendatario.estado_arrendatario is not None
                         else True
                     ),
-                    arrendatario.fecha_ingreso_arrendatario or datetime.now().isoformat(),
+                    arrendatario.fecha_ingreso_arrendatario
+                    or datetime.now().isoformat(),
                     arrendatario.nombre_habitante,
                     arrendatario.telefono_habitante,
                     datetime.now().isoformat(),
@@ -174,7 +185,9 @@ class RepositorioArrendatarioPostgres:
             cursor = conn.cursor()
             placeholder = self.db.get_placeholder()
 
-            cursor.execute(f"DELETE FROM ARRENDATARIOS WHERE ID_PERSONA = {placeholder}", (id_persona,))
+            cursor.execute(
+                f"DELETE FROM ARRENDATARIOS WHERE ID_PERSONA = {placeholder}",
+                (id_persona,),
+            )
             conn.commit()
             return cursor.rowcount > 0
-

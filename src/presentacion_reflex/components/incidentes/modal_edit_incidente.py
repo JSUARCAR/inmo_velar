@@ -1,6 +1,5 @@
 import reflex as rx
 
-from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_input,
@@ -143,7 +142,9 @@ def _edit_incidente_form() -> rx.Component:
                         on_change=lambda val: IncidentesState.set_edit_field(
                             "id_proveedor_asignado", val
                         ),
-                        value=IncidentesState.edit_form_data["id_proveedor_asignado"].to(str),
+                        value=IncidentesState.edit_form_data[
+                            "id_proveedor_asignado"
+                        ].to(str),
                         width="100%",
                     ),
                 ),

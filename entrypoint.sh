@@ -70,37 +70,35 @@ handle {
 EOF
 echo "  ✅ Caddyfile generated (frontend: $FRONTEND_DIR)"
 
-# ── Step 3: Clear stale alembic state ─────────────────────
+# ── Step 3: Run Database Migrations ──────────────────────
 echo ""
-echo "=== Step 3: Clearing alembic state (SKIPPED for manual DB management) ==="
-# python -c "
-# import psycopg2, os
-# url = os.environ.get('DATABASE_URL','')
-# if url:
-#     conn = psycopg2.connect(url)
-#     conn.autocommit = True
-#     cur = conn.cursor()
-#     cur.execute('DROP TABLE IF EXISTS alembic_version')
-#     print('  ✅ Cleared alembic_version table')
-#     conn.close()
-# else:
-#     print('  ⚠ DATABASE_URL not set, skipping')
-# " || echo "  ⚠ Could not clear alembic_version (non-fatal)"
+echo "=== Step 3: Running Database Migrations ==="
+if [ -n "$DATABASE_URL" ]; then
+    echo "  ✅ DATABASE_URL is set"
+    
+    # Ejecutar migraciones de base de datos
+    echo "  📦 Running database migrations..."
+    python /app/scripts/run_pg_migrations.py || echo "  ⚠ Database migrations had issues (non-fatal)"
+    
+    # Configurar permisos
+    echo "  🔐 Setting up permissions..."
+    python /app/scripts/setup_permissions.py || echo "  ⚠ Permission setup had issues (non-fatal)"
+    
+    echo "  ✅ Database setup completed"
+else
+    echo "  ⚠ DATABASE_URL not set, skipping migrations"
+    echo "  ⚠ This is expected for local development with SQLite"
+fi
 
-# ── Step 4: Initialize database ──────────────────────────
+# ── Step 4: Start backend ────────────────────────────────
 echo ""
-echo "=== Step 4: Initializing database (SKIPPED for manual DB management) ==="
-# reflex db init || echo "  ⚠ reflex db init had issues (non-fatal, tables may already exist)"
-
-# ── Step 5: Start backend ────────────────────────────────
-echo ""
-echo "=== Step 5: Starting Reflex backend on port 8081 ==="
+echo "=== Step 4: Starting Reflex backend on port 8081 ==="
 reflex run --env prod --backend-only --backend-port 8081 --backend-host 0.0.0.0 &
 BACKEND_PID=$!
 
-# ── Step 6: Start Caddy ──────────────────────────────────
+# ── Step 5: Start Caddy ──────────────────────────────────
 echo ""
-echo "=== Step 6: Waiting 3s then starting Caddy on port ${PORT:-8080} ==="
+echo "=== Step 5: Waiting 3s then starting Caddy on port ${PORT:-8080} ==="
 sleep 3
 echo "  ✅ Starting Caddy..."
 caddy run --config /app/Caddyfile.runtime --adapter caddyfile

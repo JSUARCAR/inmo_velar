@@ -6,16 +6,24 @@ Gestión completa de estados de cuenta mensuales
 import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
-from src.presentacion_reflex.components.contratos.badge_grupo_pago import badge_grupo_pago
+from src.presentacion_reflex.components.contratos.badge_grupo_pago import (
+    badge_grupo_pago,
+)
 from src.presentacion_reflex.components.liquidaciones import (
     bulk_liquidacion_form,
     cancel_modal,
+    delete_confirm_dialog,
+    group_delete_confirm_dialog,
     liquidacion_create_form,
     liquidacion_detail_modal,
     liquidacion_edit_form,
     payment_form,
     reverse_confirm_dialog,
+    reverse_pago_confirm_dialog,
     modal_exportar_liquidaciones_periodo,
+)
+from src.presentacion_reflex.components.liquidaciones.modal_seleccion_incidentes import (
+    modal_seleccion_incidentes,
 )
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
@@ -283,7 +291,9 @@ def liquidaciones_table() -> rx.Component:
                 header_cell_sortable("ID", "id"),
                 header_cell_sortable("Período", "periodo"),
                 header_cell_sortable("Propiedad", "contrato"),
-                rx.table.column_header_cell("Ciclo Operativo", style={"font-weight": "600"}),
+                rx.table.column_header_cell(
+                    "Ciclo Operativo", style={"font-weight": "600"}
+                ),
                 header_cell_sortable("Canon", "canon"),
                 header_cell_sortable("Neto a Pagar", "neto"),
                 header_cell_sortable("Estado Recaudo", "estado_recaudo"),
@@ -398,6 +408,48 @@ def liquidaciones_table() -> rx.Component:
                                         color_scheme="violet",
                                     ),
                                     content="Registrar pago",
+                                ),
+                                rx.box(),
+                            ),
+                            # Reversar Pago (solo Pagada)
+                            rx.cond(
+                                (liq["estado"] == "Pagada")
+                                & AuthState.check_action(
+                                    "Liquidaciones", "REVERSAR_PAGO"
+                                ),
+                                rx.tooltip(
+                                    rx.icon_button(
+                                        rx.icon("rotate-ccw", size=18),
+                                        on_click=lambda: (
+                                            LiquidacionesState.open_reverse_pago_confirm(
+                                                liq["id"]
+                                            )
+                                        ),
+                                        size="2",
+                                        variant="ghost",
+                                        color_scheme="orange",
+                                    ),
+                                    content="Reversar pago",
+                                ),
+                                rx.box(),
+                            ),
+                            # Eliminar (no Pagada, no eliminada, con permiso)
+                            rx.cond(
+                                (liq["estado"] != "Pagada")
+                                & AuthState.check_action("Liquidaciones", "ELIMINAR"),
+                                rx.tooltip(
+                                    rx.icon_button(
+                                        rx.icon("trash-2", size=18),
+                                        on_click=lambda: (
+                                            LiquidacionesState.open_delete_modal(
+                                                liq["id"]
+                                            )
+                                        ),
+                                        size="2",
+                                        variant="ghost",
+                                        color_scheme="red",
+                                    ),
+                                    content="Eliminar liquidación",
                                 ),
                                 rx.box(),
                             ),
@@ -542,6 +594,29 @@ def liquidaciones_table_agrupada() -> rx.Component:
                                     ),
                                     rx.box(),
                                 ),
+                                # Eliminar No Pagadas (solo si no está todo pagado)
+                                rx.cond(
+                                    (liq["estado"] != "Pagada")
+                                    & AuthState.check_action(
+                                        "Liquidaciones", "ELIMINAR"
+                                    ),
+                                    rx.tooltip(
+                                        rx.icon_button(
+                                            rx.icon("trash-2", size=18),
+                                            on_click=lambda: (
+                                                LiquidacionesState.open_group_delete_modal(
+                                                    liq["id_propietario"],
+                                                    liq["periodo"],
+                                                )
+                                            ),
+                                            size="2",
+                                            variant="ghost",
+                                            color_scheme="red",
+                                        ),
+                                        content="Eliminar liquidaciones no pagadas",
+                                    ),
+                                    rx.box(),
+                                ),
                                 spacing="2",
                             )
                         ),
@@ -625,8 +700,12 @@ def liquidaciones_page() -> rx.Component:
             rx.box(),
         ),
         cancel_modal(),
+        delete_confirm_dialog(),
+        group_delete_confirm_dialog(),
         reverse_confirm_dialog(),
+        reverse_pago_confirm_dialog(),
         modal_exportar_liquidaciones_periodo(),
+        modal_seleccion_incidentes(),
         width="100%",
         spacing="4",
         padding="2em",

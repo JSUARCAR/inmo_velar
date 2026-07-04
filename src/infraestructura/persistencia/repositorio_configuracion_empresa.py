@@ -23,22 +23,28 @@ class RepositorioConfiguracionEmpresa:
 
         return ConfiguracionEmpresa(
             id=row_dict.get("id") or row_dict.get("ID"),
-            nombre_empresa=row_dict.get("nombre_empresa") or row_dict.get("NOMBRE_EMPRESA"),
+            nombre_empresa=row_dict.get("nombre_empresa")
+            or row_dict.get("NOMBRE_EMPRESA"),
             nit=row_dict.get("nit") or row_dict.get("NIT"),
             email=row_dict.get("email") or row_dict.get("EMAIL"),
             telefono=row_dict.get("telefono") or row_dict.get("TELEFONO"),
             direccion=row_dict.get("direccion") or row_dict.get("DIRECCION"),
             ubicacion=row_dict.get("ubicacion") or row_dict.get("UBICACION"),
             website=row_dict.get("website") or row_dict.get("WEBSITE"),
-            redes_sociales=row_dict.get("redes_sociales") or row_dict.get("REDES_SOCIALES"),
+            redes_sociales=row_dict.get("redes_sociales")
+            or row_dict.get("REDES_SOCIALES"),
             representante_legal=row_dict.get("representante_legal")
             or row_dict.get("REPRESENTANTE_LEGAL")
             or "",
             cedula_representante=row_dict.get("cedula_representante")
             or row_dict.get("CEDULA_REPRESENTANTE")
             or "",
-            logo_base64=row_dict.get("logo_base64") or row_dict.get("LOGO_BASE64") or "",
-            logo_filename=row_dict.get("logo_filename") or row_dict.get("LOGO_FILENAME") or "",
+            logo_base64=row_dict.get("logo_base64")
+            or row_dict.get("LOGO_BASE64")
+            or "",
+            logo_filename=row_dict.get("logo_filename")
+            or row_dict.get("LOGO_FILENAME")
+            or "",
             created_at=str(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             updated_at=str(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),
         )
@@ -52,7 +58,9 @@ class RepositorioConfiguracionEmpresa:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(f"SELECT * FROM configuracion_sistema WHERE id = {placeholder}", (1,))
+        cursor.execute(
+            f"SELECT * FROM configuracion_sistema WHERE id = {placeholder}", (1,)
+        )
         row = cursor.fetchone()
 
         if row:

@@ -4,8 +4,13 @@ Modal Neumórfico para Renovación de Contratos (Mandatos y Arrendamientos).
 
 import reflex as rx
 from src.presentacion_reflex.state.contratos_state import ContratosState
-from src.presentacion_reflex.components.neuro_elements import neuro_button, neuro_input, neuro_badge
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_button,
+    neuro_input,
+    neuro_badge,
+)
 import src.presentacion_reflex.styles as styles
+
 
 def modal_renovacion_contrato() -> rx.Component:
     """Modal para confirmar y ejecutar la renovación de un contrato."""
@@ -25,7 +30,6 @@ def modal_renovacion_contrato() -> rx.Component:
                 margin_bottom="1.5rem",
                 color="var(--gray-11)",
             ),
-
             # Error message
             rx.cond(
                 ContratosState.error_message != "",
@@ -36,7 +40,6 @@ def modal_renovacion_contrato() -> rx.Component:
                     margin_bottom="1rem",
                 ),
             ),
-
             rx.cond(
                 ContratosState.renewal_loading_proyeccion,
                 rx.center(rx.spinner(size="3"), height="150px"),
@@ -56,7 +59,12 @@ def modal_renovacion_contrato() -> rx.Component:
                         rx.grid(
                             # Canon Anterior
                             rx.box(
-                                rx.text("Canon Anterior", size="1", color="var(--gray-11)", weight="medium"),
+                                rx.text(
+                                    "Canon Anterior",
+                                    size="1",
+                                    color="var(--gray-11)",
+                                    weight="medium",
+                                ),
                                 rx.text(
                                     f"${ContratosState.renewal_proyeccion['canon_actual'].to(str)}",
                                     weight="bold",
@@ -69,7 +77,12 @@ def modal_renovacion_contrato() -> rx.Component:
                             ),
                             # Nuevo Canon / Incremento
                             rx.box(
-                                rx.text("Nuevo Canon Proyectado", size="1", color="var(--gray-11)", weight="medium"),
+                                rx.text(
+                                    "Nuevo Canon Proyectado",
+                                    size="1",
+                                    color="var(--gray-11)",
+                                    weight="medium",
+                                ),
                                 rx.hstack(
                                     rx.text(
                                         f"${ContratosState.renewal_proyeccion['canon_nuevo'].to(str)}",
@@ -78,8 +91,17 @@ def modal_renovacion_contrato() -> rx.Component:
                                         color="var(--green-11)",
                                     ),
                                     rx.cond(
-                                        ContratosState.renewal_proyeccion.contains("aplica_ipc") & ContratosState.renewal_proyeccion["aplica_ipc"].to(bool),
-                                        neuro_badge(f"{ContratosState.renewal_proyeccion['porcentaje_ipc'].to(str)}% IPC", color_scheme="cyan", size="1"),
+                                        ContratosState.renewal_proyeccion.contains(
+                                            "aplica_ipc"
+                                        )
+                                        & ContratosState.renewal_proyeccion[
+                                            "aplica_ipc"
+                                        ].to(bool),
+                                        neuro_badge(
+                                            f"{ContratosState.renewal_proyeccion['porcentaje_ipc'].to(str)}% IPC",
+                                            color_scheme="cyan",
+                                            size="1",
+                                        ),
                                     ),
                                 ),
                                 padding="3",
@@ -92,10 +114,11 @@ def modal_renovacion_contrato() -> rx.Component:
                             width="100%",
                             margin_bottom="1rem",
                         ),
-
                         # Nueva Fecha de Fin (Editable)
                         rx.vstack(
-                            rx.text("Nueva Fecha de Vencimiento", size="2", weight="bold"),
+                            rx.text(
+                                "Nueva Fecha de Vencimiento", size="2", weight="bold"
+                            ),
                             neuro_input(
                                 rx.input.slot(rx.icon("calendar")),
                                 type="date",
@@ -105,17 +128,20 @@ def modal_renovacion_contrato() -> rx.Component:
                             ),
                             rx.cond(
                                 ContratosState.renewal_proyeccion.contains("mensaje"),
-                                rx.text(ContratosState.renewal_proyeccion["mensaje"], size="1", color="var(--blue-11)"),
+                                rx.text(
+                                    ContratosState.renewal_proyeccion["mensaje"],
+                                    size="1",
+                                    color="var(--blue-11)",
+                                ),
                             ),
                             spacing="1",
                             width="100%",
                         ),
                         spacing="4",
                         width="100%",
-                    )
+                    ),
                 ),
             ),
-
             # Buttons
             rx.flex(
                 rx.dialog.close(
@@ -128,14 +154,19 @@ def modal_renovacion_contrato() -> rx.Component:
                 ),
                 rx.cond(
                     ContratosState.renewal_proyeccion.contains("error"),
-                    rx.box(display="none"), # Oculta el botón de confirmación si hay error en la proyección
+                    rx.box(
+                        display="none"
+                    ),  # Oculta el botón de confirmación si hay error en la proyección
                     neuro_button(
                         rx.cond(
-                            ContratosState.is_loading, rx.spinner(size="1"), rx.text("Confirmar Renovación")
+                            ContratosState.is_loading,
+                            rx.spinner(size="1"),
+                            rx.text("Confirmar Renovación"),
                         ),
                         color_scheme="green",
                         on_click=ContratosState.execute_renewal,
-                        disabled=ContratosState.is_loading | ContratosState.renewal_loading_proyeccion,
+                        disabled=ContratosState.is_loading
+                        | ContratosState.renewal_loading_proyeccion,
                     ),
                 ),
                 spacing="3",
@@ -143,7 +174,11 @@ def modal_renovacion_contrato() -> rx.Component:
                 justify="end",
             ),
             max_width="550px",
-            style={"box_shadow": styles.SHADOW_RAISED_ELITE, "border_radius": "16px", "background": "var(--gray-2)"},
+            style={
+                "box_shadow": styles.SHADOW_RAISED_ELITE,
+                "border_radius": "16px",
+                "background": "var(--gray-2)",
+            },
         ),
         open=ContratosState.show_renewal_confirm,
         on_open_change=lambda _: ContratosState.cancel_renewal(),

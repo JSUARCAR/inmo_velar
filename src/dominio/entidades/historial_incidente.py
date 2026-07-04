@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 
 @dataclass(frozen=True)

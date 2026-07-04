@@ -1,28 +1,36 @@
-# Task 3: Refactorizar Llamadas a `.execute` en Configuraciones y Parámetros - Reporte de Ejecución
+# Task 3 Report: Update Service to Set Observaciones
 
-## Implementación
-- Se modificaron las llamadas a `conn.execute()` y `conn.executemany()` en los archivos de integración para utilizar cursores explícitos (`cursor = conn.cursor()`).
-- Se cambiaron los placeholders de SQLite (`?`) por la convención de PostgreSQL (`%s`), alineado con las reglas en `GEMINI.md`.
-- Se corrigió la sintaxis de inserción: se migró de `INSERT OR REPLACE INTO` a `INSERT INTO` simple, apoyándose en las operaciones previas de `DELETE FROM` de la limpieza de datos (`setup` / `cleanup`).
-- Se corrigieron los datos booleanos enviados directamente en los tests de `1` o `0` a `True` o `False` para alinearse con los tipos estrictos de PostgreSQL.
-- Se ajustó el año del test de IPC (2998 a 2997) para evitar colisiones con un test que podía quedar a medio fallar por problemas anteriores.
+## What I Implemented
 
-## Pruebas y Resultados
-- Se ejecutó: `pytest tests/integration/test_repositorio_parametro.py tests/integration/test_servicio_configuracion.py -v`.
-- **Resultados:** De los 20 tests descubiertos, 18 pasaron (PASS) y 2 fallaron (FAIL).
-- Ningún test arrojó el error original especificado (`AttributeError: 'psycopg2.extensions.connection' object has no attribute 'execute'`), lo que significa que la migración a nivel de `tests/` fue exitosa.
-- Se ejecutó `ruff format` y `ruff check --fix` exitosamente, validando la integridad del código modificado.
+Modified `servicio_incidente_liquidacion.py` to automatically update the `observaciones` field of the liquidation when an incident is associated or disassociated.
 
-## Archivos Modificados
-- `tests/integration/test_repositorio_parametro.py`
-- `tests/integration/test_servicio_configuracion.py`
+### Change 1: `asociar_incidente()` method (after line 176)
+After updating the quota status, the service now sets `liquidacion.observaciones` to `f"Inc #{id_incidente}"` and saves via `repositorio_liquidacion.actualizar()`.
 
-## Hallazgos de Revisión (Self-review)
-Los cambios en los scripts de prueba son correctos y aseguran compatibilidad con la nueva conexión de PostgreSQL en `TestDatabaseManager`. 
+### Change 2: `desasociar_incidente()` method (after line 272)
+After deleting the relationship, the service clears `liquidacion.observaciones` to `""` and saves via `repositorio_liquidacion.actualizar()`.
 
-## Problemas y Preocupaciones (Issues/Concerns)
-Las 2 fallas restantes se deben a errores originados en la lógica de negocio (carpeta `src/`):
-1. `TestRepositorioParametroPostgres.test_crear_parametro`: Falla con `AttributeError: 'RepositorioParametroPostgres' object has no attribute 'crear'`. El método en el repositorio puede llamarse de otra forma o no haber sido implementado.
-2. `TestServicioConfiguracionUsuarios.test_crear_usuario`: Falla con `psycopg2.errors.DatatypeMismatch` en `estado_usuario`. El repositorio (`repositorio_usuario.py` línea 117) está intentando insertar un `1` de tipo entero en una columna booleana. 
+## What I Tested
 
-Al estar el scope actual restringido estrictamente a los tests, no se modificó la carpeta `src/`. Esto deberá resolverse en otra subtarea de refactorización.
+- **Import verification:** `python -c "from src.aplicacion.servicios.servicio_incidente_liquidacion import ServicioIncidenteLiquidacion; print('OK')"` → **PASSED**
+- **Code review:** Confirmed the `Liquidacion` entity has `observaciones: Optional[str] = None` field (line 64 in `liquidacion.py`)
+- **Repository interface:** Confirmed `IRepositorioLiquidacion` is already imported and has `actualizar()` method
+
+## Files Changed
+
+- `src/aplicacion/servicios/servicio_incidente_liquidacion.py` — Added observaciones update logic in both methods
+
+## Self-Review Findings
+
+None. The implementation follows the exact specification:
+- Uses full replacement (not append) for observaciones
+- Handles null liquidacion in desasociar_incidente with `if liquidacion:` guard
+- Uses the existing `self.repositorio_liquidacion` which was already injected
+
+## Issues or Concerns
+
+None. The changes are minimal, focused, and follow the existing patterns in the codebase.
+
+---
+
+**Commit:** `941ed34` — `feat(liquidacion): set observaciones when associating/disassociating incidents`

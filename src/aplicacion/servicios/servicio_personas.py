@@ -82,7 +82,7 @@ class ServicioPersonas:
         repo_arrendatario: IRepositorioArrendatario,
         repo_codeudor: IRepositorioCodeudor,
         repo_proveedor: RepositorioProveedores,
-        repo_auditoria: Optional[RepositorioAuditoria] = None
+        repo_auditoria: Optional[RepositorioAuditoria] = None,
     ):
         self.repo_persona = repo_persona
         self.repo_asesor = repo_asesor
@@ -103,12 +103,14 @@ class ServicioPersonas:
         """
         Lista personas con sus roles asignados.
         """
-        logger.debug(f"Listando personas: filtro_rol={filtro_rol}, solo_activos={solo_activos}, sin_contrato={sin_contrato}, busqueda={busqueda}")
+        logger.debug(
+            f"Listando personas: filtro_rol={filtro_rol}, solo_activos={solo_activos}, sin_contrato={sin_contrato}, busqueda={busqueda}"
+        )
         personas = self.repo_persona.obtener_todos(
             filtro_rol=filtro_rol,
             solo_activos=solo_activos,
             sin_contrato=sin_contrato,
-            busqueda=busqueda
+            busqueda=busqueda,
         )
 
         return [
@@ -134,7 +136,9 @@ class ServicioPersonas:
         sort_order: str = "desc",
     ):
         """Lista personas con paginación, filtros y ordenamiento dinámico."""
-        logger.debug(f"Listando personas paginado: page={page}, sin_contrato={sin_contrato}, sort_by={sort_by}")
+        logger.debug(
+            f"Listando personas paginado: page={page}, sin_contrato={sin_contrato}, sort_by={sort_by}"
+        )
         from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
 
         params = PaginationParams(page=page, page_size=page_size)
@@ -146,7 +150,7 @@ class ServicioPersonas:
             sin_contrato=sin_contrato,
             busqueda=busqueda,
             fecha_inicio=fecha_inicio,
-            fecha_fin=fecha_fin
+            fecha_fin=fecha_fin,
         )
 
         personas = self.repo_persona.obtener_todos(
@@ -160,7 +164,7 @@ class ServicioPersonas:
             limit=params.limit,
             offset=params.offset,
             sort_by=sort_by,
-            sort_order=sort_order
+            sort_order=sort_order,
         )
 
         items = [
@@ -191,7 +195,9 @@ class ServicioPersonas:
         fecha_fin: Optional[str] = None,
     ) -> str:
         """Genera un CSV con las personas filtradas."""
-        logger.debug(f"Exportando personas a CSV: filtro_rol={filtro_rol}, solo_activos={solo_activos}, sin_contrato={sin_contrato}, busqueda={busqueda}, fecha_inicio={fecha_inicio}, fecha_fin={fecha_fin}")
+        logger.debug(
+            f"Exportando personas a CSV: filtro_rol={filtro_rol}, solo_activos={solo_activos}, sin_contrato={sin_contrato}, busqueda={busqueda}, fecha_inicio={fecha_inicio}, fecha_fin={fecha_fin}"
+        )
         import csv
         import io
 
@@ -203,7 +209,7 @@ class ServicioPersonas:
             fecha_inicio=fecha_inicio,
             fecha_fin=fecha_fin,
             sort_by="nombre_completo",
-            sort_order="asc"
+            sort_order="asc",
         )
 
         output = io.StringIO()
@@ -256,7 +262,7 @@ class ServicioPersonas:
         Consolida datos de propiedades, contratos y estados financieros.
         """
         logger.debug(f"Obteniendo detalles completos para persona ID: {id_persona}")
-        
+
         persona_dto = self.obtener_persona_completa(id_persona)
         if not persona_dto:
             return {}
@@ -273,19 +279,24 @@ class ServicioPersonas:
                 "direccion": persona_dto.persona.direccion_principal,
                 "roles": persona_dto.roles,
                 "estado": "ACTIVO" if persona_dto.esta_activa else "Inactivo",
-                "fecha_creacion": persona_dto.persona.created_at[:10] if persona_dto.persona.created_at else "N/A",
+                "fecha_creacion": (
+                    persona_dto.persona.created_at[:10]
+                    if persona_dto.persona.created_at
+                    else "N/A"
+                ),
             },
-            "detalles_roles": {}
+            "detalles_roles": {},
         }
 
         from src.infraestructura.persistencia.database import db_manager
+
         placeholder = db_manager.get_placeholder()
 
         # Detalle Propietario: Propiedades y Cuentas
         if "Propietario" in persona_dto.roles:
             propietario = persona_dto.datos_roles["Propietario"]
             propiedades = []
-            
+
             query_prop = f"""
                 SELECT p.ID_PROPIEDAD, p.MATRICULA_INMOBILIARIA, p.DIRECCION_PROPIEDAD, p.TIPO_PROPIEDAD, p.DISPONIBILIDAD_PROPIEDAD
                 FROM PROPIEDADES p
@@ -293,82 +304,88 @@ class ServicioPersonas:
                     SELECT ID_PROPIEDAD FROM CONTRATOS_MANDATOS WHERE ID_PROPIETARIO = {placeholder} AND ESTADO_CONTRATO_M = 'ACTIVO'
                 )
             """
-            
+
             with db_manager.obtener_conexion() as conn:
                 cursor = db_manager.get_dict_cursor(conn)
                 cursor.execute(query_prop, (propietario.id_propietario,))
                 for row in cursor.fetchall():
-                    propiedades.append({
-                        "id": row["ID_PROPIEDAD"],
-                        "matricula": row["MATRICULA_INMOBILIARIA"],
-                        "direccion": row["DIRECCION_PROPIEDAD"],
-                        "tipo": row["TIPO_PROPIEDAD"],
-                        "disponible": "Sí" if row["DISPONIBILIDAD_PROPIEDAD"] else "No"
-                    })
+                    propiedades.append(
+                        {
+                            "id": row["ID_PROPIEDAD"],
+                            "matricula": row["MATRICULA_INMOBILIARIA"],
+                            "direccion": row["DIRECCION_PROPIEDAD"],
+                            "tipo": row["TIPO_PROPIEDAD"],
+                            "disponible": (
+                                "Sí" if row["DISPONIBILIDAD_PROPIEDAD"] else "No"
+                            ),
+                        }
+                    )
 
             resultado["detalles_roles"]["Propietario"] = {
                 "observaciones": propietario.observaciones_propietario,
                 "fecha_ingreso": propietario.fecha_ingreso_propietario,
-                "propiedades_activas": propiedades
+                "propiedades_activas": propiedades,
             }
 
         # Detalle Arrendatario: Contratos Activos
         if "Arrendatario" in persona_dto.roles:
             arrendatario = persona_dto.datos_roles["Arrendatario"]
             contratos = []
-            
+
             query_arr = f"""
                 SELECT ca.ID_CONTRATO_A, ca.FECHA_INICIO_CONTRATO_A, ca.FECHA_FIN_CONTRATO_A, ca.CANON_ARRENDAMIENTO, p.DIRECCION_PROPIEDAD
                 FROM CONTRATOS_ARRENDAMIENTOS ca
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 WHERE ca.ID_ARRENDATARIO = {placeholder} AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
             """
-            
+
             with db_manager.obtener_conexion() as conn:
                 cursor = db_manager.get_dict_cursor(conn)
                 cursor.execute(query_arr, (arrendatario.id_arrendatario,))
                 for row in cursor.fetchall():
-                    contratos.append({
-                        "id": row["ID_CONTRATO_A"],
-                        "inicio": row["FECHA_INICIO_CONTRATO_A"],
-                        "fin": row["FECHA_FIN_CONTRATO_A"],
-                        "canon": row["CANON_ARRENDAMIENTO"],
-                        "propiedad": row["DIRECCION_PROPIEDAD"]
-                    })
+                    contratos.append(
+                        {
+                            "id": row["ID_CONTRATO_A"],
+                            "inicio": row["FECHA_INICIO_CONTRATO_A"],
+                            "fin": row["FECHA_FIN_CONTRATO_A"],
+                            "canon": row["CANON_ARRENDAMIENTO"],
+                            "propiedad": row["DIRECCION_PROPIEDAD"],
+                        }
+                    )
 
             resultado["detalles_roles"]["Arrendatario"] = {
                 "codigo_seguro": arrendatario.codigo_aprobacion_seguro,
                 "habitante": arrendatario.nombre_habitante,
                 "telefono_habitante": arrendatario.telefono_habitante,
-                "contratos_activos": contratos
+                "contratos_activos": contratos,
             }
 
         # Detalle Codeudor: Garantías en contratos
         if "Codeudor" in persona_dto.roles:
             codeudor = persona_dto.datos_roles["Codeudor"]
             garantias = []
-            
+
             query_cod = f"""
                 SELECT ca.ID_CONTRATO_A, ca.FECHA_INICIO_CONTRATO_A, ca.ESTADO_CONTRATO_A, p.DIRECCION_PROPIEDAD
                 FROM CONTRATOS_ARRENDAMIENTOS ca
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 WHERE ca.ID_CODEUDOR = {placeholder}
             """
-            
+
             with db_manager.obtener_conexion() as conn:
                 cursor = db_manager.get_dict_cursor(conn)
                 cursor.execute(query_cod, (codeudor.id_codeudor,))
                 for row in cursor.fetchall():
-                    garantias.append({
-                        "id": row["ID_CONTRATO_A"],
-                        "inicio": row["FECHA_INICIO_CONTRATO_A"],
-                        "estado": row["ESTADO_CONTRATO_A"],
-                        "propiedad": row["DIRECCION_PROPIEDAD"]
-                    })
+                    garantias.append(
+                        {
+                            "id": row["ID_CONTRATO_A"],
+                            "inicio": row["FECHA_INICIO_CONTRATO_A"],
+                            "estado": row["ESTADO_CONTRATO_A"],
+                            "propiedad": row["DIRECCION_PROPIEDAD"],
+                        }
+                    )
 
-            resultado["detalles_roles"]["Codeudor"] = {
-                "garantias_activas": garantias
-            }
+            resultado["detalles_roles"]["Codeudor"] = {"garantias_activas": garantias}
 
         # Detalle Asesor: Métricas básicas
         if "Asesor" in persona_dto.roles:
@@ -376,7 +393,7 @@ class ServicioPersonas:
             resultado["detalles_roles"]["Asesor"] = {
                 "comision_arriendo": f"{asesor.comision_porcentaje_arriendo}%",
                 "comision_venta": f"{asesor.comision_porcentaje_venta}%",
-                "fecha_ingreso": asesor.fecha_ingreso
+                "fecha_ingreso": asesor.fecha_ingreso,
             }
 
         # Detalle Proveedor: Especialidad y Calificación
@@ -385,7 +402,7 @@ class ServicioPersonas:
             resultado["detalles_roles"]["Proveedor"] = {
                 "especialidad": proveedor.especialidad,
                 "calificacion": proveedor.calificacion,
-                "observaciones": proveedor.observaciones
+                "observaciones": proveedor.observaciones,
             }
 
         return resultado
@@ -398,7 +415,9 @@ class ServicioPersonas:
         usuario_sistema: str = "sistema",
     ) -> PersonaConRoles:
         """Crea una nueva persona y le asigna roles."""
-        logger.debug(f"Creando persona con roles: datos_persona={datos_persona}, roles={roles}, datos_extras={datos_extras}, usuario_sistema={usuario_sistema}")
+        logger.debug(
+            f"Creando persona con roles: datos_persona={datos_persona}, roles={roles}, datos_extras={datos_extras}, usuario_sistema={usuario_sistema}"
+        )
         if self.repo_persona.obtener_por_documento(datos_persona["numero_documento"]):
             raise ValueError(
                 f"Ya existe una persona con documento {datos_persona['numero_documento']}"
@@ -420,7 +439,10 @@ class ServicioPersonas:
         datos_extras = datos_extras or {}
         for rol in roles:
             self._asignar_rol_interno(
-                persona_creada.id_persona, rol, datos_extras.get(rol, {}), usuario_sistema
+                persona_creada.id_persona,
+                rol,
+                datos_extras.get(rol, {}),
+                usuario_sistema,
             )
 
         cache_manager.invalidate("personas")
@@ -432,7 +454,9 @@ class ServicioPersonas:
         self, id_persona: int, datos: Dict, usuario_sistema: str = "sistema"
     ) -> PersonaConRoles:
         """Actualiza los datos de una persona."""
-        logger.debug(f"Actualizando persona: id_persona={id_persona}, datos={datos}, usuario_sistema={usuario_sistema}")
+        logger.debug(
+            f"Actualizando persona: id_persona={id_persona}, datos={datos}, usuario_sistema={usuario_sistema}"
+        )
         persona = self.repo_persona.obtener_por_id(id_persona)
         if not persona:
             raise ValueError(f"No existe persona con ID {id_persona}")
@@ -467,34 +491,44 @@ class ServicioPersonas:
         usuario_sistema: str = "sistema",
     ) -> None:
         """Asigna un rol a una persona existente."""
-        logger.debug(f"Asignando rol a persona: id_persona={id_persona}, nombre_rol={nombre_rol}, datos_extra={datos_extra}, usuario_sistema={usuario_sistema}")
+        logger.debug(
+            f"Asignando rol a persona: id_persona={id_persona}, nombre_rol={nombre_rol}, datos_extra={datos_extra}, usuario_sistema={usuario_sistema}"
+        )
         persona = self.repo_persona.obtener_por_id(id_persona)
         if not persona:
             raise ValueError(f"No existe persona con ID {id_persona}")
 
         datos_roles = self._obtener_datos_roles_persona(id_persona)
         if nombre_rol in datos_roles:
-            return 
+            return
 
-        self._asignar_rol_interno(id_persona, nombre_rol, datos_extra or {}, usuario_sistema)
-        
+        self._asignar_rol_interno(
+            id_persona, nombre_rol, datos_extra or {}, usuario_sistema
+        )
+
         # Auditoría
         self._auditar_accion(
-            id_persona, 
-            "ESTADO_CHANGE", 
-            f"Rol '{nombre_rol}' asignado", 
-            None, 
-            nombre_rol, 
-            usuario_sistema
+            id_persona,
+            "ESTADO_CHANGE",
+            f"Rol '{nombre_rol}' asignado",
+            None,
+            nombre_rol,
+            usuario_sistema,
         )
-        
+
         cache_manager.invalidate("personas")
 
     def actualizar_datos_rol(
-        self, id_persona: int, nombre_rol: str, datos_extra: Dict, usuario_sistema: str = "sistema"
+        self,
+        id_persona: int,
+        nombre_rol: str,
+        datos_extra: Dict,
+        usuario_sistema: str = "sistema",
     ) -> None:
         """Actualiza los datos específicos de un rol."""
-        logger.debug(f"Actualizando datos de rol: id_persona={id_persona}, nombre_rol={nombre_rol}, datos_extra={datos_extra}, usuario_sistema={usuario_sistema}")
+        logger.debug(
+            f"Actualizando datos de rol: id_persona={id_persona}, nombre_rol={nombre_rol}, datos_extra={datos_extra}, usuario_sistema={usuario_sistema}"
+        )
         persona = self.repo_persona.obtener_por_id(id_persona)
         if not persona:
             raise ValueError(f"No existe persona con ID {id_persona}")
@@ -511,12 +545,18 @@ class ServicioPersonas:
                 asesor.fecha_ingreso = datos_extra["fecha_vinculacion"]
             if "comision_porcentaje_arriendo" in datos_extra:
                 try:
-                    asesor.comision_porcentaje_arriendo = int(datos_extra["comision_porcentaje_arriendo"])
-                except (ValueError, TypeError): pass
+                    asesor.comision_porcentaje_arriendo = int(
+                        datos_extra["comision_porcentaje_arriendo"]
+                    )
+                except (ValueError, TypeError):
+                    pass
             if "comision_porcentaje_venta" in datos_extra:
                 try:
-                    asesor.comision_porcentaje_venta = int(datos_extra["comision_porcentaje_venta"])
-                except (ValueError, TypeError): pass
+                    asesor.comision_porcentaje_venta = int(
+                        datos_extra["comision_porcentaje_venta"]
+                    )
+                except (ValueError, TypeError):
+                    pass
             asesor.updated_at = datetime.now().isoformat()
             asesor.updated_by = usuario_sistema
             self.repo_asesor.actualizar(asesor, usuario_sistema)
@@ -526,7 +566,9 @@ class ServicioPersonas:
             if "fecha_inicio_propietario" in datos_extra:
                 prop.fecha_ingreso_propietario = datos_extra["fecha_inicio_propietario"]
             if "observaciones_propietario" in datos_extra:
-                prop.observaciones_propietario = datos_extra["observaciones_propietario"]
+                prop.observaciones_propietario = datos_extra[
+                    "observaciones_propietario"
+                ]
             prop.updated_at = datetime.now().isoformat()
             prop.updated_by = usuario_sistema
             self.repo_propietario.actualizar(prop, usuario_sistema)
@@ -556,22 +598,26 @@ class ServicioPersonas:
                 prov.observaciones = datos_extra["observaciones"]
             prov.updated_at = datetime.now().isoformat()
             self.repo_proveedor.actualizar(prov)
-        
+
         # Auditoría simplificada para actualización de datos de rol
         self._auditar_accion(
-            id_persona, 
-            "UPDATE", 
-            f"Datos del rol '{nombre_rol}' actualizados", 
-            None, 
-            str(datos_extra), 
-            usuario_sistema
+            id_persona,
+            "UPDATE",
+            f"Datos del rol '{nombre_rol}' actualizados",
+            None,
+            str(datos_extra),
+            usuario_sistema,
         )
-        
+
         cache_manager.invalidate("personas")
 
-    def remover_rol(self, id_persona: int, nombre_rol: str, usuario_sistema: str = "sistema") -> None:
+    def remover_rol(
+        self, id_persona: int, nombre_rol: str, usuario_sistema: str = "sistema"
+    ) -> None:
         """Remueve un rol de una persona."""
-        logger.debug(f"Removiendo rol de persona: id_persona={id_persona}, nombre_rol={nombre_rol}")
+        logger.debug(
+            f"Removiendo rol de persona: id_persona={id_persona}, nombre_rol={nombre_rol}"
+        )
         datos_roles = self._obtener_datos_roles_persona(id_persona)
         if len(datos_roles) == 1 and nombre_rol in datos_roles:
             raise ValueError("No se puede remover el último rol de una persona")
@@ -586,17 +632,17 @@ class ServicioPersonas:
             self.repo_asesor.eliminar_por_persona(id_persona)
         elif nombre_rol == "Proveedor":
             self.repo_proveedor.eliminar_por_persona(id_persona)
-        
+
         # Auditoría
         self._auditar_accion(
-            id_persona, 
-            "ESTADO_CHANGE", 
-            f"Rol '{nombre_rol}' removido", 
-            nombre_rol, 
-            None, 
-            usuario_sistema
+            id_persona,
+            "ESTADO_CHANGE",
+            f"Rol '{nombre_rol}' removido",
+            nombre_rol,
+            None,
+            usuario_sistema,
         )
-        
+
         cache_manager.invalidate("personas")
 
     def desactivar_persona(
@@ -606,18 +652,30 @@ class ServicioPersonas:
         usuario_sistema: str = "sistema",
     ) -> bool:
         """Inactiva una persona (soft delete)."""
-        logger.debug(f"Desactivando persona: id_persona={id_persona}, motivo={motivo}, usuario_sistema={usuario_sistema}")
+        logger.debug(
+            f"Desactivando persona: id_persona={id_persona}, motivo={motivo}, usuario_sistema={usuario_sistema}"
+        )
         result = self.repo_persona.inactivar(id_persona, motivo, usuario_sistema)
         if result:
             self._auditar_accion(
-                id_persona, "ESTADO_CHANGE", "Persona inactivada", "ACTIVO", "Inactivo", usuario_sistema, motivo
+                id_persona,
+                "ESTADO_CHANGE",
+                "Persona inactivada",
+                "ACTIVO",
+                "Inactivo",
+                usuario_sistema,
+                motivo,
             )
             cache_manager.invalidate("personas")
         return result
 
-    def activar_persona(self, id_persona: int, usuario_sistema: str = "sistema") -> bool:
+    def activar_persona(
+        self, id_persona: int, usuario_sistema: str = "sistema"
+    ) -> bool:
         """Reactiva una persona inactiva."""
-        logger.debug(f"Activando persona: id_persona={id_persona}, usuario_sistema={usuario_sistema}")
+        logger.debug(
+            f"Activando persona: id_persona={id_persona}, usuario_sistema={usuario_sistema}"
+        )
         persona = self.repo_persona.obtener_por_id(id_persona)
         if not persona:
             return False
@@ -627,7 +685,12 @@ class ServicioPersonas:
         result = self.repo_persona.actualizar(persona, usuario_sistema)
         if result:
             self._auditar_accion(
-                id_persona, "ESTADO_CHANGE", "Persona reactivada", "Inactivo", "ACTIVO", usuario_sistema
+                id_persona,
+                "ESTADO_CHANGE",
+                "Persona reactivada",
+                "Inactivo",
+                "ACTIVO",
+                usuario_sistema,
             )
             cache_manager.invalidate("personas")
         return result
@@ -645,19 +708,19 @@ class ServicioPersonas:
     # --- Métodos Privados ---
 
     def _auditar_accion(
-        self, 
-        id_persona: int, 
-        operacion: str, 
-        motivo: str, 
-        anterior: Optional[str] = None, 
+        self,
+        id_persona: int,
+        operacion: str,
+        motivo: str,
+        anterior: Optional[str] = None,
         nuevo: Optional[str] = None,
         usuario: str = "sistema",
-        motivo_extra: Optional[str] = None
+        motivo_extra: Optional[str] = None,
     ):
         """Registra una acción en la tabla de auditoría."""
         if not self.repo_auditoria:
             return
-            
+
         try:
             self.repo_auditoria.guardar_cambio(
                 tabla="PERSONAS",
@@ -666,7 +729,7 @@ class ServicioPersonas:
                 valor_anterior=anterior,
                 valor_nuevo=nuevo,
                 usuario=usuario,
-                motivo_cambio=motivo_extra or motivo
+                motivo_cambio=motivo_extra or motivo,
             )
         except Exception as e:
             logger.warning(f"No se pudo registrar auditoría: {e}")
@@ -693,7 +756,9 @@ class ServicioPersonas:
         created_at = datetime.now().isoformat()
 
         if nombre_rol == "Propietario":
-            fecha_inicio = datos_extra.get("fecha_inicio_propietario", datetime.now().date().isoformat())
+            fecha_inicio = datos_extra.get(
+                "fecha_inicio_propietario", datetime.now().date().isoformat()
+            )
             propietario = Propietario(
                 id_persona=id_persona,
                 fecha_ingreso_propietario=fecha_inicio,
@@ -726,11 +791,17 @@ class ServicioPersonas:
             self.repo_codeudor.crear(codeudor, usuario_sistema)
 
         elif nombre_rol == "Asesor":
-            fecha_vinculacion = datos_extra.get("fecha_vinculacion", datetime.now().date().isoformat())
-            try: com_arr = int(datos_extra.get("comision_porcentaje_arriendo", 0))
-            except: com_arr = 0
-            try: com_venta = int(datos_extra.get("comision_porcentaje_venta", 0))
-            except: com_venta = 0
+            fecha_vinculacion = datos_extra.get(
+                "fecha_vinculacion", datetime.now().date().isoformat()
+            )
+            try:
+                com_arr = int(datos_extra.get("comision_porcentaje_arriendo", 0))
+            except:
+                com_arr = 0
+            try:
+                com_venta = int(datos_extra.get("comision_porcentaje_venta", 0))
+            except:
+                com_venta = 0
 
             asesor = Asesor(
                 id_persona=id_persona,

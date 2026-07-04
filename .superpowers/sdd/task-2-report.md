@@ -1,31 +1,30 @@
-# Task 2 Report: Auditoría de Usos Residuales de AGE() en el Repositorio
+# Task 2: Update Repository Mapping - Report
 
-## Status: ✅ DONE
+## What I Implemented
 
-## Resumen
+Added `valor_incidentes` to the mapping dict returned by `obtener_datos_para_pdf()` method in `repositorio_liquidacion_postgres.py`.
 
-Se verificaron los 3 usos de `AGE()` en `repositorio_dashboard.py` dentro del método `obtener_contratos_elegibles_ipc`. Todos extraen `YEAR` (años completos para cálculo IPC), no `DAY`, por lo que son **semánticamente correctos** y no presentan el bug documentado en ADR-0010.
+## What I Tested and Test Results
 
-## Cambio Realizado
+1. **Import test:** `python -c "from src.infraestructura.persistencia.repositorio_liquidacion_postgres import RepositorioLiquidacionPostgres; print('OK')"` → **OK**
 
-Se añadió un comentario SQL inline (2 líneas, estilo `--`) dentro del query PostgreSQL, justo antes de los campos que usan `AGE()`:
+2. **Method test:** `python -c "from src.infraestructura.persistencia.database import db_manager; from src.infraestructura.persistencia.repositorio_liquidacion_postgres import RepositorioLiquidacionPostgres; repo = RepositorioLiquidacionPostgres(db_manager); data = repo.obtener_datos_para_pdf(572); print('valor_incidentes:', data.get('valor_incidentes'))"` → **valor_incidentes: 70000**
 
-```sql
--- NOTA: AGE() aquí es correcto: extraemos YEAR (años completos),
--- no DAY (días totales). Ver ADR-0010.
-```
+Both tests passed. The method now correctly returns the `valor_incidentes` field from the database.
 
-## Verificación
+## Files Changed
 
-| Check | Resultado |
-|-------|-----------|
-| `ruff check` | ✅ All checks passed! |
-| `black --check` | ✅ 1 file would be left unchanged |
+- `src/infraestructura/persistencia/repositorio_liquidacion_postgres.py` (line 1236):
+  - Added: `"valor_incidentes": row.get("VALOR_INCIDENTES") or 0,`
+  - Location: After `"otros_egr": row.get("OTROS_EGRESOS") or 0,`
 
-## Commit
+## Self-Review Findings
 
-- `62653ba` — `docs(dashboard): anotar uso correcto de AGE en calculo IPC ref ADR-0010`
+- The change is minimal and isolated (1 line added)
+- The `or 0` fallback matches the pattern used for other numeric fields (`seguro_monto`, `otros_egr`)
+- No breaking changes: existing fields remain unchanged
+- The query already selects `l.*` which includes `VALOR_INCIDENTES`, so no query changes needed
 
-## Archivo Modificado
+## Issues or Concerns
 
-- [repositorio_dashboard.py](file:///C:/Users/PC/OneDrive/Desktop/inmobiliaria%20velar/PYTHON-REFLEX/src/infraestructura/persistencia/repositorio_dashboard.py#L361-L362)
+None. The implementation is straightforward and follows existing code patterns.

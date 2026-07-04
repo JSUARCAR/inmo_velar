@@ -32,10 +32,12 @@ class PDFGenerator(FPDF):
                 # Decodificar y guardar temporalmente
                 if "," in self.logo_data:
                     self.logo_data = self.logo_data.split(",")[1]
-                
+
                 img_data = base64.b64decode(self.logo_data)
-                
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp_file:
+
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=".png"
+                ) as tmp_file:
                     tmp_file.write(img_data)
                     tmp_path = tmp_file.name
 
@@ -45,17 +47,17 @@ class PDFGenerator(FPDF):
                     # Logo width = 50mm (aprox 2 pulgadas).
                     # X = (210 - 50) / 2 = 80
                     self.image(tmp_path, x=80, y=8, w=50)
-                    self.ln(25) # Espacio después del logo
+                    self.ln(25)  # Espacio después del logo
                 finally:
                     # Limpiar archivo temporal
                     try:
                         os.unlink(tmp_path)
                     except:
                         pass
-                        
+
             except Exception as e:
                 print(f"Error dibujando logo FPDF: {e}")
-                
+
             # Título del Documento (Debajo del logo)
             self.set_font("helvetica", "B", 14)
             self.cell(0, 10, self.title_doc, align="C", new_x="LMARGIN", new_y="NEXT")
@@ -65,7 +67,14 @@ class PDFGenerator(FPDF):
             # 2. SIN LOGO (Modo Legacy Text)
             # Título Empresa
             self.set_font("helvetica", "B", 15)
-            self.cell(0, 10, "INMOBILIARIA VELAR SAS", align="C", new_x="LMARGIN", new_y="NEXT")
+            self.cell(
+                0,
+                10,
+                "INMOBILIARIA VELAR SAS",
+                align="C",
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
 
             # Subtítulo Dirección/NIT
             self.set_font("helvetica", "", 9)
@@ -97,25 +106,34 @@ class PDFGenerator(FPDF):
             self.ln(5)
 
     def footer(self):
-        self.set_y(-25) # Un poco más espacio para 2 líneas + pag
-        
+        self.set_y(-25)  # Un poco más espacio para 2 líneas + pag
+
         # New Footer Style (Mandate Contract Match)
         self.set_font("helvetica", "B", 8)
-        self.set_text_color(100, 100, 100) # Gray Dark
-        
+        self.set_text_color(100, 100, 100)  # Gray Dark
+
         # Address Line
-        self.cell(0, 5, "Calle 19 No. 16 - 44 Centro Comercial Manhatan Local 15 Armenia, Quindío.", align="C", new_x="LMARGIN", new_y="NEXT")
-        
+        self.cell(
+            0,
+            5,
+            "Calle 19 No. 16 - 44 Centro Comercial Manhatan Local 15 Armenia, Quindío.",
+            align="C",
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
+
         # Contact Line
-        self.cell(0, 5, "Contacto: +57 3135410407", align="C", new_x="LMARGIN", new_y="NEXT")
-        
+        self.cell(
+            0, 5, "Contacto: +57 3135410407", align="C", new_x="LMARGIN", new_y="NEXT"
+        )
+
         # Page Number
         self.set_font("helvetica", "", 8)
-        self.set_text_color(128, 128, 128) # Gray Medium
+        self.set_text_color(128, 128, 128)  # Gray Medium
         self.cell(
             0,
             10,
-            f'Página {self.page_no()}/{{nb}}',
+            f"Página {self.page_no()}/{{nb}}",
             align="C",
         )
 
@@ -149,7 +167,9 @@ class ServicioDocumentosPDF:
         pdf.set_font("helvetica", "B", 10)
         pdf.cell(30, 7, "Fecha Pago:", border=0)
         pdf.set_font("helvetica", "", 10)
-        pdf.cell(60, 7, f"{datos['fecha_pago']}", border=0, new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            60, 7, f"{datos['fecha_pago']}", border=0, new_x="LMARGIN", new_y="NEXT"
+        )
 
         # Fila 2
         pdf.set_font("helvetica", "B", 10)
@@ -200,7 +220,15 @@ class ServicioDocumentosPDF:
         for c in datos.get("conceptos", []):
             pdf.cell(80, 7, str(c["tipo_concepto"]), border=1)
             pdf.cell(60, 7, str(c["periodo"]), border=1)
-            pdf.cell(50, 7, f"${c['valor']:,}", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
+            pdf.cell(
+                50,
+                7,
+                f"${c['valor']:,}",
+                border=1,
+                align="R",
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
             total_calculado += c["valor"]
 
         pdf.ln(5)
@@ -234,7 +262,9 @@ class ServicioDocumentosPDF:
 
         pdf.line(70, pdf.get_y(), 140, pdf.get_y())
         pdf.cell(0, 5, "Firma Autorizada", align="C", new_x="LMARGIN", new_y="NEXT")
-        pdf.cell(0, 5, "Departamento de Tesorería", align="C", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            0, 5, "Departamento de Tesorería", align="C", new_x="LMARGIN", new_y="NEXT"
+        )
 
         # Guardar
         filename = f"recaudo_{datos['id_recaudo']}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
@@ -256,14 +286,19 @@ class ServicioDocumentosPDF:
         # Extraer logo si existe
         empresa_config = datos.get("empresa", {})
         logo_data = empresa_config.get("logo_base64")
-        
+
         pdf = PDFGenerator("ESTADO DE CUENTA - PROPIETARIO", logo_data=logo_data)
         pdf.add_page()
 
         # --- Información Propietario ---
         pdf.set_font("helvetica", "B", 10)
         pdf.cell(
-            100, 7, f"Propietario: {datos['propietario']}", border=0, new_x="LMARGIN", new_y="NEXT"
+            100,
+            7,
+            f"Propietario: {datos['propietario']}",
+            border=0,
+            new_x="LMARGIN",
+            new_y="NEXT",
         )
         pdf.set_font("helvetica", "", 10)
         pdf.cell(
@@ -285,47 +320,79 @@ class ServicioDocumentosPDF:
         # Periodo
         pdf.set_font("helvetica", "B", 11)
         pdf.cell(95, 8, f"Período Liquidado: {datos['periodo']}", border=1)
-        pdf.cell(95, 8, f"ID Liquidación: {datos['id']}", border=1, new_x="LMARGIN", new_y="NEXT")
-        
+        pdf.cell(
+            95,
+            8,
+            f"ID Liquidación: {datos['id']}",
+            border=1,
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
+
         pdf.ln(5)
 
         # --- Detalle de Propiedades (Consolidado) o Propiedad Única ---
-        if "propiedades" in datos and isinstance(datos["propiedades"], list) and len(datos["propiedades"]) > 0:
-             # Caso Consolidado: Mostrar Tabla de Propiedades
+        if (
+            "propiedades" in datos
+            and isinstance(datos["propiedades"], list)
+            and len(datos["propiedades"]) > 0
+        ):
+            # Caso Consolidado: Mostrar Tabla de Propiedades
             pdf.set_font("helvetica", "B", 10)
-            pdf.cell(0, 8, f"DETALLE DE PROPIEDADES ({datos['cantidad_propiedades']} Inmuebles)", new_x="LMARGIN", new_y="NEXT")
-            
+            pdf.cell(
+                0,
+                8,
+                f"DETALLE DE PROPIEDADES ({datos['cantidad_propiedades']} Inmuebles)",
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
+
             # Encabezados
             pdf.set_font("helvetica", "B", 9)
             pdf.set_fill_color(240, 240, 240)
             pdf.cell(100, 7, "Dirección", border=1, fill=True)
             pdf.cell(30, 7, "Canon", border=1, fill=True)
-            pdf.cell(30, 7, "Egresos", border=1, fill=True) 
+            pdf.cell(30, 7, "Egresos", border=1, fill=True)
             pdf.cell(30, 7, "Neto", border=1, fill=True, new_x="LMARGIN", new_y="NEXT")
-            
+
             pdf.set_font("helvetica", "", 9)
-            
+
             for p in datos["propiedades"]:
                 direccion = p.get("direccion", "N/A")
                 canon = p.get("canon", 0) or 0
                 neto = p.get("neto", 0) or 0
-                
+
                 # Calcular total egresos por propiedad para mostrar en resumen
                 # (Asumiendo que neto = ingresos - egresos, aprox)
-                total_ingresos_p = (p.get("canon", 0) or 0) + (p.get("otros_ingresos", 0) or 0)
+                total_ingresos_p = (p.get("canon", 0) or 0) + (
+                    p.get("otros_ingresos", 0) or 0
+                )
                 egresos_p = total_ingresos_p - neto
-                
+
                 pdf.cell(100, 6, str(direccion)[:55], border=1)
                 pdf.cell(30, 6, f"${canon:,}", border=1, align="R")
                 pdf.cell(30, 6, f"${egresos_p:,}", border=1, align="R")
-                pdf.cell(30, 6, f"${neto:,}", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
-            
+                pdf.cell(
+                    30,
+                    6,
+                    f"${neto:,}",
+                    border=1,
+                    align="R",
+                    new_x="LMARGIN",
+                    new_y="NEXT",
+                )
+
             pdf.ln(5)
 
         else:
-             # Caso Individual (Legacy)
+            # Caso Individual (Legacy)
             pdf.cell(
-                190, 7, f"Propiedad: {datos.get('propiedad', 'N/A')}", border="B", new_x="LMARGIN", new_y="NEXT"
+                190,
+                7,
+                f"Propiedad: {datos.get('propiedad', 'N/A')}",
+                border="B",
+                new_x="LMARGIN",
+                new_y="NEXT",
             )
             pdf.ln(5)
 
@@ -335,7 +402,15 @@ class ServicioDocumentosPDF:
 
         pdf.set_font("helvetica", "", 10)
         pdf.cell(140, 7, "Canon de Arrendamiento", border=1)
-        pdf.cell(50, 7, f"${datos['canon']:,}", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            50,
+            7,
+            f"${datos['canon']:,}",
+            border=1,
+            align="R",
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
 
         if datos["otros_ingresos"] > 0:
             pdf.cell(140, 7, "Otros Ingresos", border=1)
@@ -351,7 +426,7 @@ class ServicioDocumentosPDF:
 
         pdf.set_font("helvetica", "B", 10)
         pdf.cell(140, 7, "TOTAL INGRESOS", border=1, align="R")
-        pdf.set_fill_color(240, 240, 240) # Ensure light gray fill
+        pdf.set_fill_color(240, 240, 240)  # Ensure light gray fill
         pdf.cell(
             50,
             7,
@@ -367,32 +442,52 @@ class ServicioDocumentosPDF:
 
         # --- Egresos ---
         pdf.set_font("helvetica", "B", 10)
-        pdf.cell(0, 8, "EGRESOS Y DEDUCCIONES", border="T", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            0, 8, "EGRESOS Y DEDUCCIONES", border="T", new_x="LMARGIN", new_y="NEXT"
+        )
 
         pdf.set_font("helvetica", "", 10)
 
         # 1. Comisión de Administración
         # Se prioriza la comisión del asesor (COMISION_PORCENTAJE_ARRIENDO) sobre la del contrato
-        pct_comision = datos.get("comision_pct_asesor") or datos.get("comision_pct_contrato") or 0
-        
+        pct_comision = (
+            datos.get("comision_pct_asesor") or datos.get("comision_pct_contrato") or 0
+        )
+
         # Normalizar porcentaje si viene en formato base 1000 (ej: 1000 -> 10.0)
         if pct_comision > 100:
             pct_comision = pct_comision / 100
-            
+
         # Recalcular monto de comisión e IVA para ser consistentes con el porcentaje mostrado
         comision_monto = int(datos["canon"] * pct_comision / 100)
         iva_comision = int(comision_monto * 0.19)
-        
+
         # Actualizar datos calculados para usarlos en el total final
-        datos['comision_monto_calc'] = comision_monto
-        datos['iva_comision_calc'] = iva_comision
+        datos["comision_monto_calc"] = comision_monto
+        datos["iva_comision_calc"] = iva_comision
 
         pdf.cell(140, 7, f"Comisión de Administración ({pct_comision}%)", border=1)
-        pdf.cell(50, 7, f"${comision_monto:,}", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            50,
+            7,
+            f"${comision_monto:,}",
+            border=1,
+            align="R",
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
 
         # 2. IVA Comisión
         pdf.cell(140, 7, "IVA Comisión (19%)", border=1)
-        pdf.cell(50, 7, f"${iva_comision:,}", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            50,
+            7,
+            f"${iva_comision:,}",
+            border=1,
+            align="R",
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
 
         # Inicializar acumulador de egresos recalculado
         total_egresos_calc = comision_monto + iva_comision
@@ -425,7 +520,7 @@ class ServicioDocumentosPDF:
         valor_str = f"${val_rep:,}" if val_rep > 0 else "$ -"
         pdf.cell(50, 7, valor_str, border=1, align="R", new_x="LMARGIN", new_y="NEXT")
         total_egresos_calc += val_rep
-        
+
         # 7. Otros Egresos
         val_otros = datos.get("otros_egr") or 0
         pdf.cell(140, 7, "Otros Egresos", border=1)
@@ -436,8 +531,8 @@ class ServicioDocumentosPDF:
         # TOTAL EGRESOS (Recalculado)
         pdf.set_font("helvetica", "B", 10)
         pdf.cell(140, 7, "TOTAL EGRESOS", border=1, align="R")
-        
-        pdf.set_fill_color(240, 240, 240) # Ensure light gray fill
+
+        pdf.set_fill_color(240, 240, 240)  # Ensure light gray fill
         pdf.cell(
             50,
             7,
@@ -448,9 +543,9 @@ class ServicioDocumentosPDF:
             new_x="LMARGIN",
             new_y="NEXT",
         )
-        
+
         # Recalcular Neto
-        datos['neto_pagar'] = datos['total_ingresos'] - total_egresos_calc
+        datos["neto_pagar"] = datos["total_ingresos"] - total_egresos_calc
 
         pdf.ln(5)
 
@@ -485,7 +580,12 @@ class ServicioDocumentosPDF:
         if datos["estado"] == "Pagada":
             pdf.set_font("helvetica", "B", 11)
             pdf.cell(
-                0, 8, "INFORMACIÓN DE PAGO REALIZADO", border="B", new_x="LMARGIN", new_y="NEXT"
+                0,
+                8,
+                "INFORMACIÓN DE PAGO REALIZADO",
+                border="B",
+                new_x="LMARGIN",
+                new_y="NEXT",
             )
             pdf.set_font("helvetica", "", 10)
             pdf.ln(2)
@@ -501,7 +601,9 @@ class ServicioDocumentosPDF:
             )
 
         # Guardar
-        filename = f"liquidacion_{datos['id']}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+        filename = (
+            f"liquidacion_{datos['id']}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+        )
         output_path = self.output_dir / filename
         pdf.output(str(output_path))
 
@@ -523,7 +625,12 @@ class ServicioDocumentosPDF:
         # --- Información Asesor ---
         pdf.set_font("helvetica", "B", 10)
         pdf.cell(
-            100, 7, f"Asesor: {datos['nombre_asesor']}", border=0, new_x="LMARGIN", new_y="NEXT"
+            100,
+            7,
+            f"Asesor: {datos['nombre_asesor']}",
+            border=0,
+            new_x="LMARGIN",
+            new_y="NEXT",
         )
         pdf.set_font("helvetica", "", 10)
         pdf.cell(
@@ -553,7 +660,9 @@ class ServicioDocumentosPDF:
 
         # --- Detalle de Contratos (Base Comisional) ---
         pdf.set_font("helvetica", "B", 12)
-        pdf.cell(0, 8, "DETALLE DE CONTRATOS GESTIONADOS", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            0, 8, "DETALLE DE CONTRATOS GESTIONADOS", new_x="LMARGIN", new_y="NEXT"
+        )
 
         pdf.set_font("helvetica", "B", 9)
         pdf.set_fill_color(240, 240, 240)
@@ -589,19 +698,27 @@ class ServicioDocumentosPDF:
                 # Fallback legacy: el porcentaje viene en datos['porcentaje_comision'] en escala 100
                 # o en datos['porcentaje_real'] que es float.
                 base_pct = datos.get("porcentaje_comision") or 0
-                if base_pct > 100: # Escala 10000 (bps)
-                     pct_str = f"{base_pct / 100.0:.1f}%"
-                     com_ind = int(canon * base_pct / 10000)
-                else: # Escala 100
-                     pct_str = f"{base_pct:.1f}%"
-                     com_ind = int(canon * base_pct / 100)
+                if base_pct > 100:  # Escala 10000 (bps)
+                    pct_str = f"{base_pct / 100.0:.1f}%"
+                    com_ind = int(canon * base_pct / 10000)
+                else:  # Escala 100
+                    pct_str = f"{base_pct:.1f}%"
+                    com_ind = int(canon * base_pct / 100)
 
             pdf.cell(20, 6, f"#{c.get('id_contrato')}", border=1)
             direccion = str(c.get("direccion") or "N/A")
             pdf.cell(90, 6, direccion[:45], border=1)
             pdf.cell(25, 6, f"${canon:,}", border=1, align="R")
             pdf.cell(25, 6, pct_str, border=1, align="C")
-            pdf.cell(30, 6, f"${com_ind:,}", border=1, align="R", new_x="LMARGIN", new_y="NEXT")
+            pdf.cell(
+                30,
+                6,
+                f"${com_ind:,}",
+                border=1,
+                align="R",
+                new_x="LMARGIN",
+                new_y="NEXT",
+            )
             total_canon += canon
 
         # Total Canones
@@ -641,9 +758,14 @@ class ServicioDocumentosPDF:
         # Descuentos
         if datos["total_descuentos"] > 0:
             descuentos = datos.get("descuentos_lista", [])
-            
+
             # Clasificación Élite (LIQ-AUTO-001)
-            ley_seguros = [d for d in descuentos if "4x1000" in d['descripcion_descuento'].lower() or "seguro" in d['descripcion_descuento'].lower()]
+            ley_seguros = [
+                d
+                for d in descuentos
+                if "4x1000" in d["descripcion_descuento"].lower()
+                or "seguro" in d["descripcion_descuento"].lower()
+            ]
             operativos = [d for d in descuentos if d not in ley_seguros]
 
             def render_grupo_descuentos(titulo, lista):
@@ -730,9 +852,7 @@ class ServicioDocumentosPDF:
         pdf.cell(60, 5, f"C.C. {datos['documento_asesor']}", align="C")
 
         # Guardar
-        filename = (
-            f"cuenta_cobro_{datos['id_liquidacion']}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
-        )
+        filename = f"cuenta_cobro_{datos['id_liquidacion']}_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
         output_path = self.output_dir / filename
         pdf.output(str(output_path))
 
@@ -763,13 +883,22 @@ class ServicioDocumentosPDF:
         pdf.set_font("helvetica", "B", 9)
         pdf.cell(40, 6, "Desocupación #:", border=0)
         pdf.set_font("helvetica", "", 9)
-        pdf.cell(40, 6, f"{datos['id_desocupacion']}", border=0, new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            40,
+            6,
+            f"{datos['id_desocupacion']}",
+            border=0,
+            new_x="LMARGIN",
+            new_y="NEXT",
+        )
 
         # Fila 2: Inmueble
         pdf.set_font("helvetica", "B", 9)
         pdf.cell(30, 6, "Inmueble:", border=0)
         pdf.set_font("helvetica", "", 9)
-        pdf.cell(160, 6, f"{datos['direccion']}", border=0, new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            160, 6, f"{datos['direccion']}", border=0, new_x="LMARGIN", new_y="NEXT"
+        )
 
         # Fila 3: Inquilino
         pdf.set_font("helvetica", "B", 9)
@@ -788,7 +917,9 @@ class ServicioDocumentosPDF:
         # --- Checklist ---
         pdf.ln(3)
         pdf.set_font("helvetica", "B", 11)
-        pdf.cell(0, 8, "INVENTARIO Y ESTADO DEL INMUEBLE", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            0, 8, "INVENTARIO Y ESTADO DEL INMUEBLE", new_x="LMARGIN", new_y="NEXT"
+        )
 
         # Definir items del checklist
         items = [
@@ -820,7 +951,13 @@ class ServicioDocumentosPDF:
         pdf.cell(col_item, row_height, "Item / Descripción", border=1, fill=True)
         pdf.cell(col_est, row_height, "Estado", border=1, fill=True)  # B/R/M
         pdf.cell(
-            col_obs, row_height, "Observaciones", border=1, fill=True, new_x="LMARGIN", new_y="NEXT"
+            col_obs,
+            row_height,
+            "Observaciones",
+            border=1,
+            fill=True,
+            new_x="LMARGIN",
+            new_y="NEXT",
         )
 
         pdf.set_font("helvetica", "", 8)
@@ -853,10 +990,14 @@ class ServicioDocumentosPDF:
 
         pdf.set_xy(20, y_sig + 2)
         pdf.set_font("helvetica", "B", 8)
-        pdf.cell(60, 4, "RECIBE (INMOBILIARIA)", align="C", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            60, 4, "RECIBE (INMOBILIARIA)", align="C", new_x="LMARGIN", new_y="NEXT"
+        )
 
         pdf.set_xy(110, y_sig + 2)
-        pdf.cell(60, 4, "ENTREGA (ARRENDATARIO)", align="C", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(
+            60, 4, "ENTREGA (ARRENDATARIO)", align="C", new_x="LMARGIN", new_y="NEXT"
+        )
 
         pdf.set_xy(110, y_sig + 6)
         pdf.set_font("helvetica", "", 8)
@@ -870,7 +1011,9 @@ class ServicioDocumentosPDF:
         return str(output_path.absolute())
 
     def generar_lote_estados_cuenta_zip(
-        self, lista_datos: List[Dict[str, Any]], filename_prefix: str = "lote_liquidaciones"
+        self,
+        lista_datos: List[Dict[str, Any]],
+        filename_prefix: str = "lote_liquidaciones",
     ) -> str:
         """
         Genera un lote de estados de cuenta y los comprime en un ZIP.
@@ -886,7 +1029,9 @@ class ServicioDocumentosPDF:
         import zipfile
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        zip_filename = f"{filename_prefix}_{datetime.now().strftime('%Y%m%d%H%M%S')}.zip"
+        zip_filename = (
+            f"{filename_prefix}_{datetime.now().strftime('%Y%m%d%H%M%S')}.zip"
+        )
         zip_path = self.output_dir / zip_filename
 
         generated_files = []
@@ -898,7 +1043,7 @@ class ServicioDocumentosPDF:
                 # Esto es seguro en hilos porque cada llamada crea su propia instancia FPDF
                 path = self.generar_estado_cuenta(datos)
                 return path
-            except Exception as e:
+            except Exception:
                 pass  # print(f"Error generando PDF para ID {datos.get('id')}: {e}") [OpSec Removed]
                 return None
 
@@ -949,7 +1094,9 @@ class ServicioDocumentosPDF:
         import zipfile
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        zip_filename = f"{filename_prefix}_{datetime.now().strftime('%Y%m%d%H%M%S')}.zip"
+        zip_filename = (
+            f"{filename_prefix}_{datetime.now().strftime('%Y%m%d%H%M%S')}.zip"
+        )
         zip_path = self.output_dir / zip_filename
 
         generated_files: List[Path] = []
@@ -989,7 +1136,5 @@ class ServicioDocumentosPDF:
                     except Exception:
                         pass
 
-        logger.info(
-            f"ZIP generado con {len(generated_files)} recibos en: {zip_path}"
-        )
+        logger.info(f"ZIP generado con {len(generated_files)} recibos en: {zip_path}")
         return str(zip_path.absolute())

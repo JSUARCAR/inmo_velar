@@ -1,0 +1,1894 @@
+- generic:
+  - region "Notifications alt+T"
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - img
+            - heading [level=1]: INMOBILIARIA VELAR SAS
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - paragraph: PRINCIPAL
+                - link:
+                  - /url: /dashboard
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Dashboard
+                - link:
+                  - /url: /alertas
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Alertas Tempranas
+              - generic:
+                - generic:
+                  - paragraph: GESTIÓN
+                - link:
+                  - /url: /personas
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Personas
+                - link:
+                  - /url: /propiedades
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Propiedades
+                - link:
+                  - /url: /contratos
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Contratos
+                - link:
+                  - /url: /propiedad-horizontal
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Prop. Horizontal
+                - link:
+                  - /url: /proveedores
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Proveedores
+              - generic:
+                - generic:
+                  - paragraph: OPERACIONES
+                - link:
+                  - /url: /liquidaciones
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Liquidaciones
+                - link:
+                  - /url: /liquidacion-asesores
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Liquidación Asesores
+                - link:
+                  - /url: /recaudos
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Recaudos
+                - link:
+                  - /url: /desocupaciones
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Desocupaciones
+                - link:
+                  - /url: /incidentes
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Incidentes
+                - link:
+                  - /url: /seguros
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Seguros
+                - link:
+                  - /url: /recibos-publicos
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Recibos Públicos
+                - link:
+                  - /url: /saldos-favor
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Saldos a Favor
+              - generic:
+                - generic:
+                  - paragraph: ADMINISTRACIÓN
+                - link:
+                  - /url: /usuarios
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Usuarios
+                - link:
+                  - /url: /configuracion
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Configuración
+                - link:
+                  - /url: /incrementos
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: IPC / Incrementos
+                - link:
+                  - /url: /auditoria
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Auditoría
+                - link:
+                  - /url: /reportes
+                  - generic:
+                    - generic:
+                      - img
+                      - paragraph: Reportes
+          - generic:
+            - img
+            - generic:
+              - paragraph: admin
+              - paragraph: Administrador
+            - generic:
+              - button:
+                - img
+              - generic:
+                - generic:
+                  - button:
+                    - generic:
+                      - generic:
+                        - img
+              - button:
+                - img
+        - generic:
+          - generic:
+            - heading [level=1]: Gestión de Incidentes
+            - generic:
+              - generic:
+                - textbox:
+                  - /placeholder: Buscar incidente...
+              - combobox:
+                - generic: Todas
+                - img
+              - combobox:
+                - generic: Todos
+                - img
+              - group:
+                - radio [checked]:
+                  - generic:
+                    - generic: Kanban
+                    - generic: Kanban
+                - radio:
+                  - generic:
+                    - generic: Lista
+                    - generic: Lista
+              - button:
+                - generic:
+                  - img
+                  - paragraph: Reportar
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                            - paragraph: Reportado
+                          - generic: "7"
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-48
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-06-07
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: BRR ROJAS PINILLA ET 1 MZ 2 CS 28
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: JOSE LUIS BOTERO PEREZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3117549594"
+                                          - generic:
+                                            - img
+                                            - paragraph: DIEGO MAURICIO CASAS FLORES
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3148952352"
+                                          - generic:
+                                            - img
+                                            - paragraph: DIEGO MAURICIO CASAS FLORES
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3148952352"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-46
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-06-04
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: EDF LA PATRIA AP 101
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: HEMAY ANDRES ORTIZ MORALES
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "447539328419"
+                                          - generic:
+                                            - img
+                                            - paragraph: MARIANA ORTIZ CASTRO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3143353568"
+                                          - generic:
+                                            - img
+                                            - paragraph: MARIANA ORTIZ CASTRO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3143353568"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-49
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-05-25
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: BRR LAS AMERICAS PI 1
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: ALBA GABRIELA GARCÍA URIBE
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3203318684"
+                                          - generic:
+                                            - img
+                                            - paragraph: ANGIE JOHANA PEREZ OSUNA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3222921413"
+                                          - generic:
+                                            - img
+                                            - paragraph: ANGIE JOHANA PEREZ OSUNA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3222921413"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-41
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-30
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: BRR VILLA LILIANA MZ N CS 20 PI 2
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: JORGE ELIECER ECHEVERRI GOMEZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "57663707292"
+                                          - generic:
+                                            - img
+                                            - paragraph: DOLLY VELÁSQUEZ QUINTERO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3128118999"
+                                          - generic:
+                                            - img
+                                            - paragraph: DOLLY VELÁSQUEZ QUINTERO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3128118999"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-38
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-26
+                                          - generic: Baja
+                                        - generic:
+                                          - img
+                                          - paragraph: EDF LA PATRIA AP 402
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: STEVEN RAMÍREZ CORREA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: +44 7751 718697
+                                          - generic:
+                                            - img
+                                            - paragraph: MARIA DEL ROSARIO MONTES
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3117431027"
+                                          - generic:
+                                            - img
+                                            - paragraph: MARIA DEL ROSARIO MONTES
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3117431027"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-33
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-15
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: BRR VILLA SOFIA MZ C CS 10
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: MAGNA PATRICIA ESCARRAGA SERNA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3106391187"
+                                          - generic:
+                                            - img
+                                            - paragraph: THAIWILL ANYELI ESTWIK RUIZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3127408952"
+                                          - generic:
+                                            - img
+                                            - paragraph: THAIWILL ANYELI ESTWIK RUIZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3127408952"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-16
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-03-14
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: CND MATTIZ TO B AP 906 PQ 153
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: JHON FREDY ARIAS
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3108349697"
+                                          - generic:
+                                            - img
+                                            - paragraph: JUAN CARLOS LÓPEZ BARRERA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3226928621"
+                                          - generic:
+                                            - img
+                                            - paragraph: JUAN CARLOS LÓPEZ BARRERA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3226928621"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                            - paragraph: Cotizado
+                          - generic: "1"
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-47
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-05-28
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: CL 49 CR 56-65 TO 1 AP 101, VERDU II
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: BRAYAN ANDRES CEBALLOS
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "85998010959"
+                                          - generic:
+                                            - img
+                                            - paragraph: EISENHOWER ARIZA PENAGOS
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3045660085"
+                                          - generic:
+                                            - img
+                                            - paragraph: EISENHOWER ARIZA PENAGOS
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3045660085"
+                                        - generic:
+                                          - paragraph: Cotizaciones
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: "226000"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                            - paragraph: Aprobado
+                          - generic: "2"
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-52
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-07-01
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: Calle Falsa 123 - Test Renov
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: SANTIAGO GÓMEZ PEÑA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3106272823"
+                                          - generic:
+                                            - img
+                                            - paragraph: Juan Test Renov
+                                          - generic:
+                                            - img
+                                            - paragraph: Juan Test Renov
+                                        - generic:
+                                          - img
+                                          - paragraph: YEISON MAESTRO
+                                          - paragraph: $70000
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-45
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-29
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: CONJ CIUDADELA COMFENALCO MZ H CS 29
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: JHON JAMES MENDOZA RENDON
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3186457734"
+                                          - generic:
+                                            - img
+                                            - paragraph: ARIF BEDOYA LOPEZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3208265710"
+                                          - generic:
+                                            - img
+                                            - paragraph: ARIF BEDOYA LOPEZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3208265710"
+                                        - generic:
+                                          - img
+                                          - paragraph: YEISON MAESTRO
+                                          - paragraph: $285000
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                            - paragraph: En Reparación
+                          - generic: "0"
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - img
+                                - paragraph: Sin incidentes
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                            - paragraph: Finalizado
+                          - generic: "24"
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-51
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-06-19
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: Calle Falsa 123 - Test Renov
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: SANTIAGO GÓMEZ PEÑA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3106272823"
+                                          - generic:
+                                            - img
+                                            - paragraph: Juan Test Renov
+                                          - generic:
+                                            - img
+                                            - paragraph: Juan Test Renov
+                                        - generic:
+                                          - img
+                                          - paragraph: ALBERTO GOMEZ
+                                          - paragraph: $150000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-06-19
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-50
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-06-19
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: BRR VILLA LILIANA AP 201, EDF FILIPINAS
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: MAIRA ALEXANDRA ROMERO MARIN
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3135456965"
+                                          - generic:
+                                            - img
+                                            - paragraph: CARLOS ALBERTO PORRAS VALENCIA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3234702231"
+                                          - generic:
+                                            - img
+                                            - paragraph: CARLOS ALBERTO PORRAS VALENCIA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3234702231"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-44
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-05-28
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: CL 49 CR 56-65 TO 1 AP 101, VERDU II
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: BRAYAN ANDRES CEBALLOS
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "85998010959"
+                                          - generic:
+                                            - img
+                                            - paragraph: EISENHOWER ARIZA PENAGOS
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3045660085"
+                                          - generic:
+                                            - img
+                                            - paragraph: EISENHOWER ARIZA PENAGOS
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3045660085"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-42
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-05-20
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: CR 40 CL 51-41 TO 5 AP 1A, CJT RES CIBELES
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: CARLOS ARTURO MUÑOZ MUÑOZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3146720999"
+                                          - generic:
+                                            - img
+                                            - paragraph: MARIANA BERMÚDEZ RAMÍREZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3019691908"
+                                          - generic:
+                                            - img
+                                            - paragraph: MARIANA BERMÚDEZ RAMÍREZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3019691908"
+                                        - generic:
+                                          - img
+                                          - paragraph: ALEXANDER JIMENEZ
+                                          - paragraph: $50000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-05-20
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-43
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-05-15
+                                          - generic: Baja
+                                        - generic:
+                                          - img
+                                          - paragraph: CR 19 CL 11N-33 ET 1 BQ 1 AP 302, CJT RES LA ABADIA
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: YULIANA CAÑON ORTEGA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3123747732"
+                                          - generic:
+                                            - img
+                                            - paragraph: CARLOS ANDRÉS RESTREPO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3045611294"
+                                          - generic:
+                                            - img
+                                            - paragraph: CARLOS ANDRÉS RESTREPO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3045611294"
+                                        - generic:
+                                          - img
+                                          - paragraph: YEISON MAESTRO
+                                          - paragraph: $65000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-05-17
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-40
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-05-04
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: CRR 14 CLL 50N-03 TRES NEVADOS TRR A AP 402
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: GIOVANNA ARANGO ORREGO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3182887155"
+                                          - generic:
+                                            - img
+                                            - paragraph: N/D
+                                          - generic:
+                                            - img
+                                            - paragraph: N/D
+                                        - generic:
+                                          - img
+                                          - paragraph: ALEXANDER JIMENEZ
+                                          - paragraph: $150000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-05-08
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-39
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-05-04
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: EDF LA PATRIA AP 402
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: STEVEN RAMÍREZ CORREA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: +44 7751 718697
+                                          - generic:
+                                            - img
+                                            - paragraph: MARIA DEL ROSARIO MONTES
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3117431027"
+                                          - generic:
+                                            - img
+                                            - paragraph: MARIA DEL ROSARIO MONTES
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3117431027"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-36
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-27
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: CR 14 CL 27N-80 LC 6, EDI MALL LA AVENIDA
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: YULIANA CAÑON ORTEGA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3123747732"
+                                          - generic:
+                                            - img
+                                            - paragraph: DIEGO FERNANDO SAAVEDRA VERGARA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3102834737"
+                                          - generic:
+                                            - img
+                                            - paragraph: DIEGO FERNANDO SAAVEDRA VERGARA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3102834737"
+                                        - generic:
+                                          - img
+                                          - paragraph: YEISON MAESTRO
+                                          - paragraph: $250
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-05-06
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-37
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-20
+                                          - generic: Baja
+                                        - generic:
+                                          - img
+                                          - paragraph: BRR LA PATRIA MZ 29 CS 38
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: YESID BEDOYA RAMIREZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3183864675"
+                                          - generic:
+                                            - img
+                                            - paragraph: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3203717698"
+                                          - generic:
+                                            - img
+                                            - paragraph: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3203717698"
+                                        - generic:
+                                          - img
+                                          - paragraph: ALBERTO GOMEZ
+                                          - paragraph: $0
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-05-30
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-34
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-17
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: BRR EL SILENCIO ET 2 MZ D CS 4
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: N/D
+                                          - generic:
+                                            - img
+                                            - paragraph: DANIEL STEVEN MARTINEZ CEBALLOS
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3206868086"
+                                          - generic:
+                                            - img
+                                            - paragraph: DANIEL STEVEN MARTINEZ CEBALLOS
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3206868086"
+                                        - generic:
+                                          - img
+                                          - paragraph: ALEXANDER JIMENEZ
+                                          - paragraph: $350000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-05-31
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-35
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-16
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: BRR LA PATRIA MZ 42 CS 33
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: MARTHA CECILIA HOLGUIN
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3113977020"
+                                          - generic:
+                                            - img
+                                            - paragraph: HECTOR ALFONSO RAMIREZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3115573253"
+                                          - generic:
+                                            - img
+                                            - paragraph: HECTOR ALFONSO RAMIREZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3115573253"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-29
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-09
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: CL 58 CR 48-39 TO 15 AP 201, CJT CER ZAZACUARI
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: JUAN CARLOS OSPINA GOMEZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3142753748"
+                                          - generic:
+                                            - img
+                                            - paragraph: LAURA CAMILA LONDOÑO POVEDA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3154920788"
+                                          - generic:
+                                            - img
+                                            - paragraph: LAURA CAMILA LONDOÑO POVEDA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3154920788"
+                                        - generic:
+                                          - img
+                                          - paragraph: Sin proveedor
+                                          - paragraph: $0
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-05-30
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-31
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-09
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: CR 23E CL 42-15 AP 605, EDF ALAMOS 23
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: EIBIYOMAR OLMOS CASTRILLON
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3332715120"
+                                          - generic:
+                                            - img
+                                            - paragraph: YENNY GARCIA HERNANDEZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3128066980"
+                                          - generic:
+                                            - img
+                                            - paragraph: YENNY GARCIA HERNANDEZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3128066980"
+                                        - generic:
+                                          - img
+                                          - paragraph: ALBERTO GOMEZ
+                                          - paragraph: $100000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-04-10
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-32
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-08
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: BRR LA PATRIA MZ 29 CS 38
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: YESID BEDOYA RAMIREZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3183864675"
+                                          - generic:
+                                            - img
+                                            - paragraph: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3203717698"
+                                          - generic:
+                                            - img
+                                            - paragraph: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3203717698"
+                                        - generic:
+                                          - img
+                                          - paragraph: ALBERTO GOMEZ
+                                          - paragraph: $220000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-04-15
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-30
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-08
+                                          - generic: Baja
+                                        - generic:
+                                          - img
+                                          - paragraph: CR 19 CL 11N-33 ET 1 BQ 1 AP 302, CJT RES LA ABADIA
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: YULIANA CAÑON ORTEGA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3123747732"
+                                          - generic:
+                                            - img
+                                            - paragraph: CARLOS ANDRÉS RESTREPO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3045611294"
+                                          - generic:
+                                            - img
+                                            - paragraph: CARLOS ANDRÉS RESTREPO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3045611294"
+                                        - generic:
+                                          - img
+                                          - paragraph: YEISON MAESTRO
+                                          - paragraph: $260000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-05-20
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-24
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-08
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: BRR LA PATRIA MZ 29 CS 38
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: YESID BEDOYA RAMIREZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3183864675"
+                                          - generic:
+                                            - img
+                                            - paragraph: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3203717698"
+                                          - generic:
+                                            - img
+                                            - paragraph: ANDREA STEFANYA RODRIGUEZ CARRILLO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3203717698"
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-23
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-08
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: CRA 44 CL 26-80 ET3 TO J AP 102, CJT RES PARQUES DE BOLIVAR
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: JENIFER HURTADO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3105595949"
+                                          - generic:
+                                            - img
+                                            - paragraph: CÉSAR AUGUSTO LONDOÑO GIRALDO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3208578346"
+                                          - generic:
+                                            - img
+                                            - paragraph: CÉSAR AUGUSTO LONDOÑO GIRALDO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3208578346"
+                                        - generic:
+                                          - img
+                                          - paragraph: ALBERTO GOMEZ
+                                          - paragraph: $100000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-04-14
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-21
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-08
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: CR 20 CL 3N-00 ET 3 TO 6 AP 404, CJT PQ RES DEL CAFE
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: ANA MARIA RODRIGUEZ HURTADO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "+1347723817"
+                                          - generic:
+                                            - img
+                                            - paragraph: MAGDA LORENA ARIAS ALONSO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3113076118"
+                                          - generic:
+                                            - img
+                                            - paragraph: MAGDA LORENA ARIAS ALONSO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3113076118"
+                                        - generic:
+                                          - img
+                                          - paragraph: ALBERTO GOMEZ
+                                          - paragraph: $120000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-04-10
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-20
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-04-07
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: EDF JOSELINO GOMEZ AP 401, CENTRO
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: ARBEY MENDEZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3002117194"
+                                          - generic:
+                                            - img
+                                            - paragraph: JULIO HERNANDEZ LARA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3154817886"
+                                          - generic:
+                                            - img
+                                            - paragraph: JULIO HERNANDEZ LARA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3154817886"
+                                        - generic:
+                                          - img
+                                          - paragraph: LEONARDO GAS
+                                          - paragraph: $0
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-04-17
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-25
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-03-31
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: CJT EL CAMINO DE COCORA MZ 1 BQ 6 CS 5 VIS
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: LUIS MATEO TORO OSORIO
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3006382740"
+                                          - generic:
+                                            - img
+                                            - paragraph: JORGE ISAAC BOTINA PABON
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: 315 5431617
+                                          - generic:
+                                            - img
+                                            - paragraph: JORGE ISAAC BOTINA PABON
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: 315 5431617
+                                        - generic:
+                                          - img
+                                          - paragraph: ALBERTO GOMEZ
+                                          - paragraph: $700000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-04-11
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-28
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-03-28
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: CR 6 CL 03-40 CS 54, CJT LA ALQUERIA
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: AMPARO SEGOVIA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3117716124"
+                                          - generic:
+                                            - img
+                                            - paragraph: ADRIANA GARCIA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3118383430"
+                                          - generic:
+                                            - img
+                                            - paragraph: ADRIANA GARCIA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3118383430"
+                                        - generic:
+                                          - img
+                                          - paragraph: COTIZACIÓN EXTERNA
+                                          - paragraph: $0
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-04-27
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-19
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-03-27
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: BRR VILLA LILIANA MZ LL CS 327 PI 1
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: NATALIA ANDREA BOJACA MONTILLA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3216245700"
+                                          - generic:
+                                            - img
+                                            - paragraph: ARACELLY AGUIRRE BETANCOURT
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3113811274"
+                                          - generic:
+                                            - img
+                                            - paragraph: ARACELLY AGUIRRE BETANCOURT
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3113811274"
+                                        - generic:
+                                          - img
+                                          - paragraph: ALBERTO GOMEZ
+                                          - paragraph: $250000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-04-17
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-18
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-03-26
+                                          - generic: Media
+                                        - generic:
+                                          - img
+                                          - paragraph: CJT RES CERROS DEL VIENTO TO F AP 304
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: LEISY YURANY HURTADO MACETA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3205271092"
+                                          - generic:
+                                            - img
+                                            - paragraph: JULIÁN FERNANDO GUZMÁN VELA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3113197843"
+                                          - generic:
+                                            - img
+                                            - paragraph: JULIÁN FERNANDO GUZMÁN VELA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3113197843"
+                                        - generic:
+                                          - img
+                                          - paragraph: LEONARDO GAS
+                                          - paragraph: $132000
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-03-27
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+                                - generic:
+                                  - generic:
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: INC-17
+                                          - generic:
+                                            - img
+                                            - paragraph: 2026-03-24
+                                          - generic: Alta
+                                        - generic:
+                                          - img
+                                          - paragraph: CR 20 CL 3N-00 TO 6 AP 803, CJT PQ RES DEL CAFE
+                                        - generic:
+                                          - generic:
+                                            - img
+                                            - paragraph: LINA MARIA IDARRAGA RAMIREZ
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: +1(347)8198083
+                                          - generic:
+                                            - img
+                                            - paragraph: MARÍA JOSÉ CORREA NORIEGA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3106551583"
+                                          - generic:
+                                            - img
+                                            - paragraph: MARÍA JOSÉ CORREA NORIEGA
+                                            - generic:
+                                              - paragraph: /
+                                              - img
+                                              - paragraph: "3106551583"
+                                        - generic:
+                                          - img
+                                          - paragraph: Sin proveedor
+                                          - paragraph: $0
+                                          - generic:
+                                            - paragraph: (
+                                            - paragraph: 2026-05-11
+                                            - paragraph: )
+                                        - generic:
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Inquilino
+                                          - generic:
+                                            - generic:
+                                              - img
+                                              - paragraph: Pendiente
+      - region "Notifications alt+T"
+  - dialog [active] [ref=f6e44]:
+    - generic [ref=f6e45]:
+      - generic [ref=f6e46]:
+        - 'heading "Incidente #52" [level=1] [ref=f6e47]'
+        - button "Descargar PDF" [ref=f6e49] [cursor=pointer]:
+          - generic [ref=f6e50]:
+            - img [ref=f6e51]
+            - paragraph [ref=f6e54]: Descargar PDF
+        - generic [ref=f6e55]: Aprobado
+        - generic [ref=f6e57]:
+          - img [ref=f6e58]
+          - paragraph [ref=f6e60]: Pendiente
+      - generic [ref=f6e61]:
+        - tablist [ref=f6e62]:
+          - tab "General" [selected] [ref=f6e63]:
+            - generic [ref=f6e64]: General
+          - tab "Cotizaciones" [ref=f6e65]:
+            - generic [ref=f6e66]: Cotizaciones
+          - tab "Documentos / Fotos" [ref=f6e67]:
+            - generic [ref=f6e68]: Documentos / Fotos
+        - tabpanel "General" [ref=f6e69]:
+          - generic [ref=f6e73]:
+            - generic [ref=f6e75]:
+              - generic [ref=f6e76]:
+                - img [ref=f6e77]
+                - paragraph [ref=f6e78]: Descripción Detallada
+              - paragraph [ref=f6e79]: Calle Falsa 123 - Test Renov
+            - generic [ref=f6e81]:
+              - generic [ref=f6e82]:
+                - img [ref=f6e83]
+                - paragraph [ref=f6e86]: "Propiedad:"
+                - paragraph [ref=f6e87]: Calle Falsa 123 - Test Renov
+              - generic [ref=f6e88]:
+                - img [ref=f6e89]
+                - paragraph [ref=f6e91]: "Prioridad:"
+                - paragraph [ref=f6e92]: Media
+              - generic [ref=f6e93]:
+                - img [ref=f6e94]
+                - paragraph [ref=f6e96]: "Fecha:"
+                - paragraph [ref=f6e97]: 2026-07-01
+              - generic [ref=f6e98]:
+                - img [ref=f6e99]
+                - paragraph [ref=f6e102]: "Origen:"
+                - paragraph [ref=f6e103]: Inquilino
+            - heading "Acciones y Estado" [level=1] [ref=f6e105]
+            - generic [ref=f6e106]:
+              - button "Editar" [ref=f6e107] [cursor=pointer]:
+                - generic [ref=f6e108]:
+                  - img [ref=f6e109]
+                  - paragraph [ref=f6e112]: Editar
+              - button "Cancelar" [ref=f6e113] [cursor=pointer]:
+                - generic [ref=f6e114]:
+                  - img [ref=f6e115]
+                  - paragraph [ref=f6e118]: Cancelar
+              - button "Finalizar" [ref=f6e119] [cursor=pointer]:
+                - generic [ref=f6e120]:
+                  - img [ref=f6e121]
+                  - paragraph [ref=f6e124]: Finalizar
+              - button "Plan de Pago" [ref=f6e125] [cursor=pointer]:
+                - generic [ref=f6e126]:
+                  - img [ref=f6e127]
+                  - paragraph [ref=f6e129]: Plan de Pago
+            - generic [ref=f6e130]:
+              - generic [ref=f6e131]:
+                - img [ref=f6e133]
+                - paragraph [ref=f6e136]: Incidente aprobado. Puede iniciar la reparación.
+              - button "Iniciar Reparación" [ref=f6e137] [cursor=pointer]
+      - button "Cerrar" [ref=f6e140] [cursor=pointer]

@@ -2,8 +2,12 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from src.infraestructura.notificaciones.cliente_email_office365 import ClienteEmailOffice365
-from src.infraestructura.notificaciones.cliente_whatsapp_desktop import ClienteWhatsAppDesktop
+from src.infraestructura.notificaciones.cliente_email_office365 import (
+    ClienteEmailOffice365,
+)
+from src.infraestructura.notificaciones.cliente_whatsapp_desktop import (
+    ClienteWhatsAppDesktop,
+)
 
 # Importar entidades para type hinting (ajustar paths según estructura real)
 # from src.dominio.entidades.liquidacion_asesor import LiquidacionAsesor
@@ -52,7 +56,11 @@ class ServicioNotificaciones:
             return mensaje_cuerpo
 
     def notificar_liquidacion_asesor(
-        self, liquidacion, email_asesor: str, nombre_asesor: str, pdf_path: Optional[str] = None
+        self,
+        liquidacion,
+        email_asesor: str,
+        nombre_asesor: str,
+        pdf_path: Optional[str] = None,
     ) -> bool:
         """
         Envía notificación de liquidación a un asesor por correo.
@@ -67,7 +75,9 @@ class ServicioNotificaciones:
             self.logger.warning("No se puede notificar: Asesor sin email.")
             return False
 
-        asunto = f"Comprobante de Liquidación - Período {liquidacion.periodo_liquidacion}"
+        asunto = (
+            f"Comprobante de Liquidación - Período {liquidacion.periodo_liquidacion}"
+        )
         cuerpo_msg = (
             f"Adjunto encontrarás el comprobante de tu liquidación correspondiente al período <strong>{liquidacion.periodo_liquidacion}</strong>.<br>"
             f"Valor Neto a Pagar: <strong>${liquidacion.valor_neto_asesor:,.0f}</strong>"
@@ -76,7 +86,10 @@ class ServicioNotificaciones:
         html_content = self._cargar_template(nombre_asesor, cuerpo_msg)
 
         return self.email_client.enviar_correo(
-            destinatario=email_asesor, asunto=asunto, cuerpo=html_content, adjunto_path=pdf_path
+            destinatario=email_asesor,
+            asunto=asunto,
+            cuerpo=html_content,
+            adjunto_path=pdf_path,
         )
 
     def notificar_recibo_vencido_whatsapp(

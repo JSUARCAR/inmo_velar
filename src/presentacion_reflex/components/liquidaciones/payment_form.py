@@ -36,7 +36,9 @@ def payment_form() -> rx.Component:
     return rx.dialog.root(
         rx.dialog.content(
             rx.dialog.title("Registrar Pago a Propietario"),
-            rx.dialog.description("Ingrese los detalles de la transferencia o pago realizado."),
+            rx.dialog.description(
+                "Ingrese los detalles de la transferencia o pago realizado."
+            ),
             rx.form.root(
                 rx.vstack(
                     # Campos Ocultos
@@ -55,7 +57,12 @@ def payment_form() -> rx.Component:
                     ),
                     # Método de Pago
                     rx.vstack(
-                        rx.text("Método de Pago", size="2", weight="medium", color="gray.700"),
+                        rx.text(
+                            "Método de Pago",
+                            size="2",
+                            weight="medium",
+                            color="gray.700",
+                        ),
                         rx.select(
                             [
                                 "Transferencia Electrónica",
@@ -88,7 +95,10 @@ def payment_form() -> rx.Component:
                     rx.hstack(
                         rx.dialog.close(
                             rx.button(
-                                "Cancelar", variant="soft", color_scheme="gray", type="button"
+                                "Cancelar",
+                                variant="soft",
+                                color_scheme="gray",
+                                type="button",
                             ),
                         ),
                         rx.spacer(),

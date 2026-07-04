@@ -5,8 +5,10 @@ Formulario modal para gestión de Recibos Públicos.
 import reflex as rx
 
 from src.presentacion_reflex.state.recibos_state import RecibosState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
-from src.presentacion_reflex import styles
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_select_root,
+)
 
 
 def modal_form() -> rx.Component:
@@ -29,11 +31,18 @@ def modal_form() -> rx.Component:
                         rx.flex(
                             # Propiedad
                             rx.box(
-                                rx.text("Propiedad *", size="2", weight="bold", margin_bottom="1"),
+                                rx.text(
+                                    "Propiedad *",
+                                    size="2",
+                                    weight="bold",
+                                    margin_bottom="1",
+                                ),
                                 neuro_select_root(
                                     rx.foreach(
                                         RecibosState.propiedades_disponibles,
-                                        lambda x: rx.select.item(x["label"], value=x["value"]),
+                                        lambda x: rx.select.item(
+                                            x["label"], value=x["value"]
+                                        ),
                                     ),
                                     placeholder="Seleccione propiedad...",
                                     name="id_propiedad",
@@ -94,9 +103,14 @@ def modal_form() -> rx.Component:
                             ),
                             # Valor
                             rx.box(
-                                rx.text("Valor Facturado *", size="2", weight="bold", margin_bottom="1"),
+                                rx.text(
+                                    "Valor Facturado *",
+                                    size="2",
+                                    weight="bold",
+                                    margin_bottom="1",
+                                ),
                                 neuro_input(
-                                    name="valor_recibo", # Note: It was valor_total but state uses valor_recibo
+                                    name="valor_recibo",  # Note: It was valor_total but state uses valor_recibo
                                     type="number",
                                     placeholder="0",
                                     required=True,
@@ -114,7 +128,12 @@ def modal_form() -> rx.Component:
                         rx.flex(
                             # Fecha Desde
                             rx.box(
-                                rx.text("Fecha Desde", size="2", weight="bold", margin_bottom="1"),
+                                rx.text(
+                                    "Fecha Desde",
+                                    size="2",
+                                    weight="bold",
+                                    margin_bottom="1",
+                                ),
                                 neuro_input(
                                     name="fecha_desde",
                                     type="date",
@@ -127,7 +146,12 @@ def modal_form() -> rx.Component:
                             ),
                             # Fecha Hasta
                             rx.box(
-                                rx.text("Fecha Hasta", size="2", weight="bold", margin_bottom="1"),
+                                rx.text(
+                                    "Fecha Hasta",
+                                    size="2",
+                                    weight="bold",
+                                    margin_bottom="1",
+                                ),
                                 neuro_input(
                                     name="fecha_hasta",
                                     type="date",
@@ -141,7 +165,10 @@ def modal_form() -> rx.Component:
                             # Vencimiento
                             rx.box(
                                 rx.text(
-                                    "Fecha Vencimiento *", size="2", weight="bold", margin_bottom="1"
+                                    "Fecha Vencimiento *",
+                                    size="2",
+                                    weight="bold",
+                                    margin_bottom="1",
                                 ),
                                 neuro_input(
                                     name="fecha_vencimiento",
@@ -157,12 +184,17 @@ def modal_form() -> rx.Component:
                             # Referencia
                             rx.box(
                                 rx.text(
-                                    "Referencia de Pago", size="2", weight="bold", margin_bottom="1"
+                                    "Referencia de Pago",
+                                    size="2",
+                                    weight="bold",
+                                    margin_bottom="1",
                                 ),
                                 neuro_input(
                                     name="referencia_pago",
                                     placeholder="Número de contrato o factura",
-                                    value=RecibosState.form_data.get("referencia_pago", ""), # Safe get
+                                    value=RecibosState.form_data.get(
+                                        "referencia_pago", ""
+                                    ),  # Safe get
                                     on_change=lambda val: RecibosState.set_form_field(
                                         "referencia_pago", val
                                     ),
@@ -179,13 +211,17 @@ def modal_form() -> rx.Component:
                     ),
                     # Observaciones
                     rx.box(
-                        rx.text("Observaciones", size="2", weight="bold", margin_bottom="1"),
+                        rx.text(
+                            "Observaciones", size="2", weight="bold", margin_bottom="1"
+                        ),
                         rx.text_area(
                             name="observaciones",
                             placeholder="Notas adicionales...",
                             width="100%",
                             value=RecibosState.form_data["observaciones"],
-                            on_change=lambda val: RecibosState.set_form_field("observaciones", val),
+                            on_change=lambda val: RecibosState.set_form_field(
+                                "observaciones", val
+                            ),
                         ),
                         width="100%",
                         margin_top="4",
@@ -200,7 +236,9 @@ def modal_form() -> rx.Component:
                             variant="soft",
                             color_scheme="gray",
                             type="button",
-                            on_click=lambda: RecibosState.handle_form_open_change(False),
+                            on_click=lambda: RecibosState.handle_form_open_change(
+                                False
+                            ),
                         )
                     ),
                     rx.button(

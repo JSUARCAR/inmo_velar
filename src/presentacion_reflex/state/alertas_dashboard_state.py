@@ -1,5 +1,4 @@
-import sys
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import reflex as rx
 
@@ -8,7 +7,9 @@ from src.infraestructura.persistencia.database import db_manager
 
 
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 class AlertasDashboardState(rx.State):
     """
@@ -44,7 +45,9 @@ class AlertasDashboardState(rx.State):
             servicio = self._get_servicio()
 
             estado = self.filtro_estado if self.filtro_estado != "Todas" else None
-            prioridad = self.filtro_prioridad if self.filtro_prioridad != "Todas" else None
+            prioridad = (
+                self.filtro_prioridad if self.filtro_prioridad != "Todas" else None
+            )
             tipo = self.filtro_tipo if self.filtro_tipo != "Todos" else None
 
             offset = max(0, (self.page - 1) * self.page_size)
@@ -93,26 +96,27 @@ class AlertasDashboardState(rx.State):
         yield rx.toast.info("Generando reporte de alertas...", position="bottom-right")
         try:
             servicio = self._get_servicio()
-            
+
             estado = self.filtro_estado if self.filtro_estado != "Todas" else None
-            prioridad = self.filtro_prioridad if self.filtro_prioridad != "Todas" else None
-            tipo = self.filtro_tipo if self.filtro_tipo != "Todos" else None
-            
-            csv_data = servicio.exportar_alertas_csv(
-                estado=estado,
-                prioridad=prioridad,
-                tipo=tipo
+            prioridad = (
+                self.filtro_prioridad if self.filtro_prioridad != "Todas" else None
             )
-            
+            tipo = self.filtro_tipo if self.filtro_tipo != "Todos" else None
+
+            csv_data = servicio.exportar_alertas_csv(
+                estado=estado, prioridad=prioridad, tipo=tipo
+            )
+
             # Codificar con BOM para Excel
             data_bytes = csv_data.encode("utf-8-sig")
-            
+
             import time
+
             filename = f"reporte_alertas_{int(time.time())}.csv"
-            
+
             yield rx.download(data=data_bytes, filename=filename)
             yield rx.toast.success("Descarga iniciada", position="bottom-right")
-            
+
         except Exception as e:
             logger.error(f"Error exportando alertas: {e}", exc_info=True)
             yield rx.toast.error(f"Error al exportar: {str(e)}")
@@ -142,4 +146,3 @@ class AlertasDashboardState(rx.State):
             return AlertasDashboardState.load_alertas
         finally:
             self.is_loading = False
-

@@ -12,6 +12,7 @@ from src.infraestructura.persistencia.database import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
+
 class RepositorioPropietarioPostgres:
     """Repositorio PostgreSQL para la entidad Propietario."""
 
@@ -22,7 +23,7 @@ class RepositorioPropietarioPostgres:
         """Mapea una fila de la BD a una entidad Propietario."""
         if not row_dict:
             return None
-            
+
         return Propietario(
             id_propietario=row_dict.get("ID_PROPIETARIO"),
             id_persona=row_dict.get("ID_PERSONA"),
@@ -71,7 +72,9 @@ class RepositorioPropietarioPostgres:
 
     def crear(self, propietario: Propietario, usuario_sistema: str) -> Propietario:
         """Crea un nuevo propietario con RETURNING id (PostgreSQL)."""
-        logger.debug(f"Ejecutando crear propietario (Postgres): id_persona={propietario.id_persona}")
+        logger.debug(
+            f"Ejecutando crear propietario (Postgres): id_persona={propietario.id_persona}"
+        )
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
 
@@ -90,7 +93,11 @@ class RepositorioPropietarioPostgres:
             (
                 propietario.id_persona,
                 propietario.observaciones_propietario,
-                bool(propietario.estado_propietario) if propietario.estado_propietario is not None else True,
+                (
+                    bool(propietario.estado_propietario)
+                    if propietario.estado_propietario is not None
+                    else True
+                ),
                 propietario.fecha_ingreso_propietario or datetime.now().isoformat(),
                 datetime.now().isoformat(),
                 usuario_sistema,
@@ -123,7 +130,11 @@ class RepositorioPropietarioPostgres:
             """,
             (
                 propietario.observaciones_propietario,
-                bool(propietario.estado_propietario) if propietario.estado_propietario is not None else True,
+                (
+                    bool(propietario.estado_propietario)
+                    if propietario.estado_propietario is not None
+                    else True
+                ),
                 datetime.now().isoformat(),
                 usuario_sistema,
                 propietario.id_propietario,

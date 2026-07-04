@@ -32,7 +32,9 @@ class RepositorioPolizaPostgres:
             id_seguro=(row_dict.get("id_seguro") or row_dict.get("ID_SEGURO")),
             fecha_inicio=(row_dict.get("fecha_inicio") or row_dict.get("FECHA_INICIO")),
             fecha_fin=(row_dict.get("fecha_fin") or row_dict.get("FECHA_FIN")),
-            numero_poliza=(row_dict.get("numero_poliza") or row_dict.get("NUMERO_POLIZA")),
+            numero_poliza=(
+                row_dict.get("numero_poliza") or row_dict.get("NUMERO_POLIZA")
+            ),
             estado=(row_dict.get("estado") or row_dict.get("ESTADO")),
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
@@ -53,7 +55,7 @@ class RepositorioPolizaPostgres:
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             placeholder = self.db.get_placeholder()
-            
+
             created_at = datetime.now().isoformat()
 
             cursor.execute(
@@ -96,7 +98,7 @@ class RepositorioPolizaPostgres:
             placeholder = self.db.get_placeholder()
 
             updated_at = datetime.now().isoformat()
-            
+
             cursor.execute(
                 f"""
                 UPDATE POLIZAS_SEGUROS SET

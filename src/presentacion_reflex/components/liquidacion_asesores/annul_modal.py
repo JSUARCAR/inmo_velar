@@ -1,7 +1,8 @@
 import reflex as rx
 
-from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
-from src.presentacion_reflex.state.liquidacion_asesores.form_state import LiquidacionFormState
+from src.presentacion_reflex.state.liquidacion_asesores.form_state import (
+    LiquidacionFormState,
+)
 
 
 def annul_modal() -> rx.Component:
@@ -35,7 +36,7 @@ def annul_modal() -> rx.Component:
                     color_scheme="red",
                     on_click=lambda: LiquidacionFormState.anular_liquidacion(
                         LiquidacionFormState.selected_liquidacion_id,
-                        LiquidacionFormState.annul_reason
+                        LiquidacionFormState.annul_reason,
                     ),
                 ),
                 spacing="3",

@@ -70,9 +70,9 @@ class ServicioSaldosFavor:
 
         # Crear entidad según tipo
         saldo = SaldoFavor(
-            id_propietario=id_beneficiario
-            if tipo_beneficiario == "Propietario"
-            else None,
+            id_propietario=(
+                id_beneficiario if tipo_beneficiario == "Propietario" else None
+            ),
             id_asesor=id_beneficiario if tipo_beneficiario == "Asesor" else None,
             tipo_beneficiario=tipo_beneficiario,
             valor_saldo=valor,

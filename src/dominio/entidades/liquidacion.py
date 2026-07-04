@@ -42,6 +42,7 @@ class Liquidacion:
     gastos_administracion: int = 0  # Cuota admin del conjunto pagada por inmob.
     gastos_servicios: int = 0  # Agua, luz común pagada por inmob.
     gastos_reparaciones: int = 0  # Incidentes/mantenimientos del mes
+    valor_incidentes: int = 0  # Descuentos por incidentes (nuevo)
     pago_predial: int = 0  # Pagos prediales
     seguro_monto: int = 0  # Monto del seguro (canon × porcentaje_seguro / 100)
     otros_egresos: int = 0  # Imprevistos
@@ -69,19 +70,35 @@ class Liquidacion:
     pagada_por: Optional[str] = None  # Usuario que registró el comprobante
     pagada_en: Optional[str] = None
 
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    # Soft delete (Eliminación lógica)
+    eliminada: bool = (
+        False  # TRUE = liquidación eliminada lógicamente, retenida para auditoría
+    )
+
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
 
     def __post_init__(self):
         """Validaciones de reglas de negocio"""
-        if self.estado_liquidacion not in ["En Proceso", "Aprobada", "Pagada", "Cancelada"]:
-            raise ValueError(f"Estado de liquidación inválido: {self.estado_liquidacion}")
+        if self.estado_liquidacion not in [
+            "En Proceso",
+            "Aprobada",
+            "Pagada",
+            "Cancelada",
+        ]:
+            raise ValueError(
+                f"Estado de liquidación inválido: {self.estado_liquidacion}"
+            )
 
         # Validar formato de período (YYYY-MM)
         if len(self.periodo) != 7 or self.periodo[4] != "-":
-            raise ValueError(f"Formato de período inválido: {self.periodo}. Use YYYY-MM")
+            raise ValueError(
+                f"Formato de período inválido: {self.periodo}. Use YYYY-MM"
+            )
 
     def calcular_totales(self):
         """Calcula automáticamente los totales y el neto a pagar"""
@@ -101,7 +118,9 @@ class Liquidacion:
             + (self.otros_egresos or 0)
         )
 
-        self.neto_a_pagar = self.total_ingresos - self.total_egresos
+        self.neto_a_pagar = (
+            self.total_ingresos - self.total_egresos - self.valor_incidentes
+        )
 
     @property
     def esta_en_proceso(self) -> bool:

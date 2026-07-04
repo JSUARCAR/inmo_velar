@@ -14,7 +14,9 @@ class ProcesadorDocumentosAsync:
     def __init__(self):
         self.servicio_base = ServicioDocumentalElite()
 
-    async def optimizar_imagen_async(self, imagen_bytes: bytes, mime_type: str) -> bytes:
+    async def optimizar_imagen_async(
+        self, imagen_bytes: bytes, mime_type: str
+    ) -> bytes:
         """
         Versión asíncrona de compresión de imágenes.
         Ejecuta la operación CPU-bound en un executor.
@@ -29,7 +31,9 @@ class ProcesadorDocumentosAsync:
         )
         return optimized_bytes
 
-    async def generar_thumbnail_async(self, imagen_bytes: bytes, mime_type: str) -> Optional[bytes]:
+    async def generar_thumbnail_async(
+        self, imagen_bytes: bytes, mime_type: str
+    ) -> Optional[bytes]:
         """
         Versión asíncrona de generación de thumbnails.
         """

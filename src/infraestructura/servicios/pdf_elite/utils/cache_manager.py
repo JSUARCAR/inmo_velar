@@ -34,7 +34,10 @@ class PDFCacheManager:
     """
 
     def __init__(
-        self, cache_dir: Path = None, ttl_seconds: int = 3600, max_cache_size_mb: int = 100
+        self,
+        cache_dir: Path = None,
+        ttl_seconds: int = 3600,
+        max_cache_size_mb: int = 100,
     ):
         """
         Inicializa el cache manager
@@ -133,12 +136,16 @@ class PDFCacheManager:
     def _ensure_cache_size(self) -> None:
         """Asegura que el cache no exceda el tamaño máximo"""
         total_size = sum(
-            (self.cache_dir / f).stat().st_size for f in self.cache_dir.glob("*.pdf") if f.is_file()
+            (self.cache_dir / f).stat().st_size
+            for f in self.cache_dir.glob("*.pdf")
+            if f.is_file()
         )
 
         if total_size > self.max_size_bytes:
             # Eliminar archivos más antiguos hasta estar bajo el límite
-            files_with_time = [(f, f.stat().st_mtime) for f in self.cache_dir.glob("*.pdf")]
+            files_with_time = [
+                (f, f.stat().st_mtime) for f in self.cache_dir.glob("*.pdf")
+            ]
             files_with_time.sort(key=lambda x: x[1])  # Más antiguos primero
 
             for file_path, _ in files_with_time:

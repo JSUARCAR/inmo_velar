@@ -56,7 +56,9 @@ class RepositorioLiquidacionAsesor:
                 row = cursor.fetchone()
                 if row:
                     if hasattr(row, "get") or isinstance(row, dict):
-                        liquidacion.id_liquidacion_asesor = row.get("ID_LIQUIDACION_ASESOR") or row.get("id_liquidacion_asesor")
+                        liquidacion.id_liquidacion_asesor = row.get(
+                            "ID_LIQUIDACION_ASESOR"
+                        ) or row.get("id_liquidacion_asesor")
                     else:
                         liquidacion.id_liquidacion_asesor = row[0]
 
@@ -208,7 +210,9 @@ class RepositorioLiquidacionAsesor:
                 search_cond = self.db_manager.get_search_condition(
                     ["per.NOMBRE_COMPLETO", "per.NUMERO_DOCUMENTO"]
                 )
-                conditions.append(f"({search_cond} OR CAST(l.ID_LIQUIDACION_ASESOR AS TEXT) LIKE %s)")
+                conditions.append(
+                    f"({search_cond} OR CAST(l.ID_LIQUIDACION_ASESOR AS TEXT) LIKE %s)"
+                )
                 query_params.extend([term, term, term])
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
@@ -226,9 +230,15 @@ class RepositorioLiquidacionAsesor:
             sort_order_valid = "DESC" if sort_order.lower() == "desc" else "ASC"
 
             # Contar total
-            cursor.execute(f"SELECT COUNT(*) as total {base_from} {where_clause}", query_params)
+            cursor.execute(
+                f"SELECT COUNT(*) as total {base_from} {where_clause}", query_params
+            )
             count_res = cursor.fetchone()
-            total = count_res["TOTAL"] if count_res and "TOTAL" in count_res else (count_res["total"] if count_res and "total" in count_res else 0)
+            total = (
+                count_res["TOTAL"]
+                if count_res and "TOTAL" in count_res
+                else (count_res["total"] if count_res and "total" in count_res else 0)
+            )
 
             # Datos
             data_query = f"""
@@ -244,26 +254,31 @@ class RepositorioLiquidacionAsesor:
 
             items = []
             for row in rows:
-                def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
+                def gv(k):
+                    return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
                 pct = float(gv("PORCENTAJE_COMISION") or 0) / 100.0
                 estado_val = gv("ESTADO_LIQUIDACION")
-                
-                items.append({
-                    "id_liquidacion_asesor": gv("ID_LIQUIDACION_ASESOR"),
-                    "periodo_liquidacion": gv("PERIODO_LIQUIDACION"),
-                    "estado_liquidacion": estado_val,
-                    "comision_bruta": gv("COMISION_BRUTA"),
-                    "total_descuentos": gv("TOTAL_DESCUENTOS"),
-                    "total_bonificaciones": gv("TOTAL_BONIFICACIONES") or 0,
-                    "valor_neto_asesor": gv("VALOR_NETO_ASESOR"),
-                    "porcentaje_real": pct,
-                    "id_contrato_a": gv("ID_CONTRATO_A"),
-                    "id_asesor": gv("ID_ASESOR"),
-                    "nombre_asesor": gv("NOMBRE_COMPLETO"),
-                    "puede_editarse": estado_val == "Pendiente",
-                    "puede_aprobarse": estado_val == "Pendiente",
-                    "puede_anularse": estado_val not in ["Anulada", "Pagada"],
-                })
+
+                items.append(
+                    {
+                        "id_liquidacion_asesor": gv("ID_LIQUIDACION_ASESOR"),
+                        "periodo_liquidacion": gv("PERIODO_LIQUIDACION"),
+                        "estado_liquidacion": estado_val,
+                        "comision_bruta": gv("COMISION_BRUTA"),
+                        "total_descuentos": gv("TOTAL_DESCUENTOS"),
+                        "total_bonificaciones": gv("TOTAL_BONIFICACIONES") or 0,
+                        "valor_neto_asesor": gv("VALOR_NETO_ASESOR"),
+                        "porcentaje_real": pct,
+                        "id_contrato_a": gv("ID_CONTRATO_A"),
+                        "id_asesor": gv("ID_ASESOR"),
+                        "nombre_asesor": gv("NOMBRE_COMPLETO"),
+                        "puede_editarse": estado_val == "Pendiente",
+                        "puede_aprobarse": estado_val == "Pendiente",
+                        "puede_anularse": estado_val not in ["Anulada", "Pagada"],
+                    }
+                )
 
             return items, total
 
@@ -299,12 +314,18 @@ class RepositorioLiquidacionAsesor:
                 query_params.append(id_asesor)
             if busqueda:
                 term = f"%{self.db_manager.normalize_search_term(busqueda)}%"
-                search_cond = self.db_manager.get_search_condition(["per.NOMBRE_COMPLETO"])
-                conditions.append(f"({search_cond} OR CAST(l.ID_LIQUIDACION_ASESOR AS TEXT) LIKE %s)")
+                search_cond = self.db_manager.get_search_condition(
+                    ["per.NOMBRE_COMPLETO"]
+                )
+                conditions.append(
+                    f"({search_cond} OR CAST(l.ID_LIQUIDACION_ASESOR AS TEXT) LIKE %s)"
+                )
                 query_params.extend([term, term])
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
-            cursor.execute(f"{query} {where_clause} GROUP BY l.ESTADO_LIQUIDACION", query_params)
+            cursor.execute(
+                f"{query} {where_clause} GROUP BY l.ESTADO_LIQUIDACION", query_params
+            )
 
             resultados = {"Pendiente": 0, "Aprobada": 0, "Pagada": 0, "Anulada": 0}
             for row in cursor.fetchall():
@@ -342,7 +363,9 @@ class RepositorioLiquidacionAsesor:
         with self.db_manager.transaccion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
             for id_contrato, canon, pct, comision in contratos_ids_canones:
-                cursor.execute(query, (id_liquidacion, id_contrato, canon, pct, comision, usuario))
+                cursor.execute(
+                    query, (id_liquidacion, id_contrato, canon, pct, comision, usuario)
+                )
 
     def obtener_contratos_de_liquidacion(self, id_liquidacion: int) -> List[Dict]:
         """
@@ -367,15 +390,17 @@ class RepositorioLiquidacionAsesor:
             cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_liquidacion,))
             rows = cursor.fetchall()
-            
+
             result = []
             for row in rows:
-                def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
-                
+
+                def gv(k):
+                    return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
                 # Lógica de Fallback
                 pct_db = gv("COMISION_PORCENTAJE_CONTRATO") or 0
                 monto_db = gv("COMISION_MONTO_CONTRATO") or 0
-                
+
                 if pct_db == 0:
                     pct_final = gv("PCT_MANDATO_ACTUAL") or 0
                     monto_final = int(gv("CANON_INCLUIDO") * pct_final / 10000)
@@ -383,19 +408,24 @@ class RepositorioLiquidacionAsesor:
                     pct_final = pct_db
                     monto_final = monto_db
 
-                result.append({
-                    "id_contrato": gv("ID_CONTRATO_A"),
-                    "canon_incluido": gv("CANON_INCLUIDO"),
-                    "comision_porcentaje_contrato": pct_final,
-                    "comision_monto_contrato": monto_final,
-                    "direccion": gv("DIRECCION_PROPIEDAD"),
-                    "arrendatario": gv("ARRENDATARIO"),
-                })
+                result.append(
+                    {
+                        "id_contrato": gv("ID_CONTRATO_A"),
+                        "canon_incluido": gv("CANON_INCLUIDO"),
+                        "comision_porcentaje_contrato": pct_final,
+                        "comision_monto_contrato": monto_final,
+                        "direccion": gv("DIRECCION_PROPIEDAD"),
+                        "arrendatario": gv("ARRENDATARIO"),
+                    }
+                )
             return result
 
     def _row_to_entity(self, row: Dict[str, Any]) -> LiquidacionAsesor:
         """Helper para mapeo de fila a entidad."""
-        def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
+        def gv(k):
+            return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
         return LiquidacionAsesor(
             id_liquidacion_asesor=gv("ID_LIQUIDACION_ASESOR"),
             id_contrato_a=gv("ID_CONTRATO_A"),

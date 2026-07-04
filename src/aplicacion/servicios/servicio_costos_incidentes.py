@@ -1,6 +1,5 @@
 from typing import Optional
 
-from src.dominio.entidades.incidente import Incidente
 from src.dominio.interfaces.repositorio_incidentes import RepositorioIncidentes
 from src.infraestructura.persistencia.database import DatabaseManager
 

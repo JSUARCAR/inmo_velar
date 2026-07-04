@@ -1,0 +1,210 @@
+- generic [active] [ref=f11e1]:
+  - region "Notifications alt+T"
+  - generic [ref=f11e2]:
+    - generic "Connection Error:"
+    - generic [ref=f11e256]:
+      - generic [ref=f11e257]:
+        - generic [ref=f11e258]:
+          - generic [ref=f11e259]:
+            - img "Logo" [ref=f11e261] [cursor=pointer]
+            - heading "INMOBILIARIA VELAR SAS" [level=1] [ref=f11e262]
+          - generic [ref=f11e265]:
+            - generic [ref=f11e266]:
+              - paragraph [ref=f11e268]: PRINCIPAL
+              - link "Dashboard" [ref=f11e269] [cursor=pointer]:
+                - /url: /dashboard
+                - generic [ref=f11e271]:
+                  - img [ref=f11e272]
+                  - paragraph [ref=f11e277]: Dashboard
+              - link "Alertas Tempranas" [ref=f11e278] [cursor=pointer]:
+                - /url: /alertas
+                - generic [ref=f11e280]:
+                  - img [ref=f11e281]
+                  - paragraph [ref=f11e286]: Alertas Tempranas
+            - generic [ref=f11e287]:
+              - paragraph [ref=f11e289]: GESTIÓN
+              - link "Personas" [ref=f11e290] [cursor=pointer]:
+                - /url: /personas
+                - generic [ref=f11e292]:
+                  - img [ref=f11e293]
+                  - paragraph [ref=f11e298]: Personas
+              - link "Propiedades" [ref=f11e299] [cursor=pointer]:
+                - /url: /propiedades
+                - generic [ref=f11e301]:
+                  - img [ref=f11e302]
+                  - paragraph [ref=f11e305]: Propiedades
+              - link "Contratos" [ref=f11e306] [cursor=pointer]:
+                - /url: /contratos
+                - generic [ref=f11e308]:
+                  - img [ref=f11e309]
+                  - paragraph [ref=f11e312]: Contratos
+              - link "Prop. Horizontal" [ref=f11e313] [cursor=pointer]:
+                - /url: /propiedad-horizontal
+                - generic [ref=f11e315]:
+                  - img [ref=f11e316]
+                  - paragraph [ref=f11e319]: Prop. Horizontal
+              - link "Proveedores" [ref=f11e320] [cursor=pointer]:
+                - /url: /proveedores
+                - generic [ref=f11e322]:
+                  - img [ref=f11e323]
+                  - paragraph [ref=f11e325]: Proveedores
+            - generic [ref=f11e326]:
+              - paragraph [ref=f11e328]: OPERACIONES
+              - link "Liquidaciones" [ref=f11e329] [cursor=pointer]:
+                - /url: /liquidaciones
+                - generic [ref=f11e331]:
+                  - img [ref=f11e332]
+                  - paragraph [ref=f11e334]: Liquidaciones
+              - link "Liquidación Asesores" [ref=f11e335] [cursor=pointer]:
+                - /url: /liquidacion-asesores
+                - generic [ref=f11e337]:
+                  - img [ref=f11e338]
+                  - paragraph [ref=f11e342]: Liquidación Asesores
+              - link "Recaudos" [ref=f11e343] [cursor=pointer]:
+                - /url: /recaudos
+                - generic [ref=f11e345]:
+                  - img [ref=f11e346]
+                  - paragraph [ref=f11e351]: Recaudos
+              - link "Desocupaciones" [ref=f11e352] [cursor=pointer]:
+                - /url: /desocupaciones
+                - generic [ref=f11e354]:
+                  - img [ref=f11e355]
+                  - paragraph [ref=f11e358]: Desocupaciones
+              - link "Incidentes" [ref=f11e359] [cursor=pointer]:
+                - /url: /incidentes
+                - generic [ref=f11e361]:
+                  - img [ref=f11e362]
+                  - paragraph [ref=f11e364]: Incidentes
+              - link "Seguros" [ref=f11e365] [cursor=pointer]:
+                - /url: /seguros
+                - generic [ref=f11e367]:
+                  - img [ref=f11e368]
+                  - paragraph [ref=f11e370]: Seguros
+              - link "Recibos Públicos" [ref=f11e371] [cursor=pointer]:
+                - /url: /recibos-publicos
+                - generic [ref=f11e373]:
+                  - img [ref=f11e374]
+                  - paragraph [ref=f11e376]: Recibos Públicos
+              - link "Saldos a Favor" [ref=f11e377] [cursor=pointer]:
+                - /url: /saldos-favor
+                - generic [ref=f11e379]:
+                  - img [ref=f11e380]
+                  - paragraph [ref=f11e383]: Saldos a Favor
+            - generic [ref=f11e384]:
+              - paragraph [ref=f11e386]: ADMINISTRACIÓN
+              - link "Usuarios" [ref=f11e387] [cursor=pointer]:
+                - /url: /usuarios
+                - generic [ref=f11e389]:
+                  - img [ref=f11e390]
+                  - paragraph [ref=f11e394]: Usuarios
+              - link "Configuración" [ref=f11e395] [cursor=pointer]:
+                - /url: /configuracion
+                - generic [ref=f11e397]:
+                  - img [ref=f11e398]
+                  - paragraph [ref=f11e401]: Configuración
+              - link "IPC / Incrementos" [ref=f11e402] [cursor=pointer]:
+                - /url: /incrementos
+                - generic [ref=f11e404]:
+                  - img [ref=f11e405]
+                  - paragraph [ref=f11e408]: IPC / Incrementos
+              - link "Auditoría" [ref=f11e409] [cursor=pointer]:
+                - /url: /auditoria
+                - generic [ref=f11e411]:
+                  - img [ref=f11e412]
+                  - paragraph [ref=f11e415]: Auditoría
+              - link "Reportes" [ref=f11e416] [cursor=pointer]:
+                - /url: /reportes
+                - generic [ref=f11e418]:
+                  - img [ref=f11e419]
+                  - paragraph [ref=f11e422]: Reportes
+          - generic [ref=f11e423]:
+            - img [ref=f11e424]
+            - generic [ref=f11e428]:
+              - paragraph [ref=f11e429]: admin
+              - paragraph [ref=f11e430]: Administrador
+            - generic [ref=f11e432]:
+              - button [ref=f11e433]:
+                - img [ref=f11e434]
+              - button [ref=f11e438]:
+                - img [ref=f11e441]
+              - button [ref=f11e444]:
+                - img [ref=f11e445]
+        - generic [ref=f11e449]:
+          - heading "Gestión de Incidentes" [level=1] [ref=f11e450]
+          - generic [ref=f11e451]:
+            - textbox "Buscar incidente..." [ref=f11e453]
+            - combobox [ref=f11e454]:
+              - generic [ref=f11e455]: Todas
+              - img [ref=f11e456]
+            - combobox [ref=f11e458]:
+              - generic [ref=f11e459]: Todos
+              - img [ref=f11e460]
+            - group [ref=f11e463]:
+              - radio "Kanban" [checked] [ref=f11e464]:
+                - generic [ref=f11e466]:
+                  - generic [ref=f11e467]: Kanban
+                  - generic [ref=f11e468]: Kanban
+              - radio "Lista" [ref=f11e469]:
+                - generic [ref=f11e471]:
+                  - generic [ref=f11e472]: Lista
+                  - generic [ref=f11e473]: Lista
+            - button "Reportar" [ref=f11e474] [cursor=pointer]:
+              - generic [ref=f11e475]:
+                - img [ref=f11e476]
+                - paragraph [ref=f11e477]: Reportar
+          - generic [ref=f11e482]:
+            - generic [ref=f11e483]:
+              - generic [ref=f11e484]:
+                - generic [ref=f11e485]:
+                  - img [ref=f11e486]
+                  - paragraph [ref=f11e489]: Reportado
+                - generic [ref=f11e490]: "0"
+              - generic [ref=f11e572]:
+                - img [ref=f11e573]
+                - paragraph [ref=f11e576]: Sin incidentes
+            - generic [ref=f11e500]:
+              - generic [ref=f11e501]:
+                - generic [ref=f11e502]:
+                  - img [ref=f11e503]
+                  - paragraph [ref=f11e505]: Cotizado
+                - generic [ref=f11e506]: "0"
+              - generic [ref=f11e577]:
+                - img [ref=f11e578]
+                - paragraph [ref=f11e580]: Sin incidentes
+            - generic [ref=f11e515]:
+              - generic [ref=f11e516]:
+                - generic [ref=f11e517]:
+                  - img [ref=f11e518]
+                  - paragraph [ref=f11e520]: Aprobado
+                - generic [ref=f11e521]: "0"
+              - generic [ref=f11e581]:
+                - img [ref=f11e582]
+                - paragraph [ref=f11e584]: Sin incidentes
+            - generic [ref=f11e530]:
+              - generic [ref=f11e531]:
+                - generic [ref=f11e532]:
+                  - img [ref=f11e533]
+                  - paragraph [ref=f11e535]: En Reparación
+                - generic [ref=f11e536]: "0"
+              - generic [ref=f11e585]:
+                - img [ref=f11e586]
+                - paragraph [ref=f11e588]: Sin incidentes
+            - generic [ref=f11e545]:
+              - generic [ref=f11e546]:
+                - generic [ref=f11e547]:
+                  - img [ref=f11e548]
+                  - paragraph [ref=f11e550]: Finalizado
+                - generic [ref=f11e551]: "0"
+              - generic [ref=f11e589]:
+                - img [ref=f11e590]
+                - paragraph [ref=f11e592]: Sin incidentes
+      - region "Notifications alt+T"
+  - img [ref=f11e254]
+  - generic [ref=f11e563]:
+    - generic [ref=f11e564]:
+      - button [ref=f11e565]:
+        - img [ref=f11e566]
+      - generic [ref=f11e568]:
+        - paragraph [ref=f11e569]: Incidentes
+        - paragraph [ref=f11e570]: Módulo
+    - paragraph [ref=f11e571]: Seguimiento y resolución de incidencias, reparaciones y mantenimiento.

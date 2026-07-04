@@ -12,6 +12,7 @@ from src.infraestructura.persistencia.database import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
+
 class RepositorioPersonaPostgres:
     """
     Repositorio PostgreSQL para la entidad Persona.
@@ -59,7 +60,9 @@ class RepositorioPersonaPostgres:
 
     def obtener_por_documento(self, numero_documento: str) -> Optional[Persona]:
         """Obtiene una persona por su número de documento."""
-        logger.debug(f"Ejecutando obtener_por_documento: numero_documento={numero_documento}")
+        logger.debug(
+            f"Ejecutando obtener_por_documento: numero_documento={numero_documento}"
+        )
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
@@ -86,7 +89,9 @@ class RepositorioPersonaPostgres:
         sort_order: str = "desc",
     ) -> List[Persona]:
         """Obtiene personas con filtros, paginación y ordenamiento dinámico en PostgreSQL."""
-        logger.debug(f"Ejecutando obtener_todos (Postgres): filtro_rol={filtro_rol}, sin_contrato={sin_contrato}, sort_by={sort_by}")
+        logger.debug(
+            f"Ejecutando obtener_todos (Postgres): filtro_rol={filtro_rol}, sin_contrato={sin_contrato}, sort_by={sort_by}"
+        )
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
@@ -97,9 +102,9 @@ class RepositorioPersonaPostgres:
             "documento": "p.NUMERO_DOCUMENTO",
             "email": "p.CORREO_ELECTRONICO",
             "estado": "p.ESTADO_REGISTRO",
-            "creado": "p.CREATED_AT"
+            "creado": "p.CREATED_AT",
         }
-        
+
         sort_col = SORT_COLUMNS.get(sort_by, "p.ID_PERSONA")
         order = "ASC" if sort_order.lower() == "asc" else "DESC"
 
@@ -111,12 +116,14 @@ class RepositorioPersonaPostgres:
                 "Arrendatario": "ARRENDATARIOS",
                 "Codeudor": "CODEUDORES",
                 "Asesor": "ASESORES",
-                "Proveedor": "PROVEEDORES"
+                "Proveedor": "PROVEEDORES",
             }
             tabla_rol = roles_map.get(filtro_rol)
             if tabla_rol:
-                join_clause = f" INNER JOIN {tabla_rol} r ON p.ID_PERSONA = r.ID_PERSONA"
-        
+                join_clause = (
+                    f" INNER JOIN {tabla_rol} r ON p.ID_PERSONA = r.ID_PERSONA"
+                )
+
         query += join_clause
         conditions = []
         params = []
@@ -182,7 +189,9 @@ class RepositorioPersonaPostgres:
         fecha_fin: Optional[str] = None,
     ) -> int:
         """Cuenta total de personas con filtros en PostgreSQL."""
-        logger.debug(f"Ejecutando contar_todos (Postgres): filtro_rol={filtro_rol}, sin_contrato={sin_contrato}")
+        logger.debug(
+            f"Ejecutando contar_todos (Postgres): filtro_rol={filtro_rol}, sin_contrato={sin_contrato}"
+        )
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
@@ -194,12 +203,14 @@ class RepositorioPersonaPostgres:
                 "Arrendatario": "ARRENDATARIOS",
                 "Codeudor": "CODEUDORES",
                 "Asesor": "ASESORES",
-                "Proveedor": "PROVEEDORES"
+                "Proveedor": "PROVEEDORES",
             }
             tabla_rol = roles_map.get(filtro_rol)
             if tabla_rol:
-                join_clause = f" INNER JOIN {tabla_rol} r ON p.ID_PERSONA = r.ID_PERSONA"
-        
+                join_clause = (
+                    f" INNER JOIN {tabla_rol} r ON p.ID_PERSONA = r.ID_PERSONA"
+                )
+
         query += join_clause
         conditions = []
         params = []
@@ -251,7 +262,9 @@ class RepositorioPersonaPostgres:
 
     def crear(self, persona: Persona, usuario_sistema: str) -> Persona:
         """Crea una nueva persona con RETURNING id (PostgreSQL)."""
-        logger.debug(f"Ejecutando crear persona (Postgres): documento={persona.numero_documento}")
+        logger.debug(
+            f"Ejecutando crear persona (Postgres): documento={persona.numero_documento}"
+        )
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
         p = self.db.get_placeholder()
@@ -278,7 +291,11 @@ class RepositorioPersonaPostgres:
                 persona.telefono_principal,
                 persona.correo_electronico,
                 persona.direccion_principal,
-                bool(persona.estado_registro) if persona.estado_registro is not None else True,
+                (
+                    bool(persona.estado_registro)
+                    if persona.estado_registro is not None
+                    else True
+                ),
                 persona.created_at or datetime.now().isoformat(),
                 usuario_sistema,
             ),
@@ -321,7 +338,11 @@ class RepositorioPersonaPostgres:
                 persona.telefono_principal,
                 persona.correo_electronico,
                 persona.direccion_principal,
-                bool(persona.estado_registro) if persona.estado_registro is not None else True,
+                (
+                    bool(persona.estado_registro)
+                    if persona.estado_registro is not None
+                    else True
+                ),
                 datetime.now().isoformat(),
                 usuario_sistema,
                 persona.id_persona,
@@ -357,11 +378,15 @@ class RepositorioPersonaPostgres:
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         p = self.db.get_placeholder()
-        cursor.execute(f"SELECT * FROM PERSONAS WHERE CORREO_ELECTRONICO = {p}", (email,))
+        cursor.execute(
+            f"SELECT * FROM PERSONAS WHERE CORREO_ELECTRONICO = {p}", (email,)
+        )
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
-    def buscar_por_nombre(self, termino_busqueda: str, limite: int = 20) -> List[Persona]:
+    def buscar_por_nombre(
+        self, termino_busqueda: str, limite: int = 20
+    ) -> List[Persona]:
         """Búsqueda fuzzy por nombre en PostgreSQL."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
@@ -407,32 +432,32 @@ class RepositorioPersonaPostgres:
         LEFT JOIN ASESORES ase ON p.ID_PERSONA = ase.ID_PERSONA
         LEFT JOIN PROVEEDORES prov ON p.ID_PERSONA = prov.ID_PERSONA
         """
-        
+
         cursor.execute(query)
         row = cursor.fetchone()
-        
+
         conteos = {
             "Propietario": {"activos": 0, "inactivos": 0},
             "Arrendatario": {"activos": 0, "inactivos": 0},
             "Codeudor": {"activos": 0, "inactivos": 0},
             "Asesor": {"activos": 0, "inactivos": 0},
-            "Proveedor": {"activos": 0, "inactivos": 0}
+            "Proveedor": {"activos": 0, "inactivos": 0},
         }
 
         if row:
             conteos["Propietario"]["activos"] = row.get("PROP_ACTIVOS", 0)
             conteos["Propietario"]["inactivos"] = row.get("PROP_INACTIVOS", 0)
-            
+
             conteos["Arrendatario"]["activos"] = row.get("ARR_ACTIVOS", 0)
             conteos["Arrendatario"]["inactivos"] = row.get("ARR_INACTIVOS", 0)
-            
+
             conteos["Codeudor"]["activos"] = row.get("COD_ACTIVOS", 0)
             conteos["Codeudor"]["inactivos"] = row.get("COD_INACTIVOS", 0)
-            
+
             conteos["Asesor"]["activos"] = row.get("ASE_ACTIVOS", 0)
             conteos["Asesor"]["inactivos"] = row.get("ASE_INACTIVOS", 0)
-            
+
             conteos["Proveedor"]["activos"] = row.get("PROV_ACTIVOS", 0)
             conteos["Proveedor"]["inactivos"] = row.get("PROV_INACTIVOS", 0)
-                
+
         return conteos

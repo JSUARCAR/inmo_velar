@@ -21,8 +21,14 @@ def document_manager_elite(
         rx.hstack(
             rx.icon("cloud-upload", size=24, color="var(--accent-9)"),
             rx.vstack(
-                rx.text("Cargar Documentos", weight="bold", size="3", color="var(--gray-12)"),
-                rx.text("Formatos soportados: PDF, JPG, PNG", size="1", color="var(--gray-10)"),
+                rx.text(
+                    "Cargar Documentos", weight="bold", size="3", color="var(--gray-12)"
+                ),
+                rx.text(
+                    "Formatos soportados: PDF, JPG, PNG",
+                    size="1",
+                    color="var(--gray-10)",
+                ),
                 spacing="0",
                 align="start",
             ),
@@ -88,7 +94,9 @@ def document_manager_elite(
         rx.hstack(
             rx.text(
                 rx.cond(
-                    state_class.is_uploading, "Subiendo archivos...", "Archivos listos para subir"
+                    state_class.is_uploading,
+                    "Subiendo archivos...",
+                    "Archivos listos para subir",
                 ),
                 size="1",
                 color="var(--gray-10)",
@@ -97,9 +105,7 @@ def document_manager_elite(
             rx.button(
                 "Subir Documentos",
                 on_click=state_class.handle_upload(
-                    rx.upload_files(
-                        upload_id=f"upload_manager_{state_class.__name__}"
-                    )
+                    rx.upload_files(upload_id=f"upload_manager_{state_class.__name__}")
                 ),
                 loading=state_class.is_uploading,
                 disabled=state_class.current_entidad_id == "",
@@ -122,7 +128,9 @@ def document_manager_elite(
                         rx.text(doc.nombre_archivo, size="2", flex="1"),
                         rx.icon_button(
                             rx.icon("arrow-down-to-line", size=18),
-                            on_click=lambda: state_class.descargar_documento(doc.id_documento),
+                            on_click=lambda: state_class.descargar_documento(
+                                doc.id_documento
+                            ),
                             variant="soft",
                             color_scheme="blue",
                             size="2",
@@ -130,7 +138,9 @@ def document_manager_elite(
                         ),
                         rx.icon_button(
                             rx.icon("trash-2", size=16),
-                            on_click=lambda: state_class.eliminar_documento(doc.id_documento),
+                            on_click=lambda: state_class.eliminar_documento(
+                                doc.id_documento
+                            ),
                             variant="ghost",
                             color_scheme="red",
                             size="1",

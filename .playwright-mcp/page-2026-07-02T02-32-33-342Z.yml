@@ -1,0 +1,274 @@
+- generic:
+  - region "Notifications alt+T"
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - img
+              - heading [level=1]: INMOBILIARIA VELAR SAS
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - paragraph: PRINCIPAL
+                  - link:
+                    - /url: /dashboard
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Dashboard
+                  - link:
+                    - /url: /alertas
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Alertas Tempranas
+                - generic:
+                  - generic:
+                    - paragraph: GESTIÓN
+                  - link:
+                    - /url: /personas
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Personas
+                  - link:
+                    - /url: /propiedades
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Propiedades
+                  - link:
+                    - /url: /contratos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Contratos
+                  - link:
+                    - /url: /propiedad-horizontal
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Prop. Horizontal
+                  - link:
+                    - /url: /proveedores
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Proveedores
+                - generic:
+                  - generic:
+                    - paragraph: OPERACIONES
+                  - link:
+                    - /url: /liquidaciones
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Liquidaciones
+                  - link:
+                    - /url: /liquidacion-asesores
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Liquidación Asesores
+                  - link:
+                    - /url: /recaudos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Recaudos
+                  - link:
+                    - /url: /desocupaciones
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Desocupaciones
+                  - link:
+                    - /url: /incidentes
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Incidentes
+                  - link:
+                    - /url: /seguros
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Seguros
+                  - link:
+                    - /url: /recibos-publicos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Recibos Públicos
+                  - link:
+                    - /url: /saldos-favor
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Saldos a Favor
+                - generic:
+                  - generic:
+                    - paragraph: ADMINISTRACIÓN
+                  - link:
+                    - /url: /usuarios
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Usuarios
+                  - link:
+                    - /url: /configuracion
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Configuración
+                  - link:
+                    - /url: /incrementos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: IPC / Incrementos
+                  - link:
+                    - /url: /auditoria
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Auditoría
+                  - link:
+                    - /url: /reportes
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Reportes
+            - generic:
+              - img
+              - generic:
+                - paragraph: admin
+                - paragraph: Administrador
+              - generic:
+                - button:
+                  - img
+                - generic:
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                - button:
+                  - img
+          - generic:
+            - generic:
+              - generic:
+                - heading [level=1]: Liquidaciones de Propietarios
+                - paragraph: Gestión de estados de cuenta mensuales y pagos a propietarios
+              - generic:
+                - button:
+                  - img
+                - generic:
+                  - switch
+                  - paragraph: Vista Individual
+                - generic:
+                  - textbox:
+                    - /placeholder: Buscar...
+                - combobox:
+                  - generic: Período
+                  - img
+                - combobox:
+                  - generic: Todos
+                  - img
+                - combobox:
+                  - generic: Todos
+                  - img
+                - generic:
+                  - button:
+                    - generic:
+                      - img
+                      - paragraph: Nueva Liquidación
+                  - button:
+                    - img
+        - region "Notifications alt+T"
+  - generic [ref=f17e5]:
+    - dialog:
+      - heading [level=1]: Editar Liquidación
+      - paragraph: Modifique los valores variables. El período y contrato no pueden cambiarse.
+      - generic:
+        - generic:
+          - paragraph: Información General
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: Propietario
+                - generic:
+                  - textbox: LUZ MARIA TORRES GUEVARA
+              - generic:
+                - paragraph: Dirección Inmueble
+                - generic:
+                  - textbox: EDF LA PATRIA AP 301
+            - generic:
+              - paragraph: Canon Mandato
+              - generic:
+                - textbox: "800000"
+            - generic:
+              - paragraph: ID Contrato
+              - generic:
+                - textbox: "53"
+            - generic:
+              - paragraph: Período
+              - generic:
+                - textbox: 2026-06
+          - paragraph: Ingresos
+          - generic:
+            - paragraph: Otros Ingresos
+            - generic:
+              - spinbutton: "0"
+          - paragraph: Egresos Variables
+          - generic:
+            - generic:
+              - paragraph: Gastos Administración
+              - generic:
+                - spinbutton: "0"
+            - generic:
+              - paragraph: Gastos Servicios
+              - generic:
+                - spinbutton: "0"
+            - generic:
+              - paragraph: Incidentes
+              - generic:
+                - spinbutton: "0"
+            - generic:
+              - paragraph: Pago Predial
+              - generic:
+                - spinbutton: "0"
+            - generic:
+              - paragraph: Otros Egresos
+              - generic:
+                - spinbutton: "0"
+          - button:
+            - generic:
+              - img
+              - paragraph: Seleccionar Incidentes
+          - paragraph: Observaciones
+          - generic:
+            - textbox:
+              - /placeholder: Detalles adicionales sobre la liquidación...
+              - text: none
+          - generic:
+            - button: Cancelar
+            - button: Guardar Cambios
+  - dialog "Seleccionar Incidentes" [ref=f17e79]:
+    - heading "Seleccionar Incidentes" [level=1] [ref=f17e80]:
+      - generic [ref=f17e81]:
+        - img [ref=f17e82]
+        - paragraph [ref=f17e85]: Seleccionar Incidentes
+    - paragraph [ref=f17e86]: Seleccione los incidentes que desea asociar a esta liquidación. El valor de cada cuota se descontará del neto a pagar.
+    - generic [ref=f17e87]:
+      - paragraph [ref=f17e89]: No hay incidentes disponibles para asociar.
+      - generic [ref=f17e90]:
+        - img [ref=f17e92]
+        - paragraph [ref=f17e94]: "Error al cargar incidentes: relation \"incidente_liquidacion\" does not exist LINE 1: SELECT * FROM INCIDENTE_LIQUIDACION WHERE ID_LIQUIDACION = 5... ^"
+    - generic [ref=f17e95]:
+      - button "Cancelar" [active] [ref=f17e97]
+      - button "Asociar Seleccionados" [ref=f17e98]

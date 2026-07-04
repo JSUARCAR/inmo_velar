@@ -47,7 +47,9 @@ def _data_table() -> rx.Component:
                     rx.table.cell(item["id"]),
                     rx.table.cell(item["direccion"]),
                     rx.table.cell(item["fecha_programada"]),
-                    rx.table.cell(rx.badge(item["estado"], variant="soft", color_scheme="blue")),
+                    rx.table.cell(
+                        rx.badge(item["estado"], variant="soft", color_scheme="blue")
+                    ),
                     rx.table.cell(rx.progress(value=item["progreso"], width="100px")),
                     rx.table.cell(
                         rx.hstack(
@@ -88,11 +90,18 @@ def _data_table() -> rx.Component:
     )
 
 
-from src.presentacion_reflex.components.desocupaciones.checklist_modal import checklist_modal
-from src.presentacion_reflex.components.desocupaciones.finalize_modal import finalize_confirm_modal
+from src.presentacion_reflex.components.desocupaciones.checklist_modal import (
+    checklist_modal,
+)
+from src.presentacion_reflex.components.desocupaciones.finalize_modal import (
+    finalize_confirm_modal,
+)
 
 
-@rx.page(route="/desocupaciones", on_load=[AuthState.require_login, DesocupacionesState.on_load])
+@rx.page(
+    route="/desocupaciones",
+    on_load=[AuthState.require_login, DesocupacionesState.on_load],
+)
 def desocupaciones() -> rx.Component:
     return dashboard_layout(
         rx.vstack(

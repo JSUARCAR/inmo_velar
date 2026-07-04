@@ -5,7 +5,9 @@ Implementación premium con visualización avanzada del progreso.
 
 import reflex as rx
 
-from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+from src.presentacion_reflex.components.document_manager_elite import (
+    document_manager_elite,
+)
 from src.presentacion_reflex.state.desocupaciones_state import DesocupacionesState
 
 
@@ -78,7 +80,9 @@ def _header_section() -> rx.Component:
                 width="100%",
             ),
             rx.progress(
-                value=DesocupacionesState.checklist_info["progreso"], width="100%", height="10px"
+                value=DesocupacionesState.checklist_info["progreso"],
+                width="100%",
+                height="10px",
             ),
             rx.hstack(
                 rx.text(
@@ -87,7 +91,9 @@ def _header_section() -> rx.Component:
                     font_size="1.2em",
                     color="var(--blue-9)",
                 ),
-                rx.text("%", font_weight="bold", font_size="1.2em", color="var(--blue-9)"),
+                rx.text(
+                    "%", font_weight="bold", font_size="1.2em", color="var(--blue-9)"
+                ),
                 spacing="0",
             ),
             spacing="2",
@@ -109,13 +115,20 @@ def _checklist_item(item: dict) -> rx.Component:
         rx.box(
             rx.cond(
                 item["completada"],
-                rx.icon("circle_check_big", size=24, color="var(--green-9)", cursor="default"),
+                rx.icon(
+                    "circle_check_big",
+                    size=24,
+                    color="var(--green-9)",
+                    cursor="default",
+                ),
                 rx.icon_button(
                     rx.icon("circle", size=24),
                     variant="ghost",
                     color_scheme="gray",
                     size="2",
-                    on_click=lambda: DesocupacionesState.toggle_tarea(item["id_tarea"], True),
+                    on_click=lambda: DesocupacionesState.toggle_tarea(
+                        item["id_tarea"], True
+                    ),
                     cursor="pointer",
                 ),
             ),
@@ -127,12 +140,17 @@ def _checklist_item(item: dict) -> rx.Component:
         rx.vstack(
             rx.hstack(
                 rx.text(
-                    item["orden"], font_weight="bold", color="var(--gray-10)", min_width="24px"
+                    item["orden"],
+                    font_weight="bold",
+                    color="var(--gray-10)",
+                    min_width="24px",
                 ),
                 rx.text(
                     item["descripcion"],
                     font_weight=rx.cond(item["completada"], "normal", "medium"),
-                    color=rx.cond(item["completada"], "var(--gray-10)", "var(--gray-12)"),
+                    color=rx.cond(
+                        item["completada"], "var(--gray-10)", "var(--gray-12)"
+                    ),
                     text_decoration=rx.cond(item["completada"], "line-through", "none"),
                 ),
                 width="100%",
@@ -146,7 +164,9 @@ def _checklist_item(item: dict) -> rx.Component:
                         rx.hstack(
                             rx.icon("user", size=12, color="var(--gray-9)"),
                             rx.text(
-                                item["responsable"], font_size="0.75em", color="var(--gray-10)"
+                                item["responsable"],
+                                font_size="0.75em",
+                                color="var(--gray-10)",
                             ),
                             spacing="1",
                             align_items="center",
@@ -157,7 +177,9 @@ def _checklist_item(item: dict) -> rx.Component:
                         rx.hstack(
                             rx.icon("clock", size=12, color="var(--gray-9)"),
                             rx.text(
-                                item["fecha_completada"], font_size="0.75em", color="var(--gray-10)"
+                                item["fecha_completada"],
+                                font_size="0.75em",
+                                color="var(--gray-10)",
                             ),
                             spacing="1",
                             align_items="center",
@@ -182,9 +204,13 @@ def _checklist_item(item: dict) -> rx.Component:
         padding="12px 16px",
         background=rx.cond(item["completada"], "var(--green-2)", "var(--gray-1)"),
         border_radius="8px",
-        border=rx.cond(item["completada"], "1px solid var(--green-5)", "1px solid var(--gray-5)"),
+        border=rx.cond(
+            item["completada"], "1px solid var(--green-5)", "1px solid var(--gray-5)"
+        ),
         width="100%",
-        _hover={"background": rx.cond(item["completada"], "var(--green-3)", "var(--gray-2)")},
+        _hover={
+            "background": rx.cond(item["completada"], "var(--green-3)", "var(--gray-2)")
+        },
         transition="all 0.2s ease",
     )
 

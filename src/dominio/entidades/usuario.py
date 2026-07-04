@@ -37,12 +37,16 @@ class Usuario:
     id_usuario: Optional[int] = None
 
     nombre_usuario: str = ""
-    contrasena_hash: str = ""  # Nota: Sin tilde para evitar problemas, aunque BD es CONTRASENA_HASH
+    contrasena_hash: str = (
+        ""  # Nota: Sin tilde para evitar problemas, aunque BD es CONTRASENA_HASH
+    )
     rol: str = ""
 
     estado_usuario: bool = True  # Estado activo del usuario
     ultimo_acceso: Optional[str] = None
-    fecha_creacion: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    fecha_creacion: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
 
     created_by: Optional[str] = None
     updated_at: Optional[str] = None

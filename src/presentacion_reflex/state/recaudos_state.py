@@ -177,12 +177,16 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             for item in resultado.items:
                 # Convertir DTO a dict para manipulaciones locales en la vista si es necesario
                 # Reflex serializa Pydantic v2 automáticamente, pero model_dump garantiza compatibilidad
-                new_item = item.model_dump() if hasattr(item, "model_dump") else dict(item)
-                
+                new_item = (
+                    item.model_dump() if hasattr(item, "model_dump") else dict(item)
+                )
+
                 # Asegurar que los campos de vista existan (calculados en el mapper o aquí)
                 if not new_item.get("valor_total_view"):
-                    new_item["valor_total_view"] = format_currency(new_item.get("valor_total", 0))
-                
+                    new_item["valor_total_view"] = format_currency(
+                        new_item.get("valor_total", 0)
+                    )
+
                 formatted_list.append(new_item)
 
             async with self:
@@ -345,9 +349,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             # Solo permitir editar pendientes o vencidos (comparar con valores string del DTO)
             if detalle.estado not in ["Pendiente", "Vencido"]:
                 async with self:
-                    self.error_message = (
-                        "Solo se pueden editar recaudos en estado 'Pendiente' o 'Vencido'"
-                    )
+                    self.error_message = "Solo se pueden editar recaudos en estado 'Pendiente' o 'Vencido'"
                     self.is_loading = False
                 return
 
@@ -437,13 +439,20 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             usuario = await self._get_usuario_actual()
 
             def _es_id_valido(valor: Any) -> bool:
-                if valor is None: return False
+                if valor is None:
+                    return False
                 v = str(valor).strip().lower()
                 return v.isdigit() and v not in ["undefined", "null", "none", ""]
 
-            id_contrato = str(form_data.get("id_contrato_a") or st_form_data.get("id_contrato_a", "")).strip()
+            id_contrato = str(
+                form_data.get("id_contrato_a") or st_form_data.get("id_contrato_a", "")
+            ).strip()
 
-            if isinstance(id_contrato, str) and not id_contrato.isdigit() and id_contrato.lower() not in ["undefined", "null", "none", ""]:
+            if (
+                isinstance(id_contrato, str)
+                and not id_contrato.isdigit()
+                and id_contrato.lower() not in ["undefined", "null", "none", ""]
+            ):
                 contrato_opt = next(
                     (c for c in st_contratos_options if c["texto"] == id_contrato), None
                 )
@@ -462,7 +471,12 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                 return
 
             valor_total_raw = form_data.get("valor_total")
-            if not valor_total_raw or str(valor_total_raw).strip().lower() in ["undefined", "null", "none", ""]:
+            if not valor_total_raw or str(valor_total_raw).strip().lower() in [
+                "undefined",
+                "null",
+                "none",
+                "",
+            ]:
                 async with self:
                     self.error_message = "El valor total es inválido"
                     self.is_loading = False
@@ -494,7 +508,10 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                     self.is_loading = False
                 return
 
-            from src.aplicacion.esquemas.recaudo import ComandoRegistrarPago, ComandoActualizarPago
+            from src.aplicacion.esquemas.recaudo import (
+                ComandoRegistrarPago,
+                ComandoActualizarPago,
+            )
             from datetime import date
 
             raw_id_recaudo = form_data.get("id_recaudo")
@@ -708,12 +725,11 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             async with self:
                 self.exportando_recibos = False
 
-            yield rx.toast.success(
-                f"ZIP de recibos generado para {periodo}"
-            )
+            yield rx.toast.success(f"ZIP de recibos generado para {periodo}")
 
             # Disparar descarga usando el script compartido de PDFState
             from src.presentacion_reflex.state.pdf_state import PDFState
+
             yield PDFState.descargar_pdf_script(zip_path)
 
         except ValueError as ve:

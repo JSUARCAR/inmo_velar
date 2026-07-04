@@ -14,17 +14,17 @@ class LiquidacionDict(pydantic.BaseModel):
 
     id: int
     periodo: str
-    contrato: str
-    propiedad: str
-    propietario: str
-    documento: str
-    id_propietario: int
-    estado: str
-    canon: float
-    neto: float
-    canon_view: str
-    neto_view: str
-    cantidad_propiedades: Optional[int]
+    contrato: Optional[str] = "N/D"
+    propiedad: Optional[str] = "N/D"
+    propietario: Optional[str] = "N/D"
+    documento: Optional[str] = "N/D"
+    id_propietario: Optional[int] = 0
+    estado: Optional[str] = "Desconocido"
+    canon: Optional[float] = 0.0
+    neto: Optional[float] = 0.0
+    canon_view: Optional[str] = "$0"
+    neto_view: Optional[str] = "$0"
+    cantidad_propiedades: Optional[int] = 1
     grupo_operativo: int = 0
     estado_recaudo: str = "Sin Recaudo"
 
@@ -91,7 +91,30 @@ class LiquidacionesState(DocumentosStateMixin):
     show_bulk_create_modal: bool = False  # Modal para generar masivas
     show_cancel_modal: bool = False  # Modal para cancelar individual
     show_reverse_confirm: bool = False  # Confirmación para reversar
+    show_reverse_pago_confirm: bool = False  # Confirmación para reversar pago
+    reverse_pago_liquidacion_id: int = 0  # ID de liquidación para reversar pago
+    reverse_pago_motivo: str = ""  # Motivo de reversión de pago
     show_export_modal: bool = False  # Modal para seleccionar periodo de exportación
+    show_delete_modal: bool = False  # Modal para eliminar liquidación
+    liquidacion_id_for_delete: int = 0  # ID de liquidación a eliminar
+    delete_confirmed: bool = False  # Checkbox de confirmación de eliminación
+
+    # Eliminación agrupada
+    show_group_delete_modal: bool = False  # Modal para eliminar grupo de liquidaciones
+    group_delete_id_propietario: int = 0  # ID del propietario del grupo
+    group_delete_periodo: str = ""  # Período del grupo a eliminar
+    group_delete_confirmed: bool = (
+        False  # Checkbox de confirmación de eliminación agrupada
+    )
+
+    # --- INCIDENT ASSOCIATION MODAL (US2) ---
+    show_seleccion_incidentes_modal: bool = False
+    seleccion_incidentes_liquidacion_id: Optional[int] = None
+    seleccion_incidentes_disponibles: List[Dict[str, Any]] = []
+    seleccion_incidentes_seleccionados: List[Dict[str, Any]] = []
+    seleccion_incidentes_total_descuentos: int = 0
+    seleccion_incidentes_error: str = ""
+    seleccion_incidentes_loading: bool = False
 
     # Exportación
     exportando_periodo: bool = False
@@ -105,9 +128,9 @@ class LiquidacionesState(DocumentosStateMixin):
     # Cancel/Reverse data
     cancel_motivo: str = ""
     liquidacion_id_for_action: int = 0  # ID de liquidación para acción pendiente
-    selected_liquidaciones_ids: List[
-        int
-    ] = []  # IDs seleccionados para acciones masivas
+    selected_liquidaciones_ids: List[int] = (
+        []
+    )  # IDs seleccionados para acciones masivas
 
     @staticmethod
     def parse_int_safe(value: Any, default: int = 0) -> int:
@@ -415,6 +438,7 @@ class LiquidacionesState(DocumentosStateMixin):
             "pago_predial": "0",
             "otros_egresos": "0",
             "observaciones": "",
+            "estado": "",
         }
         self.error_message = ""
         # Reset combobox propiedad
@@ -591,6 +615,8 @@ class LiquidacionesState(DocumentosStateMixin):
                         "pago_predial": str(liquidacion.get("pago_predial", 0)),
                         "otros_egresos": str(liquidacion.get("otros_egr", 0)),
                         "observaciones": str(liquidacion.get("observaciones", "")),
+                        "valor_incidentes": str(liquidacion.get("valor_incidentes", 0)),
+                        "estado": str(liquidacion.get("estado", "")),
                     }
                     self.show_edit_modal = True
                     self.show_create_modal = False
@@ -657,6 +683,9 @@ class LiquidacionesState(DocumentosStateMixin):
                 )
                 l_fmt["otros_egr_view"] = format_currency(
                     liquidacion.get("otros_egr", 0)
+                )
+                l_fmt["valor_incidentes_view"] = format_currency(
+                    liquidacion.get("valor_incidentes", 0)
                 )
 
                 # Formatear listas internas si existen
@@ -1077,21 +1106,37 @@ class LiquidacionesState(DocumentosStateMixin):
 
             # Procesar datos del formulario
             datos_procesados = {
-                "otros_ingresos": LiquidacionesState.parse_int_safe(form_data.get("otros_ingresos")),
-                "gastos_administracion": LiquidacionesState.parse_int_safe(form_data.get("gastos_administracion")),
-                "gastos_servicios": LiquidacionesState.parse_int_safe(form_data.get("gastos_servicios")),
-                "gastos_reparaciones": LiquidacionesState.parse_int_safe(form_data.get("gastos_reparaciones")),
-                "pago_predial": LiquidacionesState.parse_int_safe(form_data.get("pago_predial")),
-                "otros_egresos": LiquidacionesState.parse_int_safe(form_data.get("otros_egresos")),
+                "otros_ingresos": LiquidacionesState.parse_int_safe(
+                    form_data.get("otros_ingresos")
+                ),
+                "gastos_administracion": LiquidacionesState.parse_int_safe(
+                    form_data.get("gastos_administracion")
+                ),
+                "gastos_servicios": LiquidacionesState.parse_int_safe(
+                    form_data.get("gastos_servicios")
+                ),
+                "valor_incidentes": LiquidacionesState.parse_int_safe(
+                    form_data.get("valor_incidentes")
+                ),
+                "pago_predial": LiquidacionesState.parse_int_safe(
+                    form_data.get("pago_predial")
+                ),
+                "otros_egresos": LiquidacionesState.parse_int_safe(
+                    form_data.get("otros_egresos")
+                ),
                 "observaciones": form_data.get("observaciones", ""),
             }
 
             if is_create_mode:
                 # Crear nueva liquidación
-                id_contrato_m = LiquidacionesState.parse_int_safe(form_data.get("id_contrato_m"), default=-1)
+                id_contrato_m = LiquidacionesState.parse_int_safe(
+                    form_data.get("id_contrato_m"), default=-1
+                )
                 if id_contrato_m <= 0:
-                    raise ValueError("El ID del contrato es obligatorio. Por favor seleccione una propiedad válida.")
-                
+                    raise ValueError(
+                        "El ID del contrato es obligatorio. Por favor seleccione una propiedad válida."
+                    )
+
                 datos_procesados["id_contrato_m"] = id_contrato_m
                 datos_procesados["periodo"] = form_data.get("periodo", "")
                 servicio.generar_liquidacion_mensual(
@@ -1184,6 +1229,44 @@ class LiquidacionesState(DocumentosStateMixin):
                 referencia_pago=form_data["referencia_pago"],
                 usuario_sistema=usuario_sistema,
             )
+
+            # US4: Actualizar estado de pago de incidentes asociados
+            try:
+                from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
+                    RepositorioPlanPagoPostgres,
+                )
+                from src.infraestructura.persistencia.repositorio_cuota_postgres import (
+                    RepositorioCuotaPostgres,
+                )
+                from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import (
+                    RepositorioIncidenteLiquidacionPostgres,
+                )
+                from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
+                    RepositorioIncidentesPostgres,
+                )
+                from src.aplicacion.servicios.servicio_estado_pago import (
+                    ServicioEstadoPagoAutomatico,
+                )
+
+                servicio_estado = ServicioEstadoPagoAutomatico(
+                    repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
+                    repositorio_cuota=RepositorioCuotaPostgres(db_manager),
+                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(
+                        db_manager
+                    ),
+                    repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
+                )
+                servicio_estado.actualizar_estado_pago_por_liquidacion(
+                    id_liquidacion=int(form_data["id_liquidacion"]),
+                    usuario=usuario_sistema,
+                )
+            except Exception as e_estado:
+                # No fallar el pago principal por error en actualización de estado
+                import logging
+
+                logging.getLogger(__name__).warning(
+                    f"Error al actualizar estado de pago de incidentes: {e_estado}"
+                )
 
             async with self:
                 self.show_payment_modal = False
@@ -1279,6 +1362,199 @@ class LiquidacionesState(DocumentosStateMixin):
     def set_cancel_motivo(self, value: str):
         self.cancel_motivo = value
 
+    # =========================================================================
+    # REVERSAR PAGO DE LIQUIDACIONES (Pagada → Aprobada)
+    # =========================================================================
+
+    def open_reverse_pago_confirm(self, id_liquidacion: int):
+        """Abre modal de confirmación para reversar pago de liquidación."""
+        self.reverse_pago_liquidacion_id = id_liquidacion
+        self.reverse_pago_motivo = ""
+        self.error_message = ""
+        self.show_reverse_pago_confirm = True
+
+    def close_reverse_pago_confirm(self):
+        """Cierra modal de confirmación de reversión de pago."""
+        self.show_reverse_pago_confirm = False
+        self.reverse_pago_liquidacion_id = 0
+        self.reverse_pago_motivo = ""
+        self.error_message = ""
+
+    def set_reverse_pago_motivo(self, value: str):
+        """Actualiza el motivo de reversión de pago."""
+        self.reverse_pago_motivo = value
+
+    @rx.event(background=True)
+    async def confirmar_reversar_pago(self):
+        """Ejecuta la reversión de pago de una liquidación individual."""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+
+        try:
+            if (
+                not self.reverse_pago_motivo
+                or len(self.reverse_pago_motivo.strip()) < 10
+            ):
+                async with self:
+                    self.error_message = "El motivo debe tener al menos 10 caracteres"
+                    self.is_loading = False
+                yield rx.toast.warning(
+                    "El motivo es muy corto", position="bottom-right"
+                )
+                return
+
+            servicio = ServicioFinanciero(db_manager)
+            result = servicio.reversar_pago_liquidacion(
+                self.reverse_pago_liquidacion_id, "admin", self.reverse_pago_motivo
+            )
+
+            # US5: Revertir estado de pago de incidentes asociados
+            try:
+                from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
+                    RepositorioPlanPagoPostgres,
+                )
+                from src.infraestructura.persistencia.repositorio_cuota_postgres import (
+                    RepositorioCuotaPostgres,
+                )
+                from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import (
+                    RepositorioIncidenteLiquidacionPostgres,
+                )
+                from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
+                    RepositorioIncidentesPostgres,
+                )
+                from src.aplicacion.servicios.servicio_estado_pago import (
+                    ServicioEstadoPagoAutomatico,
+                )
+
+                servicio_estado = ServicioEstadoPagoAutomatico(
+                    repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
+                    repositorio_cuota=RepositorioCuotaPostgres(db_manager),
+                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(
+                        db_manager
+                    ),
+                    repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
+                )
+                servicio_estado.revertir_estado_pago_por_liquidacion(
+                    id_liquidacion=self.reverse_pago_liquidacion_id,
+                    usuario="admin",
+                )
+            except Exception as e_estado:
+                import logging
+
+                logging.getLogger(__name__).warning(
+                    f"Error al revertir estado de pago de incidentes: {e_estado}"
+                )
+
+            async with self:
+                self.show_reverse_pago_confirm = False
+                self.show_detail_modal = False
+                self.reverse_pago_liquidacion_id = 0
+                self.reverse_pago_motivo = ""
+                self.is_loading = False
+
+            yield LiquidacionesState.load_liquidaciones()
+
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al reversar pago: {str(e)}"
+                self.is_loading = False
+            yield rx.toast.error(self.error_message, position="bottom-right")
+            return
+
+        yield rx.toast.success("Pago reversado exitosamente", position="bottom-right")
+
+    @rx.event(background=True)
+    async def confirmar_reversar_pago_masivo(self):
+        """Ejecuta la reversión de pagos de liquidaciones de un propietario para un período."""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+
+        try:
+            if (
+                not self.reverse_pago_motivo
+                or len(self.reverse_pago_motivo.strip()) < 10
+            ):
+                async with self:
+                    self.error_message = "El motivo debe tener al menos 10 caracteres"
+                    self.is_loading = False
+                yield rx.toast.warning(
+                    "El motivo es muy corto", position="bottom-right"
+                )
+                return
+
+            servicio = ServicioFinanciero(db_manager)
+            result = servicio.reversar_pago_propietario(
+                self.form_data.get("id_propietario"),
+                self.form_data.get("periodo"),
+                "admin",
+                self.reverse_pago_motivo,
+            )
+
+            # US5: Revertir estado de pago de incidentes asociados a todas las liquidaciones revertidas
+            try:
+                from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
+                    RepositorioPlanPagoPostgres,
+                )
+                from src.infraestructura.persistencia.repositorio_cuota_postgres import (
+                    RepositorioCuotaPostgres,
+                )
+                from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import (
+                    RepositorioIncidenteLiquidacionPostgres,
+                )
+                from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
+                    RepositorioIncidentesPostgres,
+                )
+                from src.aplicacion.servicios.servicio_estado_pago import (
+                    ServicioEstadoPagoAutomatico,
+                )
+
+                servicio_estado = ServicioEstadoPagoAutomatico(
+                    repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
+                    repositorio_cuota=RepositorioCuotaPostgres(db_manager),
+                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(
+                        db_manager
+                    ),
+                    repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
+                )
+                # Actualizar estados de pago para cada liquidación revertida
+                if result and "liquidaciones_revertidas" in result:
+                    for liq in result["liquidaciones_revertidas"]:
+                        servicio_estado.revertir_estado_pago_por_liquidacion(
+                            id_liquidacion=liq["id"],
+                            usuario="admin",
+                        )
+            except Exception as e_estado:
+                import logging
+
+                logging.getLogger(__name__).warning(
+                    f"Error al revertir estados de pago de incidentes: {e_estado}"
+                )
+
+            async with self:
+                self.show_reverse_pago_confirm = False
+                self.reverse_pago_motivo = ""
+                self.is_loading = False
+
+            yield LiquidacionesState.load_liquidaciones()
+
+            total = result.get("total_reversadas", 0)
+            if total > 0:
+                yield rx.toast.success(
+                    f"Se reversaron {total} pagos exitosamente", position="bottom-right"
+                )
+            else:
+                yield rx.toast.info(
+                    "No se encontraron pagos para reversar", position="bottom-right"
+                )
+
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al reversar pagos: {str(e)}"
+                self.is_loading = False
+            yield rx.toast.error(self.error_message, position="bottom-right")
+
     def open_cancel_modal(self, id_liquidacion: int):
         """Abre modal para cancelar liquidación"""
         self.liquidacion_id_for_action = id_liquidacion
@@ -1335,16 +1611,258 @@ class LiquidacionesState(DocumentosStateMixin):
         )
 
     # =========================================================================
+    # ELIMINAR LIQUIDACIONES (Soft Delete)
+    # =========================================================================
+
+    def open_delete_modal(self, id_liquidacion: int):
+        """Abre modal para eliminar liquidación"""
+        self.liquidacion_id_for_delete = id_liquidacion
+        self.delete_confirmed = False
+        self.error_message = ""
+
+        # Buscar la liquidación en la lista actual para mostrar datos en el diálogo
+        for liq in self.liquidaciones:
+            if liq.get("id") == id_liquidacion:
+                self.liquidacion_actual = liq
+                break
+
+        self.show_delete_modal = True
+
+    def close_delete_modal(self):
+        """Cierra modal de eliminación"""
+        self.show_delete_modal = False
+        self.liquidacion_id_for_delete = 0
+        self.delete_confirmed = False
+        self.error_message = ""
+
+    def set_delete_confirmed(self, value: bool):
+        """Actualiza el estado del checkbox de confirmación"""
+        self.delete_confirmed = value
+
+    # =========================================================================
+    # ELIMINACIÓN AGRUPADA
+    # =========================================================================
+
+    def open_group_delete_modal(self, id_propietario: int, periodo: str):
+        """Abre modal para eliminar grupo de liquidaciones"""
+        self.group_delete_id_propietario = id_propietario
+        self.group_delete_periodo = periodo
+        self.group_delete_confirmed = False
+        self.error_message = ""
+
+        # Buscar datos del propietario para mostrar en el diálogo
+        for liq in self.liquidaciones:
+            if (
+                liq.get("id_propietario") == id_propietario
+                and liq.get("periodo") == periodo
+            ):
+                self.liquidacion_actual = liq
+                break
+
+        self.show_group_delete_modal = True
+
+    def close_group_delete_modal(self):
+        """Cierra modal de eliminación agrupada"""
+        self.show_group_delete_modal = False
+        self.group_delete_id_propietario = 0
+        self.group_delete_periodo = ""
+        self.group_delete_confirmed = False
+        self.error_message = ""
+
+    def set_group_delete_confirmed(self, value: bool):
+        """Actualiza el estado del checkbox de confirmación de eliminación agrupada"""
+        self.group_delete_confirmed = value
+
+    @rx.event(background=True)
+    async def confirmar_eliminar_agrupadas(self):
+        """Ejecuta eliminación de liquidaciones agrupadas"""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+
+        try:
+            if not self.group_delete_confirmed:
+                async with self:
+                    self.error_message = (
+                        "Debe confirmar la eliminación marcando el checkbox"
+                    )
+                    self.is_loading = False
+                return
+
+            # Llamar al método de eliminación agrupada
+            async for _ in LiquidacionesState.eliminar_liquidaciones_agrupadas(
+                self.group_delete_id_propietario, self.group_delete_periodo
+            ):
+                pass
+
+            async with self:
+                self.show_group_delete_modal = False
+                self.group_delete_id_propietario = 0
+                self.group_delete_periodo = ""
+                self.group_delete_confirmed = False
+                self.is_loading = False
+
+        except Exception as e:
+            async with self:
+                self.error_message = (
+                    f"Error al eliminar liquidaciones agrupadas: {str(e)}"
+                )
+                self.is_loading = False
+            yield rx.toast.error(self.error_message, position="bottom-right")
+
+    @rx.event(background=True)
+    async def confirmar_eliminar(self):
+        """Ejecuta eliminación de liquidación individual"""
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+
+        try:
+            if not self.delete_confirmed:
+                async with self:
+                    self.error_message = (
+                        "Debe confirmar la eliminación marcando el checkbox"
+                    )
+                    self.is_loading = False
+                return
+
+            servicio = ServicioFinanciero(db_manager)
+            usuario_sistema = "admin"  # TODO: Obtener de AuthState
+
+            result = servicio.eliminar_liquidacion(
+                self.liquidacion_id_for_delete, usuario_sistema
+            )
+
+            async with self:
+                self.show_delete_modal = False
+                self.show_detail_modal = False
+                self.liquidacion_id_for_delete = 0
+                self.delete_confirmed = False
+                self.is_loading = False
+
+            # Recargar lista
+            yield LiquidacionesState.load_liquidaciones()
+
+            if result.get("exitosa"):
+                yield rx.toast.success(
+                    result.get("mensaje", "Liquidación eliminada correctamente"),
+                    position="bottom-right",
+                )
+            else:
+                yield rx.toast.info(
+                    result.get("mensaje", "Operación completada"),
+                    position="bottom-right",
+                )
+
+        except ValueError as e:
+            async with self:
+                self.error_message = str(e)
+                self.is_loading = False
+            yield rx.toast.error(str(e), position="bottom-right")
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error al eliminar: {str(e)}"
+                self.is_loading = False
+            yield rx.toast.error(self.error_message, position="bottom-right")
+
+    # =========================================================================
+    # ELIMINACIÓN MASIVA (VISTA AGRUPADA)
+    # =========================================================================
+
+    @rx.event(background=True)
+    async def eliminar_liquidaciones_agrupadas(self, id_propietario: int, periodo: str):
+        """
+        Elimina todas las liquidaciones no pagadas de un propietario para un período.
+        Muestra diálogo de confirmación antes de ejecutar.
+        """
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+
+        try:
+            servicio = ServicioFinanciero(db_manager)
+            usuario_sistema = "admin"  # TODO: Obtener de AuthState
+
+            # Obtener liquidaciones del grupo
+            liquidaciones_grupo = (
+                servicio.repo_liquidacion.listar_por_propietario_y_periodo(
+                    id_propietario, periodo
+                )
+            )
+
+            if not liquidaciones_grupo:
+                async with self:
+                    self.is_loading = False
+                yield rx.toast.info(
+                    "No se encontraron liquidaciones para eliminar",
+                    position="bottom-right",
+                )
+                return
+
+            # Filtrar solo las que no están pagadas
+            liquidaciones_eliminables = [
+                liq
+                for liq in liquidaciones_grupo
+                if liq.estado_liquidacion != "Pagada" and not liq.eliminada
+            ]
+
+            if not liquidaciones_eliminables:
+                async with self:
+                    self.is_loading = False
+                yield rx.toast.info(
+                    "No hay liquidaciones para eliminar (todas están pagadas o ya fueron eliminadas)",
+                    position="bottom-right",
+                )
+                return
+
+            # Eliminar cada liquidación
+            eliminadas = 0
+            errores = []
+            for liq in liquidaciones_eliminables:
+                try:
+                    servicio.eliminar_liquidacion(liq.id_liquidacion, usuario_sistema)
+                    eliminadas += 1
+                except Exception as e:
+                    errores.append(f"ID {liq.id_liquidacion}: {str(e)}")
+
+            async with self:
+                self.is_loading = False
+
+            # Recargar lista
+            yield LiquidacionesState.load_liquidaciones()
+
+            if eliminadas > 0:
+                yield rx.toast.success(
+                    f"Se eliminaron {eliminadas} liquidaciones del período {periodo}",
+                    position="bottom-right",
+                )
+
+            if errores:
+                yield rx.toast.warning(
+                    f"Se omitieron {len(errores)} liquidaciones (posiblemente pagadas)",
+                    position="bottom-right",
+                )
+
+        except Exception as e:
+            async with self:
+                self.error_message = (
+                    f"Error al eliminar liquidaciones agrupadas: {str(e)}"
+                )
+                self.is_loading = False
+            yield rx.toast.error(self.error_message, position="bottom-right")
+
+    # =========================================================================
     # EXPORTACIÓN MASIVA
     # =========================================================================
 
     def open_export_modal(self):
         """Abre modal para exportar liquidaciones del periodo."""
         from datetime import datetime
+
         self.show_export_modal = True
         # Preseleccionar el periodo actual o el filtrado
         if not self.filter_periodo or self.filter_periodo == "Todos":
-             self.filter_periodo = datetime.now().strftime("%Y-%m")
+            self.filter_periodo = datetime.now().strftime("%Y-%m")
 
     def close_export_modal(self):
         """Cierra el modal de exportación."""
@@ -1356,29 +1874,33 @@ class LiquidacionesState(DocumentosStateMixin):
         async with self:
             self.exportando_periodo = True
             self.error_message = ""
-            
+
             # Usar el periodo filtrado si existe, si no el actual
             periodo = self.filter_periodo
             if not periodo or periodo == "Todos":
                 from datetime import datetime
+
                 periodo = datetime.now().strftime("%Y-%m")
-        
+
         try:
-            from pathlib import Path
+
             # Importar dependencias para inyección
             servicio = ServicioFinanciero(db_manager)
-            
+
             # Ejecutar exportación
             zip_path = servicio.exportar_estados_cuenta_periodo_zip(periodo)
-            
+
             # Entregar para descarga usando el script especializado de PDFState
             if zip_path:
                 from src.presentacion_reflex.state.pdf_state import PDFState
+
                 yield PDFState.descargar_pdf_script(zip_path)
-                yield rx.toast.success(f"Exportación de {periodo} completada", position="bottom-right")
-            
+                yield rx.toast.success(
+                    f"Exportación de {periodo} completada", position="bottom-right"
+                )
+
             async with self:
-                 self.show_export_modal = False
+                self.show_export_modal = False
 
         except Exception as e:
             async with self:
@@ -1387,3 +1909,260 @@ class LiquidacionesState(DocumentosStateMixin):
         finally:
             async with self:
                 self.exportando_periodo = False
+
+    # -------------------------------------------------------------------------
+    # INCIDENT ASSOCIATION MODAL (US2) - T043-T045
+    # -------------------------------------------------------------------------
+    def set_show_seleccion_incidentes_modal(self, value: bool):
+        """Setter para el estado del modal de selección de incidentes."""
+        self.show_seleccion_incidentes_modal = value
+
+    @rx.event(background=True)
+    async def open_seleccion_incidentes_modal(self, id_liquidacion: int):
+        """Abre el modal de selección de incidentes para una liquidación."""
+        async with self:
+            self.seleccion_incidentes_liquidacion_id = id_liquidacion
+            self.seleccion_incidentes_error = ""
+            self.seleccion_incidentes_seleccionados = []
+            self.seleccion_incidentes_total_descuentos = 0
+            self.seleccion_incidentes_loading = True
+            self.show_seleccion_incidentes_modal = True
+
+        try:
+            from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
+                RepositorioIncidentesPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
+                RepositorioPlanPagoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_cuota_postgres import (
+                RepositorioCuotaPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import (
+                RepositorioIncidenteLiquidacionPostgres,
+            )
+            from src.infraestructura.persistencia.database import db_manager as dm
+
+            repo_incidentes = RepositorioIncidentesPostgres(dm)
+            repo_plan = RepositorioPlanPagoPostgres(dm)
+            repo_cuota = RepositorioCuotaPostgres(dm)
+            repo_relacion = RepositorioIncidenteLiquidacionPostgres(dm)
+
+            # 1. Obtener relaciones existentes para esta liquidación
+            relaciones_existentes = repo_relacion.obtener_por_liquidacion(
+                id_liquidacion
+            )
+            ids_ya_asociados = {r.id_incidente for r in relaciones_existentes}
+
+            # 2. Buscar incidentes elegibles: estado en [Aprobado, En Reparacion, Finalizado]
+            #    y estado_pago != Pagado
+            incidentes_elegibles = []
+            # Usar búsqueda directa con filtros SQL
+            conn = dm.obtener_conexion()
+            cursor = dm.get_dict_cursor(conn)
+            placeholder = dm.get_placeholder()
+
+            query = f"""
+                SELECT i.ID_INCIDENTE, i.DESCRIPCION_INCIDENTE, i.COSTO_INCIDENTE,
+                       i.ESTADO, i.ESTADO_PAGO,
+                       p.DIRECCION_PROPIEDAD as PROPIEDAD,
+                       per.NOMBRE_COMPLETO as PROPIETARIO
+                FROM INCIDENTES i
+                LEFT JOIN PROPIEDADES p ON i.ID_PROPIEDAD = p.ID_PROPIEDAD
+                LEFT JOIN CONTRATOS_MANDATOS cm ON (
+                    i.ID_CONTRATO_M = cm.ID_CONTRATO_M
+                    OR (i.ID_CONTRATO_M IS NULL AND i.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'ACTIVO')
+                )
+                LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
+                LEFT JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+                WHERE i.ESTADO IN ({placeholder}, {placeholder}, {placeholder})
+                  AND i.ESTADO_PAGO != {placeholder}
+                ORDER BY i.ID_INCIDENTE DESC
+            """
+            cursor.execute(
+                query,
+                ("Aprobado", "En Reparacion", "Finalizado", "Pagado"),
+            )
+            rows = cursor.fetchall()
+
+            for row in rows:
+                id_inc = row["ID_INCIDENTE"]
+                # Obtener plan activo y cuota disponible
+                plan = repo_plan.obtener_por_incidente(id_inc)
+                if not plan:
+                    continue  # Sin plan activo, no se puede asociar
+
+                cuotas = repo_cuota.obtener_por_plan(plan.id_plan_pago)
+                # Buscar primera cuota que pueda asociarse
+                cuota_disponible = None
+                for cuota in cuotas:
+                    if (
+                        cuota.puede_asociarse()
+                        and cuota.id_liquidacion != id_liquidacion
+                    ):
+                        cuota_disponible = cuota
+                        break
+
+                if cuota_disponible is None:
+                    continue  # No hay cuotas disponibles
+
+                ya_asociado = id_inc in ids_ya_asociados
+                incidentes_elegibles.append(
+                    {
+                        "id": id_inc,
+                        "descripcion": row["DESCRIPCION_INCIDENTE"]
+                        or f"Incidente #{id_inc}",
+                        "costo": row["COSTO_INCIDENTE"] or 0,
+                        "costo_view": format_currency(row["COSTO_INCIDENTE"] or 0),
+                        "estado": row["ESTADO"],
+                        "estado_pago": row["ESTADO_PAGO"] or "Pendiente",
+                        "propiedad": row["PROPIEDAD"] or "N/A",
+                        "propietario": row["PROPIETARIO"] or "N/A",
+                        "num_cuota": cuota_disponible.numero_cuota,
+                        "valor_cuota": plan.valor_cuota,
+                        "valor_cuota_view": format_currency(plan.valor_cuota),
+                        "ya_asociado": ya_asociado,
+                    }
+                )
+
+            async with self:
+                self.seleccion_incidentes_disponibles = incidentes_elegibles
+                self.seleccion_incidentes_loading = False
+
+        except Exception as e:
+            async with self:
+                self.seleccion_incidentes_error = (
+                    f"Error al cargar incidentes: {str(e)}"
+                )
+                self.seleccion_incidentes_loading = False
+
+    def toggle_seleccion_incidente(self, id_incidente: int):
+        """Alterna la selección de un incidente en el modal."""
+        seleccionados = list(self.seleccion_incidentes_seleccionados)
+        disponibles = self.seleccion_incidentes_disponibles
+
+        # Verificar si ya está seleccionado
+        idx = next(
+            (i for i, s in enumerate(seleccionados) if s["id"] == id_incidente),
+            None,
+        )
+
+        if idx is not None:
+            # Quitar de selección
+            seleccionados.pop(idx)
+        else:
+            # Agregar a selección
+            incidente = next(
+                (inc for inc in disponibles if inc["id"] == id_incidente),
+                None,
+            )
+            if incidente and not incidente.get("ya_asociado", False):
+                seleccionados.append(incidente)
+
+        # Recalcular total de descuentos
+        total = sum(s.get("valor_cuota", 0) for s in seleccionados)
+
+        self.seleccion_incidentes_seleccionados = seleccionados
+        self.seleccion_incidentes_total_descuentos = total
+
+    @rx.event(background=True)
+    async def asociar_incidentes_seleccionados(self):
+        """Asocia los incidentes seleccionados a la liquidación."""
+        if not self.seleccion_incidentes_seleccionados:
+            async with self:
+                self.seleccion_incidentes_error = (
+                    "Debe seleccionar al menos un incidente"
+                )
+            return
+
+        async with self:
+            self.seleccion_incidentes_loading = True
+            self.seleccion_incidentes_error = ""
+
+        try:
+            from src.infraestructura.persistencia.repositorio_incidentes_postgres import (
+                RepositorioIncidentesPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
+                RepositorioPlanPagoPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_cuota_postgres import (
+                RepositorioCuotaPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import (
+                RepositorioIncidenteLiquidacionPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
+                RepositorioLiquidacionPostgres,
+            )
+            from src.infraestructura.persistencia.database import db_manager as dm
+            from src.core.auth import obtener_usuario_actual_async
+            from src.aplicacion.servicios.servicio_incidente_liquidacion import (
+                ServicioIncidenteLiquidacion,
+            )
+
+            repo_relacion = RepositorioIncidenteLiquidacionPostgres(dm)
+            repo_cuota = RepositorioCuotaPostgres(dm)
+            repo_plan = RepositorioPlanPagoPostgres(dm)
+            repo_liquidacion = RepositorioLiquidacionPostgres(dm)
+            repo_incidentes = RepositorioIncidentesPostgres(dm)
+
+            servicio = ServicioIncidenteLiquidacion(
+                repositorio_relacion=repo_relacion,
+                repositorio_cuota=repo_cuota,
+                repositorio_plan=repo_plan,
+                repositorio_liquidacion=repo_liquidacion,
+                repositorio_incidentes=repo_incidentes,
+            )
+
+            usuario = await obtener_usuario_actual_async()
+            id_liquidacion = self.seleccion_incidentes_liquidacion_id
+            exitosos = 0
+            errores = []
+
+            for incidente in self.seleccion_incidentes_seleccionados:
+                resultado = servicio.asociar_incidente(
+                    id_incidente=incidente["id"],
+                    id_liquidacion=id_liquidacion,
+                    numero_cuota=incidente["num_cuota"],
+                    valor_descuento=incidente["valor_cuota"],
+                    asociado_por=usuario,
+                )
+
+                if resultado.get("success"):
+                    exitosos += 1
+                else:
+                    errores.append(
+                        f"Incidente #{incidente['id']}: {resultado.get('message', 'Error desconocido')}"
+                    )
+
+            async with self:
+                if errores:
+                    self.seleccion_incidentes_error = (
+                        f"Asociados: {exitosos}. Errores: {'; '.join(errores)}"
+                    )
+                else:
+                    self.show_seleccion_incidentes_modal = False
+                    yield rx.toast.success(
+                        f"{exitosos} incidente(s) asociado(s) exitosamente",
+                        position="bottom-right",
+                    )
+                    yield LiquidacionesState.load_liquidaciones()
+
+                self.seleccion_incidentes_loading = False
+
+        except Exception as e:
+            async with self:
+                self.seleccion_incidentes_error = (
+                    f"Error al asociar incidentes: {str(e)}"
+                )
+                self.seleccion_incidentes_loading = False
+
+    def close_seleccion_incidentes_modal(self):
+        """Cierra el modal de selección de incidentes."""
+        self.show_seleccion_incidentes_modal = False
+        self.seleccion_incidentes_liquidacion_id = None
+        self.seleccion_incidentes_disponibles = []
+        self.seleccion_incidentes_seleccionados = []
+        self.seleccion_incidentes_total_descuentos = 0
+        self.seleccion_incidentes_error = ""

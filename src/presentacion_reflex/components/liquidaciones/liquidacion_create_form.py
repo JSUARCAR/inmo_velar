@@ -10,7 +10,9 @@ from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 from src.presentacion_reflex import styles
 
 
-from src.presentacion_reflex.components.shared.searchable_select import searchable_select
+from src.presentacion_reflex.components.shared.searchable_select import (
+    searchable_select,
+)
 
 
 def form_field(
@@ -87,14 +89,18 @@ def liquidacion_create_form() -> rx.Component:
                                 "nombre_propietario",
                                 "Autocargado...",
                                 read_only=True,
-                                value=LiquidacionesState.form_data["nombre_propietario"],
+                                value=LiquidacionesState.form_data[
+                                    "nombre_propietario"
+                                ],
                             ),
                             form_field(
                                 "Dirección Inmueble",
                                 "direccion_propiedad",
                                 "Autocargado...",
                                 read_only=True,
-                                value=LiquidacionesState.form_data["direccion_propiedad"],
+                                value=LiquidacionesState.form_data[
+                                    "direccion_propiedad"
+                                ],
                             ),
                             columns="2",
                             spacing="3",
@@ -125,7 +131,9 @@ def liquidacion_create_form() -> rx.Component:
                             type="month",
                             required=True,
                             value=LiquidacionesState.form_data["periodo"],
-                            on_change=lambda val: LiquidacionesState.set_form_field("periodo", val),
+                            on_change=lambda val: LiquidacionesState.set_form_field(
+                                "periodo", val
+                            ),
                         ),
                         columns="2",
                         spacing="3",
@@ -222,11 +230,16 @@ def liquidacion_create_form() -> rx.Component:
                     rx.hstack(
                         rx.dialog.close(
                             rx.button(
-                                "Cancelar", variant="soft", color_scheme="gray", type="button"
+                                "Cancelar",
+                                variant="soft",
+                                color_scheme="gray",
+                                type="button",
                             ),
                         ),
                         rx.spacer(),
-                        rx.button("Generar Liquidación", type="submit", color_scheme="blue"),
+                        rx.button(
+                            "Generar Liquidación", type="submit", color_scheme="blue"
+                        ),
                         width="100%",
                     ),
                     spacing="4",

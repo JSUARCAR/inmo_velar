@@ -1,0 +1,431 @@
+ .../servicios/servicio_incidente_liquidacion.py    | 423 +++++++++++++++++++++
+ 1 file changed, 423 insertions(+)
+diff --git a/src/aplicacion/servicios/servicio_incidente_liquidacion.py b/src/aplicacion/servicios/servicio_incidente_liquidacion.py
+new file mode 100644
+index 0000000..268bd76
+--- /dev/null
++++ b/src/aplicacion/servicios/servicio_incidente_liquidacion.py
+@@ -0,0 +1,423 @@
++"""
++Servicio para asociación de incidentes a liquidaciones.
++Implementa la lógica de negocio para asociar incidentes con liquidaciones.
++
++Feature: 003-integracion-incidentes-liquidaciones
++Date: 2026-06-30
++"""
++
++import logging
++from datetime import datetime
++from typing import Dict, List, Optional, Any
++
++from src.dominio.entidades.incidente_liquidacion import IncidenteLiquidacion
++from src.dominio.entidades.cuota_incidente import CuotaIncidente
++from src.dominio.interfaces.repositorio_incidente_liq import RepositorioIncidenteLiquidacion
++from src.dominio.interfaces.repositorio_cuota import RepositorioCuota
++from src.dominio.interfaces.repositorio_plan_pago import RepositorioPlanPago
++from src.dominio.interfaces.repositorio_liquidacion import IRepositorioLiquidacion
++from src.dominio.interfaces.repositorio_incidentes import RepositorioIncidentes
++
++logger = logging.getLogger(__name__)
++
++
++class ServicioIncidenteLiquidacion:
++    """
++    Servicio para gestionar la asociación de incidentes a liquidaciones.
++    
++    Responsibilities:
++    - Asociar incidentes con liquidaciones
++    - Desasociar incidentes de liquidaciones
++    - Calcular totales de descuentos
++    - Actualizar estado de pago de incidentes
++    """
++
++    def __init__(
++        self,
++        repositorio_relacion: RepositorioIncidenteLiquidacion,
++        repositorio_cuota: RepositorioCuota,
++        repositorio_plan: RepositorioPlanPago,
++        repositorio_liquidacion: IRepositorioLiquidacion,
++        repositorio_incidentes: RepositorioIncidentes,
++    ):
++        self.repositorio_relacion = repositorio_relacion
++        self.repositorio_cuota = repositorio_cuota
++        self.repositorio_plan = repositorio_plan
++        self.repositorio_liquidacion = repositorio_liquidacion
++        self.repositorio_incidentes = repositorio_incidentes
++
++    def asociar_incidente(
++        self,
++        id_incidente: int,
++        id_liquidacion: int,
++        numero_cuota: int,
++        valor_descuento: int,
++        asociado_por: str,
++    ) -> Dict[str, Any]:
++        """
++        Asocia un incidente a una liquidación.
++        
++        Args:
++            id_incidente: ID del incidente
++            id_liquidacion: ID de la liquidación
++            numero_cuota: Número de cuota del incidente
++            valor_descuento: Valor del descuento
++            asociado_por: Usuario que asocia
++            
++        Returns:
++            Dict con resultado de la operación
++        """
++        try:
++            # 1. Validar que el incidente existe y está calificado
++            incidente = self.repositorio_incidentes.obtener_por_id(id_incidente)
++            if not incidente:
++                return {
++                    "success": False,
++                    "error": "INCIDENTE_NO_ENCONTRADO",
++                    "message": "El incidente no existe",
++                }
++            
++            if incidente.estado not in ["Aprobado", "En Reparacion", "Finalizado"]:
++                return {
++                    "success": False,
++                    "error": "INCIDENTE_NO_CALIFICADO",
++                    "message": f"El incidente no está en un estado válido (estado actual: {incidente.estado})",
++                }
++            
++            if incidente.estado_pago == "Pagado":
++                return {
++                    "success": False,
++                    "error": "INCIDENTE_PAGADO",
++                    "message": "El incidente ya está pagado completamente",
++                }
++            
++            # 2. Verificar que el incidente tenga un plan de pago activo
++            plan = self.repositorio_plan.obtener_por_incidente(id_incidente)
++            if not plan or not plan.esta_activo():
++                return {
++                    "success": False,
++                    "error": "PLAN_NO_EXISTE",
++                    "message": "El incidente no tiene un plan de pago activo",
++                }
++            
++            # 3. Validar que la liquidación existe y está calificada
++            liquidacion = self.repositorio_liquidacion.obtener_por_id(id_liquidacion)
++            if not liquidacion:
++                return {
++                    "success": False,
++                    "error": "LIQUIDACION_NO_ENCONTRADA",
++                    "message": "La liquidación no existe",
++                }
++            
++            if liquidacion.estado_liquidacion not in ["En Proceso", "Aprobada"]:
++                return {
++                    "success": False,
++                    "error": "LIQUIDACION_NO_CALIFICADA",
++                    "message": f"La liquidación no está en un estado válido (estado actual: {liquidacion.estado_liquidacion})",
++                }
++            
++            # 4. Validar que la cuota exista y esté pendiente
++            cuotas = self.repositorio_cuota.obtener_por_plan(plan.id_plan_pago)
++            cuota = next((c for c in cuotas if c.numero_cuota == numero_cuota), None)
++            
++            if not cuota:
++                return {
++                    "success": False,
++                    "error": "CUOTA_NO_ENCONTRADA",
++                    "message": f"No se encontró la cuota número {numero_cuota}",
++                }
++            
++            if not cuota.puede_asociarse():
++                return {
++                    "success": False,
++                    "error": "CUOTA_YA_ASOCIADA",
++                    "message": "La cuota ya está asociada a una liquidación",
++                }
++            
++            # 5. Validar que no exista una asociación duplicada
++            relaciones_existentes = self.repositorio_relacion.obtener_por_incidente(id_incidente)
++            duplicado = next(
++                (
++                    r
++                    for r in relaciones_existentes
++                    if r.id_liquidacion == id_liquidacion
++                    and r.numero_cuota == numero_cuota
++                ),
++                None,
++            )
++            
++            if duplicado:
++                return {
++                    "success": False,
++                    "error": "DUPLICADO",
++                    "message": "Esta cuota ya está asociada a esta liquidación",
++                }
++            
++            # 6. Validar valor del descuento
++            if valor_descuento <= 0:
++                return {
++                    "success": False,
++                    "error": "VALOR_INVALIDO",
++                    "message": "El valor del descuento debe ser mayor a 0",
++                }
++            
++            # 7. Crear la relación
++            relacion = IncidenteLiquidacion.crear(
++                id_incidente=id_incidente,
++                id_liquidacion=id_liquidacion,
++                numero_cuota=numero_cuota,
++                valor_descuento=valor_descuento,
++                asociado_por=asociado_por,
++            )
++            relacion = self.repositorio_relacion.crear(relacion)
++            
++            # 8. Actualizar estado de la cuota
++            cuota.asociar_a_liquidacion(id_liquidacion)
++            self.repositorio_cuota.actualizar(cuota)
++            
++            # 9b. Actualizar observaciones con ID del incidente (reemplazo completo)
++            liquidacion.observaciones = f"Inc #{id_incidente}"
++            self.repositorio_liquidacion.actualizar(liquidacion)
++            
++            # 9. Actualizar valor_incidentes de la liquidación
++            total_descuentos = self.repositorio_relacion.calcular_total_descuentos(
++                id_liquidacion
++            )
++            # Nota: La liquidación se actualizará con el trigger de BD
++            
++            logger.info(
++                f"Incidente {id_incidente} asociado a liquidación {id_liquidacion} "
++                f"(cuota {numero_cuota}, descuento ${valor_descuento})"
++            )
++            
++            return {
++                "success": True,
++                "data": {
++                    "relacion": relacion.to_dict(),
++                    "total_descuentos_liquidacion": total_descuentos,
++                },
++                "message": "Incidente asociado exitosamente",
++            }
++            
++        except Exception as e:
++            logger.error(f"Error al asociar incidente: {e}")
++            return {
++                "success": False,
++                "error": "ERROR_INESPERADO",
++                "message": f"Error al asociar incidente: {str(e)}",
++            }
++
++    def desasociar_incidente(
++        self,
++        id_relacion: int,
++        desasociado_por: str,
++        justificacion: str = "",
++    ) -> Dict[str, Any]:
++        """
++        Desasocia un incidente de una liquidación.
++        
++        Args:
++            id_relacion: ID de la relación a eliminar
++            desasociado_por: Usuario que desasocia
++            justificacion: Justificación de la desasociación
++            
++        Returns:
++            Dict con resultado de la operación
++        """
++        try:
++            # 1. Obtener la relación
++            relacion = self.repositorio_relacion.obtener_por_id(id_relacion)
++            
++            if not relacion:
++                return {
++                    "success": False,
++                    "error": "RELACION_NO_ENCONTRADA",
++                    "message": "La relación no existe",
++                }
++            
++            # 2. Verificar que la liquidación no esté pagada
++            liquidacion = self.repositorio_liquidacion.obtener_por_id(
++                relacion.id_liquidacion
++            )
++            
++            if liquidacion and liquidacion.estado_liquidacion == "Pagada":
++                return {
++                    "success": False,
++                    "error": "LIQUIDACION_PAGADA",
++                    "message": "No se puede desasociar de una liquidación pagada",
++                }
++            
++            if liquidacion and liquidacion.estado_liquidacion == "Cancelada":
++                return {
++                    "success": False,
++                    "error": "LIQUIDACION_ANULADA",
++                    "message": "No se puede desasociar de una liquidación cancelada",
++                }
++            
++            # 3. Obtener y actualizar la cuota
++            plan = self.repositorio_plan.obtener_por_incidente(relacion.id_incidente)
++            if plan:
++                cuotas = self.repositorio_cuota.obtener_por_plan(plan.id_plan_pago)
++                cuota = next(
++                    (
++                        c
++                        for c in cuotas
++                        if c.numero_cuota == relacion.numero_cuota
++                        and c.id_liquidacion == relacion.id_liquidacion
++                    ),
++                    None,
++                )
++                
++                if cuota:
++                    cuota.desasociar_de_liquidacion()
++                    self.repositorio_cuota.actualizar(cuota)
++            
++            # 4. Eliminar la relación
++            self.repositorio_relacion.eliminar(id_relacion)
++            
++            # 5b. Actualizar observaciones (reemplazo completo)
++            if liquidacion:
++                liquidacion.observaciones = ""
++                self.repositorio_liquidacion.actualizar(liquidacion)
++            
++            # 5. Actualizar valor_incidentes de la liquidación
++            if liquidacion:
++                total_descuentos = self.repositorio_relacion.calcular_total_descuentos(
++                    relacion.id_liquidacion
++                )
++                # Nota: La liquidación se actualizará con el trigger de BD
++            
++            logger.info(
++                f"Relación {id_relacion} eliminada por {desasociado_por}"
++            )
++            
++            return {
++                "success": True,
++                "data": {"id_relacion_eliminada": id_relacion},
++                "message": "Incidente desasociado exitosamente",
++            }
++            
++        except Exception as e:
++            logger.error(f"Error al desasociar incidente: {e}")
++            return {
++                "success": False,
++                "error": "ERROR_INESPERADO",
++                "message": f"Error al desasociar incidente: {str(e)}",
++            }
++
++    def obtener_incidentes_por_liquidacion(
++        self, id_liquidacion: int
++    ) -> Dict[str, Any]:
++        """
++        Obtiene todos los incidentes asociados a una liquidación.
++        
++        Args:
++            id_liquidacion: ID de la liquidación
++            
++        Returns:
++            Dict con la lista de incidentes asociados
++        """
++        try:
++            relaciones = self.repositorio_relacion.obtener_por_liquidacion(id_liquidacion)
++            
++            incidentes = []
++            for relacion in relaciones:
++                incidente = self.repositorio_incidentes.obtener_por_id(
++                    relacion.id_incidente
++                )
++                if incidente:
++                    incidentes.append(
++                        {
++                            "relacion": relacion.to_dict(),
++                            "incidente": {
++                                "id": incidente.id_incidente,
++                                "descripcion": incidente.descripcion_incidente,
++                                "costo": incidente.costo_incidente,
++                                "estado": incidente.estado,
++                                "estado_pago": incidente.estado_pago,
++                            },
++                        }
++                    )
++            
++            total_descuentos = sum(r.valor_descuento for r in relaciones)
++            
++            return {
++                "success": True,
++                "data": {
++                    "incidentes": incidentes,
++                    "total_descuentos": total_descuentos,
++                    "num_incidentes": len(incidentes),
++                },
++            }
++            
++        except Exception as e:
++            logger.error(f"Error al obtener incidentes por liquidación: {e}")
++            return {
++                "success": False,
++                "error": "ERROR_INESPERADO",
++                "message": f"Error al obtener incidentes: {str(e)}",
++            }
++
++    def obtener_liquidaciones_por_incidente(
++        self, id_incidente: int
++    ) -> Dict[str, Any]:
++        """
++        Obtiene todas las liquidaciones asociadas a un incidente.
++        
++        Args:
++            id_incidente: ID del incidente
++            
++        Returns:
++            Dict con la lista de liquidaciones asociadas
++        """
++        try:
++            relaciones = self.repositorio_relacion.obtener_por_incidente(id_incidente)
++            
++            liquidaciones = []
++            for relacion in relaciones:
++                liquidacion = self.repositorio_liquidacion.obtener_por_id(
++                    relacion.id_liquidacion
++                )
++                if liquidacion:
++                    liquidaciones.append(
++                        {
++                            "relacion": relacion.to_dict(),
++                            "liquidacion": {
++                                "id": liquidacion.id_liquidacion,
++                                "periodo": liquidacion.periodo,
++                                "estado": liquidacion.estado_liquidacion,
++                                "neto_a_pagar": liquidacion.neto_a_pagar,
++                            },
++                        }
++                    )
++            
++            total_descuentos = sum(r.valor_descuento for r in relaciones)
++            
++            return {
++                "success": True,
++                "data": {
++                    "liquidaciones": liquidaciones,
++                    "total_descuentos": total_descuentos,
++                    "num_liquidaciones": len(liquidaciones),
++                },
++            }
++            
++        except Exception as e:
++            logger.error(f"Error al obtener liquidaciones por incidente: {e}")
++            return {
++                "success": False,
++                "error": "ERROR_INESPERADO",
++                "message": f"Error al obtener liquidaciones: {str(e)}",
++            }
++
++    def calcular_total_descuentos(self, id_liquidacion: int) -> int:
++        """
++        Calcula el total de descuentos para una liquidación.
++        
++        Args:
++            id_liquidacion: ID de la liquidación
++            
++        Returns:
++            Total de descuentos
++        """
++        return self.repositorio_relacion.calcular_total_descuentos(id_liquidacion)

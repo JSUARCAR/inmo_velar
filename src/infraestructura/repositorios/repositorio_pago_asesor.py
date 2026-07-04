@@ -54,16 +54,20 @@ class RepositorioPagoAsesor:
                 row = cursor.fetchone()
                 if row:
                     if hasattr(row, "get") or isinstance(row, dict):
-                        pago.id_pago_asesor = row.get("ID_PAGO_ASESOR") or row.get("id_pago_asesor")
+                        pago.id_pago_asesor = row.get("ID_PAGO_ASESOR") or row.get(
+                            "id_pago_asesor"
+                        )
                     else:
                         pago.id_pago_asesor = row[0]
-                
+
                 pago.created_by = usuario
                 pago.updated_by = usuario
                 return pago
         except Exception as e:
             if "unique" in str(e).lower():
-                raise ValueError(f"Ya existe un pago con la referencia {pago.referencia_pago}")
+                raise ValueError(
+                    f"Ya existe un pago con la referencia {pago.referencia_pago}"
+                )
             raise
 
     def actualizar(self, pago: PagoAsesor, usuario: str) -> PagoAsesor:
@@ -152,7 +156,10 @@ class RepositorioPagoAsesor:
 
     def _row_to_entity(self, row: Dict[str, Any]) -> PagoAsesor:
         """Helper para mapeo de fila a entidad."""
-        def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
+        def gv(k):
+            return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
         return PagoAsesor(
             id_pago_asesor=gv("ID_PAGO_ASESOR"),
             id_liquidacion_asesor=gv("ID_LIQUIDACION_ASESOR"),

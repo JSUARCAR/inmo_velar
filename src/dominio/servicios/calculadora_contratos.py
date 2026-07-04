@@ -15,16 +15,16 @@ class CalculadoraContratos:
     ) -> int:
         """
         Calcula la duración en meses entre dos fechas de forma comercial.
-        
+
         Reglas:
         - 01-Ene a 31-Ene = 1 mes.
         - 15-Ene a 14-Feb = 1 mes.
         - 15-Ene a 15-Feb = 1 mes (redondeado hacia abajo comercialmente, o inicio del segundo).
-        
+
         Args:
             fecha_inicio: Fecha de inicio (date o string YYYY-MM-DD).
             fecha_fin: Fecha de fin (date o string YYYY-MM-DD).
-            
+
         Returns:
             Entero con la cantidad de meses.
         """
@@ -89,11 +89,13 @@ class CalculadoraContratos:
         retorna el día hábil inmediatamente siguiente.
         """
         import holidays
+
         festivos_col = holidays.Colombia()
         dia = fecha
         # 5 es sábado, 6 es domingo en weekday()
         while dia.weekday() >= 5 or dia in festivos_col:
             from datetime import timedelta
+
             dia += timedelta(days=1)
         return dia
 
@@ -112,7 +114,7 @@ class CalculadoraContratos:
             return 10
         elif 8 <= dia <= 17:
             return 20
-        else: # 18 al 27
+        else:  # 18 al 27
             return 30
 
     @staticmethod
@@ -126,36 +128,39 @@ class CalculadoraContratos:
         """
         if isinstance(fecha_inicio, str):
             fecha_inicio = datetime.strptime(fecha_inicio[:10], "%Y-%m-%d").date()
-        
+
         dia = fecha_inicio.day
         if dia >= 28 or dia <= 7:
             return 1, 10
         elif 8 <= dia <= 17:
             return 2, 20
-        else: # 18 al 27
+        else:  # 18 al 27
             return 3, 30
 
     @staticmethod
-    def resolver_dia_pago_real(fecha_pago: Optional[int], grupo_operativo: int, mes: int, año: int) -> int:
+    def resolver_dia_pago_real(
+        fecha_pago: Optional[int], grupo_operativo: int, mes: int, año: int
+    ) -> int:
         """
         Resuelve el día de pago real según el grupo, truncando al fin de mes
         si es necesario (ej: febrero) y ajustando por días hábiles.
-        Retorna el día (int) o la fecha completa si se desea, pero por contrato actual 
+        Retorna el día (int) o la fecha completa si se desea, pero por contrato actual
         debe retornar el día.
-        Nota: Devuelve el día calculado. Para mayor exactitud financiera, 
+        Nota: Devuelve el día calculado. Para mayor exactitud financiera,
         se sugiere usar resolver_fecha_pago_habil.
         """
         dia_base = fecha_pago if fecha_pago not in [None, -1] else 30
-        
+
         # Validar si el mes tiene menos días que el día de pago (ej. Febrero 30 -> 28/29)
         import calendar
+
         _, ultimo_dia_mes = calendar.monthrange(año, mes)
         if dia_base > ultimo_dia_mes:
             dia_base = ultimo_dia_mes
-            
+
         fecha_ideal = date(año, mes, dia_base)
         fecha_habil = CalculadoraContratos.obtener_siguiente_dia_habil(fecha_ideal)
-        
+
         return fecha_habil.day
 
     @staticmethod
@@ -165,11 +170,12 @@ class CalculadoraContratos:
         de fines de semana o festivos, truncando al último día del mes si aplica.
         """
         import calendar
+
         _, ultimo_dia_mes = calendar.monthrange(año, mes)
         dia_base = fecha_pago if fecha_pago > 0 else 30
         if dia_base > ultimo_dia_mes:
             dia_base = ultimo_dia_mes
-            
+
         fecha_ideal = date(año, mes, dia_base)
         return CalculadoraContratos.obtener_siguiente_dia_habil(fecha_ideal)
 
@@ -196,5 +202,6 @@ class CalculadoraContratos:
             return fecha.replace(year=año, month=mes)
         except ValueError:
             import calendar
+
             ultimo_dia = calendar.monthrange(año, mes)[1]
             return fecha.replace(year=año, month=mes, day=ultimo_dia)

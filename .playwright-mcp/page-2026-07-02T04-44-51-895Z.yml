@@ -1,0 +1,300 @@
+- generic:
+  - region "Notifications alt+T"
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - img
+              - heading [level=1]: INMOBILIARIA VELAR SAS
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - paragraph: PRINCIPAL
+                  - link:
+                    - /url: /dashboard
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Dashboard
+                  - link:
+                    - /url: /alertas
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Alertas Tempranas
+                - generic:
+                  - generic:
+                    - paragraph: GESTIÓN
+                  - link:
+                    - /url: /personas
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Personas
+                  - link:
+                    - /url: /propiedades
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Propiedades
+                  - link:
+                    - /url: /contratos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Contratos
+                  - link:
+                    - /url: /propiedad-horizontal
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Prop. Horizontal
+                  - link:
+                    - /url: /proveedores
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Proveedores
+                - generic:
+                  - generic:
+                    - paragraph: OPERACIONES
+                  - link:
+                    - /url: /liquidaciones
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Liquidaciones
+                  - link:
+                    - /url: /liquidacion-asesores
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Liquidación Asesores
+                  - link:
+                    - /url: /recaudos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Recaudos
+                  - link:
+                    - /url: /desocupaciones
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Desocupaciones
+                  - link:
+                    - /url: /incidentes
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Incidentes
+                  - link:
+                    - /url: /seguros
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Seguros
+                  - link:
+                    - /url: /recibos-publicos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Recibos Públicos
+                  - link:
+                    - /url: /saldos-favor
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Saldos a Favor
+                - generic:
+                  - generic:
+                    - paragraph: ADMINISTRACIÓN
+                  - link:
+                    - /url: /usuarios
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Usuarios
+                  - link:
+                    - /url: /configuracion
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Configuración
+                  - link:
+                    - /url: /incrementos
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: IPC / Incrementos
+                  - link:
+                    - /url: /auditoria
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Auditoría
+                  - link:
+                    - /url: /reportes
+                    - generic:
+                      - generic:
+                        - img
+                        - paragraph: Reportes
+            - generic:
+              - img
+              - generic:
+                - paragraph: admin
+                - paragraph: Administrador
+              - generic:
+                - button:
+                  - img
+                - generic:
+                  - generic:
+                    - button:
+                      - generic:
+                        - generic:
+                          - img
+                - button:
+                  - img
+          - generic:
+            - generic:
+              - generic:
+                - heading [level=1]: Liquidaciones de Propietarios
+                - paragraph: Gestión de estados de cuenta mensuales y pagos a propietarios
+              - generic:
+                - button:
+                  - img
+                - generic:
+                  - switch
+                  - paragraph: Vista Individual
+                - generic:
+                  - textbox:
+                    - /placeholder: Buscar...
+                - combobox:
+                  - generic: Período
+                  - img
+                - combobox:
+                  - generic: Todos
+                  - img
+                - combobox:
+                  - generic: Todos
+                  - img
+                - generic:
+                  - button:
+                    - generic:
+                      - img
+                      - paragraph: Nueva Liquidación
+                  - button:
+                    - img
+        - region "Notifications alt+T"
+  - generic [ref=f11e2228]:
+    - dialog:
+      - heading [level=1]: Editar Liquidación
+      - paragraph: Modifique los valores variables. El período y contrato no pueden cambiarse.
+      - generic:
+        - generic:
+          - paragraph: Información General
+          - generic:
+            - generic:
+              - generic:
+                - paragraph: Propietario
+                - generic:
+                  - textbox: SANTIAGO GÓMEZ PEÑA
+              - generic:
+                - paragraph: Dirección Inmueble
+                - generic:
+                  - textbox: Calle Falsa 123 - Test Renov
+            - generic:
+              - paragraph: Canon Mandato
+              - generic:
+                - textbox: "1051000"
+            - generic:
+              - paragraph: ID Contrato
+              - generic:
+                - textbox: "103"
+            - generic:
+              - paragraph: Período
+              - generic:
+                - textbox: 2026-06
+          - paragraph: Ingresos
+          - generic:
+            - paragraph: Otros Ingresos
+            - generic:
+              - spinbutton: "0"
+          - paragraph: Egresos Variables
+          - generic:
+            - generic:
+              - paragraph: Gastos Administración
+              - generic:
+                - spinbutton: "0"
+            - generic:
+              - paragraph: Gastos Servicios
+              - generic:
+                - spinbutton: "0"
+            - generic:
+              - paragraph: Incidentes
+              - generic:
+                - spinbutton: "0"
+            - generic:
+              - paragraph: Pago Predial
+              - generic:
+                - spinbutton: "0"
+            - generic:
+              - paragraph: Otros Egresos
+              - generic:
+                - spinbutton: "0"
+          - button:
+            - generic:
+              - img
+              - paragraph: Seleccionar Incidentes
+          - paragraph: Observaciones
+          - generic:
+            - textbox:
+              - /placeholder: Detalles adicionales sobre la liquidación...
+          - generic:
+            - button: Cancelar
+            - button: Guardar Cambios
+  - dialog "Seleccionar Incidentes" [ref=f11e2302]:
+    - heading "Seleccionar Incidentes" [level=1] [ref=f11e2303]:
+      - generic [ref=f11e2304]:
+        - img [ref=f11e2305]
+        - paragraph [ref=f11e2308]: Seleccionar Incidentes
+    - paragraph [ref=f11e2309]: Seleccione los incidentes que desea asociar a esta liquidación. El valor de cada cuota se descontará del neto a pagar.
+    - table [ref=f11e2330]:
+      - rowgroup [ref=f11e2331]:
+        - row "Sel. ID Descripción Propiedad Costo Cuota Valor Cuota Estado Pago Nota" [ref=f11e2332]:
+          - columnheader "Sel." [ref=f11e2333]
+          - columnheader "ID" [ref=f11e2334]
+          - columnheader "Descripción" [ref=f11e2335]
+          - columnheader "Propiedad" [ref=f11e2336]
+          - columnheader "Costo" [ref=f11e2337]
+          - columnheader "Cuota" [ref=f11e2338]
+          - columnheader "Valor Cuota" [ref=f11e2339]
+          - columnheader "Estado Pago" [ref=f11e2340]
+          - columnheader "Nota" [ref=f11e2341]
+      - rowgroup [ref=f11e2342]:
+        - row "52 Calle Falsa 123 - Test Renov Calle Falsa 123 - Test Renov $70.000 1 $70.000 Pendiente" [ref=f11e2343]:
+          - cell [ref=f11e2344]:
+            - checkbox [ref=f11e2347]
+          - cell "52" [ref=f11e2348]:
+            - paragraph [ref=f11e2349]: "52"
+          - cell "Calle Falsa 123 - Test Renov" [ref=f11e2350]:
+            - paragraph [ref=f11e2351]: Calle Falsa 123 - Test Renov
+          - cell "Calle Falsa 123 - Test Renov" [ref=f11e2352]:
+            - paragraph [ref=f11e2353]: Calle Falsa 123 - Test Renov
+          - cell "$70.000" [ref=f11e2354]:
+            - paragraph [ref=f11e2355]: $70.000
+          - cell "1" [ref=f11e2356]:
+            - paragraph [ref=f11e2357]: "1"
+          - cell "$70.000" [ref=f11e2358]:
+            - paragraph [ref=f11e2359]: $70.000
+          - cell "Pendiente" [ref=f11e2360]:
+            - generic [ref=f11e2361]: Pendiente
+          - cell [ref=f11e2362]:
+            - paragraph
+    - generic [ref=f11e2321]:
+      - button "Cancelar" [active] [ref=f11e2323]
+      - button "Asociar Seleccionados" [ref=f11e2324]

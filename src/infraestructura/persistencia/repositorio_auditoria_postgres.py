@@ -44,8 +44,10 @@ class RepositorioAuditoriaPostgres(RepositorioAuditoria):
         row = cursor.fetchone()
         conn.commit()
         if row:
-            if isinstance(row, dict): return row.get("ID_AUDITORIA") or row.get("id_auditoria")
+            if isinstance(row, dict):
+                return row.get("ID_AUDITORIA") or row.get("id_auditoria")
             return row[0]
+
     def buscar_por_tabla(self, tabla: str, limit: int = 50) -> List[AuditoriaCambio]:
         query = "SELECT * FROM AUDITORIA_CAMBIOS WHERE TABLA = %s ORDER BY FECHA_CAMBIO DESC LIMIT %s"
         conn = self.db.obtener_conexion()
@@ -79,11 +81,12 @@ class RepositorioAuditoriaPostgres(RepositorioAuditoria):
             id_registro=row_dict.get("ID_REGISTRO") or row_dict.get("id_registro"),
             accion=row_dict.get("TIPO_OPERACION") or row_dict.get("tipo_operacion"),
             campo=row_dict.get("CAMPO_MODIFICADO") or row_dict.get("campo_modificado"),
-            valor_anterior=row_dict.get("VALOR_ANTERIOR") or row_dict.get("valor_anterior"),
+            valor_anterior=row_dict.get("VALOR_ANTERIOR")
+            or row_dict.get("valor_anterior"),
             valor_nuevo=row_dict.get("VALOR_NUEVO") or row_dict.get("valor_nuevo"),
             usuario=row_dict.get("USUARIO") or row_dict.get("usuario"),
             fecha_cambio=row_dict.get("FECHA_CAMBIO") or row_dict.get("fecha_cambio"),
-            motivo_cambio=row_dict.get("MOTIVO_CAMBIO") or row_dict.get("motivo_cambio"),
+            motivo_cambio=row_dict.get("MOTIVO_CAMBIO")
+            or row_dict.get("motivo_cambio"),
             ip_origen=row_dict.get("IP_ORIGEN") or row_dict.get("ip_origen"),
         )
-

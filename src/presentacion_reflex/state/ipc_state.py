@@ -35,7 +35,7 @@ class IPCState(rx.State):
         self.ipc_to_delete_id = ipc.id_ipc
         self.ipc_to_delete_anio = ipc.anio
         self.show_delete_dialog = True
-        
+
     def cancel_delete(self) -> None:
         """Cancela la eliminación de un IPC y cierra el diálogo."""
         self.show_delete_dialog = False
@@ -117,7 +117,9 @@ class IPCState(rx.State):
             self.is_loading = True
             self.error_message = ""
             current_user = await self.get_state(AuthState)
-            usuario = current_user.user_nombre if current_user.is_authenticated else "sistema"
+            usuario = (
+                current_user.user_nombre if current_user.is_authenticated else "sistema"
+            )
 
         try:
             servicio = ServicioIPC(db_manager)
@@ -154,20 +156,22 @@ class IPCState(rx.State):
             self.is_loading = True
             self.error_message = ""
             current_user = await self.get_state(AuthState)
-            
+
             if not current_user.backend_check_action("Incrementos", "ELIMINAR"):
                 self.error_message = "No tiene permisos para eliminar IPC"
                 self.is_loading = False
                 self.show_delete_dialog = False
                 return
 
-            usuario = current_user.user_nombre if current_user.is_authenticated else "sistema"
+            usuario = (
+                current_user.user_nombre if current_user.is_authenticated else "sistema"
+            )
             id_ipc = self.ipc_to_delete_id
 
         try:
             servicio = ServicioIPC(db_manager)
             servicio.eliminar_ipc(id_ipc, usuario)
-            
+
             # Recargar y cerrar
             lista = servicio.listar_todos()
 

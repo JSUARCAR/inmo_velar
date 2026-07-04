@@ -39,7 +39,9 @@ def modal_seguro() -> rx.Component:
                             name="nombre_seguro",
                             placeholder="Ej: Seguro Todo Riesgo",
                             required=True,
-                            default_value=SegurosState.seguro_form_data["nombre_seguro"],
+                            default_value=SegurosState.seguro_form_data[
+                                "nombre_seguro"
+                            ],
                             width="100%",
                         ),
                         spacing="1",
@@ -48,13 +50,17 @@ def modal_seguro() -> rx.Component:
                     # Porcentaje y Fecha Inicio (en fila)
                     rx.hstack(
                         rx.vstack(
-                            rx.text("Porcentaje de Seguro * (%)", size="2", weight="bold"),
+                            rx.text(
+                                "Porcentaje de Seguro * (%)", size="2", weight="bold"
+                            ),
                             rx.input(
                                 name="porcentaje_seguro",
                                 type="number",
                                 placeholder="Ej: 10",
                                 required=True,
-                                default_value=SegurosState.seguro_form_data["porcentaje_seguro"],
+                                default_value=SegurosState.seguro_form_data[
+                                    "porcentaje_seguro"
+                                ],
                                 width="100%",
                             ),
                             width="50%",
@@ -65,7 +71,9 @@ def modal_seguro() -> rx.Component:
                             rx.input(
                                 name="fecha_inicio_seguro",
                                 type="date",
-                                default_value=SegurosState.seguro_form_data["fecha_inicio_seguro"],
+                                default_value=SegurosState.seguro_form_data[
+                                    "fecha_inicio_seguro"
+                                ],
                                 width="100%",
                             ),
                             width="50%",

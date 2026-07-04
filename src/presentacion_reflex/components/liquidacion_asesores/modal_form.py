@@ -1,13 +1,16 @@
 import reflex as rx
 
-from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
-from src.presentacion_reflex.state.liquidacion_asesores.filtros_state import LiquidacionFiltrosState
-from src.presentacion_reflex.state.liquidacion_asesores.form_state import LiquidacionFormState
-from src.presentacion_reflex.state.liquidacion_asesores.grid_state import LiquidacionGridState
+from src.presentacion_reflex.state.liquidacion_asesores.filtros_state import (
+    LiquidacionFiltrosState,
+)
+from src.presentacion_reflex.state.liquidacion_asesores.form_state import (
+    LiquidacionFormState,
+)
+from src.presentacion_reflex.state.liquidacion_asesores.grid_state import (
+    LiquidacionGridState,
+)
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_select_root,
-    neuro_input,
-    neuro_button,
 )
 from src.presentacion_reflex import styles
 
@@ -38,7 +41,9 @@ def modal_form() -> rx.Component:
                         rx.flex(
                             # Asesor
                             rx.box(
-                                rx.text("Asesor", size="2", weight="bold", margin_bottom="1"),
+                                rx.text(
+                                    "Asesor", size="2", weight="bold", margin_bottom="1"
+                                ),
                                 neuro_select_root(
                                     rx.foreach(
                                         LiquidacionFiltrosState.asesores_options,
@@ -53,14 +58,18 @@ def modal_form() -> rx.Component:
                                     on_change=lambda val: LiquidacionFormState.set_form_field(
                                         "id_asesor", val
                                     ),
-                                    disabled=LiquidacionFormState.selected_liquidacion_id > 0,
+                                    disabled=LiquidacionFormState.selected_liquidacion_id
+                                    > 0,
                                 ),
                                 width="100%",
                             ),
                             # Período
                             rx.box(
                                 rx.text(
-                                    "Período (YYYY-MM)", size="2", weight="bold", margin_bottom="1"
+                                    "Período (YYYY-MM)",
+                                    size="2",
+                                    weight="bold",
+                                    margin_bottom="1",
                                 ),
                                 rx.input(
                                     name="periodo",
@@ -72,7 +81,8 @@ def modal_form() -> rx.Component:
                                     on_change=lambda val: LiquidacionFormState.set_form_field(
                                         "periodo", val
                                     ),
-                                    read_only=LiquidacionFormState.selected_liquidacion_id > 0,
+                                    read_only=LiquidacionFormState.selected_liquidacion_id
+                                    > 0,
                                     style=styles.NEU_INPUT_STYLE,
                                 ),
                                 width="100%",
@@ -91,15 +101,21 @@ def modal_form() -> rx.Component:
                         # Right Column: Properties List (Table Format)
                         rx.box(
                             rx.text(
-                                "Propiedades a Liquidar", size="2", weight="bold", margin_bottom="2"
+                                "Propiedades a Liquidar",
+                                size="2",
+                                weight="bold",
+                                margin_bottom="2",
                             ),
                             rx.scroll_area(
                                 rx.cond(
-                                    LiquidacionFormState.advisor_properties.length() > 0,
+                                    LiquidacionFormState.advisor_properties.length()
+                                    > 0,
                                     rx.table.root(
                                         rx.table.header(
                                             rx.table.row(
-                                                rx.table.column_header_cell("Dirección"),
+                                                rx.table.column_header_cell(
+                                                    "Dirección"
+                                                ),
                                                 rx.table.column_header_cell("Canon"),
                                                 rx.table.column_header_cell("% Com."),
                                                 rx.table.column_header_cell("Comisión"),
@@ -109,10 +125,28 @@ def modal_form() -> rx.Component:
                                             rx.foreach(
                                                 LiquidacionFormState.advisor_properties,
                                                 lambda prop: rx.table.row(
-                                                    rx.table.cell(prop["DIRECCION_PROPIEDAD"], size="1"),
-                                                    rx.table.cell(prop["CANON_ARRENDAMIENTO_VIEW"], size="1"),
-                                                    rx.table.cell(prop["COMISION_PORCENTAJE_VIEW"], size="1", color="blue"),
-                                                    rx.table.cell(prop["COMISION_MONTO_VIEW"], size="1", weight="bold"),
+                                                    rx.table.cell(
+                                                        prop["DIRECCION_PROPIEDAD"],
+                                                        size="1",
+                                                    ),
+                                                    rx.table.cell(
+                                                        prop[
+                                                            "CANON_ARRENDAMIENTO_VIEW"
+                                                        ],
+                                                        size="1",
+                                                    ),
+                                                    rx.table.cell(
+                                                        prop[
+                                                            "COMISION_PORCENTAJE_VIEW"
+                                                        ],
+                                                        size="1",
+                                                        color="blue",
+                                                    ),
+                                                    rx.table.cell(
+                                                        prop["COMISION_MONTO_VIEW"],
+                                                        size="1",
+                                                        weight="bold",
+                                                    ),
                                                 ),
                                             )
                                         ),
@@ -174,10 +208,13 @@ def modal_form() -> rx.Component:
                                 rx.select.trigger(placeholder="Tipo"),
                                 rx.select.content(
                                     rx.select.group(
-                                        rx.select.item("Venta Propiedad", value="Venta Propiedad"),
+                                        rx.select.item(
+                                            "Venta Propiedad", value="Venta Propiedad"
+                                        ),
                                         rx.select.item("Captación", value="Captación"),
                                         rx.select.item(
-                                            "Bono Cumplimiento", value="Bono Cumplimiento"
+                                            "Bono Cumplimiento",
+                                            value="Bono Cumplimiento",
                                         ),
                                         rx.select.item("Incentivo", value="Incentivo"),
                                         rx.select.item("Otros", value="Otros"),
@@ -472,7 +509,10 @@ def modal_form() -> rx.Component:
                     # Observaciones
                     rx.box(
                         rx.text(
-                            "Observaciones Generales", size="2", weight="bold", margin_bottom="1"
+                            "Observaciones Generales",
+                            size="2",
+                            weight="bold",
+                            margin_bottom="1",
                         ),
                         rx.text_area(
                             name="observaciones",

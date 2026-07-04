@@ -17,7 +17,9 @@ class ColorPalette:
     from .config import Colors
 
     @staticmethod
-    def lighten(rgb: Tuple[float, float, float], amount: float = 0.2) -> Tuple[float, float, float]:
+    def lighten(
+        rgb: Tuple[float, float, float], amount: float = 0.2
+    ) -> Tuple[float, float, float]:
         """
         Aclara un color RGB
 
@@ -36,7 +38,9 @@ class ColorPalette:
         )
 
     @staticmethod
-    def darken(rgb: Tuple[float, float, float], amount: float = 0.2) -> Tuple[float, float, float]:
+    def darken(
+        rgb: Tuple[float, float, float], amount: float = 0.2
+    ) -> Tuple[float, float, float]:
         """
         Oscurece un color RGB
 
@@ -56,7 +60,9 @@ class ColorPalette:
 
     @staticmethod
     def interpolate(
-        color1: Tuple[float, float, float], color2: Tuple[float, float, float], factor: float = 0.5
+        color1: Tuple[float, float, float],
+        color2: Tuple[float, float, float],
+        factor: float = 0.5,
     ) -> Tuple[float, float, float]:
         """
         Interpola entre dos colores
@@ -72,11 +78,17 @@ class ColorPalette:
         r1, g1, b1 = color1
         r2, g2, b2 = color2
 
-        return (r1 + (r2 - r1) * factor, g1 + (g2 - g1) * factor, b1 + (b2 - b1) * factor)
+        return (
+            r1 + (r2 - r1) * factor,
+            g1 + (g2 - g1) * factor,
+            b1 + (b2 - b1) * factor,
+        )
 
     @staticmethod
     def create_gradient(
-        color1: Tuple[float, float, float], color2: Tuple[float, float, float], steps: int = 5
+        color1: Tuple[float, float, float],
+        color2: Tuple[float, float, float],
+        steps: int = 5,
     ) -> List[Tuple[float, float, float]]:
         """
         Crea un gradiente entre dos colores

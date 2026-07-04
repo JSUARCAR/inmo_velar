@@ -55,7 +55,9 @@ class BaseDocumentTemplate(ReportLabGenerator):
         self.include_qr: bool = False
         self.qr_data: Optional[str] = None
         self.qr_size: int = 100
-        self.qr_position: str = "top-right"  # top-right, top-left, bottom-right, bottom-left
+        self.qr_position: str = (
+            "top-right"  # top-right, top-left, bottom-right, bottom-left
+        )
 
         # Estado del documento
         self._document_id: Optional[int] = None
@@ -65,7 +67,9 @@ class BaseDocumentTemplate(ReportLabGenerator):
     # CONFIGURACIÓN DE CARACTERÍSTICAS AVANZADAS
     # ========================================================================
 
-    def set_watermark(self, text: str, style: str = "diagonal", opacity: float = 0.15) -> None:
+    def set_watermark(
+        self, text: str, style: str = "diagonal", opacity: float = 0.15
+    ) -> None:
         """
         Establece marca de agua para el documento
 
@@ -78,7 +82,9 @@ class BaseDocumentTemplate(ReportLabGenerator):
         self.watermark_style = style
         self.watermark_opacity = opacity
 
-    def set_qr_code(self, data: str, size: int = 100, position: str = "top-right") -> None:
+    def set_qr_code(
+        self, data: str, size: int = 100, position: str = "top-right"
+    ) -> None:
         """
         Establece código QR para el documento
 
@@ -186,9 +192,7 @@ class BaseDocumentTemplate(ReportLabGenerator):
         canvas_obj.saveState()
         canvas_obj.translate(25, page_height / 3)
         canvas_obj.rotate(90)
-        info_text = (
-            f"Impreso por {config.empresa_nombre} - NIT {config.empresa_nit} - Correo: {config.empresa_email}"
-        )
+        info_text = f"Impreso por {config.empresa_nombre} - NIT {config.empresa_nit} - Correo: {config.empresa_email}"
         canvas_obj.drawString(0, 0, info_text)
         canvas_obj.restoreState()
 
@@ -199,7 +203,9 @@ class BaseDocumentTemplate(ReportLabGenerator):
         canvas_obj.saveState()
         canvas_obj.translate(page_width - 25, page_height / 3)
         canvas_obj.rotate(90)
-        canvas_obj.drawString(0, 0, f"Generado por Sistema Velar SAS - Auditoría: {dt_str}")
+        canvas_obj.drawString(
+            0, 0, f"Generado por Sistema Velar SAS - Auditoría: {dt_str}"
+        )
         canvas_obj.restoreState()
 
         canvas_obj.restoreState()
@@ -228,7 +234,9 @@ class BaseDocumentTemplate(ReportLabGenerator):
         """
         try:
             # Generar QR code
-            qr_buffer = QRGenerator.generate_qr(self.qr_data, size=self.qr_size, style="rounded")
+            qr_buffer = QRGenerator.generate_qr(
+                self.qr_data, size=self.qr_size, style="rounded"
+            )
 
             # Calcular posición absoluta usando el tamaño de página
             page_width, page_height = doc.pagesize
@@ -265,6 +273,7 @@ class BaseDocumentTemplate(ReportLabGenerator):
             canvas_obj.restoreState()
         except Exception as e:
             import logging
+
             logger = logging.getLogger("PDFElite")
             logger.warning(f"No se pudo agregar QR al PDF: {e}")
 

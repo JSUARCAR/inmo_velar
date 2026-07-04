@@ -58,7 +58,9 @@ class RepositorioSaldoFavor:
             cursor.execute(query, params)
             row = cursor.fetchone()
             if row:
-                saldo.id_saldo_favor = row["ID_SALDO_FAVOR"] if isinstance(row, dict) else row[0]
+                saldo.id_saldo_favor = (
+                    row["ID_SALDO_FAVOR"] if isinstance(row, dict) else row[0]
+                )
             return saldo
 
     def actualizar(self, saldo: SaldoFavor, usuario: str) -> SaldoFavor:

@@ -32,11 +32,15 @@ class IPC:
     id_ipc: Optional[int] = None
 
     anio: int = 0
-    valor_ipc: float = 0.0  # Mapeo a REAL/DECIMAL para soportar porcentajes con decimales
+    valor_ipc: float = (
+        0.0  # Mapeo a REAL/DECIMAL para soportar porcentajes con decimales
+    )
     fecha_publicacion: Optional[str] = None
 
     estado_registro: Optional[bool] = True
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None
 
     def valor_decimal(self) -> Decimal:

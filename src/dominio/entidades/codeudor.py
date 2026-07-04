@@ -35,5 +35,7 @@ class Codeudor:
     estado_registro: Optional[bool] = True
     motivo_inactivacion: Optional[str] = None
 
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None

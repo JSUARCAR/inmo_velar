@@ -119,9 +119,15 @@ def seguros_page() -> rx.Component:
                         rx.center(
                             rx.vstack(
                                 rx.icon("shield", size=60, color="gray.8"),
-                                rx.text("No se encontraron seguros", size="4", color="gray.11"),
                                 rx.text(
-                                    "Crea un nuevo seguro para comenzar", size="2", color="gray.10"
+                                    "No se encontraron seguros",
+                                    size="4",
+                                    color="gray.11",
+                                ),
+                                rx.text(
+                                    "Crea un nuevo seguro para comenzar",
+                                    size="2",
+                                    color="gray.10",
                                 ),
                                 spacing="3",
                             ),
@@ -165,10 +171,14 @@ def seguros_page() -> rx.Component:
                                         rx.table.cell(
                                             rx.badge(
                                                 rx.cond(
-                                                    seguro.estado_seguro == 1, "ACTIVO", "Inactivo"
+                                                    seguro.estado_seguro == 1,
+                                                    "ACTIVO",
+                                                    "Inactivo",
                                                 ),
                                                 color_scheme=rx.cond(
-                                                    seguro.estado_seguro == 1, "green", "gray"
+                                                    seguro.estado_seguro == 1,
+                                                    "green",
+                                                    "gray",
                                                 ),
                                             )
                                         ),
@@ -189,10 +199,14 @@ def seguros_page() -> rx.Component:
                                                 ),
                                                 # Editar
                                                 rx.cond(
-                                                    AuthState.check_action("Seguros", "EDITAR"),
+                                                    AuthState.check_action(
+                                                        "Seguros", "EDITAR"
+                                                    ),
                                                     rx.tooltip(
                                                         rx.icon_button(
-                                                            rx.icon("square-pen", size=22),
+                                                            rx.icon(
+                                                                "square-pen", size=22
+                                                            ),
                                                             size="2",
                                                             variant="soft",
                                                             on_click=lambda: SegurosState.open_edit_seguro_modal(
@@ -204,18 +218,28 @@ def seguros_page() -> rx.Component:
                                                 ),
                                                 # Toggle Estado
                                                 rx.cond(
-                                                    AuthState.check_action("Seguros", "EDITAR"),
+                                                    AuthState.check_action(
+                                                        "Seguros", "EDITAR"
+                                                    ),
                                                     rx.tooltip(
                                                         rx.icon_button(
                                                             rx.cond(
-                                                                seguro.estado_seguro == 1,
-                                                                rx.icon("shield-off", size=22),
-                                                                rx.icon("shield-check", size=22),
+                                                                seguro.estado_seguro
+                                                                == 1,
+                                                                rx.icon(
+                                                                    "shield-off",
+                                                                    size=22,
+                                                                ),
+                                                                rx.icon(
+                                                                    "shield-check",
+                                                                    size=22,
+                                                                ),
                                                             ),
                                                             size="2",
                                                             variant="soft",
                                                             color_scheme=rx.cond(
-                                                                seguro.estado_seguro == 1,
+                                                                seguro.estado_seguro
+                                                                == 1,
                                                                 "red",
                                                                 "green",
                                                             ),

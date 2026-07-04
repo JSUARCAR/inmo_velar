@@ -1,9 +1,7 @@
 import os
 import sqlite3
 
-DB_PATH = (
-    r"c:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\migraciones\DB_Inmo_Velar.db"
-)
+DB_PATH = r"c:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX\migraciones\DB_Inmo_Velar.db"
 
 
 def migrate():
@@ -29,7 +27,9 @@ def migrate():
 
         if "DIAS_FACTURADOS" not in columns:
             print("Adding DIAS_FACTURADOS...")
-            cursor.execute("ALTER TABLE RECIBOS_PUBLICOS ADD COLUMN DIAS_FACTURADOS INTEGER")
+            cursor.execute(
+                "ALTER TABLE RECIBOS_PUBLICOS ADD COLUMN DIAS_FACTURADOS INTEGER"
+            )
 
         conn.commit()
         print("Migration completed successfully.")

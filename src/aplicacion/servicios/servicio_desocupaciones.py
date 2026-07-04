@@ -11,7 +11,9 @@ from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_desocupacion_postgres import (
     RepositorioDesocupacionPostgres,
 )
-from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+    RepositorioPropiedadPostgres,
+)
 from src.infraestructura.cache.cache_manager import cache_manager
 
 # Plantilla de tareas por defecto para desocupación
@@ -37,7 +39,11 @@ class ServicioDesocupaciones:
 
     @cache_manager.invalidates("dashboard")
     def iniciar_desocupacion(
-        self, id_contrato: int, fecha_programada: str, observaciones: Optional[str], usuario: str
+        self,
+        id_contrato: int,
+        fecha_programada: str,
+        observaciones: Optional[str],
+        usuario: str,
     ) -> Desocupacion:
         """
         Inicia un nuevo proceso de desocupación.
@@ -72,7 +78,9 @@ class ServicioDesocupaciones:
                 raise ValueError(f"Contrato {id_contrato} no encontrado")
 
             if row["ESTADO_CONTRATO_A"] != "ACTIVO":
-                raise ValueError("El contrato debe estar Activo para iniciar desocupación")
+                raise ValueError(
+                    "El contrato debe estar Activo para iniciar desocupación"
+                )
 
         # Verificar que no exista una desocupación con la misma fecha programada para este contrato
         with self.db_manager.obtener_conexion() as conn:
@@ -162,7 +170,9 @@ class ServicioDesocupaciones:
         return self.repo.obtener_tareas(id_desocupacion)
 
     @cache_manager.invalidates("dashboard")
-    def completar_tarea(self, id_tarea: int, usuario: str, observaciones: Optional[str] = None):
+    def completar_tarea(
+        self, id_tarea: int, usuario: str, observaciones: Optional[str] = None
+    ):
         """
         Marca una tarea como completada.
 
@@ -193,7 +203,9 @@ class ServicioDesocupaciones:
         }
 
     @cache_manager.invalidates("dashboard")
-    def finalizar_desocupacion(self, id_desocupacion: int, usuario: str, rol_usuario: str = "Asesor"):
+    def finalizar_desocupacion(
+        self, id_desocupacion: int, usuario: str, rol_usuario: str = "Asesor"
+    ):
         """
         Finaliza una desocupación (marca como Completada y actualiza estados relacionados).
         Si hay tareas pendientes, las marca como completadas automáticamente (Forzar Finalización).
@@ -238,7 +250,11 @@ class ServicioDesocupaciones:
 
         fecha_real = datetime.now().date().isoformat()
         timestamp = datetime.now().isoformat()
-        mensaje_autocompletado = f"Autocompletada por Finalización Forzada - Autorizado por {usuario} ({rol_usuario})" if es_forzada else "Completada"
+        mensaje_autocompletado = (
+            f"Autocompletada por Finalización Forzada - Autorizado por {usuario} ({rol_usuario})"
+            if es_forzada
+            else "Completada"
+        )
 
         try:
             with self.db_manager.obtener_conexion() as conn:
@@ -257,7 +273,10 @@ class ServicioDesocupaciones:
                         END
                     WHERE ID_DESOCUPACION = {placeholder} AND COMPLETADA = 0
                 """
-                cursor.execute(update_tareas_query, (timestamp, usuario, mensaje_autocompletado, id_desocupacion))
+                cursor.execute(
+                    update_tareas_query,
+                    (timestamp, usuario, mensaje_autocompletado, id_desocupacion),
+                )
 
                 # 2. Actualizar desocupación a Completada
                 update_desoc_query = f"""
@@ -269,7 +288,8 @@ class ServicioDesocupaciones:
                     WHERE ID_DESOCUPACION = {placeholder}
                 """
                 cursor.execute(
-                    update_desoc_query, (fecha_real, timestamp, usuario, id_desocupacion)
+                    update_desoc_query,
+                    (fecha_real, timestamp, usuario, id_desocupacion),
                 )
 
                 # 3. Actualizar contrato a Finalizado y liberar propiedad
@@ -277,10 +297,16 @@ class ServicioDesocupaciones:
                 cursor.execute(check_contrato_query, (desocupacion.id_contrato,))
                 contrato_row = cursor.fetchone()
 
-                estado_contrato = contrato_row.get("estado_contrato_a") or contrato_row.get("ESTADO_CONTRATO_A", "")
+                estado_contrato = contrato_row.get(
+                    "estado_contrato_a"
+                ) or contrato_row.get("ESTADO_CONTRATO_A", "")
                 if contrato_row and estado_contrato.upper() == "ACTIVO":
-                    id_propiedad = contrato_row["id_propiedad"] if "id_propiedad" in contrato_row else contrato_row["ID_PROPIEDAD"]
-                    
+                    id_propiedad = (
+                        contrato_row["id_propiedad"]
+                        if "id_propiedad" in contrato_row
+                        else contrato_row["ID_PROPIEDAD"]
+                    )
+
                     update_contrato_query = f"""
                         UPDATE CONTRATOS_ARRENDAMIENTOS
                         SET ESTADO_CONTRATO_A = 'Finalizado',
@@ -290,9 +316,10 @@ class ServicioDesocupaciones:
                         WHERE ID_CONTRATO_A = {placeholder}
                     """
                     cursor.execute(
-                        update_contrato_query, (timestamp, usuario, desocupacion.id_contrato)
+                        update_contrato_query,
+                        (timestamp, usuario, desocupacion.id_contrato),
                     )
-                    
+
                     # 4. Liberar la propiedad desde app layer (remplazo de trigger)
                     update_propiedad_query = f"""
                         UPDATE PROPIEDADES
@@ -301,10 +328,13 @@ class ServicioDesocupaciones:
                             UPDATED_BY = {placeholder}
                         WHERE ID_PROPIEDAD = {placeholder}
                     """
-                    cursor.execute(update_propiedad_query, (timestamp, usuario, id_propiedad))
-                    
+                    cursor.execute(
+                        update_propiedad_query, (timestamp, usuario, id_propiedad)
+                    )
+
                     # Invalidar caché de propiedades
                     from src.infraestructura.cache.cache_manager import cache_manager
+
                     cache_manager.invalidate("propiedades:list")
                     cache_manager.invalidate("propiedades:list_paginated")
                     cache_manager.invalidate(f"propiedad:{id_propiedad}")
@@ -338,7 +368,9 @@ class ServicioDesocupaciones:
             raise ValueError("Solo se pueden cancelar desocupaciones en proceso")
 
         # Actualizar observaciones con motivo de cancelación
-        observaciones_actualizadas = f"{desocupacion.observaciones or ''}\n\nCANCELADA: {motivo}"
+        observaciones_actualizadas = (
+            f"{desocupacion.observaciones or ''}\n\nCANCELADA: {motivo}"
+        )
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
@@ -352,7 +384,12 @@ class ServicioDesocupaciones:
                     UPDATED_BY = {placeholder}
                 WHERE ID_DESOCUPACION = {placeholder}
             """,
-                (observaciones_actualizadas, datetime.now().isoformat(), usuario, id_desocupacion),
+                (
+                    observaciones_actualizadas,
+                    datetime.now().isoformat(),
+                    usuario,
+                    id_desocupacion,
+                ),
             )
             conn.commit()
 
@@ -365,8 +402,7 @@ class ServicioDesocupaciones:
         """
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
-            cursor.execute(
-                """
+            cursor.execute("""
                 SELECT 
                     ca.ID_CONTRATO_A, 
                     p.DIRECCION_PROPIEDAD,
@@ -377,8 +413,7 @@ class ServicioDesocupaciones:
                 JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
                 WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
                 ORDER BY p.DIRECCION_PROPIEDAD
-            """
-            )
+            """)
 
             contratos = []
             for row in cursor.fetchall():

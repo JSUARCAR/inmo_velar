@@ -31,7 +31,7 @@ class RepositorioReportes:
             # podríamos leer datos estancados (stale snapshot).
             try:
                 conn.rollback()
-            except getattr(conn, "OperationalError", Exception) as e:
+            except getattr(conn, "OperationalError", Exception):
                 # Fallar si la conexión está severamente dañada, en lugar de silenciar todo
                 pass
 
@@ -39,16 +39,18 @@ class RepositorioReportes:
             try:
                 cursor.execute(paginated_query, paginated_params)
                 rows = cursor.fetchall()
-                
+
                 # Extraer el total_count de la primera fila si existen resultados (Blindaje Élite)
                 total = 0
                 if rows is not None and len(rows) > 0:
                     first_row = rows[0]
                     if hasattr(first_row, "get"):
-                        total = (first_row.get("_total_count") or 
-                                 first_row.get("_TOTAL_COUNT") or 
-                                 0)
-                
+                        total = (
+                            first_row.get("_total_count")
+                            or first_row.get("_TOTAL_COUNT")
+                            or 0
+                        )
+
                 # Limpiar la columna auxiliar de los resultados de forma segura
                 if rows:
                     for row in rows:
@@ -69,10 +71,16 @@ class RepositorioReportes:
         limit: int = 20,
     ) -> Tuple[List[Dict[str, Any]], int]:
         """Obtiene datos de personas con un rol específico (Propietarios, Arrendatarios, etc)."""
-        _TABLAS_PERMITIDAS = {"PROPIETARIOS", "ARRENDATARIOS", "CODEUDORES", "ASESORES", "TERCEROS"}
+        _TABLAS_PERMITIDAS = {
+            "PROPIETARIOS",
+            "ARRENDATARIOS",
+            "CODEUDORES",
+            "ASESORES",
+            "TERCEROS",
+        }
         if role_table.upper() not in _TABLAS_PERMITIDAS:
             raise ValueError(f"Tabla no permitida para reporte de roles: {role_table}")
-            
+
         query = f"""
             SELECT p.TIPO_DOCUMENTO, p.NUMERO_DOCUMENTO, p.NOMBRE_COMPLETO, 
                    p.TELEFONO_PRINCIPAL, p.CORREO_ELECTRONICO, p.DIRECCION_PRINCIPAL,
@@ -335,7 +343,7 @@ class RepositorioReportes:
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
-        
+
         query += " ORDER BY la.ID_LIQUIDACION_ASESOR DESC"
 
         return self._ejecutar_query_paginada(query, params, page, limit)
@@ -345,12 +353,22 @@ class RepositorioReportes:
     ) -> Tuple[List[Dict[str, Any]], int]:
         """Obtiene todos los registros de una tabla con búsqueda simple y paginación."""
         _TABLAS_PERMITIDAS = {
-            "PERSONAS", "PROPIETARIOS", "ARRENDATARIOS", "CODEUDORES", "ASESORES", "TERCEROS",
-            "PROPIEDADES", "CONTRATOS_MANDATOS", "CONTRATOS_ARRENDAMIENTOS", "RECAUDOS", "LIQUIDACIONES", "INCIDENTES"
+            "PERSONAS",
+            "PROPIETARIOS",
+            "ARRENDATARIOS",
+            "CODEUDORES",
+            "ASESORES",
+            "TERCEROS",
+            "PROPIEDADES",
+            "CONTRATOS_MANDATOS",
+            "CONTRATOS_ARRENDAMIENTOS",
+            "RECAUDOS",
+            "LIQUIDACIONES",
+            "INCIDENTES",
         }
         if tabla.upper() not in _TABLAS_PERMITIDAS:
             raise ValueError(f"Tabla genérica no permitida: {tabla}")
-            
+
         query = f"SELECT * FROM {tabla.upper()}"
         params = []
 
@@ -562,7 +580,7 @@ class RepositorioReportes:
         # Preparar filtros de liquidación dinámicos para el JOIN interno
         liq_filter_clauses = []
         liq_params = []
-        
+
         if fecha_pago_inicio:
             liq_filter_clauses.append("l_inner.FECHA_PAGO >= %s")
             liq_params.append(fecha_pago_inicio)
@@ -575,7 +593,7 @@ class RepositorioReportes:
         if periodo_fin:
             liq_filter_clauses.append("l_inner.PERIODO <= %s")
             liq_params.append(periodo_fin)
-            
+
         liq_where = ""
         if liq_filter_clauses:
             liq_where = " WHERE " + " AND ".join(liq_filter_clauses)

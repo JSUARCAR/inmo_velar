@@ -1,0 +1,4 @@
+- generic [active]:
+  - region "Notifications alt+T"
+  - generic:
+    - generic "Connection Error:"

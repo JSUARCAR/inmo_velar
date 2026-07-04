@@ -7,14 +7,35 @@ sys.path.append(os.getcwd())
 from src.infraestructura.persistencia.database import db_manager
 
 tables_to_check = [
-    "personas", "propietarios", "arrendatarios", "proveedores", "asesores", 
-    "codeudores", "propiedades", "contratos_arrendamientos", "contratos_mandatos", 
-    "liquidaciones_contratos", "liquidaciones_asesores", "liquidaciones", 
-    "recaudos", "desocupaciones", "incidentes", "historial_incidentes", 
-    "descuentos_asesores", "cotizaciones", "bonificaciones_asesores", "ipc", 
-    "pagos_asesores", "recaudo_conceptos", "recibos_publicos", "rol_permisos", 
-    "seguros", "sesiones_usuario", "tareas_desocupacion"
+    "personas",
+    "propietarios",
+    "arrendatarios",
+    "proveedores",
+    "asesores",
+    "codeudores",
+    "propiedades",
+    "contratos_arrendamientos",
+    "contratos_mandatos",
+    "liquidaciones_contratos",
+    "liquidaciones_asesores",
+    "liquidaciones",
+    "recaudos",
+    "desocupaciones",
+    "incidentes",
+    "historial_incidentes",
+    "descuentos_asesores",
+    "cotizaciones",
+    "bonificaciones_asesores",
+    "ipc",
+    "pagos_asesores",
+    "recaudo_conceptos",
+    "recibos_publicos",
+    "rol_permisos",
+    "seguros",
+    "sesiones_usuario",
+    "tareas_desocupacion",
 ]
+
 
 def verify_tables():
     print("Verifying tables are empty...")
@@ -32,13 +53,13 @@ def verify_tables():
                     count = list(result.values())[0]
                 else:
                     count = result[0]
-                
+
                 if count > 0:
                     print(f"WARNING: Table '{table}' is NOT empty. Count: {count}")
                     all_empty = False
                 # else:
                 #     print(f"Table '{table}' is empty.")
-    
+
     except Exception as e:
         print(f"Error checking tables: {e}")
         return
@@ -47,6 +68,7 @@ def verify_tables():
         print("All specified tables are empty.")
     else:
         print("Some tables are not empty.")
+
 
 if __name__ == "__main__":
     verify_tables()

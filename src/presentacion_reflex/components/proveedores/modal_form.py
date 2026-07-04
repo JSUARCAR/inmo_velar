@@ -1,7 +1,9 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.proveedores_state import ProveedoresState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_select_root,
+)
 from src.presentacion_reflex import styles
 
 
@@ -17,7 +19,9 @@ def modal_proveedor() -> rx.Component:
                         "Nuevo Proveedor",
                     )
                 ),
-                rx.dialog.description("Complete la información del proveedor de servicios."),
+                rx.dialog.description(
+                    "Complete la información del proveedor de servicios."
+                ),
                 # Mensaje de error
                 rx.cond(
                     ProveedoresState.error_message != "",
@@ -41,7 +45,9 @@ def modal_proveedor() -> rx.Component:
                             placeholder="Seleccione una persona...",
                             width="100%",
                             value=ProveedoresState.form_data["id_persona"],
-                            on_change=lambda val: ProveedoresState.set_form_field("id_persona", val),
+                            on_change=lambda val: ProveedoresState.set_form_field(
+                                "id_persona", val
+                            ),
                             disabled=ProveedoresState.is_editing,
                         ),
                         spacing="1",
@@ -61,7 +67,9 @@ def modal_proveedor() -> rx.Component:
                                 rx.select.item("Otros", value="Otros"),
                             ],
                             value=ProveedoresState.form_data["especialidad"],
-                            on_change=lambda val: ProveedoresState.set_form_field("especialidad", val),
+                            on_change=lambda val: ProveedoresState.set_form_field(
+                                "especialidad", val
+                            ),
                             width="100%",
                             placeholder="Seleccione especialidad...",
                         ),
@@ -70,7 +78,9 @@ def modal_proveedor() -> rx.Component:
                     ),
                     # Calificación
                     rx.vstack(
-                        rx.text("Calificación Inicial (1.0 - 5.0)", weight="bold", size="2"),
+                        rx.text(
+                            "Calificación Inicial (1.0 - 5.0)", weight="bold", size="2"
+                        ),
                         rx.hstack(
                             rx.slider(
                                 value=[ProveedoresState.form_data["calificacion"]],
@@ -82,7 +92,10 @@ def modal_proveedor() -> rx.Component:
                                 step=0.5,
                                 width="200px",
                             ),
-                            rx.text(ProveedoresState.form_data["calificacion"], weight="bold"),
+                            rx.text(
+                                ProveedoresState.form_data["calificacion"],
+                                weight="bold",
+                            ),
                             align="center",
                             spacing="3",
                         ),
@@ -95,7 +108,9 @@ def modal_proveedor() -> rx.Component:
                         rx.text_area(
                             placeholder="Notas adicionales sobre el proveedor...",
                             value=ProveedoresState.form_data["observaciones"],
-                            on_change=lambda val: ProveedoresState.set_form_field("observaciones", val),
+                            on_change=lambda val: ProveedoresState.set_form_field(
+                                "observaciones", val
+                            ),
                             width="100%",
                             style=styles.NEU_INPUT_STYLE,
                         ),

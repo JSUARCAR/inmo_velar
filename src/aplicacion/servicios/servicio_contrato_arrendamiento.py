@@ -96,9 +96,11 @@ class ServicioContratoArrendamiento:
             )
 
         # Calcular Día de Pago (El mismo día de inicio para arrendamientos)
-        dia_pago = CalculadoraContratos.calcular_dia_pago_arrendamiento(datos["fecha_inicio"])
+        dia_pago = CalculadoraContratos.calcular_dia_pago_arrendamiento(
+            datos["fecha_inicio"]
+        )
         fecha_pago_str = str(dia_pago)
-        
+
         # En arrendamientos, el grupo operativo ya no obedece a las reglas de mandato.
         # Se establece en 0 o se deriva un grupo lógico simple según el día de pago.
         grupo = 1 if dia_pago <= 10 else (2 if dia_pago <= 20 else 3)
@@ -122,7 +124,12 @@ class ServicioContratoArrendamiento:
         contrato_creado = self.repo_arriendo.crear(contrato, usuario_sistema)
 
         # Marcar la propiedad como OCUPADA usando el método unificado
-        self._sincronizar_disponibilidad_por_estado(contrato_creado, EstadoContrato.BORRADOR, EstadoContrato.ACTIVO, usuario_sistema)
+        self._sincronizar_disponibilidad_por_estado(
+            contrato_creado,
+            EstadoContrato.BORRADOR,
+            EstadoContrato.ACTIVO,
+            usuario_sistema,
+        )
 
         return contrato_creado
 
@@ -145,11 +152,15 @@ class ServicioContratoArrendamiento:
 
         # Si no hay db_manager (caso raro o mocks), ejecutamos sin transacción explícita
         if db is None:
-            self._ejecutar_actualizacion_arrendamiento(id_contrato, datos, usuario_sistema)
+            self._ejecutar_actualizacion_arrendamiento(
+                id_contrato, datos, usuario_sistema
+            )
             return
 
         with db.transaccion():
-            self._ejecutar_actualizacion_arrendamiento(id_contrato, datos, usuario_sistema)
+            self._ejecutar_actualizacion_arrendamiento(
+                id_contrato, datos, usuario_sistema
+            )
 
     def _ejecutar_actualizacion_arrendamiento(
         self, id_contrato: int, datos: Dict, usuario_sistema: str
@@ -166,7 +177,9 @@ class ServicioContratoArrendamiento:
             f_fin = datos.get("fecha_fin", arriendo.fecha_fin_contrato_a)
             d_reg = int(datos.get("duracion_meses", arriendo.duracion_contrato_a))
 
-            coherente, mensaje = CalculadoraContratos.validar_coherencia(f_inicio, f_fin, d_reg)
+            coherente, mensaje = CalculadoraContratos.validar_coherencia(
+                f_inicio, f_fin, d_reg
+            )
             if not coherente:
                 raise ValueError(f"Error de Integridad Contractual: {mensaje}")
 
@@ -178,18 +191,24 @@ class ServicioContratoArrendamiento:
 
         # Actualización de llaves foráneas y datos básicos
         arriendo.id_propiedad = datos.get("id_propiedad", arriendo.id_propiedad)
-        arriendo.id_arrendatario = datos.get("id_arrendatario", arriendo.id_arrendatario)
+        arriendo.id_arrendatario = datos.get(
+            "id_arrendatario", arriendo.id_arrendatario
+        )
         arriendo.id_codeudor = datos.get("id_codeudor", arriendo.id_codeudor)
 
         # Actualización de fechas y duración
         if "fecha_inicio" in datos:
             arriendo.fecha_inicio_contrato_a = datos["fecha_inicio"]
             # Recalcular Ciclo de Pago para Arrendamiento (mismo día de inicio)
-            dia_pago = CalculadoraContratos.calcular_dia_pago_arrendamiento(datos["fecha_inicio"])
+            dia_pago = CalculadoraContratos.calcular_dia_pago_arrendamiento(
+                datos["fecha_inicio"]
+            )
             arriendo.fecha_pago = str(dia_pago)
             # Para mantener coherencia en la DB, calculamos el grupo operativo
-            grupo, _ = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
-            if hasattr(arriendo, 'grupo_operativo'):
+            grupo, _ = CalculadoraContratos.calcular_ciclo_pago_mandato(
+                datos["fecha_inicio"]
+            )
+            if hasattr(arriendo, "grupo_operativo"):
                 arriendo.grupo_operativo = grupo
 
         arriendo.fecha_fin_contrato_a = datos.get(
@@ -225,7 +244,9 @@ class ServicioContratoArrendamiento:
         # 1.1 Sincronizar disponibilidad si hubo cambio de estado
         estado_nuevo = arriendo.estado_contrato_a
         if estado_anterior != estado_nuevo:
-            self._sincronizar_disponibilidad_por_estado(arriendo, estado_anterior, estado_nuevo, usuario_sistema)
+            self._sincronizar_disponibilidad_por_estado(
+                arriendo, estado_anterior, estado_nuevo, usuario_sistema
+            )
 
         # 2. Sincronización en Cascada (Integridad Contractual Élite)
         logger = logging.getLogger(__name__)
@@ -234,8 +255,8 @@ class ServicioContratoArrendamiento:
         # Sincronización Consolidada y Atómica en Cascada
         cambio_canon = nuevo_canon != canon_anterior
         cambio_fechas = (
-            arriendo.fecha_inicio_contrato_a != fecha_inicio_anterior or 
-            arriendo.fecha_fin_contrato_a != fecha_fin_anterior
+            arriendo.fecha_inicio_contrato_a != fecha_inicio_anterior
+            or arriendo.fecha_fin_contrato_a != fecha_fin_anterior
         )
 
         if cambio_canon or cambio_fechas:
@@ -243,41 +264,59 @@ class ServicioContratoArrendamiento:
                 f"Iniciando cascada de sincronización para contrato={id_contrato}. "
                 f"Cambios -> Canon: {cambio_canon}, Fechas: {cambio_fechas}"
             )
-            
+
             # Sincronizar Mandato en un solo fetch/update
             if self.repo_mandato is None:
                 logger.error("CASCADA MANDATO ABORTADA: repo_mandato es None")
             else:
-                mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
+                mandato = self.repo_mandato.obtener_activo_por_propiedad(
+                    arriendo.id_propiedad
+                )
                 if mandato:
                     if cambio_canon:
                         mandato.canon_mandato = nuevo_canon
                     if cambio_fechas:
-                        mandato.fecha_inicio_contrato_m = arriendo.fecha_inicio_contrato_a
+                        mandato.fecha_inicio_contrato_m = (
+                            arriendo.fecha_inicio_contrato_a
+                        )
                         mandato.fecha_fin_contrato_m = arriendo.fecha_fin_contrato_a
-                        dia_pago = CalculadoraContratos.calcular_dia_pago_mandato(mandato.fecha_inicio_contrato_m)
+                        dia_pago = CalculadoraContratos.calcular_dia_pago_mandato(
+                            mandato.fecha_inicio_contrato_m
+                        )
                         mandato.fecha_pago = str(dia_pago)
-                        grupo_op = CalculadoraContratos.calcular_ciclo_pago_mandato(mandato.fecha_inicio_contrato_m)
+                        grupo_op = CalculadoraContratos.calcular_ciclo_pago_mandato(
+                            mandato.fecha_inicio_contrato_m
+                        )
                         mandato.grupo_operativo = grupo_op[0]
-                    
+
                     self.repo_mandato.actualizar(mandato, usuario_sistema)
-                    logger.info(f"Mandato {mandato.id_contrato_m} sincronizado exitosamente")
+                    logger.info(
+                        f"Mandato {mandato.id_contrato_m} sincronizado exitosamente"
+                    )
                 else:
-                    logger.info(f"No existe mandato activo para la propiedad {arriendo.id_propiedad}")
+                    logger.info(
+                        f"No existe mandato activo para la propiedad {arriendo.id_propiedad}"
+                    )
 
             # Sincronizar Propiedad
             if cambio_canon:
                 if self.repo_propiedad is None:
                     logger.error("CASCADA PROPIEDAD ABORTADA: repo_propiedad es None")
                 else:
-                    propiedad = self.repo_propiedad.obtener_por_id(arriendo.id_propiedad)
+                    propiedad = self.repo_propiedad.obtener_por_id(
+                        arriendo.id_propiedad
+                    )
                     if propiedad:
                         propiedad.canon_arrendamiento_estimado = nuevo_canon
                         self.repo_propiedad.actualizar(propiedad, usuario_sistema)
                         self._invalidar_cache_propiedad(arriendo.id_propiedad)
-                        logger.info(f"Propiedad {arriendo.id_propiedad} sincronizada: canon_estimado={nuevo_canon}")
+                        logger.info(
+                            f"Propiedad {arriendo.id_propiedad} sincronizada: canon_estimado={nuevo_canon}"
+                        )
                     else:
-                        logger.warning(f"Propiedad {arriendo.id_propiedad} no encontrada para cascada")
+                        logger.warning(
+                            f"Propiedad {arriendo.id_propiedad} no encontrada para cascada"
+                        )
 
     def listar_arrendamientos_paginado(self, **kwargs):
         return self.repo_arriendo.listar_paginado(**kwargs)
@@ -295,7 +334,9 @@ class ServicioContratoArrendamiento:
         meses_duracion = arriendo.duracion_contrato_a
 
         # Calcular nueva fecha fin usando CalculadoraContratos
-        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(fecha_fin_actual, meses_duracion)
+        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(
+            fecha_fin_actual, meses_duracion
+        )
         nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
 
         # Calcular IPC si aplica
@@ -329,12 +370,16 @@ class ServicioContratoArrendamiento:
     ) -> ContratoArrendamiento:
         """Lógica de renovación automática con incremento IPC. Acepta fecha fin personalizada."""
         db = getattr(self.repo_arriendo, "db", None)
-        
+
         if db is None:
-            return self._ejecutar_renovacion_arrendamiento(id_contrato, usuario_sistema, nueva_fecha_fin)
-            
+            return self._ejecutar_renovacion_arrendamiento(
+                id_contrato, usuario_sistema, nueva_fecha_fin
+            )
+
         with db.transaccion():
-            return self._ejecutar_renovacion_arrendamiento(id_contrato, usuario_sistema, nueva_fecha_fin)
+            return self._ejecutar_renovacion_arrendamiento(
+                id_contrato, usuario_sistema, nueva_fecha_fin
+            )
 
     def _ejecutar_renovacion_arrendamiento(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
@@ -348,7 +393,9 @@ class ServicioContratoArrendamiento:
         meses_duracion = arriendo.duracion_contrato_a
 
         # Calcular nueva fecha fin automática usando CalculadoraContratos
-        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(fecha_fin_actual, meses_duracion)
+        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(
+            fecha_fin_actual, meses_duracion
+        )
         nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
 
         # Si el usuario proveyó una fecha personalizada, usarla en lugar de la calculada
@@ -400,7 +447,9 @@ class ServicioContratoArrendamiento:
         mandato = self.repo_mandato.obtener_activo_por_propiedad(arriendo.id_propiedad)
         if mandato:
             mandato.canon_mandato = nuevo_canon
-            mandato.fecha_fin_contrato_m = nueva_fecha_fin_str # Sincronizar fecha fin en renovación
+            mandato.fecha_fin_contrato_m = (
+                nueva_fecha_fin_str  # Sincronizar fecha fin en renovación
+            )
             mandato.updated_by = usuario_sistema
             mandato.updated_at = datetime.now().isoformat()
             self.repo_mandato.actualizar(mandato, usuario_sistema)
@@ -420,17 +469,29 @@ class ServicioContratoArrendamiento:
     @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
     @cache_manager.invalidates("dashboard")
     def terminar_arrendamiento(
-        self, id_contrato: int, motivo: str, usuario_sistema: str, estado_destino: EstadoContrato = EstadoContrato.CANCELADO
+        self,
+        id_contrato: int,
+        motivo: str,
+        usuario_sistema: str,
+        estado_destino: EstadoContrato = EstadoContrato.CANCELADO,
     ) -> None:
         db = getattr(self.repo_arriendo, "db", None)
         if db is None:
-            self._ejecutar_terminacion_arrendamiento(id_contrato, motivo, usuario_sistema, estado_destino)
+            self._ejecutar_terminacion_arrendamiento(
+                id_contrato, motivo, usuario_sistema, estado_destino
+            )
             return
         with db.transaccion():
-            self._ejecutar_terminacion_arrendamiento(id_contrato, motivo, usuario_sistema, estado_destino)
+            self._ejecutar_terminacion_arrendamiento(
+                id_contrato, motivo, usuario_sistema, estado_destino
+            )
 
     def _ejecutar_terminacion_arrendamiento(
-        self, id_contrato: int, motivo: str, usuario_sistema: str, estado_destino: EstadoContrato
+        self,
+        id_contrato: int,
+        motivo: str,
+        usuario_sistema: str,
+        estado_destino: EstadoContrato,
     ) -> None:
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
         if not arriendo:
@@ -445,14 +506,16 @@ class ServicioContratoArrendamiento:
         arriendo.fecha_fin_contrato_a = datetime.now().strftime("%Y-%m-%d")
 
         self.repo_arriendo.actualizar(arriendo, usuario_sistema)
-        self._sincronizar_disponibilidad_por_estado(arriendo, estado_anterior, arriendo.estado_contrato_a, usuario_sistema)
+        self._sincronizar_disponibilidad_por_estado(
+            arriendo, estado_anterior, arriendo.estado_contrato_a, usuario_sistema
+        )
 
     def _sincronizar_disponibilidad_por_estado(
         self,
         contrato: ContratoArrendamiento,
         estado_anterior: EstadoContrato,
         estado_nuevo: EstadoContrato,
-        usuario: str
+        usuario: str,
     ) -> None:
         """
         Único punto de sincronización de disponibilidad.
@@ -461,17 +524,23 @@ class ServicioContratoArrendamiento:
         ESTADOS_TERMINALES = {EstadoContrato.FINALIZADO, EstadoContrato.CANCELADO}
 
         # Transición: Activo → Terminal → Liberar propiedad
-        if estado_anterior == EstadoContrato.ACTIVO and estado_nuevo in ESTADOS_TERMINALES:
+        if (
+            estado_anterior == EstadoContrato.ACTIVO
+            and estado_nuevo in ESTADOS_TERMINALES
+        ):
             propiedad = self.repo_propiedad.obtener_por_id(contrato.id_propiedad)
-            if propiedad and getattr(propiedad, 'disponibilidad_propiedad', None) != 1:
+            if propiedad and getattr(propiedad, "disponibilidad_propiedad", None) != 1:
                 propiedad.disponibilidad_propiedad = 1  # DISPONIBLE
                 self.repo_propiedad.actualizar(propiedad, usuario)
                 self._invalidar_cache_propiedad(contrato.id_propiedad)
 
         # Transición: Terminal/Borrador → Activo → Ocupar propiedad (re-activación)
-        elif estado_anterior != EstadoContrato.ACTIVO and estado_nuevo == EstadoContrato.ACTIVO:
+        elif (
+            estado_anterior != EstadoContrato.ACTIVO
+            and estado_nuevo == EstadoContrato.ACTIVO
+        ):
             propiedad = self.repo_propiedad.obtener_por_id(contrato.id_propiedad)
-            if propiedad and getattr(propiedad, 'disponibilidad_propiedad', None) != 0:
+            if propiedad and getattr(propiedad, "disponibilidad_propiedad", None) != 0:
                 propiedad.disponibilidad_propiedad = 0  # OCUPADA
                 self.repo_propiedad.actualizar(propiedad, usuario)
                 self._invalidar_cache_propiedad(contrato.id_propiedad)

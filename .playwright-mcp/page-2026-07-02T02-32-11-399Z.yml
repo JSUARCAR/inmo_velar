@@ -1,0 +1,4 @@
+- generic [active] [ref=f17e1]:
+  - region "Notifications alt+T"
+  - generic [ref=f17e2]:
+    - generic "Connection Error:"

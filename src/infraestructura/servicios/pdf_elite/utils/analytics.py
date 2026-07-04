@@ -179,7 +179,9 @@ class PDFAnalytics:
         for gen in recent_gens:
             type_counts[gen["doc_type"]] += 1
 
-        top_documents = sorted(type_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+        top_documents = sorted(type_counts.items(), key=lambda x: x[1], reverse=True)[
+            :5
+        ]
 
         return {
             "period_days": days,
@@ -211,7 +213,9 @@ class PDFAnalytics:
         Returns:
             Lista de errores recientes
         """
-        return sorted(self.data["errors"], key=lambda x: x["timestamp"], reverse=True)[:limit]
+        return sorted(self.data["errors"], key=lambda x: x["timestamp"], reverse=True)[
+            :limit
+        ]
 
     def export_report(self, days: int = 30) -> str:
         """

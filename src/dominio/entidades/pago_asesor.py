@@ -42,7 +42,9 @@ class PagoAsesor:
     fecha_confirmacion: Optional[str] = None
 
     # Auditoría
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
@@ -132,7 +134,9 @@ class PagoAsesor:
         self.updated_at = datetime.now().isoformat()
         self.updated_by = usuario
 
-    def marcar_como_pagado(self, fecha_pago: str, comprobante: str, usuario: str) -> None:
+    def marcar_como_pagado(
+        self, fecha_pago: str, comprobante: str, usuario: str
+    ) -> None:
         """
         Marca el pago como efectuado.
 
@@ -145,7 +149,9 @@ class PagoAsesor:
             ValueError: Si el pago no puede ser pagado
         """
         if not self.puede_pagarse:
-            raise ValueError(f"No se puede marcar como pagado un pago en estado {self.estado_pago}")
+            raise ValueError(
+                f"No se puede marcar como pagado un pago en estado {self.estado_pago}"
+            )
 
         if not comprobante or comprobante.strip() == "":
             raise ValueError("Debe especificar un comprobante de pago")
@@ -169,7 +175,9 @@ class PagoAsesor:
             ValueError: Si el pago no puede ser rechazado
         """
         if not self.puede_rechazarse:
-            raise ValueError(f"No se puede rechazar un pago en estado {self.estado_pago}")
+            raise ValueError(
+                f"No se puede rechazar un pago en estado {self.estado_pago}"
+            )
 
         if not motivo or motivo.strip() == "":
             raise ValueError("Debe especificar un motivo para el rechazo")

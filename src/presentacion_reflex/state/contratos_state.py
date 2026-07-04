@@ -375,7 +375,9 @@ class ContratosState(DocumentosStateMixin):
         f_fin = self.form_data.get("fecha_fin")
         if f_inicio and f_fin:
             try:
-                total_meses = CalculadoraContratos.calcular_duracion_meses(f_inicio, f_fin)
+                total_meses = CalculadoraContratos.calcular_duracion_meses(
+                    f_inicio, f_fin
+                )
                 self.form_data["duracion_meses"] = str(total_meses)
             except ValueError:
                 pass
@@ -383,13 +385,15 @@ class ContratosState(DocumentosStateMixin):
     def on_change_fecha_inicio(self, fecha: str):
         self.form_data["fecha_inicio"] = fecha
         self._calcular_duracion()
-        
+
         if fecha:
             try:
                 if "mandato" in self.modal_mode:
                     dia_pago = CalculadoraContratos.calcular_dia_pago_mandato(fecha)
                 else:
-                    dia_pago = CalculadoraContratos.calcular_dia_pago_arrendamiento(fecha)
+                    dia_pago = CalculadoraContratos.calcular_dia_pago_arrendamiento(
+                        fecha
+                    )
                 self.form_data["fecha_pago"] = str(dia_pago)
             except Exception:
                 pass
@@ -413,12 +417,6 @@ class ContratosState(DocumentosStateMixin):
     @rx.event(background=True)
     async def load_kpis(self):
         from src.aplicacion.servicios.servicio_contratos import ServicioContratos
-        from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-            RepositorioContratoMandatoPostgres,
-        )
-        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-            RepositorioContratoArrendamientoPostgres,
-        )
 
         servicio = ServicioContratos(db_manager)
         kpis = servicio.obtener_kpis(self.filter_asesor_id)
@@ -435,12 +433,6 @@ class ContratosState(DocumentosStateMixin):
     @rx.event(background=True)
     async def load_filter_options(self):
         from src.aplicacion.servicios.servicio_contratos import ServicioContratos
-        from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-            RepositorioContratoMandatoPostgres,
-        )
-        from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-            RepositorioContratoArrendamientoPostgres,
-        )
 
         servicio = ServicioContratos(db_manager)
         ops = servicio.obtener_opciones_filtro()
@@ -461,27 +453,6 @@ class ContratosState(DocumentosStateMixin):
             self.is_loading = True
             self.error_message = ""
         try:
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-                RepositorioContratoMandatoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-                RepositorioContratoArrendamientoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
-                RepositorioPropiedadPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
-                RepositorioRenovacionPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
-                RepositorioIPCPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
-                RepositorioArrendatarioPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
-                RepositorioCodeudorPostgres,
-            )
 
             servicio = ServicioContratos(db_manager)
             asesor_filter = (
@@ -652,21 +623,6 @@ class ContratosState(DocumentosStateMixin):
             t = "CONTRATO_MANDATO" if tipo == "Mandato" else "CONTRATO_ARRENDAMIENTO"
             self.iniciar_contexto_documental(t, str(id_contrato))
         try:
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-                RepositorioContratoMandatoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-                RepositorioContratoArrendamientoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
-                RepositorioPropiedadPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
-                RepositorioArrendatarioPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
-                RepositorioCodeudorPostgres,
-            )
 
             servicio = ServicioContratos(db_manager)
 
@@ -692,7 +648,8 @@ class ContratosState(DocumentosStateMixin):
                             "comision_porcentaje": comision,
                             "iva_porcentaje": iva,
                             "banco_propietario": c.banco_propietario or "",
-                            "numero_cuenta_propietario": c.numero_cuenta_propietario or "",
+                            "numero_cuenta_propietario": c.numero_cuenta_propietario
+                            or "",
                             "tipo_cuenta": c.tipo_cuenta or "Ahorros",
                             "consignatario": c.consignatario or "",
                             "documento_consignatario": c.documento_consignatario or "",
@@ -764,12 +721,6 @@ class ContratosState(DocumentosStateMixin):
             # para evitar race conditions con on_change / reset_on_submit
             state_snapshot = dict(self.form_data)
         try:
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-                RepositorioContratoMandatoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-                RepositorioContratoArrendamientoPostgres,
-            )
 
             servicio = ServicioContratos(db_manager)
 
@@ -782,13 +733,16 @@ class ContratosState(DocumentosStateMixin):
 
             # ═══════════ DIAGNÓSTICO TEMPORAL ═══════════
             import logging
+
             _dbg = logging.getLogger("SAVE_CONTRATO_DEBUG")
             _dbg.setLevel(logging.DEBUG)
             if not _dbg.handlers:
                 _dbg.addHandler(logging.StreamHandler())
             _dbg.info(f">>> form_data HTML: {form_data}")
             _dbg.info(f">>> state_snapshot: {state_snapshot}")
-            _dbg.info(f">>> full_data (merged): canon={full_data.get('canon')}, tipo={type(full_data.get('canon'))}")
+            _dbg.info(
+                f">>> full_data (merged): canon={full_data.get('canon')}, tipo={type(full_data.get('canon'))}"
+            )
             _dbg.info(f">>> modal_mode={self.modal_mode}, editing_id={self.editing_id}")
             # ═══════════ FIN DIAGNÓSTICO ═══════════
 
@@ -808,10 +762,14 @@ class ContratosState(DocumentosStateMixin):
                     ),
                     "duracion_meses": int(full_data.get("duracion_meses") or 12),
                     "banco_propietario": full_data.get("banco_propietario", ""),
-                    "numero_cuenta_propietario": full_data.get("numero_cuenta_propietario", ""),
+                    "numero_cuenta_propietario": full_data.get(
+                        "numero_cuenta_propietario", ""
+                    ),
                     "tipo_cuenta": full_data.get("tipo_cuenta", "Ahorros"),
                     "consignatario": full_data.get("consignatario", ""),
-                    "documento_consignatario": full_data.get("documento_consignatario", ""),
+                    "documento_consignatario": full_data.get(
+                        "documento_consignatario", ""
+                    ),
                 }
                 if self.modal_mode == "crear_mandato":
                     servicio.crear_mandato(datos, usuario)
@@ -821,9 +779,11 @@ class ContratosState(DocumentosStateMixin):
                 datos = {
                     "id_propiedad": int(full_data["id_propiedad"]),
                     "id_arrendatario": int(full_data["id_arrendatario"]),
-                    "id_codeudor": int(full_data["id_codeudor"])
-                    if full_data.get("id_codeudor")
-                    else None,
+                    "id_codeudor": (
+                        int(full_data["id_codeudor"])
+                        if full_data.get("id_codeudor")
+                        else None
+                    ),
                     "fecha_inicio": full_data["fecha_inicio"],
                     "fecha_fin": full_data["fecha_fin"],
                     "canon": int(full_data.get("canon") or 0),
@@ -858,12 +818,6 @@ class ContratosState(DocumentosStateMixin):
             t = "CONTRATO_MANDATO" if tipo == "Mandato" else "CONTRATO_ARRENDAMIENTO"
             self.iniciar_contexto_documental(t, str(id_contrato))
         try:
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-                RepositorioContratoMandatoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-                RepositorioContratoArrendamientoPostgres,
-            )
 
             servicio = ServicioContratos(db_manager)
 
@@ -887,12 +841,6 @@ class ContratosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
         try:
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-                RepositorioContratoMandatoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-                RepositorioContratoArrendamientoPostgres,
-            )
 
             servicio = ServicioContratos(db_manager)
 
@@ -910,9 +858,11 @@ class ContratosState(DocumentosStateMixin):
             timestamp = int(time.time())
             filename = f"reporte_contratos_{timestamp}.csv"
             yield rx.download(
-                data=csv_data.encode("utf-8-sig")
-                if isinstance(csv_data, str)
-                else csv_data,
+                data=(
+                    csv_data.encode("utf-8-sig")
+                    if isinstance(csv_data, str)
+                    else csv_data
+                ),
                 filename=filename,
             )
         except Exception as e:
@@ -928,27 +878,6 @@ class ContratosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
         try:
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-                RepositorioContratoMandatoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-                RepositorioContratoArrendamientoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
-                RepositorioPropiedadPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
-                RepositorioRenovacionPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
-                RepositorioIPCPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
-                RepositorioArrendatarioPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
-                RepositorioCodeudorPostgres,
-            )
             from src.presentacion_reflex.state.pdf_state import PDFState
 
             servicio = ServicioContratos(db_manager)
@@ -964,9 +893,7 @@ class ContratosState(DocumentosStateMixin):
                         id_contrato, motivo, usuario_sistema
                     )
 
-                yield PDFState.generar_certificado_paz_y_salvo(
-                    id_contrato, tipo
-                )
+                yield PDFState.generar_certificado_paz_y_salvo(id_contrato, tipo)
                 yield ContratosState.load_contratos()
                 yield ContratosState.load_kpis()
                 yield ContratosState.load_filter_options()
@@ -998,18 +925,6 @@ class ContratosState(DocumentosStateMixin):
             self.show_renewal_confirm = True
             self.error_message = ""
         try:
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-                RepositorioContratoMandatoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-                RepositorioContratoArrendamientoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
-                RepositorioPropiedadPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
-                RepositorioIPCPostgres,
-            )
 
             servicio = ServicioContratos(db_manager)
 
@@ -1030,21 +945,6 @@ class ContratosState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
         try:
-            from src.infraestructura.persistencia.repositorio_renovacion_postgres import (
-                RepositorioRenovacionPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-                RepositorioContratoMandatoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-                RepositorioContratoArrendamientoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
-                RepositorioPropiedadPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
-                RepositorioIPCPostgres,
-            )
 
             servicio = ServicioContratos(db_manager)
 
@@ -1102,7 +1002,6 @@ class ContratosState(DocumentosStateMixin):
         self.error_message = ""
 
     def open_ipc_modal(self, id_contrato: int):
-        from datetime import datetime
 
         self.ipc_target_contrato_id = id_contrato
         self.form_data = {
@@ -1123,15 +1022,6 @@ class ContratosState(DocumentosStateMixin):
             fecha = form_data.get("fecha_aplicacion", "")
             observaciones = form_data.get("observaciones", "")
 
-            from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
-                RepositorioContratoMandatoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgres import (
-                RepositorioContratoArrendamientoPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_ipc_postgres import (
-                RepositorioIPCPostgres,
-            )
 
             servicio = ServicioContratos(db_manager)
 

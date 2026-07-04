@@ -9,7 +9,9 @@ def create_saldo_modal() -> rx.Component:
     return rx.dialog.root(
         rx.dialog.content(
             rx.dialog.title("Registrar Saldo a Favor"),
-            rx.dialog.description("Registre un dinero a favor de un propietario o asesor."),
+            rx.dialog.description(
+                "Registre un dinero a favor de un propietario o asesor."
+            ),
             rx.vstack(
                 rx.cond(
                     SaldosState.error_message != "",
@@ -65,7 +67,9 @@ def create_saldo_modal() -> rx.Component:
                     )
                 ),
                 rx.button(
-                    "Guardar", on_click=SaldosState.create_saldo, loading=SaldosState.is_loading
+                    "Guardar",
+                    on_click=SaldosState.create_saldo,
+                    loading=SaldosState.is_loading,
                 ),
                 spacing="3",
                 justify="end",
@@ -95,7 +99,9 @@ def saldos_table() -> rx.Component:
                 lambda saldo: rx.table.row(
                     rx.table.cell(saldo.fecha_generacion),
                     rx.table.cell(
-                        rx.badge(saldo.tipo_beneficiario, color_scheme="blue", variant="soft")
+                        rx.badge(
+                            saldo.tipo_beneficiario, color_scheme="blue", variant="soft"
+                        )
                     ),
                     rx.table.cell(
                         rx.cond(
@@ -109,7 +115,9 @@ def saldos_table() -> rx.Component:
                     rx.table.cell(
                         rx.badge(
                             saldo.estado,
-                            color_scheme=rx.cond(saldo.estado == "Pendiente", "amber", "green"),
+                            color_scheme=rx.cond(
+                                saldo.estado == "Pendiente", "amber", "green"
+                            ),
                             variant="solid",
                         )
                     ),
@@ -182,7 +190,9 @@ def saldos_content() -> rx.Component:
             rx.cond(
                 AuthState.check_action("Saldos Favor", "CREAR"),
                 rx.button(
-                    rx.icon("plus", size=18), "Nuevo Saldo", on_click=SaldosState.open_create_modal
+                    rx.icon("plus", size=18),
+                    "Nuevo Saldo",
+                    on_click=SaldosState.open_create_modal,
                 ),
             ),
             width="100%",
@@ -197,7 +207,10 @@ def saldos_content() -> rx.Component:
             rx.select(
                 ["Todos", "Propietario", "Asesor"],
                 value=SaldosState.filter_tipo,
-                on_change=lambda val: [SaldosState.set_filter_tipo(val), SaldosState.load_saldos()],
+                on_change=lambda val: [
+                    SaldosState.set_filter_tipo(val),
+                    SaldosState.load_saldos(),
+                ],
             ),
             rx.select(
                 ["Pendiente", "Historial"],
@@ -209,7 +222,9 @@ def saldos_content() -> rx.Component:
             ),
             rx.spacer(),
             rx.button(
-                rx.icon("refresh-cw", size=16), variant="ghost", on_click=SaldosState.load_saldos
+                rx.icon("refresh-cw", size=16),
+                variant="ghost",
+                on_click=SaldosState.load_saldos,
             ),
             width="100%",
         ),

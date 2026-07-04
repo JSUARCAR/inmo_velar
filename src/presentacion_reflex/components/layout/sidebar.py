@@ -177,7 +177,7 @@ def sidebar_items() -> rx.Component:
                 "bell_ring",
                 "/alertas",
                 "Gestión proactiva de vencimientos de contratos, recibos y eventos críticos.",
-                module_name="Dashboard", # Reutilizamos Dashboard por ahora para visibilidad compartida
+                module_name="Dashboard",  # Reutilizamos Dashboard por ahora para visibilidad compartida
             ),
         ),
         # Sección Gestión

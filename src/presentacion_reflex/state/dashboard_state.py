@@ -1,4 +1,3 @@
-import sys
 import decimal
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional, ClassVar

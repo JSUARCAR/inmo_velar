@@ -274,7 +274,9 @@ class ReportLabGenerator(BasePDFGenerator):
         self.story.append(Paragraph(text, self.styles[style_name]))
         self.story.append(Spacer(1, Constants.SPACING_TINY))
 
-    def add_paragraph(self, text: str, style_name: str = "Body", **style_overrides) -> None:
+    def add_paragraph(
+        self, text: str, style_name: str = "Body", **style_overrides
+    ) -> None:
         """
         Agrega párrafo de texto
 
@@ -297,7 +299,9 @@ class ReportLabGenerator(BasePDFGenerator):
                 }
                 align_val = style_overrides["alignment"]
                 if isinstance(align_val, str):
-                    style_overrides["alignment"] = align_map.get(align_val.lower(), TA_LEFT)
+                    style_overrides["alignment"] = align_map.get(
+                        align_val.lower(), TA_LEFT
+                    )
 
             style = ParagraphStyle("Temp", parent=style, **style_overrides)
 
@@ -384,7 +388,9 @@ class ReportLabGenerator(BasePDFGenerator):
     # ========================================================================
 
     def set_header_footer(
-        self, on_first_page: Optional[Callable] = None, on_later_pages: Optional[Callable] = None
+        self,
+        on_first_page: Optional[Callable] = None,
+        on_later_pages: Optional[Callable] = None,
     ) -> None:
         """
         Establece funciones callback para header/footer
@@ -435,7 +441,9 @@ class ReportLabGenerator(BasePDFGenerator):
                 self._on_later_pages(canvas_obj, doc_obj)
 
         # Crear Template de Página base
-        template = PageTemplate(id="BaseTemplate", frames=[main_frame], onPage=page_wrapper)
+        template = PageTemplate(
+            id="BaseTemplate", frames=[main_frame], onPage=page_wrapper
+        )
 
         # Agregar template al documento
         self.doc.addPageTemplates([template])
@@ -456,7 +464,9 @@ class ReportLabGenerator(BasePDFGenerator):
 
         return output_path
 
-    def _default_header_footer(self, canvas_obj: pdf_canvas.Canvas, doc: BaseDocTemplate) -> None:
+    def _default_header_footer(
+        self, canvas_obj: pdf_canvas.Canvas, doc: BaseDocTemplate
+    ) -> None:
         """
         Header y footer por defecto
 
@@ -476,7 +486,9 @@ class ReportLabGenerator(BasePDFGenerator):
         canvas_obj.setFont(Fonts.MAIN, Fonts.SIZE_TINY)
         canvas_obj.setFillColorRGB(*Colors.GRAY_DARK)
         info_text = (
-            f"{config.empresa_nit} | " f"{config.empresa_telefono} | " f"{config.empresa_email}"
+            f"{config.empresa_nit} | "
+            f"{config.empresa_telefono} | "
+            f"{config.empresa_email}"
         )
         canvas_obj.drawString(inch, doc.pagesize[1] - 0.7 * inch, info_text)
 

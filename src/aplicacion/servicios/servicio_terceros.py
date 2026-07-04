@@ -14,9 +14,15 @@ from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
     RepositorioArrendatarioPostgres,
 )
-from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
+from src.infraestructura.persistencia.repositorio_asesor_postgres import (
+    RepositorioAsesorPostgres,
+)
+from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+    RepositorioCodeudorPostgres,
+)
+from src.infraestructura.persistencia.repositorio_persona_postgres import (
+    RepositorioPersonaPostgres,
+)
 from src.infraestructura.persistencia.repositorio_propietario_postgres import (
     RepositorioPropietarioPostgres,
 )
@@ -63,7 +69,9 @@ class ServicioTerceros:
                 comision_porcentaje_arriendo=kwargs.get("comision_arriendo", 10),
                 comision_porcentaje_venta=kwargs.get("comision_venta", 50),
             )
-            resultado["roles"]["asesor"] = self.repo_asesor.crear(asesor, usuario_sistema)
+            resultado["roles"]["asesor"] = self.repo_asesor.crear(
+                asesor, usuario_sistema
+            )
 
         if "PROPIETARIO" in roles:
             propietario = Propietario(
@@ -85,7 +93,9 @@ class ServicioTerceros:
 
         if "CODEUDOR" in roles:
             codeudor = Codeudor(id_persona=persona_creada.id_persona)
-            resultado["roles"]["codeudor"] = self.repo_codeudor.crear(codeudor, usuario_sistema)
+            resultado["roles"]["codeudor"] = self.repo_codeudor.crear(
+                codeudor, usuario_sistema
+            )
 
         return resultado
 

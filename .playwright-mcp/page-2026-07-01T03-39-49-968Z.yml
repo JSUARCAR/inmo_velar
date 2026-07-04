@@ -1,0 +1,159 @@
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - generic [ref=e2]:
+    - generic "Connection Error:"
+    - generic [ref=e42]:
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - generic [ref=e45]:
+            - img "Logo" [ref=e47] [cursor=pointer]
+            - heading "INMOBILIARIA VELAR SAS" [level=1] [ref=e48]
+          - generic [ref=e51]:
+            - generic [ref=e52]:
+              - paragraph [ref=e54]: PRINCIPAL
+              - link "Dashboard" [ref=e55] [cursor=pointer]:
+                - /url: /dashboard
+                - generic [ref=e57]:
+                  - img [ref=e58]
+                  - paragraph [ref=e63]: Dashboard
+              - link "Alertas Tempranas" [ref=e64] [cursor=pointer]:
+                - /url: /alertas
+                - generic [ref=e66]:
+                  - img [ref=e67]
+                  - paragraph [ref=e72]: Alertas Tempranas
+            - generic [ref=e73]:
+              - paragraph [ref=e75]: GESTIÓN
+              - link "Personas" [ref=e76] [cursor=pointer]:
+                - /url: /personas
+                - generic [ref=e78]:
+                  - img [ref=e79]
+                  - paragraph [ref=e84]: Personas
+              - link "Propiedades" [ref=e85] [cursor=pointer]:
+                - /url: /propiedades
+                - generic [ref=e87]:
+                  - img [ref=e88]
+                  - paragraph [ref=e91]: Propiedades
+              - link "Contratos" [ref=e92] [cursor=pointer]:
+                - /url: /contratos
+                - generic [ref=e94]:
+                  - img [ref=e95]
+                  - paragraph [ref=e98]: Contratos
+              - link "Prop. Horizontal" [ref=e99] [cursor=pointer]:
+                - /url: /propiedad-horizontal
+                - generic [ref=e101]:
+                  - img [ref=e102]
+                  - paragraph [ref=e105]: Prop. Horizontal
+              - link "Proveedores" [ref=e106] [cursor=pointer]:
+                - /url: /proveedores
+                - generic [ref=e108]:
+                  - img [ref=e109]
+                  - paragraph [ref=e111]: Proveedores
+            - generic [ref=e112]:
+              - paragraph [ref=e114]: OPERACIONES
+              - link "Liquidaciones" [ref=e115] [cursor=pointer]:
+                - /url: /liquidaciones
+                - generic [ref=e117]:
+                  - img [ref=e118]
+                  - paragraph [ref=e120]: Liquidaciones
+              - link "Liquidación Asesores" [ref=e121] [cursor=pointer]:
+                - /url: /liquidacion-asesores
+                - generic [ref=e123]:
+                  - img [ref=e124]
+                  - paragraph [ref=e128]: Liquidación Asesores
+              - link "Recaudos" [ref=e129] [cursor=pointer]:
+                - /url: /recaudos
+                - generic [ref=e131]:
+                  - img [ref=e132]
+                  - paragraph [ref=e137]: Recaudos
+              - link "Desocupaciones" [ref=e138] [cursor=pointer]:
+                - /url: /desocupaciones
+                - generic [ref=e140]:
+                  - img [ref=e141]
+                  - paragraph [ref=e144]: Desocupaciones
+              - link "Incidentes" [ref=e145] [cursor=pointer]:
+                - /url: /incidentes
+                - generic [ref=e147]:
+                  - img [ref=e148]
+                  - paragraph [ref=e150]: Incidentes
+              - link "Seguros" [ref=e151] [cursor=pointer]:
+                - /url: /seguros
+                - generic [ref=e153]:
+                  - img [ref=e154]
+                  - paragraph [ref=e156]: Seguros
+              - link "Recibos Públicos" [ref=e157] [cursor=pointer]:
+                - /url: /recibos-publicos
+                - generic [ref=e159]:
+                  - img [ref=e160]
+                  - paragraph [ref=e162]: Recibos Públicos
+              - link "Saldos a Favor" [ref=e163] [cursor=pointer]:
+                - /url: /saldos-favor
+                - generic [ref=e165]:
+                  - img [ref=e166]
+                  - paragraph [ref=e169]: Saldos a Favor
+            - generic [ref=e170]:
+              - paragraph [ref=e172]: ADMINISTRACIÓN
+              - link "Usuarios" [ref=e173] [cursor=pointer]:
+                - /url: /usuarios
+                - generic [ref=e175]:
+                  - img [ref=e176]
+                  - paragraph [ref=e180]: Usuarios
+              - link "Configuración" [ref=e181] [cursor=pointer]:
+                - /url: /configuracion
+                - generic [ref=e183]:
+                  - img [ref=e184]
+                  - paragraph [ref=e187]: Configuración
+              - link "IPC / Incrementos" [ref=e188] [cursor=pointer]:
+                - /url: /incrementos
+                - generic [ref=e190]:
+                  - img [ref=e191]
+                  - paragraph [ref=e194]: IPC / Incrementos
+              - link "Auditoría" [ref=e195] [cursor=pointer]:
+                - /url: /auditoria
+                - generic [ref=e197]:
+                  - img [ref=e198]
+                  - paragraph [ref=e201]: Auditoría
+              - link "Reportes" [ref=e202] [cursor=pointer]:
+                - /url: /reportes
+                - generic [ref=e204]:
+                  - img [ref=e205]
+                  - paragraph [ref=e208]: Reportes
+          - generic [ref=e209]:
+            - img [ref=e210]
+            - generic [ref=e214]:
+              - paragraph [ref=e215]: admin
+              - paragraph [ref=e216]: Administrador
+            - generic [ref=e218]:
+              - button [ref=e219]:
+                - img [ref=e220]
+              - button [ref=e224]:
+                - img [ref=e227]
+              - button [ref=e230]:
+                - img [ref=e231]
+        - generic [ref=e236]:
+          - generic [ref=e237]:
+            - generic [ref=e238]:
+              - heading "Dashboard Ejecutivo" [level=1] [ref=e239]
+              - paragraph [ref=e240]: Análisis de rendimiento y control de activos
+            - button "Actualizar" [ref=e242] [cursor=pointer]:
+              - img [ref=e243]
+              - text: Actualizar
+          - generic [ref=e250]:
+            - generic [ref=e251]:
+              - img [ref=e252]
+              - paragraph [ref=e254]: "Filtros:"
+            - combobox [ref=e256]:
+              - generic [ref=e257]: Junio
+              - img [ref=e258]
+            - combobox [ref=e261]:
+              - generic [ref=e262]: "2026"
+              - img [ref=e263]
+            - combobox [ref=e266]:
+              - generic [ref=e267]: Todos
+              - img [ref=e268]
+            - button "Aplicar" [ref=e270] [cursor=pointer]:
+              - img [ref=e271]
+              - text: Aplicar
+            - button [ref=e273] [cursor=pointer]:
+              - img [ref=e274]
+      - region "Notifications alt+T"
+  - img [ref=e283]

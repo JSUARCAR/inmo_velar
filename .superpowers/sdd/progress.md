@@ -1,14 +1,13 @@
-# Progress Ledger — Plan Maestro: Estabilización Dashboard y Suite 86 Fallos
-# Plan: docs/superpowers/plans/2026-06-23-estabilizacion-dashboard-y-suite-pruebas.md
-# Base commit: ec14ba4
+# Progress Ledger
 
-## Tasks
+## Incident-Liquidation Sync
 
-- [x] Task 1: Instalar dependencias faltantes (holidays, python-barcode) — COMPLETA (commit 1656065, 43/43 passing)
-- [x] Task 2: Actualizar esquema SQLite en TestDatabaseManager — COMPLETA (commit 01714aa, 11/11 passing)
-- [x] Task 3: Corregir booleanos enteros en PostgreSQL — COMPLETA (commit d52bd8d, 13/13 passing). Concern: 46 tests preexistentes con %s vs ? en SQLite (Task 4 los resolverá)
-- [ ] Task 4: Resolver obtener_por_matricula — interfaz faltante en repositorio
-- [ ] Task 5: Corregir tests de estado Reflex (DashboardBase, integración y Plotly)
-- [ ] Task 6: Corregir in_managed_transaction, desocupación y documental
-- [ ] Task 7: Corregir Dashboard UI — "0 días" y duplicados remanentes
-- [ ] Task 8: Verificación Final Global
+| Task | Status | Commits | Review |
+|------|--------|---------|--------|
+| Task 1: Create DB Migration for Triggers | complete | 9fa08d7 | ✅ Approved |
+| Task 2: Update Repository Mapping | complete | e52633b | ✅ Approved |
+| Task 3: Update Service to Set Observaciones | complete | 941ed34 | ✅ Approved |
+| Task 4: Update Frontend State | complete | 9592ef0 | ✅ Approved |
+| Task 5: Fix Edit Form Component | complete | e0d4817 | ✅ Approved |
+| Task 6: Update Detail Modal Component | complete | 3377e35 | ✅ Approved |
+| Task 7: End-to-End Verification | complete | 86536ed | ✅ Approved |

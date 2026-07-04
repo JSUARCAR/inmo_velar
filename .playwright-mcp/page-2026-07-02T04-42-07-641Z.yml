@@ -1,0 +1,93 @@
+- generic [active] [ref=f9e1]:
+  - region "Notifications alt+T"
+  - generic [ref=f9e2]:
+    - generic "Connection Error:"
+    - generic [ref=f9e4]:
+      - generic [ref=f9e5]:
+        - generic [ref=f9e6]:
+          - generic [ref=f9e7]:
+            - img [ref=f9e9] [cursor=pointer]
+            - heading "Inmobiliaria Velar" [level=1] [ref=f9e12]
+          - generic [ref=f9e15]:
+            - paragraph [ref=f9e18]: PRINCIPAL
+            - paragraph [ref=f9e21]: GESTIÓN
+            - paragraph [ref=f9e24]: OPERACIONES
+            - paragraph [ref=f9e27]: ADMINISTRACIÓN
+          - generic [ref=f9e28]:
+            - img [ref=f9e29]
+            - generic:
+              - paragraph
+              - paragraph
+            - generic [ref=f9e34]:
+              - button [ref=f9e35]:
+                - img [ref=f9e36]
+              - button [ref=f9e40]:
+                - img [ref=f9e43]
+              - button [ref=f9e46]:
+                - img [ref=f9e47]
+        - generic [ref=f9e51]:
+          - generic [ref=f9e52]:
+            - heading "Liquidaciones de Propietarios" [level=1] [ref=f9e53]
+            - paragraph [ref=f9e54]: Gestión de estados de cuenta mensuales y pagos a propietarios
+          - generic [ref=f9e55]:
+            - generic [ref=f9e56]:
+              - switch [ref=f9e57]
+              - paragraph [ref=f9e59]: Vista Individual
+            - textbox "Buscar..." [ref=f9e61]
+            - combobox [ref=f9e62]:
+              - generic [ref=f9e63]: Período
+              - img [ref=f9e64]
+            - combobox [ref=f9e66]:
+              - generic [ref=f9e67]: Todos
+              - img [ref=f9e68]
+            - combobox [ref=f9e70]:
+              - generic [ref=f9e71]: Todos
+              - img [ref=f9e72]
+            - button [ref=f9e75] [cursor=pointer]:
+              - img [ref=f9e76]
+          - generic [ref=f9e81]:
+            - table [ref=f9e86]:
+              - rowgroup [ref=f9e87]:
+                - row "ID Período Propiedad Ciclo Operativo Canon Neto a Pagar Estado Recaudo Estado Acciones" [ref=f9e88]:
+                  - columnheader "ID" [ref=f9e89]:
+                    - generic [ref=f9e90] [cursor=pointer]:
+                      - paragraph [ref=f9e91]: ID
+                      - img [ref=f9e92]
+                  - columnheader "Período" [ref=f9e95]:
+                    - generic [ref=f9e96] [cursor=pointer]:
+                      - paragraph [ref=f9e97]: Período
+                      - img [ref=f9e98]
+                  - columnheader "Propiedad" [ref=f9e100]:
+                    - generic [ref=f9e101] [cursor=pointer]:
+                      - paragraph [ref=f9e102]: Propiedad
+                      - img [ref=f9e103]
+                  - columnheader "Ciclo Operativo" [ref=f9e106]
+                  - columnheader "Canon" [ref=f9e107]:
+                    - generic [ref=f9e108] [cursor=pointer]:
+                      - paragraph [ref=f9e109]: Canon
+                      - img [ref=f9e110]
+                  - columnheader "Neto a Pagar" [ref=f9e113]:
+                    - generic [ref=f9e114] [cursor=pointer]:
+                      - paragraph [ref=f9e115]: Neto a Pagar
+                      - img [ref=f9e116]
+                  - columnheader "Estado Recaudo" [ref=f9e119]:
+                    - generic [ref=f9e120] [cursor=pointer]:
+                      - paragraph [ref=f9e121]: Estado Recaudo
+                      - img [ref=f9e122]
+                  - columnheader "Estado" [ref=f9e125]:
+                    - generic [ref=f9e126] [cursor=pointer]:
+                      - paragraph [ref=f9e127]: Estado
+                      - img [ref=f9e128]
+                  - columnheader "Acciones" [ref=f9e131]
+              - rowgroup
+            - generic [ref=f9e133]:
+              - button "Anterior" [disabled] [ref=f9e134] [cursor=pointer]:
+                - img [ref=f9e135]
+                - paragraph [ref=f9e137]: Anterior
+              - generic [ref=f9e138]:
+                - paragraph [ref=f9e139]: Página 1
+                - paragraph [ref=f9e140]: Mostrando 1-0 de 0
+              - button "Siguiente" [disabled] [ref=f9e141] [cursor=pointer]:
+                - paragraph [ref=f9e142]: Siguiente
+                - img [ref=f9e143]
+      - region "Notifications alt+T"

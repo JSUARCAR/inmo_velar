@@ -1,21 +1,37 @@
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, List
 
 import reflex as rx
 
 
 import rxconfig
 
+
 def _get_api_base() -> str:
     # Use dynamic api_url from rxconfig or fallback
-    base = rxconfig.api_url if hasattr(rxconfig, "api_url") and rxconfig.api_url else "http://127.0.0.1:8000"
+    base = (
+        rxconfig.api_url
+        if hasattr(rxconfig, "api_url") and rxconfig.api_url
+        else "http://127.0.0.1:8000"
+    )
     # Ensure it doesn't end with slash
     return base.rstrip("/")
 
+
 def _get_image_src(doc: rx.Var) -> rx.Var:
-    return rx.Var.create(f"{_get_api_base()}/api/storage/") + doc.id_documento.to(str) + "/download"
+    return (
+        rx.Var.create(f"{_get_api_base()}/api/storage/")
+        + doc.id_documento.to(str)
+        + "/download"
+    )
+
 
 def _get_image_href(doc: rx.Var) -> rx.Var:
-    return rx.Var.create(f"{_get_api_base()}/api/storage/") + doc.id_documento.to(str) + "/download?force_download=true"
+    return (
+        rx.Var.create(f"{_get_api_base()}/api/storage/")
+        + doc.id_documento.to(str)
+        + "/download?force_download=true"
+    )
+
 
 def image_gallery(
     documentos: List[Any],
@@ -62,7 +78,11 @@ def image_gallery(
                                         ),
                                         # Placeholder para PDFs u otros archivos
                                         rx.center(
-                                            rx.icon("file-text", size=48, color="var(--gray-9)"),
+                                            rx.icon(
+                                                "file-text",
+                                                size=48,
+                                                color="var(--gray-9)",
+                                            ),
                                             width="100%",
                                             height="140px",
                                             background="var(--gray-3)",
@@ -80,8 +100,7 @@ def image_gallery(
                                     ),
                                     rx.hstack(
                                         rx.badge(
-                                            doc.extension
-                                            .to_string()
+                                            doc.extension.to_string()
                                             .upper()
                                             .replace(".", ""),
                                             variant="soft",
@@ -104,7 +123,9 @@ def image_gallery(
                                             size="1",
                                             variant="ghost",
                                             color_scheme="red",
-                                            on_click=lambda: on_delete(doc.id_documento),
+                                            on_click=lambda: on_delete(
+                                                doc.id_documento
+                                            ),
                                         ),
                                         width="100%",
                                         align="center",
@@ -123,9 +144,7 @@ def image_gallery(
                         rx.context_menu.content(
                             rx.context_menu.item(
                                 "Descargar",
-                                on_select=rx.redirect(
-                                    path=_get_image_href(doc)
-                                ),
+                                on_select=rx.redirect(path=_get_image_href(doc)),
                             ),
                             rx.context_menu.separator(),
                             rx.context_menu.item(

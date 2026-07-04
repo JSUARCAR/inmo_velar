@@ -15,7 +15,9 @@ class RepositorioBonificacionAsesor:
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
 
-    def crear(self, bonificacion: BonificacionAsesor, usuario: str) -> BonificacionAsesor:
+    def crear(
+        self, bonificacion: BonificacionAsesor, usuario: str
+    ) -> BonificacionAsesor:
         """
         Crea una nueva bonificación con PostgreSQL Native.
         """
@@ -39,10 +41,12 @@ class RepositorioBonificacionAsesor:
             cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, params)
             row = cursor.fetchone()
-            
+
             if row:
-                def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
-                
+
+                def gv(k):
+                    return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
                 if hasattr(row, "get") or isinstance(row, dict):
                     bonificacion.id_bonificacion_asesor = gv("ID_BONIFICACION_ASESOR")
                     bonificacion.fecha_registro = gv("FECHA_REGISTRO")
@@ -55,7 +59,9 @@ class RepositorioBonificacionAsesor:
 
     def obtener_por_id(self, id_bonificacion: int) -> Optional[BonificacionAsesor]:
         """Obtiene una bonificación por ID."""
-        query = "SELECT * FROM BONIFICACIONES_ASESORES WHERE ID_BONIFICACION_ASESOR = %s"
+        query = (
+            "SELECT * FROM BONIFICACIONES_ASESORES WHERE ID_BONIFICACION_ASESOR = %s"
+        )
 
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
@@ -98,7 +104,10 @@ class RepositorioBonificacionAsesor:
 
     def _row_to_entity(self, row: Dict[str, Any]) -> BonificacionAsesor:
         """Helper para mapeo de fila a entidad."""
-        def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
+        def gv(k):
+            return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
         return BonificacionAsesor(
             id_bonificacion_asesor=gv("ID_BONIFICACION_ASESOR"),
             id_liquidacion_asesor=gv("ID_LIQUIDACION_ASESOR"),

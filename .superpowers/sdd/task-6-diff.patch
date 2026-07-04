@@ -1,0 +1,17 @@
+ .../components/liquidaciones/liquidacion_detail_modal.py              | 4 ++++
+ 1 file changed, 4 insertions(+)
+diff --git a/src/presentacion_reflex/components/liquidaciones/liquidacion_detail_modal.py b/src/presentacion_reflex/components/liquidaciones/liquidacion_detail_modal.py
+index 343e838..a8a1a29 100644
+--- a/src/presentacion_reflex/components/liquidaciones/liquidacion_detail_modal.py
++++ b/src/presentacion_reflex/components/liquidaciones/liquidacion_detail_modal.py
+@@ -196,6 +196,10 @@ def liquidacion_detail_modal() -> rx.Component:
+                             "Seguro:",
+                             LiquidacionesState.liquidacion_actual["seguro_monto_view"],
+                         ),
++                        info_row(
++                            "Incidentes (Plan Pago):",
++                            LiquidacionesState.liquidacion_actual["valor_incidentes_view"],
++                        ),
+                         info_row(
+                             "Otros Egresos:",
+                             LiquidacionesState.liquidacion_actual["otros_egr_view"],

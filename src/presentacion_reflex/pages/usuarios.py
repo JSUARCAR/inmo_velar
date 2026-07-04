@@ -2,13 +2,23 @@ import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.components.usuarios import modal_form
-from src.presentacion_reflex.components.usuarios.gestion_permisos import gestion_permisos_modal
+from src.presentacion_reflex.components.usuarios.gestion_permisos import (
+    gestion_permisos_modal,
+)
 from src.presentacion_reflex.state.auth_state import AuthState
-from src.presentacion_reflex.state.usuarios_state import UsuarioDisplayModel, UsuariosState
+from src.presentacion_reflex.state.usuarios_state import (
+    UsuarioDisplayModel,
+    UsuariosState,
+)
 
 
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_button,
+    neuro_select_root,
+)
 from src.presentacion_reflex import styles
+
 
 def filtros_bar() -> rx.Component:
     return rx.flex(
@@ -67,7 +77,6 @@ def filtros_bar() -> rx.Component:
     )
 
 
-
 def usuario_card(u: UsuarioDisplayModel) -> rx.Component:
     """Card individual para vista móvil de usuarios."""
     return rx.card(
@@ -119,7 +128,9 @@ def usuario_card(u: UsuarioDisplayModel) -> rx.Component:
                             rx.icon("shield-check", size=18),
                             variant="surface",
                             color_scheme="violet",
-                            on_click=lambda: UsuariosState.open_permissions_modal(u.rol),
+                            on_click=lambda: UsuariosState.open_permissions_modal(
+                                u.rol
+                            ),
                         ),
                     ),
                     rx.cond(
@@ -221,7 +232,9 @@ def usuarios_table() -> rx.Component:
                                         rx.icon("pencil", size=16),
                                         size="2",
                                         variant="ghost",
-                                        on_click=lambda: UsuariosState.open_edit_modal(u),
+                                        on_click=lambda: UsuariosState.open_edit_modal(
+                                            u
+                                        ),
                                     ),
                                     content="Editar usuario",
                                 ),

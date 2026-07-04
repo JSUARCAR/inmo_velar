@@ -3,17 +3,12 @@ Servicio: Cumplimiento
 Calcula el estado de cumplimiento de obligaciones financieras de contratos.
 """
 
-from datetime import date, datetime, timedelta
 from typing import Optional
 
 from src.dominio.value_objects.estado_cumplimiento import (
-    ESTADO_AL_DIA,
-    ESTADO_PENDIENTE,
-    ESTADO_VENCIDO,
     EstadoCumplimiento,
     crear_estado_al_dia,
     crear_estado_pendiente,
-    crear_estado_vencido,
     obtener_periodo_actual,
 )
 from src.infraestructura.persistencia.database import db_manager
@@ -21,7 +16,6 @@ from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
     RepositorioLiquidacionPostgres,
 )
 from src.infraestructura.persistencia.repositorio_recaudo import RepositorioRecaudo
-
 
 DIAS_GRACIA_DEFAULT: int = 5
 

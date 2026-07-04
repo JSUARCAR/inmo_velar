@@ -9,8 +9,12 @@ from typing import Any, Dict, List, Optional
 from src.dominio.entidades.poliza import PolizaSeguro
 from src.dominio.entidades.seguro import Seguro
 from src.infraestructura.persistencia.database import DatabaseManager
-from src.infraestructura.persistencia.repositorio_poliza_postgres import RepositorioPolizaPostgres
-from src.infraestructura.persistencia.repositorio_seguro_postgres import RepositorioSeguroPostgres
+from src.infraestructura.persistencia.repositorio_poliza_postgres import (
+    RepositorioPolizaPostgres,
+)
+from src.infraestructura.persistencia.repositorio_seguro_postgres import (
+    RepositorioSeguroPostgres,
+)
 
 
 class ServicioSeguros:
@@ -74,13 +78,20 @@ class ServicioSeguros:
         if not datos.get("nombre_seguro"):
             raise ValueError("El nombre del seguro es obligatorio")
 
-        if not isinstance(datos.get("porcentaje_seguro"), int) or datos["porcentaje_seguro"] <= 0:
-            raise ValueError("El porcentaje del seguro debe ser un número entero positivo")
+        if (
+            not isinstance(datos.get("porcentaje_seguro"), int)
+            or datos["porcentaje_seguro"] <= 0
+        ):
+            raise ValueError(
+                "El porcentaje del seguro debe ser un número entero positivo"
+            )
 
         # Verificar que no exista un seguro con el mismo nombre
         seguro_existente = self.repo_seguros.obtener_por_nombre(datos["nombre_seguro"])
         if seguro_existente:
-            raise ValueError(f"Ya existe un seguro con el nombre '{datos['nombre_seguro']}'")
+            raise ValueError(
+                f"Ya existe un seguro con el nombre '{datos['nombre_seguro']}'"
+            )
 
         # Crear entidad
         seguro = Seguro(
@@ -125,20 +136,29 @@ class ServicioSeguros:
             # Verificar que no exista otro seguro con el mismo nombre
             otro_seguro = self.repo_seguros.obtener_por_nombre(datos["nombre_seguro"])
             if otro_seguro and otro_seguro.id_seguro != id_seguro:
-                raise ValueError(f"Ya existe otro seguro con el nombre '{datos['nombre_seguro']}'")
+                raise ValueError(
+                    f"Ya existe otro seguro con el nombre '{datos['nombre_seguro']}'"
+                )
             seguro.nombre_seguro = datos["nombre_seguro"]
 
         if "fecha_inicio_seguro" in datos:
             seguro.fecha_inicio_seguro = datos["fecha_inicio_seguro"]
 
         if "porcentaje_seguro" in datos:
-            if not isinstance(datos["porcentaje_seguro"], int) or datos["porcentaje_seguro"] <= 0:
-                raise ValueError("El porcentaje del seguro debe ser un número entero positivo")
+            if (
+                not isinstance(datos["porcentaje_seguro"], int)
+                or datos["porcentaje_seguro"] <= 0
+            ):
+                raise ValueError(
+                    "El porcentaje del seguro debe ser un número entero positivo"
+                )
             seguro.porcentaje_seguro = datos["porcentaje_seguro"]
 
         return self.repo_seguros.actualizar(seguro, usuario_sistema)
 
-    def desactivar_seguro(self, id_seguro: int, motivo: str, usuario_sistema: str) -> bool:
+    def desactivar_seguro(
+        self, id_seguro: int, motivo: str, usuario_sistema: str
+    ) -> bool:
         """
         Desactiva un seguro.
 
@@ -222,8 +242,7 @@ class ServicioSeguros:
         # Usamos SQL directo por eficiencia para este dropdown
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
-            cursor.execute(
-                """
+            cursor.execute("""
                 SELECT 
                     ca.ID_CONTRATO_A, 
                     p.DIRECCION_PROPIEDAD as DIRECCION,
@@ -233,6 +252,5 @@ class ServicioSeguros:
                 JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
                 JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
                 WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
-            """
-            )
+            """)
             return [dict(row) for row in cursor.fetchall()]

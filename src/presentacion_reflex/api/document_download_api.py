@@ -19,11 +19,15 @@ async def download_document(id_documento: int, force_download: bool = False):
         documento = repo.obtener_por_id_con_contenido(id_documento)
 
         if not documento or not documento.contenido:
-            raise HTTPException(status_code=404, detail="Documento no encontrado o sin contenido")
+            raise HTTPException(
+                status_code=404, detail="Documento no encontrado o sin contenido"
+            )
 
         # Determinar disposición (inline para preview, attachment para descarga forzada)
         disposition_type = "attachment" if force_download else "inline"
-        content_disposition = f'{disposition_type}; filename="{documento.nombre_archivo}"'
+        content_disposition = (
+            f'{disposition_type}; filename="{documento.nombre_archivo}"'
+        )
 
         return Response(
             content=documento.contenido,
@@ -63,7 +67,9 @@ def register_document_routes(app):
         try:
             if hasattr(fastapi_app, "mount"):
                 fastapi_app.mount("/api/storage", doc_api)
-                print("[STORAGE-REGISTER] Rutas de Documentos montadas exitosamente en /api/storage")
+                print(
+                    "[STORAGE-REGISTER] Rutas de Documentos montadas exitosamente en /api/storage"
+                )
             else:
                 print("[STORAGE-REGISTER] Error: La app backend no soporta 'mount'")
         except Exception as e:

@@ -28,8 +28,12 @@ class RepositorioParametroPostgres:
 
         return ParametroSistema(
             id_parametro=(row_dict.get("id_parametro") or row_dict.get("ID_PARAMETRO")),
-            nombre_parametro=(row_dict.get("nombre_parametro") or row_dict.get("NOMBRE_PARAMETRO")),
-            valor_parametro=(row_dict.get("valor_parametro") or row_dict.get("VALOR_PARAMETRO")),
+            nombre_parametro=(
+                row_dict.get("nombre_parametro") or row_dict.get("NOMBRE_PARAMETRO")
+            ),
+            valor_parametro=(
+                row_dict.get("valor_parametro") or row_dict.get("VALOR_PARAMETRO")
+            ),
             tipo_dato=(row_dict.get("tipo_dato") or row_dict.get("TIPO_DATO")),
             descripcion=(row_dict.get("descripcion") or row_dict.get("DESCRIPCION")),
             categoria=(row_dict.get("categoria") or row_dict.get("CATEGORIA")),
@@ -44,7 +48,9 @@ class RepositorioParametroPostgres:
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
-        cursor.execute("SELECT * FROM PARAMETROS_SISTEMA ORDER BY CATEGORIA, NOMBRE_PARAMETRO")
+        cursor.execute(
+            "SELECT * FROM PARAMETROS_SISTEMA ORDER BY CATEGORIA, NOMBRE_PARAMETRO"
+        )
         return [self._row_to_entity(row) for row in cursor.fetchall() if row]
 
     def listar_categorias(self) -> List[str]:
@@ -52,8 +58,12 @@ class RepositorioParametroPostgres:
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
-        cursor.execute("SELECT DISTINCT CATEGORIA FROM PARAMETROS_SISTEMA WHERE CATEGORIA IS NOT NULL ORDER BY CATEGORIA")
-        return [row.get("categoria") or row.get("CATEGORIA") for row in cursor.fetchall()]
+        cursor.execute(
+            "SELECT DISTINCT CATEGORIA FROM PARAMETROS_SISTEMA WHERE CATEGORIA IS NOT NULL ORDER BY CATEGORIA"
+        )
+        return [
+            row.get("categoria") or row.get("CATEGORIA") for row in cursor.fetchall()
+        ]
 
     def obtener_por_categoria(self, categoria: str) -> List[ParametroSistema]:
         """Obtiene todos los parámetros de una categoría específica."""
@@ -61,7 +71,10 @@ class RepositorioParametroPostgres:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(f"SELECT * FROM PARAMETROS_SISTEMA WHERE CATEGORIA = {placeholder} ORDER BY NOMBRE_PARAMETRO", (categoria,))
+        cursor.execute(
+            f"SELECT * FROM PARAMETROS_SISTEMA WHERE CATEGORIA = {placeholder} ORDER BY NOMBRE_PARAMETRO",
+            (categoria,),
+        )
         return [self._row_to_entity(row) for row in cursor.fetchall() if row]
 
     def obtener_por_nombre(self, nombre: str) -> Optional[ParametroSistema]:
@@ -70,7 +83,10 @@ class RepositorioParametroPostgres:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(f"SELECT * FROM PARAMETROS_SISTEMA WHERE NOMBRE_PARAMETRO = {placeholder}", (nombre,))
+        cursor.execute(
+            f"SELECT * FROM PARAMETROS_SISTEMA WHERE NOMBRE_PARAMETRO = {placeholder}",
+            (nombre,),
+        )
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
@@ -80,7 +96,10 @@ class RepositorioParametroPostgres:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(f"SELECT * FROM PARAMETROS_SISTEMA WHERE ID_PARAMETRO = {placeholder}", (id_parametro,))
+        cursor.execute(
+            f"SELECT * FROM PARAMETROS_SISTEMA WHERE ID_PARAMETRO = {placeholder}",
+            (id_parametro,),
+        )
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
@@ -100,34 +119,46 @@ class RepositorioParametroPostgres:
                     {placeholder}, {placeholder}
                 )
             """
-            
+
             created_at = datetime.now().isoformat()
-            
+
             if self.db.use_postgresql:
                 query += " RETURNING id_parametro"
                 cursor.execute(
                     query,
                     (
-                        parametro.nombre_parametro, parametro.valor_parametro,
-                        parametro.tipo_dato, parametro.descripcion,
-                        parametro.categoria, parametro.modificable,
-                        created_at, usuario
-                    )
+                        parametro.nombre_parametro,
+                        parametro.valor_parametro,
+                        parametro.tipo_dato,
+                        parametro.descripcion,
+                        parametro.categoria,
+                        parametro.modificable,
+                        created_at,
+                        usuario,
+                    ),
                 )
                 row = cursor.fetchone()
-                parametro.id_parametro = row.get("id_parametro") or row.get("ID_PARAMETRO")
+                parametro.id_parametro = row.get("id_parametro") or row.get(
+                    "ID_PARAMETRO"
+                )
             else:
                 cursor.execute(
                     query,
                     (
-                        parametro.nombre_parametro, parametro.valor_parametro,
-                        parametro.tipo_dato, parametro.descripcion,
-                        parametro.categoria, parametro.modificable,
-                        created_at, usuario
-                    )
+                        parametro.nombre_parametro,
+                        parametro.valor_parametro,
+                        parametro.tipo_dato,
+                        parametro.descripcion,
+                        parametro.categoria,
+                        parametro.modificable,
+                        created_at,
+                        usuario,
+                    ),
                 )
-                parametro.id_parametro = self.db.get_last_insert_id(cursor, "PARAMETROS_SISTEMA", "ID_PARAMETRO")
-                
+                parametro.id_parametro = self.db.get_last_insert_id(
+                    cursor, "PARAMETROS_SISTEMA", "ID_PARAMETRO"
+                )
+
             return parametro
 
     def actualizar(self, parametro: ParametroSistema, usuario: str) -> bool:
@@ -135,14 +166,16 @@ class RepositorioParametroPostgres:
         Actualiza el valor de un parámetro existente.
         """
         if not parametro.es_modificable:
-            raise PermissionError(f"El parámetro '{parametro.nombre_parametro}' no es modificable")
+            raise PermissionError(
+                f"El parámetro '{parametro.nombre_parametro}' no es modificable"
+            )
 
         with self.db.obtener_conexion() as conn:
             cursor = conn.cursor()
             placeholder = self.db.get_placeholder()
 
             updated_at = datetime.now().isoformat()
-            
+
             cursor.execute(
                 f"""
                 UPDATE PARAMETROS_SISTEMA SET
@@ -151,7 +184,12 @@ class RepositorioParametroPostgres:
                     UPDATED_BY = {placeholder}
                 WHERE ID_PARAMETRO = {placeholder}
                 """,
-                (parametro.valor_parametro, updated_at, usuario, parametro.id_parametro),
+                (
+                    parametro.valor_parametro,
+                    updated_at,
+                    usuario,
+                    parametro.id_parametro,
+                ),
             )
 
             conn.commit()

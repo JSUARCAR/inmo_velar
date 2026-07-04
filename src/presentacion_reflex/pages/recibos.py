@@ -1,12 +1,21 @@
 import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
-from src.presentacion_reflex.components.recibos import detail_modal, modal_form, payment_modal
+from src.presentacion_reflex.components.recibos import (
+    detail_modal,
+    modal_form,
+    payment_modal,
+)
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.recibos_state import RecibosState
 
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_button,
+    neuro_select_root,
+)
 from src.presentacion_reflex import styles
+
 
 def filtros_bar() -> rx.Component:
     return rx.flex(
@@ -25,7 +34,10 @@ def filtros_bar() -> rx.Component:
             ],
             placeholder="Filtrar Servicio",
             value=RecibosState.filter_servicio,
-            on_change=lambda val: [RecibosState.set_filter_servicio(val), RecibosState.load_data()],
+            on_change=lambda val: [
+                RecibosState.set_filter_servicio(val),
+                RecibosState.load_data(),
+            ],
             width=["100%", "200px"],
         ),
         neuro_select_root(
@@ -37,7 +49,10 @@ def filtros_bar() -> rx.Component:
             ],
             placeholder="Estado",
             value=RecibosState.filter_estado,
-            on_change=lambda val: [RecibosState.set_filter_estado(val), RecibosState.load_data()],
+            on_change=lambda val: [
+                RecibosState.set_filter_estado(val),
+                RecibosState.load_data(),
+            ],
             width=["100%", "150px"],
         ),
         rx.spacer(),
@@ -90,7 +105,9 @@ def recibos_table() -> rx.Component:
                     rx.table.cell(recibo.dias_facturados),
                     rx.table.cell(recibo.valor_formato),
                     rx.table.cell(recibo.fecha_vencimiento),
-                    rx.table.cell(rx.badge(recibo.estado, color_scheme=recibo.clase_estado)),
+                    rx.table.cell(
+                        rx.badge(recibo.estado, color_scheme=recibo.clase_estado)
+                    ),
                     rx.table.cell(
                         rx.hstack(
                             rx.cond(
@@ -102,7 +119,9 @@ def recibos_table() -> rx.Component:
                                         size="2",
                                         variant="soft",
                                         color_scheme="green",
-                                        on_click=lambda: RecibosState.open_payment_modal(recibo),
+                                        on_click=lambda: RecibosState.open_payment_modal(
+                                            recibo
+                                        ),
                                     ),
                                     content="Registrar pago",
                                 ),
@@ -115,7 +134,9 @@ def recibos_table() -> rx.Component:
                                         rx.icon("pencil", size=16),
                                         size="2",
                                         variant="ghost",
-                                        on_click=lambda: RecibosState.open_edit_modal(recibo),
+                                        on_click=lambda: RecibosState.open_edit_modal(
+                                            recibo
+                                        ),
                                     ),
                                     content="Editar recibo",
                                 ),
@@ -126,13 +147,17 @@ def recibos_table() -> rx.Component:
                                     size="2",
                                     variant="ghost",
                                     color_scheme="blue",
-                                    on_click=lambda: RecibosState.open_detail_modal(recibo),
+                                    on_click=lambda: RecibosState.open_detail_modal(
+                                        recibo
+                                    ),
                                 ),
                                 content="Ver detalle",
                             ),
                             rx.cond(
                                 (recibo.estado != "Pagado")
-                                & AuthState.check_action("Recibos Publicos", "ELIMINAR"),
+                                & AuthState.check_action(
+                                    "Recibos Publicos", "ELIMINAR"
+                                ),
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("trash-2", size=16),
@@ -162,7 +187,9 @@ def recibos_table() -> rx.Component:
 def recibos_content() -> rx.Component:
     return rx.vstack(
         rx.heading("Gestión de Recibos Públicos", size="6"),
-        rx.text("Administre los vencimientos y pagos de servicios públicos.", color="gray"),
+        rx.text(
+            "Administre los vencimientos y pagos de servicios públicos.", color="gray"
+        ),
         rx.divider(),
         filtros_bar(),
         rx.cond(

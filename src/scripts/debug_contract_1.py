@@ -33,17 +33,25 @@ def debug_contract_1():
         # 2. Check Arrendatario
         if id_arr:
             print(f"\n[ARRENDATARIO ID={id_arr}]")
-            cursor.execute(f"SELECT * FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = {id_arr}")
+            cursor.execute(
+                f"SELECT * FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = {id_arr}"
+            )
             arrendatario = cursor.fetchone()
             if arrendatario:
-                a_dict = dict(arrendatario) if hasattr(arrendatario, "keys") else arrendatario
+                a_dict = (
+                    dict(arrendatario)
+                    if hasattr(arrendatario, "keys")
+                    else arrendatario
+                )
                 print(a_dict)
                 id_persona = a_dict.get("ID_PERSONA") or a_dict.get("id_persona")
 
                 # 3. Check Persona
                 if id_persona:
                     print(f"\n[PERSONA ID={id_persona}]")
-                    cursor.execute(f"SELECT * FROM PERSONAS WHERE ID_PERSONA = {id_persona}")
+                    cursor.execute(
+                        f"SELECT * FROM PERSONAS WHERE ID_PERSONA = {id_persona}"
+                    )
                     persona = cursor.fetchone()
                     if persona:
                         p_dict = dict(persona) if hasattr(persona, "keys") else persona

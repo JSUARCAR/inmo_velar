@@ -63,11 +63,15 @@ class SaldosState(rx.State):
                 estado = "Pendiente"
 
             # Usamos listar_saldos base
-            lista_entidades = servicio.listar_saldos(tipo_beneficiario=tipo, estado=estado)
+            lista_entidades = servicio.listar_saldos(
+                tipo_beneficiario=tipo, estado=estado
+            )
 
             # Refinamiento si es Historial (excluir pendientes)
             if self.filter_estado == "Historial":
-                lista_entidades = [s for s in lista_entidades if s.estado != "Pendiente"]
+                lista_entidades = [
+                    s for s in lista_entidades if s.estado != "Pendiente"
+                ]
 
             # MAPEO Entidad -> Modelo Reflex
             modelos = []
@@ -144,7 +148,9 @@ class SaldosState(rx.State):
         async with self:
             self.is_loading = True
             current_user = await self.get_state(AuthState)
-            usuario = current_user.user_nombre if current_user.is_authenticated else "sistema"
+            usuario = (
+                current_user.user_nombre if current_user.is_authenticated else "sistema"
+            )
 
         try:
             servicio = ServicioSaldosFavor(db_manager)
@@ -178,14 +184,18 @@ class SaldosState(rx.State):
         async with self:
             self.is_loading = True
             current_user = await self.get_state(AuthState)
-            usuario = current_user.user_nombre if current_user.is_authenticated else "sistema"
+            usuario = (
+                current_user.user_nombre if current_user.is_authenticated else "sistema"
+            )
 
         try:
             servicio = ServicioSaldosFavor(db_manager)
             if action == "aplicar":
                 servicio.aplicar_saldo(id_saldo, "Aplicado desde web", usuario)
             elif action == "devolver":
-                servicio.devolver_saldo(id_saldo, "Devolución registrada desde web", usuario)
+                servicio.devolver_saldo(
+                    id_saldo, "Devolución registrada desde web", usuario
+                )
             elif action == "eliminar":
                 servicio.eliminar_saldo(id_saldo, usuario)
 

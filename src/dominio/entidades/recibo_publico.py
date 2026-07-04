@@ -44,7 +44,9 @@ class ReciboPublico:
     dias_facturados: int = 0
 
     # Auditoría
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
@@ -66,7 +68,8 @@ class ReciboPublico:
 
         if self.estado not in self.ESTADOS:
             raise ValueError(
-                f"Estado inválido: {self.estado}. " f"Debe ser uno de: {', '.join(self.ESTADOS)}"
+                f"Estado inválido: {self.estado}. "
+                f"Debe ser uno de: {', '.join(self.ESTADOS)}"
             )
 
         # Validar formato de período (YYYY-MM)
@@ -75,7 +78,8 @@ class ReciboPublico:
 
             if not re.match(r"^\d{4}-\d{2}$", self.periodo_recibo):
                 raise ValueError(
-                    f"Formato de período inválido: {self.periodo_recibo}. " "Use formato YYYY-MM"
+                    f"Formato de período inválido: {self.periodo_recibo}. "
+                    "Use formato YYYY-MM"
                 )
 
     @property

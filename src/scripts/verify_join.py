@@ -22,7 +22,9 @@ def verify_join_integrity():
         cursor.execute(query1)
         res1 = cursor.fetchone()
         c1 = list(res1.values())[0] if hasattr(res1, "values") else res1[0]
-        print(f"JOIN Contrato -> Arrendatario: {'OK' if c1 > 0 else 'FAIL'} (Count: {c1})")
+        print(
+            f"JOIN Contrato -> Arrendatario: {'OK' if c1 > 0 else 'FAIL'} (Count: {c1})"
+        )
 
         # 2. Check Link CA -> ARR -> PER
         query2 = """
@@ -49,7 +51,9 @@ def verify_join_integrity():
                 raw_id_arr = list(row.values())[0] if hasattr(row, "values") else row[0]
                 print(f"DEBUG: Contrato has ID_ARRENDATARIO = {raw_id_arr}")
 
-                check_arr = f"SELECT * FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = {raw_id_arr}"
+                check_arr = (
+                    f"SELECT * FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = {raw_id_arr}"
+                )
                 cursor.execute(check_arr)
                 arr_row = cursor.fetchone()
                 print(f"DEBUG: Arrendatario Row: {arr_row}")

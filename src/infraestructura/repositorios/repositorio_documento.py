@@ -1,4 +1,3 @@
-import sqlite3
 from typing import List, Optional
 
 from src.dominio.entidades.documento import Documento
@@ -133,7 +132,9 @@ class RepositorioDocumento:
             return self._row_to_entity(row, include_content=True)
         return None
 
-    def anular_version_anterior(self, entidad_tipo: str, entidad_id: str, nombre_archivo: str):
+    def anular_version_anterior(
+        self, entidad_tipo: str, entidad_id: str, nombre_archivo: str
+    ):
         """
         Marca como 'NO VIGENTE' las versiones anteriores de un archivo con el mismo nombre
         para la misma entidad. Útil para el control de versiones.
@@ -147,7 +148,9 @@ class RepositorioDocumento:
         try:
             with self.db.transaccion() as conn:
                 cursor = self.db.get_dict_cursor(conn)
-                cursor.execute(sql, (False, entidad_tipo, str(entidad_id), nombre_archivo, True))
+                cursor.execute(
+                    sql, (False, entidad_tipo, str(entidad_id), nombre_archivo, True)
+                )
         except Exception:
             pass  # print(f"Error al anular versiones anteriores: {e}") [OpSec Removed]
             raise

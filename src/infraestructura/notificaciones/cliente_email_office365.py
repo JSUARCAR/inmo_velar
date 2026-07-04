@@ -23,7 +23,9 @@ class ClienteEmailOffice365:
         self.logger = logging.getLogger(__name__)
 
         if not self.email or not self.password:
-            self.logger.warning("Credenciales SMTP no configuradas (configuracion settings)")
+            self.logger.warning(
+                "Credenciales SMTP no configuradas (configuracion settings)"
+            )
 
     def enviar_correo(
         self, destinatario: str, asunto: str, cuerpo: str, adjunto_path: str = None
@@ -52,7 +54,9 @@ class ClienteEmailOffice365:
             msg["Subject"] = asunto
 
             # Agregar cuerpo del mensaje
-            msg.attach(MIMEText(cuerpo, "html"))  # Asumimos HTML por defecto para formatting
+            msg.attach(
+                MIMEText(cuerpo, "html")
+            )  # Asumimos HTML por defecto para formatting
 
             # Agregar adjunto si existe
             if adjunto_path:
@@ -62,12 +66,16 @@ class ClienteEmailOffice365:
                         with open(adjunto_path, "rb") as f:
                             part = MIMEApplication(f.read(), Name=filename)
 
-                        part["Content-Disposition"] = f'attachment; filename="{filename}"'
+                        part["Content-Disposition"] = (
+                            f'attachment; filename="{filename}"'
+                        )
                         msg.attach(part)
                     except Exception as e:
                         self.logger.error(f"Error leyendo adjunto {adjunto_path}: {e}")
                 else:
-                    self.logger.warning(f"Archivo adjunto no encontrado: {adjunto_path}")
+                    self.logger.warning(
+                        f"Archivo adjunto no encontrado: {adjunto_path}"
+                    )
 
             # Conectar al servidor SMTP
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:

@@ -37,9 +37,12 @@ class RepositorioPropiedadPostgres:
         # Helper para obtener valor ignorando mayúsculas/minúsculas si fuera necesario (Postgres devuelve minusculas por defecto con psycopg2 a veces)
         # Para ser seguros, usamos .get probando claves mayúsculas (como en esquema) y minúsculas
         def get_val(key):
-            if key in data: return data[key]
-            if key.upper() in data: return data[key.upper()]
-            if key.lower() in data: return data[key.lower()]
+            if key in data:
+                return data[key]
+            if key.upper() in data:
+                return data[key.upper()]
+            if key.lower() in data:
+                return data[key.lower()]
             return None
 
         return Propiedad(

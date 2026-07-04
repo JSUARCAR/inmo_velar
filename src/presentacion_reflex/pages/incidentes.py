@@ -157,6 +157,9 @@ from src.presentacion_reflex.components.incidentes.modal_edit_incidente import (
 from src.presentacion_reflex.components.incidentes.modal_cancel_incidente import (
     modal_cancel_incidente,
 )
+from src.presentacion_reflex.components.incidentes.modal_plan_pago import (
+    modal_plan_pago,
+)
 
 
 @rx.page(
@@ -190,46 +193,44 @@ def incidentes() -> rx.Component:
                 height="100%",
                 min_height="0",
             ),
-            # Pagination Controls — Solo visible en modo Lista
-            rx.cond(
-                IncidentesState.view_mode == "list",
-                rx.flex(
-                    rx.button(
-                        rx.icon("chevron-left"),
-                        "Anterior",
-                        on_click=IncidentesState.prev_page,
-                        disabled=IncidentesState.page == 1,
-                        variant="soft",
-                        color_scheme="gray",
-                    ),
-                    rx.text(
-                        "Página ",
-                        IncidentesState.page,
-                        " de ",
-                        IncidentesState.total_pages,
-                        weight="medium",
-                        color="gray",
-                    ),
-                    rx.button(
-                        "Siguiente",
-                        rx.icon("chevron-right"),
-                        on_click=IncidentesState.next_page,
-                        disabled=IncidentesState.page == IncidentesState.total_pages,
-                        variant="soft",
-                        color_scheme="gray",
-                    ),
-                    width="100%",
-                    justify="center",
-                    align_items="center",
-                    flex_wrap="wrap",
-                    gap="4",
-                    margin_top="1em",
+            # Pagination Controls
+            rx.flex(
+                rx.button(
+                    rx.icon("chevron-left"),
+                    "Anterior",
+                    on_click=IncidentesState.prev_page,
+                    disabled=IncidentesState.page == 1,
+                    variant="soft",
+                    color_scheme="gray",
                 ),
+                rx.text(
+                    "Página ",
+                    IncidentesState.page,
+                    " de ",
+                    IncidentesState.total_pages,
+                    weight="medium",
+                    color="gray",
+                ),
+                rx.button(
+                    "Siguiente",
+                    rx.icon("chevron-right"),
+                    on_click=IncidentesState.next_page,
+                    disabled=IncidentesState.page == IncidentesState.total_pages,
+                    variant="soft",
+                    color_scheme="gray",
+                ),
+                width="100%",
+                justify="center",
+                align_items="center",
+                flex_wrap="wrap",
+                gap="4",
+                margin_top="1em",
             ),
             modal_form(),
             modal_details(),
             modal_edit_incidente(),
             modal_cancel_incidente(),
+            modal_plan_pago(),
             width="100%",
             flex="1",
             height="100%",

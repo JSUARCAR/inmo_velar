@@ -9,6 +9,7 @@ import pydantic
 
 class SeguroDict(pydantic.BaseModel):
     """Estructura tipada para Seguro."""
+
     id_seguro: int
     nombre_seguro: str
     porcentaje_seguro: int
@@ -20,6 +21,7 @@ class SeguroDict(pydantic.BaseModel):
 
 class PolizaDict(pydantic.BaseModel):
     """Estructura tipada para Póliza."""
+
     id_poliza: int
     id_contrato: int
     id_seguro: int
@@ -98,7 +100,9 @@ class SegurosState(rx.State):
             # Filtrar por búsqueda si existe
             if search.strip():
                 search_lower = search.lower()
-                seguros_list = [s for s in seguros_list if search_lower in s.nombre_seguro.lower()]
+                seguros_list = [
+                    s for s in seguros_list if search_lower in s.nombre_seguro.lower()
+                ]
 
             # Convertir a modelos Pydantic
             seguros_data = [
@@ -212,7 +216,9 @@ class SegurosState(rx.State):
                     "id_seguro": seguro.id_seguro,
                     "nombre_seguro": seguro.nombre_seguro or "",
                     "porcentaje_seguro": (
-                        str(seguro.porcentaje_seguro) if seguro.porcentaje_seguro else ""
+                        str(seguro.porcentaje_seguro)
+                        if seguro.porcentaje_seguro
+                        else ""
                     ),
                     "fecha_inicio_seguro": seguro.fecha_inicio_seguro or "",
                 }
@@ -278,14 +284,18 @@ class SegurosState(rx.State):
                 int(estado_actual)
                 if isinstance(estado_actual, (int, float, str))
                 else int(
-                    estado_actual.get("estado_seguro", 0) if isinstance(estado_actual, dict) else 0
+                    estado_actual.get("estado_seguro", 0)
+                    if isinstance(estado_actual, dict)
+                    else 0
                 )
             )
 
             if estado_int == 1:
                 # Desactivar
                 servicio.desactivar_seguro(
-                    id_seguro, motivo="Desactivado desde interfaz", usuario_sistema="admin"
+                    id_seguro,
+                    motivo="Desactivado desde interfaz",
+                    usuario_sistema="admin",
                 )
             else:
                 # Activar
@@ -369,7 +379,9 @@ class SegurosState(rx.State):
                     "nombre_seguro": seguro.nombre_seguro,
                     "porcentaje_seguro": seguro.porcentaje_seguro,
                     "fecha_inicio_seguro": seguro.fecha_inicio_seguro or "N/A",
-                    "estado_seguro": "ACTIVO" if seguro.estado_seguro == 1 else "Inactivo",
+                    "estado_seguro": (
+                        "ACTIVO" if seguro.estado_seguro == 1 else "Inactivo"
+                    ),
                     "fecha_ingreso_seguro": seguro.fecha_ingreso_seguro or "N/A",
                     "motivo_inactivacion": seguro.motivo_inactivacion or "N/A",
                 }
@@ -384,7 +396,7 @@ class SegurosState(rx.State):
                         fecha_fin=p.fecha_fin or "",
                         estado=p.estado or "",
                         id_contrato=p.id_contrato,
-                        id_seguro=p.id_seguro
+                        id_seguro=p.id_seguro,
                     )
                     for p in todas_polizas
                     if p.id_seguro == id_seguro

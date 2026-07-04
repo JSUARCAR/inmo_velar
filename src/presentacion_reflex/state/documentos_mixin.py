@@ -1,5 +1,5 @@
 import traceback
-from typing import Any, Dict, List
+from typing import List
 
 import reflex as rx
 
@@ -11,6 +11,7 @@ servicio_documental = ServicioDocumentalElite()
 
 import pydantic
 
+
 class DocumentoUI(pydantic.BaseModel):
     id_documento: int
     nombre_archivo: str
@@ -18,6 +19,7 @@ class DocumentoUI(pydantic.BaseModel):
     mime_type: str
     version: int
     fecha_creacion: str
+
 
 class DocumentosStateMixin(rx.State):
     """
@@ -42,7 +44,9 @@ class DocumentosStateMixin(rx.State):
     def iniciar_contexto_documental(self, tipo: str, id_entidad: str):
         """Inicializa el contexto para la carga y lectura de documentos. Obligatorio."""
         if not tipo or not str(id_entidad).strip():
-            raise ValueError("El tipo y el ID de entidad son obligatorios para el contexto documental.")
+            raise ValueError(
+                "El tipo y el ID de entidad son obligatorios para el contexto documental."
+            )
         self.current_entidad_tipo = tipo
         self.current_entidad_id = str(id_entidad)
         self.cargar_documentos()
@@ -74,7 +78,9 @@ class DocumentosStateMixin(rx.State):
         if not entidad_tipo or not entidad_id:
             pass  # print("Error: Entidad tipo/id no definidos para upload") [OpSec Removed]
             self.is_uploading = False
-            yield rx.toast.error("Error crítico: Contexto documental (tipo/id) no inicializado.")
+            yield rx.toast.error(
+                "Error crítico: Contexto documental (tipo/id) no inicializado."
+            )
             return
 
         try:

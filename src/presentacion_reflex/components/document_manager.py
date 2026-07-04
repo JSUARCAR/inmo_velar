@@ -26,8 +26,17 @@ def document_manager(
         rx.upload(
             rx.vstack(
                 rx.icon("upload_cloud", size=40, color="var(--accent-9)"),
-                rx.text(label, color="var(--gray-11)", font_size="0.9em", text_align="center"),
-                rx.text(f"Formatos: {accepted_formats}", color="var(--gray-9)", font_size="0.8em"),
+                rx.text(
+                    label,
+                    color="var(--gray-11)",
+                    font_size="0.9em",
+                    text_align="center",
+                ),
+                rx.text(
+                    f"Formatos: {accepted_formats}",
+                    color="var(--gray-9)",
+                    font_size="0.8em",
+                ),
                 align_items="center",
                 justify_content="center",
                 padding="2em",
@@ -35,7 +44,10 @@ def document_manager(
                 border_radius="8px",
                 width="100%",
                 background_color="var(--gray-2)",
-                _hover={"background_color": "var(--gray-3)", "border_color": "var(--accent-9)"},
+                _hover={
+                    "background_color": "var(--gray-3)",
+                    "border_color": "var(--accent-9)",
+                },
             ),
             id=upload_id,
             accept={format: [] for format in accepted_formats.split(",")},

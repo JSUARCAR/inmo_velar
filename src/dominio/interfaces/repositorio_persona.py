@@ -34,7 +34,7 @@ class IRepositorioPersona(Protocol):
         limit: Optional[int] = None,
         offset: int = 0,
         sort_by: str = "id_persona",
-        sort_order: str = "desc"
+        sort_order: str = "desc",
     ) -> List[Persona]:
         """Obtiene personas con filtros, paginación y ordenamiento dinámico."""
         ...
@@ -47,7 +47,7 @@ class IRepositorioPersona(Protocol):
         sin_contrato: bool = False,
         busqueda: Optional[str] = None,
         fecha_inicio: Optional[str] = None,
-        fecha_fin: Optional[str] = None
+        fecha_fin: Optional[str] = None,
     ) -> int:
         """Cuenta total de personas con filtros."""
         ...
@@ -56,7 +56,7 @@ class IRepositorioPersona(Protocol):
         self,
         solo_activos: bool = True,
         solo_inactivos: bool = False,
-        sin_contrato: bool = False
+        sin_contrato: bool = False,
     ) -> dict[str, int]:
         """Obtiene un diccionario con el total global de personas por rol."""
         ...
@@ -75,9 +75,7 @@ class IRepositorioPersona(Protocol):
 
     # ---- Operaciones Especializadas ----
 
-    def obtener_por_documento(
-        self, numero_documento: str
-    ) -> Optional[Persona]:
+    def obtener_por_documento(self, numero_documento: str) -> Optional[Persona]:
         """Busca una persona por su documento."""
         ...
 
@@ -85,7 +83,9 @@ class IRepositorioPersona(Protocol):
         """Busca una persona por email."""
         ...
 
-    def buscar_por_nombre(self, termino_busqueda: str, limite: int = 20) -> List[Persona]:
+    def buscar_por_nombre(
+        self, termino_busqueda: str, limite: int = 20
+    ) -> List[Persona]:
         """
         Búsqueda fuzzy por nombre.
 
