@@ -17,7 +17,9 @@ from src.presentacion_reflex.components.tablas import header_cell_sortable
 from src.presentacion_reflex.components.contratos.tarjeta_contrato import (
     tarjeta_contrato,
 )
-from src.presentacion_reflex.components.contratos.badge_grupo_pago import badge_grupo_pago
+from src.presentacion_reflex.components.contratos.badge_grupo_pago import (
+    badge_grupo_pago,
+)
 
 from src.presentacion_reflex.components.contratos.formulario_contrato_mandato import (
     formulario_contrato_mandato,
@@ -307,9 +309,7 @@ def render_table_view() -> rx.Component:
                     rx.table.cell(
                         rx.text("$", c.valor_canon.to_string(), weight="bold")
                     ),
-                    rx.table.cell(
-                        badge_grupo_pago(c.grupo_operativo, c.fecha_pago)
-                    ),
+                    rx.table.cell(badge_grupo_pago(c.grupo_operativo, c.fecha_pago)),
                     rx.table.cell(
                         rx.vstack(
                             rx.text("Inicia: ", c.fecha_inicio, size="1"),

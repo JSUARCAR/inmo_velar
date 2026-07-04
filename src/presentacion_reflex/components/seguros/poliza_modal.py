@@ -38,7 +38,9 @@ def modal_poliza() -> rx.Component:
                             name="numero_poliza",
                             placeholder="Ej: POL-2024-001",
                             required=True,
-                            default_value=SegurosState.poliza_form_data["numero_poliza"],
+                            default_value=SegurosState.poliza_form_data[
+                                "numero_poliza"
+                            ],
                             width="100%",
                         ),
                         spacing="1",
@@ -46,7 +48,9 @@ def modal_poliza() -> rx.Component:
                     ),
                     # Contrato ID *
                     rx.vstack(
-                        rx.text("ID Contrato de Arrendamiento *", size="2", weight="bold"),
+                        rx.text(
+                            "ID Contrato de Arrendamiento *", size="2", weight="bold"
+                        ),
                         rx.input(
                             name="id_contrato",
                             type="number",
@@ -55,7 +59,9 @@ def modal_poliza() -> rx.Component:
                             width="100%",
                         ),
                         rx.text(
-                            "Ingrese el ID del contrato de arrendamiento", size="1", color="gray"
+                            "Ingrese el ID del contrato de arrendamiento",
+                            size="1",
+                            color="gray",
                         ),
                         spacing="1",
                         width="100%",
@@ -70,7 +76,9 @@ def modal_poliza() -> rx.Component:
                             required=True,
                             width="100%",
                         ),
-                        rx.text("Ingrese el ID del seguro a asignar", size="1", color="gray"),
+                        rx.text(
+                            "Ingrese el ID del seguro a asignar", size="1", color="gray"
+                        ),
                         spacing="1",
                         width="100%",
                     ),
@@ -82,7 +90,9 @@ def modal_poliza() -> rx.Component:
                                 name="fecha_inicio",
                                 type="date",
                                 required=True,
-                                default_value=SegurosState.poliza_form_data["fecha_inicio"],
+                                default_value=SegurosState.poliza_form_data[
+                                    "fecha_inicio"
+                                ],
                                 width="100%",
                             ),
                             width="50%",
@@ -94,7 +104,9 @@ def modal_poliza() -> rx.Component:
                                 name="fecha_fin",
                                 type="date",
                                 required=True,
-                                default_value=SegurosState.poliza_form_data["fecha_fin"],
+                                default_value=SegurosState.poliza_form_data[
+                                    "fecha_fin"
+                                ],
                                 width="100%",
                             ),
                             width="50%",

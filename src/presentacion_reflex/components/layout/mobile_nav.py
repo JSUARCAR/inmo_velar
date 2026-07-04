@@ -1,6 +1,9 @@
 import reflex as rx
 
-from src.presentacion_reflex.components.layout.sidebar import sidebar_footer, sidebar_items
+from src.presentacion_reflex.components.layout.sidebar import (
+    sidebar_footer,
+    sidebar_items,
+)
 from src.presentacion_reflex.components.layout.bell_icon import bell_icon
 from src.presentacion_reflex.components.layout.theme_toggle import theme_toggle_icon
 from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
@@ -18,7 +21,13 @@ def mobile_nav() -> rx.Component:
             rx.drawer.root(
                 rx.drawer.trigger(
                     rx.icon_button(
-                        rx.icon("menu", size=26, color=rx.cond(rx.color_mode == "light", "var(--gray-12)", "white")),
+                        rx.icon(
+                            "menu",
+                            size=26,
+                            color=rx.cond(
+                                rx.color_mode == "light", "var(--gray-12)", "white"
+                            ),
+                        ),
                         variant="ghost",
                         size="3",
                         _hover={
@@ -47,12 +56,24 @@ def mobile_nav() -> rx.Component:
                                                 object_fit="contain",
                                                 alt="Logo",
                                             ),
-                                            rx.icon("building", size=26, color=rx.cond(rx.color_mode == "light", "var(--gray-12)", "white")),
+                                            rx.icon(
+                                                "building",
+                                                size=26,
+                                                color=rx.cond(
+                                                    rx.color_mode == "light",
+                                                    "var(--gray-12)",
+                                                    "white",
+                                                ),
+                                            ),
                                         ),
                                         rx.heading(
                                             "Inmobiliaria Velar",
                                             size="5",
-                                            color=rx.cond(rx.color_mode == "light", "var(--gray-12)", "white"),
+                                            color=rx.cond(
+                                                rx.color_mode == "light",
+                                                "var(--gray-12)",
+                                                "white",
+                                            ),
                                             weight="bold",
                                             letter_spacing="-0.5px",
                                         ),
@@ -62,7 +83,15 @@ def mobile_nav() -> rx.Component:
                                     rx.spacer(),
                                     rx.drawer.close(
                                         rx.icon_button(
-                                            rx.icon("x", size=24, color=rx.cond(rx.color_mode == "light", "var(--gray-12)", "white")),
+                                            rx.icon(
+                                                "x",
+                                                size=24,
+                                                color=rx.cond(
+                                                    rx.color_mode == "light",
+                                                    "var(--gray-12)",
+                                                    "white",
+                                                ),
+                                            ),
                                             variant="ghost",
                                             size="2",
                                             _hover={
@@ -94,7 +123,7 @@ def mobile_nav() -> rx.Component:
                             rx.box(
                                 sidebar_footer(),
                                 width="100%",
-                                padding="4", # Added padding for better look on white bg
+                                padding="4",  # Added padding for better look on white bg
                             ),
                             height="100%",
                             width="100%",
@@ -145,7 +174,7 @@ def mobile_nav() -> rx.Component:
             bell_icon(),
             # User Avatar (Mini) with Ring
             rx.box(
-                    rx.icon("user-check", size=24, color="#3b82f6"),
+                rx.icon("user-check", size=24, color="#3b82f6"),
                 _hover={"transform": "scale(1.1)"},
                 transition="all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
             ),

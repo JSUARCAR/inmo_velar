@@ -10,8 +10,13 @@ import reflex as rx
 from src.presentacion_reflex.state.dashboard_state import DashboardState
 
 
-from src.presentacion_reflex.components.neuro_elements import neuro_panel, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_panel,
+    neuro_button,
+    neuro_select_root,
+)
 from src.presentacion_reflex import styles
+
 
 def dashboard_filters() -> rx.Component:
     """
@@ -20,8 +25,18 @@ def dashboard_filters() -> rx.Component:
     anio_actual = datetime.now().year
     anios = [str(a) for a in range(anio_actual, anio_actual - 5, -1)]
     meses = [
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre",
     ]
 
     return neuro_panel(
@@ -36,9 +51,7 @@ def dashboard_filters() -> rx.Component:
             # Dropdown Mes
             rx.box(
                 neuro_select_root(
-                    rx.select.group(
-                        *[rx.select.item(m, value=m) for m in meses]
-                    ),
+                    rx.select.group(*[rx.select.item(m, value=m) for m in meses]),
                     placeholder="Seleccionar Mes",
                     value=DashboardState.selected_month_name,
                     on_change=DashboardState.set_month,
@@ -49,9 +62,7 @@ def dashboard_filters() -> rx.Component:
             # Dropdown Año
             rx.box(
                 neuro_select_root(
-                    rx.select.group(
-                        *[rx.select.item(a, value=a) for a in anios]
-                    ),
+                    rx.select.group(*[rx.select.item(a, value=a) for a in anios]),
                     placeholder="Año",
                     value=DashboardState.selected_year.to_string(),
                     on_change=DashboardState.set_year,

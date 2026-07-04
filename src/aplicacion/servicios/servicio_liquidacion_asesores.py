@@ -11,7 +11,6 @@ from src.dominio.entidades.bonificacion_asesor import BonificacionAsesor
 from src.dominio.entidades.descuento_asesor import DescuentoAsesor
 from src.dominio.entidades.liquidacion_asesor import LiquidacionAsesor
 from src.dominio.entidades.pago_asesor import PagoAsesor
-from src.infraestructura.persistencia.database import DatabaseManager
 from src.infraestructura.cache.cache_manager import cache_manager, invalidate_cache
 from src.infraestructura.repositorios.repositorio_bonificacion_asesor import (
     RepositorioBonificacionAsesor,
@@ -102,12 +101,16 @@ class ServicioLiquidacionAsesores:
         Genera el PDF del comprobante de la liquidación.
         """
         if not self.servicio_pdf:
-            raise ValueError("Servicio PDF no configurado en ServicioLiquidacionAsesores")
+            raise ValueError(
+                "Servicio PDF no configurado en ServicioLiquidacionAsesores"
+            )
 
         detalle = self.obtener_detalle_completo(id_liquidacion)
         liquidacion = detalle["liquidacion"]
 
-        nombre_asesor = liquidacion.get("nombre_asesor") or f"Asesor {liquidacion['id_asesor']}"
+        nombre_asesor = (
+            liquidacion.get("nombre_asesor") or f"Asesor {liquidacion['id_asesor']}"
+        )
         documento_asesor = "N/A"
 
         try:
@@ -135,7 +138,9 @@ class ServicioLiquidacionAsesores:
             "contratos": detalle["contratos"],
             "descuentos_lista": detalle["descuentos"],
             "id_contrato_legacy": liquidacion["id_contrato_a"],
-            "direccion_legacy": (detalle.get("propiedad") or {}).get("direccion_propiedad"),
+            "direccion_legacy": (detalle.get("propiedad") or {}).get(
+                "direccion_propiedad"
+            ),
             "canon_legacy": (detalle.get("contrato") or {}).get("canon_arrendamiento"),
         }
 
@@ -158,11 +163,17 @@ class ServicioLiquidacionAsesores:
         Genera una nueva liquidación de comisión para un asesor.
         @deprecated: Usar generar_liquidacion_multi_contrato incluso para un solo contrato.
         """
-        existente = self.repo_liquidacion.obtener_por_contrato_periodo(id_contrato, periodo)
+        existente = self.repo_liquidacion.obtener_por_contrato_periodo(
+            id_contrato, periodo
+        )
         if existente:
-            raise ValueError(f"Ya existe una liquidación para el contrato {id_contrato} en el período {periodo}")
+            raise ValueError(
+                f"Ya existe una liquidación para el contrato {id_contrato} en el período {periodo}"
+            )
 
-        comision_bruta = LiquidacionAsesor.calcular_comision_bruta(canon_arrendamiento, porcentaje_comision)
+        comision_bruta = LiquidacionAsesor.calcular_comision_bruta(
+            canon_arrendamiento, porcentaje_comision
+        )
 
         liquidacion = LiquidacionAsesor(
             id_contrato_a=id_contrato,
@@ -174,7 +185,9 @@ class ServicioLiquidacionAsesores:
             total_descuentos=0,
             valor_neto_asesor=comision_bruta,
             estado_liquidacion="Pendiente",
-            observaciones_liquidacion=(datos_adicionales.get("observaciones") if datos_adicionales else None),
+            observaciones_liquidacion=(
+                datos_adicionales.get("observaciones") if datos_adicionales else None
+            ),
         )
 
         resultado = self.repo_liquidacion.crear(liquidacion, usuario)
@@ -185,7 +198,11 @@ class ServicioLiquidacionAsesores:
                     entidad_tipo="LiquidacionAsesor",
                     entidad_id=resultado.id_liquidacion_asesor,
                     tipo_evento="CREATED",
-                    idempotency_key=f"liq_asesores:generar:{idempotency_key}" if not idempotency_key.startswith("liq_asesores") else idempotency_key,
+                    idempotency_key=(
+                        f"liq_asesores:generar:{idempotency_key}"
+                        if not idempotency_key.startswith("liq_asesores")
+                        else idempotency_key
+                    ),
                     payload=self._liquidacion_to_dict(resultado),
                     usuario_id=1,
                 )
@@ -213,7 +230,9 @@ class ServicioLiquidacionAsesores:
         # Validar existencia previa fuera de la transacción para evitar bloqueos innecesarios
         existente = self.repo_liquidacion.obtener_por_asesor_periodo(id_asesor, periodo)
         if existente:
-            raise ValueError(f"Ya existe una liquidación para el asesor {id_asesor} en el período {periodo}")
+            raise ValueError(
+                f"Ya existe una liquidación para el asesor {id_asesor} en el período {periodo}"
+            )
 
         # Iniciar transacción atómica
         with self.repo_liquidacion.db_manager.transaccion():
@@ -222,7 +241,7 @@ class ServicioLiquidacionAsesores:
             suma_canon_por_pct = 0
             total_descuentos_automaticos = 0
             contratos_con_comision = []
-            
+
             # Acumuladores Consolidados Élite
             acumulado_seguro = 0
             acumulado_4x1000 = 0
@@ -231,31 +250,40 @@ class ServicioLiquidacionAsesores:
                 id_cto = c.get("id")
                 canon = c.get("canon", 0)
                 pct = c.get("porcentaje_comision", 0)
-                
-                comision_individual = LiquidacionAsesor.calcular_comision_bruta(canon, pct)
-                
+
+                comision_individual = LiquidacionAsesor.calcular_comision_bruta(
+                    canon, pct
+                )
+
                 canon_total += canon
                 comision_bruta_total += comision_individual
                 suma_canon_por_pct += canon * pct
-                
-                contratos_con_comision.append({
-                    "id": id_cto,
-                    "canon": canon,
-                    "porcentaje": pct,
-                    "comision": comision_individual,
-                })
+
+                contratos_con_comision.append(
+                    {
+                        "id": id_cto,
+                        "canon": canon,
+                        "porcentaje": pct,
+                        "comision": comision_individual,
+                    }
+                )
 
                 # --- Acumulación de Seguros ---
                 pct_seguro = c.get("porcentaje_seguro") or 0
                 if pct_seguro > 0:
-                    if pct_seguro < 100: pct_seguro *= 100
-                    acumulado_seguro += LiquidacionAsesor.calcular_valor_seguro(canon, pct_seguro)
+                    if pct_seguro < 100:
+                        pct_seguro *= 100
+                    acumulado_seguro += LiquidacionAsesor.calcular_valor_seguro(
+                        canon, pct_seguro
+                    )
 
                 # --- Acumulación de 4x1000 ---
                 acumulado_4x1000 += LiquidacionAsesor.calcular_4x1000(canon)
 
             total_descuentos_automaticos = acumulado_seguro + acumulado_4x1000
-            porcentaje_ponderado = int(suma_canon_por_pct / canon_total) if canon_total > 0 else 0
+            porcentaje_ponderado = (
+                int(suma_canon_por_pct / canon_total) if canon_total > 0 else 0
+            )
 
             liquidacion = LiquidacionAsesor(
                 id_contrato_a=None,
@@ -266,25 +294,46 @@ class ServicioLiquidacionAsesores:
                 comision_bruta=comision_bruta_total,
                 total_descuentos=total_descuentos_automaticos,
                 total_bonificaciones=total_bonificaciones,
-                valor_neto_asesor=comision_bruta_total + total_bonificaciones - total_descuentos_automaticos,
+                valor_neto_asesor=comision_bruta_total
+                + total_bonificaciones
+                - total_descuentos_automaticos,
                 estado_liquidacion="Pendiente",
                 modo_comision="CONTRATO_MANDATO",
-                observaciones_liquidacion=(datos_adicionales.get("observaciones") if datos_adicionales else None),
+                observaciones_liquidacion=(
+                    datos_adicionales.get("observaciones")
+                    if datos_adicionales
+                    else None
+                ),
             )
 
             liquidacion_creada = self.repo_liquidacion.crear(liquidacion, usuario)
 
             # 1. Detalle de contratos
-            contratos_tuplas = [(c["id"], c["canon"], c["porcentaje"], c["comision"]) for c in contratos_con_comision]
+            contratos_tuplas = [
+                (c["id"], c["canon"], c["porcentaje"], c["comision"])
+                for c in contratos_con_comision
+            ]
             self.repo_liquidacion.guardar_contratos_liquidacion(
                 liquidacion_creada.id_liquidacion_asesor, contratos_tuplas, usuario
             )
 
             # 2. Descuentos Consolidados
             if acumulado_seguro > 0:
-                self.agregar_descuento(liquidacion_creada.id_liquidacion_asesor, "Otros", "descuento 2.00% Seguro", acumulado_seguro, usuario)
+                self.agregar_descuento(
+                    liquidacion_creada.id_liquidacion_asesor,
+                    "Otros",
+                    "descuento 2.00% Seguro",
+                    acumulado_seguro,
+                    usuario,
+                )
             if acumulado_4x1000 > 0:
-                self.agregar_descuento(liquidacion_creada.id_liquidacion_asesor, "Otros", "descuento 4x1000", acumulado_4x1000, usuario)
+                self.agregar_descuento(
+                    liquidacion_creada.id_liquidacion_asesor,
+                    "Otros",
+                    "descuento 4x1000",
+                    acumulado_4x1000,
+                    usuario,
+                )
 
             if self.repo_idempotencia and idempotency_key:
                 try:
@@ -292,7 +341,11 @@ class ServicioLiquidacionAsesores:
                         entidad_tipo="LiquidacionAsesor",
                         entidad_id=liquidacion_creada.id_liquidacion_asesor,
                         tipo_evento="CREATED_MULTI",
-                        idempotency_key=f"liq_asesores:generar_multi:{idempotency_key}" if not idempotency_key.startswith("liq_asesores") else idempotency_key,
+                        idempotency_key=(
+                            f"liq_asesores:generar_multi:{idempotency_key}"
+                            if not idempotency_key.startswith("liq_asesores")
+                            else idempotency_key
+                        ),
                         payload=self._liquidacion_to_dict(liquidacion_creada),
                         usuario_id=1,
                     )
@@ -303,7 +356,9 @@ class ServicioLiquidacionAsesores:
             return liquidacion_creada
 
     @cache_manager.invalidates("dashboard")
-    def actualizar_liquidacion(self, id_liquidacion: int, datos: Dict[str, Any], usuario: str) -> LiquidacionAsesor:
+    def actualizar_liquidacion(
+        self, id_liquidacion: int, datos: Dict[str, Any], usuario: str
+    ) -> LiquidacionAsesor:
         """Actualiza una liquidación pendiente."""
         liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
         if not liquidacion:
@@ -330,7 +385,9 @@ class ServicioLiquidacionAsesores:
         return result
 
     @cache_manager.invalidates("dashboard")
-    def aprobar_liquidacion(self, id_liquidacion: int, usuario: str) -> LiquidacionAsesor:
+    def aprobar_liquidacion(
+        self, id_liquidacion: int, usuario: str
+    ) -> LiquidacionAsesor:
         """Aprueba una liquidación."""
         liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
         if not liquidacion:
@@ -342,7 +399,9 @@ class ServicioLiquidacionAsesores:
         return result
 
     @cache_manager.invalidates("dashboard")
-    def anular_liquidacion(self, id_liquidacion: int, motivo: str, usuario: str) -> LiquidacionAsesor:
+    def anular_liquidacion(
+        self, id_liquidacion: int, motivo: str, usuario: str
+    ) -> LiquidacionAsesor:
         """Anula una liquidación."""
         liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
         if not liquidacion:
@@ -354,11 +413,15 @@ class ServicioLiquidacionAsesores:
         return result
 
     @cache_manager.invalidates("dashboard")
-    def agregar_descuento(self, id_liquidacion: int, tipo: str, descripcion: str, valor: int, usuario: str) -> DescuentoAsesor:
+    def agregar_descuento(
+        self, id_liquidacion: int, tipo: str, descripcion: str, valor: int, usuario: str
+    ) -> DescuentoAsesor:
         """Agrega un descuento y recalcula el neto."""
         liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
         if not liquidacion or not liquidacion.puede_editarse:
-            raise ValueError("Operación no permitida: liquidación no existe o no es editable")
+            raise ValueError(
+                "Operación no permitida: liquidación no existe o no es editable"
+            )
 
         descuento = DescuentoAsesor(
             id_liquidacion_asesor=id_liquidacion,
@@ -378,9 +441,13 @@ class ServicioLiquidacionAsesores:
         if not descuento:
             raise ValueError(f"No se encontró el descuento {id_descuento}")
 
-        liquidacion = self.repo_liquidacion.obtener_por_id(descuento.id_liquidacion_asesor)
+        liquidacion = self.repo_liquidacion.obtener_por_id(
+            descuento.id_liquidacion_asesor
+        )
         if not liquidacion or not liquidacion.puede_editarse:
-            raise ValueError("No se puede eliminar descuentos de liquidaciones no editables")
+            raise ValueError(
+                "No se puede eliminar descuentos de liquidaciones no editables"
+            )
 
         if self.repo_descuento.eliminar(id_descuento):
             self._recalcular_valor_neto(descuento.id_liquidacion_asesor, usuario)
@@ -398,15 +465,20 @@ class ServicioLiquidacionAsesores:
             return
 
         # 1. Obtener sumatorias exactas usando COALESCE para evitar Nones
-        total_descuentos = self.repo_descuento.calcular_total_descuentos(id_liquidacion) or 0
+        total_descuentos = (
+            self.repo_descuento.calcular_total_descuentos(id_liquidacion) or 0
+        )
         total_bonificaciones = 0
         if self.repo_bonificacion:
-            total_bonificaciones = self.repo_bonificacion.calcular_total_bonificaciones(id_liquidacion) or 0
+            total_bonificaciones = (
+                self.repo_bonificacion.calcular_total_bonificaciones(id_liquidacion)
+                or 0
+            )
         else:
             total_bonificaciones = liquidacion.total_bonificaciones or 0
 
         # 2. Aplicar lógica de integridad
-        # Si es legacy, preservamos la comisión bruta actual. Si es nueva lógica, 
+        # Si es legacy, preservamos la comisión bruta actual. Si es nueva lógica,
         # confiamos en que el desglose de contratos ya actualizó la comisión_bruta.
         comision_bruta = liquidacion.comision_bruta or 0
 
@@ -418,10 +490,14 @@ class ServicioLiquidacionAsesores:
         liquidacion.valor_neto_asesor = nuevo_valor_neto
 
         self.repo_liquidacion.actualizar(liquidacion, usuario)
-        logger.info(f"Recálculo exitoso Liquidación {id_liquidacion}: Neto=${nuevo_valor_neto}")
+        logger.info(
+            f"Recálculo exitoso Liquidación {id_liquidacion}: Neto=${nuevo_valor_neto}"
+        )
 
     @cache_manager.invalidates("dashboard")
-    def agregar_bonificacion(self, id_liquidacion: int, tipo: str, descripcion: str, valor: int, usuario: str) -> BonificacionAsesor:
+    def agregar_bonificacion(
+        self, id_liquidacion: int, tipo: str, descripcion: str, valor: int, usuario: str
+    ) -> BonificacionAsesor:
         """Agrega una bonificación detallada."""
         if not self.repo_bonificacion:
             raise ValueError("Repositorio de bonificaciones no configurado")
@@ -459,14 +535,21 @@ class ServicioLiquidacionAsesores:
         return False
 
     def programar_pago(
-        self, id_liquidacion: int, id_asesor: int, valor: int, 
-        fecha_programada: str, medio_pago: str, 
-        datos_adicionales: Optional[Dict[str, Any]] = None, usuario: str = "SYSTEM"
+        self,
+        id_liquidacion: int,
+        id_asesor: int,
+        valor: int,
+        fecha_programada: str,
+        medio_pago: str,
+        datos_adicionales: Optional[Dict[str, Any]] = None,
+        usuario: str = "SYSTEM",
     ) -> PagoAsesor:
         """Programa un pago para una liquidación aprobada."""
         liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
         if not liquidacion or not liquidacion.esta_aprobada:
-            raise ValueError("Solo se pueden programar pagos para liquidaciones aprobadas")
+            raise ValueError(
+                "Solo se pueden programar pagos para liquidaciones aprobadas"
+            )
 
         pago = PagoAsesor(
             id_liquidacion_asesor=id_liquidacion,
@@ -474,8 +557,12 @@ class ServicioLiquidacionAsesores:
             valor_pago=valor,
             fecha_programada=fecha_programada,
             medio_pago=medio_pago,
-            referencia_pago=datos_adicionales.get("referencia") if datos_adicionales else None,
-            observaciones_pago=(datos_adicionales.get("observaciones") if datos_adicionales else None),
+            referencia_pago=(
+                datos_adicionales.get("referencia") if datos_adicionales else None
+            ),
+            observaciones_pago=(
+                datos_adicionales.get("observaciones") if datos_adicionales else None
+            ),
             estado_pago="Programado",
         )
 
@@ -485,7 +572,9 @@ class ServicioLiquidacionAsesores:
 
     @idempotent(key_prefix="liquidacion:registrar_pago")
     @cache_manager.invalidates("dashboard")
-    def registrar_pago(self, id_pago: int, fecha_pago: str, comprobante: str, usuario: str) -> PagoAsesor:
+    def registrar_pago(
+        self, id_pago: int, fecha_pago: str, comprobante: str, usuario: str
+    ) -> PagoAsesor:
         """Registra un pago efectivo."""
         pago = self.repo_pago.obtener_por_id(id_pago)
         if not pago:
@@ -504,24 +593,38 @@ class ServicioLiquidacionAsesores:
 
     @cache_manager.cached("liq_asesores:list_paginated", level=1, ttl=300)
     def listar_liq_asesores_paginado(
-        self, page: int = 1, page_size: int = 25,
-        estado: Optional[str] = None, periodo: Optional[str] = None,
-        busqueda: Optional[str] = None, id_asesor: Optional[int] = None,
-        sort_by: str = "periodo_liquidacion", sort_order: str = "desc"
+        self,
+        page: int = 1,
+        page_size: int = 25,
+        estado: Optional[str] = None,
+        periodo: Optional[str] = None,
+        busqueda: Optional[str] = None,
+        id_asesor: Optional[int] = None,
+        sort_by: str = "periodo_liquidacion",
+        sort_order: str = "desc",
     ):
         """Lista delegada al repositorio con cache."""
         from src.dominio.modelos.pagination import PaginatedResult
+
         items, total = self.repo_liquidacion.listar_paginado(
-            page=page, page_size=page_size, id_asesor=id_asesor, 
-            periodo=periodo, estado=estado, busqueda=busqueda,
-            sort_by=sort_by, sort_order=sort_order
+            page=page,
+            page_size=page_size,
+            id_asesor=id_asesor,
+            periodo=periodo,
+            estado=estado,
+            busqueda=busqueda,
+            sort_by=sort_by,
+            sort_order=sort_order,
         )
         return PaginatedResult(items=items, total=total, page=page, page_size=page_size)
 
     @cache_manager.cached("liq_asesores:metrics", level=1, ttl=60)
     def obtener_metricas_filtradas(
-        self, estado: Optional[str] = None, periodo: Optional[str] = None,
-        busqueda: Optional[str] = None, id_asesor: Optional[int] = None
+        self,
+        estado: Optional[str] = None,
+        periodo: Optional[str] = None,
+        busqueda: Optional[str] = None,
+        id_asesor: Optional[int] = None,
     ) -> Dict[str, int]:
         """Métricas delegadas al repositorio."""
         return self.repo_liquidacion.obtener_metricas_por_filtros(
@@ -536,11 +639,13 @@ class ServicioLiquidacionAsesores:
 
         descuentos = self.repo_descuento.listar_por_liquidacion(id_liquidacion)
         pagos = self.repo_pago.listar_por_liquidacion(id_liquidacion)
-        
+
         bonificaciones = []
         if self.repo_bonificacion:
             try:
-                bonif_entities = self.repo_bonificacion.listar_por_liquidacion(id_liquidacion)
+                bonif_entities = self.repo_bonificacion.listar_por_liquidacion(
+                    id_liquidacion
+                )
                 bonificaciones = [
                     {
                         "id_bonificacion_asesor": b.id_bonificacion_asesor,
@@ -548,22 +653,27 @@ class ServicioLiquidacionAsesores:
                         "descripcion_bonificacion": b.descripcion_bonificacion,
                         "valor_bonificacion": b.valor_bonificacion,
                         "fecha_registro": b.fecha_registro,
-                    } for b in bonif_entities
+                    }
+                    for b in bonif_entities
                 ]
             except Exception as e:
                 logger.error(f"Error obteniendo bonificaciones: {e}")
 
         # Sintética para legacy
         if not bonificaciones and (liquidacion.total_bonificaciones or 0) > 0:
-            bonificaciones.append({
-                "id_bonificacion_asesor": -1,
-                "tipo_bonificacion": "Bonificación Consolidada",
-                "descripcion_bonificacion": "Total (sin desglose)",
-                "valor_bonificacion": liquidacion.total_bonificaciones,
-                "fecha_registro": liquidacion.fecha_creacion,
-            })
+            bonificaciones.append(
+                {
+                    "id_bonificacion_asesor": -1,
+                    "tipo_bonificacion": "Bonificación Consolidada",
+                    "descripcion_bonificacion": "Total (sin desglose)",
+                    "valor_bonificacion": liquidacion.total_bonificaciones,
+                    "fecha_registro": liquidacion.fecha_creacion,
+                }
+            )
 
-        contratos_asociados = self.repo_liquidacion.obtener_contratos_de_liquidacion(id_liquidacion)
+        contratos_asociados = self.repo_liquidacion.obtener_contratos_de_liquidacion(
+            id_liquidacion
+        )
 
         # --- SOPORTE LEGACY ÉLITE ---
         # Si es una liquidación de contrato único (legacy), cargamos datos extra para el PDF
@@ -571,11 +681,17 @@ class ServicioLiquidacionAsesores:
         propiedad_legacy = None
         if liquidacion.id_contrato_a and self.repo_contrato_arrendamiento:
             try:
-                contrato_legacy = self.repo_contrato_arrendamiento.obtener_por_id(liquidacion.id_contrato_a)
+                contrato_legacy = self.repo_contrato_arrendamiento.obtener_por_id(
+                    liquidacion.id_contrato_a
+                )
                 if contrato_legacy and self.repo_propiedad:
-                    propiedad_legacy = self.repo_propiedad.obtener_por_id(contrato_legacy.id_propiedad)
+                    propiedad_legacy = self.repo_propiedad.obtener_por_id(
+                        contrato_legacy.id_propiedad
+                    )
             except Exception as e:
-                logger.warning(f"Error cargando datos legacy para liquidación {id_liquidacion}: {e}")
+                logger.warning(
+                    f"Error cargando datos legacy para liquidación {id_liquidacion}: {e}"
+                )
 
         return {
             "liquidacion": self._liquidacion_to_dict(liquidacion),
@@ -583,8 +699,12 @@ class ServicioLiquidacionAsesores:
             "descuentos": [self._descuento_to_dict(d) for d in descuentos],
             "bonificaciones": bonificaciones,
             "pagos": [self._pago_to_dict(p) for p in pagos],
-            "contrato": self._contrato_to_dict(contrato_legacy) if contrato_legacy else None,
-            "propiedad": self._propiedad_to_dict(propiedad_legacy) if propiedad_legacy else None,
+            "contrato": (
+                self._contrato_to_dict(contrato_legacy) if contrato_legacy else None
+            ),
+            "propiedad": (
+                self._propiedad_to_dict(propiedad_legacy) if propiedad_legacy else None
+            ),
         }
 
     def _contrato_to_dict(self, contrato: Any) -> Dict[str, Any]:
@@ -606,7 +726,9 @@ class ServicioLiquidacionAsesores:
 
     @idempotent(key_prefix="liquidacion:masiva")
     @cache_manager.invalidates("dashboard")
-    def generar_liquidaciones_masivas_optimizado(self, periodo: str, usuario: str) -> Dict[str, int]:
+    def generar_liquidaciones_masivas_optimizado(
+        self, periodo: str, usuario: str
+    ) -> Dict[str, int]:
         """
         Generación masiva optimizada bajo el estándar de Atomicidad Élite.
         Toda la operación se ejecuta en una única transacción global.
@@ -615,11 +737,13 @@ class ServicioLiquidacionAsesores:
             raise ValueError("Repositorios necesarios no configurados")
 
         stats = {"creadas": 0, "omitidas": 0, "errores": 0, "total": 0}
-        
+
         try:
             asesores = self.repo_asesor.listar_activos()
             stats["total"] = len(asesores)
-            contratos_agrupados = self.repo_contrato_arrendamiento.obtener_activos_todos_agrupados()
+            contratos_agrupados = (
+                self.repo_contrato_arrendamiento.obtener_activos_todos_agrupados()
+            )
 
             # Envolver todo el procesamiento en una transacción única
             with self.repo_liquidacion.db_manager.transaccion():
@@ -627,7 +751,9 @@ class ServicioLiquidacionAsesores:
                     try:
                         # Verificar si ya existe liquidación para este asesor en este periodo
                         # Nota: Se usa el repositorio que ya conoce la conexión/transacción activa
-                        if self.repo_liquidacion.obtener_por_asesor_periodo(asesor.id_asesor, periodo):
+                        if self.repo_liquidacion.obtener_por_asesor_periodo(
+                            asesor.id_asesor, periodo
+                        ):
                             stats["omitidas"] += 1
                             continue
 
@@ -639,14 +765,18 @@ class ServicioLiquidacionAsesores:
                         # Cada contrato lleva su propio % del ContratoMandato (ya en 0-10000)
                         contratos_detalle = []
                         for c in contratos_asesor:
-                            pct_contrato = getattr(c, "comision_porcentaje_contrato_m", 0) or 0
+                            pct_contrato = (
+                                getattr(c, "comision_porcentaje_contrato_m", 0) or 0
+                            )
                             contratos_detalle.append(
                                 {
                                     "id": c.id_contrato_a,
                                     "canon": c.canon_arrendamiento,
                                     "porcentaje_comision": pct_contrato,
                                     "id_seguro": getattr(c, "id_seguro", None),
-                                    "porcentaje_seguro": getattr(c, "porcentaje_seguro", 0),
+                                    "porcentaje_seguro": getattr(
+                                        c, "porcentaje_seguro", 0
+                                    ),
                                 }
                             )
 
@@ -659,11 +789,15 @@ class ServicioLiquidacionAsesores:
                         )
                         stats["creadas"] += 1
                     except Exception as e:
-                        logger.error(f"Error procesando asesor {asesor.id_asesor} en batch: {e}")
+                        logger.error(
+                            f"Error procesando asesor {asesor.id_asesor} en batch: {e}"
+                        )
                         # En un masivo atómico, cualquier error interno debería abortar el batch completo
-                        # o registrarlo si se decide que la atomicidad es por asesor. 
+                        # o registrarlo si se decide que la atomicidad es por asesor.
                         # Según el plan, la atomicidad es GLOBAL por corrida.
-                        raise Exception(f"Fallo crítico en procesamiento masivo (Asesor {asesor.id_asesor}): {e}")
+                        raise Exception(
+                            f"Fallo crítico en procesamiento masivo (Asesor {asesor.id_asesor}): {e}"
+                        )
 
             self._invalidar_caches()
             return stats

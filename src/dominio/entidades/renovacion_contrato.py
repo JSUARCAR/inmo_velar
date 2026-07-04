@@ -31,7 +31,11 @@ class RenovacionContrato:
     porcentaje_incremento: Optional[int] = None
     motivo_renovacion: Optional[str] = None
 
-    fecha_renovacion: str = field(default_factory=lambda: datetime.now().date().isoformat())
+    fecha_renovacion: str = field(
+        default_factory=lambda: datetime.now().date().isoformat()
+    )
 
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None

@@ -6,7 +6,9 @@ Gestión completa de estados de cuenta mensuales
 import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
-from src.presentacion_reflex.components.contratos.badge_grupo_pago import badge_grupo_pago
+from src.presentacion_reflex.components.contratos.badge_grupo_pago import (
+    badge_grupo_pago,
+)
 from src.presentacion_reflex.components.liquidaciones import (
     bulk_liquidacion_form,
     cancel_modal,
@@ -289,7 +291,9 @@ def liquidaciones_table() -> rx.Component:
                 header_cell_sortable("ID", "id"),
                 header_cell_sortable("Período", "periodo"),
                 header_cell_sortable("Propiedad", "contrato"),
-                rx.table.column_header_cell("Ciclo Operativo", style={"font-weight": "600"}),
+                rx.table.column_header_cell(
+                    "Ciclo Operativo", style={"font-weight": "600"}
+                ),
                 header_cell_sortable("Canon", "canon"),
                 header_cell_sortable("Neto a Pagar", "neto"),
                 header_cell_sortable("Estado Recaudo", "estado_recaudo"),
@@ -410,7 +414,9 @@ def liquidaciones_table() -> rx.Component:
                             # Reversar Pago (solo Pagada)
                             rx.cond(
                                 (liq["estado"] == "Pagada")
-                                & AuthState.check_action("Liquidaciones", "REVERSAR_PAGO"),
+                                & AuthState.check_action(
+                                    "Liquidaciones", "REVERSAR_PAGO"
+                                ),
                                 rx.tooltip(
                                     rx.icon_button(
                                         rx.icon("rotate-ccw", size=18),
@@ -591,7 +597,9 @@ def liquidaciones_table_agrupada() -> rx.Component:
                                 # Eliminar No Pagadas (solo si no está todo pagado)
                                 rx.cond(
                                     (liq["estado"] != "Pagada")
-                                    & AuthState.check_action("Liquidaciones", "ELIMINAR"),
+                                    & AuthState.check_action(
+                                        "Liquidaciones", "ELIMINAR"
+                                    ),
                                     rx.tooltip(
                                         rx.icon_button(
                                             rx.icon("trash-2", size=18),

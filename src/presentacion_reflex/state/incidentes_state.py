@@ -39,6 +39,7 @@ class IncidenteDict(pydantic.BaseModel):
     nombre_proveedor: Optional[str] = None
     cotizaciones_resumen: List[Dict[str, Any]] = []
     estado_pago: str = "Pendiente"
+    plan_pago: Optional[Dict[str, Any]] = None
 
 
 class IncidentesState(DocumentosStateMixin):
@@ -155,9 +156,9 @@ class IncidentesState(DocumentosStateMixin):
     # --- DETAILS MODAL & QUOTING ---
     details_modal_open: bool = False
     selected_incidente: Dict[str, Any] = {}
-    cotizaciones: List[
-        Dict[str, Any]
-    ] = []  # Lista de cotizaciones del incidente seleccionado
+    cotizaciones: List[Dict[str, Any]] = (
+        []
+    )  # Lista de cotizaciones del incidente seleccionado
 
     show_quote_form: bool = False
 
@@ -296,7 +297,9 @@ class IncidentesState(DocumentosStateMixin):
                     self.plan_pago_data = resultado["data"]["plan"]
                     self.plan_pago_cuotas = resultado["data"]["cuotas"]
                     self.plan_pago_num_cuotas = self.plan_pago_data.get("num_cuotas", 1)
-                    self.plan_pago_valor_cuota = self.plan_pago_data.get("valor_cuota", 0)
+                    self.plan_pago_valor_cuota = self.plan_pago_data.get(
+                        "valor_cuota", 0
+                    )
                 else:
                     # Nuevo plan - calcular valor basado en costo del incidente
                     incidente = next(
@@ -515,6 +518,7 @@ class IncidentesState(DocumentosStateMixin):
                     "nombre_proveedor": inc.nombre_proveedor,
                     "cotizaciones_resumen": inc.cotizaciones_resumen or [],
                     "estado_pago": getattr(inc, "estado_pago", "Pendiente"),
+                    "plan_pago": getattr(inc, "plan_pago", None),
                 }
                 incidente_dict_obj = IncidenteDict(**item)
                 items.append(incidente_dict_obj)
@@ -719,7 +723,9 @@ class IncidentesState(DocumentosStateMixin):
                 current_inc["estado"] = inc_obj.estado
                 current_inc["prioridad"] = inc_obj.prioridad
                 current_inc["costo_incidente"] = inc_obj.costo_incidente
-                current_inc["estado_pago"] = getattr(inc_obj, "estado_pago", "Pendiente")
+                current_inc["estado_pago"] = getattr(
+                    inc_obj, "estado_pago", "Pendiente"
+                )
 
                 # Manejo robusto de fecha_arreglo (str o datetime)
                 fecha_val = inc_obj.fecha_arreglo
@@ -1115,11 +1121,13 @@ class IncidentesState(DocumentosStateMixin):
                     else str(inc_obj.fecha_incidente)[:10]
                 ),
                 "id_propiedad": inc_obj.id_propiedad,
-                "direccion": getattr(
-                    propiedad, "direccion_propiedad", f"#{inc_obj.id_propiedad}"
-                )
-                if propiedad
-                else f"#{inc_obj.id_propiedad}",
+                "direccion": (
+                    getattr(
+                        propiedad, "direccion_propiedad", f"#{inc_obj.id_propiedad}"
+                    )
+                    if propiedad
+                    else f"#{inc_obj.id_propiedad}"
+                ),
                 "origen_reporte": inc_obj.origen_reporte or "Inquilino",
                 "responsable_pago": inc_obj.responsable_pago or "Por definir",
                 "nombre_propietario": inc_obj.nombre_propietario or "N/D",
@@ -1129,9 +1137,11 @@ class IncidentesState(DocumentosStateMixin):
                     inc_obj.fecha_arreglo.strftime("%Y-%m-%d")
                     if inc_obj.fecha_arreglo
                     and hasattr(inc_obj.fecha_arreglo, "strftime")
-                    else str(inc_obj.fecha_arreglo).split(" ")[0]
-                    if inc_obj.fecha_arreglo
-                    else None
+                    else (
+                        str(inc_obj.fecha_arreglo).split(" ")[0]
+                        if inc_obj.fecha_arreglo
+                        else None
+                    )
                 ),
                 "cotizaciones": [],
                 "fecha_reporte": (

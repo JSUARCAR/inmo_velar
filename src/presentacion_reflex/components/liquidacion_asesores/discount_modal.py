@@ -1,8 +1,11 @@
 import reflex as rx
 
-from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
-from src.presentacion_reflex.state.liquidacion_asesores.form_state import LiquidacionFormState
-from src.presentacion_reflex.state.liquidacion_asesores.grid_state import LiquidacionGridState
+from src.presentacion_reflex.state.liquidacion_asesores.form_state import (
+    LiquidacionFormState,
+)
+from src.presentacion_reflex.state.liquidacion_asesores.grid_state import (
+    LiquidacionGridState,
+)
 
 
 def discount_modal() -> rx.Component:
@@ -15,7 +18,12 @@ def discount_modal() -> rx.Component:
                 rx.flex(
                     # Tipo
                     rx.box(
-                        rx.text("Tipo de Descuento", size="2", weight="bold", margin_bottom="1"),
+                        rx.text(
+                            "Tipo de Descuento",
+                            size="2",
+                            weight="bold",
+                            margin_bottom="1",
+                        ),
                         rx.select(
                             ["Descuento Manual", "Anticipo", "Otro"],
                             name="tipo",
@@ -31,7 +39,9 @@ def discount_modal() -> rx.Component:
                     ),
                     # Descripción
                     rx.box(
-                        rx.text("Descripción", size="2", weight="bold", margin_bottom="1"),
+                        rx.text(
+                            "Descripción", size="2", weight="bold", margin_bottom="1"
+                        ),
                         rx.input(
                             name="descripcion",
                             placeholder="Ej: Anticipo de comisión",

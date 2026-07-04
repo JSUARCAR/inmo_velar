@@ -12,7 +12,9 @@ class ServicioUsuarios:
     """
 
     def __init__(
-        self, db_manager: DatabaseManager, auth_service: Optional[ServicioAutenticacion] = None
+        self,
+        db_manager: DatabaseManager,
+        auth_service: Optional[ServicioAutenticacion] = None,
     ):
         self.db = db_manager
         self.repo = RepositorioUsuario(db_manager)
@@ -78,7 +80,9 @@ class ServicioUsuarios:
         usuario.estado_usuario = activo
         return self.repo.actualizar(usuario, editor)
 
-    def restablecer_contrasena(self, id_usuario: int, nueva_contrasena: str, editor: str) -> bool:
+    def restablecer_contrasena(
+        self, id_usuario: int, nueva_contrasena: str, editor: str
+    ) -> bool:
         """Restablece la contraseña de un usuario (Admin action)."""
         usuario = self.repo.obtener_por_id(id_usuario)
         if not usuario:
@@ -90,13 +94,16 @@ class ServicioUsuarios:
             raise ValueError("La contraseña debe tener al menos 6 caracteres")
 
         from src.infraestructura.logging.logger import logger
+
         try:
             # Debugging: Ensure hashear_contraseña returns string
             nuevo_hash = self.auth_service.hashear_contraseña(nueva_contrasena)
-            
+
             # If accidentally returned tuple (hash, salt), this log will reveal it
             if not isinstance(nuevo_hash, str):
-                logger.error(f"CRITICAL: hashear_contraseña returned {type(nuevo_hash)}: {nuevo_hash}")
+                logger.error(
+                    f"CRITICAL: hashear_contraseña returned {type(nuevo_hash)}: {nuevo_hash}"
+                )
                 # Fallback if it is a tuple (just in case of weird environment)
                 if isinstance(nuevo_hash, tuple):
                     nuevo_hash = nuevo_hash[0]

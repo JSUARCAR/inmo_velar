@@ -3,6 +3,7 @@ import reflex as rx
 from src.presentacion_reflex import styles
 from src.presentacion_reflex.state.alertas_state import AlertasState
 
+
 def notification_item(item: dict) -> rx.Component:
     return rx.box(
         rx.hstack(
@@ -30,8 +31,7 @@ def notification_item(item: dict) -> rx.Component:
 
 def bell_icon() -> rx.Component:
     return rx.box(
-        rx.html(
-            """
+        rx.html("""
             <style>
                 @keyframes bell-ring {
                     0% { transform: rotate(0); }
@@ -71,8 +71,7 @@ def bell_icon() -> rx.Component:
                     opacity: 0.6;
                 }
             </style>
-        """
-        ),
+        """),
         rx.popover.root(
             rx.popover.trigger(
                 rx.box(
@@ -103,7 +102,10 @@ def bell_icon() -> rx.Component:
                                             color="white",
                                             size="1",
                                             weight="bold",
-                                            style={"font-size": "10px", "line-height": "1"},
+                                            style={
+                                                "font-size": "10px",
+                                                "line-height": "1",
+                                            },
                                         ),
                                         bg="linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)",  # Red gradient
                                         border_radius="full",
@@ -137,7 +139,7 @@ def bell_icon() -> rx.Component:
                             justify_content="center",
                         ),
                         # Aplicación Estricta de Neumorfismo Élite
-                        variant="soft", # Base
+                        variant="soft",  # Base
                         color_scheme="gray",
                         size="2",
                         radius="full",
@@ -168,7 +170,9 @@ def bell_icon() -> rx.Component:
                 rx.vstack(
                     rx.hstack(
                         rx.icon("bell-ring", size=18, color="#ef4444"),
-                        rx.text("Notificaciones", weight="bold", size="3", color="#111827"),
+                        rx.text(
+                            "Notificaciones", weight="bold", size="3", color="#111827"
+                        ),
                         rx.spacer(),
                         rx.badge(
                             AlertasState.unread_count,
@@ -187,11 +191,19 @@ def bell_icon() -> rx.Component:
                         rx.vstack(
                             rx.cond(
                                 AlertasState.notifications,
-                                rx.foreach(AlertasState.notifications, notification_item),
+                                rx.foreach(
+                                    AlertasState.notifications, notification_item
+                                ),
                                 rx.center(
                                     rx.vstack(
-                                        rx.icon("circle_check", size=48, color="#e5e7eb"),
-                                        rx.text("¡Todo al día!", color="#9ca3af", weight="medium"),
+                                        rx.icon(
+                                            "circle_check", size=48, color="#e5e7eb"
+                                        ),
+                                        rx.text(
+                                            "¡Todo al día!",
+                                            color="#9ca3af",
+                                            weight="medium",
+                                        ),
                                         spacing="2",
                                         align="center",
                                     ),

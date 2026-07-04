@@ -3,7 +3,9 @@ import io
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 
-from src.aplicacion.servicios.procesador_documentos_async import ProcesadorDocumentosAsync
+from src.aplicacion.servicios.procesador_documentos_async import (
+    ProcesadorDocumentosAsync,
+)
 from src.aplicacion.servicios.servicio_documental import ServicioDocumentalElite
 from src.dominio.servicios.validador_documentos import ValidadorDocumentos
 
@@ -31,7 +33,9 @@ async def upload_documento(
 
         # 1. Validar
         validacion = ValidadorDocumentos.validar_archivo_generico(
-            entidad_tipo=entidad_tipo, nombre_archivo=file.filename, tamano_bytes=len(content)
+            entidad_tipo=entidad_tipo,
+            nombre_archivo=file.filename,
+            tamano_bytes=len(content),
         )
 
         if not validacion["valido"]:
@@ -79,10 +83,14 @@ async def descargar_documento(documento_id: int):
     if not doc or not doc.contenido:
         raise HTTPException(status_code=404, detail="Documento no encontrado")
 
-    disposition = "inline" if "image" in doc.mime_type or "pdf" in doc.mime_type else "attachment"
+    disposition = (
+        "inline" if "image" in doc.mime_type or "pdf" in doc.mime_type else "attachment"
+    )
 
     return StreamingResponse(
         io.BytesIO(doc.contenido),
         media_type=doc.mime_type,
-        headers={"Content-Disposition": f"{disposition}; filename={doc.nombre_archivo}"},
+        headers={
+            "Content-Disposition": f"{disposition}; filename={doc.nombre_archivo}"
+        },
     )

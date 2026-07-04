@@ -8,7 +8,7 @@ Fecha: 2026-04-03
 """
 
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from reportlab.lib import colors
 from ..components.tables import AdvancedTable
@@ -148,7 +148,6 @@ class InformeRecaudosElite(BaseDocumentTemplate):
         self.add_title_main(self.document_title)
 
         from reportlab.platypus import Table, TableStyle, Paragraph
-        from reportlab.lib import colors as rl_colors
         from ..core.config import Colors
 
         meses = {

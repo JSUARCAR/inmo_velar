@@ -1,5 +1,6 @@
 import reflex as rx
 
+
 def matrix_background() -> rx.Component:
     """
     Componente de fondo Matrix (Lluvia Digital).
@@ -13,9 +14,8 @@ def matrix_background() -> rx.Component:
                 "width": "100%",
                 "height": "100%",
                 "display": "block",
-            }
+            },
         ),
-        
         # Estilos para posicionar el canvas sobre (o bajo) el Aurora
         style={
             "position": "fixed",
@@ -24,7 +24,7 @@ def matrix_background() -> rx.Component:
             "width": "100%",
             "height": "100%",
             "opacity": "0.6",
-            "z_index": "1", # Visible
+            "z_index": "1",  # Visible
             "pointer_events": "none",
-        }
+        },
     )

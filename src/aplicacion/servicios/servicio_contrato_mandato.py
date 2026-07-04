@@ -52,11 +52,13 @@ class ServicioContratoMandato:
         db = getattr(self.repo_mandato, "db", None)
         if db is None:
             return self._ejecutar_creacion_mandato(datos, usuario_sistema)
-            
+
         with db.transaccion():
             return self._ejecutar_creacion_mandato(datos, usuario_sistema)
 
-    def _ejecutar_creacion_mandato(self, datos: Dict, usuario_sistema: str) -> ContratoMandato:
+    def _ejecutar_creacion_mandato(
+        self, datos: Dict, usuario_sistema: str
+    ) -> ContratoMandato:
         id_propiedad = datos["id_propiedad"]
 
         # 0. Validar Coherencia de Fechas y Duración
@@ -78,7 +80,9 @@ class ServicioContratoMandato:
             )
 
         # Calcular Ciclo de Pago y Grupo Operativo
-        grupo, _ = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
+        grupo, _ = CalculadoraContratos.calcular_ciclo_pago_mandato(
+            datos["fecha_inicio"]
+        )
         dia_pago = CalculadoraContratos.calcular_dia_pago_mandato(datos["fecha_inicio"])
         fecha_pago_str = str(dia_pago)
 
@@ -119,7 +123,7 @@ class ServicioContratoMandato:
         if db is None:
             self._ejecutar_actualizacion_mandato(id_contrato, datos, usuario_sistema)
             return
-            
+
         with db.transaccion():
             self._ejecutar_actualizacion_mandato(id_contrato, datos, usuario_sistema)
 
@@ -135,8 +139,10 @@ class ServicioContratoMandato:
             f_inicio = datos.get("fecha_inicio", mandato.fecha_inicio_contrato_m)
             f_fin = datos.get("fecha_fin", mandato.fecha_fin_contrato_m)
             d_reg = int(datos.get("duracion_meses", mandato.duracion_contrato_m))
-            
-            coherente, mensaje = CalculadoraContratos.validar_coherencia(f_inicio, f_fin, d_reg)
+
+            coherente, mensaje = CalculadoraContratos.validar_coherencia(
+                f_inicio, f_fin, d_reg
+            )
             if not coherente:
                 raise ValueError(f"Error de Integridad Contractual: {mensaje}")
 
@@ -148,8 +154,12 @@ class ServicioContratoMandato:
         if "fecha_inicio" in datos:
             mandato.fecha_inicio_contrato_m = datos["fecha_inicio"]
             # Recalcular Ciclo de Pago y Grupo Operativo
-            grupo, _ = CalculadoraContratos.calcular_ciclo_pago_mandato(datos["fecha_inicio"])
-            dia_pago = CalculadoraContratos.calcular_dia_pago_mandato(datos["fecha_inicio"])
+            grupo, _ = CalculadoraContratos.calcular_ciclo_pago_mandato(
+                datos["fecha_inicio"]
+            )
+            dia_pago = CalculadoraContratos.calcular_dia_pago_mandato(
+                datos["fecha_inicio"]
+            )
             mandato.fecha_pago = str(dia_pago)
             mandato.grupo_operativo = grupo
 
@@ -164,7 +174,7 @@ class ServicioContratoMandato:
             "comision_porcentaje", mandato.comision_porcentaje_contrato_m
         )
         mandato.iva_contrato_m = datos.get("iva_porcentaje", mandato.iva_contrato_m)
-        
+
         # Solo actualizar fecha_pago si no fue recalculada por un cambio en fecha_inicio
         if "fecha_inicio" not in datos:
             mandato.fecha_pago = datos.get("fecha_pago", mandato.fecha_pago)
@@ -207,7 +217,9 @@ class ServicioContratoMandato:
         meses_duracion = mandato.duracion_contrato_m
 
         # Calcular nueva fecha fin sumando los meses de duración
-        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(fecha_fin_actual, meses_duracion)
+        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(
+            fecha_fin_actual, meses_duracion
+        )
         nueva_fecha_fin_str = nueva_fecha_fin_dt.strftime("%Y-%m-%d")
 
         return {
@@ -234,8 +246,10 @@ class ServicioContratoMandato:
         meses_duracion = mandato.duracion_contrato_m
 
         # Calcular nueva fecha fin automática
-        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(fecha_fin_actual, meses_duracion)
-        
+        nueva_fecha_fin_dt = CalculadoraContratos.sumar_meses(
+            fecha_fin_actual, meses_duracion
+        )
+
         nueva_fecha_fin_str = (
             nueva_fecha_fin
             if nueva_fecha_fin

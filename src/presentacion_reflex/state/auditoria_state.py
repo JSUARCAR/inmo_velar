@@ -42,7 +42,9 @@ class AuditoriaState(rx.State):
 
             # Obtener datos del backend
             if self.filter_tabla != "Todas":
-                entidades = servicio.buscar_auditoria_por_tabla(self.filter_tabla, limit=100)
+                entidades = servicio.buscar_auditoria_por_tabla(
+                    self.filter_tabla, limit=100
+                )
             else:
                 entidades = servicio.listar_auditoria(limit=100)
 

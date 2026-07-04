@@ -56,7 +56,9 @@ class ServicioPermisos:
         permisos = self.obtener_permisos_rol(rol)
         return [p.id_permiso for p in permisos if p.id_permiso]
 
-    def actualizar_permisos_rol(self, rol: str, ids_permisos: List[int], usuario: str) -> bool:
+    def actualizar_permisos_rol(
+        self, rol: str, ids_permisos: List[int], usuario: str
+    ) -> bool:
         """
         Actualiza los permisos de un rol. Reemplaza todos los permisos existentes.
 
@@ -70,7 +72,9 @@ class ServicioPermisos:
         """
         # No permitir modificar permisos de Administrador
         if rol == "Administrador":
-            raise ValueError("No se pueden modificar los permisos del rol Administrador")
+            raise ValueError(
+                "No se pueden modificar los permisos del rol Administrador"
+            )
 
         try:
             # 1. Limpiar permisos existentes
@@ -87,7 +91,9 @@ class ServicioPermisos:
     def asignar_permiso(self, rol: str, id_permiso: int, usuario: str) -> bool:
         """Asigna un permiso individual a un rol."""
         if rol == "Administrador":
-            raise ValueError("No se pueden modificar los permisos del rol Administrador")
+            raise ValueError(
+                "No se pueden modificar los permisos del rol Administrador"
+            )
 
         self.repo.asignar_permiso_a_rol(rol, id_permiso, usuario)
         return True
@@ -95,7 +101,9 @@ class ServicioPermisos:
     def revocar_permiso(self, rol: str, id_permiso: int, usuario: str) -> bool:
         """Revoca un permiso individual de un rol."""
         if rol == "Administrador":
-            raise ValueError("No se pueden modificar los permisos del rol Administrador")
+            raise ValueError(
+                "No se pueden modificar los permisos del rol Administrador"
+            )
 
         return self.repo.revocar_permiso_de_rol(rol, id_permiso, usuario)
 
@@ -221,6 +229,8 @@ class ServicioPermisos:
         todos_permisos = self.repo.listar_permisos()
 
         # Solo permisos de VER
-        ids_permisos = [p.id_permiso for p in todos_permisos if p.accion == "VER" and p.id_permiso]
+        ids_permisos = [
+            p.id_permiso for p in todos_permisos if p.accion == "VER" and p.id_permiso
+        ]
 
         return self.actualizar_permisos_rol(rol, ids_permisos, usuario)

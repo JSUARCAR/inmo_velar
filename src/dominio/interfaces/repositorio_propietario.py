@@ -1,8 +1,10 @@
 """
 Interface (Protocol): Repositorio de Propietarios
 """
-from typing import List, Optional, Protocol, Any
+
+from typing import Optional, Protocol
 from src.dominio.entidades.propietario import Propietario
+
 
 class IRepositorioPropietario(Protocol):
     def obtener_por_id(self, id_propietario: int) -> Optional[Propietario]: ...

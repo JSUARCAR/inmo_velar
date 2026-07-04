@@ -25,8 +25,7 @@ class RepositorioLiquidacionPostgres:
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
 
-        cursor.execute(
-            """
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS LIQUIDACIONES (
             ID_LIQUIDACION INTEGER PRIMARY KEY AUTOINCREMENT,
             ID_CONTRATO_M INTEGER NOT NULL,
@@ -46,6 +45,7 @@ class RepositorioLiquidacionPostgres:
             GASTOS_ADMINISTRACION INTEGER DEFAULT 0,
             GASTOS_SERVICIOS INTEGER DEFAULT 0,
             GASTOS_REPARACIONES INTEGER DEFAULT 0,
+            VALOR_INCIDENTES INTEGER DEFAULT 0,
             PAGO_PREDIAL INTEGER DEFAULT 0,
             SEGURO_MONTO INTEGER DEFAULT 0,
             OTROS_EGRESOS INTEGER DEFAULT 0,
@@ -80,8 +80,7 @@ class RepositorioLiquidacionPostgres:
             FOREIGN KEY (ID_CONTRATO_M) REFERENCES CONTRATOS_MANDATOS(ID_CONTRATO_M),
             UNIQUE(ID_CONTRATO_M, PERIODO)
         )
-        """
-        )
+        """)
 
         conn.commit()
 
@@ -138,6 +137,11 @@ class RepositorioLiquidacionPostgres:
                 row_dict.get("gastos_reparaciones")
                 or row_dict.get("GASTOS_REPARACIONES")
             ),
+            valor_incidentes=(
+                row_dict.get("valor_incidentes")
+                or row_dict.get("VALOR_INCIDENTES")
+                or 0
+            ),
             pago_predial=(
                 row_dict.get("pago_predial") or row_dict.get("PAGO_PREDIAL") or 0
             ),
@@ -190,11 +194,11 @@ class RepositorioLiquidacionPostgres:
                 ID_CONTRATO_M, PERIODO, FECHA_GENERACION,
                 CANON_BRUTO, OTROS_INGRESOS, TOTAL_INGRESOS,
                 COMISION_PORCENTAJE, COMISION_MONTO, IVA_COMISION, IMPUESTO_4X1000,
-                GASTOS_ADMINISTRACION, GASTOS_SERVICIOS, GASTOS_REPARACIONES, PAGO_PREDIAL, SEGURO_MONTO, OTROS_EGRESOS,
+                GASTOS_ADMINISTRACION, GASTOS_SERVICIOS, GASTOS_REPARACIONES, VALOR_INCIDENTES, PAGO_PREDIAL, SEGURO_MONTO, OTROS_EGRESOS,
                 TOTAL_EGRESOS, NETO_A_PAGAR,
                 ESTADO_LIQUIDACION, OBSERVACIONES,
                 CREATED_AT, CREATED_BY
-            ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
+            ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
         """,
             (
                 liquidacion.id_contrato_m,
@@ -210,6 +214,7 @@ class RepositorioLiquidacionPostgres:
                 liquidacion.gastos_administracion,
                 liquidacion.gastos_servicios,
                 liquidacion.gastos_reparaciones,
+                liquidacion.valor_incidentes,
                 liquidacion.pago_predial,
                 liquidacion.seguro_monto,
                 liquidacion.otros_egresos,
@@ -635,7 +640,9 @@ class RepositorioLiquidacionPostgres:
 
         conn.commit()
 
-    def reversar_pago(self, id_liquidacion: int, usuario_sistema: str, motivo: str) -> dict:
+    def reversar_pago(
+        self, id_liquidacion: int, usuario_sistema: str, motivo: str
+    ) -> dict:
         """
         Reversa el pago de una liquidación ('Pagada' → 'Aprobada').
         Limpia campos de pago, registra motivo en AUDITORIA_CAMBIOS.
@@ -669,7 +676,12 @@ class RepositorioLiquidacionPostgres:
                     INSERT INTO AUDITORIA_CAMBIOS (TABLA_MODIFICADA, ID_REGISTRO, CAMPO_MODIFICADO, VALOR_NUEVO, USUARIO, FECHA_MODIFICACION)
                     VALUES ('LIQUIDACIONES', {placeholder}, 'MOTIVO_REVERSION', {placeholder}, {placeholder}, {placeholder})
                 """,
-                    (id_liquidacion, motivo, usuario_sistema, datetime.now().isoformat()),
+                    (
+                        id_liquidacion,
+                        motivo,
+                        usuario_sistema,
+                        datetime.now().isoformat(),
+                    ),
                 )
             except Exception:
                 pass  # Tabla AUDITORIA_CAMBIOS puede no existir en SQLite
@@ -678,7 +690,11 @@ class RepositorioLiquidacionPostgres:
 
         return {
             "exitosa": cursor.rowcount > 0 or True,
-            "mensaje": "Liquidación reversada exitosamente" if cursor.rowcount > 0 else "La liquidación ya estaba en estado 'Aprobada'",
+            "mensaje": (
+                "Liquidación reversada exitosamente"
+                if cursor.rowcount > 0
+                else "La liquidación ya estaba en estado 'Aprobada'"
+            ),
             "id_liquidacion": id_liquidacion,
             "estado_anterior": "Pagada",
             "estado_nuevo": "Aprobada",

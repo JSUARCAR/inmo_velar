@@ -49,13 +49,20 @@ class ParametroSistema:
     categoria: Optional[str] = None
     modificable: Optional[int] = 1  # 1 = modificable, 0 = solo lectura
 
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
 
     def __post_init__(self):
         """Validaciones al crear la entidad."""
-        if self.tipo_dato and self.tipo_dato not in ("INTEGER", "TEXT", "DECIMAL", "BOOLEAN"):
+        if self.tipo_dato and self.tipo_dato not in (
+            "INTEGER",
+            "TEXT",
+            "DECIMAL",
+            "BOOLEAN",
+        ):
             raise ValueError(
                 f"Tipo de dato inválido: {self.tipo_dato}. "
                 "Valores permitidos: INTEGER, TEXT, DECIMAL, BOOLEAN"
@@ -73,7 +80,9 @@ class ParametroSistema:
     def valor_como_int(self) -> int:
         """Convierte el valor a entero."""
         if self.tipo_dato != "INTEGER":
-            raise TypeError(f"El parámetro '{self.nombre_parametro}' no es de tipo INTEGER")
+            raise TypeError(
+                f"El parámetro '{self.nombre_parametro}' no es de tipo INTEGER"
+            )
         try:
             return int(self.valor_parametro)
         except ValueError:
@@ -89,14 +98,26 @@ class ParametroSistema:
         try:
             return Decimal(self.valor_parametro)
         except Exception:
-            raise ValueError(f"No se puede convertir '{self.valor_parametro}' a Decimal")
+            raise ValueError(
+                f"No se puede convertir '{self.valor_parametro}' a Decimal"
+            )
 
     @property
     def valor_como_bool(self) -> bool:
         """Convierte el valor a booleano."""
         if self.tipo_dato != "BOOLEAN":
-            raise TypeError(f"El parámetro '{self.nombre_parametro}' no es de tipo BOOLEAN")
-        return self.valor_parametro in ("1", "true", "True", "TRUE", "yes", "Yes", "YES")
+            raise TypeError(
+                f"El parámetro '{self.nombre_parametro}' no es de tipo BOOLEAN"
+            )
+        return self.valor_parametro in (
+            "1",
+            "true",
+            "True",
+            "TRUE",
+            "yes",
+            "Yes",
+            "YES",
+        )
 
     @property
     def valor_como_porcentaje(self) -> Decimal:
@@ -122,7 +143,9 @@ class ParametroSistema:
             PermissionError: Si el parámetro no es modificable
         """
         if not self.es_modificable:
-            raise PermissionError(f"El parámetro '{self.nombre_parametro}' no es modificable")
+            raise PermissionError(
+                f"El parámetro '{self.nombre_parametro}' no es modificable"
+            )
 
         # Validar tipo de dato
         if self.tipo_dato == "INTEGER":
@@ -137,7 +160,9 @@ class ParametroSistema:
                 raise ValueError("El valor debe ser un número decimal válido")
         elif self.tipo_dato == "BOOLEAN":
             if nuevo_valor not in ("0", "1", "true", "false", "True", "False"):
-                raise ValueError("El valor debe ser un booleano válido: 0, 1, true, false")
+                raise ValueError(
+                    "El valor debe ser un booleano válido: 0, 1, true, false"
+                )
 
         self.valor_parametro = nuevo_valor
         self.updated_at = datetime.now().isoformat()

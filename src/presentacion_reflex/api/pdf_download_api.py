@@ -17,21 +17,22 @@ pdf_router = APIRouter(tags=["PDF Downloads"])
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 PDF_OUTPUT_DIR = BASE_DIR / "documentos_generados"
 
+
 @pdf_router.get("/download/{filename}")
 async def download_pdf(filename: str):
     """Endpoint para descargar PDFs con nombre correcto."""
     decoded_filename = urllib.parse.unquote(filename)
     print(f"\n[PDF-DOWNLOAD] Original: {filename}")
     print(f"[PDF-DOWNLOAD] Decodificado: {decoded_filename}")
-    
+
     safe_filename = Path(decoded_filename).name
     pdf_path = PDF_OUTPUT_DIR / safe_filename
-    
+
     print(f"[PDF-DOWNLOAD] Ruta absoluta: {pdf_path.absolute()}")
     print(f"[PDF-DOWNLOAD] Existe?: {pdf_path.exists()}")
 
     if not pdf_path.exists():
-        print(f"[PDF-DOWNLOAD] Error 404: Archivo no encontrado")
+        print("[PDF-DOWNLOAD] Error 404: Archivo no encontrado")
         raise HTTPException(
             status_code=404, detail=f"PDF no encontrado: {safe_filename}"
         )
@@ -44,6 +45,7 @@ async def download_pdf(filename: str):
             "Cache-Control": "no-cache, no-store, must-revalidate",
         },
     )
+
 
 @pdf_router.get("/view/{filename}")
 async def view_pdf(filename: str):
@@ -65,6 +67,7 @@ async def view_pdf(filename: str):
         },
     )
 
+
 def register_pdf_routes(app):
     """
     Registra las rutas de PDF en la aplicación Reflex usando .mount() para compatibilidad total.
@@ -73,12 +76,14 @@ def register_pdf_routes(app):
         target_app = getattr(app, "api", getattr(app, "_api", None))
 
         if not target_app:
-            print("[PDF-REGISTER] Error: No se pudo obtener la instancia de la app backend.")
+            print(
+                "[PDF-REGISTER] Error: No se pudo obtener la instancia de la app backend."
+            )
             return
 
         # Crear una mini-app de FastAPI para el router
         pdf_api = FastAPI()
-        
+
         # Habilitar CORS para esta sub-app
         pdf_api.add_middleware(
             CORSMiddleware,
@@ -87,13 +92,15 @@ def register_pdf_routes(app):
             allow_methods=["*"],
             allow_headers=["*"],
         )
-        
+
         pdf_api.include_router(pdf_router)
 
         # Montar la app en /api/pdf
         if hasattr(target_app, "mount"):
             target_app.mount("/api/pdf", pdf_api)
-            print("[PDF-REGISTER] Rutas montadas exitosamente en /api/pdf usando .mount()")
+            print(
+                "[PDF-REGISTER] Rutas montadas exitosamente en /api/pdf usando .mount()"
+            )
         else:
             print("[PDF-REGISTER] Error: La app backend no soporta '.mount()'")
 

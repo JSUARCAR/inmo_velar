@@ -42,9 +42,15 @@ def modal_incremento_ipc() -> rx.Component:
                             max="20",
                             required=True,
                             value=ContratosState.form_data["porcentaje_ipc"],
-                            on_change=lambda v: ContratosState.set_form_field("porcentaje_ipc", v),
+                            on_change=lambda v: ContratosState.set_form_field(
+                                "porcentaje_ipc", v
+                            ),
                         ),
-                        rx.text("Ejemplo: 5.62 para 5.62% de incremento", size="1", color="gray"),
+                        rx.text(
+                            "Ejemplo: 5.62 para 5.62% de incremento",
+                            size="1",
+                            color="gray",
+                        ),
                         spacing="1",
                         width="100%",
                     ),
@@ -53,7 +59,7 @@ def modal_incremento_ipc() -> rx.Component:
                         rx.text("Fecha de Aplicación *", size="2", weight="bold"),
                         rx.input(
                             type="date",
-                            name="fecha_application", # Note: form field is fecha_aplicacion in state? Wait, I'll check.
+                            name="fecha_application",  # Note: form field is fecha_aplicacion in state? Wait, I'll check.
                             required=True,
                             value=ContratosState.form_data["fecha_aplicacion"],
                             on_change=lambda v: ContratosState.set_form_field(
@@ -70,7 +76,9 @@ def modal_incremento_ipc() -> rx.Component:
                             name="observaciones",
                             placeholder="Notas adicionales sobre el incremento...",
                             value=ContratosState.form_data["observaciones"],
-                            on_change=lambda v: ContratosState.set_form_field("observaciones", v),
+                            on_change=lambda v: ContratosState.set_form_field(
+                                "observaciones", v
+                            ),
                             min_height="80px",
                         ),
                         spacing="1",
@@ -91,7 +99,9 @@ def modal_incremento_ipc() -> rx.Component:
                     ),
                     rx.button(
                         rx.cond(
-                            ContratosState.is_loading, rx.spinner(size="1"), rx.text("Aplicar IPC")
+                            ContratosState.is_loading,
+                            rx.spinner(size="1"),
+                            rx.text("Aplicar IPC"),
                         ),
                         type="submit",
                         disabled=ContratosState.is_loading,

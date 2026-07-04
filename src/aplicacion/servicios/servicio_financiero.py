@@ -18,10 +18,10 @@ from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracio
 from src.dominio.interfaces.repositorio_recaudo import IRepositorioRecaudo
 from src.dominio.interfaces.repositorio_liquidacion import IRepositorioLiquidacion
 from src.dominio.interfaces.repositorio_propiedad import IRepositorioPropiedad
+
 # Interfaces para contratos se inyectarán después si es posible, por ahora usamos base
 # Pero para ser estrictos con Fase 3, el servicio financiero debería recibir interfaces.
 
-from src.infraestructura.cache.cache_manager import cache_manager
 from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 
 
@@ -39,7 +39,9 @@ class ServicioFinanciero:
         pdf_service: Optional[ServicioDocumentosPDF] = None,
         servicio_configuracion: Optional[ServicioConfiguracion] = None,
     ):
-        from src.infraestructura.persistencia.repositorio_recaudo import RepositorioRecaudo
+        from src.infraestructura.persistencia.repositorio_recaudo import (
+            RepositorioRecaudo,
+        )
         from src.infraestructura.persistencia.repositorio_liquidacion_postgres import (
             RepositorioLiquidacionPostgres,
         )
@@ -52,20 +54,24 @@ class ServicioFinanciero:
         from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
             RepositorioContratoMandatoPostgres,
         )
-        from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
-        from src.infraestructura.persistencia.repositorio_cuota_postgres import RepositorioCuotaPostgres
+        from src.infraestructura.servicios.servicio_documentos_pdf import (
+            ServicioDocumentosPDF,
+        )
+        from src.infraestructura.persistencia.repositorio_cuota_postgres import (
+            RepositorioCuotaPostgres,
+        )
 
         self.repo_recaudo = repo_recaudo or RepositorioRecaudo(db_manager)
-        self.repo_liquidacion = (
-            repo_liquidacion or RepositorioLiquidacionPostgres(db_manager)
+        self.repo_liquidacion = repo_liquidacion or RepositorioLiquidacionPostgres(
+            db_manager
         )
         self.repo_cuota = RepositorioCuotaPostgres(db_manager)
         self.repo_propiedad = repo_propiedad or RepositorioPropiedadPostgres(db_manager)
-        self.repo_arriendo = (
-            repo_arriendo or RepositorioContratoArrendamientoPostgres(db_manager)
+        self.repo_arriendo = repo_arriendo or RepositorioContratoArrendamientoPostgres(
+            db_manager
         )
-        self.repo_mandato = (
-            repo_mandato or RepositorioContratoMandatoPostgres(db_manager)
+        self.repo_mandato = repo_mandato or RepositorioContratoMandatoPostgres(
+            db_manager
         )
         self.pdf_service = pdf_service or ServicioDocumentosPDF()
         self.servicio_config = servicio_configuracion
@@ -184,8 +190,8 @@ class ServicioFinanciero:
             )
 
         iva_comision = int(comision_monto * (iva_val / 10000.0))
-        impuesto_4x1000 = 0 # Eliminado por política Elite
-        seguro_monto = 0 # Eliminado por política Elite
+        impuesto_4x1000 = 0  # Eliminado por política Elite
+        seguro_monto = 0  # Eliminado por política Elite
 
         valor_admin_propiedad = 0
         id_propiedad_asociada = None
@@ -213,11 +219,13 @@ class ServicioFinanciero:
                     id_propiedad_asociada = row_prop["ID_PROPIEDAD"]
         except Exception:
             valor_admin_propiedad = 0
-            
+
         cuotas_pendientes = []
         valor_incidentes = 0
         if id_propiedad_asociada:
-            cuotas_pendientes = self.repo_cuota.obtener_cuotas_pendientes_por_propiedad(id_propiedad_asociada)
+            cuotas_pendientes = self.repo_cuota.obtener_cuotas_pendientes_por_propiedad(
+                id_propiedad_asociada
+            )
             valor_incidentes = sum(c.valor_cuota for c in cuotas_pendientes)
 
         liquidacion = Liquidacion(
@@ -235,7 +243,9 @@ class ServicioFinanciero:
             ),
             gastos_servicios=datos_adicionales.get("gastos_servicios", 0),
             gastos_reparaciones=datos_adicionales.get("gastos_reparaciones", 0),
-            valor_incidentes=datos_adicionales.get("valor_incidentes", valor_incidentes),
+            valor_incidentes=datos_adicionales.get(
+                "valor_incidentes", valor_incidentes
+            ),
             pago_predial=datos_adicionales.get("pago_predial", 0),
             seguro_monto=seguro_monto,
             otros_egresos=datos_adicionales.get("otros_egresos", 0),
@@ -243,13 +253,13 @@ class ServicioFinanciero:
             observaciones=datos_adicionales.get("observaciones"),
         )
         nueva_liq = self.repo_liquidacion.crear(liquidacion, usuario_sistema)
-        
+
         # T008: Asociar las cuotas a la liquidación guardada en borrador
         if nueva_liq.id_liquidacion and cuotas_pendientes:
             for cuota in cuotas_pendientes:
                 cuota.id_liquidacion = nueva_liq.id_liquidacion
                 self.repo_cuota.actualizar(cuota)
-                
+
         return nueva_liq
 
     def generar_liquidacion_propietario(
@@ -380,7 +390,9 @@ class ServicioFinanciero:
         """
         if not motivo or len(motivo.strip()) < 10:
             raise ValueError("El motivo de reversión debe tener al menos 10 caracteres")
-        return self.repo_liquidacion.reversar_pago(id_liquidacion, usuario_sistema, motivo.strip())
+        return self.repo_liquidacion.reversar_pago(
+            id_liquidacion, usuario_sistema, motivo.strip()
+        )
 
     def reversar_pago_propietario(
         self, id_propietario: int, periodo: str, usuario_sistema: str, motivo: str
@@ -464,7 +476,9 @@ class ServicioFinanciero:
         except Exception:
             pass  # Tabla AUDITORIA_CAMBIOS puede no existir en SQLite
 
-        operacion_id = f"DEL-LIQ-{id_liquidacion}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        operacion_id = (
+            f"DEL-LIQ-{id_liquidacion}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        )
 
         return {
             "exitosa": True,
@@ -526,7 +540,14 @@ class ServicioFinanciero:
             estado, periodo, busqueda, id_asesor
         )
         items = self.repo_liquidacion.listar_paginado(
-            params.page_size, params.offset, estado, periodo, busqueda, id_asesor, sort_by, sort_order
+            params.page_size,
+            params.offset,
+            estado,
+            periodo,
+            busqueda,
+            id_asesor,
+            sort_by,
+            sort_order,
         )
         return PaginatedResult(
             items=items, total=total, page=params.page, page_size=params.page_size
@@ -550,9 +571,9 @@ class ServicioFinanciero:
             "estado_recaudo": recaudo.estado_recaudo,
             "observaciones": recaudo.observaciones or "Sin observaciones",
             "id_contrato_a": recaudo.id_contrato_a,
-            "direccion_propiedad": propiedad.direccion_propiedad
-            if propiedad
-            else "N/A",
+            "direccion_propiedad": (
+                propiedad.direccion_propiedad if propiedad else "N/A"
+            ),
             "conceptos": [
                 {
                     "tipo_concepto": c.tipo_concepto,
@@ -651,31 +672,35 @@ class ServicioFinanciero:
         # 3. Formatear detalle de propiedades (lista de filas para la tabla detallada)
         detalle_propiedades = []
         lista_propiedades = []
-        
+
         for idx, prop in enumerate(propiedades, 1):
             prop_id = prop.get("id", idx)
             lista_propiedades.append({"id": prop_id, "direccion": prop["direccion"]})
-            
-            detalle_propiedades.append({
-                "id": prop_id,
-                "canon": prop.get("canon", 0) or 0,
-                "comision": prop.get("comision_monto", 0) or 0,
-                "seguro": prop.get("seguro_monto", 0) or 0,
-                "iva": prop.get("iva_comision", 0) or 0,
-                "impuesto_4x1000": prop.get("impuesto_4x1000", 0) or 0,
-                "admin": prop.get("gastos_admin", 0) or 0,
-                "servicios": prop.get("gastos_serv", 0) or 0,
-                "predial": prop.get("pago_predial", 0) or 0,
-                "incidente": (prop.get("gastos_rep", 0) or 0) + (prop.get("otros_egr", 0) or 0),
-                "total": prop.get("neto", 0) or 0
-            })
+
+            detalle_propiedades.append(
+                {
+                    "id": prop_id,
+                    "canon": prop.get("canon", 0) or 0,
+                    "comision": prop.get("comision_monto", 0) or 0,
+                    "seguro": prop.get("seguro_monto", 0) or 0,
+                    "iva": prop.get("iva_comision", 0) or 0,
+                    "impuesto_4x1000": prop.get("impuesto_4x1000", 0) or 0,
+                    "admin": prop.get("gastos_admin", 0) or 0,
+                    "servicios": prop.get("gastos_serv", 0) or 0,
+                    "predial": prop.get("pago_predial", 0) or 0,
+                    "incidente": (prop.get("gastos_rep", 0) or 0)
+                    + (prop.get("otros_egr", 0) or 0),
+                    "total": prop.get("neto", 0) or 0,
+                }
+            )
 
         # 4. Construir resumen financiero consolidado
         resumen = {
             "total_ingresos": datos.get("total_ingresos", 0) or 0,
             "total_egresos": datos.get("total_egresos", 0) or 0,
             "honorarios": datos.get("comision_monto", 0) or 0,
-            "otros_descuentos": (datos.get("total_egresos", 0) or 0) - (datos.get("comision_monto", 0) or 0),
+            "otros_descuentos": (datos.get("total_egresos", 0) or 0)
+            - (datos.get("comision_monto", 0) or 0),
             "valor_neto": datos.get("neto_pagar", 0) or 0,
             "cuenta_bancaria": f"{datos.get('banco', 'N/A')} - {datos.get('tipo_cuenta', 'N/A')} {datos.get('cuenta_bancaria', 'N/A')}",
             "fecha_pago": datos.get("fecha_pago", ""),
@@ -690,13 +715,14 @@ class ServicioFinanciero:
             "propietario": propietario,
             "inmueble": inmueble,
             "periodo": datos["periodo"],
-            "fecha_generacion": datos.get("fecha_generacion") or datetime.now().strftime("%Y-%m-%d"),
+            "fecha_generacion": datos.get("fecha_generacion")
+            or datetime.now().strftime("%Y-%m-%d"),
             "lista_propiedades": lista_propiedades,
             "detalle_propiedades": detalle_propiedades,
             "resumen": resumen,
-            "observaciones": datos.get("observaciones"), # Propagación vital
+            "observaciones": datos.get("observaciones"),  # Propagación vital
             "empresa": datos.get("empresa", {}),
-            "modo": "consolidado"
+            "modo": "consolidado",
         }
 
     def exportar_estados_cuenta_periodo_zip(self, periodo: str) -> str:
@@ -704,52 +730,60 @@ class ServicioFinanciero:
         Genera un lote de estados de cuenta consolidados por propietario para un periodo.
         Utiliza el motor Élite y devuelve la ruta al archivo ZIP.
         """
-        logger.info(f"Iniciando exportación masiva de estados de cuenta para el periodo: {periodo}")
-        
+        logger.info(
+            f"Iniciando exportación masiva de estados de cuenta para el periodo: {periodo}"
+        )
+
         # 1. Obtener lista de propietarios que tienen liquidaciones en este periodo
         resultado_agrupado = self.listar_liquidaciones_propietarios_paginado(
-            page=1,
-            page_size=1000, 
-            periodo=periodo,
-            estado="Todos"
+            page=1, page_size=1000, periodo=periodo, estado="Todos"
         )
-        
+
         propietarios = resultado_agrupado.items
         if not propietarios:
-            raise ValueError(f"No se encontraron liquidaciones para exportar en el periodo {periodo}")
-            
+            raise ValueError(
+                f"No se encontraron liquidaciones para exportar en el periodo {periodo}"
+            )
+
         logger.debug(f"Se encontraron {len(propietarios)} propietarios para procesar.")
-        
+
         # 2. Preparar lista de datos para el motor PDF Elite
         lista_datos_pdf = []
         for prop in propietarios:
             try:
                 id_propietario = prop["id_propietario"]
                 # Obtener el consolidado completo desde el repo
-                datos_raw = self.obtener_datos_consolidados_para_pdf(id_propietario, periodo)
-                
+                datos_raw = self.obtener_datos_consolidados_para_pdf(
+                    id_propietario, periodo
+                )
+
                 if datos_raw:
                     # MAPEO CRÍTICO: Transformar formato legacy a Elite estructurado
                     datos_elite = self.mapear_consolidado_a_pdf_elite(datos_raw)
                     lista_datos_pdf.append(datos_elite)
             except Exception as e:
-                logger.error(f"Error preparando datos para propietario {prop.get('propietario')}: {e}")
-                
+                logger.error(
+                    f"Error preparando datos para propietario {prop.get('propietario')}: {e}"
+                )
+
         if not lista_datos_pdf:
-            raise ValueError("No se pudieron preparar datos para ninguna liquidación en este periodo.")
-            
+            raise ValueError(
+                "No se pudieron preparar datos para ninguna liquidación en este periodo."
+            )
+
         # 3. Delegar al Facade para generación masiva con motor Elite
         from src.infraestructura.servicios.servicio_pdf_facade import ServicioPDFFacade
+
         # Si self.pdf_service es la Facade, la usamos. Si no, instanciamos una localmente.
         facade = self.pdf_service
         if not isinstance(facade, ServicioPDFFacade):
-             facade = ServicioPDFFacade()
-             
+            facade = ServicioPDFFacade()
+
         zip_path = facade.generar_lote_liquidaciones_elite_zip(
             lista_datos=lista_datos_pdf,
-            filename_prefix=f"estados_cuenta_{periodo.replace('-', '_')}"
+            filename_prefix=f"estados_cuenta_{periodo.replace('-', '_')}",
         )
-        
+
         logger.info(f"Exportación masiva completada exitosamente: {zip_path}")
         return zip_path
 

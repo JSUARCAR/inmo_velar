@@ -302,8 +302,10 @@ class RepositorioAsistenciaPostgres:
 
         return {
             "entidad": entidad,
-            "direccion_propiedad": get_val("DIRECCION_PROPIEDAD_JOIN") or "Sin dirección",
-            "nombre_propietario": get_val("NOMBRE_PROPIETARIO_JOIN") or "Propietario desconocido",
+            "direccion_propiedad": get_val("DIRECCION_PROPIEDAD_JOIN")
+            or "Sin dirección",
+            "nombre_propietario": get_val("NOMBRE_PROPIETARIO_JOIN")
+            or "Propietario desconocido",
             "nombre_asesor": get_val("NOMBRE_ASESOR_JOIN") or "No asignado",
         }
 

@@ -57,7 +57,9 @@ class ChartConverter:
             )
 
         # Convertir a bytes
-        img_bytes = pio.to_image(fig, format=format, width=width, height=height, scale=scale)
+        img_bytes = pio.to_image(
+            fig, format=format, width=width, height=height, scale=scale
+        )
 
         # Retornar como BytesIO
         buffer = BytesIO(img_bytes)

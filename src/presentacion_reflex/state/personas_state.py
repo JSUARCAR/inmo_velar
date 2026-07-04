@@ -155,7 +155,13 @@ class PersonasState(rx.State):
 
     # --- Role Management ---
     selected_roles: List[str] = []  # Changed from single string to List
-    available_roles: List[str] = ["Propietario", "Arrendatario", "Codeudor", "Asesor", "Proveedor"]
+    available_roles: List[str] = [
+        "Propietario",
+        "Arrendatario",
+        "Codeudor",
+        "Asesor",
+        "Proveedor",
+    ]
 
     # --- Elite UX Features ---
     view_mode: str = "table"  # "table" or "cards"
@@ -185,6 +191,7 @@ class PersonasState(rx.State):
         logger.debug("Ejecutando load_seguros_activos en PersonasState")
         try:
             from src.aplicacion.servicios.servicio_seguros import ServicioSeguros
+
             servicio = ServicioSeguros(db_manager)
             seguros_list = servicio.listar_seguros(solo_activos=True)
             self.seguros_options = [
@@ -194,7 +201,7 @@ class PersonasState(rx.State):
                 }
                 for s in seguros_list
             ]
-        except Exception as e:
+        except Exception:
             pass  # print(f"Error cargando seguros: {e}") [OpSec Removed]
             self.seguros_options = []
 
@@ -217,17 +224,33 @@ class PersonasState(rx.State):
 
     def load_personas(self):
         """Carga la lista de personas aplicando filtros y paginación."""
-        logger.debug(f"Ejecutando load_personas: page={self.page}, filtro_rol={self.filtro_rol}, inactivos={self.mostrar_inactivos}, sin_contrato={self.filtro_sin_contrato}")
+        logger.debug(
+            f"Ejecutando load_personas: page={self.page}, filtro_rol={self.filtro_rol}, inactivos={self.mostrar_inactivos}, sin_contrato={self.filtro_sin_contrato}"
+        )
         self.is_loading = True
         yield
         try:
-            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
-            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+            from src.infraestructura.persistencia.repositorio_persona_postgres import (
+                RepositorioPersonaPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import (
+                RepositorioPropietarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import (
+                RepositorioAsesorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import (
+                RepositorioProveedoresPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import (
+                RepositorioAuditoriaPostgres,
+            )
 
             repo_persona = RepositorioPersonaPostgres(db_manager)
             repo_propietario = RepositorioPropietarioPostgres(db_manager)
@@ -244,7 +267,7 @@ class PersonasState(rx.State):
                 repo_codeudor=repo_codeudor,
                 repo_asesor=repo_asesor,
                 repo_proveedor=repo_proveedor,
-                repo_auditoria=repo_auditoria
+                repo_auditoria=repo_auditoria,
             )
 
             # Mapear filtro "Todos" a None
@@ -266,14 +289,22 @@ class PersonasState(rx.State):
             )
 
             self.total_items = resultado.total
-            
+
             # Cargar KPIs Globales (Activos | Inactivos)
             conteos = servicio.obtener_conteos_por_rol()
-            self.kpi_propietarios = conteos.get("Propietario", {"activos": 0, "inactivos": 0})
-            self.kpi_arrendatarios = conteos.get("Arrendatario", {"activos": 0, "inactivos": 0})
-            self.kpi_codeudores = conteos.get("Codeudor", {"activos": 0, "inactivos": 0})
+            self.kpi_propietarios = conteos.get(
+                "Propietario", {"activos": 0, "inactivos": 0}
+            )
+            self.kpi_arrendatarios = conteos.get(
+                "Arrendatario", {"activos": 0, "inactivos": 0}
+            )
+            self.kpi_codeudores = conteos.get(
+                "Codeudor", {"activos": 0, "inactivos": 0}
+            )
             self.kpi_asesores = conteos.get("Asesor", {"activos": 0, "inactivos": 0})
-            self.kpi_proveedores = conteos.get("Proveedor", {"activos": 0, "inactivos": 0})
+            self.kpi_proveedores = conteos.get(
+                "Proveedor", {"activos": 0, "inactivos": 0}
+            )
 
             # Convertir objetos a diccionarios para serialización Reflex
             self.personas = [
@@ -289,7 +320,9 @@ class PersonasState(rx.State):
                     direccion=p.persona.direccion_principal or "",
                     roles=p.roles,
                     estado="ACTIVO" if p.esta_activa else "Inactivo",
-                    fecha_creacion=p.persona.created_at[:10] if p.persona.created_at else "N/A",
+                    fecha_creacion=(
+                        p.persona.created_at[:10] if p.persona.created_at else "N/A"
+                    ),
                 )
                 for p in resultado.items
             ]
@@ -361,13 +394,27 @@ class PersonasState(rx.State):
         try:
             yield rx.toast.info("Generando archivo...", position="bottom-right")
 
-            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
-            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+            from src.infraestructura.persistencia.repositorio_persona_postgres import (
+                RepositorioPersonaPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import (
+                RepositorioPropietarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import (
+                RepositorioAsesorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import (
+                RepositorioProveedoresPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import (
+                RepositorioAuditoriaPostgres,
+            )
 
             repo_persona = RepositorioPersonaPostgres(db_manager)
             repo_propietario = RepositorioPropietarioPostgres(db_manager)
@@ -384,7 +431,7 @@ class PersonasState(rx.State):
                 repo_codeudor=repo_codeudor,
                 repo_asesor=repo_asesor,
                 repo_proveedor=repo_proveedor,
-                repo_auditoria=repo_auditoria
+                repo_auditoria=repo_auditoria,
             )
             rol_filter = self.filtro_rol if self.filtro_rol != "Todos" else None
 
@@ -441,7 +488,9 @@ class PersonasState(rx.State):
             import traceback
 
             traceback.print_exc()
-            yield rx.toast.error(f"Error al exportar: {str(e)}", position="bottom-right")
+            yield rx.toast.error(
+                f"Error al exportar: {str(e)}", position="bottom-right"
+            )
 
     def next_page(self):
         logger.debug("Ejecutando next_page")
@@ -513,7 +562,9 @@ class PersonasState(rx.State):
 
     def handle_form_submit(self, form_data: dict):
         """Handle form submission for all wizard steps."""
-        logger.debug(f"Ejecutando handle_form_submit en paso {self.modal_step} con datos: {form_data}")
+        logger.debug(
+            f"Ejecutando handle_form_submit en paso {self.modal_step} con datos: {form_data}"
+        )
         pass  # print(f"📝 Form submitted at step {self.modal_step}") [OpSec Removed]
         pass  # print(f"Received form data: {form_data}") [OpSec Removed]
 
@@ -588,13 +639,13 @@ class PersonasState(rx.State):
         self.error_message = ""
         self.selected_roles = []  # Reset roles
         self.reset_wizard()  # Reset wizard to step 1
-        
+
         # Cargar seguros activos y resetear combobox
         self.load_seguros_activos()
         self.seguro_search = ""
         self.seguro_selected_label = ""
         self.seguro_menu_open = False
-        
+
         self.show_modal = True
         pass  # print("✅ Modal state set to True") [OpSec Removed]
 
@@ -606,13 +657,27 @@ class PersonasState(rx.State):
             self.current_persona_id = persona["id"]
 
             # 1. Obtener datos completos desde el servicio (incluyendo roles)
-            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
-            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+            from src.infraestructura.persistencia.repositorio_persona_postgres import (
+                RepositorioPersonaPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import (
+                RepositorioPropietarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import (
+                RepositorioAsesorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import (
+                RepositorioProveedoresPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import (
+                RepositorioAuditoriaPostgres,
+            )
 
             repo_persona = RepositorioPersonaPostgres(db_manager)
             repo_propietario = RepositorioPropietarioPostgres(db_manager)
@@ -629,23 +694,30 @@ class PersonasState(rx.State):
                 repo_codeudor=repo_codeudor,
                 repo_asesor=repo_asesor,
                 repo_proveedor=repo_proveedor,
-                repo_auditoria=repo_auditoria
+                repo_auditoria=repo_auditoria,
             )
-            persona_completa = servicio.obtener_persona_completa(self.current_persona_id)
+            persona_completa = servicio.obtener_persona_completa(
+                self.current_persona_id
+            )
 
             if not persona_completa:
-                self.error_message = "Error: La persona no se encuentra en la base de datos."
+                self.error_message = (
+                    "Error: La persona no se encuentra en la base de datos."
+                )
                 self.show_modal = True
                 return
 
             p_entidad = persona_completa.persona
 
-
             # 2. Cargar datos básicos (con conversion a mayúsculas si aplica)
             self.form_data = {
                 "nombre_completo": (p_entidad.nombre_completo or "").upper(),
                 "tipo_documento": p_entidad.tipo_documento or "CC",
-                "numero_documento": str(p_entidad.numero_documento) if p_entidad.numero_documento else "",
+                "numero_documento": (
+                    str(p_entidad.numero_documento)
+                    if p_entidad.numero_documento
+                    else ""
+                ),
                 "telefono_principal": p_entidad.telefono_principal or "",
                 "correo_electronico": (p_entidad.correo_electronico or "").upper(),
                 "direccion_principal": (p_entidad.direccion_principal or "").upper(),
@@ -658,7 +730,9 @@ class PersonasState(rx.State):
             self.seguro_selected_label = ""
 
             # 3. Cargar roles activos
-            self.selected_roles = persona_completa.roles if persona_completa.roles else []
+            self.selected_roles = (
+                persona_completa.roles if persona_completa.roles else []
+            )
             pass  # print(f"Loaded roles: {self.selected_roles}") [OpSec Removed]
 
             # Cargar datos de cada rol al form_data
@@ -668,7 +742,8 @@ class PersonasState(rx.State):
                 prop = datos_roles["Propietario"]
                 self.form_data.update(
                     {
-                        "observaciones_propietario": prop.observaciones_propietario or "",
+                        "observaciones_propietario": prop.observaciones_propietario
+                        or "",
                     }
                 )
 
@@ -682,7 +757,7 @@ class PersonasState(rx.State):
                         "telefono_habitante": arr.telefono_habitante or "",
                     }
                 )
-                
+
                 # Encontrar label para combobox de seguro
                 if arr.id_seguro:
                     id_seg_str = str(arr.id_seguro)
@@ -695,7 +770,9 @@ class PersonasState(rx.State):
                 ase = datos_roles["Asesor"]
                 self.form_data.update(
                     {
-                        "comision_porcentaje_arriendo": str(ase.comision_porcentaje_arriendo),
+                        "comision_porcentaje_arriendo": str(
+                            ase.comision_porcentaje_arriendo
+                        ),
                         "comision_porcentaje_venta": str(ase.comision_porcentaje_venta),
                         "fecha_vinculacion": ase.fecha_ingreso or "",
                     }
@@ -706,7 +783,9 @@ class PersonasState(rx.State):
                 self.form_data.update(
                     {
                         "especialidad": prov.especialidad or "",
-                        "calificacion": str(prov.calificacion) if prov.calificacion else "",
+                        "calificacion": (
+                            str(prov.calificacion) if prov.calificacion else ""
+                        ),
                         "observaciones": prov.observaciones or "",
                     }
                 )
@@ -736,21 +815,39 @@ class PersonasState(rx.State):
     @rx.event(background=True)
     async def open_details_modal(self, persona: Dict):
         """Abre el modal de detalles y carga la información completa."""
-        logger.debug(f"Ejecutando open_details_modal para persona ID: {persona.get('id')}")
-        
+        logger.debug(
+            f"Ejecutando open_details_modal para persona ID: {persona.get('id')}"
+        )
+
         async with self:
             self.show_details_modal = True
             self.is_loading_details = True
-            self.current_persona_details = {"persona": persona} # Datos básicos mientras carga
-        
+            self.current_persona_details = {
+                "persona": persona
+            }  # Datos básicos mientras carga
+
         try:
-            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
-            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+            from src.infraestructura.persistencia.repositorio_persona_postgres import (
+                RepositorioPersonaPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import (
+                RepositorioPropietarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import (
+                RepositorioAsesorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import (
+                RepositorioProveedoresPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import (
+                RepositorioAuditoriaPostgres,
+            )
 
             repo_persona = RepositorioPersonaPostgres(db_manager)
             repo_propietario = RepositorioPropietarioPostgres(db_manager)
@@ -767,13 +864,15 @@ class PersonasState(rx.State):
                 repo_codeudor=repo_codeudor,
                 repo_asesor=repo_asesor,
                 repo_proveedor=repo_proveedor,
-                repo_auditoria=repo_auditoria
+                repo_auditoria=repo_auditoria,
             )
-            
+
             detalles = servicio.obtener_detalles_completos(persona["id"])
-            
+
             # Recuperar Auditoría (Optimizado: Consulta directa por ID de registro)
-            logs = repo_auditoria.obtener_por_registro("PERSONAS", persona["id"], limit=50)
+            logs = repo_auditoria.obtener_por_registro(
+                "PERSONAS", persona["id"], limit=50
+            )
             persona_logs = [
                 {
                     "fecha": log.fecha_cambio,
@@ -783,11 +882,11 @@ class PersonasState(rx.State):
                 }
                 for log in logs
             ]
-            
+
             async with self:
                 self.current_persona_details = detalles
                 self.audit_logs = persona_logs
-                
+
         except Exception as e:
             logger.error(f"Error cargando detalles: {e}")
             yield rx.toast.error(f"Error al cargar detalles: {str(e)}")
@@ -799,19 +898,26 @@ class PersonasState(rx.State):
         self, form_data: dict, is_editing: bool, selected_roles: List[str]
     ) -> tuple[bool, str]:
         """Validate form data before saving."""
-        logger.debug(f"Ejecutando validate_form_data: is_editing={is_editing}, roles={selected_roles}")
+        logger.debug(
+            f"Ejecutando validate_form_data: is_editing={is_editing}, roles={selected_roles}"
+        )
         pass  # print("\n🔍 === VALIDATE_FORM START ===") [OpSec Removed]
 
         # Sanitizar número de documento: eliminar puntos (ej: 1.000.000.000 -> 1000000000)
         if "numero_documento" in form_data:
-            form_data["numero_documento"] = "".join(filter(str.isdigit, form_data["numero_documento"]))
+            form_data["numero_documento"] = "".join(
+                filter(str.isdigit, form_data["numero_documento"])
+            )
 
         # Required fields for all personas
         if not form_data.get("nombre_completo", "").strip():
             return False, "El nombre completo es obligatorio"
 
         if not form_data.get("numero_documento", "").strip():
-            return False, "El número de documento es obligatorio y debe contener números"
+            return (
+                False,
+                "El número de documento es obligatorio y debe contener números",
+            )
 
         if not form_data.get("telefono_principal", "").strip():
             return False, "El teléfono principal es obligatorio"
@@ -853,7 +959,10 @@ class PersonasState(rx.State):
                     p_arr = int(form_data.get("comision_porcentaje_arriendo", 0))
                     p_ven = int(form_data.get("comision_porcentaje_venta", 0))
                     if p_arr < 0 or p_arr > 100 or p_ven < 0 or p_ven > 100:
-                        return False, "Los porcentajes de comisión deben estar entre 0 y 100"
+                        return (
+                            False,
+                            "Los porcentajes de comisión deben estar entre 0 y 100",
+                        )
                 except ValueError:
                     return False, "Los porcentajes deben ser números enteros"
 
@@ -875,10 +984,14 @@ class PersonasState(rx.State):
             selected_roles = self.selected_roles
 
             auth_state = await self.get_state(AuthState)
-            user_system = auth_state.user_nombre if auth_state.is_authenticated else "sistema"
+            user_system = (
+                auth_state.user_nombre if auth_state.is_authenticated else "sistema"
+            )
 
         # Validate
-        is_valid, error_msg = self.validate_form_data(form_data, is_editing, selected_roles)
+        is_valid, error_msg = self.validate_form_data(
+            form_data, is_editing, selected_roles
+        )
 
         if not is_valid:
             async with self:
@@ -888,13 +1001,27 @@ class PersonasState(rx.State):
             return
 
         try:
-            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
-            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+            from src.infraestructura.persistencia.repositorio_persona_postgres import (
+                RepositorioPersonaPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import (
+                RepositorioPropietarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import (
+                RepositorioAsesorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import (
+                RepositorioProveedoresPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import (
+                RepositorioAuditoriaPostgres,
+            )
 
             repo_persona = RepositorioPersonaPostgres(db_manager)
             repo_propietario = RepositorioPropietarioPostgres(db_manager)
@@ -911,7 +1038,7 @@ class PersonasState(rx.State):
                 repo_codeudor=repo_codeudor,
                 repo_asesor=repo_asesor,
                 repo_proveedor=repo_proveedor,
-                repo_auditoria=repo_auditoria
+                repo_auditoria=repo_auditoria,
             )
             success_message = ""
 
@@ -921,14 +1048,20 @@ class PersonasState(rx.State):
                 datos_rol = {}
                 if rol == "Propietario":
                     datos_rol = {
-                        "observaciones_propietario": form_data.get("observaciones_propietario", ""),
+                        "observaciones_propietario": form_data.get(
+                            "observaciones_propietario", ""
+                        ),
                     }
                 elif rol == "Arrendatario":
                     datos_rol = {
-                        "codigo_aprobacion_seguro": form_data.get("codigo_aprobacion_seguro", ""),
+                        "codigo_aprobacion_seguro": form_data.get(
+                            "codigo_aprobacion_seguro", ""
+                        ),
                         # Convertir a entero solo si hay valor
                         "id_seguro": (
-                            int(form_data.get("id_seguro")) if form_data.get("id_seguro") else None
+                            int(form_data.get("id_seguro"))
+                            if form_data.get("id_seguro")
+                            else None
                         ),
                         "nombre_habitante": form_data.get("nombre_habitante", ""),
                         "telefono_habitante": form_data.get("telefono_habitante", ""),
@@ -958,7 +1091,9 @@ class PersonasState(rx.State):
             if is_editing:
                 pass  # print(f"Updating persona {current_persona_id}") [OpSec Removed]
                 servicio.actualizar_persona(
-                    id_persona=current_persona_id, datos=form_data, usuario_sistema=user_system
+                    id_persona=current_persona_id,
+                    datos=form_data,
+                    usuario_sistema=user_system,
                 )
 
                 # Gestión de Roles en Edición
@@ -1043,7 +1178,7 @@ class PersonasState(rx.State):
         else:
             self.sort_by = column
             self.sort_order = "desc"
-        
+
         self.page = 1
         return PersonasState.load_personas
 
@@ -1055,13 +1190,27 @@ class PersonasState(rx.State):
         try:
             from src.aplicacion.servicios.servicio_personas import ServicioPersonas
             from src.infraestructura.persistencia.database import db_manager
-            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
-            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
-            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
-            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
+            from src.infraestructura.persistencia.repositorio_persona_postgres import (
+                RepositorioPersonaPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import (
+                RepositorioPropietarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
+                RepositorioArrendatarioPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
+                RepositorioCodeudorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import (
+                RepositorioAsesorPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import (
+                RepositorioProveedoresPostgres,
+            )
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import (
+                RepositorioAuditoriaPostgres,
+            )
 
             # Instanciar servicios y repositorios (Postgres preferido según protocolo)
 
@@ -1080,26 +1229,31 @@ class PersonasState(rx.State):
                 repo_codeudor=repo_codeudor,
                 repo_asesor=repo_asesor,
                 repo_proveedor=repo_proveedor,
-                repo_auditoria=repo_auditoria
+                repo_auditoria=repo_auditoria,
             )
-            
+
             # Lógica de transición
             if estado_actual == "ACTIVO":
-                exito = servicio.desactivar_persona(id_persona, motivo="Desactivado desde UI", usuario_sistema="admin")
+                exito = servicio.desactivar_persona(
+                    id_persona, motivo="Desactivado desde UI", usuario_sistema="admin"
+                )
                 msg = "Persona desactivada exitosamente"
             else:
                 exito = servicio.activar_persona(id_persona, usuario_sistema="admin")
                 msg = "Persona reactivada exitosamente"
-                
+
             if exito:
                 yield rx.toast.success(msg)
                 # Desencadenar recarga de datos
                 yield PersonasState.load_personas
             else:
-                yield rx.toast.error("No se pudo completar la operación en la base de datos.")
-                
+                yield rx.toast.error(
+                    "No se pudo completar la operación en la base de datos."
+                )
+
         except Exception as e:
             import traceback
+
             traceback.print_exc()
             yield rx.toast.error(f"Error en el sistema: {str(e)}")
         finally:

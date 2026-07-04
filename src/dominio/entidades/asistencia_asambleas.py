@@ -93,7 +93,7 @@ class AsistenciaAsambleas:
                 fecha = self.fecha_asistencia.date()
             elif hasattr(self.fecha_asistencia, "year"):
                 # Es un objeto date
-                from datetime import date as date_type
+
                 fecha = self.fecha_asistencia
             elif isinstance(self.fecha_asistencia, str):
                 fecha = datetime.fromisoformat(self.fecha_asistencia).date()

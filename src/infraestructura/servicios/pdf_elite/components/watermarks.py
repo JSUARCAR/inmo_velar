@@ -83,7 +83,9 @@ class Watermark:
         canvas_obj.restoreState()
 
     @staticmethod
-    def add_draft_watermark(canvas_obj: pdf_canvas.Canvas, opacity: float = 0.15) -> None:
+    def add_draft_watermark(
+        canvas_obj: pdf_canvas.Canvas, opacity: float = 0.15
+    ) -> None:
         """
         Agrega marca de agua "BORRADOR"
 
@@ -101,7 +103,9 @@ class Watermark:
         )
 
     @staticmethod
-    def add_confidential_watermark(canvas_obj: pdf_canvas.Canvas, opacity: float = 0.12) -> None:
+    def add_confidential_watermark(
+        canvas_obj: pdf_canvas.Canvas, opacity: float = 0.12
+    ) -> None:
         """
         Agrega marca de agua "CONFIDENCIAL"
 
@@ -152,7 +156,10 @@ class Watermark:
 
     @staticmethod
     def add_multi_watermark(
-        canvas_obj: pdf_canvas.Canvas, text: str, repeats: int = 3, opacity: float = 0.08
+        canvas_obj: pdf_canvas.Canvas,
+        text: str,
+        repeats: int = 3,
+        opacity: float = 0.08,
     ) -> None:
         """
         Agrega múltiples instancias de la marca de agua

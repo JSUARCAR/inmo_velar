@@ -357,41 +357,71 @@ def modal_details() -> rx.Component:
                                 ),
                                 # PLAN DE PAGO (si existe)
                                 rx.cond(
-                                    inc.contains("plan_pago") & (inc["plan_pago"] != None),
+                                    inc.contains("plan_pago")
+                                    & (inc["plan_pago"] != None),
                                     rx.vstack(
                                         rx.divider(margin_y="0.5em"),
                                         rx.hstack(
-                                            rx.icon("wallet", size=18, color="var(--green-9)"),
-                                            rx.text("Plan de Pago", weight="bold", size="2", color="var(--green-9)"),
+                                            rx.icon(
+                                                "wallet",
+                                                size=18,
+                                                color="var(--green-9)",
+                                            ),
+                                            rx.text(
+                                                "Plan de Pago",
+                                                weight="bold",
+                                                size="2",
+                                                color="var(--green-9)",
+                                            ),
                                             spacing="2",
-                                            align_items="center"
+                                            align_items="center",
                                         ),
                                         rx.box(
                                             rx.grid(
                                                 rx.vstack(
-                                                    rx.text("Total", size="1", color="gray"),
-                                                    rx.text(f"${inc['plan_pago'].to(dict)['total_plan']}", weight="bold"),
+                                                    rx.text(
+                                                        "Total", size="1", color="gray"
+                                                    ),
+                                                    rx.text(
+                                                        f"${inc['plan_pago'].to(dict)['total_plan']}",
+                                                        weight="bold",
+                                                    ),
                                                 ),
                                                 rx.vstack(
-                                                    rx.text("Cuotas", size="1", color="gray"),
-                                                    rx.text(f"{inc['plan_pago'].to(dict)['num_cuotas']} de ${inc['plan_pago'].to(dict)['valor_cuota']}", weight="medium"),
+                                                    rx.text(
+                                                        "Cuotas", size="1", color="gray"
+                                                    ),
+                                                    rx.text(
+                                                        f"{inc['plan_pago'].to(dict)['num_cuotas']} de ${inc['plan_pago'].to(dict)['valor_cuota']}",
+                                                        weight="medium",
+                                                    ),
                                                 ),
                                                 rx.vstack(
-                                                    rx.text("Estado", size="1", color="gray"),
-                                                    rx.badge(inc["plan_pago"].to(dict)["estado"], color_scheme="green", variant="soft"),
+                                                    rx.text(
+                                                        "Estado", size="1", color="gray"
+                                                    ),
+                                                    rx.badge(
+                                                        inc["plan_pago"].to(dict)[
+                                                            "estado"
+                                                        ],
+                                                        color_scheme="green",
+                                                        variant="soft",
+                                                    ),
                                                 ),
-                                                columns=rx.breakpoints(initial="1", sm="3"),
+                                                columns=rx.breakpoints(
+                                                    initial="1", sm="3"
+                                                ),
                                                 spacing="3",
-                                                width="100%"
+                                                width="100%",
                                             ),
                                             padding="0.75em",
                                             background_color="var(--green-3)",
                                             border_radius="8px",
-                                            width="100%"
+                                            width="100%",
                                         ),
                                         width="100%",
-                                        spacing="2"
-                                    )
+                                        spacing="2",
+                                    ),
                                 ),
                                 rx.divider(margin_y="0.5em"),
                                 rx.heading(

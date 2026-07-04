@@ -3,6 +3,7 @@ import reflex as rx
 from src.presentacion_reflex.state.personas_state import PersonasState
 from src.presentacion_reflex import styles
 
+
 def tarjeta_selector_rol(rol: str) -> rx.Component:
     """Tarjeta interactiva y estilizada para la selección de roles con estetica Claude."""
 
@@ -63,7 +64,7 @@ def tarjeta_selector_rol(rol: str) -> rx.Component:
                         box_shadow=styles.SHADOW_RING,
                     ),
                     rx.box(
-                        width="28px", 
+                        width="28px",
                         height="28px",
                         border=f"1px solid {styles.BORDER_DEFAULT}",
                         border_radius="full",
@@ -74,10 +75,12 @@ def tarjeta_selector_rol(rol: str) -> rx.Component:
             ),
             rx.vstack(
                 rx.text(
-                    rol, 
-                    weight="bold", 
-                    size="4", 
-                    color=rx.cond(esta_seleccionado, styles.BRAND_PRIMARY, styles.TEXT_PRIMARY),
+                    rol,
+                    weight="bold",
+                    size="4",
+                    color=rx.cond(
+                        esta_seleccionado, styles.BRAND_PRIMARY, styles.TEXT_PRIMARY
+                    ),
                 ),
                 rx.text(descripcion, size="2", color=styles.TEXT_SECONDARY),
                 spacing="1",
@@ -95,8 +98,14 @@ def tarjeta_selector_rol(rol: str) -> rx.Component:
         # Estilo de seleccion Claude: Inset cuando esta seleccionado, Ring cuando no
         style={
             "background": rx.cond(esta_seleccionado, styles.BG_APP, styles.BG_PANEL),
-            "box_shadow": rx.cond(esta_seleccionado, styles.SHADOW_INSET, styles.SHADOW_RING),
-            "border": rx.cond(esta_seleccionado, f"1px solid {styles.BRAND_PRIMARY}", f"1px solid {styles.BORDER_DEFAULT}"),
+            "box_shadow": rx.cond(
+                esta_seleccionado, styles.SHADOW_INSET, styles.SHADOW_RING
+            ),
+            "border": rx.cond(
+                esta_seleccionado,
+                f"1px solid {styles.BRAND_PRIMARY}",
+                f"1px solid {styles.BORDER_DEFAULT}",
+            ),
             "transition": styles.GLOBAL_TRANSITION,
             "border_radius": "16px",
             "outline": "none",

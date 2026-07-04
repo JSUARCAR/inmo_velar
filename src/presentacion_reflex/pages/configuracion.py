@@ -2,7 +2,10 @@ import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.configuracion_state import ConfiguracionState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button, neuro_select_root
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_button,
+)
 from src.presentacion_reflex import styles
 
 # --- ESTILOS & CONSTANTES ---
@@ -30,7 +33,9 @@ def elite_input_field(
 ) -> rx.Component:
     """Campo de entrada con diseño elite y validación visual."""
     return rx.vstack(
-        rx.text(label, font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY),
+        rx.text(
+            label, font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY
+        ),
         rx.box(
             rx.icon(
                 icon_tag,
@@ -46,7 +51,9 @@ def elite_input_field(
                 placeholder=placeholder,
                 value=ConfiguracionState.empresa[field_name],
                 type=type_,
-                on_change=lambda val: ConfiguracionState.set_empresa_field(field_name, val),
+                on_change=lambda val: ConfiguracionState.set_empresa_field(
+                    field_name, val
+                ),
                 padding_left="40px",
                 width="100%",
             ),
@@ -70,7 +77,12 @@ def company_identity_card() -> rx.Component:
         ),
         rx.grid(
             rx.vstack(
-                rx.text("Nombre Legal", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY),
+                rx.text(
+                    "Nombre Legal",
+                    font_size="0.875rem",
+                    weight="medium",
+                    color=styles.TEXT_SECONDARY,
+                ),
                 neuro_input(
                     value=ConfiguracionState.empresa["nombre_empresa"],
                     on_change=lambda val: ConfiguracionState.set_empresa_field(
@@ -82,10 +94,17 @@ def company_identity_card() -> rx.Component:
                 width="100%",
             ),
             rx.vstack(
-                rx.text("NIT / RUC", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY),
+                rx.text(
+                    "NIT / RUC",
+                    font_size="0.875rem",
+                    weight="medium",
+                    color=styles.TEXT_SECONDARY,
+                ),
                 neuro_input(
                     value=ConfiguracionState.empresa["nit"],
-                    on_change=lambda val: ConfiguracionState.set_empresa_field("nit", val),
+                    on_change=lambda val: ConfiguracionState.set_empresa_field(
+                        "nit", val
+                    ),
                     placeholder="Ej. 900.000.000-1",
                     width="100%",
                 ),
@@ -98,7 +117,10 @@ def company_identity_card() -> rx.Component:
         rx.grid(
             rx.vstack(
                 rx.text(
-                    "Representante Legal", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY
+                    "Representante Legal",
+                    font_size="0.875rem",
+                    weight="medium",
+                    color=styles.TEXT_SECONDARY,
                 ),
                 neuro_input(
                     value=ConfiguracionState.empresa["representante_legal"],
@@ -112,7 +134,10 @@ def company_identity_card() -> rx.Component:
             ),
             rx.vstack(
                 rx.text(
-                    "Cédula Representante", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY
+                    "Cédula Representante",
+                    font_size="0.875rem",
+                    weight="medium",
+                    color=styles.TEXT_SECONDARY,
                 ),
                 neuro_input(
                     value=ConfiguracionState.empresa["cedula_representante"],
@@ -187,7 +212,10 @@ def company_identity_card() -> rx.Component:
                             ),
                             id="logo_upload",
                             multiple=False,
-                            accept={"image/png": [".png"], "image/jpeg": [".jpg", ".jpeg"]},
+                            accept={
+                                "image/png": [".png"],
+                                "image/jpeg": [".jpg", ".jpeg"],
+                            },
                             max_files=1,
                             on_drop=ConfiguracionState.handle_upload_logo(
                                 rx.upload_files(upload_id="logo_upload")
@@ -279,16 +307,26 @@ def contact_location_card() -> rx.Component:
             margin_bottom="4",
         ),
         rx.grid(
-            elite_input_field("Correo Electrónico", "contacto@empresa.com", "email", "mail"),
-            elite_input_field("Teléfono / Móvil", "+57 300 000 0000", "telefono", "phone"),
-            elite_input_field("Dirección Física", "Calle 123 # 45 - 67", "direccion", "map-pin"),
-            elite_input_field("Ciudad / Ubicación", "Bogotá D.C.", "ubicacion", "globe"),
+            elite_input_field(
+                "Correo Electrónico", "contacto@empresa.com", "email", "mail"
+            ),
+            elite_input_field(
+                "Teléfono / Móvil", "+57 300 000 0000", "telefono", "phone"
+            ),
+            elite_input_field(
+                "Dirección Física", "Calle 123 # 45 - 67", "direccion", "map-pin"
+            ),
+            elite_input_field(
+                "Ciudad / Ubicación", "Bogotá D.C.", "ubicacion", "globe"
+            ),
             columns="2",
             spacing="5",
             width="100%",
         ),
         rx.box(
-            elite_input_field("Sitio Web", "https://www.miempresa.com", "website", "link"),
+            elite_input_field(
+                "Sitio Web", "https://www.miempresa.com", "website", "link"
+            ),
             margin_top="4",
             width="100%",
         ),
@@ -296,7 +334,12 @@ def contact_location_card() -> rx.Component:
         rx.vstack(
             rx.hstack(
                 rx.icon("share-2", size=20, color="#8b5cf6"),  # Purple for social
-                rx.text("Redes Sociales", font_size="0.95rem", weight="medium", color="#1e293b"),
+                rx.text(
+                    "Redes Sociales",
+                    font_size="0.95rem",
+                    weight="medium",
+                    color="#1e293b",
+                ),
                 spacing="2",
             ),
             rx.grid(
@@ -311,13 +354,20 @@ def contact_location_card() -> rx.Component:
                             align_items="center",
                             justify_content="center",
                         ),
-                        rx.text("Facebook", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY),
+                        rx.text(
+                            "Facebook",
+                            font_size="0.875rem",
+                            weight="medium",
+                            color=styles.TEXT_SECONDARY,
+                        ),
                         spacing="2",
                     ),
                     neuro_input(
                         placeholder="@tuempresa",
                         value=ConfiguracionState.empresa["facebook"],
-                        on_change=lambda val: ConfiguracionState.set_empresa_field("facebook", val),
+                        on_change=lambda val: ConfiguracionState.set_empresa_field(
+                            "facebook", val
+                        ),
                         width="100%",
                     ),
                     width="100%",
@@ -334,7 +384,10 @@ def contact_location_card() -> rx.Component:
                             justify_content="center",
                         ),
                         rx.text(
-                            "Instagram", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY
+                            "Instagram",
+                            font_size="0.875rem",
+                            weight="medium",
+                            color=styles.TEXT_SECONDARY,
                         ),
                         spacing="2",
                     ),
@@ -359,13 +412,20 @@ def contact_location_card() -> rx.Component:
                             align_items="center",
                             justify_content="center",
                         ),
-                        rx.text("TikTok", font_size="0.875rem", weight="medium", color=styles.TEXT_SECONDARY),
+                        rx.text(
+                            "TikTok",
+                            font_size="0.875rem",
+                            weight="medium",
+                            color=styles.TEXT_SECONDARY,
+                        ),
                         spacing="2",
                     ),
                     neuro_input(
                         placeholder="@tuempresa",
                         value=ConfiguracionState.empresa["tiktok"],
-                        on_change=lambda val: ConfiguracionState.set_empresa_field("tiktok", val),
+                        on_change=lambda val: ConfiguracionState.set_empresa_field(
+                            "tiktok", val
+                        ),
                         width="100%",
                     ),
                     width="100%",
@@ -419,11 +479,53 @@ def company_tab_content() -> rx.Component:
 def parameter_badge(categoria: rx.Var) -> rx.Component:
     return rx.match(
         categoria,
-        ("FINANCIERO", rx.badge("FINANCIERO", color_scheme="green", variant="soft", radius="full", padding_x="2")),
-        ("LEGAL", rx.badge("LEGAL", color_scheme="blue", variant="soft", radius="full", padding_x="2")),
-        ("SISTEMA", rx.badge("SISTEMA", color_scheme="gray", variant="soft", radius="full", padding_x="2")),
-        ("NOTIFICACIONES", rx.badge("NOTIFICACIONES", color_scheme="orange", variant="soft", radius="full", padding_x="2")),
-        rx.badge(categoria, color_scheme="violet", variant="soft", radius="full", padding_x="2")
+        (
+            "FINANCIERO",
+            rx.badge(
+                "FINANCIERO",
+                color_scheme="green",
+                variant="soft",
+                radius="full",
+                padding_x="2",
+            ),
+        ),
+        (
+            "LEGAL",
+            rx.badge(
+                "LEGAL",
+                color_scheme="blue",
+                variant="soft",
+                radius="full",
+                padding_x="2",
+            ),
+        ),
+        (
+            "SISTEMA",
+            rx.badge(
+                "SISTEMA",
+                color_scheme="gray",
+                variant="soft",
+                radius="full",
+                padding_x="2",
+            ),
+        ),
+        (
+            "NOTIFICACIONES",
+            rx.badge(
+                "NOTIFICACIONES",
+                color_scheme="orange",
+                variant="soft",
+                radius="full",
+                padding_x="2",
+            ),
+        ),
+        rx.badge(
+            categoria,
+            color_scheme="violet",
+            variant="soft",
+            radius="full",
+            padding_x="2",
+        ),
     )
 
 
@@ -455,9 +557,15 @@ def system_tab_content() -> rx.Component:
                         lambda param: rx.table.row(
                             rx.table.cell(
                                 rx.vstack(
-                                    rx.text(param["nombre_parametro"], weight="bold", color="#334155"),
                                     rx.text(
-                                        param["descripcion"], font_size="0.75rem", color="#94a3b8"
+                                        param["nombre_parametro"],
+                                        weight="bold",
+                                        color="#334155",
+                                    ),
+                                    rx.text(
+                                        param["descripcion"],
+                                        font_size="0.75rem",
+                                        color="#94a3b8",
                                     ),
                                     spacing="1",
                                 ),
@@ -467,7 +575,12 @@ def system_tab_content() -> rx.Component:
                             rx.table.cell(parameter_badge(param["categoria"])),
                             rx.table.cell(
                                 rx.cond(
-                                    (param["modificable"] == 1) & (ConfiguracionState.parametros_desbloqueados.contains(param["id_parametro"])),
+                                    (param["modificable"] == 1)
+                                    & (
+                                        ConfiguracionState.parametros_desbloqueados.contains(
+                                            param["id_parametro"]
+                                        )
+                                    ),
                                     rx.hstack(
                                         neuro_input(
                                             default_value=param["valor_parametro"],
@@ -478,13 +591,19 @@ def system_tab_content() -> rx.Component:
                                             size="2",
                                             auto_focus=True,
                                         ),
-                                        rx.icon("pencil", size=14, color=styles.ACCENT_COLOR),
+                                        rx.icon(
+                                            "pencil", size=14, color=styles.ACCENT_COLOR
+                                        ),
                                     ),
                                     rx.text(
                                         param["valor_parametro"],
                                         weight="bold",
                                         font_family="monospace",
-                                        color=rx.cond(param["modificable"] != 1, "#94a3b8", "#1e293b"),
+                                        color=rx.cond(
+                                            param["modificable"] != 1,
+                                            "#94a3b8",
+                                            "#1e293b",
+                                        ),
                                     ),
                                 )
                             ),
@@ -493,18 +612,24 @@ def system_tab_content() -> rx.Component:
                                     param["modificable"] == 1,
                                     rx.icon_button(
                                         rx.cond(
-                                            ConfiguracionState.parametros_desbloqueados.contains(param["id_parametro"]),
+                                            ConfiguracionState.parametros_desbloqueados.contains(
+                                                param["id_parametro"]
+                                            ),
                                             rx.icon("lock-open", size=16),
                                             rx.icon("lock", size=16),
                                         ),
                                         color_scheme=rx.cond(
-                                            ConfiguracionState.parametros_desbloqueados.contains(param["id_parametro"]),
+                                            ConfiguracionState.parametros_desbloqueados.contains(
+                                                param["id_parametro"]
+                                            ),
                                             "blue",
-                                            "gray"
+                                            "gray",
                                         ),
                                         variant="soft",
                                         size="1",
-                                        on_click=lambda: ConfiguracionState.toggle_lock(param["id_parametro"]),
+                                        on_click=lambda: ConfiguracionState.toggle_lock(
+                                            param["id_parametro"]
+                                        ),
                                         cursor="pointer",
                                     ),
                                     rx.icon(
@@ -558,10 +683,14 @@ def configuracion_content() -> rx.Component:
         rx.tabs.root(
             rx.tabs.list(
                 rx.tabs.trigger(
-                    "Empresa", value="empresa", style={"font_size": "1rem", "padding_y": "12px"}
+                    "Empresa",
+                    value="empresa",
+                    style={"font_size": "1rem", "padding_y": "12px"},
                 ),
                 rx.tabs.trigger(
-                    "Sistema", value="sistema", style={"font_size": "1rem", "padding_y": "12px"}
+                    "Sistema",
+                    value="sistema",
+                    style={"font_size": "1rem", "padding_y": "12px"},
                 ),
                 size="2",
             ),

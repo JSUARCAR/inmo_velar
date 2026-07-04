@@ -1,7 +1,7 @@
 import logging
 import sys
-from datetime import datetime
 from typing import Any, Dict
+
 
 # Configuración básica de logging
 class StructuredLogger:
@@ -9,20 +9,20 @@ class StructuredLogger:
     Logger estructurado para la aplicación.
     Proporciona métodos para loguear eventos con contexto.
     """
-    
+
     def __init__(self, name: str = "app"):
         self.logger = logging.getLogger(name)
         if not self.logger.handlers:
             self.logger.setLevel(logging.INFO)
-            
+
             # Formateador simple para consola
             handler = logging.StreamHandler(sys.stdout)
             formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             )
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
-            
+
             # TODO: Agregar FileHandler para auditoría persistente
 
     def _format_context(self, context: Dict[str, Any]) -> str:
@@ -45,6 +45,7 @@ class StructuredLogger:
 
     def debug(self, message: str, **context):
         self.logger.debug(f"{message}{self._format_context(context)}")
+
 
 # Instancia global
 logger = StructuredLogger()

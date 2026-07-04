@@ -25,44 +25,53 @@ def render_alerta_row(alerta: dict) -> rx.Component:
     """Renderiza una fila de la tabla de alertas."""
     prioridad = alerta.get("prioridad", "Media")
     color_prioridad = rx.cond(
-        prioridad == "Alta", "red",
-        rx.cond(prioridad == "Media", "orange", "blue")
+        prioridad == "Alta", "red", rx.cond(prioridad == "Media", "orange", "blue")
     )
 
     estado = alerta.get("estado_alerta", "Pendiente")
     color_estado = rx.cond(
-        estado == "Pendiente", "orange",
-        rx.cond(estado == "En Proceso", "blue", "green")
+        estado == "Pendiente",
+        "orange",
+        rx.cond(estado == "En Proceso", "blue", "green"),
     )
 
     return rx.table.row(
         rx.table.cell(
             rx.vstack(
                 rx.text(alerta.get("tipo_alerta"), weight="bold", size="2"),
-                rx.text(alerta.get("descripcion_alerta"), size="1", color=styles.TEXT_SECONDARY),
+                rx.text(
+                    alerta.get("descripcion_alerta"),
+                    size="1",
+                    color=styles.TEXT_SECONDARY,
+                ),
                 spacing="1",
             )
         ),
+        rx.table.cell(neuro_badge(prioridad, color_scheme=color_prioridad)),
         rx.table.cell(
-            neuro_badge(prioridad, color_scheme=color_prioridad)
+            rx.text(
+                rx.cond(
+                    alerta.get("fecha_vencimiento_alerta"),
+                    alerta.get("fecha_vencimiento_alerta"),
+                    "N/A",
+                ),
+                size="2",
+            )
         ),
-        rx.table.cell(
-            rx.text(rx.cond(alerta.get("fecha_vencimiento_alerta"), alerta.get("fecha_vencimiento_alerta"), "N/A"), size="2")
-        ),
-        rx.table.cell(
-            neuro_badge(estado, color_scheme=color_estado)
-        ),
+        rx.table.cell(neuro_badge(estado, color_scheme=color_estado)),
         rx.table.cell(
             rx.cond(
                 estado == "Pendiente",
                 neuro_button(
                     "Resolver",
-                    on_click=lambda: AlertasDashboardState.resolver_alerta(alerta["id_alertas"]),
+                    on_click=lambda: AlertasDashboardState.resolver_alerta(
+                        alerta["id_alertas"]
+                    ),
                     size="1",
                     variant="soft",
                     color_scheme="green",
                 ),
-                rx.text("---", size="2", color=styles.TEXT_TERTIARY)
+                rx.text("---", size="2", color=styles.TEXT_TERTIARY),
             )
         ),
     )
@@ -76,8 +85,16 @@ def alertas_page() -> rx.Component:
             rx.box(
                 rx.hstack(
                     rx.vstack(
-                        rx.heading("Alertas Tempranas", size="7", font_family=styles.FONT_DISPLAY),
-                        rx.text("Gestión proactiva de vencimientos y eventos críticos", size="2", color=styles.TEXT_SECONDARY),
+                        rx.heading(
+                            "Alertas Tempranas",
+                            size="7",
+                            font_family=styles.FONT_DISPLAY,
+                        ),
+                        rx.text(
+                            "Gestión proactiva de vencimientos y eventos críticos",
+                            size="2",
+                            color=styles.TEXT_SECONDARY,
+                        ),
                         spacing="1",
                     ),
                     rx.spacer(),
@@ -105,7 +122,6 @@ def alertas_page() -> rx.Component:
                 border_bottom=f"1px solid {styles.BORDER_DEFAULT}",
                 width="100%",
             ),
-
             # CONTENIDO
             rx.vstack(
                 # FILTROS
@@ -125,7 +141,6 @@ def alertas_page() -> rx.Component:
                     spacing="4",
                     width="100%",
                 ),
-
                 # TABLA DE ALERTAS
                 neuro_panel(
                     rx.cond(
@@ -143,8 +158,7 @@ def alertas_page() -> rx.Component:
                             ),
                             rx.table.body(
                                 rx.foreach(
-                                    AlertasDashboardState.alertas,
-                                    render_alerta_row
+                                    AlertasDashboardState.alertas, render_alerta_row
                                 )
                             ),
                             width="100%",
@@ -153,7 +167,6 @@ def alertas_page() -> rx.Component:
                     ),
                     width="100%",
                 ),
-                
                 # PAGINACIÓN (Simplificada)
                 rx.hstack(
                     rx.text(f"Total: {AlertasDashboardState.total_alertas} alertas"),
@@ -161,13 +174,17 @@ def alertas_page() -> rx.Component:
                     rx.hstack(
                         neuro_button(
                             "Anterior",
-                            on_click=lambda: AlertasDashboardState.set_page(AlertasDashboardState.page - 1),
+                            on_click=lambda: AlertasDashboardState.set_page(
+                                AlertasDashboardState.page - 1
+                            ),
                             variant="soft",
                             size="1",
                         ),
                         neuro_button(
                             "Siguiente",
-                            on_click=lambda: AlertasDashboardState.set_page(AlertasDashboardState.page + 1),
+                            on_click=lambda: AlertasDashboardState.set_page(
+                                AlertasDashboardState.page + 1
+                            ),
                             variant="soft",
                             size="1",
                         ),
@@ -176,7 +193,6 @@ def alertas_page() -> rx.Component:
                     width="100%",
                     padding_top="4",
                 ),
-
                 width="100%",
                 padding="6",
                 spacing="6",
@@ -186,6 +202,7 @@ def alertas_page() -> rx.Component:
             min_height="100vh",
         )
     )
+
 
 # Ruta protegida
 @rx.page(

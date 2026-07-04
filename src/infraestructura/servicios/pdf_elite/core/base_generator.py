@@ -67,9 +67,10 @@ class BasePDFGenerator(ABC):
     def _sanitize_string(self, text: str) -> str:
         """Sanitiza strings para prevenir errores de XML en ReportLab"""
         import html
+
         if not isinstance(text, str):
             return str(text)
-        if text.startswith('data:image'):
+        if text.startswith("data:image"):
             return text
         return html.escape(text)
 
@@ -176,7 +177,9 @@ class BasePDFGenerator(ABC):
             error: La excepción que ocurrió
             data: Datos que se estaban procesando
         """
-        logger.error(f"Error generando PDF con {self.__class__.__name__}: {error}", exc_info=True)
+        logger.error(
+            f"Error generando PDF con {self.__class__.__name__}: {error}", exc_info=True
+        )
 
     # ========================================================================
     # MÉTODOS PÚBLICOS DE UTILIDAD
@@ -248,11 +251,11 @@ class BasePDFGenerator(ABC):
     # ========================================================================
 
     def _generate_filename(
-        self, 
-        prefix: str, 
-        descriptor: Any, 
+        self,
+        prefix: str,
+        descriptor: Any,
         extension: str = "pdf",
-        timestamp_format: str = "%Y%m%d%H%M%S"
+        timestamp_format: str = "%Y%m%d%H%M%S",
     ) -> str:
         """
         Genera un nombre de archivo estandarizado
@@ -291,7 +294,7 @@ class BasePDFGenerator(ABC):
 
         for char in invalid_chars:
             filename = filename.replace(char, "_")
-            
+
         # Reemplazar espacios por guiones bajos para mayor compatibilidad
         filename = filename.replace(" ", "_")
 
@@ -325,7 +328,9 @@ class BasePDFGenerator(ABC):
         if missing:
             raise ValueError(f"Campos requeridos faltantes: {', '.join(missing)}")
 
-    def _validate_field_type(self, data: Dict[str, Any], field: str, expected_type: type) -> None:
+    def _validate_field_type(
+        self, data: Dict[str, Any], field: str, expected_type: type
+    ) -> None:
         """
         Valida que un campo tenga el tipo esperado
 

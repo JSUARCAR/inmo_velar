@@ -3,6 +3,7 @@ Value Object: AuditInfo
 Información de auditoría para entidades del dominio.
 Inmutable, genera nuevas instancias al actualizar.
 """
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
@@ -19,9 +20,8 @@ class AuditInfo:
         updated_at: Fecha de última actualización (ISO 8601)
         updated_by: Usuario que realizó la última actualización
     """
-    created_at: str = field(
-        default_factory=lambda: datetime.now().isoformat()
-    )
+
+    created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
@@ -44,6 +44,4 @@ class AuditInfo:
         )
 
     def __str__(self) -> str:
-        return (
-            f"Creado: {self.created_at} por {self.created_by or 'Sistema'}"
-        )
+        return f"Creado: {self.created_at} por {self.created_by or 'Sistema'}"

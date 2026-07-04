@@ -187,4 +187,3 @@ class ServicioAsistenciasAsambleas:
                 continue
 
         return eventos_por_día
-

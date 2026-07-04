@@ -1,6 +1,8 @@
 import reflex as rx
 
-from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+from src.presentacion_reflex.components.document_manager_elite import (
+    document_manager_elite,
+)
 from src.presentacion_reflex.state.recibos_state import RecibosState
 
 
@@ -16,30 +18,44 @@ def detail_modal() -> rx.Component:
                         rx.grid(
                             rx.vstack(
                                 rx.text("Propiedad", weight="bold", size="2"),
-                                rx.text(RecibosState.detail_data["propiedad_nombre"], size="3"),
+                                rx.text(
+                                    RecibosState.detail_data["propiedad_nombre"],
+                                    size="3",
+                                ),
                             ),
                             rx.vstack(
                                 rx.text("Servicio", weight="bold", size="2"),
-                                rx.text(RecibosState.detail_data["tipo_servicio"], size="3"),
+                                rx.text(
+                                    RecibosState.detail_data["tipo_servicio"], size="3"
+                                ),
                             ),
                             rx.vstack(
                                 rx.text("Período", weight="bold", size="2"),
-                                rx.text(RecibosState.detail_data["periodo_recibo"], size="3"),
+                                rx.text(
+                                    RecibosState.detail_data["periodo_recibo"], size="3"
+                                ),
                             ),
                             rx.vstack(
                                 rx.text("Valor", weight="bold", size="2"),
-                                rx.text(RecibosState.detail_data["valor_formato"], size="3"),
+                                rx.text(
+                                    RecibosState.detail_data["valor_formato"], size="3"
+                                ),
                             ),
                             rx.vstack(
                                 rx.text("Estado", weight="bold", size="2"),
                                 rx.badge(
                                     RecibosState.detail_data["estado"],
-                                    color_scheme=RecibosState.detail_data["clase_estado"],
+                                    color_scheme=RecibosState.detail_data[
+                                        "clase_estado"
+                                    ],
                                 ),
                             ),
                             rx.vstack(
                                 rx.text("Fecha Vencimiento", weight="bold", size="2"),
-                                rx.text(RecibosState.detail_data["fecha_vencimiento"], size="3"),
+                                rx.text(
+                                    RecibosState.detail_data["fecha_vencimiento"],
+                                    size="3",
+                                ),
                             ),
                             columns="2",
                             spacing="4",
@@ -50,15 +66,22 @@ def detail_modal() -> rx.Component:
                         rx.grid(
                             rx.vstack(
                                 rx.text("Fecha Desde", weight="bold", size="2"),
-                                rx.text(RecibosState.detail_data["fecha_desde"], size="3"),
+                                rx.text(
+                                    RecibosState.detail_data["fecha_desde"], size="3"
+                                ),
                             ),
                             rx.vstack(
                                 rx.text("Fecha Hasta", weight="bold", size="2"),
-                                rx.text(RecibosState.detail_data["fecha_hasta"], size="3"),
+                                rx.text(
+                                    RecibosState.detail_data["fecha_hasta"], size="3"
+                                ),
                             ),
                             rx.vstack(
                                 rx.text("Días Facturados", weight="bold", size="2"),
-                                rx.text(RecibosState.detail_data["dias_facturados"], size="3"),
+                                rx.text(
+                                    RecibosState.detail_data["dias_facturados"],
+                                    size="3",
+                                ),
                             ),
                             columns="3",
                             spacing="4",
@@ -72,11 +95,21 @@ def detail_modal() -> rx.Component:
                                 rx.grid(
                                     rx.vstack(
                                         rx.text("Fecha Pago", weight="bold", size="2"),
-                                        rx.text(RecibosState.detail_data["fecha_pago"], size="3"),
+                                        rx.text(
+                                            RecibosState.detail_data["fecha_pago"],
+                                            size="3",
+                                        ),
                                     ),
                                     rx.vstack(
-                                        rx.text("Comprobante Referencia", weight="bold", size="2"),
-                                        rx.text(RecibosState.detail_data["comprobante"], size="3"),
+                                        rx.text(
+                                            "Comprobante Referencia",
+                                            weight="bold",
+                                            size="2",
+                                        ),
+                                        rx.text(
+                                            RecibosState.detail_data["comprobante"],
+                                            size="3",
+                                        ),
                                     ),
                                     columns="2",
                                     spacing="4",

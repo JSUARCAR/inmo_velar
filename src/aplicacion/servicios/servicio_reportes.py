@@ -85,7 +85,9 @@ class ServicioReportes:
         except ValueError:
             return None
 
-    def _extraer_headers_seguro(self, data: List[Dict[str, Any]], fallback: List[str] = []) -> List[str]:
+    def _extraer_headers_seguro(
+        self, data: List[Dict[str, Any]], fallback: List[str] = []
+    ) -> List[str]:
         """Extrae las llaves del primer registro de forma segura (Blindaje Élite)."""
         if data and len(data) > 0 and hasattr(data[0], "keys"):
             return list(data[0].keys())
@@ -113,7 +115,9 @@ class ServicioReportes:
         # 1. Reportes de Entidades Base (Paginación real en PostgreSQL)
         if report_id == "personas":
             solo_activos: Optional[bool] = (
-                True if estado == "ACTIVO" else (False if estado == "Inactivo" else None)
+                True
+                if estado == "ACTIVO"
+                else (False if estado == "Inactivo" else None)
             )
             filtro_rol = filtros.get("rol") if filtros.get("rol") != "Todos" else None
             data, total = self.repo_reportes.obtener_reporte_personas(
@@ -123,16 +127,26 @@ class ServicioReportes:
                 page=pagina,
                 limit=limite,
             )
-            headers = self._extraer_headers_seguro(data, [
-                "ID_PERSONA", "TIPO_DOCUMENTO", "NUMERO_DOCUMENTO",
-                "NOMBRE_COMPLETO", "TELEFONO_PRINCIPAL",
-                "CORREO_ELECTRONICO", "DIRECCION_PRINCIPAL", "ESTADO_REGISTRO",
-            ])
+            headers = self._extraer_headers_seguro(
+                data,
+                [
+                    "ID_PERSONA",
+                    "TIPO_DOCUMENTO",
+                    "NUMERO_DOCUMENTO",
+                    "NOMBRE_COMPLETO",
+                    "TELEFONO_PRINCIPAL",
+                    "CORREO_ELECTRONICO",
+                    "DIRECCION_PRINCIPAL",
+                    "ESTADO_REGISTRO",
+                ],
+            )
             return data, headers, total
 
         if report_id == "propiedades":
             solo_activas: Optional[bool] = (
-                True if estado == "ACTIVO" else (False if estado == "Inactivo" else None)
+                True
+                if estado == "ACTIVO"
+                else (False if estado == "Inactivo" else None)
             )
             data, total = self.repo_reportes.obtener_reporte_propiedades(
                 busqueda=busqueda,
@@ -140,12 +154,22 @@ class ServicioReportes:
                 page=pagina,
                 limit=limite,
             )
-            headers = self._extraer_headers_seguro(data, [
-                "ID_PROPIEDAD", "MATRICULA_INMOBILIARIA", "DIRECCION_PROPIEDAD",
-                "TIPO_PROPIEDAD", "AREA_M2", "HABITACIONES", "ESTRATO",
-                "VALOR_ADMINISTRACION", "CANON_ARRENDAMIENTO_ESTIMADO",
-                "DISPONIBILIDAD_PROPIEDAD", "ESTADO_REGISTRO",
-            ])
+            headers = self._extraer_headers_seguro(
+                data,
+                [
+                    "ID_PROPIEDAD",
+                    "MATRICULA_INMOBILIARIA",
+                    "DIRECCION_PROPIEDAD",
+                    "TIPO_PROPIEDAD",
+                    "AREA_M2",
+                    "HABITACIONES",
+                    "ESTRATO",
+                    "VALOR_ADMINISTRACION",
+                    "CANON_ARRENDAMIENTO_ESTIMADO",
+                    "DISPONIBILIDAD_PROPIEDAD",
+                    "ESTADO_REGISTRO",
+                ],
+            )
             return data, headers, total
 
         # 2. Reportes de Roles (Paginación Real en DB)
@@ -293,7 +317,7 @@ class ServicioReportes:
         """Ordena los headers para reportes de roles para mejor legibilidad (Blindaje Élite)."""
         if not data or len(data) == 0:
             return []
-            
+
         priority = [
             "tipo_documento",
             "numero_documento",
@@ -301,12 +325,12 @@ class ServicioReportes:
             "telefono_principal",
             "correo_electronico",
         ]
-        
+
         # Acceso seguro al primer registro
         first_row = data[0]
         if not hasattr(first_row, "keys"):
             return []
-            
+
         all_keys = list(first_row.keys())
         headers = []
 

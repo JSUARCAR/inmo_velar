@@ -26,12 +26,13 @@ from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempote
 from src.aplicacion.decorators.idempotent import idempotent
 from src.infraestructura.cache.cache_manager import cache_manager
 
+
 class ServicioIncidentes:
     def __init__(
-        self, 
-        db_manager: DatabaseManager, 
+        self,
+        db_manager: DatabaseManager,
         repo_incidentes: RepositorioIncidentes = None,
-        repo_idempotencia: Optional[IRepositorioIdempotencia] = None
+        repo_idempotencia: Optional[IRepositorioIdempotencia] = None,
     ):
         self.db_manager = db_manager
         self.repo_incidentes = (
@@ -42,11 +43,17 @@ class ServicioIncidentes:
         self.repo_proveedores = RepositorioProveedoresPostgres(db_manager)
         self.repo_propiedades = RepositorioPropiedadPostgres(db_manager)
         self.repo_ordenes = RepositorioOrdenTrabajoPostgres(db_manager)
-        
-        from src.infraestructura.persistencia.repositorio_plan_pago_postgres import RepositorioPlanPagoPostgres
-        from src.infraestructura.persistencia.repositorio_cuota_postgres import RepositorioCuotaPostgres
-        from src.infraestructura.persistencia.repositorio_bloqueos import RepositorioBloqueos
-        
+
+        from src.infraestructura.persistencia.repositorio_plan_pago_postgres import (
+            RepositorioPlanPagoPostgres,
+        )
+        from src.infraestructura.persistencia.repositorio_cuota_postgres import (
+            RepositorioCuotaPostgres,
+        )
+        from src.infraestructura.persistencia.repositorio_bloqueos import (
+            RepositorioBloqueos,
+        )
+
         self.repo_plan_pago = RepositorioPlanPagoPostgres(db_manager)
         self.repo_cuota = RepositorioCuotaPostgres(db_manager)
         self.repo_bloqueos = RepositorioBloqueos(db_manager)
@@ -55,10 +62,10 @@ class ServicioIncidentes:
     @idempotent(key_prefix="incidentes:reportar")
     @cache_manager.invalidates("dashboard")
     def reportar_incidente(
-        self, 
-        datos: Dict[str, Any], 
+        self,
+        datos: Dict[str, Any],
         usuario_sistema: str,
-        idempotency_key: Optional[str] = None
+        idempotency_key: Optional[str] = None,
     ) -> Incidente:
         """
         Reporta un nuevo incidente.
@@ -83,18 +90,30 @@ class ServicioIncidentes:
         if self.repo_idempotencia and idempotency_key:
             try:
                 # Intentar obtener ID de usuario
-                user_data = self.db_manager.execute_query_one("SELECT id_usuario FROM usuarios WHERE nombre_usuario = %s", (usuario_sistema,))
+                user_data = self.db_manager.execute_query_one(
+                    "SELECT id_usuario FROM usuarios WHERE nombre_usuario = %s",
+                    (usuario_sistema,),
+                )
                 u_id = user_data.get("ID_USUARIO") if user_data else 1
-                
+
                 self.repo_idempotencia.registrar_evento(
                     entidad_tipo="Incidente",
                     entidad_id=resultado.id_incidente,
                     tipo_evento="CREATED",
-                    idempotency_key=f"incidentes:reportar:{idempotency_key}" if not idempotency_key.startswith("incidentes") else idempotency_key,
-                    payload=resultado.__dict__ if hasattr(resultado, "__dict__") else {"id": resultado.id_incidente},
-                    usuario_id=u_id
+                    idempotency_key=(
+                        f"incidentes:reportar:{idempotency_key}"
+                        if not idempotency_key.startswith("incidentes")
+                        else idempotency_key
+                    ),
+                    payload=(
+                        resultado.__dict__
+                        if hasattr(resultado, "__dict__")
+                        else {"id": resultado.id_incidente}
+                    ),
+                    usuario_id=u_id,
                 )
-            except Exception: pass
+            except Exception:
+                pass
 
         return resultado
 
@@ -285,16 +304,19 @@ class ServicioIncidentes:
             incidente = incidente.avanzar_estado("Aprobado", usuario_sistema)
 
             self.repo_incidentes.actualizar(incidente)
-            
+
             # Crear plan de pago automáticamente con 1 cuota
-            from src.aplicacion.servicios.servicio_plan_pago import ServicioPlanPagoIncidente
+            from src.aplicacion.servicios.servicio_plan_pago import (
+                ServicioPlanPagoIncidente,
+            )
+
             servicio_plan = ServicioPlanPagoIncidente(
                 repositorio_plan=self.repo_plan_pago,
                 repositorio_cuota=self.repo_cuota,
                 repositorio_incidentes=self.repo_incidentes,
                 repositorio_bloqueos=self.repo_bloqueos,
             )
-            
+
             # Solo si el responsable de pago es Propietario (o Inquilino, pero esto impacta Liquidaciones de Propietario)
             if cotizacion_aprobada.valor_total > 0:
                 res = servicio_plan.crear_plan(
@@ -304,7 +326,9 @@ class ServicioIncidentes:
                     creado_por=usuario_sistema,
                 )
                 if not res.get("success"):
-                    _log.warning(f"No se pudo crear el plan de pago automáticamente: {res.get('message')}")
+                    _log.warning(
+                        f"No se pudo crear el plan de pago automáticamente: {res.get('message')}"
+                    )
 
             self._registrar_historial(
                 id_incidente=id_incidente,

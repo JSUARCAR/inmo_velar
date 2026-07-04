@@ -5,9 +5,8 @@ Inmutable y con validación estricta.
 """
 
 from dataclasses import dataclass
-from datetime import date, datetime
-from typing import Final, Literal, Optional
-
+from datetime import date
+from typing import Final, Optional
 
 ESTADO_AL_DIA: Final = "AL_DIA"
 ESTADO_PENDIENTE: Final = "PENDIENTE"

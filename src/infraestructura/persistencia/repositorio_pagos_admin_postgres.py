@@ -170,18 +170,20 @@ class RepositorioPagosAdminPostgres:
         p = self.db.get_placeholder()
 
         # Verificar estado actual antes de proceder (Idempotencia)
-        query_check = f"SELECT ESTADO_PAGO FROM PAGOS_ADMINISTRACION WHERE ID_PAGO_ADMIN = {p}"
+        query_check = (
+            f"SELECT ESTADO_PAGO FROM PAGOS_ADMINISTRACION WHERE ID_PAGO_ADMIN = {p}"
+        )
         cursor.execute(query_check, (id_pago,))
         row = cursor.fetchone()
-        
+
         if not row:
             cursor.close()
             raise ValueError(f"Pago con ID {id_pago} no encontrado.")
-            
+
         estado = row.get("ESTADO_PAGO") or row.get("estado_pago")
         if estado == "Pagado":
             cursor.close()
-            return True # Ya está pagado, no hacer nada
+            return True  # Ya está pagado, no hacer nada
 
         query_update = f"""
             UPDATE PAGOS_ADMINISTRACION

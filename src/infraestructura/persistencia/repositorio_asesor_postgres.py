@@ -38,12 +38,12 @@ class RepositorioAsesorPostgres:
             updated_at=get_val("UPDATED_AT"),
             updated_by=get_val("UPDATED_BY"),
         )
-        
+
         # Campo extra de JOIN si está presente
         nombre = get_val("NOMBRE_COMPLETO")
         if nombre:
             asesor.nombre_completo = nombre
-            
+
         return asesor
 
     def obtener_por_id(self, id_asesor: int) -> Optional[Asesor]:
@@ -71,7 +71,6 @@ class RepositorioAsesorPostgres:
         return self._row_to_entity(row)
 
     def listar_activos(self) -> List[Asesor]:
-
         """Lista todos los asesores activos con sus datos personales."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
@@ -118,22 +117,25 @@ class RepositorioAsesorPostgres:
             ) VALUES ({p}, {p}, {p}, {p}, {p}, {p}, {p}, {p})
             RETURNING ID_ASESOR
         """
-        
-        cursor.execute(query, (
-            asesor.id_persona,
-            asesor.id_usuario,
-            asesor.comision_porcentaje_arriendo,
-            asesor.comision_porcentaje_venta,
-            asesor.fecha_ingreso or datetime.now().isoformat(),
-            asesor.estado if asesor.estado is not None else True,
-            datetime.now().isoformat(),
-            usuario_sistema
-        ))
-        
+
+        cursor.execute(
+            query,
+            (
+                asesor.id_persona,
+                asesor.id_usuario,
+                asesor.comision_porcentaje_arriendo,
+                asesor.comision_porcentaje_venta,
+                asesor.fecha_ingreso or datetime.now().isoformat(),
+                asesor.estado if asesor.estado is not None else True,
+                datetime.now().isoformat(),
+                usuario_sistema,
+            ),
+        )
+
         result = cursor.fetchone()
         if result:
             asesor.id_asesor = result.get("ID_ASESOR") or result.get("id_asesor")
-            
+
         conn.commit()
         cursor.close()
         return asesor
@@ -153,16 +155,19 @@ class RepositorioAsesorPostgres:
                 UPDATED_BY = {p}
             WHERE ID_ASESOR = {p}
         """
-        
-        cursor.execute(query, (
-            asesor.comision_porcentaje_arriendo,
-            asesor.comision_porcentaje_venta,
-            asesor.estado if asesor.estado is not None else True,
-            datetime.now().isoformat(),
-            usuario_sistema,
-            asesor.id_asesor
-        ))
-        
+
+        cursor.execute(
+            query,
+            (
+                asesor.comision_porcentaje_arriendo,
+                asesor.comision_porcentaje_venta,
+                asesor.estado if asesor.estado is not None else True,
+                datetime.now().isoformat(),
+                usuario_sistema,
+                asesor.id_asesor,
+            ),
+        )
+
         conn.commit()
         count = cursor.rowcount
         cursor.close()
@@ -176,7 +181,7 @@ class RepositorioAsesorPostgres:
 
         query = f"DELETE FROM ASESORES WHERE ID_PERSONA = {p}"
         cursor.execute(query, (id_persona,))
-        
+
         conn.commit()
         count = cursor.rowcount
         cursor.close()

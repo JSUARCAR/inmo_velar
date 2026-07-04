@@ -12,6 +12,7 @@ from src.infraestructura.persistencia.database import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
+
 class RepositorioSeguroPostgres:
     """
     Repositorio para gestionar seguros en PostgreSQL.
@@ -22,7 +23,9 @@ class RepositorioSeguroPostgres:
 
     def crear(self, seguro: Seguro, usuario_sistema: str) -> Seguro:
         """Crea un nuevo seguro con RETURNING id (PostgreSQL)."""
-        logger.debug(f"Ejecutando crear seguro (Postgres): nombre={seguro.nombre_seguro}")
+        logger.debug(
+            f"Ejecutando crear seguro (Postgres): nombre={seguro.nombre_seguro}"
+        )
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
 
@@ -45,7 +48,11 @@ class RepositorioSeguroPostgres:
                 seguro.nombre_seguro,
                 seguro.fecha_inicio_seguro,
                 seguro.porcentaje_seguro,
-                bool(seguro.estado_seguro) if seguro.estado_seguro is not None else True,
+                (
+                    bool(seguro.estado_seguro)
+                    if seguro.estado_seguro is not None
+                    else True
+                ),
                 seguro.fecha_ingreso_seguro or datetime.now().date().isoformat(),
                 ahora,
                 usuario_sistema,
@@ -70,9 +77,7 @@ class RepositorioSeguroPostgres:
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
-        cursor.execute(
-            "SELECT * FROM SEGUROS WHERE ID_SEGURO = %s", (id_seguro,)
-        )
+        cursor.execute("SELECT * FROM SEGUROS WHERE ID_SEGURO = %s", (id_seguro,))
 
         row = cursor.fetchone()
         return self._row_a_seguro(row) if row else None
@@ -128,7 +133,11 @@ class RepositorioSeguroPostgres:
                 seguro.nombre_seguro,
                 seguro.fecha_inicio_seguro,
                 seguro.porcentaje_seguro,
-                bool(seguro.estado_seguro) if seguro.estado_seguro is not None else True,
+                (
+                    bool(seguro.estado_seguro)
+                    if seguro.estado_seguro is not None
+                    else True
+                ),
                 ahora,
                 usuario_sistema,
                 seguro.id_seguro,

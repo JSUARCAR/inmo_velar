@@ -1,5 +1,4 @@
 import reflex as rx
-from src.presentacion_reflex.components.layout.sidebar import sidebar
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.reportes_state import ReportesState, ReportItem
 from src.presentacion_reflex import styles

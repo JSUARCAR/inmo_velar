@@ -55,7 +55,9 @@ class ContratoMandato:
     documento_consignatario: Optional[str] = None
 
     # Auditoría
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None

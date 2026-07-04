@@ -17,7 +17,7 @@ def modal_exportar_liquidaciones_periodo() -> rx.Component:
         rx.dialog.content(
             rx.dialog.title(
                 rx.hstack(
-                    rx.icon("file-archive", size=20, color="#d97757"), # Terracotta
+                    rx.icon("file-archive", size=20, color="#d97757"),  # Terracotta
                     rx.text("Exportar Estados de Cuenta"),
                     spacing="2",
                     align="center",
@@ -34,7 +34,7 @@ def modal_exportar_liquidaciones_periodo() -> rx.Component:
                 rx.text("Período", size="2", weight="medium"),
                 neuro_input(
                     type="month",
-                    value=LiquidacionesState.filter_periodo, # Reutilizamos el filtro para coherencia
+                    value=LiquidacionesState.filter_periodo,  # Reutilizamos el filtro para coherencia
                     on_change=LiquidacionesState.set_filter_periodo,
                     width="100%",
                     size="3",
@@ -64,7 +64,7 @@ def modal_exportar_liquidaciones_periodo() -> rx.Component:
                     ),
                     on_click=LiquidacionesState.exportar_liquidaciones_periodo_zip,
                     loading=LiquidacionesState.exportando_periodo,
-                    color_scheme="orange", # Coral/Terracotta style
+                    color_scheme="orange",  # Coral/Terracotta style
                 ),
                 spacing="3",
                 justify="end",
@@ -72,7 +72,11 @@ def modal_exportar_liquidaciones_periodo() -> rx.Component:
             ),
             max_width="450px",
             background=styles.BG_PANEL,
-            style={"box_shadow": styles.NEU_SHADOW, "border": "none", "border_radius": "24px"},
+            style={
+                "box_shadow": styles.NEU_SHADOW,
+                "border": "none",
+                "border_radius": "24px",
+            },
         ),
         open=LiquidacionesState.show_export_modal,
         on_open_change=lambda open: rx.cond(

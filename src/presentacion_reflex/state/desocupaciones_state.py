@@ -90,7 +90,9 @@ class DesocupacionesState(DocumentosStateMixin):
 
         try:
             servicio = ServicioDesocupaciones(db_manager)
-            estado_filtro = self.filter_estado if self.filter_estado != "Todos" else None
+            estado_filtro = (
+                self.filter_estado if self.filter_estado != "Todos" else None
+            )
 
             resultado = servicio.listar_desocupaciones_paginado(
                 page=self.current_page, page_size=self.page_size, estado=estado_filtro
@@ -159,7 +161,11 @@ class DesocupacionesState(DocumentosStateMixin):
 
     def open_create_modal(self):
         self.modal_create_open = True
-        self.form_create_data = {"id_contrato": "", "fecha_programada": "", "observaciones": ""}
+        self.form_create_data = {
+            "id_contrato": "",
+            "fecha_programada": "",
+            "observaciones": "",
+        }
         return DesocupacionesState.load_contratos_candidatos
 
     def close_create_modal(self):
@@ -301,7 +307,9 @@ class DesocupacionesState(DocumentosStateMixin):
 
             # Recargar checklist para actualizar estado visual
             if self.id_desocupacion_seleccionada:
-                yield DesocupacionesState.open_checklist(self.id_desocupacion_seleccionada)
+                yield DesocupacionesState.open_checklist(
+                    self.id_desocupacion_seleccionada
+                )
 
             # También recargar la lista principal para actualizar progreso
             yield DesocupacionesState.load_desocupaciones()
@@ -361,9 +369,9 @@ class DesocupacionesState(DocumentosStateMixin):
             # pero el servicio validará el ROL del usuario.
 
             servicio.finalizar_desocupacion(
-                self.id_desocupacion_seleccionada, 
+                self.id_desocupacion_seleccionada,
                 self.current_user,
-                self.current_user_role
+                self.current_user_role,
             )
 
             async with self:

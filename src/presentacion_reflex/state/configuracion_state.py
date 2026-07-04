@@ -79,14 +79,15 @@ class ConfiguracionState(rx.State):
             {
                 "id_parametro": p.id_parametro,
                 "nombre_parametro": p.nombre_parametro,
-                "valor_parametro": str(p.valor_parametro) if p.valor_parametro is not None else "",
+                "valor_parametro": (
+                    str(p.valor_parametro) if p.valor_parametro is not None else ""
+                ),
                 "descripcion": p.descripcion or "",
                 "categoria": p.categoria or "SISTEMA",
                 "modificable": p.modificable if p.modificable is not None else 1,
             }
             for p in params
         ]
-
 
     def set_empresa_field(self, field: str, value: str):
         """Actualiza un campo específico de la empresa."""
@@ -169,11 +170,11 @@ class ConfiguracionState(rx.State):
             servicio = ServicioConfiguracion(db_manager)
             servicio.actualizar_parametro(id_parametro, nuevo_valor, "USUARIO_WEB")
             self.cargar_parametros()
-            
+
             # Bloquear de nuevo tras guardar (opcional, por seguridad)
             if id_parametro in self.parametros_desbloqueados:
                 self.parametros_desbloqueados.remove(id_parametro)
-                
+
             return rx.toast.success("Parámetro actualizado.")
         except Exception as e:
             return rx.toast.error(f"Error al actualizar parámetro: {str(e)}")
@@ -184,4 +185,3 @@ class ConfiguracionState(rx.State):
             self.parametros_desbloqueados.remove(id_parametro)
         else:
             self.parametros_desbloqueados.append(id_parametro)
-

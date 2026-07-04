@@ -28,15 +28,24 @@ def modal_detalle_seguro() -> rx.Component:
                         rx.grid(
                             # Nombre
                             rx.vstack(
-                                rx.text("Nombre", size="2", color="gray", weight="bold"),
-                                rx.text(SegurosState.selected_seguro["nombre_seguro"], size="3"),
+                                rx.text(
+                                    "Nombre", size="2", color="gray", weight="bold"
+                                ),
+                                rx.text(
+                                    SegurosState.selected_seguro["nombre_seguro"],
+                                    size="3",
+                                ),
                                 spacing="1",
                             ),
                             # Porcentaje
                             rx.vstack(
-                                rx.text("Porcentaje", size="2", color="gray", weight="bold"),
                                 rx.text(
-                                    SegurosState.selected_seguro["porcentaje_seguro"].to(str),
+                                    "Porcentaje", size="2", color="gray", weight="bold"
+                                ),
+                                rx.text(
+                                    SegurosState.selected_seguro[
+                                        "porcentaje_seguro"
+                                    ].to(str),
                                     "%",
                                     size="3",
                                     weight="bold",
@@ -46,11 +55,14 @@ def modal_detalle_seguro() -> rx.Component:
                             ),
                             # Estado
                             rx.vstack(
-                                rx.text("Estado", size="2", color="gray", weight="bold"),
+                                rx.text(
+                                    "Estado", size="2", color="gray", weight="bold"
+                                ),
                                 rx.badge(
                                     SegurosState.selected_seguro["estado_seguro"],
                                     color_scheme=rx.cond(
-                                        SegurosState.selected_seguro["estado_seguro"] == "ACTIVO",
+                                        SegurosState.selected_seguro["estado_seguro"]
+                                        == "ACTIVO",
                                         "green",
                                         "red",
                                     ),
@@ -59,29 +71,49 @@ def modal_detalle_seguro() -> rx.Component:
                             ),
                             # Fecha Inicio
                             rx.vstack(
-                                rx.text("Fecha Inicio", size="2", color="gray", weight="bold"),
                                 rx.text(
-                                    SegurosState.selected_seguro["fecha_inicio_seguro"], size="3"
+                                    "Fecha Inicio",
+                                    size="2",
+                                    color="gray",
+                                    weight="bold",
+                                ),
+                                rx.text(
+                                    SegurosState.selected_seguro["fecha_inicio_seguro"],
+                                    size="3",
                                 ),
                                 spacing="1",
                             ),
                             # Fecha Ingreso
                             rx.vstack(
-                                rx.text("Fecha Ingreso", size="2", color="gray", weight="bold"),
                                 rx.text(
-                                    SegurosState.selected_seguro["fecha_ingreso_seguro"], size="3"
+                                    "Fecha Ingreso",
+                                    size="2",
+                                    color="gray",
+                                    weight="bold",
+                                ),
+                                rx.text(
+                                    SegurosState.selected_seguro[
+                                        "fecha_ingreso_seguro"
+                                    ],
+                                    size="3",
                                 ),
                                 spacing="1",
                             ),
                             # Motivo Inactivación (si aplica)
                             rx.cond(
-                                SegurosState.selected_seguro["motivo_inactivacion"] != "N/A",
+                                SegurosState.selected_seguro["motivo_inactivacion"]
+                                != "N/A",
                                 rx.vstack(
                                     rx.text(
-                                        "Motivo Inactivación", size="2", color="gray", weight="bold"
+                                        "Motivo Inactivación",
+                                        size="2",
+                                        color="gray",
+                                        weight="bold",
                                     ),
                                     rx.text(
-                                        SegurosState.selected_seguro["motivo_inactivacion"],
+                                        SegurosState.selected_seguro[
+                                            "motivo_inactivacion"
+                                        ],
                                         size="3",
                                         color="red",
                                     ),
@@ -110,7 +142,8 @@ def modal_detalle_seguro() -> rx.Component:
                                         rx.vstack(
                                             rx.hstack(
                                                 rx.badge(
-                                                    poliza["numero_poliza"], color_scheme="blue"
+                                                    poliza["numero_poliza"],
+                                                    color_scheme="blue",
                                                 ),
                                                 rx.badge(
                                                     poliza["estado"],
@@ -136,7 +169,9 @@ def modal_detalle_seguro() -> rx.Component:
                                                     size="2",
                                                 ),
                                                 rx.text(
-                                                    "Fin: ", poliza["fecha_fin"], size="2"
+                                                    "Fin: ",
+                                                    poliza["fecha_fin"],
+                                                    size="2",
                                                 ),
                                                 spacing="4",
                                             ),

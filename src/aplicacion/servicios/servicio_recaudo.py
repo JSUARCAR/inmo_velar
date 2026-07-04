@@ -112,9 +112,11 @@ class ServicioRecaudo:
                     entidad_id=resultado.id_recaudo,
                     tipo_evento="CREATED",
                     idempotency_key=_idempotency_full_key,
-                    payload=resultado.__dict__
-                    if hasattr(resultado, "__dict__")
-                    else {"id": resultado.id_recaudo},
+                    payload=(
+                        resultado.__dict__
+                        if hasattr(resultado, "__dict__")
+                        else {"id": resultado.id_recaudo}
+                    ),
                     usuario_id=u_id,
                 )
             except Exception as e:
@@ -384,13 +386,17 @@ class ServicioRecaudo:
             fecha_pago=recaudo.fecha_pago,
             valor_total=recaudo.valor_total,
             valor_total_view=format_currency(recaudo.valor_total),
-            metodo_pago=recaudo.metodo_pago.value
-            if hasattr(recaudo.metodo_pago, "value")
-            else str(recaudo.metodo_pago),
+            metodo_pago=(
+                recaudo.metodo_pago.value
+                if hasattr(recaudo.metodo_pago, "value")
+                else str(recaudo.metodo_pago)
+            ),
             referencia=recaudo.referencia_bancaria or "",
-            estado=recaudo.estado_recaudo.value
-            if hasattr(recaudo.estado_recaudo, "value")
-            else str(recaudo.estado_recaudo),
+            estado=(
+                recaudo.estado_recaudo.value
+                if hasattr(recaudo.estado_recaudo, "value")
+                else str(recaudo.estado_recaudo)
+            ),
             observaciones=recaudo.observaciones or "",
             created_at=recaudo.created_at or "",
             created_by=recaudo.created_by or "",
@@ -468,9 +474,9 @@ class ServicioRecaudo:
             "direccion": (row["DIRECCION_PROPIEDAD"] or "") if row else "",
             "matricula": (row["MATRICULA_INMOBILIARIA"] or "") if row else "",
             "arrendatario": (row["ARRENDATARIO"] or "") if row else "",
-            "telefono_arrendatario": (row["TELEFONO_ARRENDATARIO"] or "")
-            if row
-            else "",
+            "telefono_arrendatario": (
+                (row["TELEFONO_ARRENDATARIO"] or "") if row else ""
+            ),
             "habitante": (row["NOMBRE_HABITANTE"] or "") if row else "",
             "telefono_habitante": (row["TELEFONO_HABITANTE"] or "") if row else "",
         }

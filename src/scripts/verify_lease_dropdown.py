@@ -27,15 +27,16 @@ def verify_logic():
             # Handle case sensitivity helper
             p_dict = dict(p) if hasattr(p, "keys") else p
             p_id = p_dict.get("ID_PROPIEDAD") or p_dict.get("id_propiedad")
-            address = p_dict.get("DIRECCION_PROPIEDAD") or p_dict.get("direccion_propiedad")
+            address = p_dict.get("DIRECCION_PROPIEDAD") or p_dict.get(
+                "direccion_propiedad"
+            )
 
             # 2. Check Active Mandate
             cursor.execute(
                 """
                 SELECT 1 FROM CONTRATOS_MANDATOS 
                 WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_M = 'ACTIVO'
-            """
-                % db_manager.get_placeholder(),
+            """ % db_manager.get_placeholder(),
                 (p_id,),
             )
             has_mandate = cursor.fetchone() is not None
@@ -45,8 +46,7 @@ def verify_logic():
                 """
                 SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS 
                 WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'ACTIVO'
-            """
-                % db_manager.get_placeholder(),
+            """ % db_manager.get_placeholder(),
                 (p_id,),
             )
             has_lease = cursor.fetchone() is not None

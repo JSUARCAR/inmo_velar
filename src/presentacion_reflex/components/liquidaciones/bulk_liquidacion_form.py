@@ -42,7 +42,11 @@ def bulk_liquidacion_form(
                 rx.vstack(
                     # Período
                     rx.box(
-                        rx.text("Período (YYYY-MM)", font_weight="600", margin_bottom="0.5rem"),
+                        rx.text(
+                            "Período (YYYY-MM)",
+                            font_weight="600",
+                            margin_bottom="0.5rem",
+                        ),
                         rx.input(
                             placeholder="2026-01",
                             name="periodo",
@@ -65,14 +69,19 @@ def bulk_liquidacion_form(
                     rx.hstack(
                         rx.dialog.close(
                             rx.button(
-                                "Cancelar", variant="soft", color_scheme="gray", on_click=on_cancel
+                                "Cancelar",
+                                variant="soft",
+                                color_scheme="gray",
+                                on_click=on_cancel,
                             )
                         ),
                         rx.button(
                             rx.cond(
                                 is_loading,
                                 rx.hstack(
-                                    rx.spinner(size="1"), rx.text("Generando..."), spacing="2"
+                                    rx.spinner(size="1"),
+                                    rx.text("Generando..."),
+                                    spacing="2",
                                 ),
                                 rx.text("Generar Liquidaciones"),
                             ),

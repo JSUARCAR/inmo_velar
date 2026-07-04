@@ -70,7 +70,9 @@ class QRGenerator:
         # Crear objeto QR
         qr = qrcode.QRCode(
             version=1,  # Auto-ajusta el tamaño
-            error_correction=error_levels.get(error_correction, qrcode.constants.ERROR_CORRECT_H),
+            error_correction=error_levels.get(
+                error_correction, qrcode.constants.ERROR_CORRECT_H
+            ),
             box_size=10,
             border=border,
         )
@@ -110,7 +112,10 @@ class QRGenerator:
 
     @staticmethod
     def generate_verification_qr(
-        doc_type: str, doc_id: int, base_url: str = "https://inmovelar.com/verify", size: int = 150
+        doc_type: str,
+        doc_id: int,
+        base_url: str = "https://inmovelar.com/verify",
+        size: int = 150,
     ) -> BytesIO:
         """
         Genera QR para verificación de documentos
@@ -137,7 +142,9 @@ class QRGenerator:
         )
 
     @staticmethod
-    def generate_contact_qr(name: str, phone: str, email: str, size: int = 180) -> BytesIO:
+    def generate_contact_qr(
+        name: str, phone: str, email: str, size: int = 180
+    ) -> BytesIO:
         """
         Genera QR con información de contacto (vCard)
 

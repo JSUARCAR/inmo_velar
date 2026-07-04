@@ -33,6 +33,7 @@ class Settings(BaseSettings):
         if v == "" or v is None:
             return 5432  # default port
         return int(v)
+
     db_user: str = Field(default="postgres", description="Usuario de PostgreSQL")
     db_password: str = Field(default="", description="Contraseña de PostgreSQL")
     db_name: str = Field(
@@ -53,7 +54,9 @@ class Settings(BaseSettings):
         default="INFO", description="Nivel de logging (DEBUG, INFO, WARNING, ERROR)"
     )
 
-    log_file: Optional[str] = Field(default="logs/app.log", description="Archivo de log")
+    log_file: Optional[str] = Field(
+        default="logs/app.log", description="Archivo de log"
+    )
 
     # === Seguridad ===
     secret_key: str = Field(
@@ -74,7 +77,9 @@ class Settings(BaseSettings):
 
     smtp_user: Optional[str] = Field(default=None, description="Usuario SMTP (Email)")
 
-    smtp_password: Optional[str] = Field(default=None, description="Contraseña SMTP (App Password)")
+    smtp_password: Optional[str] = Field(
+        default=None, description="Contraseña SMTP (App Password)"
+    )
 
     # === Notificaciones (WhatsApp) ===
     wa_autosend_delay: float = Field(

@@ -98,12 +98,14 @@ class LiquidacionesState(DocumentosStateMixin):
     show_delete_modal: bool = False  # Modal para eliminar liquidación
     liquidacion_id_for_delete: int = 0  # ID de liquidación a eliminar
     delete_confirmed: bool = False  # Checkbox de confirmación de eliminación
-    
+
     # Eliminación agrupada
     show_group_delete_modal: bool = False  # Modal para eliminar grupo de liquidaciones
     group_delete_id_propietario: int = 0  # ID del propietario del grupo
     group_delete_periodo: str = ""  # Período del grupo a eliminar
-    group_delete_confirmed: bool = False  # Checkbox de confirmación de eliminación agrupada
+    group_delete_confirmed: bool = (
+        False  # Checkbox de confirmación de eliminación agrupada
+    )
 
     # --- INCIDENT ASSOCIATION MODAL (US2) ---
     show_seleccion_incidentes_modal: bool = False
@@ -126,9 +128,9 @@ class LiquidacionesState(DocumentosStateMixin):
     # Cancel/Reverse data
     cancel_motivo: str = ""
     liquidacion_id_for_action: int = 0  # ID de liquidación para acción pendiente
-    selected_liquidaciones_ids: List[
-        int
-    ] = []  # IDs seleccionados para acciones masivas
+    selected_liquidaciones_ids: List[int] = (
+        []
+    )  # IDs seleccionados para acciones masivas
 
     @staticmethod
     def parse_int_safe(value: Any, default: int = 0) -> int:
@@ -1104,21 +1106,37 @@ class LiquidacionesState(DocumentosStateMixin):
 
             # Procesar datos del formulario
             datos_procesados = {
-                "otros_ingresos": LiquidacionesState.parse_int_safe(form_data.get("otros_ingresos")),
-                "gastos_administracion": LiquidacionesState.parse_int_safe(form_data.get("gastos_administracion")),
-                "gastos_servicios": LiquidacionesState.parse_int_safe(form_data.get("gastos_servicios")),
-                "valor_incidentes": LiquidacionesState.parse_int_safe(form_data.get("valor_incidentes")),
-                "pago_predial": LiquidacionesState.parse_int_safe(form_data.get("pago_predial")),
-                "otros_egresos": LiquidacionesState.parse_int_safe(form_data.get("otros_egresos")),
+                "otros_ingresos": LiquidacionesState.parse_int_safe(
+                    form_data.get("otros_ingresos")
+                ),
+                "gastos_administracion": LiquidacionesState.parse_int_safe(
+                    form_data.get("gastos_administracion")
+                ),
+                "gastos_servicios": LiquidacionesState.parse_int_safe(
+                    form_data.get("gastos_servicios")
+                ),
+                "valor_incidentes": LiquidacionesState.parse_int_safe(
+                    form_data.get("valor_incidentes")
+                ),
+                "pago_predial": LiquidacionesState.parse_int_safe(
+                    form_data.get("pago_predial")
+                ),
+                "otros_egresos": LiquidacionesState.parse_int_safe(
+                    form_data.get("otros_egresos")
+                ),
                 "observaciones": form_data.get("observaciones", ""),
             }
 
             if is_create_mode:
                 # Crear nueva liquidación
-                id_contrato_m = LiquidacionesState.parse_int_safe(form_data.get("id_contrato_m"), default=-1)
+                id_contrato_m = LiquidacionesState.parse_int_safe(
+                    form_data.get("id_contrato_m"), default=-1
+                )
                 if id_contrato_m <= 0:
-                    raise ValueError("El ID del contrato es obligatorio. Por favor seleccione una propiedad válida.")
-                
+                    raise ValueError(
+                        "El ID del contrato es obligatorio. Por favor seleccione una propiedad válida."
+                    )
+
                 datos_procesados["id_contrato_m"] = id_contrato_m
                 datos_procesados["periodo"] = form_data.get("periodo", "")
                 servicio.generar_liquidacion_mensual(
@@ -1233,7 +1251,9 @@ class LiquidacionesState(DocumentosStateMixin):
                 servicio_estado = ServicioEstadoPagoAutomatico(
                     repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
                     repositorio_cuota=RepositorioCuotaPostgres(db_manager),
-                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(db_manager),
+                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(
+                        db_manager
+                    ),
                     repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
                 )
                 servicio_estado.actualizar_estado_pago_por_liquidacion(
@@ -1243,6 +1263,7 @@ class LiquidacionesState(DocumentosStateMixin):
             except Exception as e_estado:
                 # No fallar el pago principal por error en actualización de estado
                 import logging
+
                 logging.getLogger(__name__).warning(
                     f"Error al actualizar estado de pago de incidentes: {e_estado}"
                 )
@@ -1371,7 +1392,10 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            if not self.reverse_pago_motivo or len(self.reverse_pago_motivo.strip()) < 10:
+            if (
+                not self.reverse_pago_motivo
+                or len(self.reverse_pago_motivo.strip()) < 10
+            ):
                 async with self:
                     self.error_message = "El motivo debe tener al menos 10 caracteres"
                     self.is_loading = False
@@ -1406,7 +1430,9 @@ class LiquidacionesState(DocumentosStateMixin):
                 servicio_estado = ServicioEstadoPagoAutomatico(
                     repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
                     repositorio_cuota=RepositorioCuotaPostgres(db_manager),
-                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(db_manager),
+                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(
+                        db_manager
+                    ),
                     repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
                 )
                 servicio_estado.revertir_estado_pago_por_liquidacion(
@@ -1415,6 +1441,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 )
             except Exception as e_estado:
                 import logging
+
                 logging.getLogger(__name__).warning(
                     f"Error al revertir estado de pago de incidentes: {e_estado}"
                 )
@@ -1435,9 +1462,7 @@ class LiquidacionesState(DocumentosStateMixin):
             yield rx.toast.error(self.error_message, position="bottom-right")
             return
 
-        yield rx.toast.success(
-            "Pago reversado exitosamente", position="bottom-right"
-        )
+        yield rx.toast.success("Pago reversado exitosamente", position="bottom-right")
 
     @rx.event(background=True)
     async def confirmar_reversar_pago_masivo(self):
@@ -1447,7 +1472,10 @@ class LiquidacionesState(DocumentosStateMixin):
             self.error_message = ""
 
         try:
-            if not self.reverse_pago_motivo or len(self.reverse_pago_motivo.strip()) < 10:
+            if (
+                not self.reverse_pago_motivo
+                or len(self.reverse_pago_motivo.strip()) < 10
+            ):
                 async with self:
                     self.error_message = "El motivo debe tener al menos 10 caracteres"
                     self.is_loading = False
@@ -1485,7 +1513,9 @@ class LiquidacionesState(DocumentosStateMixin):
                 servicio_estado = ServicioEstadoPagoAutomatico(
                     repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
                     repositorio_cuota=RepositorioCuotaPostgres(db_manager),
-                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(db_manager),
+                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(
+                        db_manager
+                    ),
                     repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
                 )
                 # Actualizar estados de pago para cada liquidación revertida
@@ -1497,6 +1527,7 @@ class LiquidacionesState(DocumentosStateMixin):
                         )
             except Exception as e_estado:
                 import logging
+
                 logging.getLogger(__name__).warning(
                     f"Error al revertir estados de pago de incidentes: {e_estado}"
                 )
@@ -1588,13 +1619,13 @@ class LiquidacionesState(DocumentosStateMixin):
         self.liquidacion_id_for_delete = id_liquidacion
         self.delete_confirmed = False
         self.error_message = ""
-        
+
         # Buscar la liquidación en la lista actual para mostrar datos en el diálogo
         for liq in self.liquidaciones:
             if liq.get("id") == id_liquidacion:
                 self.liquidacion_actual = liq
                 break
-        
+
         self.show_delete_modal = True
 
     def close_delete_modal(self):
@@ -1618,13 +1649,16 @@ class LiquidacionesState(DocumentosStateMixin):
         self.group_delete_periodo = periodo
         self.group_delete_confirmed = False
         self.error_message = ""
-        
+
         # Buscar datos del propietario para mostrar en el diálogo
         for liq in self.liquidaciones:
-            if liq.get("id_propietario") == id_propietario and liq.get("periodo") == periodo:
+            if (
+                liq.get("id_propietario") == id_propietario
+                and liq.get("periodo") == periodo
+            ):
                 self.liquidacion_actual = liq
                 break
-        
+
         self.show_group_delete_modal = True
 
     def close_group_delete_modal(self):
@@ -1649,7 +1683,9 @@ class LiquidacionesState(DocumentosStateMixin):
         try:
             if not self.group_delete_confirmed:
                 async with self:
-                    self.error_message = "Debe confirmar la eliminación marcando el checkbox"
+                    self.error_message = (
+                        "Debe confirmar la eliminación marcando el checkbox"
+                    )
                     self.is_loading = False
                 return
 
@@ -1668,7 +1704,9 @@ class LiquidacionesState(DocumentosStateMixin):
 
         except Exception as e:
             async with self:
-                self.error_message = f"Error al eliminar liquidaciones agrupadas: {str(e)}"
+                self.error_message = (
+                    f"Error al eliminar liquidaciones agrupadas: {str(e)}"
+                )
                 self.is_loading = False
             yield rx.toast.error(self.error_message, position="bottom-right")
 
@@ -1682,7 +1720,9 @@ class LiquidacionesState(DocumentosStateMixin):
         try:
             if not self.delete_confirmed:
                 async with self:
-                    self.error_message = "Debe confirmar la eliminación marcando el checkbox"
+                    self.error_message = (
+                        "Debe confirmar la eliminación marcando el checkbox"
+                    )
                     self.is_loading = False
                 return
 
@@ -1744,19 +1784,25 @@ class LiquidacionesState(DocumentosStateMixin):
             usuario_sistema = "admin"  # TODO: Obtener de AuthState
 
             # Obtener liquidaciones del grupo
-            liquidaciones_grupo = servicio.repo_liquidacion.listar_por_propietario_y_periodo(
-                id_propietario, periodo
+            liquidaciones_grupo = (
+                servicio.repo_liquidacion.listar_por_propietario_y_periodo(
+                    id_propietario, periodo
+                )
             )
 
             if not liquidaciones_grupo:
                 async with self:
                     self.is_loading = False
-                yield rx.toast.info("No se encontraron liquidaciones para eliminar", position="bottom-right")
+                yield rx.toast.info(
+                    "No se encontraron liquidaciones para eliminar",
+                    position="bottom-right",
+                )
                 return
 
             # Filtrar solo las que no están pagadas
             liquidaciones_eliminables = [
-                liq for liq in liquidaciones_grupo
+                liq
+                for liq in liquidaciones_grupo
                 if liq.estado_liquidacion != "Pagada" and not liq.eliminada
             ]
 
@@ -1765,7 +1811,7 @@ class LiquidacionesState(DocumentosStateMixin):
                     self.is_loading = False
                 yield rx.toast.info(
                     "No hay liquidaciones para eliminar (todas están pagadas o ya fueron eliminadas)",
-                    position="bottom-right"
+                    position="bottom-right",
                 )
                 return
 
@@ -1788,18 +1834,20 @@ class LiquidacionesState(DocumentosStateMixin):
             if eliminadas > 0:
                 yield rx.toast.success(
                     f"Se eliminaron {eliminadas} liquidaciones del período {periodo}",
-                    position="bottom-right"
+                    position="bottom-right",
                 )
 
             if errores:
                 yield rx.toast.warning(
                     f"Se omitieron {len(errores)} liquidaciones (posiblemente pagadas)",
-                    position="bottom-right"
+                    position="bottom-right",
                 )
 
         except Exception as e:
             async with self:
-                self.error_message = f"Error al eliminar liquidaciones agrupadas: {str(e)}"
+                self.error_message = (
+                    f"Error al eliminar liquidaciones agrupadas: {str(e)}"
+                )
                 self.is_loading = False
             yield rx.toast.error(self.error_message, position="bottom-right")
 
@@ -1810,10 +1858,11 @@ class LiquidacionesState(DocumentosStateMixin):
     def open_export_modal(self):
         """Abre modal para exportar liquidaciones del periodo."""
         from datetime import datetime
+
         self.show_export_modal = True
         # Preseleccionar el periodo actual o el filtrado
         if not self.filter_periodo or self.filter_periodo == "Todos":
-             self.filter_periodo = datetime.now().strftime("%Y-%m")
+            self.filter_periodo = datetime.now().strftime("%Y-%m")
 
     def close_export_modal(self):
         """Cierra el modal de exportación."""
@@ -1825,29 +1874,33 @@ class LiquidacionesState(DocumentosStateMixin):
         async with self:
             self.exportando_periodo = True
             self.error_message = ""
-            
+
             # Usar el periodo filtrado si existe, si no el actual
             periodo = self.filter_periodo
             if not periodo or periodo == "Todos":
                 from datetime import datetime
+
                 periodo = datetime.now().strftime("%Y-%m")
-        
+
         try:
-            from pathlib import Path
+
             # Importar dependencias para inyección
             servicio = ServicioFinanciero(db_manager)
-            
+
             # Ejecutar exportación
             zip_path = servicio.exportar_estados_cuenta_periodo_zip(periodo)
-            
+
             # Entregar para descarga usando el script especializado de PDFState
             if zip_path:
                 from src.presentacion_reflex.state.pdf_state import PDFState
+
                 yield PDFState.descargar_pdf_script(zip_path)
-                yield rx.toast.success(f"Exportación de {periodo} completada", position="bottom-right")
-            
+                yield rx.toast.success(
+                    f"Exportación de {periodo} completada", position="bottom-right"
+                )
+
             async with self:
-                 self.show_export_modal = False
+                self.show_export_modal = False
 
         except Exception as e:
             async with self:
@@ -1896,7 +1949,9 @@ class LiquidacionesState(DocumentosStateMixin):
             repo_relacion = RepositorioIncidenteLiquidacionPostgres(dm)
 
             # 1. Obtener relaciones existentes para esta liquidación
-            relaciones_existentes = repo_relacion.obtener_por_liquidacion(id_liquidacion)
+            relaciones_existentes = repo_relacion.obtener_por_liquidacion(
+                id_liquidacion
+            )
             ids_ya_asociados = {r.id_incidente for r in relaciones_existentes}
 
             # 2. Buscar incidentes elegibles: estado en [Aprobado, En Reparacion, Finalizado]
@@ -1941,7 +1996,10 @@ class LiquidacionesState(DocumentosStateMixin):
                 # Buscar primera cuota que pueda asociarse
                 cuota_disponible = None
                 for cuota in cuotas:
-                    if cuota.puede_asociarse() and cuota.id_liquidacion != id_liquidacion:
+                    if (
+                        cuota.puede_asociarse()
+                        and cuota.id_liquidacion != id_liquidacion
+                    ):
                         cuota_disponible = cuota
                         break
 
@@ -1949,20 +2007,23 @@ class LiquidacionesState(DocumentosStateMixin):
                     continue  # No hay cuotas disponibles
 
                 ya_asociado = id_inc in ids_ya_asociados
-                incidentes_elegibles.append({
-                    "id": id_inc,
-                    "descripcion": row["DESCRIPCION_INCIDENTE"] or f"Incidente #{id_inc}",
-                    "costo": row["COSTO_INCIDENTE"] or 0,
-                    "costo_view": format_currency(row["COSTO_INCIDENTE"] or 0),
-                    "estado": row["ESTADO"],
-                    "estado_pago": row["ESTADO_PAGO"] or "Pendiente",
-                    "propiedad": row["PROPIEDAD"] or "N/A",
-                    "propietario": row["PROPIETARIO"] or "N/A",
-                    "num_cuota": cuota_disponible.numero_cuota,
-                    "valor_cuota": plan.valor_cuota,
-                    "valor_cuota_view": format_currency(plan.valor_cuota),
-                    "ya_asociado": ya_asociado,
-                })
+                incidentes_elegibles.append(
+                    {
+                        "id": id_inc,
+                        "descripcion": row["DESCRIPCION_INCIDENTE"]
+                        or f"Incidente #{id_inc}",
+                        "costo": row["COSTO_INCIDENTE"] or 0,
+                        "costo_view": format_currency(row["COSTO_INCIDENTE"] or 0),
+                        "estado": row["ESTADO"],
+                        "estado_pago": row["ESTADO_PAGO"] or "Pendiente",
+                        "propiedad": row["PROPIEDAD"] or "N/A",
+                        "propietario": row["PROPIETARIO"] or "N/A",
+                        "num_cuota": cuota_disponible.numero_cuota,
+                        "valor_cuota": plan.valor_cuota,
+                        "valor_cuota_view": format_currency(plan.valor_cuota),
+                        "ya_asociado": ya_asociado,
+                    }
+                )
 
             async with self:
                 self.seleccion_incidentes_disponibles = incidentes_elegibles
@@ -1970,7 +2031,9 @@ class LiquidacionesState(DocumentosStateMixin):
 
         except Exception as e:
             async with self:
-                self.seleccion_incidentes_error = f"Error al cargar incidentes: {str(e)}"
+                self.seleccion_incidentes_error = (
+                    f"Error al cargar incidentes: {str(e)}"
+                )
                 self.seleccion_incidentes_loading = False
 
     def toggle_seleccion_incidente(self, id_incidente: int):
@@ -2007,7 +2070,9 @@ class LiquidacionesState(DocumentosStateMixin):
         """Asocia los incidentes seleccionados a la liquidación."""
         if not self.seleccion_incidentes_seleccionados:
             async with self:
-                self.seleccion_incidentes_error = "Debe seleccionar al menos un incidente"
+                self.seleccion_incidentes_error = (
+                    "Debe seleccionar al menos un incidente"
+                )
             return
 
         async with self:
@@ -2088,7 +2153,9 @@ class LiquidacionesState(DocumentosStateMixin):
 
         except Exception as e:
             async with self:
-                self.seleccion_incidentes_error = f"Error al asociar incidentes: {str(e)}"
+                self.seleccion_incidentes_error = (
+                    f"Error al asociar incidentes: {str(e)}"
+                )
                 self.seleccion_incidentes_loading = False
 
     def close_seleccion_incidentes_modal(self):

@@ -52,7 +52,9 @@ class ServicioDocumental:
 
         # 3. Anular versiones anteriores (si existen)
         if ultima_version > 0:
-            self.repositorio.anular_version_anterior(entidad_tipo, entidad_id, nombre_archivo)
+            self.repositorio.anular_version_anterior(
+                entidad_tipo, entidad_id, nombre_archivo
+            )
 
         # 4. Crear nuevo documento
         nuevo_doc = Documento(
@@ -90,7 +92,11 @@ class ServicioDocumentalElite(ServicioDocumental):
     """Extensión del servicio documental con funcionalidades elite."""
 
     def validar_documento_modulo(
-        self, entidad_tipo: str, tipo_documento: str, archivo_bytes: bytes, filename: str
+        self,
+        entidad_tipo: str,
+        tipo_documento: str,
+        archivo_bytes: bytes,
+        filename: str,
     ) -> Dict[str, Any]:
         """
         Valida que el documento cumpla con las reglas del módulo y tipo.
@@ -126,7 +132,10 @@ class ServicioDocumentalElite(ServicioDocumental):
         return {"valido": True, "mensaje": "Documento válido"}
 
     def generar_thumbnail(
-        self, imagen_bytes: bytes, mime_type: str, max_size: Tuple[int, int] = (200, 200)
+        self,
+        imagen_bytes: bytes,
+        mime_type: str,
+        max_size: Tuple[int, int] = (200, 200),
     ) -> Optional[bytes]:
         """Genera thumbnail para imágenes usando PIL."""
         if not HAS_PIL or "image" not in mime_type:
@@ -174,7 +183,11 @@ class ServicioDocumentalElite(ServicioDocumental):
             return imagen_bytes
 
     async def procesar_upload_multiple(
-        self, files: List[rx.UploadFile], entidad_tipo: str, entidad_id: str, usuario: str
+        self,
+        files: List[rx.UploadFile],
+        entidad_tipo: str,
+        entidad_id: str,
+        usuario: str,
     ) -> List[Documento]:
         """
         Procesa múltiples archivos con validación y optimizaciones.
@@ -192,7 +205,9 @@ class ServicioDocumentalElite(ServicioDocumental):
 
             # Validar reglas de negocio
             resultado = ValidadorDocumentos.validar_archivo_generico(
-                entidad_tipo=entidad_tipo, nombre_archivo=filename, tamano_bytes=len(content)
+                entidad_tipo=entidad_tipo,
+                nombre_archivo=filename,
+                tamano_bytes=len(content),
             )
 
             if not resultado["valido"]:

@@ -1,8 +1,14 @@
 import reflex as rx
 
-from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
-from src.presentacion_reflex.state.liquidacion_asesores_state import LiquidacionAsesoresState
-from src.presentacion_reflex.state.liquidacion_asesores.form_state import LiquidacionFormState
+from src.presentacion_reflex.components.document_manager_elite import (
+    document_manager_elite,
+)
+from src.presentacion_reflex.state.liquidacion_asesores_state import (
+    LiquidacionAsesoresState,
+)
+from src.presentacion_reflex.state.liquidacion_asesores.form_state import (
+    LiquidacionFormState,
+)
 from src.presentacion_reflex.state.pdf_state import PDFState
 
 
@@ -19,28 +25,42 @@ def detail_modal() -> rx.Component:
                         rx.card(
                             rx.flex(
                                 rx.box(
-                                    rx.text("Asesor", size="1", color="gray", weight="bold"),
                                     rx.text(
-                                        LiquidacionFormState.liquidacion_actual["asesor"],
+                                        "Asesor", size="1", color="gray", weight="bold"
+                                    ),
+                                    rx.text(
+                                        LiquidacionFormState.liquidacion_actual[
+                                            "asesor"
+                                        ],
                                         size="3",
                                         weight="medium",
                                     ),
                                 ),
                                 rx.box(
-                                    rx.text("Período", size="1", color="gray", weight="bold"),
                                     rx.text(
-                                        LiquidacionFormState.liquidacion_actual["periodo"],
+                                        "Período", size="1", color="gray", weight="bold"
+                                    ),
+                                    rx.text(
+                                        LiquidacionFormState.liquidacion_actual[
+                                            "periodo"
+                                        ],
                                         size="3",
                                         weight="medium",
                                     ),
                                 ),
                                 rx.box(
-                                    rx.text("Estado", size="1", color="gray", weight="bold"),
+                                    rx.text(
+                                        "Estado", size="1", color="gray", weight="bold"
+                                    ),
                                     rx.badge(
-                                        LiquidacionFormState.liquidacion_actual["estado"],
+                                        LiquidacionFormState.liquidacion_actual[
+                                            "estado"
+                                        ],
                                         size="2",
                                         color_scheme=rx.match(
-                                            LiquidacionFormState.liquidacion_actual["estado"],
+                                            LiquidacionFormState.liquidacion_actual[
+                                                "estado"
+                                            ],
                                             ("Pendiente", "yellow"),
                                             ("Aprobada", "blue"),
                                             ("Pagada", "green"),
@@ -118,7 +138,9 @@ def detail_modal() -> rx.Component:
                         ),
                         # Properties Section
                         rx.box(
-                            rx.heading("Propiedades Liquidadas", size="3", margin_bottom="2"),
+                            rx.heading(
+                                "Propiedades Liquidadas", size="3", margin_bottom="2"
+                            ),
                             rx.cond(
                                 LiquidacionFormState.advisor_properties.length() > 0,
                                 rx.table.root(
@@ -134,10 +156,23 @@ def detail_modal() -> rx.Component:
                                         rx.foreach(
                                             LiquidacionFormState.advisor_properties,
                                             lambda p: rx.table.row(
-                                                rx.table.cell(p["DIRECCION_PROPIEDAD"], size="1"),
-                                                rx.table.cell(p["CANON_ARRENDAMIENTO_VIEW"], size="1"),
-                                                rx.table.cell(p["COMISION_PORCENTAJE_VIEW"], size="1", color="blue"),
-                                                rx.table.cell(p["COMISION_MONTO_VIEW"], size="1", weight="bold"),
+                                                rx.table.cell(
+                                                    p["DIRECCION_PROPIEDAD"], size="1"
+                                                ),
+                                                rx.table.cell(
+                                                    p["CANON_ARRENDAMIENTO_VIEW"],
+                                                    size="1",
+                                                ),
+                                                rx.table.cell(
+                                                    p["COMISION_PORCENTAJE_VIEW"],
+                                                    size="1",
+                                                    color="blue",
+                                                ),
+                                                rx.table.cell(
+                                                    p["COMISION_MONTO_VIEW"],
+                                                    size="1",
+                                                    weight="bold",
+                                                ),
                                             ),
                                         )
                                     ),
@@ -157,7 +192,11 @@ def detail_modal() -> rx.Component:
                         rx.separator(size="4", margin_y="4"),
                         # Descuentos y Bonificaciones
                         rx.box(
-                            rx.heading("Descuentos  y Bonificaciones", size="3", margin_bottom="2"),
+                            rx.heading(
+                                "Descuentos  y Bonificaciones",
+                                size="3",
+                                margin_bottom="2",
+                            ),
                             rx.cond(
                                 (
                                     LiquidacionFormState.descuentos_actuales.length()
@@ -181,12 +220,16 @@ def detail_modal() -> rx.Component:
                                             lambda d: rx.table.row(
                                                 rx.table.cell(
                                                     rx.badge(
-                                                        "Descuento", color_scheme="red", size="1"
+                                                        "Descuento",
+                                                        color_scheme="red",
+                                                        size="1",
                                                     )
                                                 ),
                                                 rx.table.cell(d["tipo"]),
                                                 rx.table.cell(d["descripcion"]),
-                                                rx.table.cell(d["valor_view"], color="red"),
+                                                rx.table.cell(
+                                                    d["valor_view"], color="red"
+                                                ),
                                                 rx.table.cell(
                                                     rx.cond(
                                                         LiquidacionFormState.liquidacion_actual[
@@ -222,8 +265,12 @@ def detail_modal() -> rx.Component:
                                                 ),
                                                 rx.table.cell(b["tipo"]),
                                                 rx.table.cell(b["descripcion"]),
-                                                rx.table.cell(b["valor_view"], color="green"),
-                                                rx.table.cell(rx.box()),  # Sin acciones por ahora
+                                                rx.table.cell(
+                                                    b["valor_view"], color="green"
+                                                ),
+                                                rx.table.cell(
+                                                    rx.box()
+                                                ),  # Sin acciones por ahora
                                             ),
                                         ),
                                     ),
@@ -241,7 +288,9 @@ def detail_modal() -> rx.Component:
                         rx.separator(size="4", margin_y="4"),
                         # Documentos y Soportes (NUEVA)
                         rx.box(
-                            rx.heading("Soportes y Comprobantes", size="3", margin_bottom="2"),
+                            rx.heading(
+                                "Soportes y Comprobantes", size="3", margin_bottom="2"
+                            ),
                             rx.text(
                                 "Adjunte comprobantes de pago y soportes de descuentos.",
                                 size="2",
@@ -271,19 +320,24 @@ def detail_modal() -> rx.Component:
                             "Descargar PDF",
                             color_scheme="blue",
                             on_click=lambda: PDFState.generar_liquidacion_asesor_pdf(
-                                LiquidacionFormState.liquidacion_actual["id_liquidacion"]
+                                LiquidacionFormState.liquidacion_actual[
+                                    "id_liquidacion"
+                                ]
                             ),
                             loading=PDFState.generating,
                         ),
                     ),
                     rx.cond(
-                        LiquidacionFormState.liquidacion_actual["estado"] == "Pendiente",
+                        LiquidacionFormState.liquidacion_actual["estado"]
+                        == "Pendiente",
                         rx.button(
                             rx.icon("circle_check"),
                             "Aprobar",
                             color_scheme="green",
                             on_click=lambda: LiquidacionFormState.aprobar_liquidacion(
-                                LiquidacionFormState.liquidacion_actual["id_liquidacion"]
+                                LiquidacionFormState.liquidacion_actual[
+                                    "id_liquidacion"
+                                ]
                             ),
                         ),
                     ),
@@ -294,26 +348,35 @@ def detail_modal() -> rx.Component:
                             "Marcar Pagada",
                             color_scheme="blue",
                             on_click=lambda: LiquidacionFormState.marcar_como_pagada(
-                                LiquidacionFormState.liquidacion_actual["id_liquidacion"]
+                                LiquidacionFormState.liquidacion_actual[
+                                    "id_liquidacion"
+                                ]
                             ),
                         ),
                     ),
                     rx.cond(
-                        (LiquidacionFormState.liquidacion_actual["estado"] != "Pagada") & 
-                        (LiquidacionFormState.liquidacion_actual["estado"] != "Anulada"),
+                        (LiquidacionFormState.liquidacion_actual["estado"] != "Pagada")
+                        & (
+                            LiquidacionFormState.liquidacion_actual["estado"]
+                            != "Anulada"
+                        ),
                         rx.button(
                             rx.icon("circle_x"),
                             "Anular",
                             color_scheme="red",
                             variant="soft",
                             on_click=lambda: LiquidacionFormState.open_annul_modal(
-                                LiquidacionFormState.liquidacion_actual["id_liquidacion"]
+                                LiquidacionFormState.liquidacion_actual[
+                                    "id_liquidacion"
+                                ]
                             ),
                         ),
                     ),
                     spacing="3",
                 ),
-                rx.dialog.close(rx.button("Cerrar", variant="soft", color_scheme="gray")),
+                rx.dialog.close(
+                    rx.button("Cerrar", variant="soft", color_scheme="gray")
+                ),
                 justify="between",
                 margin_top="4",
                 width="100%",

@@ -149,7 +149,9 @@ def liquidacion_edit_form() -> rx.Component:
                     rx.cond(
                         LiquidacionesState.form_data["estado"] == "En Proceso",
                         rx.cond(
-                            AuthState.check_action("Liquidaciones", "SELECCIONAR_INCIDENTES"),
+                            AuthState.check_action(
+                                "Liquidaciones", "SELECCIONAR_INCIDENTES"
+                            ),
                             rx.button(
                                 rx.hstack(
                                     rx.icon("link", size=16),

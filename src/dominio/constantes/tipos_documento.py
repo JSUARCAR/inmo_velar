@@ -121,7 +121,11 @@ TIPOS_DOCUMENTO_MODULO: Dict[str, Dict[str, Any]] = {
         },
     },
     "LIQUIDACION": {
-        "recibo_pago": {"label": "Recibo de Pago", "tipos": [".pdf"], "max_size": 2 * 1024 * 1024},
+        "recibo_pago": {
+            "label": "Recibo de Pago",
+            "tipos": [".pdf"],
+            "max_size": 2 * 1024 * 1024,
+        },
         "comprobante_bancario": {
             "label": "Comprobante Bancario",
             "tipos": [".pdf"],
@@ -129,7 +133,11 @@ TIPOS_DOCUMENTO_MODULO: Dict[str, Dict[str, Any]] = {
         },
     },
     "LIQUIDACION_ASESOR": {
-        "recibo_pago": {"label": "Recibo de Pago", "tipos": [".pdf"], "max_size": 2 * 1024 * 1024},
+        "recibo_pago": {
+            "label": "Recibo de Pago",
+            "tipos": [".pdf"],
+            "max_size": 2 * 1024 * 1024,
+        },
         "comprobante_descuento": {
             "label": "Comprobante Descuento",
             "tipos": [".pdf"],
@@ -200,6 +208,10 @@ DOCUMENTOS_REQUERIDOS_POR_ESTADO: Dict[str, Dict[str, List[str]]] = {
     },
     "DESOCUPACION": {
         "En Proceso": ["checklist_fisico", "foto_estado_inicial"],
-        "Finalizada": ["acta_desocupacion", "foto_estado_final", "paz_y_salvo_servicios"],
+        "Finalizada": [
+            "acta_desocupacion",
+            "foto_estado_final",
+            "paz_y_salvo_servicios",
+        ],
     },
 }

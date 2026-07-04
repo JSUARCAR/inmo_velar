@@ -22,7 +22,9 @@ from src.infraestructura.persistencia.repositorio_contrato_arrendamiento_postgre
 from src.infraestructura.persistencia.repositorio_contrato_mandato_postgres import (
     RepositorioContratoMandatoPostgres,
 )
-from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
+from src.infraestructura.persistencia.repositorio_ipc_postgres import (
+    RepositorioIPCPostgres,
+)
 from src.infraestructura.persistencia.repositorio_pagos_admin_postgres import (
     RepositorioPagosAdminPostgres,
 )
@@ -41,7 +43,9 @@ from src.infraestructura.persistencia.repositorio_dashboard import (
 
 
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 class ServicioAlertas:
     """
@@ -88,7 +92,9 @@ class ServicioAlertas:
         # Repositorio Dashboard (para consultas IPC elegibles)
         self.repo_dashboard = RepositorioDashboard(db_manager)
 
-    def sincronizar_alertas(self, usuario_sistema: str = "sistema", forzar: bool = False) -> int:
+    def sincronizar_alertas(
+        self, usuario_sistema: str = "sistema", forzar: bool = False
+    ) -> int:
         """
         Escanea el sistema en busca de eventos que requieran alertas y las persiste.
         Implementa guard global para evitar DDOS y validación de historial para idempotencia.
@@ -102,7 +108,9 @@ class ServicioAlertas:
                 logger.debug("Sincronización global omitida (Guard de 30 min activo)")
                 return 0
 
-        logger.info(f"Iniciando sincronización proactiva de alertas (Usuario: {usuario_sistema})...")
+        logger.info(
+            f"Iniciando sincronización proactiva de alertas (Usuario: {usuario_sistema})..."
+        )
         nuevas = 0
         alertas_calculadas = self.obtener_alertas_calculadas()
 
@@ -111,7 +119,7 @@ class ServicioAlertas:
                 # Extraer ID de entidad
                 partes = ac["id"].split("_")
                 id_entidad = int(partes[-1]) if len(partes) > 1 else None
-                
+
                 # 2. Idempotencia Avanzada (Bug Recreación Fix)
                 # Buscamos si existe una alerta PENDIENTE
                 existente = self.repo_alerta.obtener_por_entidad_y_tipo(
@@ -130,10 +138,13 @@ class ServicioAlertas:
                         tipo_alerta=ac["tipo"],
                         solo_pendientes=False,
                     )
-                    
+
                     # Si existe una resuelta hoy, no recrear
                     if reciente and reciente.fecha_resolucion:
-                        if reciente.fecha_resolucion[:10] == datetime.now().isoformat()[:10]:
+                        if (
+                            reciente.fecha_resolucion[:10]
+                            == datetime.now().isoformat()[:10]
+                        ):
                             continue
 
                     nueva_alerta = Alerta(
@@ -154,8 +165,10 @@ class ServicioAlertas:
         # 3. Finalización y Caché
         if nuevas > 0:
             cache_manager.invalidate("dashboard", level=1)
-            logger.info(f"Sincronización completa: {nuevas} nuevas alertas registradas.")
-        
+            logger.info(
+                f"Sincronización completa: {nuevas} nuevas alertas registradas."
+            )
+
         # Establecer timestamp global de sincronización (30 min)
         cache_manager.l1.set("alertas:last_global_sync", datetime.now().isoformat())
 
@@ -200,13 +213,16 @@ class ServicioAlertas:
         tipo: Optional[str] = None,
     ) -> int:
         """Cuenta el total de alertas según filtros."""
-        return self.repo_alerta.contar_todas(estado=estado, prioridad=prioridad, tipo=tipo)
+        return self.repo_alerta.contar_todas(
+            estado=estado, prioridad=prioridad, tipo=tipo
+        )
 
     def marcar_como_resuelta(self, id_alerta: int, usuario: str, accion: str) -> bool:
         """Marcar una alerta como resuelta."""
         result = self.repo_alerta.marcar_resuelta(id_alerta, usuario, accion)
         if result:
             from src.infraestructura.cache.cache_manager import cache_manager
+
             cache_manager.invalidate("dashboard")
         return result
 
@@ -265,7 +281,9 @@ class ServicioAlertas:
         alertas = []
 
         # 1. Contratos próximos a vencer
-        dias_cnt = self.servicio_config.obtener_valor_parametro("DIAS_ALERTA_ARRENDAMIENTO", 90)
+        dias_cnt = self.servicio_config.obtener_valor_parametro(
+            "DIAS_ALERTA_ARRENDAMIENTO", 90
+        )
         contratos_vencen = self.servicio_contratos.listar_arrendamientos_por_vencer(
             dias_antelacion=dias_cnt
         )
@@ -292,7 +310,9 @@ class ServicioAlertas:
             )
 
         # 1.1 Contratos Mandato
-        dias_mand_config = self.servicio_config.obtener_valor_parametro("DIAS_ALERTA_MANDATO", 90)
+        dias_mand_config = self.servicio_config.obtener_valor_parametro(
+            "DIAS_ALERTA_MANDATO", 90
+        )
         dias_mand = max(90, int(dias_mand_config or 90))
 
         mandatos_vencen = self.servicio_contratos.listar_mandatos_por_vencer(
@@ -386,10 +406,14 @@ class ServicioAlertas:
                         "prioridad": "Alta",
                     }
                 )
-            
+
             # 2. Asambleas PRÓXIMAS
-            dias_alerta = self.servicio_config.obtener_valor_parametro("DIAS_ALERTA_ASAMBLEA", 3)
-            asambleas_prox = self.repo_asistencia.listar_asambleas_proximas(int(dias_alerta))
+            dias_alerta = self.servicio_config.obtener_valor_parametro(
+                "DIAS_ALERTA_ASAMBLEA", 3
+            )
+            asambleas_prox = self.repo_asistencia.listar_asambleas_proximas(
+                int(dias_alerta)
+            )
             for reg in asambleas_prox:
                 a = reg["entidad"]
                 alertas.append(
@@ -422,10 +446,14 @@ class ServicioAlertas:
                         "prioridad": "Alta",
                     }
                 )
-            
+
             # 2. Pagos PRÓXIMOS
-            dias_pago = self.servicio_config.obtener_valor_parametro("DIAS_ALERTA_PAGO_ADMIN", 5)
-            proximos = self.repo_pagos_admin.listar_pagos_proximos_vencer(int(dias_pago))
+            dias_pago = self.servicio_config.obtener_valor_parametro(
+                "DIAS_ALERTA_PAGO_ADMIN", 5
+            )
+            proximos = self.repo_pagos_admin.listar_pagos_proximos_vencer(
+                int(dias_pago)
+            )
             for p in proximos:
                 alertas.append(
                     {
@@ -440,4 +468,3 @@ class ServicioAlertas:
         except Exception as e:
             logger.warning(f"Error en _obtener_alertas_pagos_admin_raw: {e}")
         return alertas
-

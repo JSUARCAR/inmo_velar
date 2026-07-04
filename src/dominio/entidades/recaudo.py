@@ -9,7 +9,6 @@ from datetime import datetime
 from typing import Optional
 
 from src.dominio.constantes.recaudo import MetodoPago, EstadoRecaudo
-from src.dominio.value_objects.audit_info import AuditInfo
 
 
 @dataclass
@@ -60,7 +59,10 @@ class Recaudo:
         if self.valor_total <= 0:
             raise ValueError("El valor del recaudo debe ser mayor a cero")
 
-        if MetodoPago.requiere_referencia(self.metodo_pago) and not self.referencia_bancaria:
+        if (
+            MetodoPago.requiere_referencia(self.metodo_pago)
+            and not self.referencia_bancaria
+        ):
             raise ValueError(
                 "La referencia bancaria es obligatoria para pagos electrónicos"
             )
@@ -89,13 +91,19 @@ class Recaudo:
         Raises:
             ValueError: Si la transición de estado no es válida
         """
-        if nuevo_estado == EstadoRecaudo.APLICADO and not self.estado_recaudo.puede_aplicarse():
+        if (
+            nuevo_estado == EstadoRecaudo.APLICADO
+            and not self.estado_recaudo.puede_aplicarse()
+        ):
             raise ValueError(
                 f"Solo se pueden aplicar pagos en estado Pendiente. "
                 f"Estado actual: {self.estado_recaudo.value}"
             )
 
-        if nuevo_estado == EstadoRecaudo.REVERSADO and not self.estado_recaudo.puede_reversarse():
+        if (
+            nuevo_estado == EstadoRecaudo.REVERSADO
+            and not self.estado_recaudo.puede_reversarse()
+        ):
             raise ValueError(
                 f"Solo se pueden reversar pagos en estado Aplicado. "
                 f"Estado actual: {self.estado_recaudo.value}"

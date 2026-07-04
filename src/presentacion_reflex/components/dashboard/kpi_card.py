@@ -79,11 +79,11 @@ def kpi_card(
                 rx.cond(
                     subtitulo != "",
                     rx.text(
-                        subtitulo, 
-                        size="1", 
-                        color=subtitle_color, 
+                        subtitulo,
+                        size="1",
+                        color=subtitle_color,
                         font_family=styles.FONT_SANS,
-                        white_space="nowrap"
+                        white_space="nowrap",
                     ),
                 ),
                 width="100%",
@@ -133,17 +133,21 @@ def kpi_card(
                     subtitulo != "",
                     rx.hstack(
                         rx.text(
-                            subtitulo, 
-                            size="1", 
-                            weight="medium", 
-                            color=subtitle_color, 
+                            subtitulo,
+                            size="1",
+                            weight="medium",
+                            color=subtitle_color,
                             font_family=styles.FONT_SANS,
                         ),
                         rx.cond(
                             tendencia != "",
                             rx.badge(
                                 tendencia,
-                                color_scheme="green" if "+" in tendencia else "red" if "-" in tendencia else "gray",
+                                color_scheme=(
+                                    "green"
+                                    if "+" in tendencia
+                                    else "red" if "-" in tendencia else "gray"
+                                ),
                                 size="1",
                                 variant="soft",
                             ),

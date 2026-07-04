@@ -1,8 +1,10 @@
 """
 Interface (Protocol): Repositorio de Asesores
 """
-from typing import List, Optional, Protocol, Any
+
+from typing import List, Optional, Protocol
 from src.dominio.entidades.asesor import Asesor
+
 
 class IRepositorioAsesor(Protocol):
     def obtener_por_id(self, id_asesor: int) -> Optional[Asesor]: ...

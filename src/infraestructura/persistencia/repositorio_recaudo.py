@@ -31,8 +31,7 @@ class RepositorioRecaudo:
         cursor = conn.cursor()
 
         # Tabla RECAUDOS
-        cursor.execute(
-            """
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS RECAUDOS (
             ID_RECAUDO INTEGER PRIMARY KEY AUTOINCREMENT,
             ID_CONTRATO_A INTEGER NOT NULL,
@@ -48,12 +47,10 @@ class RepositorioRecaudo:
             UPDATED_BY TEXT,
             FOREIGN KEY (ID_CONTRATO_A) REFERENCES CONTRATOS_ARRENDAMIENTOS(ID_CONTRATO_A)
         )
-        """
-        )
+        """)
 
         # Tabla RECAUDO_CONCEPTOS
-        cursor.execute(
-            """
+        cursor.execute("""
         CREATE TABLE IF NOT EXISTS RECAUDO_CONCEPTOS (
             ID_RECAUDO_CONCEPTO INTEGER PRIMARY KEY AUTOINCREMENT,
             ID_RECAUDO INTEGER NOT NULL,
@@ -63,8 +60,7 @@ class RepositorioRecaudo:
             CREATED_AT TEXT DEFAULT (datetime('now', 'localtime')),
             FOREIGN KEY (ID_RECAUDO) REFERENCES RECAUDOS(ID_RECAUDO) ON DELETE CASCADE
         )
-        """
-        )
+        """)
 
         conn.commit()
 

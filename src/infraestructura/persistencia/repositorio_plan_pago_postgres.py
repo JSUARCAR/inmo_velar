@@ -8,7 +8,7 @@ Date: 2026-06-30
 
 import logging
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 
 from src.dominio.entidades.plan_pago_incidente import PlanPagoIncidente
 from src.dominio.interfaces.repositorio_plan_pago import RepositorioPlanPago
@@ -80,7 +80,9 @@ class RepositorioPlanPagoPostgres(RepositorioPlanPago):
                 plan.created_at = result.get("CREATED_AT")
 
             conn.commit()
-            logger.info(f"Plan de pago creado: {plan.id_plan_pago} para incidente {plan.id_incidente}")
+            logger.info(
+                f"Plan de pago creado: {plan.id_plan_pago} para incidente {plan.id_incidente}"
+            )
             return plan
 
         except Exception as e:

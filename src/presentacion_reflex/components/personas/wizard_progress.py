@@ -3,6 +3,7 @@ import reflex as rx
 from src.presentacion_reflex.state.personas_state import PersonasState
 from src.presentacion_reflex import styles
 
+
 def progreso_asistente() -> rx.Component:
     """Indicador de progreso premium para el asistente multi-paso con estetica Claude (Anthropic)."""
 
@@ -21,7 +22,9 @@ def progreso_asistente() -> rx.Component:
                         str(num_paso),
                         size="3",
                         weight="bold",
-                        color=rx.cond(es_actual, styles.BRAND_PRIMARY, styles.TEXT_TERTIARY),
+                        color=rx.cond(
+                            es_actual, styles.BRAND_PRIMARY, styles.TEXT_TERTIARY
+                        ),
                     ),
                 ),
                 width="42px",
@@ -41,7 +44,7 @@ def progreso_asistente() -> rx.Component:
                     "border": rx.cond(
                         es_actual,
                         f"2px solid {styles.BRAND_PRIMARY}",
-                        f"1px solid {styles.BORDER_DEFAULT}"
+                        f"1px solid {styles.BORDER_DEFAULT}",
                     ),
                     "transform": rx.cond(es_actual, "scale(1.1)", "scale(1)"),
                 },

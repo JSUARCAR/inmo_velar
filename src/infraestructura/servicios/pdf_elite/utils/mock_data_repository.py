@@ -185,7 +185,9 @@ class MockPDFRepository:
         }
 
     @classmethod
-    def get_estado_cuenta_data(cls, propietario_id: int, periodo: str) -> Optional[Dict[str, Any]]:
+    def get_estado_cuenta_data(
+        cls, propietario_id: int, periodo: str
+    ) -> Optional[Dict[str, Any]]:
         """
         Obtiene datos para estado de cuenta de un propietario
 

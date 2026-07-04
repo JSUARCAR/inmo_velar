@@ -6,7 +6,6 @@ Muestra resumen de la liquidación y desglose financiero antes de confirmar.
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
-from src.presentacion_reflex.styles import Z_MODAL
 
 
 def info_row(label: str, value) -> rx.Component:
@@ -70,8 +69,10 @@ def delete_confirm_dialog() -> rx.Component:
                             "Neto a Pagar:",
                             rx.cond(
                                 LiquidacionesState.liquidacion_actual["neto"],
-                                rx.text(f"${LiquidacionesState.liquidacion_actual['neto']:,.0f}"),
-                                "$0"
+                                rx.text(
+                                    f"${LiquidacionesState.liquidacion_actual['neto']:,.0f}"
+                                ),
+                                "$0",
                             ),
                         ),
                         info_row(
@@ -89,72 +90,94 @@ def delete_confirm_dialog() -> rx.Component:
                             "Total Ingresos:",
                             rx.cond(
                                 LiquidacionesState.liquidacion_actual["total_ingresos"],
-                                rx.text(f"${LiquidacionesState.liquidacion_actual['total_ingresos']:,.0f}"),
-                                "$0"
+                                rx.text(
+                                    f"${LiquidacionesState.liquidacion_actual['total_ingresos']:,.0f}"
+                                ),
+                                "$0",
                             ),
                         ),
                         info_row(
                             "Comisión:",
                             rx.cond(
                                 LiquidacionesState.liquidacion_actual["comision"],
-                                rx.text(f"${LiquidacionesState.liquidacion_actual['comision']:,.0f}"),
-                                "$0"
+                                rx.text(
+                                    f"${LiquidacionesState.liquidacion_actual['comision']:,.0f}"
+                                ),
+                                "$0",
                             ),
                         ),
                         info_row(
                             "IVA:",
                             rx.cond(
                                 LiquidacionesState.liquidacion_actual["iva"],
-                                rx.text(f"${LiquidacionesState.liquidacion_actual['iva']:,.0f}"),
-                                "$0"
+                                rx.text(
+                                    f"${LiquidacionesState.liquidacion_actual['iva']:,.0f}"
+                                ),
+                                "$0",
                             ),
                         ),
                         info_row(
                             "Gastos Admin:",
                             rx.cond(
                                 LiquidacionesState.liquidacion_actual["gastos_admin"],
-                                rx.text(f"${LiquidacionesState.liquidacion_actual['gastos_admin']:,.0f}"),
-                                "$0"
+                                rx.text(
+                                    f"${LiquidacionesState.liquidacion_actual['gastos_admin']:,.0f}"
+                                ),
+                                "$0",
                             ),
                         ),
                         info_row(
                             "Gastos Servicios:",
                             rx.cond(
-                                LiquidacionesState.liquidacion_actual["gastos_servicios"],
-                                rx.text(f"${LiquidacionesState.liquidacion_actual['gastos_servicios']:,.0f}"),
-                                "$0"
+                                LiquidacionesState.liquidacion_actual[
+                                    "gastos_servicios"
+                                ],
+                                rx.text(
+                                    f"${LiquidacionesState.liquidacion_actual['gastos_servicios']:,.0f}"
+                                ),
+                                "$0",
                             ),
                         ),
                         info_row(
                             "Gastos Reparaciones:",
                             rx.cond(
-                                LiquidacionesState.liquidacion_actual["gastos_reparaciones"],
-                                rx.text(f"${LiquidacionesState.liquidacion_actual['gastos_reparaciones']:,.0f}"),
-                                "$0"
+                                LiquidacionesState.liquidacion_actual[
+                                    "gastos_reparaciones"
+                                ],
+                                rx.text(
+                                    f"${LiquidacionesState.liquidacion_actual['gastos_reparaciones']:,.0f}"
+                                ),
+                                "$0",
                             ),
                         ),
                         info_row(
                             "Pago Predial:",
                             rx.cond(
                                 LiquidacionesState.liquidacion_actual["pago_predial"],
-                                rx.text(f"${LiquidacionesState.liquidacion_actual['pago_predial']:,.0f}"),
-                                "$0"
+                                rx.text(
+                                    f"${LiquidacionesState.liquidacion_actual['pago_predial']:,.0f}"
+                                ),
+                                "$0",
                             ),
                         ),
                         info_row(
                             "Otros Egresos:",
                             rx.cond(
                                 LiquidacionesState.liquidacion_actual["otros_egresos"],
-                                rx.text(f"${LiquidacionesState.liquidacion_actual['otros_egresos']:,.0f}"),
-                                "$0"
+                                rx.text(
+                                    f"${LiquidacionesState.liquidacion_actual['otros_egresos']:,.0f}"
+                                ),
+                                "$0",
                             ),
                         ),
                         info_row(
                             "Total Egresos:",
                             rx.cond(
                                 LiquidacionesState.liquidacion_actual["total_egresos"],
-                                rx.text(f"${LiquidacionesState.liquidacion_actual['total_egresos']:,.0f}"),
-                                "$0"
+                                rx.text(
+                                    f"${LiquidacionesState.liquidacion_actual['total_egresos']:,.0f}"
+                                ),
+                                "$0",
                             ),
                         ),
                         padding="1em",

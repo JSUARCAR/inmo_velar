@@ -14,7 +14,9 @@ def payment_modal() -> rx.Component:
                     rx.input(
                         type="date",
                         value=RecibosState.payment_data["fecha_pago"],
-                        on_change=lambda val: RecibosState.set_payment_field("fecha_pago", val),
+                        on_change=lambda val: RecibosState.set_payment_field(
+                            "fecha_pago", val
+                        ),
                         width="100%",
                     ),
                     width="100%",
@@ -24,7 +26,9 @@ def payment_modal() -> rx.Component:
                     rx.input(
                         placeholder="Ej: TRX-123456",
                         value=RecibosState.payment_data["comprobante"],
-                        on_change=lambda val: RecibosState.set_payment_field("comprobante", val),
+                        on_change=lambda val: RecibosState.set_payment_field(
+                            "comprobante", val
+                        ),
                         width="100%",
                     ),
                     width="100%",

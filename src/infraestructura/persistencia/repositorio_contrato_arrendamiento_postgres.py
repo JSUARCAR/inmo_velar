@@ -3,7 +3,7 @@ Repositorio Postgres: ContratoArrendamiento
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
 from src.dominio.constantes.estados_contrato import EstadoContrato
@@ -45,7 +45,11 @@ class RepositorioContratoArrendamientoPostgres:
                 contrato.deposito,
                 contrato.fecha_pago,
                 contrato.grupo_operativo,
-                contrato.estado_contrato_a.value if hasattr(contrato.estado_contrato_a, 'value') else contrato.estado_contrato_a,
+                (
+                    contrato.estado_contrato_a.value
+                    if hasattr(contrato.estado_contrato_a, "value")
+                    else contrato.estado_contrato_a
+                ),
                 contrato.alerta_vencimiento_contrato_a,
                 contrato.alerta_ipc,
                 contrato.fecha_renovacion_contrato_a,
@@ -153,8 +157,10 @@ class RepositorioContratoArrendamientoPostgres:
         agrupados = {}
         for row in rows:
             row_dict = dict(row)
-            id_asesor = row_dict.get("asesor_id_agrupacion") or row_dict.get("ASESOR_ID_AGRUPACION")
-            
+            id_asesor = row_dict.get("asesor_id_agrupacion") or row_dict.get(
+                "ASESOR_ID_AGRUPACION"
+            )
+
             entidad = self._row_to_entity(row)
             if id_asesor not in agrupados:
                 agrupados[id_asesor] = []
@@ -397,7 +403,11 @@ class RepositorioContratoArrendamientoPostgres:
                 contrato.deposito,
                 contrato.fecha_pago,
                 contrato.grupo_operativo,
-                contrato.estado_contrato_a.value if hasattr(contrato.estado_contrato_a, 'value') else contrato.estado_contrato_a,
+                (
+                    contrato.estado_contrato_a.value
+                    if hasattr(contrato.estado_contrato_a, "value")
+                    else contrato.estado_contrato_a
+                ),
                 contrato.motivo_cancelacion,
                 contrato.alerta_vencimiento_contrato_a,
                 contrato.alerta_ipc,
@@ -452,7 +462,9 @@ class RepositorioContratoArrendamientoPostgres:
             ),
             deposito=(row_dict.get("deposito") or row_dict.get("DEPOSITO")),
             fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
-            estado_contrato_a=self._map_estado(row_dict.get("estado_contrato_a") or row_dict.get("ESTADO_CONTRATO_A")),
+            estado_contrato_a=self._map_estado(
+                row_dict.get("estado_contrato_a") or row_dict.get("ESTADO_CONTRATO_A")
+            ),
             motivo_cancelacion=(
                 row_dict.get("motivo_cancelacion") or row_dict.get("MOTIVO_CANCELACION")
             ),

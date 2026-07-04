@@ -6,7 +6,6 @@ Implementa lógica de autenticación, hash de contraseñas y gestión de sesione
 import hashlib
 import secrets
 from datetime import datetime
-from typing import Optional
 
 import bcrypt
 
@@ -15,7 +14,6 @@ from src.dominio.entidades.sesion_usuario import SesionUsuario
 from src.dominio.entidades.usuario import Usuario
 from src.dominio.excepciones.excepciones_base import (
     ErrorAutenticacion,
-    ErrorValidacion,
     SesionInvalida,
 )
 from src.dominio.repositorios.interfaces import RepositorioSesion, RepositorioUsuario
@@ -28,7 +26,9 @@ class ServicioAutenticacion:
     Maneja login, logout, hash de contraseñas y sesiones.
     """
 
-    def __init__(self, repo_usuario: RepositorioUsuario, repo_sesion: RepositorioSesion):
+    def __init__(
+        self, repo_usuario: RepositorioUsuario, repo_sesion: RepositorioSesion
+    ):
         self.repo_usuario = repo_usuario
         self.repo_sesion = repo_sesion
 
@@ -54,7 +54,9 @@ class ServicioAutenticacion:
         """
         try:
             # Intentar verificar como Bcrypt
-            return bcrypt.checkpw(contraseña_plana.encode("utf-8"), contraseña_hash.encode("utf-8"))
+            return bcrypt.checkpw(
+                contraseña_plana.encode("utf-8"), contraseña_hash.encode("utf-8")
+            )
         except ValueError:
             # Fallback a SHA256 (Legacy)
             # Asumimos que el hash SHA256 almacenado no tiene salt o es hash simple
@@ -79,12 +81,16 @@ class ServicioAutenticacion:
         usuario = self.repo_usuario.obtener_por_nombre(nombre_usuario)
 
         if not usuario:
-            logger.warning("Intento de login fallido: usuario no encontrado", user=nombre_usuario)
+            logger.warning(
+                "Intento de login fallido: usuario no encontrado", user=nombre_usuario
+            )
             raise ErrorAutenticacion("Usuario o contraseña incorrectos")
 
         # Verificar que esté activo
         if not usuario.es_activo():
-            logger.warning("Intento de login fallido: usuario inactivo", user=nombre_usuario)
+            logger.warning(
+                "Intento de login fallido: usuario inactivo", user=nombre_usuario
+            )
             raise ErrorAutenticacion("El usuario se encuentra inactivo")
 
         # Verificar contraseña (automigración incluida)
@@ -97,7 +103,9 @@ class ServicioAutenticacion:
                 usuario.contrasena_hash = nuevo_hash
                 # Guardar actualización de hash
                 self.repo_usuario.actualizar(usuario, nombre_usuario)
-                logger.info("Hash de contraseña actualizado a Bcrypt", user=nombre_usuario)
+                logger.info(
+                    "Hash de contraseña actualizado a Bcrypt", user=nombre_usuario
+                )
 
             # Actualizar último acceso
             usuario.ultimo_acceso = datetime.now().isoformat()
@@ -105,7 +113,9 @@ class ServicioAutenticacion:
             logger.info("Usuario autenticado exitosamente", user=nombre_usuario)
             return usuario
 
-        logger.warning("Intento de login fallido: contraseña incorrecta", user=nombre_usuario)
+        logger.warning(
+            "Intento de login fallido: contraseña incorrecta", user=nombre_usuario
+        )
         raise ErrorAutenticacion("Usuario o contraseña incorrectos")
 
     def crear_sesion(self, usuario: Usuario) -> SesionUsuario:
@@ -176,7 +186,9 @@ class ServicioAutenticacion:
         )
 
         # Verificar contraseña actual
-        if not self.verificar_contraseña(datos.password_actual, usuario.contrasena_hash):
+        if not self.verificar_contraseña(
+            datos.password_actual, usuario.contrasena_hash
+        ):
             return False
 
         # Hashear nueva contraseña

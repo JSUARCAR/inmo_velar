@@ -19,7 +19,6 @@ import unicodedata
 from contextvars import ContextVar
 
 import psycopg2
-from psycopg2 import pool
 from dotenv import load_dotenv
 
 # ContextVar for managing connections per asyncio task smoothly
@@ -151,6 +150,7 @@ if DB_MODE == "postgresql":
 
     class SQLiteConnectionWrapper:
         """Wrapper para SQLite para dar paridad funcional con el wrapper de Postgres."""
+
         def __init__(self, conn):
             self._conn = conn
             self.in_managed_transaction = False
@@ -166,7 +166,7 @@ if DB_MODE == "postgresql":
             return self._conn.rollback()
 
         def __getattr__(self, name):
-            if name == 'close':
+            if name == "close":
                 # No close the actual connection, it is reused per thread
                 return lambda: None
             return getattr(self._conn, name)
@@ -472,9 +472,9 @@ class DatabaseManager:
         try:
             if not was_managed:
                 conexion.in_managed_transaction = True
-            
+
             yield conexion
-            
+
             # Solo hacemos commit si somos el nivel más externo de la transacción
             if not was_managed:
                 # IMPORTANTE: Desactivamos el flag antes del commit final
@@ -491,7 +491,7 @@ class DatabaseManager:
             if not was_managed:
                 conexion.in_managed_transaction = False
                 # Retornar explícitamente la conexión al pool para evitar Starvation
-                if hasattr(conexion, 'close'):
+                if hasattr(conexion, "close"):
                     conexion.close()
                 if self.use_postgresql:
                     _pg_conn_ctx.set(None)

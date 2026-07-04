@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 import reflex as rx
 
@@ -7,7 +7,6 @@ from src.presentacion_reflex.state.incidentes_state import (
     IncidentesState,
     IncidenteDict,
 )
-from src.presentacion_reflex import styles
 
 
 def _column_icon(title: str) -> str:

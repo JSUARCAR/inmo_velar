@@ -2,6 +2,7 @@
 Interface (Puerto): Repositorio de Recaudos.
 Definición del contrato para persistencia de pagos.
 """
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Dict, Generic, List, Optional, TypeVar
@@ -16,6 +17,7 @@ T = TypeVar("T")
 @dataclass(frozen=True)
 class FiltrosRecaudo:
     """Filtros tipados para consultas de recaudos."""
+
     estado: Optional[EstadoRecaudo] = None
     fecha_desde: Optional[str] = None
     fecha_hasta: Optional[str] = None
@@ -35,6 +37,7 @@ class FiltrosRecaudo:
 @dataclass
 class ResultadoPaginado(Generic[T]):
     """Resultado paginado genérico."""
+
     items: List[T] = field(default_factory=list)
     total: int = 0
     page: int = 1
@@ -120,9 +123,7 @@ class IRepositorioRecaudo(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def obtener_conceptos_por_recaudo(
-        self, id_recaudo: int
-    ) -> List[RecaudoConcepto]:
+    def obtener_conceptos_por_recaudo(self, id_recaudo: int) -> List[RecaudoConcepto]:
         """Obtiene los conceptos de un recaudo."""
         raise NotImplementedError
 

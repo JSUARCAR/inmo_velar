@@ -7,7 +7,9 @@ from datetime import date
 from typing import Dict, List, Optional
 
 from src.dominio.entidades.recibo_publico import ReciboPublico
-from src.infraestructura.persistencia.repositorio_propiedad_postgres import RepositorioPropiedadPostgres
+from src.infraestructura.persistencia.repositorio_propiedad_postgres import (
+    RepositorioPropiedadPostgres,
+)
 from src.infraestructura.repositorios.repositorio_recibo_publico import (
     RepositorioReciboPublico,
 )
@@ -88,7 +90,9 @@ class ServicioRecibosPublicos:
                 f_hasta = date.fromisoformat(fecha_hasta)
 
                 if f_hasta < f_desde:
-                    raise ValueError("La fecha hasta no puede ser menor a la fecha desde")
+                    raise ValueError(
+                        "La fecha hasta no puede ser menor a la fecha desde"
+                    )
 
                 # Diferencia de días
                 # Usuario pide "diferencia de dias".
@@ -121,7 +125,9 @@ class ServicioRecibosPublicos:
             # Ya existe un recibo para esta combinación
             raise
 
-    def actualizar_recibo(self, id_recibo: int, datos: dict, usuario: str) -> ReciboPublico:
+    def actualizar_recibo(
+        self, id_recibo: int, datos: dict, usuario: str
+    ) -> ReciboPublico:
         """
         Actualiza un recibo existente.
 
@@ -174,7 +180,9 @@ class ServicioRecibosPublicos:
                 f_hasta = date.fromisoformat(nuevo_hasta)
 
                 if f_hasta < f_desde:
-                    raise ValueError("La fecha hasta no puede ser menor a la fecha desde")
+                    raise ValueError(
+                        "La fecha hasta no puede ser menor a la fecha desde"
+                    )
 
                 recibo.fecha_desde = nuevo_desde
                 recibo.fecha_hasta = nuevo_hasta
@@ -248,9 +256,13 @@ class ServicioRecibosPublicos:
         Returns:
             Lista de recibos
         """
-        return self.repo_recibo.listar_por_propiedad(id_propiedad, periodo_inicio, periodo_fin)
+        return self.repo_recibo.listar_por_propiedad(
+            id_propiedad, periodo_inicio, periodo_fin
+        )
 
-    def obtener_resumen_por_propiedad(self, id_propiedad: int, periodo: str) -> Dict[str, any]:
+    def obtener_resumen_por_propiedad(
+        self, id_propiedad: int, periodo: str
+    ) -> Dict[str, any]:
         """
         Obtiene un resumen de recibos de una propiedad para un período.
 
@@ -273,7 +285,9 @@ class ServicioRecibosPublicos:
         total = sum(r.valor_recibo for r in recibos)
         pagado = sum(r.valor_recibo for r in recibos if r.esta_pagado)
         pendiente = sum(r.valor_recibo for r in recibos if r.estado == "Pendiente")
-        vencido = sum(r.valor_recibo for r in recibos if r.esta_vencido and not r.esta_pagado)
+        vencido = sum(
+            r.valor_recibo for r in recibos if r.esta_vencido and not r.esta_pagado
+        )
 
         return {
             "total": total,

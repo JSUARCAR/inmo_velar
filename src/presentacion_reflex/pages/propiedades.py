@@ -454,12 +454,48 @@ def propiedades_page() -> rx.Component:
                                         rx.table.root(
                                             rx.table.header(
                                                 rx.table.row(
-                                                    header_cell_sortable("Propiedad", "direccion", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
-                                                    header_cell_sortable("Tipo", "tipo", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
-                                                    header_cell_sortable("Municipio", "ciudad", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
-                                                    header_cell_sortable("Estado", "disponibilidad", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
-                                                    header_cell_sortable("Canon", "canon_estimado", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
-                                                    header_cell_sortable("Venta / Comisión", "valor_venta", PropiedadesState.sort_by, PropiedadesState.sort_order, PropiedadesState.toggle_sort),
+                                                    header_cell_sortable(
+                                                        "Propiedad",
+                                                        "direccion",
+                                                        PropiedadesState.sort_by,
+                                                        PropiedadesState.sort_order,
+                                                        PropiedadesState.toggle_sort,
+                                                    ),
+                                                    header_cell_sortable(
+                                                        "Tipo",
+                                                        "tipo",
+                                                        PropiedadesState.sort_by,
+                                                        PropiedadesState.sort_order,
+                                                        PropiedadesState.toggle_sort,
+                                                    ),
+                                                    header_cell_sortable(
+                                                        "Municipio",
+                                                        "ciudad",
+                                                        PropiedadesState.sort_by,
+                                                        PropiedadesState.sort_order,
+                                                        PropiedadesState.toggle_sort,
+                                                    ),
+                                                    header_cell_sortable(
+                                                        "Estado",
+                                                        "disponibilidad",
+                                                        PropiedadesState.sort_by,
+                                                        PropiedadesState.sort_order,
+                                                        PropiedadesState.toggle_sort,
+                                                    ),
+                                                    header_cell_sortable(
+                                                        "Canon",
+                                                        "canon_estimado",
+                                                        PropiedadesState.sort_by,
+                                                        PropiedadesState.sort_order,
+                                                        PropiedadesState.toggle_sort,
+                                                    ),
+                                                    header_cell_sortable(
+                                                        "Venta / Comisión",
+                                                        "valor_venta",
+                                                        PropiedadesState.sort_by,
+                                                        PropiedadesState.sort_order,
+                                                        PropiedadesState.toggle_sort,
+                                                    ),
                                                     rx.table.column_header_cell(
                                                         "Servicios"
                                                     ),

@@ -6,7 +6,6 @@ Muestra resumen del grupo y permite confirmar la eliminación masiva.
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
-from src.presentacion_reflex.styles import Z_MODAL
 
 
 def info_row(label: str, value) -> rx.Component:
@@ -42,7 +41,12 @@ def group_delete_confirm_dialog() -> rx.Component:
                 LiquidacionesState.liquidacion_actual,
                 rx.vstack(
                     # Resumen del grupo
-                    rx.heading("Resumen del Grupo", size="5", margin_top="0.8em", margin_bottom="0.4em"),
+                    rx.heading(
+                        "Resumen del Grupo",
+                        size="5",
+                        margin_top="0.8em",
+                        margin_bottom="0.4em",
+                    ),
                     rx.box(
                         info_row(
                             "Propietario:",
@@ -50,7 +54,9 @@ def group_delete_confirm_dialog() -> rx.Component:
                         ),
                         info_row(
                             "Documento:",
-                            LiquidacionesState.liquidacion_actual.get("documento", "N/A"),
+                            LiquidacionesState.liquidacion_actual.get(
+                                "documento", "N/A"
+                            ),
                         ),
                         info_row(
                             "Período:",
@@ -58,14 +64,18 @@ def group_delete_confirm_dialog() -> rx.Component:
                         ),
                         info_row(
                             "Propiedades:",
-                            LiquidacionesState.liquidacion_actual.get("cantidad_propiedades", 0),
+                            LiquidacionesState.liquidacion_actual.get(
+                                "cantidad_propiedades", 0
+                            ),
                         ),
                         info_row(
                             "Neto Total:",
                             rx.cond(
                                 LiquidacionesState.liquidacion_actual.get("neto"),
-                                rx.text(f"${LiquidacionesState.liquidacion_actual['neto']:,.0f}"),
-                                "$0"
+                                rx.text(
+                                    f"${LiquidacionesState.liquidacion_actual['neto']:,.0f}"
+                                ),
+                                "$0",
                             ),
                         ),
                         info_row(

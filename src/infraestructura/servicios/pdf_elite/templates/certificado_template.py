@@ -11,9 +11,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
 
-from reportlab.lib import colors
 from ..components.tables import AdvancedTable
-from ..core.config import Colors, config
+from ..core.config import config
 from ..styles.themes import Themes
 from .base_template import BaseDocumentTemplate
 
@@ -49,7 +48,13 @@ class CertificadoTemplate(BaseDocumentTemplate):
     def validate_data(self, data: Dict[str, Any]) -> bool:
         """Valida datos del certificado"""
         self._require_fields(
-            data, "certificado_id", "tipo", "beneficiario", "contenido", "firmante", "fecha"
+            data,
+            "certificado_id",
+            "tipo",
+            "beneficiario",
+            "contenido",
+            "firmante",
+            "fecha",
         )
         return True
 
@@ -68,7 +73,9 @@ class CertificadoTemplate(BaseDocumentTemplate):
             self.enable_verification_qr("certificado", data["certificado_id"])
 
         # Configurar Header/Footer con Membrete
-        self.set_header_footer(self._header_footer_with_features, self._header_footer_with_features)
+        self.set_header_footer(
+            self._header_footer_with_features, self._header_footer_with_features
+        )
 
         # Crear documento
         filename = self._generate_filename("certificado", data["certificado_id"])
@@ -96,7 +103,6 @@ class CertificadoTemplate(BaseDocumentTemplate):
 
     def _add_header_elegante(self, data: Dict[str, Any], titulo: str) -> None:
         """Agrega header elegante del certificado"""
-        from reportlab.platypus import HRFlowable
 
         # Espacio superior (Ajustado para el membrete)
         self.add_spacer(1.5)
@@ -125,7 +131,9 @@ class CertificadoTemplate(BaseDocumentTemplate):
         self.add_spacer(0.2)
 
         # Certifica que...
-        self.add_paragraph("<b>CERTIFICA QUE:</b>", style_name="BodyBold", alignment="center")
+        self.add_paragraph(
+            "<b>CERTIFICA QUE:</b>", style_name="BodyBold", alignment="center"
+        )
 
         self.add_spacer(0.3)
 

@@ -1,5 +1,6 @@
 import reflex as rx
 
+
 def aurora_background() -> rx.Component:
     """
     Componente de fondo animado "Aurora".
@@ -23,7 +24,7 @@ def aurora_background() -> rx.Component:
             left="-10%",
             width="50vw",
             height="50vw",
-            background="radial-gradient(circle, rgba(76, 29, 149, 0.4) 0%, rgba(0,0,0,0) 70%)", # Purple
+            background="radial-gradient(circle, rgba(76, 29, 149, 0.4) 0%, rgba(0,0,0,0) 70%)",  # Purple
             filter="blur(60px)",
             animation="aurora-1 15s infinite alternate",
             opacity="0.6",
@@ -35,7 +36,7 @@ def aurora_background() -> rx.Component:
             right="-10%",
             width="40vw",
             height="40vw",
-            background="radial-gradient(circle, rgba(13, 148, 136, 0.4) 0%, rgba(0,0,0,0) 70%)", # Teal
+            background="radial-gradient(circle, rgba(13, 148, 136, 0.4) 0%, rgba(0,0,0,0) 70%)",  # Teal
             filter="blur(60px)",
             animation="aurora-2 20s infinite alternate",
             opacity="0.6",
@@ -47,7 +48,7 @@ def aurora_background() -> rx.Component:
             left="20%",
             width="60vw",
             height="60vw",
-            background="radial-gradient(circle, rgba(29, 78, 216, 0.4) 0%, rgba(0,0,0,0) 70%)", # Blue
+            background="radial-gradient(circle, rgba(29, 78, 216, 0.4) 0%, rgba(0,0,0,0) 70%)",  # Blue
             filter="blur(80px)",
             animation="aurora-3 18s infinite alternate",
             opacity="0.6",

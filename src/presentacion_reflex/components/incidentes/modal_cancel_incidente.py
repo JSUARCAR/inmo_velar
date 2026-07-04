@@ -1,6 +1,5 @@
 import reflex as rx
 
-from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
 from src.presentacion_reflex.components.neuro_elements import neuro_button
 from src.presentacion_reflex import styles

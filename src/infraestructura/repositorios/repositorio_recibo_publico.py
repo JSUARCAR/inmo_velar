@@ -54,7 +54,9 @@ class RepositorioReciboPublico:
                 cursor.execute(query, params)
                 row = cursor.fetchone()
                 if row:
-                    recibo.id_recibo_publico = row["ID_RECIBO_PUBLICO"] if isinstance(row, dict) else row[0]
+                    recibo.id_recibo_publico = (
+                        row["ID_RECIBO_PUBLICO"] if isinstance(row, dict) else row[0]
+                    )
                 return recibo
         except sqlite3.IntegrityError as e:
             if "UNIQUE constraint failed" in str(e):
@@ -109,7 +111,9 @@ class RepositorioReciboPublico:
             cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, params)
             if cursor.rowcount == 0:
-                raise ValueError(f"No se encontró el recibo con ID {recibo.id_recibo_publico}")
+                raise ValueError(
+                    f"No se encontró el recibo con ID {recibo.id_recibo_publico}"
+                )
 
         recibo.updated_by = usuario
         recibo.updated_at = timestamp
@@ -297,7 +301,9 @@ class RepositorioReciboPublico:
         """
         Elimina (físicamente) un recibo público.
         """
-        query = f"DELETE FROM RECIBOS_PUBLICOS WHERE ID_RECIBO_PUBLICO = {self.placeholder}"
+        query = (
+            f"DELETE FROM RECIBOS_PUBLICOS WHERE ID_RECIBO_PUBLICO = {self.placeholder}"
+        )
 
         with self.db_manager.transaccion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
@@ -320,7 +326,9 @@ class RepositorioReciboPublico:
             estado=row["ESTADO"],
             fecha_desde=row["FECHA_DESDE"] if "FECHA_DESDE" in row.keys() else None,
             fecha_hasta=row["FECHA_HASTA"] if "FECHA_HASTA" in row.keys() else None,
-            dias_facturados=row["DIAS_FACTURADOS"] if "DIAS_FACTURADOS" in row.keys() else 0,
+            dias_facturados=(
+                row["DIAS_FACTURADOS"] if "DIAS_FACTURADOS" in row.keys() else 0
+            ),
             created_at=row["CREATED_AT"],
             created_by=row["CREATED_BY"],
             updated_at=row["UPDATED_AT"],

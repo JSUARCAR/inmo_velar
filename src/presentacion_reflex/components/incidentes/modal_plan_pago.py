@@ -6,7 +6,6 @@ Date: 2026-06-30
 
 import reflex as rx
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
-from src.presentacion_reflex import styles
 
 
 def _plan_details_view() -> rx.Component:

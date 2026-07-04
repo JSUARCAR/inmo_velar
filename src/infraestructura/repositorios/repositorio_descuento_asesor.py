@@ -41,7 +41,9 @@ class RepositorioDescuentoAsesor:
             row = cursor.fetchone()
             if row:
                 if hasattr(row, "get") or isinstance(row, dict):
-                    descuento.id_descuento_asesor = row.get("ID_DESCUENTO_ASESOR") or row.get("id_descuento_asesor")
+                    descuento.id_descuento_asesor = row.get(
+                        "ID_DESCUENTO_ASESOR"
+                    ) or row.get("id_descuento_asesor")
                 else:
                     descuento.id_descuento_asesor = row[0]
 
@@ -92,7 +94,10 @@ class RepositorioDescuentoAsesor:
 
     def _row_to_entity(self, row: Dict[str, Any]) -> DescuentoAsesor:
         """Helper para mapeo de fila a entidad."""
-        def gv(k): return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
+        def gv(k):
+            return row.get(k) or row.get(k.upper()) or row.get(k.lower())
+
         return DescuentoAsesor(
             id_descuento_asesor=gv("ID_DESCUENTO_ASESOR"),
             id_liquidacion_asesor=gv("ID_LIQUIDACION_ASESOR"),

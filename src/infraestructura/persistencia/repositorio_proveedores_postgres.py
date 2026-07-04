@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List, Optional
 
 from src.dominio.entidades.proveedor import Proveedor

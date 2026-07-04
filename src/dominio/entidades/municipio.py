@@ -33,7 +33,9 @@ class Municipio:
 
     # Control
     estado_registro: Optional[int] = 1
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None
 
     def __post_init__(self) -> None:

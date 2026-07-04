@@ -11,7 +11,10 @@ def person_card(persona: dict) -> rx.Component:
     initials = persona["nombre"][:2]
 
     from src.presentacion_reflex import styles
-    from src.presentacion_reflex.components.neuro_elements import neuro_badge, neuro_button
+    from src.presentacion_reflex.components.neuro_elements import (
+        neuro_badge,
+        neuro_button,
+    )
 
     return rx.card(
         rx.vstack(
@@ -47,7 +50,11 @@ def person_card(persona: dict) -> rx.Component:
                 rx.hstack(
                     rx.icon("mail", size=14, color=styles.TEXT_TERTIARY),
                     rx.text(
-                        rx.cond(persona["correo"] != "", persona["correo"], "No especificado"),
+                        rx.cond(
+                            persona["correo"] != "",
+                            persona["correo"],
+                            "No especificado",
+                        ),
                         size="1",
                         color=styles.TEXT_SECONDARY,
                     ),
@@ -125,7 +132,11 @@ def person_card(persona: dict) -> rx.Component:
                             rx.icon("eye", size=16),
                             on_click=lambda: PersonasState.open_details_modal(persona),
                             size="1",
-                            style={"min_width": "32px", "height": "32px", "padding": "0"},
+                            style={
+                                "min_width": "32px",
+                                "height": "32px",
+                                "padding": "0",
+                            },
                         ),
                         content="Ver detalles completos",
                     ),
@@ -136,7 +147,11 @@ def person_card(persona: dict) -> rx.Component:
                                 rx.icon("pencil", size=16),
                                 on_click=lambda: PersonasState.open_edit_modal(persona),
                                 size="1",
-                                style={"min_width": "32px", "height": "32px", "padding": "0"},
+                                style={
+                                    "min_width": "32px",
+                                    "height": "32px",
+                                    "padding": "0",
+                                },
                             ),
                             content="Editar persona",
                         ),

@@ -7,7 +7,14 @@ from src.presentacion_reflex.components.personas.modal_detalles import modal_det
 from src.presentacion_reflex.components.personas.person_card import person_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.personas_state import PersonasState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_select_root, neuro_button, neuro_spinner, neuro_badge, neuro_switch
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_input,
+    neuro_select_root,
+    neuro_button,
+    neuro_spinner,
+    neuro_badge,
+    neuro_switch,
+)
 from src.presentacion_reflex import styles
 
 
@@ -61,12 +68,14 @@ def persona_row(persona: dict) -> rx.Component:
                         display="inline-block",
                     ),
                 )
-                                    )
-                                ),
+            )
+        ),
         rx.table.cell(
             rx.box(
                 persona["estado"],
-                color=rx.cond(persona["estado"] == "ACTIVO", "var(--green-9)", "var(--red-9)"),
+                color=rx.cond(
+                    persona["estado"] == "ACTIVO", "var(--green-9)", "var(--red-9)"
+                ),
                 background=styles.BG_PANEL,
                 border_radius="20px",
                 padding="2px 10px",
@@ -109,7 +118,9 @@ def persona_row(persona: dict) -> rx.Component:
     )
 
 
-@rx.page(route="/personas", on_load=[AuthState.require_login, PersonasState.load_personas])
+@rx.page(
+    route="/personas", on_load=[AuthState.require_login, PersonasState.load_personas]
+)
 def personas_page() -> rx.Component:
     pass  # print("\n🌐 === PERSONAS PAGE RENDERING ===") [OpSec Removed]
     pass  # print("✅ Toast provider will be included in this page") [OpSec Removed]
@@ -150,48 +161,108 @@ def personas_page() -> rx.Component:
                             # KPI Indicators (Activos | Inactivos)
                             rx.hstack(
                                 rx.badge(
-                                    rx.icon("home", size=14), 
-                                    "Propietarios ", 
-                                    rx.text(PersonasState.kpi_propietarios["activos"], as_="span", weight="bold"),
+                                    rx.icon("home", size=14),
+                                    "Propietarios ",
+                                    rx.text(
+                                        PersonasState.kpi_propietarios["activos"],
+                                        as_="span",
+                                        weight="bold",
+                                    ),
                                     rx.text(" | ", as_="span", opacity=0.5),
-                                    rx.text(PersonasState.kpi_propietarios["inactivos"], as_="span", color_scheme="ruby", weight="bold"),
-                                    color_scheme="blue", radius="full", size="2", variant="surface"
+                                    rx.text(
+                                        PersonasState.kpi_propietarios["inactivos"],
+                                        as_="span",
+                                        color_scheme="ruby",
+                                        weight="bold",
+                                    ),
+                                    color_scheme="blue",
+                                    radius="full",
+                                    size="2",
+                                    variant="surface",
                                 ),
                                 rx.badge(
-                                    rx.icon("key", size=14), 
-                                    "Arrendatarios ", 
-                                    rx.text(PersonasState.kpi_arrendatarios["activos"], as_="span", weight="bold"),
+                                    rx.icon("key", size=14),
+                                    "Arrendatarios ",
+                                    rx.text(
+                                        PersonasState.kpi_arrendatarios["activos"],
+                                        as_="span",
+                                        weight="bold",
+                                    ),
                                     rx.text(" | ", as_="span", opacity=0.5),
-                                    rx.text(PersonasState.kpi_arrendatarios["inactivos"], as_="span", color_scheme="ruby", weight="bold"),
-                                    color_scheme="green", radius="full", size="2", variant="surface"
+                                    rx.text(
+                                        PersonasState.kpi_arrendatarios["inactivos"],
+                                        as_="span",
+                                        color_scheme="ruby",
+                                        weight="bold",
+                                    ),
+                                    color_scheme="green",
+                                    radius="full",
+                                    size="2",
+                                    variant="surface",
                                 ),
                                 rx.badge(
-                                    rx.icon("briefcase", size=14), 
-                                    "Asesores ", 
-                                    rx.text(PersonasState.kpi_asesores["activos"], as_="span", weight="bold"),
+                                    rx.icon("briefcase", size=14),
+                                    "Asesores ",
+                                    rx.text(
+                                        PersonasState.kpi_asesores["activos"],
+                                        as_="span",
+                                        weight="bold",
+                                    ),
                                     rx.text(" | ", as_="span", opacity=0.5),
-                                    rx.text(PersonasState.kpi_asesores["inactivos"], as_="span", color_scheme="ruby", weight="bold"),
-                                    color_scheme="purple", radius="full", size="2", variant="surface"
+                                    rx.text(
+                                        PersonasState.kpi_asesores["inactivos"],
+                                        as_="span",
+                                        color_scheme="ruby",
+                                        weight="bold",
+                                    ),
+                                    color_scheme="purple",
+                                    radius="full",
+                                    size="2",
+                                    variant="surface",
                                 ),
                                 rx.badge(
-                                    rx.icon("handshake", size=14), 
-                                    "Codeudores ", 
-                                    rx.text(PersonasState.kpi_codeudores["activos"], as_="span", weight="bold"),
+                                    rx.icon("handshake", size=14),
+                                    "Codeudores ",
+                                    rx.text(
+                                        PersonasState.kpi_codeudores["activos"],
+                                        as_="span",
+                                        weight="bold",
+                                    ),
                                     rx.text(" | ", as_="span", opacity=0.5),
-                                    rx.text(PersonasState.kpi_codeudores["inactivos"], as_="span", color_scheme="ruby", weight="bold"),
-                                    color_scheme="orange", radius="full", size="2", variant="surface"
+                                    rx.text(
+                                        PersonasState.kpi_codeudores["inactivos"],
+                                        as_="span",
+                                        color_scheme="ruby",
+                                        weight="bold",
+                                    ),
+                                    color_scheme="orange",
+                                    radius="full",
+                                    size="2",
+                                    variant="surface",
                                 ),
                                 rx.badge(
-                                    rx.icon("truck", size=14), 
-                                    "Proveedores ", 
-                                    rx.text(PersonasState.kpi_proveedores["activos"], as_="span", weight="bold"),
+                                    rx.icon("truck", size=14),
+                                    "Proveedores ",
+                                    rx.text(
+                                        PersonasState.kpi_proveedores["activos"],
+                                        as_="span",
+                                        weight="bold",
+                                    ),
                                     rx.text(" | ", as_="span", opacity=0.5),
-                                    rx.text(PersonasState.kpi_proveedores["inactivos"], as_="span", color_scheme="ruby", weight="bold"),
-                                    color_scheme="cyan", radius="full", size="2", variant="surface"
+                                    rx.text(
+                                        PersonasState.kpi_proveedores["inactivos"],
+                                        as_="span",
+                                        color_scheme="ruby",
+                                        weight="bold",
+                                    ),
+                                    color_scheme="cyan",
+                                    radius="full",
+                                    size="2",
+                                    variant="surface",
                                 ),
                                 spacing="3",
                                 wrap="wrap",
-                                margin_top="2"
+                                margin_top="2",
                             ),
                             spacing="1",
                             align="start",
@@ -269,7 +340,9 @@ def personas_page() -> rx.Component:
                         # --- New Filter Toggles ---
                         rx.hstack(
                             rx.hstack(
-                                rx.text("Inactivos", size="2", color=styles.TEXT_SECONDARY),
+                                rx.text(
+                                    "Inactivos", size="2", color=styles.TEXT_SECONDARY
+                                ),
                                 neuro_switch(
                                     checked=PersonasState.mostrar_inactivos,
                                     on_change=PersonasState.toggle_mostrar_inactivos,
@@ -279,7 +352,11 @@ def personas_page() -> rx.Component:
                                 spacing="2",
                             ),
                             rx.hstack(
-                                rx.text("Sin contrato", size="2", color=styles.TEXT_SECONDARY),
+                                rx.text(
+                                    "Sin contrato",
+                                    size="2",
+                                    color=styles.TEXT_SECONDARY,
+                                ),
                                 neuro_switch(
                                     checked=PersonasState.filtro_sin_contrato,
                                     on_change=PersonasState.toggle_filtro_sin_contrato,
@@ -373,7 +450,9 @@ def personas_page() -> rx.Component:
                     rx.center(
                         rx.vstack(
                             neuro_spinner(size="3"),
-                            rx.text("Cargando personas...", size="2", color="var(--gray-10)"),
+                            rx.text(
+                                "Cargando personas...", size="2", color="var(--gray-10)"
+                            ),
                             spacing="2",
                         ),
                         padding="8",
@@ -386,18 +465,58 @@ def personas_page() -> rx.Component:
                                 rx.table.root(
                                     rx.table.header(
                                         rx.table.row(
-                                            header_cell_sortable("Nombre", "nombre", PersonasState.sort_by, PersonasState.sort_order, PersonasState.toggle_sort),
-                                            header_cell_sortable("Documento", "documento", PersonasState.sort_by, PersonasState.sort_order, PersonasState.toggle_sort),
-                                            header_cell_sortable("Contacto", "email", PersonasState.sort_by, PersonasState.sort_order, PersonasState.toggle_sort),
-                                            header_cell_sortable("Fecha Creación", "creado", PersonasState.sort_by, PersonasState.sort_order, PersonasState.toggle_sort),
-                                            rx.table.column_header_cell(
-                                                "Roles", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
+                                            header_cell_sortable(
+                                                "Nombre",
+                                                "nombre",
+                                                PersonasState.sort_by,
+                                                PersonasState.sort_order,
+                                                PersonasState.toggle_sort,
                                             ),
-                                            header_cell_sortable("Estado", "estado", PersonasState.sort_by, PersonasState.sort_order, PersonasState.toggle_sort),
-                                            rx.table.column_header_cell(
-                                                "Acciones", style={"font-weight": "700", "color": styles.TEXT_PRIMARY, "background": "transparent"}
+                                            header_cell_sortable(
+                                                "Documento",
+                                                "documento",
+                                                PersonasState.sort_by,
+                                                PersonasState.sort_order,
+                                                PersonasState.toggle_sort,
                                             ),
-                                            style={"background": "transparent"}
+                                            header_cell_sortable(
+                                                "Contacto",
+                                                "email",
+                                                PersonasState.sort_by,
+                                                PersonasState.sort_order,
+                                                PersonasState.toggle_sort,
+                                            ),
+                                            header_cell_sortable(
+                                                "Fecha Creación",
+                                                "creado",
+                                                PersonasState.sort_by,
+                                                PersonasState.sort_order,
+                                                PersonasState.toggle_sort,
+                                            ),
+                                            rx.table.column_header_cell(
+                                                "Roles",
+                                                style={
+                                                    "font-weight": "700",
+                                                    "color": styles.TEXT_PRIMARY,
+                                                    "background": "transparent",
+                                                },
+                                            ),
+                                            header_cell_sortable(
+                                                "Estado",
+                                                "estado",
+                                                PersonasState.sort_by,
+                                                PersonasState.sort_order,
+                                                PersonasState.toggle_sort,
+                                            ),
+                                            rx.table.column_header_cell(
+                                                "Acciones",
+                                                style={
+                                                    "font-weight": "700",
+                                                    "color": styles.TEXT_PRIMARY,
+                                                    "background": "transparent",
+                                                },
+                                            ),
+                                            style={"background": "transparent"},
                                         ),
                                     ),
                                     rx.table.body(
@@ -414,18 +533,36 @@ def personas_page() -> rx.Component:
                                                                 p["roles"].length() > 0,
                                                                 rx.match(
                                                                     p["roles"][0],
-                                                                    ("Propietario", "blue"),
-                                                                    ("Arrendatario", "green"),
-                                                                    ("Asesor", "purple"),
-                                                                    ("Codeudor", "orange"),
-                                                                    ("Proveedor", "cyan"),
+                                                                    (
+                                                                        "Propietario",
+                                                                        "blue",
+                                                                    ),
+                                                                    (
+                                                                        "Arrendatario",
+                                                                        "green",
+                                                                    ),
+                                                                    (
+                                                                        "Asesor",
+                                                                        "purple",
+                                                                    ),
+                                                                    (
+                                                                        "Codeudor",
+                                                                        "orange",
+                                                                    ),
+                                                                    (
+                                                                        "Proveedor",
+                                                                        "cyan",
+                                                                    ),
                                                                     "gray",
                                                                 ),
                                                                 "gray",
                                                             ),
                                                         ),
                                                         rx.text(
-                                                            p["nombre"], weight="bold", size="2", color=styles.TEXT_PRIMARY
+                                                            p["nombre"],
+                                                            weight="bold",
+                                                            size="2",
+                                                            color=styles.TEXT_PRIMARY,
                                                         ),
                                                         align="center",
                                                         spacing="3",
@@ -447,7 +584,11 @@ def personas_page() -> rx.Component:
                                                                 size=12,
                                                                 color=styles.TEXT_TERTIARY,
                                                             ),
-                                                            rx.text(p["correo"], size="1", color=styles.TEXT_SECONDARY),
+                                                            rx.text(
+                                                                p["correo"],
+                                                                size="1",
+                                                                color=styles.TEXT_SECONDARY,
+                                                            ),
                                                             spacing="1",
                                                         ),
                                                         rx.hstack(
@@ -482,14 +623,32 @@ def personas_page() -> rx.Component:
                                                                 r,
                                                                 color_scheme=rx.match(
                                                                     r,
-                                                                    ("Propietario", "blue"),
-                                                                    ("Arrendatario", "green"),
-                                                                    ("Asesor", "violet"),
-                                                                    ("Codeudor", "orange"),
-                                                                    ("Proveedor", "cyan"),
+                                                                    (
+                                                                        "Propietario",
+                                                                        "blue",
+                                                                    ),
+                                                                    (
+                                                                        "Arrendatario",
+                                                                        "green",
+                                                                    ),
+                                                                    (
+                                                                        "Asesor",
+                                                                        "violet",
+                                                                    ),
+                                                                    (
+                                                                        "Codeudor",
+                                                                        "orange",
+                                                                    ),
+                                                                    (
+                                                                        "Proveedor",
+                                                                        "cyan",
+                                                                    ),
                                                                     "gray",
                                                                 ),
-                                                                style={"margin_right": "4px", "margin_bottom": "4px"},
+                                                                style={
+                                                                    "margin_right": "4px",
+                                                                    "margin_bottom": "4px",
+                                                                },
                                                             ),
                                                         )
                                                     )
@@ -498,7 +657,9 @@ def personas_page() -> rx.Component:
                                                     neuro_badge(
                                                         p["estado"],
                                                         color_scheme=rx.cond(
-                                                            p["estado"] == "ACTIVO", "green", "red"
+                                                            p["estado"] == "ACTIVO",
+                                                            "green",
+                                                            "red",
                                                         ),
                                                     )
                                                 ),
@@ -509,7 +670,9 @@ def personas_page() -> rx.Component:
                                                                 rx.icon("eye", size=16),
                                                                 variant="ghost",
                                                                 size="2",
-                                                                on_click=lambda: PersonasState.open_details_modal(p),
+                                                                on_click=lambda: PersonasState.open_details_modal(
+                                                                    p
+                                                                ),
                                                                 _hover={
                                                                     "background": styles.ACCENT_BG_SOFT,
                                                                     "color": styles.ACCENT_COLOR,
@@ -523,7 +686,10 @@ def personas_page() -> rx.Component:
                                                             ),
                                                             rx.tooltip(
                                                                 rx.icon_button(
-                                                                    rx.icon("pencil", size=16),
+                                                                    rx.icon(
+                                                                        "pencil",
+                                                                        size=16,
+                                                                    ),
                                                                     variant="ghost",
                                                                     size="2",
                                                                     on_click=lambda: PersonasState.open_edit_modal(
@@ -545,12 +711,16 @@ def personas_page() -> rx.Component:
                                                                 p["estado"] == "ACTIVO",
                                                                 rx.tooltip(
                                                                     rx.icon_button(
-                                                                        rx.icon("trash_2", size=16),
+                                                                        rx.icon(
+                                                                            "trash_2",
+                                                                            size=16,
+                                                                        ),
                                                                         variant="ghost",
                                                                         color_scheme="red",
                                                                         size="2",
                                                                         on_click=lambda: PersonasState.toggle_estado_persona(
-                                                                            p["id"], p["estado"]
+                                                                            p["id"],
+                                                                            p["estado"],
                                                                         ),
                                                                         _hover={
                                                                             "background": "var(--red-3)",
@@ -560,12 +730,16 @@ def personas_page() -> rx.Component:
                                                                 ),
                                                                 rx.tooltip(
                                                                     rx.icon_button(
-                                                                        rx.icon("refresh_cw", size=16),
+                                                                        rx.icon(
+                                                                            "refresh_cw",
+                                                                            size=16,
+                                                                        ),
                                                                         variant="ghost",
                                                                         color_scheme="green",
                                                                         size="2",
                                                                         on_click=lambda: PersonasState.toggle_estado_persona(
-                                                                            p["id"], p["estado"]
+                                                                            p["id"],
+                                                                            p["estado"],
                                                                         ),
                                                                         _hover={
                                                                             "background": "var(--green-3)",
@@ -611,7 +785,9 @@ def personas_page() -> rx.Component:
                                 PersonasState.total_items > 0,
                                 rx.grid(
                                     rx.foreach(PersonasState.personas, person_card),
-                                    columns=rx.breakpoints(initial="1", sm="1", md="2", lg="3"),
+                                    columns=rx.breakpoints(
+                                        initial="1", sm="1", md="2", lg="3"
+                                    ),
                                     gap="6",
                                     width="100%",
                                     padding="4",
@@ -619,9 +795,13 @@ def personas_page() -> rx.Component:
                                 # Empty state for cards
                                 rx.center(
                                     rx.vstack(
-                                        rx.icon("users", size=48, color=styles.TEXT_TERTIARY),
+                                        rx.icon(
+                                            "users", size=48, color=styles.TEXT_TERTIARY
+                                        ),
                                         rx.heading(
-                                            "No hay personas", size="5", color=styles.TEXT_PRIMARY
+                                            "No hay personas",
+                                            size="5",
+                                            color=styles.TEXT_PRIMARY,
                                         ),
                                         rx.text(
                                             "Crea tu primera persona haciendo clic en el botón superior",

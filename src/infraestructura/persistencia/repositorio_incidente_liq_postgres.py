@@ -11,7 +11,9 @@ from datetime import datetime
 from typing import List, Optional
 
 from src.dominio.entidades.incidente_liquidacion import IncidenteLiquidacion
-from src.dominio.interfaces.repositorio_incidente_liq import RepositorioIncidenteLiquidacion
+from src.dominio.interfaces.repositorio_incidente_liq import (
+    RepositorioIncidenteLiquidacion,
+)
 from src.infraestructura.persistencia.database import DatabaseManager
 
 logger = logging.getLogger(__name__)
@@ -109,7 +111,9 @@ class RepositorioIncidenteLiquidacionPostgres(RepositorioIncidenteLiquidacion):
         )
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
-    def obtener_por_liquidacion(self, id_liquidacion: int) -> List[IncidenteLiquidacion]:
+    def obtener_por_liquidacion(
+        self, id_liquidacion: int
+    ) -> List[IncidenteLiquidacion]:
         """Obtiene todas las relaciones de una liquidación."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)

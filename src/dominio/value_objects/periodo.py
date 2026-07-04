@@ -3,9 +3,9 @@ Value Object: Periodo
 Representa un período contable en formato YYYY-MM.
 Inmutable y con validación estricta.
 """
+
 from dataclasses import dataclass
 from datetime import date
-from typing import Final
 
 
 @dataclass(frozen=True)
@@ -19,14 +19,13 @@ class Periodo:
     Raises:
         ValueError: Si el formato es inválido o la fecha no existe
     """
+
     valor: str
 
     def __post_init__(self) -> None:
         """Validaciones de formato y rango."""
         if len(self.valor) != 7 or self.valor[4] != "-":
-            raise ValueError(
-                f"Formato de período inválido: {self.valor}. Use YYYY-MM"
-            )
+            raise ValueError(f"Formato de período inválido: {self.valor}. Use YYYY-MM")
         try:
             año = int(self.valor[:4])
             mes = int(self.valor[5:])

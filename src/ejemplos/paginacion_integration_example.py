@@ -10,7 +10,11 @@ Fecha: 2025-12-29
 
 from typing import Optional
 
-from src.dominio.modelos.pagination import PaginatedResult, PaginationParams, create_empty_result
+from src.dominio.modelos.pagination import (
+    PaginatedResult,
+    PaginationParams,
+    create_empty_result,
+)
 from src.infraestructura.cache.cache_manager import cache_manager
 
 # ====================================================================

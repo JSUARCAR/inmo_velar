@@ -314,7 +314,9 @@ class ServicioPDFFacade:
         return str(path)
 
     def generar_lote_recibos_recaudo_zip(
-        self, lista_datos: List[Dict[str, Any]], filename_prefix: str = "lote_recibos_recaudo"
+        self,
+        lista_datos: List[Dict[str, Any]],
+        filename_prefix: str = "lote_recibos_recaudo",
     ) -> str:
         """Genera un lote de recibos de recaudo élite y los comprime en un archivo ZIP.
 
@@ -340,7 +342,9 @@ class ServicioPDFFacade:
         )
 
     def generar_lote_liquidaciones_elite_zip(
-        self, lista_datos: List[Dict[str, Any]], filename_prefix: str = "lote_liquidaciones_periodo"
+        self,
+        lista_datos: List[Dict[str, Any]],
+        filename_prefix: str = "lote_liquidaciones_periodo",
     ) -> str:
         """Genera un lote de estados de cuenta élite (liquidaciones) y los comprime en un archivo ZIP.
 
@@ -363,7 +367,9 @@ class ServicioPDFFacade:
         import zipfile
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
-        zip_filename = f"{filename_prefix}_{datetime.now().strftime('%Y%m%d%H%M%S')}.zip"
+        zip_filename = (
+            f"{filename_prefix}_{datetime.now().strftime('%Y%m%d%H%M%S')}.zip"
+        )
         zip_path = self.output_dir / zip_filename
 
         generated_files: List[Path] = []
@@ -404,7 +410,9 @@ class ServicioPDFFacade:
                     except Exception:
                         pass
 
-        logger.info(f"ZIP de liquidaciones generado con {len(generated_files)} archivos en: {zip_path}")
+        logger.info(
+            f"ZIP de liquidaciones generado con {len(generated_files)} archivos en: {zip_path}"
+        )
         return str(zip_path.absolute())
 
     # ========================================================================

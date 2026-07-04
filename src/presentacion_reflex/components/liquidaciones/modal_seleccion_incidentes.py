@@ -28,7 +28,9 @@ def _incidente_row(incidente: rx.Var) -> rx.Component:
         rx.table.cell(
             rx.checkbox(
                 default_checked=False,
-                on_change=lambda _: LiquidacionesState.toggle_seleccion_incidente(incidente.id),
+                on_change=lambda _: LiquidacionesState.toggle_seleccion_incidente(
+                    incidente.id
+                ),
                 disabled=incidente.ya_asociado,
             )
         ),
@@ -77,20 +79,31 @@ def modal_seleccion_incidentes() -> rx.Component:
                 ),
                 rx.vstack(
                     rx.cond(
-                        LiquidacionesState.seleccion_incidentes_disponibles.length() > 0,
+                        LiquidacionesState.seleccion_incidentes_disponibles.length()
+                        > 0,
                         rx.box(
                             rx.table.root(
                                 rx.table.header(
                                     rx.table.row(
-                                        rx.table.column_header_cell("Sel.", width="50px"),
+                                        rx.table.column_header_cell(
+                                            "Sel.", width="50px"
+                                        ),
                                         rx.table.column_header_cell("ID", width="50px"),
                                         rx.table.column_header_cell("Descripción"),
                                         rx.table.column_header_cell("Propiedad"),
-                                        rx.table.column_header_cell("Costo", width="100px"),
-                                        rx.table.column_header_cell("Cuota", width="70px"),
-                                        rx.table.column_header_cell("Valor Cuota", width="110px"),
+                                        rx.table.column_header_cell(
+                                            "Costo", width="100px"
+                                        ),
+                                        rx.table.column_header_cell(
+                                            "Cuota", width="70px"
+                                        ),
+                                        rx.table.column_header_cell(
+                                            "Valor Cuota", width="110px"
+                                        ),
                                         rx.table.column_header_cell("Estado Pago"),
-                                        rx.table.column_header_cell("Nota", width="80px"),
+                                        rx.table.column_header_cell(
+                                            "Nota", width="80px"
+                                        ),
                                     )
                                 ),
                                 rx.table.body(
@@ -106,13 +119,17 @@ def modal_seleccion_incidentes() -> rx.Component:
                             width="100%",
                         ),
                         rx.flex(
-                            rx.text("No hay incidentes disponibles para asociar.", color="gray"),
+                            rx.text(
+                                "No hay incidentes disponibles para asociar.",
+                                color="gray",
+                            ),
                             padding="4",
                             justify="center",
                         ),
                     ),
                     rx.cond(
-                        LiquidacionesState.seleccion_incidentes_seleccionados.length() > 0,
+                        LiquidacionesState.seleccion_incidentes_seleccionados.length()
+                        > 0,
                         rx.box(
                             rx.flex(
                                 rx.icon("calculator", size=16),

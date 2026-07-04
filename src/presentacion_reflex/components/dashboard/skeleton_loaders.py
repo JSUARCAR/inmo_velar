@@ -5,6 +5,7 @@ Permiten mostrar una interfaz progresiva mientras los datos cargan asincrónicam
 
 import reflex as rx
 
+
 def kpi_skeleton() -> rx.Component:
     """Skeleton para tarjetas de KPI pequeñas."""
     return rx.skeleton(
@@ -15,6 +16,7 @@ def kpi_skeleton() -> rx.Component:
             bg="gray.100",
         )
     )
+
 
 def chart_skeleton(height: str = "300px") -> rx.Component:
     """Skeleton para contenedores de gráficos."""
@@ -27,11 +29,15 @@ def chart_skeleton(height: str = "300px") -> rx.Component:
         )
     )
 
+
 def table_skeleton(rows: int = 5) -> rx.Component:
     """Skeleton para tablas o listas."""
     return rx.skeleton(
         rx.vstack(
-            *[rx.box(width="100%", height="40px", bg="gray.100", border_radius="md") for _ in range(rows)],
+            *[
+                rx.box(width="100%", height="40px", bg="gray.100", border_radius="md")
+                for _ in range(rows)
+            ],
             spacing="3",
             width="100%",
         )

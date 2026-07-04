@@ -26,9 +26,27 @@ def reverse_pago_confirm_dialog() -> rx.Component:
                     rx.cond(
                         LiquidacionesState.liquidacion_actual,
                         rx.box(
-                            rx.text("Propietario: ", LiquidacionesState.liquidacion_actual.get("propietario", "N/A"), weight="bold"),
-                            rx.text("Dirección: ", LiquidacionesState.liquidacion_actual.get("propiedad", "N/A"), weight="bold"),
-                            rx.text("Período: ", LiquidacionesState.liquidacion_actual.get("periodo", "N/A"), weight="bold"),
+                            rx.text(
+                                "Propietario: ",
+                                LiquidacionesState.liquidacion_actual.get(
+                                    "propietario", "N/A"
+                                ),
+                                weight="bold",
+                            ),
+                            rx.text(
+                                "Dirección: ",
+                                LiquidacionesState.liquidacion_actual.get(
+                                    "propiedad", "N/A"
+                                ),
+                                weight="bold",
+                            ),
+                            rx.text(
+                                "Período: ",
+                                LiquidacionesState.liquidacion_actual.get(
+                                    "periodo", "N/A"
+                                ),
+                                weight="bold",
+                            ),
                             spacing="1",
                             padding="0.75em",
                             background="gray.50",
@@ -38,7 +56,11 @@ def reverse_pago_confirm_dialog() -> rx.Component:
                         rx.box(),
                     ),
                     rx.vstack(
-                        rx.text("Motivo de reversión (requerido, mínimo 10 caracteres):", size="2", weight="medium"),
+                        rx.text(
+                            "Motivo de reversión (requerido, mínimo 10 caracteres):",
+                            size="2",
+                            weight="medium",
+                        ),
                         rx.text_area(
                             placeholder="Ingrese el motivo de la reversión del pago...",
                             value=LiquidacionesState.reverse_pago_motivo,

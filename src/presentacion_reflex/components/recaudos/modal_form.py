@@ -12,7 +12,9 @@ from src.presentacion_reflex.components.neuro_elements import (
 from src.presentacion_reflex import styles
 
 
-from src.presentacion_reflex.components.shared.searchable_select import searchable_select
+from src.presentacion_reflex.components.shared.searchable_select import (
+    searchable_select,
+)
 
 
 def modal_recaudo() -> rx.Component:
@@ -47,8 +49,16 @@ def modal_recaudo() -> rx.Component:
             # Formulario
             rx.form.root(
                 # Campos ocultos nativos y seguros
-                rx.input(type="hidden", name="id_recaudo", value=RecaudosState.form_data["id_recaudo"].to(str)),
-                rx.input(type="hidden", name="id_contrato_a", value=RecaudosState.form_data["id_contrato_a"].to(str)),
+                rx.input(
+                    type="hidden",
+                    name="id_recaudo",
+                    value=RecaudosState.form_data["id_recaudo"].to(str),
+                ),
+                rx.input(
+                    type="hidden",
+                    name="id_contrato_a",
+                    value=RecaudosState.form_data["id_contrato_a"].to(str),
+                ),
                 rx.vstack(
                     # Contrato (solo en creación, visualmente)
                     rx.cond(
@@ -232,7 +242,9 @@ def modal_recaudo() -> rx.Component:
                                 placeholder="YYYY-MM",
                                 type="month",
                                 name="periodo",
-                                default_value=RecaudosState.form_data["periodo"].to(str),
+                                default_value=RecaudosState.form_data["periodo"].to(
+                                    str
+                                ),
                                 required=True,
                                 size="2",
                                 width="100%",
@@ -254,7 +266,9 @@ def modal_recaudo() -> rx.Component:
                         neuro_text_area(
                             placeholder="Notas adicionales sobre este pago...",
                             name="observaciones",
-                            default_value=RecaudosState.form_data["observaciones"].to(str),
+                            default_value=RecaudosState.form_data["observaciones"].to(
+                                str
+                            ),
                             size="2",
                             width="100%",
                             min_height="80px",

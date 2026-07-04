@@ -211,9 +211,7 @@ class PropiedadesState(DocumentosStateMixin):
 
         try:
             kpis = servicio.obtener_kpis(
-                filtro_tipo=tipo,
-                filtro_municipio=municipio,
-                busqueda=busqueda
+                filtro_tipo=tipo, filtro_municipio=municipio, busqueda=busqueda
             )
 
             async with self:
@@ -342,7 +340,8 @@ class PropiedadesState(DocumentosStateMixin):
                     agua_tooltip=f"Agua: {getattr(p, 'codigo_agua', '') or 'N/A'}",
                     codigo_gas=getattr(p, "codigo_gas", "") or "",
                     gas_tooltip=f"Gas: {getattr(p, 'codigo_gas', '') or 'N/A'}",
-                    observaciones_admin_ph=getattr(p, "observaciones_admin_ph", "") or "",
+                    observaciones_admin_ph=getattr(p, "observaciones_admin_ph", "")
+                    or "",
                     imagen_id=getattr(p, "imagen_principal_id", None),
                     estado_registro=getattr(p, "estado_registro", 1) or 0,
                 )
@@ -460,7 +459,7 @@ class PropiedadesState(DocumentosStateMixin):
             "link_pago_administracion": "",  # URL vacío
             "cuota_extra_ordinaria": "0",  # Sin cuota extra por defecto
             "observaciones_admin_ph": "",
-            }
+        }
 
         self.show_modal = True
         self.error_message = ""
@@ -487,9 +486,9 @@ class PropiedadesState(DocumentosStateMixin):
                     "matricula_inmobiliaria": propiedad.matricula_inmobiliaria or "",
                     "direccion_propiedad": propiedad.direccion_propiedad or "",
                     "tipo_propiedad": propiedad.tipo_propiedad or "Casa",
-                    "id_municipio": str(propiedad.id_municipio)
-                    if propiedad.id_municipio
-                    else "1",
+                    "id_municipio": (
+                        str(propiedad.id_municipio) if propiedad.id_municipio else "1"
+                    ),
                     "area_metros": str(propiedad.area_m2) if propiedad.area_m2 else "0",
                     "valor_canon": (
                         str(propiedad.canon_arrendamiento_estimado)
@@ -512,9 +511,9 @@ class PropiedadesState(DocumentosStateMixin):
                         if propiedad.parqueadero is not None
                         else "0"
                     ),
-                    "estrato": str(propiedad.estrato)
-                    if propiedad.estrato is not None
-                    else "1",
+                    "estrato": (
+                        str(propiedad.estrato) if propiedad.estrato is not None else "1"
+                    ),
                     # Financiero / Venta
                     "valor_administracion": (
                         str(propiedad.valor_administracion)
@@ -561,7 +560,9 @@ class PropiedadesState(DocumentosStateMixin):
                 self.reset_wizard()
 
                 # Cargar documentos
-                self.iniciar_contexto_documental("PROPIEDAD", str(propiedad.id_propiedad))
+                self.iniciar_contexto_documental(
+                    "PROPIEDAD", str(propiedad.id_propiedad)
+                )
 
         except Exception as e:
             pass  # print(f"Error cargando propiedad: {e}") [OpSec Removed]
@@ -817,6 +818,6 @@ class PropiedadesState(DocumentosStateMixin):
         else:
             self.sort_by = column
             self.sort_order = "desc"
-        
+
         self.current_page = 1
         return PropiedadesState.load_propiedades

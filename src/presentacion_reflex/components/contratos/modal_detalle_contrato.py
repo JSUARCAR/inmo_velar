@@ -7,7 +7,9 @@ import reflex as rx
 
 from src.presentacion_reflex.state.contratos_state import ContratosState
 from src.presentacion_reflex.components.neuro_elements import neuro_button
-from src.presentacion_reflex.components.document_manager_elite import document_manager_elite
+from src.presentacion_reflex.components.document_manager_elite import (
+    document_manager_elite,
+)
 from src.presentacion_reflex import styles
 
 
@@ -15,7 +17,13 @@ def detail_field(label: str, value: str) -> rx.Component:
     """Campo de detalle solo lectura."""
     return rx.box(
         rx.vstack(
-            rx.text(label, size="1", weight="bold", color="gray.500", text_transform="uppercase"),
+            rx.text(
+                label,
+                size="1",
+                weight="bold",
+                color="gray.500",
+                text_transform="uppercase",
+            ),
             rx.text(value, size="3", weight="medium", color="var(--gray-12)"),
             spacing="1",
             align_items="start",
@@ -23,7 +31,10 @@ def detail_field(label: str, value: str) -> rx.Component:
         ),
         padding="0.5em 1em",
         border_radius="8px",
-        style={"box_shadow": styles.SHADOW_INSET_ELITE, "background": "rgba(255,255,255,0.4)"},
+        style={
+            "box_shadow": styles.SHADOW_INSET_ELITE,
+            "background": "rgba(255,255,255,0.4)",
+        },
     )
 
 
@@ -64,7 +75,9 @@ def modal_detalle_contrato() -> rx.Component:
             rx.vstack(
                 # Información Básica
                 rx.grid(
-                    detail_field("ID Contrato", ContratosState.contrato_detalle["id_view"]),
+                    detail_field(
+                        "ID Contrato", ContratosState.contrato_detalle["id_view"]
+                    ),
                     detail_field("Estado", ContratosState.contrato_detalle["estado"]),
                     detail_field(
                         "Fecha Inicio", ContratosState.contrato_detalle["fecha_inicio"]
@@ -188,11 +201,34 @@ def modal_detalle_contrato() -> rx.Component:
                     rx.vstack(
                         section_divider("Información de Pago"),
                         rx.grid(
-                            detail_field("Banco", ContratosState.contrato_detalle["banco_propietario"].to(str)),
-                            detail_field("Cuenta", ContratosState.contrato_detalle["numero_cuenta_propietario"].to(str)),
-                            detail_field("Tipo", ContratosState.contrato_detalle["tipo_cuenta"].to(str)),
-                            detail_field("Consignatario", ContratosState.contrato_detalle["consignatario"].to(str)),
-                            detail_field("Doc. Consignatario", ContratosState.contrato_detalle["documento_consignatario"].to(str)),
+                            detail_field(
+                                "Banco",
+                                ContratosState.contrato_detalle["banco_propietario"].to(
+                                    str
+                                ),
+                            ),
+                            detail_field(
+                                "Cuenta",
+                                ContratosState.contrato_detalle[
+                                    "numero_cuenta_propietario"
+                                ].to(str),
+                            ),
+                            detail_field(
+                                "Tipo",
+                                ContratosState.contrato_detalle["tipo_cuenta"].to(str),
+                            ),
+                            detail_field(
+                                "Consignatario",
+                                ContratosState.contrato_detalle["consignatario"].to(
+                                    str
+                                ),
+                            ),
+                            detail_field(
+                                "Doc. Consignatario",
+                                ContratosState.contrato_detalle[
+                                    "documento_consignatario"
+                                ].to(str),
+                            ),
                             columns="2",
                             spacing="4",
                             width="100%",
@@ -259,7 +295,17 @@ def modal_detalle_contrato() -> rx.Component:
                             on_click=ContratosState.close_detail_modal,
                             variant="soft",
                             color_scheme="gray",
-                            style={"box_shadow": styles.SHADOW_FLAT_ELITE, "_hover": {"box_shadow": styles.SHADOW_RAISED_ELITE, "transform": "scale(1.02)"}, "_active": {"box_shadow": styles.SHADOW_INSET_ELITE, "transform": "scale(0.98)"}},
+                            style={
+                                "box_shadow": styles.SHADOW_FLAT_ELITE,
+                                "_hover": {
+                                    "box_shadow": styles.SHADOW_RAISED_ELITE,
+                                    "transform": "scale(1.02)",
+                                },
+                                "_active": {
+                                    "box_shadow": styles.SHADOW_INSET_ELITE,
+                                    "transform": "scale(0.98)",
+                                },
+                            },
                         )
                     ),
                     justify="end",

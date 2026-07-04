@@ -1,6 +1,7 @@
 import reflex as rx
 from src.presentacion_reflex import styles
 
+
 def theme_toggle() -> rx.Component:
     """
     Elite Theme Toggle Component.
@@ -10,7 +11,7 @@ def theme_toggle() -> rx.Component:
         rx.segmented_control.item(
             rx.icon("sun", size=16),
             value="light",
-            content="Claro", # Tooltip fallback
+            content="Claro",  # Tooltip fallback
         ),
         rx.segmented_control.item(
             rx.icon("moon", size=16),
@@ -23,6 +24,7 @@ def theme_toggle() -> rx.Component:
         radius="full",
         cursor="pointer",
     )
+
 
 def theme_toggle_icon() -> rx.Component:
     """
@@ -37,8 +39,8 @@ def theme_toggle_icon() -> rx.Component:
                 rx.icon("sun", size=18, color="var(--gray-11)"),
             ),
             on_click=rx.toggle_color_mode,
-            size="2", # Reducido para encajar con el stack apretado
-            padding="2", # Homologado con los demás botones
+            size="2",  # Reducido para encajar con el stack apretado
+            padding="2",  # Homologado con los demás botones
             radius="full",
             background=styles.BG_PANEL,
             border="none",
@@ -49,7 +51,7 @@ def theme_toggle_icon() -> rx.Component:
             },
             _hover={
                 "transform": "translateY(-1px)",
-                "box_shadow": styles.NEU_SHADOW, # Mantener sombra en hover
+                "box_shadow": styles.NEU_SHADOW,  # Mantener sombra en hover
             },
             transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             width="32px",

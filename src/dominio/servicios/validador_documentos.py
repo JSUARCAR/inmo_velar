@@ -34,7 +34,9 @@ class ValidadorDocumentos:
                 "mensaje": f"Configuración no encontrada para módulo {entidad_tipo}",
             }
 
-        extension = "." + nombre_archivo.split(".")[-1].lower() if "." in nombre_archivo else ""
+        extension = (
+            "." + nombre_archivo.split(".")[-1].lower() if "." in nombre_archivo else ""
+        )
         if not extension:
             return {"valido": False, "mensaje": "El archivo no tiene extensión"}
 

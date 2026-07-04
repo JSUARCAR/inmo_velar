@@ -28,7 +28,6 @@ from src.aplicacion.servicios.servicio_asistencias_asambleas import (
 from src.aplicacion.servicios.servicio_pagos_administracion import (
     ServicioPagosAdministracion,
 )
-from src.dominio.excepciones.propiedad_horizontal_error import PropiedadHorizontalError
 
 # Infraestructura
 from src.infraestructura.persistencia.database import db_manager
@@ -261,11 +260,15 @@ class PropiedadHorizontalState(rx.State):
             repo_pagos = RepositorioPagosAdminPostgres(db_manager)
 
             asambleas_hoy = repo_asistencia.listar_asambleas_hoy()
-            asambleas_proximas = repo_asistencia.listar_asambleas_proximas(dias_antelacion=3)
+            asambleas_proximas = repo_asistencia.listar_asambleas_proximas(
+                dias_antelacion=3
+            )
             pagos_vencidos = repo_pagos.listar_pagos_vencidos()
 
             async with self:
-                self.contador_asambleas_proximas = len(asambleas_hoy) + len(asambleas_proximas)
+                self.contador_asambleas_proximas = len(asambleas_hoy) + len(
+                    asambleas_proximas
+                )
                 self.contador_pagos_vencidos = len(pagos_vencidos)
         except Exception as e:
             logger.warning(f"Error cargando contadores alertas PH: {e}")

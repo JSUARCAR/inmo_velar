@@ -143,7 +143,11 @@ class AuthState(rx.State):
                 "id_usuario": usuario.id_usuario,
                 "nombre_usuario": usuario.nombre_usuario,
                 "rol": usuario.rol,
-                "ultimo_acceso": usuario.ultimo_acceso.isoformat() if hasattr(usuario.ultimo_acceso, 'isoformat') else usuario.ultimo_acceso,
+                "ultimo_acceso": (
+                    usuario.ultimo_acceso.isoformat()
+                    if hasattr(usuario.ultimo_acceso, "isoformat")
+                    else usuario.ultimo_acceso
+                ),
             }
             self._user_data = user_dict
             self.is_authenticated = True
@@ -171,10 +175,13 @@ class AuthState(rx.State):
         except Exception as e:
             if not IS_PROD:
                 import traceback
+
                 _debug("_validate_session → EXCEPCIÓN INESPERADA", error=str(e))
                 traceback.print_exc(file=sys.stderr)
             else:
-                logger.error("Error de validación de sesión (detalles ocultos en producción)")
+                logger.error(
+                    "Error de validación de sesión (detalles ocultos en producción)"
+                )
             try:
                 db_manager.obtener_conexion().rollback()
             except Exception:
@@ -189,6 +196,7 @@ class AuthState(rx.State):
         Valida la sesión; si no es válida, redirige a /login.
         """
         import threading
+
         _debug(
             "require_login CALLED",
             route=self.router.url if hasattr(self, "router") else "unknown",
@@ -234,7 +242,11 @@ class AuthState(rx.State):
         _debug("login CALLED", username=form_data.get("username"))
 
         # Rate limiting por IP
-        client_ip = self.router.session.client_ip if hasattr(self.router, 'session') else "unknown"
+        client_ip = (
+            self.router.session.client_ip
+            if hasattr(self.router, "session")
+            else "unknown"
+        )
         now_ts = _time.time()
         attempts = _login_attempts.get(client_ip, [])
         # Limpiar intentos expirados
@@ -278,7 +290,11 @@ class AuthState(rx.State):
                 "id_usuario": usuario_autenticado.id_usuario,
                 "nombre_usuario": usuario_autenticado.nombre_usuario,
                 "rol": usuario_autenticado.rol,
-                "ultimo_acceso": usuario_autenticado.ultimo_acceso.isoformat() if hasattr(usuario_autenticado.ultimo_acceso, 'isoformat') else usuario_autenticado.ultimo_acceso,
+                "ultimo_acceso": (
+                    usuario_autenticado.ultimo_acceso.isoformat()
+                    if hasattr(usuario_autenticado.ultimo_acceso, "isoformat")
+                    else usuario_autenticado.ultimo_acceso
+                ),
             }
             self._user_data = user_dict
             self.is_authenticated = True
@@ -297,7 +313,9 @@ class AuthState(rx.State):
 
         except ErrorAutenticacion as e:
             _debug("login → ERROR_AUTH", error=str(e))
-            self.error_message = "Credenciales inválidas. Verifique usuario y contraseña."
+            self.error_message = (
+                "Credenciales inválidas. Verifique usuario y contraseña."
+            )
             self.is_loading = False
         except ExcepcionDominio as e:
             self.error_message = f"Error de negocio: {str(e)}"
@@ -305,12 +323,15 @@ class AuthState(rx.State):
         except Exception as e:
             if not IS_PROD:
                 import traceback
+
                 error_trace = traceback.format_exc()
                 _debug("login → EXCEPCIÓN", error=str(e))
                 print(f"LOGIN ERROR: {str(e)}", file=sys.stderr)
                 print(f"TRACEBACK: {error_trace}", file=sys.stderr)
             else:
-                logger.error("Error inesperado en login (detalles ocultos en producción)")
+                logger.error(
+                    "Error inesperado en login (detalles ocultos en producción)"
+                )
             try:
                 db_manager.obtener_conexion().rollback()
             except Exception:
@@ -338,7 +359,7 @@ class AuthState(rx.State):
         return rx.cond(
             cls.user_rol == "Administrador",
             True,
-            cls.allowed_modules.contains(module_name)
+            cls.allowed_modules.contains(module_name),
         )
 
     @classmethod
@@ -348,21 +369,19 @@ class AuthState(rx.State):
         Retorna un rx.Var booleano compatible con rx.cond().
         """
         # Usar rx.cond y manejo seguro para evitar VarAttributeError durante la compilación
-        is_admin = (cls.user_rol == "Administrador")
-        
+        is_admin = cls.user_rol == "Administrador"
+
         # Comprobar si el módulo existe primero
         module_exists = cls.permissions_map.contains(module_name)
-        
-        # Obtener la lista de acciones de forma segura. 
+
+        # Obtener la lista de acciones de forma segura.
         # Si el módulo existe, comprobar la acción. Si no, False.
         return rx.cond(
             is_admin,
             True,
             rx.cond(
-                module_exists,
-                cls.permissions_map[module_name].contains(action),
-                False
-            )
+                module_exists, cls.permissions_map[module_name].contains(action), False
+            ),
         )
 
     def backend_check_action(self, module_name: str, action: str) -> bool:

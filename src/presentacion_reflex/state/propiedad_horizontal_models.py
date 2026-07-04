@@ -2,7 +2,6 @@ from datetime import date, datetime
 from typing import List, Optional
 
 import pydantic
-import reflex as rx
 
 
 class AsistenciaModel(pydantic.BaseModel):

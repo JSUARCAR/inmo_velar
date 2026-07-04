@@ -23,7 +23,9 @@ class Alerta:
     descripcion_alerta: str
     id_alertas: Optional[int] = None
     prioridad: str = "Media"  # Alta, Media, Baja
-    fecha_generacion_alerta: str = field(default_factory=lambda: datetime.now().isoformat())
+    fecha_generacion_alerta: str = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     fecha_vencimiento_alerta: Optional[str] = None
     estado_alerta: str = "Pendiente"  # Pendiente, En Proceso, Resuelta, Archivada
     id_entidad_relacionada: Optional[int] = None
@@ -56,7 +58,7 @@ class Alerta:
             "Otros",
         ]
         if self.tipo_alerta not in tipos_validos:
-            # No lanzamos error para evitar romper el sistema por variaciones menores, 
+            # No lanzamos error para evitar romper el sistema por variaciones menores,
             # pero podríamos logearlo.
             pass
 

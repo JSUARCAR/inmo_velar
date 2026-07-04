@@ -17,7 +17,9 @@ class Documento:
     extension: str = ""
     mime_type: str = ""
     descripcion: str = ""
-    contenido: Optional[bytes] = None  # BLOB - Puede ser None si se cargó con 'lazy loading'
+    contenido: Optional[bytes] = (
+        None  # BLOB - Puede ser None si se cargó con 'lazy loading'
+    )
     version: int = 1
     es_vigente: bool = True
     created_at: Optional[datetime] = None

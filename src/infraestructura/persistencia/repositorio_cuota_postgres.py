@@ -76,7 +76,9 @@ class RepositorioCuotaPostgres(RepositorioCuota):
                 cuota.created_at = result.get("CREATED_AT")
 
             conn.commit()
-            logger.info(f"Cuota creada: {cuota.id_cuota} para plan {cuota.id_plan_pago}")
+            logger.info(
+                f"Cuota creada: {cuota.id_cuota} para plan {cuota.id_plan_pago}"
+            )
             return cuota
 
         except Exception as e:
@@ -84,16 +86,17 @@ class RepositorioCuotaPostgres(RepositorioCuota):
             logger.error(f"Error al crear cuota: {e}")
             raise
 
-    def crear_desde_plan(self, id_plan_pago: int, num_cuotas: int, 
-                         valor_cuota: int) -> List[CuotaIncidente]:
+    def crear_desde_plan(
+        self, id_plan_pago: int, num_cuotas: int, valor_cuota: int
+    ) -> List[CuotaIncidente]:
         """Crea todas las cuotas para un plan."""
         cuotas_creadas = []
-        
+
         for i in range(1, num_cuotas + 1):
             cuota = CuotaIncidente.crear(id_plan_pago, i, valor_cuota)
             cuota = self.crear(cuota)
             cuotas_creadas.append(cuota)
-        
+
         logger.info(f"Creadas {len(cuotas_creadas)} cuotas para plan {id_plan_pago}")
         return cuotas_creadas
 
@@ -130,7 +133,9 @@ class RepositorioCuotaPostgres(RepositorioCuota):
         )
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
-    def obtener_cuotas_pendientes_por_propiedad(self, id_propiedad: int) -> List[CuotaIncidente]:
+    def obtener_cuotas_pendientes_por_propiedad(
+        self, id_propiedad: int
+    ) -> List[CuotaIncidente]:
         """Obtiene las cuotas pendientes que no están asociadas a ninguna liquidación para una propiedad."""
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
@@ -148,17 +153,19 @@ class RepositorioCuotaPostgres(RepositorioCuota):
         cursor.execute(query, (id_propiedad,))
         return [self._row_to_entity(row) for row in cursor.fetchall()]
 
-    def contar_estado_liquidaciones_por_plan(self, id_plan_pago: int) -> tuple[int, int]:
+    def contar_estado_liquidaciones_por_plan(
+        self, id_plan_pago: int
+    ) -> tuple[int, int]:
         """
-        Calcula la cantidad de cuotas con liquidación y cuántas están pagadas 
+        Calcula la cantidad de cuotas con liquidación y cuántas están pagadas
         para un plan de pago específico en una sola consulta optimizada.
-        
+
         Returns:
             Tuple[int, int]: (total_cuotas_con_liq, total_cuotas_pagadas)
         """
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
-        
+
         query = """
             SELECT 
                 COUNT(c.ID_CUOTA) as total_con_liq,
@@ -169,13 +176,13 @@ class RepositorioCuotaPostgres(RepositorioCuota):
         """
         cursor.execute(query, (id_plan_pago,))
         row = cursor.fetchone()
-        
+
         if not row:
             return 0, 0
-            
+
         total_con_liq = row.get("total_con_liq", 0) or row.get("TOTAL_CON_LIQ", 0) or 0
         total_pagadas = row.get("total_pagadas", 0) or row.get("TOTAL_PAGADAS", 0) or 0
-        
+
         return total_con_liq, total_pagadas
 
     def actualizar(self, cuota: CuotaIncidente) -> CuotaIncidente:
@@ -207,7 +214,9 @@ class RepositorioCuotaPostgres(RepositorioCuota):
         cursor = self.db.get_dict_cursor(conn)
 
         try:
-            cursor.execute("DELETE FROM CUOTA_INCIDENTE WHERE ID_CUOTA = %s", (id_cuota,))
+            cursor.execute(
+                "DELETE FROM CUOTA_INCIDENTE WHERE ID_CUOTA = %s", (id_cuota,)
+            )
             conn.commit()
             logger.info(f"Cuota eliminada: {id_cuota}")
             return True

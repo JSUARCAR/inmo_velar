@@ -3,7 +3,6 @@ Página de Propiedad Horizontal - Reflex
 Gestión de Asambleas y Pagos de Administración.
 """
 
-from typing import Dict
 
 import reflex as rx
 
@@ -313,7 +312,13 @@ def _celda_dia(dia: rx.Var) -> rx.Component:
                                     border_radius="50%",
                                     bg=evento.color_tipo,
                                 ),
-                                content=evento.direccion_propiedad + " | " + evento.nombre_asistente + " · " + evento.tipo_reunion + " - " + evento.hora_asistencia,
+                                content=evento.direccion_propiedad
+                                + " | "
+                                + evento.nombre_asistente
+                                + " · "
+                                + evento.tipo_reunion
+                                + " - "
+                                + evento.hora_asistencia,
                             ),
                         ),
                         spacing="1",
@@ -836,7 +841,8 @@ def modal_dia_calendario() -> rx.Component:
             rx.box(
                 rx.hstack(
                     rx.dialog.title(
-                        "Eventos del ", PropiedadHorizontalState.dia_seleccionado,
+                        "Eventos del ",
+                        PropiedadHorizontalState.dia_seleccionado,
                     ),
                     rx.dialog.close(
                         rx.icon_button(
@@ -969,7 +975,8 @@ def propiedad_horizontal_page() -> rx.Component:
                                 rx.hstack(
                                     rx.text("Asambleas"),
                                     rx.cond(
-                                        PropiedadHorizontalState.contador_asambleas_proximas > 0,
+                                        PropiedadHorizontalState.contador_asambleas_proximas
+                                        > 0,
                                         rx.badge(
                                             PropiedadHorizontalState.contador_asambleas_proximas.to_string(),
                                             color_scheme="red",
@@ -987,7 +994,8 @@ def propiedad_horizontal_page() -> rx.Component:
                                 rx.hstack(
                                     rx.text("Pagos de Administración"),
                                     rx.cond(
-                                        PropiedadHorizontalState.contador_pagos_vencidos > 0,
+                                        PropiedadHorizontalState.contador_pagos_vencidos
+                                        > 0,
                                         rx.badge(
                                             PropiedadHorizontalState.contador_pagos_vencidos.to_string(),
                                             color_scheme="red",

@@ -120,7 +120,9 @@ class CacheLevel:
                 del self._cache[k]
                 del self._timestamps[k]
 
-            logger.info(f"{self.name}: Invalidado patrón '{pattern}' ({len(keys_to_delete)} items)")
+            logger.info(
+                f"{self.name}: Invalidado patrón '{pattern}' ({len(keys_to_delete)} items)"
+            )
             return len(keys_to_delete)
 
     def size(self) -> int:
@@ -137,14 +139,18 @@ class CacheLevel:
         """
         with self._lock:
             current_time = time.time()
-            expired_keys = [k for k, ts in self._timestamps.items() if current_time - ts > self.ttl]
+            expired_keys = [
+                k for k, ts in self._timestamps.items() if current_time - ts > self.ttl
+            ]
 
             for k in expired_keys:
                 del self._cache[k]
                 del self._timestamps[k]
 
             if expired_keys:
-                logger.debug(f"{self.name}: Limpiados {len(expired_keys)} items expirados")
+                logger.debug(
+                    f"{self.name}: Limpiados {len(expired_keys)} items expirados"
+                )
 
             return len(expired_keys)
 
@@ -189,7 +195,9 @@ class CacheManager:
                 if total > 0:
                     logger.info(f"Cleanup: {total} items expirados eliminados")
 
-        cleanup_thread = threading.Thread(target=cleanup_loop, daemon=True, name="CacheCleanup")
+        cleanup_thread = threading.Thread(
+            target=cleanup_loop, daemon=True, name="CacheCleanup"
+        )
         cleanup_thread.start()
 
     def _generate_key(self, namespace: str, *args, **kwargs) -> str:
@@ -199,7 +207,13 @@ class CacheManager:
         safe_args = []
         for i, arg in enumerate(args):
             # Si es el primer argumento y parece una instancia de clase (self), guardar solo el nombre de la clase
-            if i == 0 and hasattr(arg, "__class__") and not isinstance(arg, (int, float, str, bool, list, dict, tuple, type(None))):
+            if (
+                i == 0
+                and hasattr(arg, "__class__")
+                and not isinstance(
+                    arg, (int, float, str, bool, list, dict, tuple, type(None))
+                )
+            ):
                 safe_args.append(arg.__class__.__name__)
             else:
                 safe_args.append(arg)
@@ -293,7 +307,8 @@ class CacheManager:
                 try:
                     count = self.invalidate(namespace, level)
                     logger.debug(
-                        f"Cache invalidado por {func.__name__}: " f"{namespace} ({count} items)"
+                        f"Cache invalidado por {func.__name__}: "
+                        f"{namespace} ({count} items)"
                     )
                 except Exception as e:
                     logger.error(f"Error invalidando cache en {func.__name__}: {e}")
@@ -372,7 +387,9 @@ class CacheManager:
                 "l2_max": self.l2.max_size,
                 "l3_size": self.l3.size(),
                 "l3_max": self.l3.max_size,
-                "total_cached_items": (self.l1.size() + self.l2.size() + self.l3.size()),
+                "total_cached_items": (
+                    self.l1.size() + self.l2.size() + self.l3.size()
+                ),
             }
 
     def reset_stats(self):

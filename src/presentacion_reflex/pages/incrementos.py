@@ -8,8 +8,12 @@ from src.presentacion_reflex.state.ipc_state import IPCState
 def ipc_modal() -> rx.Component:
     return rx.dialog.root(
         rx.dialog.content(
-            rx.dialog.title(rx.cond(IPCState.is_editing, "Editar IPC", "Registrar IPC")),
-            rx.dialog.description("Ingrese los datos del índice para el año correspondiente."),
+            rx.dialog.title(
+                rx.cond(IPCState.is_editing, "Editar IPC", "Registrar IPC")
+            ),
+            rx.dialog.description(
+                "Ingrese los datos del índice para el año correspondiente."
+            ),
             rx.vstack(
                 rx.cond(
                     IPCState.error_message != "",
@@ -54,7 +58,9 @@ def ipc_modal() -> rx.Component:
                         on_click=IPCState.close_modal,
                     )
                 ),
-                rx.button("Guardar", on_click=IPCState.save_ipc, loading=IPCState.is_loading),
+                rx.button(
+                    "Guardar", on_click=IPCState.save_ipc, loading=IPCState.is_loading
+                ),
                 spacing="3",
                 justify="end",
             ),
@@ -140,7 +146,9 @@ def ipc_table() -> rx.Component:
                                         size="1",
                                         variant="ghost",
                                         color_scheme="red",
-                                        on_click=lambda: IPCState.confirm_delete_ipc(ipc),
+                                        on_click=lambda: IPCState.confirm_delete_ipc(
+                                            ipc
+                                        ),
                                     ),
                                     content="Eliminar IPC",
                                 ),
@@ -163,7 +171,9 @@ def incrementos_content() -> rx.Component:
             rx.cond(
                 AuthState.check_action("Incrementos", "CREAR"),
                 rx.button(
-                    rx.icon("plus", size=18), "Nuevo Año", on_click=IPCState.open_create_modal
+                    rx.icon("plus", size=18),
+                    "Nuevo Año",
+                    on_click=IPCState.open_create_modal,
                 ),
             ),
             width="100%",
@@ -176,7 +186,9 @@ def incrementos_content() -> rx.Component:
         rx.divider(),
         rx.cond(
             IPCState.is_loading
-            & ~(IPCState.show_modal | IPCState.show_delete_dialog),  # Show spinner if loading and modal not open (initial load)
+            & ~(
+                IPCState.show_modal | IPCState.show_delete_dialog
+            ),  # Show spinner if loading and modal not open (initial load)
             rx.center(rx.spinner()),
             ipc_table(),
         ),

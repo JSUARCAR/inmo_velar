@@ -54,7 +54,9 @@ class SaldoFavor:
     observaciones: Optional[str] = None
 
     # Auditoría
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
@@ -70,7 +72,10 @@ class SaldoFavor:
             raise ValueError("El valor del saldo debe ser mayor que cero")
 
         # Validar tipo_beneficiario
-        if self.tipo_beneficiario and self.tipo_beneficiario not in self.TIPOS_BENEFICIARIO:
+        if (
+            self.tipo_beneficiario
+            and self.tipo_beneficiario not in self.TIPOS_BENEFICIARIO
+        ):
             raise ValueError(
                 f"Tipo de beneficiario inválido: {self.tipo_beneficiario}. "
                 f"Debe ser uno de: {', '.join(self.TIPOS_BENEFICIARIO)}"
@@ -79,7 +84,8 @@ class SaldoFavor:
         # Validar estado
         if self.estado not in self.ESTADOS:
             raise ValueError(
-                f"Estado inválido: {self.estado}. " f"Debe ser uno de: {', '.join(self.ESTADOS)}"
+                f"Estado inválido: {self.estado}. "
+                f"Debe ser uno de: {', '.join(self.ESTADOS)}"
             )
 
         # Validar XOR: exactamente uno de propietario o asesor
@@ -92,7 +98,9 @@ class SaldoFavor:
             )
 
         if not tiene_propietario and not tiene_asesor:
-            raise ValueError("Un saldo a favor debe pertenecer a un propietario O un asesor")
+            raise ValueError(
+                "Un saldo a favor debe pertenecer a un propietario O un asesor"
+            )
 
         # Validar coherencia tipo_beneficiario con FK
         if tiene_propietario and self.tipo_beneficiario != "Propietario":
@@ -101,7 +109,9 @@ class SaldoFavor:
             )
 
         if tiene_asesor and self.tipo_beneficiario != "Asesor":
-            raise ValueError("Si id_asesor está definido, tipo_beneficiario debe ser 'Asesor'")
+            raise ValueError(
+                "Si id_asesor está definido, tipo_beneficiario debe ser 'Asesor'"
+            )
 
     @property
     def esta_pendiente(self) -> bool:
@@ -153,7 +163,9 @@ class SaldoFavor:
             ValueError: Si el saldo ya está resuelto
         """
         if self.esta_resuelto:
-            raise ValueError(f"El saldo ya está {self.estado.lower()}, no puede aplicarse")
+            raise ValueError(
+                f"El saldo ya está {self.estado.lower()}, no puede aplicarse"
+            )
 
         self.estado = "Aplicado"
         self.fecha_resolucion = date.today().isoformat()
@@ -173,7 +185,9 @@ class SaldoFavor:
             ValueError: Si el saldo ya está resuelto
         """
         if self.esta_resuelto:
-            raise ValueError(f"El saldo ya está {self.estado.lower()}, no puede devolverse")
+            raise ValueError(
+                f"El saldo ya está {self.estado.lower()}, no puede devolverse"
+            )
 
         self.estado = "Devuelto"
         self.fecha_resolucion = date.today().isoformat()

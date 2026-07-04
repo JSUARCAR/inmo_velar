@@ -41,7 +41,11 @@ class DataValidator:
         Returns:
             Tupla (es_válido, campos_faltantes)
         """
-        missing = [field for field in required_fields if field not in data or data[field] is None]
+        missing = [
+            field
+            for field in required_fields
+            if field not in data or data[field] is None
+        ]
         return (len(missing) == 0, missing)
 
     @staticmethod

@@ -24,7 +24,9 @@ class Desocupacion:
     id_contrato: int = 0
 
     # Fechas
-    fecha_solicitud: str = field(default_factory=lambda: datetime.now().date().isoformat())
+    fecha_solicitud: str = field(
+        default_factory=lambda: datetime.now().date().isoformat()
+    )
     fecha_programada: str = ""  # Fecha estimada de entrega
     fecha_real: Optional[str] = None  # Fecha real de entrega (cuando se completa)
 
@@ -35,7 +37,9 @@ class Desocupacion:
     observaciones: Optional[str] = None
 
     # Auditoría
-    created_at: Optional[str] = field(default_factory=lambda: datetime.now().isoformat())
+    created_at: Optional[str] = field(
+        default_factory=lambda: datetime.now().isoformat()
+    )
     created_by: Optional[str] = None
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None

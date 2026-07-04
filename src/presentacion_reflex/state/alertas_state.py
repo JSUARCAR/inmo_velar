@@ -1,4 +1,3 @@
-import sys
 import time
 from typing import Any, Dict, List
 
@@ -9,7 +8,9 @@ from src.infraestructura.persistencia.database import db_manager
 
 
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 class AlertasState(rx.State):
     """
@@ -48,13 +49,15 @@ class AlertasState(rx.State):
             servicio = self._get_servicio()
 
             # 1. Sincronizar (detectar nuevos eventos)
-            # Solo sincronizamos si ha pasado mucho tiempo (ej: 1 hora) 
+            # Solo sincronizamos si ha pasado mucho tiempo (ej: 1 hora)
             # para no saturar el servidor en cada navegación
             # Por ahora lo dejamos simplificado
             servicio.sincronizar_alertas(usuario_sistema="sistema")
 
             # 2. Obtener alertas persistidas pendientes
-            items = servicio.obtener_alertas(estado="Pendiente", formato_notificacion=True)
+            items = servicio.obtener_alertas(
+                estado="Pendiente", formato_notificacion=True
+            )
             self.notifications = items
             self.unread_count = len(items)
             logger.info(f"Alertas sincronizadas exitosamente: {len(items)}")
@@ -79,11 +82,15 @@ class AlertasState(rx.State):
             servicio = self._get_servicio()
             # Asumimos que AuthState tiene el usuario, pero usamos 'sistema' por ahora
             success = servicio.marcar_como_resuelta(
-                int(id_alerta), usuario="usuario_ui", accion="Resuelta desde notificaciones"
+                int(id_alerta),
+                usuario="usuario_ui",
+                accion="Resuelta desde notificaciones",
             )
             if success:
                 # Recargar localmente
-                self.notifications = [n for n in self.notifications if n["id"] != id_alerta]
+                self.notifications = [
+                    n for n in self.notifications if n["id"] != id_alerta
+                ]
                 self.unread_count = len(self.notifications)
         except Exception as e:
             logger.error(f"Error resolviendo alerta: {e}", exc_info=True)
@@ -93,4 +100,3 @@ class AlertasState(rx.State):
 
     def close_list(self):
         self.show_list = False
-

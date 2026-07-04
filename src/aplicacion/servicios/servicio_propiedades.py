@@ -122,13 +122,13 @@ class ServicioPropiedades:
         self,
         filtro_tipo: Optional[str] = None,
         filtro_municipio: Optional[int] = None,
-        busqueda: Optional[str] = None
+        busqueda: Optional[str] = None,
     ) -> dict:
         """Obtiene las métricas KPIs de propiedades con filtros aplicados."""
         return self.repo.obtener_kpis(
             filtro_tipo=filtro_tipo,
             filtro_municipio=filtro_municipio,
-            busqueda=busqueda
+            busqueda=busqueda,
         )
 
     def crear_propiedad(
@@ -235,7 +235,10 @@ class ServicioPropiedades:
             datos["link_pago_administracion"] = f"https://{link_pago}"
 
         # REGLA DE ÉLITE: Prevenir estado "Disponible" si tiene Arrendamiento Activo
-        if "disponibilidad_propiedad" in datos and datos["disponibilidad_propiedad"] == 1:
+        if (
+            "disponibilidad_propiedad" in datos
+            and datos["disponibilidad_propiedad"] == 1
+        ):
             self._verificar_arrendamiento_activo(id_propiedad)
 
         # Capturar canon anterior antes de aplicar cambios
@@ -273,7 +276,9 @@ class ServicioPropiedades:
                     )
                     row = cursor.fetchone()
                     id_contrato_a = row.get("ID_CONTRATO_A") if row else None
-                    canon_anterior_arriendo = row.get("CANON_ARRENDAMIENTO") if row else None
+                    canon_anterior_arriendo = (
+                        row.get("CANON_ARRENDAMIENTO") if row else None
+                    )
 
                     # 2. Actualizar Mandato activo
                     cursor.execute(
@@ -471,4 +476,6 @@ class ServicioPropiedades:
             query_check_arr.replace("%s", db_manager.get_placeholder()),
             (int(id_propiedad),),
         ):
-            raise ValueError("No se puede cambiar a Disponible: existe un Arrendamiento Activo vinculado.")
+            raise ValueError(
+                "No se puede cambiar a Disponible: existe un Arrendamiento Activo vinculado."
+            )

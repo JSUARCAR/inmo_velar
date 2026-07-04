@@ -3,7 +3,6 @@ Repositorio Postgres para Codeudor.
 Implementa mapeo 1:1 estricto con tabla CODEUDORES.
 """
 
-import psycopg2
 from datetime import datetime
 from typing import List, Optional
 
@@ -40,11 +39,15 @@ class RepositorioCodeudorPostgres:
             id_codeudor=(row_dict.get("id_codeudor") or row_dict.get("ID_CODEUDOR")),
             id_persona=(row_dict.get("id_persona") or row_dict.get("ID_PERSONA")),
             fecha_ingreso_codeudor=(
-                row_dict.get("fecha_ingreso_codeudor") or row_dict.get("FECHA_INGRESO_CODEUDOR")
+                row_dict.get("fecha_ingreso_codeudor")
+                or row_dict.get("FECHA_INGRESO_CODEUDOR")
             ),
-            estado_registro=(row_dict.get("estado_registro") or row_dict.get("ESTADO_REGISTRO")),
+            estado_registro=(
+                row_dict.get("estado_registro") or row_dict.get("ESTADO_REGISTRO")
+            ),
             motivo_inactivacion=(
-                row_dict.get("motivo_inactivacion") or row_dict.get("MOTIVO_INACTIVACION")
+                row_dict.get("motivo_inactivacion")
+                or row_dict.get("MOTIVO_INACTIVACION")
             ),
             created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
@@ -57,7 +60,8 @@ class RepositorioCodeudorPostgres:
         placeholder = self.db.get_placeholder()
 
         cursor.execute(
-            f"SELECT * FROM CODEUDORES WHERE ID_CODEUDOR = {placeholder}", (id_codeudor,)
+            f"SELECT * FROM CODEUDORES WHERE ID_CODEUDOR = {placeholder}",
+            (id_codeudor,),
         )
 
         row = cursor.fetchone()
@@ -69,7 +73,9 @@ class RepositorioCodeudorPostgres:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        cursor.execute(f"SELECT * FROM CODEUDORES WHERE ID_PERSONA = {placeholder}", (id_persona,))
+        cursor.execute(
+            f"SELECT * FROM CODEUDORES WHERE ID_PERSONA = {placeholder}", (id_persona,)
+        )
 
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
@@ -114,7 +120,9 @@ class RepositorioCodeudorPostgres:
             )
 
             conn.commit()
-            codeudor.id_codeudor = self.db.get_last_insert_id(cursor, "CODEUDORES", "ID_CODEUDOR")
+            codeudor.id_codeudor = self.db.get_last_insert_id(
+                cursor, "CODEUDORES", "ID_CODEUDOR"
+            )
 
             return codeudor
 
@@ -143,7 +151,9 @@ class RepositorioCodeudorPostgres:
             cursor = conn.cursor()
             placeholder = self.db.get_placeholder()
 
-            cursor.execute(f"DELETE FROM CODEUDORES WHERE ID_PERSONA = {placeholder}", (id_persona,))
+            cursor.execute(
+                f"DELETE FROM CODEUDORES WHERE ID_PERSONA = {placeholder}",
+                (id_persona,),
+            )
             conn.commit()
             return cursor.rowcount > 0
-
