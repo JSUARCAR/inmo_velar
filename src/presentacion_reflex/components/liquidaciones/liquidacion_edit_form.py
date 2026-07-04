@@ -148,23 +148,18 @@ def liquidacion_edit_form() -> rx.Component:
                     # Botón Seleccionar Incidentes (solo para liquidaciones en proceso)
                     rx.cond(
                         LiquidacionesState.form_data["estado"] == "En Proceso",
-                        rx.cond(
-                            AuthState.check_action(
-                                "Liquidaciones", "SELEC_INCIDENTES"
+                        rx.button(
+                            rx.hstack(
+                                rx.icon("link", size=16),
+                                rx.text("Seleccionar Incidentes"),
                             ),
-                            rx.button(
-                                rx.hstack(
-                                    rx.icon("link", size=16),
-                                    rx.text("Seleccionar Incidentes"),
-                                ),
-                                on_click=LiquidacionesState.open_seleccion_incidentes_modal(
-                                    LiquidacionesState.form_data["id_liquidacion"]
-                                ),
-                                type="button",
-                                variant="soft",
-                                color_scheme="orange",
-                                margin_top="1em",
+                            on_click=LiquidacionesState.open_seleccion_incidentes_modal(
+                                LiquidacionesState.form_data["id_liquidacion"]
                             ),
+                            type="button",
+                            variant="soft",
+                            color_scheme="orange",
+                            margin_top="1em",
                         ),
                     ),
                     section_title("Observaciones"),
