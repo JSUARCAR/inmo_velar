@@ -98,6 +98,7 @@ class LiquidacionesState(DocumentosStateMixin):
     show_delete_modal: bool = False  # Modal para eliminar liquidación
     liquidacion_id_for_delete: int = 0  # ID de liquidación a eliminar
     delete_confirmed: bool = False  # Checkbox de confirmación de eliminación
+    edit_form_is_en_proceso: bool = False  # Indica si la liquidación en edición está "En Proceso"
 
     # Eliminación agrupada
     show_group_delete_modal: bool = False  # Modal para eliminar grupo de liquidaciones
@@ -424,6 +425,7 @@ class LiquidacionesState(DocumentosStateMixin):
         self.show_create_modal = True
         self.show_detail_modal = False
         self.show_edit_modal = False
+        self.edit_form_is_en_proceso = False
         self.show_payment_modal = False
         self.form_data = {
             "id_contrato_m": "",
@@ -619,6 +621,7 @@ class LiquidacionesState(DocumentosStateMixin):
                         "estado": str(liquidacion.get("estado", "")),
                     }
                     self.show_edit_modal = True
+                    self.edit_form_is_en_proceso = True
                     self.show_create_modal = False
                     self.show_detail_modal = False
                     self.show_payment_modal = False
@@ -703,6 +706,7 @@ class LiquidacionesState(DocumentosStateMixin):
                     self.show_detail_modal = True
                     self.show_create_modal = False
                     self.show_edit_modal = False
+                    self.edit_form_is_en_proceso = False
                     self.show_payment_modal = False
                     self.is_loading = False
         except Exception as e:
@@ -875,6 +879,7 @@ class LiquidacionesState(DocumentosStateMixin):
         self.show_detail_modal = False
         self.show_create_modal = False
         self.show_edit_modal = False
+        self.edit_form_is_en_proceso = False
         self.error_message = ""
 
     def open_payment_modal_bulk(self, id_propietario: int, periodo: str):
@@ -893,6 +898,7 @@ class LiquidacionesState(DocumentosStateMixin):
         self.show_detail_modal = False
         self.show_create_modal = False
         self.show_edit_modal = False
+        self.edit_form_is_en_proceso = False
         self.show_bulk_create_modal = False
         self.error_message = ""
 
@@ -901,6 +907,7 @@ class LiquidacionesState(DocumentosStateMixin):
         self.show_detail_modal = False
         self.show_create_modal = False
         self.show_edit_modal = False
+        self.edit_form_is_en_proceso = False
         self.show_payment_modal = False
         self.show_bulk_create_modal = False
         self.liquidacion_actual = None
@@ -927,6 +934,7 @@ class LiquidacionesState(DocumentosStateMixin):
         self.show_detail_modal = False
         self.show_create_modal = False
         self.show_edit_modal = False
+        self.edit_form_is_en_proceso = False
         self.show_payment_modal = False
         self.form_data = {
             "periodo": periodo_actual,
@@ -1157,6 +1165,7 @@ class LiquidacionesState(DocumentosStateMixin):
             async with self:
                 self.show_create_modal = False
                 self.show_edit_modal = False
+                self.edit_form_is_en_proceso = False
                 self.form_data = {}
 
             # Recargar lista

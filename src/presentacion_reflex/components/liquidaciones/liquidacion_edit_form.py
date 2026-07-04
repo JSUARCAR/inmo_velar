@@ -147,7 +147,7 @@ def liquidacion_edit_form() -> rx.Component:
                     ),
                     # Botón Seleccionar Incidentes (solo para liquidaciones en proceso)
                     rx.cond(
-                        LiquidacionesState.form_data["estado"] == "En Proceso",
+                        LiquidacionesState.edit_form_is_en_proceso,
                         rx.button(
                             rx.hstack(
                                 rx.icon("link", size=16),
