@@ -49,7 +49,10 @@ cat > /app/Caddyfile.runtime <<EOF
 }
 
 handle @backend {
-    reverse_proxy localhost:8081
+    reverse_proxy localhost:8081 {
+        header_up Upgrade {http.request.Upgrade}
+        header_up Connection {http.request.Connection}
+    }
 }
 
 handle {

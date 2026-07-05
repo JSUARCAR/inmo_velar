@@ -1,0 +1,8 @@
+- generic [active] [ref=f16e1]:
+  - region "Notifications alt+T"
+  - generic [ref=f16e2]:
+    - generic "Connection Error:"
+    - link "Built with Reflex" [ref=f16e13] [cursor=pointer]:
+      - /url: https://reflex.dev
+      - img [ref=f16e14]
+      - generic [ref=f16e18]: Built with Reflex

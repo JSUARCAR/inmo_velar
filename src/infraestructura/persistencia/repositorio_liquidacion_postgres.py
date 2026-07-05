@@ -978,7 +978,7 @@ class RepositorioLiquidacionPostgres:
                 query_params.append(id_asesor)
 
             if ciclo_operativo and ciclo_operativo != "Todos":
-                conditions.append(f"prop.GRUPO_OPERATIVO = {placeholder}")
+                conditions.append(f"cm.GRUPO_OPERATIVO = {placeholder}")
                 query_params.append(ciclo_operativo)
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
@@ -1553,7 +1553,7 @@ class RepositorioLiquidacionPostgres:
             query_params.append(id_asesor)
 
         if ciclo_operativo and ciclo_operativo != "Todos":
-            conditions.append(f"prop.GRUPO_OPERATIVO = {placeholder}")
+            conditions.append(f"cm.GRUPO_OPERATIVO = {placeholder}")
             query_params.append(ciclo_operativo)
 
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
@@ -1646,7 +1646,7 @@ class RepositorioLiquidacionPostgres:
             query_params.append(id_asesor)
 
         if ciclo_operativo and ciclo_operativo != "Todos":
-            conditions.append(f"prop.GRUPO_OPERATIVO = {placeholder}")
+            conditions.append(f"cm.GRUPO_OPERATIVO = {placeholder}")
             query_params.append(ciclo_operativo)
 
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""

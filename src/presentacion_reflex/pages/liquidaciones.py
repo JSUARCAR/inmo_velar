@@ -68,17 +68,15 @@ def render_estado_recaudo_badge(estado_recaudo: rx.Var) -> rx.Component:
 def liquidaciones_toolbar() -> rx.Component:
     """Barra de herramientas con filtros y búsqueda con diseño neumórfico."""
     return rx.flex(
-        # --- GRUPO FILTROS (Search y Selects) ---
+        # --- GRUPO FILTROS ---
         rx.flex(
-            # Búsqueda
             neuro_input(
                 placeholder="Buscar...",
                 value=LiquidacionesState.search_text,
                 on_change=LiquidacionesState.set_search,
                 on_key_down=lambda key: LiquidacionesState.handle_search_key_down(key),
-                width=["100%", "100%", "250px"],
+                width=rx.breakpoints(initial="100%", md="250px"),
             ),
-            # Filtro Período
             neuro_select_root(
                 rx.foreach(
                     LiquidacionesState.periodos_select_options,
@@ -87,9 +85,8 @@ def liquidaciones_toolbar() -> rx.Component:
                 placeholder="Período",
                 value=LiquidacionesState.filter_periodo,
                 on_change=LiquidacionesState.set_filter_periodo,
-                width=["100%", "100%", "130px"],
+                width=rx.breakpoints(initial="100%", md="130px"),
             ),
-            # Filtro Estado
             neuro_select_root(
                 rx.foreach(
                     LiquidacionesState.estado_options,
@@ -98,9 +95,8 @@ def liquidaciones_toolbar() -> rx.Component:
                 placeholder="Estado",
                 value=LiquidacionesState.filter_estado,
                 on_change=LiquidacionesState.set_filter_estado,
-                width=["100%", "100%", "140px"],
+                width=rx.breakpoints(initial="100%", md="140px"),
             ),
-            # Filtro Ciclo Operativo
             neuro_select_root(
                 rx.foreach(
                     LiquidacionesState.ciclos_operativos_options,
@@ -109,9 +105,8 @@ def liquidaciones_toolbar() -> rx.Component:
                 placeholder="Ciclo",
                 value=LiquidacionesState.filter_ciclo_operativo,
                 on_change=LiquidacionesState.set_filter_ciclo_operativo,
-                width=["100%", "100%", "120px"],
+                width=rx.breakpoints(initial="100%", md="120px"),
             ),
-            # Filtro Asesor
             neuro_select_root(
                 rx.foreach(
                     LiquidacionesState.asesores_select_options,
@@ -120,16 +115,15 @@ def liquidaciones_toolbar() -> rx.Component:
                 placeholder="Asesor",
                 value=LiquidacionesState.filter_asesor_id,
                 on_change=LiquidacionesState.set_filter_asesor,
-                width=["100%", "100%", "180px"],
+                width=rx.breakpoints(initial="100%", md="180px"),
             ),
-            gap="3",
+            gap="5",
             align="center",
             flex_wrap="wrap",
-            flex="1",
         ),
         
         # --- GRUPO ACCIONES Y VISTAS ---
-        rx.flex(
+        rx.hstack(
             # Toggle Vista Agrupada
             rx.flex(
                 rx.switch(
@@ -147,9 +141,9 @@ def liquidaciones_toolbar() -> rx.Component:
                     size="2",
                     color=styles.TEXT_PRIMARY,
                 ),
-                gap="2",
+                gap="3",
                 align="center",
-                padding="0.5em",
+                padding="0.5em 1em",
                 background=styles.BG_PANEL,
                 border_radius="10px",
                 style={"box_shadow": styles.NEU_INSET},
@@ -173,7 +167,7 @@ def liquidaciones_toolbar() -> rx.Component:
                 rx.cond(
                     AuthState.check_action("Liquidaciones", "CREAR"),
                     neuro_button(
-                        rx.hstack(rx.icon("users"), rx.text("Masiva")),
+                        rx.hstack(rx.icon("users"), rx.text("Masiva"), gap="2"),
                         on_click=LiquidacionesState.open_bulk_create_modal,
                         width=rx.breakpoints(initial="100%", md="auto"),
                     ),
@@ -181,7 +175,7 @@ def liquidaciones_toolbar() -> rx.Component:
                 rx.cond(
                     AuthState.check_action("Liquidaciones", "CREAR"),
                     neuro_button(
-                        rx.hstack(rx.icon("plus"), rx.text("Nueva")),
+                        rx.hstack(rx.icon("plus"), rx.text("Nueva Liquidción"), gap="4"),
                         on_click=LiquidacionesState.open_create_modal,
                         width=rx.breakpoints(initial="100%", md="auto"),
                     ),
@@ -189,23 +183,25 @@ def liquidaciones_toolbar() -> rx.Component:
             ),
             # Botón Refresh
             neuro_button(
-                rx.icon("refresh-cw"),
+                rx.icon("refresh-cw", size=20),
                 on_click=LiquidacionesState.load_liquidaciones,
             ),
-            gap="3",
+            spacing="5",
             align="center",
-            flex_wrap="wrap",
-            justify=rx.breakpoints(initial="start", md="end"),
+            wrap="wrap",
+            style={"gap": "1.75rem"},
         ),
+        
         width="100%",
         padding="1em",
         background=styles.BG_PANEL,
         border_radius="16px",
         style={"box_shadow": styles.NEU_SHADOW},
-        gap="4",
-        flex_direction=rx.breakpoints(initial="column", lg="row"),
-        align=rx.breakpoints(initial="stretch", lg="center"),
-        justify="between",
+        gap="6",
+        flex_wrap="wrap",
+        flex_direction="row",
+        align="center",
+        justify="start",
     )
 
 

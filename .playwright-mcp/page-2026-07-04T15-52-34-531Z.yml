@@ -1,0 +1,410 @@
+- generic [active] [ref=f16e1]:
+  - region "Notifications alt+T"
+  - generic [ref=f16e19]:
+    - generic "Connection Error:"
+    - generic [ref=f16e53]:
+      - generic [ref=f16e54]:
+        - generic [ref=f16e55]:
+          - generic [ref=f16e56]:
+            - img "Logo" [ref=f16e58] [cursor=pointer]
+            - heading "INMOBILIARIA VELAR SAS" [level=1] [ref=f16e59]
+          - generic [ref=f16e62]:
+            - generic [ref=f16e63]:
+              - paragraph [ref=f16e65]: PRINCIPAL
+              - link "Dashboard" [ref=f16e66] [cursor=pointer]:
+                - /url: /dashboard
+                - generic [ref=f16e68]:
+                  - img [ref=f16e69]
+                  - paragraph [ref=f16e74]: Dashboard
+              - link "Alertas Tempranas" [ref=f16e75] [cursor=pointer]:
+                - /url: /alertas
+                - generic [ref=f16e77]:
+                  - img [ref=f16e78]
+                  - paragraph [ref=f16e83]: Alertas Tempranas
+            - generic [ref=f16e84]:
+              - paragraph [ref=f16e86]: GESTIÓN
+              - link "Personas" [ref=f16e87] [cursor=pointer]:
+                - /url: /personas
+                - generic [ref=f16e89]:
+                  - img [ref=f16e90]
+                  - paragraph [ref=f16e95]: Personas
+              - link "Propiedades" [ref=f16e96] [cursor=pointer]:
+                - /url: /propiedades
+                - generic [ref=f16e98]:
+                  - img [ref=f16e99]
+                  - paragraph [ref=f16e102]: Propiedades
+              - link "Contratos" [ref=f16e103] [cursor=pointer]:
+                - /url: /contratos
+                - generic [ref=f16e105]:
+                  - img [ref=f16e106]
+                  - paragraph [ref=f16e109]: Contratos
+              - link "Prop. Horizontal" [ref=f16e110] [cursor=pointer]:
+                - /url: /propiedad-horizontal
+                - generic [ref=f16e112]:
+                  - img [ref=f16e113]
+                  - paragraph [ref=f16e116]: Prop. Horizontal
+              - link "Proveedores" [ref=f16e117] [cursor=pointer]:
+                - /url: /proveedores
+                - generic [ref=f16e119]:
+                  - img [ref=f16e120]
+                  - paragraph [ref=f16e122]: Proveedores
+            - generic [ref=f16e123]:
+              - paragraph [ref=f16e125]: OPERACIONES
+              - link "Liquidaciones" [ref=f16e126] [cursor=pointer]:
+                - /url: /liquidaciones
+                - generic [ref=f16e128]:
+                  - img [ref=f16e129]
+                  - paragraph [ref=f16e131]: Liquidaciones
+              - link "Liquidación Asesores" [ref=f16e132] [cursor=pointer]:
+                - /url: /liquidacion-asesores
+                - generic [ref=f16e134]:
+                  - img [ref=f16e135]
+                  - paragraph [ref=f16e139]: Liquidación Asesores
+              - link "Recaudos" [ref=f16e140] [cursor=pointer]:
+                - /url: /recaudos
+                - generic [ref=f16e142]:
+                  - img [ref=f16e143]
+                  - paragraph [ref=f16e148]: Recaudos
+              - link "Desocupaciones" [ref=f16e149] [cursor=pointer]:
+                - /url: /desocupaciones
+                - generic [ref=f16e151]:
+                  - img [ref=f16e152]
+                  - paragraph [ref=f16e155]: Desocupaciones
+              - link "Incidentes" [ref=f16e156] [cursor=pointer]:
+                - /url: /incidentes
+                - generic [ref=f16e158]:
+                  - img [ref=f16e159]
+                  - paragraph [ref=f16e161]: Incidentes
+              - link "Seguros" [ref=f16e162] [cursor=pointer]:
+                - /url: /seguros
+                - generic [ref=f16e164]:
+                  - img [ref=f16e165]
+                  - paragraph [ref=f16e167]: Seguros
+              - link "Recibos Públicos" [ref=f16e168] [cursor=pointer]:
+                - /url: /recibos-publicos
+                - generic [ref=f16e170]:
+                  - img [ref=f16e171]
+                  - paragraph [ref=f16e173]: Recibos Públicos
+              - link "Saldos a Favor" [ref=f16e174] [cursor=pointer]:
+                - /url: /saldos-favor
+                - generic [ref=f16e176]:
+                  - img [ref=f16e177]
+                  - paragraph [ref=f16e180]: Saldos a Favor
+            - generic [ref=f16e181]:
+              - paragraph [ref=f16e183]: ADMINISTRACIÓN
+              - link "Usuarios" [ref=f16e184] [cursor=pointer]:
+                - /url: /usuarios
+                - generic [ref=f16e186]:
+                  - img [ref=f16e187]
+                  - paragraph [ref=f16e191]: Usuarios
+              - link "Configuración" [ref=f16e192] [cursor=pointer]:
+                - /url: /configuracion
+                - generic [ref=f16e194]:
+                  - img [ref=f16e195]
+                  - paragraph [ref=f16e198]: Configuración
+              - link "IPC / Incrementos" [ref=f16e199] [cursor=pointer]:
+                - /url: /incrementos
+                - generic [ref=f16e201]:
+                  - img [ref=f16e202]
+                  - paragraph [ref=f16e205]: IPC / Incrementos
+              - link "Auditoría" [ref=f16e206] [cursor=pointer]:
+                - /url: /auditoria
+                - generic [ref=f16e208]:
+                  - img [ref=f16e209]
+                  - paragraph [ref=f16e212]: Auditoría
+              - link "Reportes" [ref=f16e213] [cursor=pointer]:
+                - /url: /reportes
+                - generic [ref=f16e215]:
+                  - img [ref=f16e216]
+                  - paragraph [ref=f16e219]: Reportes
+          - generic [ref=f16e220]:
+            - img [ref=f16e221]
+            - generic [ref=f16e225]:
+              - paragraph [ref=f16e226]: jsuarcar
+              - paragraph [ref=f16e227]: Administrador
+            - generic [ref=f16e229]:
+              - button [ref=f16e230]:
+                - img [ref=f16e231]
+              - button "50" [ref=f16e235]:
+                - generic [ref=f16e236]:
+                  - img [ref=f16e238]
+                  - paragraph [ref=f16e244]: "50"
+              - button [ref=f16e245]:
+                - img [ref=f16e246]
+        - generic [ref=f16e250]:
+          - generic [ref=f16e251]:
+            - generic [ref=f16e252]:
+              - generic [ref=f16e253]:
+                - heading "Dashboard Ejecutivo" [level=1] [ref=f16e254]
+                - paragraph [ref=f16e255]: Análisis de rendimiento y control de activos
+              - button "Actualizar" [ref=f16e257]:
+                - img [ref=f16e258]
+                - text: Actualizar
+            - generic [ref=f16e265]:
+              - generic [ref=f16e266]:
+                - img [ref=f16e267]
+                - paragraph [ref=f16e269]: "Filtros:"
+              - combobox [ref=f16e271]:
+                - generic [ref=f16e272]: Julio
+                - img [ref=f16e273]
+              - combobox [ref=f16e276]:
+                - generic [ref=f16e277]: "2026"
+                - img [ref=f16e278]
+              - combobox [ref=f16e281]:
+                - generic [ref=f16e282]: Todos
+                - img [ref=f16e283]
+              - button "Aplicar" [ref=f16e285]:
+                - img [ref=f16e286]
+                - text: Aplicar
+              - button [ref=f16e288]:
+                - img [ref=f16e289]
+          - generic [ref=f16e298]:
+            - generic [ref=f16e299]:
+              - generic [ref=f16e301]:
+                - generic [ref=f16e302]:
+                  - generic [ref=f16e303]:
+                    - paragraph [ref=f16e304]: Ocupación Financiera
+                    - paragraph [ref=f16e305]: 94,8%
+                  - img [ref=f16e308]
+                - generic [ref=f16e309]:
+                  - paragraph [ref=f16e310]: Ingresos vs Potencial
+                  - generic [ref=f16e311]: +2.1% MoM
+              - generic [ref=f16e313]:
+                - generic [ref=f16e314]:
+                  - generic [ref=f16e315]:
+                    - paragraph [ref=f16e316]: Eficiencia Recaudo
+                    - paragraph [ref=f16e317]: 19,1%
+                  - img [ref=f16e320]
+                - generic [ref=f16e323]:
+                  - paragraph [ref=f16e324]: Recaudado este mes
+                  - generic [ref=f16e325]: +1.5% YoY
+              - generic [ref=f16e327]:
+                - generic [ref=f16e328]:
+                  - generic [ref=f16e329]:
+                    - paragraph [ref=f16e330]: Potencial Total
+                    - paragraph [ref=f16e331]: $74.138.499
+                  - img [ref=f16e334]
+                - paragraph [ref=f16e338]: Cartera Total Estimada
+            - generic [ref=f16e341]:
+              - generic [ref=f16e342]:
+                - paragraph [ref=f16e343]: PULSO OPERATIVO Y ACCIONES
+                - generic [ref=f16e345]: Tiempo real
+              - generic [ref=f16e346]:
+                - generic [ref=f16e348]:
+                  - generic [ref=f16e349]:
+                    - img [ref=f16e350]
+                    - paragraph [ref=f16e352]: Cartera Mora
+                  - paragraph [ref=f16e353]: $11.058.108
+                  - progressbar
+                  - paragraph [ref=f16e354]: 13 contratos
+                - generic [ref=f16e356]:
+                  - generic [ref=f16e357]:
+                    - img [ref=f16e358]
+                    - paragraph [ref=f16e361]: Recaudo Mes
+                  - paragraph [ref=f16e362]: $13.415.000
+                  - progressbar
+                  - paragraph [ref=f16e363]: 19,1% de meta
+                - generic [ref=f16e365]:
+                  - generic [ref=f16e366]:
+                    - img [ref=f16e367]
+                    - paragraph [ref=f16e370]: Ocupación
+                  - paragraph [ref=f16e371]: 96,3%
+                  - progressbar
+                  - paragraph [ref=f16e372]: 78/3 disp
+                - link "Alertas Activas 105 100% Requieren atención" [ref=f16e373] [cursor=pointer]:
+                  - /url: /alertas
+                  - generic [ref=f16e375]:
+                    - generic [ref=f16e376]:
+                      - img [ref=f16e377]
+                      - paragraph [ref=f16e382]: Alertas Activas
+                    - paragraph [ref=f16e383]: "105"
+                    - progressbar
+                    - paragraph [ref=f16e384]: Requieren atención
+              - generic [ref=f16e385]:
+                - generic [ref=f16e387]:
+                  - img [ref=f16e389]
+                  - generic [ref=f16e391]:
+                    - paragraph [ref=f16e392]: Comisiones
+                    - paragraph [ref=f16e393]: $5.703.627
+                  - paragraph [ref=f16e395]: 5 pend
+                - generic [ref=f16e397]:
+                  - img [ref=f16e399]
+                  - generic [ref=f16e402]:
+                    - paragraph [ref=f16e403]: Contratos
+                    - paragraph [ref=f16e404]: "77"
+                  - paragraph [ref=f16e406]: Activos
+                - generic [ref=f16e408]:
+                  - img [ref=f16e410]
+                  - generic [ref=f16e413]:
+                    - paragraph [ref=f16e414]: Recibos Pend.
+                    - paragraph [ref=f16e415]: "0"
+                  - paragraph [ref=f16e417]: En mora/próximos
+            - generic [ref=f16e422]:
+              - generic [ref=f16e423]:
+                - img [ref=f16e424]
+                - paragraph [ref=f16e427]: Vencimientos Próximos (90 Días)
+              - table [ref=f16e434]:
+                - rowgroup [ref=f16e435]:
+                  - row "Propiedad Fecha Fin" [ref=f16e436]:
+                    - columnheader "Propiedad" [ref=f16e437]
+                    - columnheader "Fecha Fin" [ref=f16e438]
+                - rowgroup [ref=f16e439]:
+                  - row "BRR LAS AMERICAS PI 1 2026-07-05 1 días" [ref=f16e440]:
+                    - cell "BRR LAS AMERICAS PI 1" [ref=f16e441]:
+                      - paragraph [ref=f16e442]: BRR LAS AMERICAS PI 1
+                    - cell "2026-07-05 1 días" [ref=f16e443]:
+                      - generic [ref=f16e444]:
+                        - paragraph [ref=f16e445]: 2026-07-05
+                        - generic [ref=f16e446]: 1 días
+                  - row "CL 50 CR 55-01 BQ 1 AP 1210, CJT RES OVIEDO 2026-07-10 6 días" [ref=f16e447]:
+                    - cell "CL 50 CR 55-01 BQ 1 AP 1210, CJT RES OVIEDO" [ref=f16e448]:
+                      - paragraph [ref=f16e449]: CL 50 CR 55-01 BQ 1 AP 1210, CJT RES OVIEDO
+                    - cell "2026-07-10 6 días" [ref=f16e450]:
+                      - generic [ref=f16e451]:
+                        - paragraph [ref=f16e452]: 2026-07-10
+                        - generic [ref=f16e453]: 6 días
+                  - row "CL 23 CR 37-25 TO 3 AP 1005, CJT TESALONICA APARTAMENTOS 2026-07-14 10 días" [ref=f16e454]:
+                    - cell "CL 23 CR 37-25 TO 3 AP 1005, CJT TESALONICA APARTAMENTOS" [ref=f16e455]:
+                      - paragraph [ref=f16e456]: CL 23 CR 37-25 TO 3 AP 1005, CJT TESALONICA APARTAMENTOS
+                    - cell "2026-07-14 10 días" [ref=f16e457]:
+                      - generic [ref=f16e458]:
+                        - paragraph [ref=f16e459]: 2026-07-14
+                        - generic [ref=f16e460]: 10 días
+                  - row "EDF GRANADA REAL AP 308 2026-07-15 11 días" [ref=f16e461]:
+                    - cell "EDF GRANADA REAL AP 308" [ref=f16e462]:
+                      - paragraph [ref=f16e463]: EDF GRANADA REAL AP 308
+                    - cell "2026-07-15 11 días" [ref=f16e464]:
+                      - generic [ref=f16e465]:
+                        - paragraph [ref=f16e466]: 2026-07-15
+                        - generic [ref=f16e467]: 11 días
+                  - row "BRR BOSQUES DE PINARES MZ 4 CS 144 PI 1 2026-07-30 26 días" [ref=f16e468]:
+                    - cell "BRR BOSQUES DE PINARES MZ 4 CS 144 PI 1" [ref=f16e469]:
+                      - paragraph [ref=f16e470]: BRR BOSQUES DE PINARES MZ 4 CS 144 PI 1
+                    - cell "2026-07-30 26 días" [ref=f16e471]:
+                      - generic [ref=f16e472]:
+                        - paragraph [ref=f16e473]: 2026-07-30
+                        - generic [ref=f16e474]: 26 días
+                  - row "CJT ENTRE LOMAS TO 3 AP 404 2026-07-30 26 días" [ref=f16e475]:
+                    - cell "CJT ENTRE LOMAS TO 3 AP 404" [ref=f16e476]:
+                      - paragraph [ref=f16e477]: CJT ENTRE LOMAS TO 3 AP 404
+                    - cell "2026-07-30 26 días" [ref=f16e478]:
+                      - generic [ref=f16e479]:
+                        - paragraph [ref=f16e480]: 2026-07-30
+                        - generic [ref=f16e481]: 26 días
+                  - row "CL 22 CR 34-60 LC PI 1, BRR LAS AMERICAS 2026-08-01 28 días" [ref=f16e482]:
+                    - cell "CL 22 CR 34-60 LC PI 1, BRR LAS AMERICAS" [ref=f16e483]:
+                      - paragraph [ref=f16e484]: CL 22 CR 34-60 LC PI 1, BRR LAS AMERICAS
+                    - cell "2026-08-01 28 días" [ref=f16e485]:
+                      - generic [ref=f16e486]:
+                        - paragraph [ref=f16e487]: 2026-08-01
+                        - generic [ref=f16e488]: 28 días
+                  - row "CR 18 CL 25-26 TO 7 AP 504, EDF ALAMOS DE POPORO 2026-08-01 28 días" [ref=f16e489]:
+                    - cell "CR 18 CL 25-26 TO 7 AP 504, EDF ALAMOS DE POPORO" [ref=f16e490]:
+                      - paragraph [ref=f16e491]: CR 18 CL 25-26 TO 7 AP 504, EDF ALAMOS DE POPORO
+                    - cell "2026-08-01 28 días" [ref=f16e492]:
+                      - generic [ref=f16e493]:
+                        - paragraph [ref=f16e494]: 2026-08-01
+                        - generic [ref=f16e495]: 28 días
+                  - row "CR 19 CL 11N-33 ET 1 BQ 1 AP 302, CJT RES LA ABADIA 2026-08-04 31 días" [ref=f16e496]:
+                    - cell "CR 19 CL 11N-33 ET 1 BQ 1 AP 302, CJT RES LA ABADIA" [ref=f16e497]:
+                      - paragraph [ref=f16e498]: CR 19 CL 11N-33 ET 1 BQ 1 AP 302, CJT RES LA ABADIA
+                    - cell "2026-08-04 31 días" [ref=f16e499]:
+                      - generic [ref=f16e500]:
+                        - paragraph [ref=f16e501]: 2026-08-04
+                        - generic [ref=f16e502]: 31 días
+                  - row "CL 22N CR 19-170 TO 6 AP 401, CJT BOSQUES DE PALERMO 2026-08-06 33 días" [ref=f16e503]:
+                    - cell "CL 22N CR 19-170 TO 6 AP 401, CJT BOSQUES DE PALERMO" [ref=f16e504]:
+                      - paragraph [ref=f16e505]: CL 22N CR 19-170 TO 6 AP 401, CJT BOSQUES DE PALERMO
+                    - cell "2026-08-06 33 días" [ref=f16e506]:
+                      - generic [ref=f16e507]:
+                        - paragraph [ref=f16e508]: 2026-08-06
+                        - generic [ref=f16e509]: 33 días
+                  - row "CL 4N CR 24A-27 T 2 AP 1104, CJT CERROS VERDES 2026-09-01 59 días" [ref=f16e510]:
+                    - cell "CL 4N CR 24A-27 T 2 AP 1104, CJT CERROS VERDES" [ref=f16e511]:
+                      - paragraph [ref=f16e512]: CL 4N CR 24A-27 T 2 AP 1104, CJT CERROS VERDES
+                    - cell "2026-09-01 59 días" [ref=f16e513]:
+                      - generic [ref=f16e514]:
+                        - paragraph [ref=f16e515]: 2026-09-01
+                        - generic [ref=f16e516]: 59 días
+                  - row "CL 49 CR 56-65 TO 1 AP 101, VERDU II 2026-09-01 59 días" [ref=f16e517]:
+                    - cell "CL 49 CR 56-65 TO 1 AP 101, VERDU II" [ref=f16e518]:
+                      - paragraph [ref=f16e519]: CL 49 CR 56-65 TO 1 AP 101, VERDU II
+                    - cell "2026-09-01 59 días" [ref=f16e520]:
+                      - generic [ref=f16e521]:
+                        - paragraph [ref=f16e522]: 2026-09-01
+                        - generic [ref=f16e523]: 59 días
+                  - row "BRR VILLA CAROLINA ET 1 MZ Ñ CS 16 PI 1 2026-09-01 59 días" [ref=f16e524]:
+                    - cell "BRR VILLA CAROLINA ET 1 MZ Ñ CS 16 PI 1" [ref=f16e525]:
+                      - paragraph [ref=f16e526]: BRR VILLA CAROLINA ET 1 MZ Ñ CS 16 PI 1
+                    - cell "2026-09-01 59 días" [ref=f16e527]:
+                      - generic [ref=f16e528]:
+                        - paragraph [ref=f16e529]: 2026-09-01
+                        - generic [ref=f16e530]: 59 días
+                  - row "CR 19 CL 32N-11 CS 31,CJT RES BOSQUES DE VIENA I 2026-09-15 73 días" [ref=f16e531]:
+                    - cell "CR 19 CL 32N-11 CS 31,CJT RES BOSQUES DE VIENA I" [ref=f16e532]:
+                      - paragraph [ref=f16e533]: CR 19 CL 32N-11 CS 31,CJT RES BOSQUES DE VIENA I
+                    - cell "2026-09-15 73 días" [ref=f16e534]:
+                      - generic [ref=f16e535]:
+                        - paragraph [ref=f16e536]: 2026-09-15
+                        - generic [ref=f16e537]: 73 días
+                  - row "BRR VILLA LILIANA MZ N CS 20 2026-09-16 74 días" [ref=f16e538]:
+                    - cell "BRR VILLA LILIANA MZ N CS 20" [ref=f16e539]:
+                      - paragraph [ref=f16e540]: BRR VILLA LILIANA MZ N CS 20
+                    - cell "2026-09-16 74 días" [ref=f16e541]:
+                      - generic [ref=f16e542]:
+                        - paragraph [ref=f16e543]: 2026-09-16
+                        - generic [ref=f16e544]: 74 días
+                  - row "CL 50 CR 55-01 ET 7 TO 1 PI 14 AP 1402, CJT RES OVIEDO 2026-09-17 75 días" [ref=f16e545]:
+                    - cell "CL 50 CR 55-01 ET 7 TO 1 PI 14 AP 1402, CJT RES OVIEDO" [ref=f16e546]:
+                      - paragraph [ref=f16e547]: CL 50 CR 55-01 ET 7 TO 1 PI 14 AP 1402, CJT RES OVIEDO
+                    - cell "2026-09-17 75 días" [ref=f16e548]:
+                      - generic [ref=f16e549]:
+                        - paragraph [ref=f16e550]: 2026-09-17
+                        - generic [ref=f16e551]: 75 días
+                  - row "BRR GIRASOLES MZ Z CS 23A 2026-09-17 75 días" [ref=f16e552]:
+                    - cell "BRR GIRASOLES MZ Z CS 23A" [ref=f16e553]:
+                      - paragraph [ref=f16e554]: BRR GIRASOLES MZ Z CS 23A
+                    - cell "2026-09-17 75 días" [ref=f16e555]:
+                      - generic [ref=f16e556]:
+                        - paragraph [ref=f16e557]: 2026-09-17
+                        - generic [ref=f16e558]: 75 días
+                  - row "EDF LA FORET AP 603, BRR LA CASTELLANA 2026-09-20 78 días" [ref=f16e559]:
+                    - cell "EDF LA FORET AP 603, BRR LA CASTELLANA" [ref=f16e560]:
+                      - paragraph [ref=f16e561]: EDF LA FORET AP 603, BRR LA CASTELLANA
+                    - cell "2026-09-20 78 días" [ref=f16e562]:
+                      - generic [ref=f16e563]:
+                        - paragraph [ref=f16e564]: 2026-09-20
+                        - generic [ref=f16e565]: 78 días
+                  - row "CONJ CIUDADELA COMFENALCO MZ H CS 29 2026-09-23 81 días" [ref=f16e566]:
+                    - cell "CONJ CIUDADELA COMFENALCO MZ H CS 29" [ref=f16e567]:
+                      - paragraph [ref=f16e568]: CONJ CIUDADELA COMFENALCO MZ H CS 29
+                    - cell "2026-09-23 81 días" [ref=f16e569]:
+                      - generic [ref=f16e570]:
+                        - paragraph [ref=f16e571]: 2026-09-23
+                        - generic [ref=f16e572]: 81 días
+                  - row "CR 20 CL 3N-00 TO 6 AP 803, CJT PQ RES DEL CAFE 2026-09-28 86 días" [ref=f16e573]:
+                    - cell "CR 20 CL 3N-00 TO 6 AP 803, CJT PQ RES DEL CAFE" [ref=f16e574]:
+                      - paragraph [ref=f16e575]: CR 20 CL 3N-00 TO 6 AP 803, CJT PQ RES DEL CAFE
+                    - cell "2026-09-28 86 días" [ref=f16e576]:
+                      - generic [ref=f16e577]:
+                        - paragraph [ref=f16e578]: 2026-09-28
+                        - generic [ref=f16e579]: 86 días
+                  - row "BRR LA PATRIA MZ 42 CS 33 2026-10-01 89 días" [ref=f16e580]:
+                    - cell "BRR LA PATRIA MZ 42 CS 33" [ref=f16e581]:
+                      - paragraph [ref=f16e582]: BRR LA PATRIA MZ 42 CS 33
+                    - cell "2026-10-01 89 días" [ref=f16e583]:
+                      - generic [ref=f16e584]:
+                        - paragraph [ref=f16e585]: 2026-10-01
+                        - generic [ref=f16e586]: 89 días
+                  - row "BRR CASA BLANCA MZ A CS 14 PI 2 2026-10-01 89 días" [ref=f16e587]:
+                    - cell "BRR CASA BLANCA MZ A CS 14 PI 2" [ref=f16e588]:
+                      - paragraph [ref=f16e589]: BRR CASA BLANCA MZ A CS 14 PI 2
+                    - cell "2026-10-01 89 días" [ref=f16e590]:
+                      - generic [ref=f16e591]:
+                        - paragraph [ref=f16e592]: 2026-10-01
+                        - generic [ref=f16e593]: 89 días
+      - region "Notifications alt+T"
+    - link "Built with Reflex" [ref=f16e47] [cursor=pointer]:
+      - /url: https://reflex.dev
+      - img [ref=f16e48]
+      - generic [ref=f16e52]: Built with Reflex
