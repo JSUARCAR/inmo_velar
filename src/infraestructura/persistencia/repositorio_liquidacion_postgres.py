@@ -896,6 +896,7 @@ class RepositorioLiquidacionPostgres:
         id_asesor: Optional[int] = None,
         sort_by: str = "periodo",
         sort_order: str = "desc",
+        ciclo_operativo: Optional[str] = None,
     ):
         """
         Lista liquidaciones agrupadas por propietario con totales consolidados.
@@ -910,6 +911,7 @@ class RepositorioLiquidacionPostgres:
         SORT_COLUMNS = {
             "periodo": "l.PERIODO",
             "propietario": "per.NOMBRE_COMPLETO",
+            "documento": "per.NUMERO_DOCUMENTO",
             "cantidad_propiedades": "CANTIDAD_PROPIEDADES",
             "canon": "TOTAL_CANON_BRUTO",
             "neto": "NETO_TOTAL",
@@ -974,6 +976,10 @@ class RepositorioLiquidacionPostgres:
             if id_asesor:
                 conditions.append(f"cm.ID_ASESOR = {placeholder}")
                 query_params.append(id_asesor)
+
+            if ciclo_operativo and ciclo_operativo != "Todos":
+                conditions.append(f"cm.GRUPO_OPERATIVO = {placeholder}")
+                query_params.append(ciclo_operativo)
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
             group_by = " GROUP BY cm.ID_PROPIETARIO, l.PERIODO, per.NOMBRE_COMPLETO, per.NUMERO_DOCUMENTO"
@@ -1476,6 +1482,7 @@ class RepositorioLiquidacionPostgres:
         id_asesor: Optional[int] = None,
         sort_by: str = "periodo",
         sort_order: str = "desc",
+        ciclo_operativo: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Lista liquidaciones con paginación y filtros complejos."""
         conn = self.db.obtener_conexion()
@@ -1486,10 +1493,14 @@ class RepositorioLiquidacionPostgres:
         SORT_COLUMNS = {
             "id": "l.ID_LIQUIDACION",
             "periodo": "l.PERIODO",
+            "fecha_generacion": "l.FECHA_GENERACION",
             "estado": "l.ESTADO_LIQUIDACION",
             "canon": "l.CANON_BRUTO",
             "neto": "l.NETO_A_PAGAR",
             "contrato": "p.DIRECCION_PROPIEDAD",
+            "matricula": "p.MATRICULA_INMOBILIARIA",
+            "propietario": "per.NOMBRE_COMPLETO",
+            "documento": "per.NUMERO_DOCUMENTO",
             "dia_pago": "cm.FECHA_PAGO",
         }
 
@@ -1541,6 +1552,10 @@ class RepositorioLiquidacionPostgres:
             conditions.append(f"cm.ID_ASESOR = {placeholder}")
             query_params.append(id_asesor)
 
+        if ciclo_operativo and ciclo_operativo != "Todos":
+            conditions.append(f"cm.GRUPO_OPERATIVO = {placeholder}")
+            query_params.append(ciclo_operativo)
+
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
         query = f"""
@@ -1587,6 +1602,7 @@ class RepositorioLiquidacionPostgres:
         periodo: Optional[str] = None,
         busqueda: Optional[str] = None,
         id_asesor: Optional[int] = None,
+        ciclo_operativo: Optional[str] = None,
     ) -> int:
         """Cuenta total de liquidaciones filtradas."""
         conn = self.db.obtener_conexion()
@@ -1628,6 +1644,10 @@ class RepositorioLiquidacionPostgres:
         if id_asesor:
             conditions.append(f"cm.ID_ASESOR = {placeholder}")
             query_params.append(id_asesor)
+
+        if ciclo_operativo and ciclo_operativo != "Todos":
+            conditions.append(f"cm.GRUPO_OPERATIVO = {placeholder}")
+            query_params.append(ciclo_operativo)
 
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
         query = f"SELECT COUNT(*) as TOTAL {base_from} {where_clause}"
