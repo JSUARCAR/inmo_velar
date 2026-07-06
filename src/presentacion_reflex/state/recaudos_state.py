@@ -66,12 +66,13 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
     # Filtros
     search_text: str = ""
     filter_estado: str = "Todos"
-    filter_contrato: str = ""
+    filter_dia_pago: str = "Todos"
     filter_fecha_desde: str = ""
     filter_fecha_hasta: str = ""
 
     # Opciones de filtros
     estado_options: List[str] = ["Todos"] + EstadoRecaudo.valores()
+    dias_pago_options: List[str] = ["Todos"] + [str(i) for i in range(1, 32)]
     contratos_options: List[Dict[str, Any]] = []
     contratos_select_options: List[str] = []
 
@@ -155,6 +156,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             page_size = self.page_size
             sort_by = self.sort_by
             sort_order = self.sort_order
+            dia_pago = self.filter_dia_pago if self.filter_dia_pago != "Todos" else None
 
         try:
             servicio = _crear_servicio()
@@ -163,6 +165,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                 estado=self._parse_estado(estado_val),
                 fecha_desde=fecha_desde,
                 fecha_hasta=fecha_hasta,
+                dia_pago=dia_pago,
                 busqueda=busqueda,
                 page=page,
                 page_size=page_size,
@@ -254,6 +257,12 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
         self.current_page = 1
         return RecaudosState.load_recaudos
 
+    def set_filter_dia_pago(self, value: str):
+        """Cambia filtro de día de pago."""
+        self.filter_dia_pago = value
+        self.current_page = 1
+        return RecaudosState.load_recaudos
+
     def set_filter_fecha_desde(self, value: str):
         """Cambia filtro de fecha desde."""
         self.filter_fecha_desde = value
@@ -263,6 +272,18 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
     def set_filter_fecha_hasta(self, value: str):
         """Cambia filtro de fecha hasta."""
         self.filter_fecha_hasta = value
+        self.current_page = 1
+        return RecaudosState.load_recaudos
+
+    def clear_filters(self):
+        """Restablece todos los filtros a valores por defecto."""
+        self.search_text = ""
+        self.filter_estado = "Todos"
+        self.filter_dia_pago = "Todos"
+        self.filter_fecha_desde = ""
+        self.filter_fecha_hasta = ""
+        self.sort_by = "fecha_pago"
+        self.sort_order = "desc"
         self.current_page = 1
         return RecaudosState.load_recaudos
 

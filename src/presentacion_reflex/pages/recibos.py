@@ -10,22 +10,25 @@ from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.recibos_state import RecibosState
 
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
+    neuro_floating_input,
+    neuro_floating_select,
     neuro_button,
-    neuro_select_root,
 )
 from src.presentacion_reflex import styles
 
 
 def filtros_bar() -> rx.Component:
     return rx.flex(
-        neuro_input(
+        neuro_floating_input(
+            label="Buscar por propiedad o comprobante...",
             placeholder="Buscar por propiedad o comprobante...",
+            value=RecibosState.search_text,
             on_change=RecibosState.set_search,
             width=["100%", "300px"],
         ),
-        neuro_select_root(
-            [
+        neuro_floating_select(
+            label="Filtrar Servicio",
+            options=[
                 rx.select.item("Todos", value="Todos"),
                 rx.select.item("Agua", value="Agua"),
                 rx.select.item("Luz", value="Luz"),
@@ -40,8 +43,9 @@ def filtros_bar() -> rx.Component:
             ],
             width=["100%", "200px"],
         ),
-        neuro_select_root(
-            [
+        neuro_floating_select(
+            label="Estado",
+            options=[
                 rx.select.item("Todos", value="Todos"),
                 rx.select.item("Pendiente", value="Pendiente"),
                 rx.select.item("Pagado", value="Pagado"),

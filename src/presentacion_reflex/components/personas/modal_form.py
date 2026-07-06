@@ -7,6 +7,7 @@ from src.presentacion_reflex.components.personas.role_selector_card import (
 from src.presentacion_reflex.components.personas.wizard_progress import (
     progreso_asistente,
 )
+from src.presentacion_reflex.components.neuro_elements import neuro_button
 from src.presentacion_reflex.state.personas_state import PersonasState
 
 
@@ -21,37 +22,27 @@ def selector_busqueda(
     al_alternar_menu: callable,
     al_seleccionar: callable,
 ) -> rx.Component:
-    """Selector con búsqueda integrada con estética Claude."""
+    """Selector con búsqueda integrada con estética Claude y floating label."""
+    from src.presentacion_reflex.components.shared.floating_label import floating_input
+
     return rx.vstack(
-        rx.text(etiqueta, size="2", weight="bold", color=styles.TEXT_PRIMARY),
-        rx.popover.root(
-            rx.popover.trigger(
-                rx.button(
-                    rx.hstack(
-                        rx.cond(
-                            etiqueta_valor == "",
-                            rx.text(marcador, color=styles.TEXT_TERTIARY),
-                            rx.text(etiqueta_valor, color=styles.TEXT_PRIMARY),
-                        ),
-                        rx.icon("chevron_down", size=16),
-                        width="100%",
-                        justify="between",
-                    ),
-                    style=styles.NEU_BUTTON_STYLE,
-                    width="100%",
-                ),
+        floating_input(
+            label=etiqueta,
+            placeholder=marcador,
+            value=rx.cond(
+                menu_abierto,
+                valor_busqueda,
+                rx.cond(etiqueta_valor != "", etiqueta_valor, valor_busqueda),
             ),
+            on_change=lambda val: [al_cambiar_busqueda(val), al_alternar_menu(True)],
+            on_focus=lambda: [al_cambiar_busqueda(""), al_alternar_menu(True)],
+            on_blur=lambda: al_alternar_menu(False),
+            width="100%",
+        ),
+        rx.cond(
+            menu_abierto,
             rx.popover.content(
                 rx.vstack(
-                    rx.input(
-                        placeholder="Buscar...",
-                        value=valor_busqueda,
-                        on_change=al_cambiar_busqueda,
-                        autofocus=True,
-                        width="100%",
-                        size="1",
-                        style=styles.NEU_INPUT_STYLE,
-                    ),
                     rx.scroll_area(
                         rx.vstack(
                             rx.foreach(
@@ -87,13 +78,13 @@ def selector_busqueda(
                     style=styles.NEU_PANEL_STYLE,
                 ),
             ),
-            open=menu_abierto,
-            on_open_change=al_alternar_menu,
         ),
         spacing="1",
         width="100%",
     )
 
+
+from src.presentacion_reflex.components.shared.floating_label import floating_input
 
 def campo_formulario(
     etiqueta: str,
@@ -110,13 +101,11 @@ def campo_formulario(
 
     input_props = {
         "name": nombre,
-        "placeholder": marcador,
         "type": tipo,
         "required": obligatorio,
         "width": "100%",
         "size": "3",
         "style": {
-            **styles.NEU_INPUT_STYLE,
             "_invalid": {
                 "box_shadow": f"{styles.SHADOW_INSET}, 0 0 0 2px rgba(220, 38, 38, 0.4)",
             },
@@ -130,14 +119,10 @@ def campo_formulario(
     else:
         input_props["default_value"] = valor_defecto
 
-    return rx.vstack(
-        rx.text(etiqueta, size="2", weight="bold", color=styles.TEXT_PRIMARY),
-        rx.input(
-            rx.cond(icono != "", rx.input.slot(rx.icon(icono, size=16)), rx.fragment()),
-            **input_props,
-        ),
-        spacing="1",
-        width="100%",
+    return floating_input(
+        etiqueta,
+        rx.cond(icono != "", rx.input.slot(rx.icon(icono, size=16)), rx.fragment()),
+        **input_props,
     )
 
 
@@ -420,36 +405,28 @@ def campos_proveedor() -> rx.Component:
     )
 
 
-# Pasos del Asistente (Wizard)
+from src.presentacion_reflex.components.shared.floating_label import floating_select
+
 def paso_1_info_basica() -> rx.Component:
     """Paso 1: Información Básica."""
     return rx.vstack(
         rx.flex(
-            rx.vstack(
-                rx.text("Tipo Doc", size="2", weight="bold", color=styles.TEXT_PRIMARY),
-                rx.select.root(
-                    rx.select.trigger(
-                        placeholder="Tipo...",
-                        style=styles.NEU_SELECT_STYLE,
-                        width="100%",
-                    ),
-                    rx.select.content(
-                        rx.select.item("CC", value="CC"),
-                        rx.select.item("NIT", value="NIT"),
-                        rx.select.item("CE", value="CE"),
-                        rx.select.item("PAS", value="PAS"),
-                        style={
-                            "background": styles.BG_PANEL,
-                            "box_shadow": styles.SHADOW_WHISPER,
-                            "border_radius": "12px",
-                        },
-                    ),
-                    name="tipo_documento",
+            rx.box(
+                floating_select(
+                    "Tipo Doc",
                     value=rx.cond(
                         PersonasState.is_editing,
                         PersonasState.form_data["tipo_documento"],
                         "CC",
                     ),
+                    options=[
+                        {"label": "CC", "value": "CC"},
+                        {"label": "NIT", "value": "NIT"},
+                        {"label": "CE", "value": "CE"},
+                        {"label": "PAS", "value": "PAS"},
+                    ],
+                    on_change=lambda val: PersonasState.set_form_value("tipo_documento", val),
+                    name="tipo_documento",
                 ),
                 width=["100%", "25%"],
             ),
@@ -665,7 +642,7 @@ def modal_persona() -> rx.Component:
                             # Botón Atrás
                             rx.cond(
                                 PersonasState.modal_step > 1,
-                                rx.button(
+                                neuro_button(
                                     rx.hstack(
                                         rx.icon("chevron_left", size=16),
                                         rx.text("Anterior"),
@@ -674,23 +651,25 @@ def modal_persona() -> rx.Component:
                                     on_click=PersonasState.prev_modal_step,
                                     size="3",
                                     style=styles.NEU_BUTTON_STYLE,
+                                    tooltip_content="Ir al paso anterior",
                                 ),
                                 rx.fragment(),
                             ),
                             rx.dialog.close(
-                                rx.button(
+                                neuro_button(
                                     "Cancelar",
                                     type="button",
                                     on_click=PersonasState.close_modal,
                                     size="3",
                                     style=styles.NEU_BUTTON_STYLE,
+                                    tooltip_content="Descartar cambios",
                                 ),
                             ),
                             rx.spacer(),
                             # Botón Siguiente / Guardar
                             rx.cond(
                                 PersonasState.modal_step < 3,
-                                rx.button(
+                                neuro_button(
                                     rx.hstack(
                                         rx.text("Siguiente"),
                                         rx.icon("chevron_right", size=16),
@@ -698,8 +677,10 @@ def modal_persona() -> rx.Component:
                                     type="submit",
                                     size="3",
                                     style=styles.NEU_BUTTON_PRIMARY_STYLE,
+                                    variant="solid",
+                                    tooltip_content="Ir al siguiente paso",
                                 ),
-                                rx.button(
+                                neuro_button(
                                     rx.hstack(
                                         rx.icon("save", size=16), rx.text("Guardar")
                                     ),
@@ -707,6 +688,8 @@ def modal_persona() -> rx.Component:
                                     loading=PersonasState.is_loading,
                                     size="3",
                                     style=styles.NEU_BUTTON_PRIMARY_STYLE,
+                                    variant="solid",
+                                    tooltip_content="Guardar persona en base de datos",
                                 ),
                             ),
                             spacing="2",

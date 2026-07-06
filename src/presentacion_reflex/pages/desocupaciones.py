@@ -4,15 +4,21 @@ from src.presentacion_reflex.components.desocupaciones.modal_form import modal_f
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.desocupaciones_state import DesocupacionesState
+from src.presentacion_reflex.components.neuro_elements import neuro_floating_select
 
 
 def _filter_bar() -> rx.Component:
     return rx.hstack(
-        rx.select(
-            DesocupacionesState.estado_options,
+        neuro_floating_select(
+            label="Estado",
+            options=rx.foreach(
+                DesocupacionesState.estado_options,
+                lambda opt: rx.select.item(opt, value=opt),
+            ),
             value=DesocupacionesState.filter_estado,
             on_change=DesocupacionesState.set_filter_estado,
             width="200px",
+            placeholder="Estado",
         ),
         rx.cond(
             AuthState.check_action("Desocupaciones", "CREAR"),

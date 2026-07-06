@@ -1,6 +1,11 @@
 import reflex as rx
 from typing import Callable
 
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_button,
+)
+
 
 def bulk_modal_form(
     is_open: rx.Var,
@@ -35,22 +40,12 @@ def bulk_modal_form(
             rx.form.root(
                 rx.flex(
                     # Período
-                    rx.box(
-                        rx.text(
-                            "Período a Liquidar (YYYY-MM)",
-                            font_weight="bold",
-                            margin_bottom="0.5rem",
-                        ),
-                        rx.input(
-                            name="periodo",
-                            type="month",
-                            placeholder="YYYY-MM",
-                            required=True,
-                            width="100%",
-                            default_value=form_data["periodo"],
-                            # Nota: En Reflex forms, el value controlado a veces conflictea con input type='month'
-                            # si no se maneja con cuidado, pero usaremos default_value o value según el state.
-                        ),
+                    neuro_floating_input(
+                        label="Período a Liquidar (YYYY-MM)",
+                        name="periodo",
+                        type="month",
+                        required=True,
+                        value=form_data["periodo"],
                         width="100%",
                     ),
                     rx.callout(
@@ -63,18 +58,14 @@ def bulk_modal_form(
                     # Botones
                     rx.flex(
                         rx.dialog.close(
-                            rx.button(
+                            neuro_button(
                                 "Cancelar",
-                                variant="soft",
                                 color_scheme="gray",
                                 type="button",
-                                # No necesitamos on_click explicito para cerrar si usamos rx.dialog.close,
-                                # pero si queremos limpiar estado, el on_open_change handlea el cierre.
-                                # Dejamos el on_click por si hay logica extra.
-                                # En este caso el dialog.close llamara al on_open_change(False) automaticamente.
+                                tooltip_content="Cerrar sin generar",
                             )
                         ),
-                        rx.button(
+                        neuro_button(
                             rx.cond(
                                 is_loading,
                                 rx.flex(
@@ -86,6 +77,7 @@ def bulk_modal_form(
                             ),
                             type="submit",
                             disabled=is_loading,
+                            tooltip_content="Generar liquidaciones para todos los asesores activos",
                         ),
                         spacing="3",
                         justify="end",

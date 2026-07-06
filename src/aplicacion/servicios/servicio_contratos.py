@@ -910,9 +910,11 @@ class ServicioContratos:
                 cm.TIPO_CUENTA,
                 cm.CONSIGNATARIO,
                 cm.DOCUMENTO_CONSIGNATARIO,
+                cm.ENLACE_VIDEO,
                 m.NOMBRE_MUNICIPIO,
                 m.DEPARTAMENTO,
-                ases.NOMBRE_COMPLETO as ASESOR
+                ases.NOMBRE_COMPLETO as ASESOR,
+                resp.NOMBRE_COMPLETO as RESPONSABLE_DEPOSITO
             FROM CONTRATOS_MANDATOS cm
             JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
             LEFT JOIN MUNICIPIOS m ON p.ID_MUNICIPIO = m.ID_MUNICIPIO
@@ -920,6 +922,8 @@ class ServicioContratos:
             JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
             LEFT JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR
             LEFT JOIN PERSONAS ases ON a.ID_PERSONA = ases.ID_PERSONA
+            LEFT JOIN ASESORES r ON cm.RESPONSABLE_DEPOSITO_ID = r.ID_ASESOR
+            LEFT JOIN PERSONAS resp ON r.ID_PERSONA = resp.ID_PERSONA
             WHERE cm.ID_CONTRATO_M = {placeholder}
             """
 
@@ -965,6 +969,8 @@ class ServicioContratos:
                     "numero_cuenta": row["NUMERO_CUENTA_PROPIETARIO"] or "N/A",
                     "tipo_cuenta": row["TIPO_CUENTA"] or "N/A",
                     "asesor": row["ASESOR"] or "N/A",
+                    "enlace_video": row["ENLACE_VIDEO"] or "",
+                    "responsable_deposito": row["RESPONSABLE_DEPOSITO"] or "N/A",
                 }
 
         else:  # Arrendamiento
@@ -981,6 +987,7 @@ class ServicioContratos:
                 ca.ALERTA_VENCIMIENTO_CONTRATO_A,
                 ca.FECHA_RENOVACION_CONTRATO_A,
                 ca.FECHA_PAGO,
+                ca.ENLACE_VIDEO,
                 ca.CREATED_AT,
                 ca.CREATED_BY,
                 p.MATRICULA_INMOBILIARIA,
@@ -1053,6 +1060,7 @@ class ServicioContratos:
                     "telefono_codeudor": row["TEL_CODEUDOR"] or "N/A",
                     "email_codeudor": row["EMAIL_CODEUDOR"] or "N/A",
                     "direccion_codeudor": row["DIR_CODEUDOR"] or "N/A",
+                    "enlace_video": row["ENLACE_VIDEO"] or "",
                 }
 
     def listar_arrendamientos_por_vencimiento(
@@ -1395,13 +1403,17 @@ class ServicioContratos:
             a.CANON_ARRENDAMIENTO,
             a.DEPOSITO,
             a.ESTADO_CONTRATO_A,
-            a.CREATED_AT
+            a.CREATED_AT,
+            a.RESPONSABLE_DEPOSITO_ID,
+            COALESCE(per_res.NOMBRE_COMPLETO, 'N/A') as NOMBRE_RESPONSABLE_DEPOSITO
         FROM CONTRATOS_ARRENDAMIENTOS a
         JOIN PROPIEDADES p ON a.ID_PROPIEDAD = p.ID_PROPIEDAD
         JOIN ARRENDATARIOS rr ON a.ID_ARRENDATARIO = rr.ID_ARRENDATARIO
         JOIN PERSONAS per_arr ON rr.ID_PERSONA = per_arr.ID_PERSONA
         LEFT JOIN CODEUDORES rc ON a.ID_CODEUDOR = rc.ID_CODEUDOR
         LEFT JOIN PERSONAS per_cod ON rc.ID_PERSONA = per_cod.ID_PERSONA
+        LEFT JOIN ASESORES res ON a.RESPONSABLE_DEPOSITO_ID = res.ID_ASESOR
+        LEFT JOIN PERSONAS per_res ON res.ID_PERSONA = per_res.ID_PERSONA
         WHERE a.ID_CONTRATO_A = {placeholder}
         """
         with self.db.obtener_conexion() as conn:
@@ -1424,6 +1436,8 @@ class ServicioContratos:
                     "deposito": row["deposito"],
                     "estado": row["estado_contrato_a"],
                     "created_at": row["created_at"],
+                    "id_responsable_deposito": row.get("responsable_deposito_id"),
+                    "nombre_responsable_deposito": row.get("nombre_responsable_deposito", "N/A"),
                     "id_view": str(row["id_contrato_a"]),
                     "canon_view": f"${row['canon_arrendamiento']:,}".replace(",", "."),
                     "deposito_view": f"${row['deposito']:,}".replace(",", "."),

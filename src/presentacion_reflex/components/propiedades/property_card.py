@@ -1,6 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex import styles
+from src.presentacion_reflex.components.neuro_elements import neuro_button, neuro_icon_action_button
 from src.presentacion_reflex.state.auth_state import AuthState
 
 
@@ -24,23 +25,6 @@ def neuro_badge(texto, **kwargs) -> rx.Component:
     }
     return rx.badge(texto, style=final_style, **kwargs)
 
-
-def neuro_button(*args, **kwargs) -> rx.Component:
-    """Botón con estilo tokenizado."""
-    custom_style = kwargs.pop("style", {})
-    final_style = {**styles.NEU_BUTTON_STYLE, **custom_style}
-    kwargs.setdefault("variant", "ghost")
-    kwargs.setdefault("size", "3")
-    return rx.button(*args, style=final_style, **kwargs)
-
-
-def neuro_icon_button(*args, **kwargs) -> rx.Component:
-    """IconButton con estilo tokenizado."""
-    custom_style = kwargs.pop("style", {})
-    final_style = {**styles.NEU_BUTTON_STYLE, **custom_style}
-    kwargs.setdefault("variant", "ghost")
-    kwargs.setdefault("size", "3")
-    return rx.icon_button(*args, style=final_style, **kwargs)
 
 
 def tarjeta_propiedad(
@@ -327,66 +311,59 @@ def tarjeta_propiedad(
                     rx.cond(
                         AuthState.check_action("Propiedades", "EDITAR"),
                         rx.hstack(
-                            rx.tooltip(
+                            neuro_button(
+                                rx.icon("refresh-ccw", size=14),
+                                on_click=lambda: on_toggle_disponibilidad(
+                                    id_propiedad, rx.cond(disponibilidad == 1, 0, 1)
+                                ),
+                                size="1",
+                                style={
+                                    "min_width": "32px",
+                                    "height": "32px",
+                                    "padding": "0",
+                                },
+                                tooltip_content="Cambiar Estado",
+                            ),
+                            neuro_button(
+                                rx.icon("pencil", size=14),
+                                on_click=lambda: on_edit(id_propiedad),
+                                size="1",
+                                style={
+                                    "min_width": "32px",
+                                    "height": "32px",
+                                    "padding": "0",
+                                },
+                                tooltip_content="Editar",
+                            ),
+                            rx.cond(
+                                estado_registro,
                                 neuro_button(
-                                    rx.icon("refresh-ccw", size=14),
-                                    on_click=lambda: on_toggle_disponibilidad(
-                                        id_propiedad, rx.cond(disponibilidad == 1, 0, 1)
+                                    rx.icon("power-off", size=14),
+                                    on_click=lambda: on_toggle_activa(
+                                        id_propiedad, 1
                                     ),
                                     size="1",
                                     style={
                                         "min_width": "32px",
                                         "height": "32px",
                                         "padding": "0",
+                                        "color": "var(--red-9)",
                                     },
+                                    tooltip_content="Desactivar",
                                 ),
-                                content="Cambiar Estado",
-                            ),
-                            rx.tooltip(
                                 neuro_button(
-                                    rx.icon("pencil", size=14),
-                                    on_click=lambda: on_edit(id_propiedad),
+                                    rx.icon("power", size=14),
+                                    on_click=lambda: on_toggle_activa(
+                                        id_propiedad, 0
+                                    ),
                                     size="1",
                                     style={
                                         "min_width": "32px",
                                         "height": "32px",
                                         "padding": "0",
+                                        "color": styles.BRAND_PRIMARY,
                                     },
-                                ),
-                                content="Editar",
-                            ),
-                            rx.tooltip(
-                                rx.cond(
-                                    estado_registro,
-                                    neuro_button(
-                                        rx.icon("power-off", size=14),
-                                        on_click=lambda: on_toggle_activa(
-                                            id_propiedad, 1
-                                        ),
-                                        size="1",
-                                        style={
-                                            "min_width": "32px",
-                                            "height": "32px",
-                                            "padding": "0",
-                                            "color": "var(--red-9)",
-                                        },
-                                    ),
-                                    neuro_button(
-                                        rx.icon("power", size=14),
-                                        on_click=lambda: on_toggle_activa(
-                                            id_propiedad, 0
-                                        ),
-                                        size="1",
-                                        style={
-                                            "min_width": "32px",
-                                            "height": "32px",
-                                            "padding": "0",
-                                            "color": styles.BRAND_PRIMARY,
-                                        },
-                                    ),
-                                ),
-                                content=rx.cond(
-                                    estado_registro, "Desactivar", "Activar"
+                                    tooltip_content="Activar",
                                 ),
                             ),
                             spacing="3",

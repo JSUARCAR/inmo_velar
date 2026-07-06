@@ -62,6 +62,9 @@ class ContratoMandato:
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
 
+    # Campos Extra (Migración)
+    enlace_video: Optional[str] = None
+
     @property
     def esta_activo(self) -> bool:
         """Indica si el contrato está activo."""

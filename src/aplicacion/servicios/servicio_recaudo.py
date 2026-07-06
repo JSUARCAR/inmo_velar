@@ -324,6 +324,7 @@ class ServicioRecaudo:
             fecha_desde=filtros.fecha_desde,
             fecha_hasta=filtros.fecha_hasta,
             busqueda=filtros.busqueda,
+            dia_pago=filtros.dia_pago,
         )
 
         rows = self.repo.listar_paginado(
@@ -333,6 +334,7 @@ class ServicioRecaudo:
             fecha_desde=filtros.fecha_desde,
             fecha_hasta=filtros.fecha_hasta,
             busqueda=filtros.busqueda,
+            dia_pago=filtros.dia_pago,
             sort_by=filtros.sort_by,
             sort_order=filtros.sort_order,
         )

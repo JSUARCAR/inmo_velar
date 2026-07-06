@@ -214,21 +214,27 @@ def delete_confirm_dialog() -> rx.Component:
                     # Botones de acción
                     rx.hstack(
                         rx.dialog.close(
-                            rx.button(
-                                "Cancelar",
-                                variant="soft",
-                                color_scheme="gray",
-                                on_click=LiquidacionesState.close_delete_modal,
+                            rx.tooltip(
+                                rx.button(
+                                    "Cancelar",
+                                    variant="soft",
+                                    color_scheme="gray",
+                                    on_click=LiquidacionesState.close_delete_modal,
+                                ),
+                                content="Cerrar sin eliminar",
                             ),
                         ),
                         rx.spacer(),
-                        rx.button(
-                            rx.icon("trash-2"),
-                            "Eliminar",
-                            on_click=LiquidacionesState.confirmar_eliminar,
-                            color_scheme="red",
-                            loading=LiquidacionesState.is_loading,
-                            disabled=~LiquidacionesState.delete_confirmed,
+                        rx.tooltip(
+                            rx.button(
+                                rx.icon("trash-2"),
+                                "Eliminar",
+                                on_click=LiquidacionesState.confirmar_eliminar,
+                                color_scheme="red",
+                                loading=LiquidacionesState.is_loading,
+                                disabled=~LiquidacionesState.delete_confirmed,
+                            ),
+                            content="Eliminar la liquidación permanentemente",
                         ),
                         width="100%",
                         padding_top="1em",

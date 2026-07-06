@@ -21,7 +21,7 @@ class FiltrosRecaudo:
     estado: Optional[EstadoRecaudo] = None
     fecha_desde: Optional[str] = None
     fecha_hasta: Optional[str] = None
-    id_contrato: Optional[int] = None
+    dia_pago: Optional[str] = None
     busqueda: Optional[str] = None
     sort_by: str = "fecha_pago"
     sort_order: str = "desc"

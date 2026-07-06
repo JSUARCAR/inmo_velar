@@ -14,6 +14,10 @@ from src.presentacion_reflex.components.shared.searchable_select import (
     searchable_select,
 )
 
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_text_area,
+)
 
 def form_field(
     label: str,
@@ -27,22 +31,19 @@ def form_field(
     on_change: Any = None,
 ) -> rx.Component:
     """Campo de formulario reutilizable."""
-    return rx.vstack(
-        rx.text(label, size="2", weight="medium", color="gray.700"),
-        rx.input(
+    return rx.box(
+        neuro_floating_input(
+            label=label,
+            value=value if value is not None else default_value,
+            on_change=on_change,
             name=name,
             placeholder=placeholder,
             type=type,
-            default_value=default_value,
             required=required,
-            read_only=read_only,
-            value=value,
-            on_change=on_change,
+            disabled=read_only,
             width="100%",
             size="2",
-            style=styles.NEU_INPUT_STYLE,
         ),
-        spacing="1",
         width="100%",
     )
 
@@ -220,7 +221,7 @@ def liquidacion_create_form() -> rx.Component:
                     ),
                     # Observaciones
                     section_title("Observaciones"),
-                    rx.text_area(
+                    neuro_text_area(
                         name="observaciones",
                         placeholder="Detalles adicionales sobre la liquidación...",
                         width="100%",
@@ -229,16 +230,22 @@ def liquidacion_create_form() -> rx.Component:
                     # Botones
                     rx.hstack(
                         rx.dialog.close(
-                            rx.button(
-                                "Cancelar",
-                                variant="soft",
-                                color_scheme="gray",
-                                type="button",
+                            rx.tooltip(
+                                rx.button(
+                                    "Cancelar",
+                                    variant="soft",
+                                    color_scheme="gray",
+                                    type="button",
+                                ),
+                                content="Cerrar sin guardar",
                             ),
                         ),
                         rx.spacer(),
-                        rx.button(
-                            "Generar Liquidación", type="submit", color_scheme="blue"
+                        rx.tooltip(
+                            rx.button(
+                                "Generar Liquidación", type="submit", color_scheme="blue"
+                            ),
+                            content="Crear la liquidación con los datos ingresados",
                         ),
                         width="100%",
                     ),

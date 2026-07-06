@@ -13,7 +13,9 @@ from src.presentacion_reflex.state.dashboard_state import DashboardState
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_panel,
     neuro_button,
-    neuro_select_root,
+    neuro_floating_select,
+    neuro_icon_action_button,
+    neuro_tooltip,
 )
 from src.presentacion_reflex import styles
 
@@ -49,60 +51,48 @@ def dashboard_filters() -> rx.Component:
                 padding_right="4",
             ),
             # Dropdown Mes
-            rx.box(
-                neuro_select_root(
-                    rx.select.group(*[rx.select.item(m, value=m) for m in meses]),
-                    placeholder="Seleccionar Mes",
-                    value=DashboardState.selected_month_name,
-                    on_change=DashboardState.set_month,
-                    size="3",
-                    width=rx.breakpoints(initial="100%", sm="auto"),
-                ),
-            ),
-            # Dropdown Año
-            rx.box(
-                neuro_select_root(
-                    rx.select.group(*[rx.select.item(a, value=a) for a in anios]),
-                    placeholder="Año",
-                    value=DashboardState.selected_year.to_string(),
-                    on_change=DashboardState.set_year,
-                    size="3",
-                    width=rx.breakpoints(initial="100%", sm="auto"),
-                ),
-            ),
-            # Dropdown Asesor
-            rx.box(
-                neuro_select_root(
-                    rx.select.group(
-                        rx.select.item("Todos", value="todos_asesores"),
-                        rx.foreach(
-                            DashboardState.advisor_options,
-                            lambda x: rx.select.item(x["label"], value=x["value"]),
-                        ),
-                    ),
-                    placeholder="Todos los asesores",
-                    value=DashboardState.selected_advisor_value,
-                    on_change=DashboardState.set_advisor,
-                    size="3",
-                    width=rx.breakpoints(initial="100%", sm="auto"),
-                ),
-            ),
-            # Botón Aplicar
-            neuro_button(
-                rx.icon("check", size=16),
-                "Aplicar",
-                on_click=DashboardState.apply_filters,
-                size="3",
-                padding_x="4",
+            neuro_floating_select(
+                label="Mes",
+                value=DashboardState.selected_month_name,
+                on_change=DashboardState.set_month,
+                options=[{"label": m, "value": m} for m in meses],
                 width=rx.breakpoints(initial="100%", sm="auto"),
             ),
+            # Dropdown Año
+            neuro_floating_select(
+                label="Año",
+                value=DashboardState.selected_year.to_string(),
+                on_change=DashboardState.set_year,
+                options=[{"label": a, "value": a} for a in anios],
+                width=rx.breakpoints(initial="100%", sm="auto"),
+            ),
+            # Dropdown Asesor
+            neuro_floating_select(
+                label="Asesor",
+                value=DashboardState.selected_advisor_value,
+                on_change=DashboardState.set_advisor,
+                options=DashboardState.advisor_options,
+                width=rx.breakpoints(initial="100%", sm="auto"),
+            ),
+            # Botón Aplicar
+            neuro_tooltip(
+                neuro_button(
+                    rx.icon("check", size=16),
+                    "Aplicar",
+                    on_click=DashboardState.apply_filters,
+                    size="3",
+                    padding_x="4",
+                    width=rx.breakpoints(initial="100%", sm="auto"),
+                ),
+                text="Aplicar filtros",
+            ),
             # Botón Reiniciar
-            rx.icon_button(
-                rx.icon("rotate_ccw", size=18),
-                on_click=DashboardState.reset_filters,
+            neuro_icon_action_button(
+                "rotate_ccw",
+                color_scheme="gray",
                 size="3",
-                variant="ghost",
-                style=styles.NEU_BUTTON_STYLE,
+                tooltip_content="Limpiar filtros",
+                on_click=DashboardState.reset_filters,
                 width=rx.breakpoints(initial="100%", sm="auto"),
             ),
             spacing="5",

@@ -432,3 +432,65 @@ html {
         min-height: 200px;
     }
 }
+
+/* ==========================================================
+ * FLOATING LABELS — Modal & Global Fixes
+ * Ensures labels float above the input border with a solid
+ * background that masks the border line beneath.
+ * ========================================================== */
+
+/* Base: label sits centered inside input with transparent bg */
+.floating-label {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* When the input's placeholder is shown (no value) and not focused, 
+   the label sits in the middle — transparent background */
+.floating-input:has(input:placeholder-shown:not(:focus)) ~ .floating-label:not(.always-float) {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 0.875rem !important;
+    background: transparent !important;
+}
+
+/* When focused: float up with solid bg to mask border */
+.floating-input:focus-within ~ .floating-label,
+.floating-input:has(input:focus) ~ .floating-label,
+input.floating-input:focus ~ .floating-label,
+button.floating-input:focus ~ .floating-label,
+button.floating-input[data-state='open'] ~ .floating-label {
+    top: 0 !important;
+    transform: translateY(-50%) !important;
+    font-size: 0.75rem !important;
+    color: var(--brand-primary) !important;
+    background: var(--bg-panel) !important;
+}
+
+/* When has value (not placeholder-shown): stay up */
+.floating-input:has(input:not(:placeholder-shown)) ~ .floating-label,
+input.floating-input:not(:placeholder-shown) ~ .floating-label,
+button.floating-input:not([data-placeholder]) ~ .floating-label {
+    top: 0 !important;
+    transform: translateY(-50%) !important;
+    font-size: 0.75rem !important;
+    background: var(--bg-panel) !important;
+}
+
+/* Always-float variant (date, month, etc.) */
+.always-float {
+    top: 0 !important;
+    transform: translateY(-50%) !important;
+    font-size: 0.75rem !important;
+    background: var(--bg-panel) !important;
+}
+
+/* Hide the native placeholder text when label is resting inside */
+input.floating-input:placeholder-shown:not(:focus)::placeholder,
+.floating-input:has(input:placeholder-shown:not(:focus)) input::placeholder {
+    color: transparent !important;
+}
+
+/* Radix Dialog: ensure bg matches label bg */
+.rt-DialogContent {
+    background: var(--bg-panel) !important;
+}

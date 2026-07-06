@@ -9,9 +9,9 @@ from src.presentacion_reflex.state.incidentes_state import (
 )
 
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
+    neuro_floating_input,
+    neuro_floating_select,
     neuro_button,
-    neuro_select_root,
 )
 from src.presentacion_reflex.components.tablas import header_cell_sortable
 from src.presentacion_reflex import styles
@@ -19,13 +19,16 @@ from src.presentacion_reflex import styles
 
 def _filter_bar() -> rx.Component:
     return rx.flex(
-        neuro_input(
+        neuro_floating_input(
+            label="Buscar incidente...",
             placeholder="Buscar incidente...",
+            value=IncidentesState.search_text,
             on_change=IncidentesState.set_search,
             width=["100%", "250px"],
         ),
-        neuro_select_root(
-            rx.foreach(
+        neuro_floating_select(
+            label="Prioridad",
+            options=rx.foreach(
                 IncidentesState.prioridad_options,
                 lambda opt: rx.select.item(opt, value=opt),
             ),
@@ -34,8 +37,9 @@ def _filter_bar() -> rx.Component:
             placeholder="Prioridad",
             width=["100%", "150px"],
         ),
-        neuro_select_root(
-            rx.foreach(
+        neuro_floating_select(
+            label="Estado",
+            options=rx.foreach(
                 IncidentesState.estado_options,
                 lambda opt: rx.select.item(opt, value=opt),
             ),

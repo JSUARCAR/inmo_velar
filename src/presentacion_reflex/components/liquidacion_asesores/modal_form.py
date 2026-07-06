@@ -10,7 +10,11 @@ from src.presentacion_reflex.state.liquidacion_asesores.grid_state import (
     LiquidacionGridState,
 )
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_select_root,
+    neuro_floating_input,
+    neuro_floating_select,
+    neuro_button,
+    neuro_text_area,
+    neuro_icon_action_button,
 )
 from src.presentacion_reflex import styles
 
@@ -37,67 +41,49 @@ def modal_form() -> rx.Component:
                 rx.flex(
                     # 2-Column Layout for Basic Info and Properties
                     rx.grid(
-                        # Left Column: Basic Info
-                        rx.flex(
-                            # Asesor
-                            rx.box(
-                                rx.text(
-                                    "Asesor", size="2", weight="bold", margin_bottom="1"
-                                ),
-                                neuro_select_root(
-                                    rx.foreach(
-                                        LiquidacionFiltrosState.asesores_options,
-                                        lambda asesor: rx.select.item(
-                                            asesor["texto"], value=asesor["id"]
-                                        ),
-                                    ),
-                                    name="id_asesor",
-                                    required=True,
-                                    placeholder="Seleccione un asesor",
-                                    value=LiquidacionFormState.form_data["id_asesor"],
-                                    on_change=lambda val: LiquidacionFormState.set_form_field(
-                                        "id_asesor", val
-                                    ),
-                                    disabled=LiquidacionFormState.selected_liquidacion_id
-                                    > 0,
-                                ),
-                                width="100%",
+                    # Left Column: Basic Info
+                    rx.flex(
+                        # Asesor
+                        neuro_floating_select(
+                            label="Asesor",
+                            value=LiquidacionFormState.form_data["id_asesor"],
+                            options=rx.foreach(
+                                LiquidacionFiltrosState.asesores_options,
+                                lambda asesor: rx.select.item(asesor["texto"], value=asesor["id"]),
                             ),
-                            # Período
-                            rx.box(
-                                rx.text(
-                                    "Período (YYYY-MM)",
-                                    size="2",
-                                    weight="bold",
-                                    margin_bottom="1",
-                                ),
-                                rx.input(
-                                    name="periodo",
-                                    type="month",
-                                    placeholder="YYYY-MM",
-                                    required=True,
-                                    width="100%",
-                                    value=LiquidacionFormState.form_data["periodo"],
-                                    on_change=lambda val: LiquidacionFormState.set_form_field(
-                                        "periodo", val
-                                    ),
-                                    read_only=LiquidacionFormState.selected_liquidacion_id
-                                    > 0,
-                                    style=styles.NEU_INPUT_STYLE,
-                                ),
-                                width="100%",
+                            on_change=lambda val: LiquidacionFormState.set_form_field(
+                                "id_asesor", val
                             ),
-                            # Callout informativo de comisión (En lugar de input)
-                            rx.callout(
-                                "La comisión se calcula automáticamente del % de cada Contrato de Mandato.",
-                                icon="info",
-                                color_scheme="blue",
-                                width="100%",
-                            ),
-                            direction="column",
-                            spacing="4",
+                            placeholder="Seleccione un asesor",
+                            disabled=LiquidacionFormState.selected_liquidacion_id
+                            > 0,
                             width="100%",
                         ),
+                        # Período
+                        neuro_floating_input(
+                            label="Período (YYYY-MM)",
+                            name="periodo",
+                            type="month",
+                            required=True,
+                            value=LiquidacionFormState.form_data["periodo"],
+                            on_change=lambda val: LiquidacionFormState.set_form_field(
+                                "periodo", val
+                            ),
+                            disabled=LiquidacionFormState.selected_liquidacion_id
+                            > 0,
+                            width="100%",
+                        ),
+                        # Callout informativo de comisión (En lugar de input)
+                        rx.callout(
+                            "La comisión se calcula automáticamente del % de cada Contrato de Mandato.",
+                            icon="info",
+                            color_scheme="blue",
+                            width="100%",
+                        ),
+                        direction="column",
+                        spacing="4",
+                        width="100%",
+                    ),
                         # Right Column: Properties List (Table Format)
                         rx.box(
                             rx.text(
@@ -204,38 +190,31 @@ def modal_form() -> rx.Component:
                             margin_bottom="2",
                         ),
                         rx.grid(
-                            rx.select.root(
-                                rx.select.trigger(placeholder="Tipo"),
-                                rx.select.content(
-                                    rx.select.group(
-                                        rx.select.item(
-                                            "Venta Propiedad", value="Venta Propiedad"
-                                        ),
-                                        rx.select.item("Captación", value="Captación"),
-                                        rx.select.item(
-                                            "Bono Cumplimiento",
-                                            value="Bono Cumplimiento",
-                                        ),
-                                        rx.select.item("Incentivo", value="Incentivo"),
-                                        rx.select.item("Otros", value="Otros"),
-                                    )
-                                ),
+                            neuro_floating_select(
+                                label="Tipo",
                                 value=LiquidacionFormState.temp_bonus["tipo"],
+                                options=[
+                                    {"label": "Venta Propiedad", "value": "Venta Propiedad"},
+                                    {"label": "Captación", "value": "Captación"},
+                                    {"label": "Bono Cumplimiento", "value": "Bono Cumplimiento"},
+                                    {"label": "Incentivo", "value": "Incentivo"},
+                                    {"label": "Otros", "value": "Otros"},
+                                ],
                                 on_change=lambda val: LiquidacionFormState.set_temp_bonus_field(
                                     "tipo", val
                                 ),
                                 width="100%",
                             ),
-                            rx.input(
-                                placeholder="Descripción",
+                            neuro_floating_input(
+                                label="Descripción",
                                 value=LiquidacionFormState.temp_bonus["descripcion"],
                                 on_change=lambda val: LiquidacionFormState.set_temp_bonus_field(
                                     "descripcion", val
                                 ),
                                 width="100%",
                             ),
-                            rx.input(
-                                placeholder="Valor (+)",
+                            neuro_floating_input(
+                                label="Valor (+)",
                                 type="number",
                                 value=LiquidacionFormState.temp_bonus["valor"],
                                 on_change=lambda val: LiquidacionFormState.set_temp_bonus_field(
@@ -243,13 +222,13 @@ def modal_form() -> rx.Component:
                                 ),
                                 width="100%",
                             ),
-                            rx.button(
+                            neuro_button(
                                 rx.icon("plus"),
                                 "Agregar",
                                 on_click=LiquidacionFormState.add_temp_bonus,
                                 type="button",
-                                variant="soft",
                                 color_scheme="green",
+                                tooltip_content="Agregar bonificación",
                             ),
                             columns="4",
                             spacing="2",
@@ -287,14 +266,13 @@ def modal_form() -> rx.Component:
                                                     weight="bold",
                                                 ),
                                                 rx.table.cell(
-                                                    rx.button(
-                                                        rx.icon("trash", size=16),
+                                                    neuro_icon_action_button(
+                                                        "trash",
+                                                        color_scheme="red",
+                                                        tooltip_content="Eliminar bonificación",
                                                         on_click=lambda: LiquidacionFormState.eliminar_bonificacion(
                                                             b["id_bonificacion"]
                                                         ),
-                                                        variant="ghost",
-                                                        color_scheme="red",
-                                                        size="1",
                                                     )
                                                 ),
                                             ),
@@ -333,14 +311,13 @@ def modal_form() -> rx.Component:
                                                     weight="bold",
                                                 ),
                                                 rx.table.cell(
-                                                    rx.button(
-                                                        rx.icon("trash", size=16),
+                                                    neuro_icon_action_button(
+                                                        "trash",
+                                                        color_scheme="red",
+                                                        tooltip_content="Eliminar bonificación temporal",
                                                         on_click=lambda: LiquidacionFormState.remove_temp_bonus(
                                                             b
                                                         ),
-                                                        variant="ghost",
-                                                        color_scheme="red",
-                                                        size="1",
                                                     )
                                                 ),
                                             ),
@@ -366,31 +343,29 @@ def modal_form() -> rx.Component:
                             margin_bottom="2",
                         ),
                         rx.grid(
-                            rx.select.root(
-                                rx.select.trigger(placeholder="Tipo de Descuento"),
-                                rx.select.content(
-                                    rx.select.group(
-                                        rx.select.item("Debug", value="Debug"),
-                                        rx.select.item("Otros", value="Otros"),
-                                        rx.select.item("Préstamo", value="Préstamo"),
-                                    )
-                                ),
+                            neuro_floating_select(
+                                label="Tipo de Descuento",
                                 value=LiquidacionFormState.temp_discount["tipo"],
+                                options=[
+                                    {"label": "Debug", "value": "Debug"},
+                                    {"label": "Otros", "value": "Otros"},
+                                    {"label": "Préstamo", "value": "Préstamo"},
+                                ],
                                 on_change=lambda val: LiquidacionFormState.set_temp_discount_field(
                                     "tipo", val
                                 ),
                                 width="100%",
                             ),
-                            rx.input(
-                                placeholder="Descripción",
+                            neuro_floating_input(
+                                label="Descripción",
                                 value=LiquidacionFormState.temp_discount["descripcion"],
                                 on_change=lambda val: LiquidacionFormState.set_temp_discount_field(
                                     "descripcion", val
                                 ),
                                 width="100%",
                             ),
-                            rx.input(
-                                placeholder="Valor",
+                            neuro_floating_input(
+                                label="Valor",
                                 type="number",
                                 value=LiquidacionFormState.temp_discount["valor"],
                                 on_change=lambda val: LiquidacionFormState.set_temp_discount_field(
@@ -398,12 +373,12 @@ def modal_form() -> rx.Component:
                                 ),
                                 width="100%",
                             ),
-                            rx.button(
+                            neuro_button(
                                 rx.icon("plus"),
                                 "Agregar",
                                 on_click=LiquidacionFormState.add_temp_discount,
                                 type="button",
-                                variant="soft",
+                                tooltip_content="Agregar descuento",
                             ),
                             columns="4",
                             spacing="2",
@@ -437,14 +412,13 @@ def modal_form() -> rx.Component:
                                                 rx.table.cell(d["descripcion"]),
                                                 rx.table.cell(d["valor_view"]),
                                                 rx.table.cell(
-                                                    rx.button(
-                                                        rx.icon("trash", size=16),
+                                                    neuro_icon_action_button(
+                                                        "trash",
+                                                        color_scheme="red",
+                                                        tooltip_content="Eliminar descuento",
                                                         on_click=lambda: LiquidacionFormState.eliminar_descuento(
                                                             d["id_descuento"]
                                                         ),
-                                                        variant="ghost",
-                                                        color_scheme="red",
-                                                        size="1",
                                                     )
                                                 ),
                                             ),
@@ -483,14 +457,13 @@ def modal_form() -> rx.Component:
                                                 rx.table.cell(d["descripcion"]),
                                                 rx.table.cell("$", d["valor"]),
                                                 rx.table.cell(
-                                                    rx.button(
-                                                        rx.icon("trash", size=16),
+                                                    neuro_icon_action_button(
+                                                        "trash",
+                                                        color_scheme="red",
+                                                        tooltip_content="Eliminar descuento temporal",
                                                         on_click=lambda: LiquidacionFormState.remove_temp_discount(
                                                             d
                                                         ),
-                                                        variant="ghost",
-                                                        color_scheme="red",
-                                                        size="1",
                                                     )
                                                 ),
                                             ),
@@ -514,7 +487,7 @@ def modal_form() -> rx.Component:
                             weight="bold",
                             margin_bottom="1",
                         ),
-                        rx.text_area(
+                        neuro_text_area(
                             name="observaciones",
                             placeholder="Observaciones opcionales...",
                             width="100%",
@@ -530,15 +503,15 @@ def modal_form() -> rx.Component:
                 ),
                 rx.flex(
                     rx.dialog.close(
-                        rx.button(
+                        neuro_button(
                             "Cancelar",
-                            variant="soft",
                             color_scheme="gray",
                             type="button",
                             on_click=LiquidacionFormState.close_modal,
+                            tooltip_content="Cerrar sin guardar",
                         )
                     ),
-                    rx.button(
+                    neuro_button(
                         rx.cond(
                             LiquidacionFormState.selected_liquidacion_id > 0,
                             "Guardar Cambios",
@@ -546,6 +519,7 @@ def modal_form() -> rx.Component:
                         ),
                         type="submit",
                         loading=LiquidacionGridState.is_loading,
+                        tooltip_content="Guardar los cambios realizados",
                     ),
                     spacing="3",
                     justify="end",

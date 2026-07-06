@@ -61,6 +61,14 @@ __all__ = [
     "Z_MODAL",
     "Z_POPOVER",
     "Z_TOOLTIP",
+    "Z_TOOLTIP_IN_MODAL",
+    "FL_LABEL_COLOR",
+    "FL_LABEL_FOCUS_COLOR",
+    "FL_LABEL_ERROR_COLOR",
+    "FL_LABEL_SIZE",
+    "FL_LABEL_SIZE_TOP",
+    "FL_TRANSLATE_Y",
+    "FL_TRANSITION",
 ]
 
 # --- Backgrounds ---
@@ -115,6 +123,16 @@ TRANSITION_SLOW = "0.4s cubic-bezier(0.4, 0, 0.2, 1)"
 Z_MODAL = "1000"
 Z_POPOVER = "1050"
 Z_TOOLTIP = "1100"
+Z_TOOLTIP_IN_MODAL = str(int(Z_MODAL) + 50)  # 1050 - Mayor que modal para visibilidad
+
+# --- Floating Label Tokens ---
+FL_LABEL_COLOR = TEXT_SECONDARY  # Color normal de etiqueta
+FL_LABEL_FOCUS_COLOR = BRAND_PRIMARY  # Color de etiqueta con foco
+FL_LABEL_ERROR_COLOR = "var(--red-9)"  # Color de etiqueta en error
+FL_LABEL_SIZE = "0.875rem"  # Tamaño de fuente normal
+FL_LABEL_SIZE_TOP = "0.75rem"  # Tamaño de fuente arriba
+FL_TRANSLATE_Y = "-20px"  # Distancia de desplazamiento vertical
+FL_TRANSITION = "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"  # Animación estándar (timing del sistema)
 
 # --- Component Styles ---
 NEU_DIVIDER_STYLE = {
@@ -278,10 +296,12 @@ BASE_STYLE = {
     rx.dialog.content: {
         "pointer_events": "auto",
         "z_index": Z_MODAL,
+        "background": BG_PANEL,
     },
     rx.alert_dialog.content: {
         "pointer_events": "auto",
         "z_index": Z_MODAL,
+        "background": BG_PANEL,
     },
     rx.popover.content: {
         "pointer_events": "auto",
@@ -290,5 +310,36 @@ BASE_STYLE = {
     rx.hover_card.content: {
         "pointer_events": "auto",
         "z_index": Z_TOOLTIP,
+    },
+    "input.floating-input:focus ~ .floating-label, .floating-input:focus-within ~ .floating-label, .floating-input:has(input:focus) ~ .floating-label, button.floating-input:focus ~ .floating-label, button.floating-input[data-state='open'] ~ .floating-label": {
+        "top": "0",
+        "transform": "translateY(-50%)",
+        "font_size": FL_LABEL_SIZE_TOP,
+        "color": FL_LABEL_FOCUS_COLOR,
+        "background": BG_PANEL,
+    },
+    "input.floating-input:not(:placeholder-shown) ~ .floating-label, .floating-input:has(input:not(:placeholder-shown)) ~ .floating-label, button.floating-input:not([data-placeholder]) ~ .floating-label": {
+        "top": "0",
+        "transform": "translateY(-50%)",
+        "font_size": FL_LABEL_SIZE_TOP,
+        "background": BG_PANEL,
+    },
+    ".always-float": {
+        "top": "0 !important",
+        "transform": "translateY(-50%) !important",
+        "font_size": f"{FL_LABEL_SIZE_TOP} !important",
+        "background": f"{BG_PANEL} !important",
+    },
+    "input.floating-input:placeholder-shown:not(:focus)::placeholder": {
+        "color": "transparent !important",
+    },
+    ".floating-input:has(input:placeholder-shown:not(:focus)) ~ .floating-label:not(.always-float)": {
+        "top": "50%",
+        "transform": "translateY(-50%)",
+        "font_size": FL_LABEL_SIZE,
+        "background": "transparent",
+    },
+    "button.floating-input[data-placeholder]:not([data-state='open']), button.floating-input[data-placeholder]:not([data-state='open']) *": {
+        "color": "transparent !important",
     },
 }

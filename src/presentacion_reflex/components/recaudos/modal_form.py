@@ -4,9 +4,9 @@ import reflex as rx
 
 from src.presentacion_reflex.state.recaudos_state import RecaudosState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
+    neuro_floating_input,
+    neuro_floating_select,
     neuro_button,
-    neuro_select_root,
     neuro_text_area,
 )
 from src.presentacion_reflex import styles
@@ -100,157 +100,90 @@ def modal_recaudo() -> rx.Component:
                         ),
                     ),
                     # Fecha de Pago
-                    rx.vstack(
-                        rx.text(
-                            "Fecha de Pago *",
-                            size="2",
-                            weight="bold",
-                            color=styles.TEXT_PRIMARY,
-                        ),
-                        neuro_input(
-                            placeholder="YYYY-MM-DD",
-                            type="date",
-                            name="fecha_pago",
-                            default_value=RecaudosState.form_data["fecha_pago"].to(str),
-                            required=True,
-                            size="2",
-                            width="100%",
-                        ),
+                    neuro_floating_input(
+                        label="Fecha de Pago *",
+                        value=RecaudosState.form_data["fecha_pago"].to(str),
+                        type="date",
+                        name="fecha_pago",
+                        required=True,
                         width="100%",
-                        spacing="1",
                     ),
                     # Valor Total
-                    rx.vstack(
-                        rx.hstack(
-                            rx.text(
-                                "Valor Total (COP) *",
-                                size="2",
-                                weight="bold",
-                                color=styles.TEXT_PRIMARY,
-                            ),
-                            rx.tooltip(
-                                rx.icon("info", size=15),
-                                content="Ingrese el valor numérico sin puntos ni comas. Ejemplo: 1500000",
-                            ),
-                            spacing="2",
-                            align="center",
+                    rx.box(
+                        rx.tooltip(
+                            rx.icon("info", size=15),
+                            content="Ingrese el valor numérico sin puntos ni comas. Ejemplo: 1500000",
                         ),
-                        neuro_input(
-                            placeholder="Ej: 1500000",
-                            type="number",
-                            name="valor_total",
-                            value=RecaudosState.form_data["valor_total"].to(str),
-                            on_change=lambda v: RecaudosState.set_form_field(
-                                "valor_total", v
-                            ),
-                            required=True,
-                            min="1",
-                            step="1",
-                            size="2",
-                            width="100%",
+                        margin_bottom="-8px",
+                    ),
+                    neuro_floating_input(
+                        label="Valor Total (COP) *",
+                        value=RecaudosState.form_data["valor_total"].to(str),
+                        on_change=lambda v: RecaudosState.set_form_field(
+                            "valor_total", v
                         ),
+                        type="number",
+                        name="valor_total",
+                        required=True,
+                        min="1",
+                        step="1",
                         width="100%",
-                        spacing="1",
                     ),
                     # Método de Pago
-                    rx.vstack(
-                        rx.text(
-                            "Método de Pago *",
-                            size="2",
-                            weight="bold",
-                            color=styles.TEXT_PRIMARY,
+                    neuro_floating_select(
+                        label="Método de Pago *",
+                        value=RecaudosState.form_data["metodo_pago"].to(str),
+                        options=[
+                            {"label": "Transferencia", "value": "Transferencia"},
+                            {"label": "PSE", "value": "PSE"},
+                            {"label": "Consignación", "value": "Consignación"},
+                            {"label": "Efectivo", "value": "Efectivo"},
+                        ],
+                        on_change=lambda v: RecaudosState.set_form_field(
+                            "metodo_pago", v
                         ),
-                        neuro_select_root(
-                            [
-                                rx.select.item("Transferencia", value="Transferencia"),
-                                rx.select.item("PSE", value="PSE"),
-                                rx.select.item("Consignación", value="Consignación"),
-                                rx.select.item("Efectivo", value="Efectivo"),
-                            ],
-                            name="metodo_pago",
-                            value=RecaudosState.form_data["metodo_pago"].to(str),
-                            on_change=lambda v: RecaudosState.set_form_field(
-                                "metodo_pago", v
-                            ),
-                            width="100%",
-                        ),
+                        name="metodo_pago",
                         width="100%",
-                        spacing="1",
                     ),
                     # Referencia Bancaria
-                    rx.vstack(
-                        rx.text(
-                            "Referencia Bancaria",
-                            size="2",
-                            weight="bold",
-                            color=styles.TEXT_PRIMARY,
-                        ),
-                        neuro_input(
-                            placeholder="Número de transacción o comprobante",
-                            name="referencia_bancaria",
-                            default_value=RecaudosState.form_data[
-                                "referencia_bancaria"
-                            ].to(str),
-                            size="2",
-                            width="100%",
-                        ),
-                        rx.text(
-                            "* Obligatoria para métodos electrónicos",
-                            size="1",
-                            color=styles.TEXT_TERTIARY,
-                        ),
+                    neuro_floating_input(
+                        label="Referencia Bancaria",
+                        value=RecaudosState.form_data[
+                            "referencia_bancaria"
+                        ].to(str),
+                        name="referencia_bancaria",
                         width="100%",
-                        spacing="1",
+                    ),
+                    rx.text(
+                        "* Obligatoria para métodos electrónicos",
+                        size="1",
+                        color=styles.TEXT_TERTIARY,
                     ),
                     # Tipo de Concepto y Período (simplificado)
                     rx.hstack(
-                        rx.vstack(
-                            rx.text(
-                                "Tipo *",
-                                size="2",
-                                weight="bold",
-                                color=styles.TEXT_PRIMARY,
+                        neuro_floating_select(
+                            label="Tipo *",
+                            value=RecaudosState.form_data["tipo_concepto"].to(str),
+                            options=[
+                                {"label": "Canon", "value": "Canon"},
+                                {"label": "Administración", "value": "Administración"},
+                                {"label": "Mora", "value": "Mora"},
+                                {"label": "Servicios", "value": "Servicios"},
+                                {"label": "Otro", "value": "Otro"},
+                            ],
+                            on_change=lambda v: RecaudosState.set_form_field(
+                                "tipo_concepto", v
                             ),
-                            neuro_select_root(
-                                [
-                                    rx.select.item("Canon", value="Canon"),
-                                    rx.select.item(
-                                        "Administración", value="Administración"
-                                    ),
-                                    rx.select.item("Mora", value="Mora"),
-                                    rx.select.item("Servicios", value="Servicios"),
-                                    rx.select.item("Otro", value="Otro"),
-                                ],
-                                name="tipo_concepto",
-                                value=RecaudosState.form_data["tipo_concepto"].to(str),
-                                on_change=lambda v: RecaudosState.set_form_field(
-                                    "tipo_concepto", v
-                                ),
-                                width="100%",
-                            ),
+                            name="tipo_concepto",
                             flex="1",
-                            spacing="1",
                         ),
-                        rx.vstack(
-                            rx.text(
-                                "Período *",
-                                size="2",
-                                weight="bold",
-                                color=styles.TEXT_PRIMARY,
-                            ),
-                            neuro_input(
-                                placeholder="YYYY-MM",
-                                type="month",
-                                name="periodo",
-                                default_value=RecaudosState.form_data["periodo"].to(
-                                    str
-                                ),
-                                required=True,
-                                size="2",
-                                width="100%",
-                            ),
+                        neuro_floating_input(
+                            label="Período *",
+                            value=RecaudosState.form_data["periodo"].to(str),
+                            type="month",
+                            name="periodo",
+                            required=True,
                             flex="1",
-                            spacing="1",
                         ),
                         width="100%",
                         spacing="3",
@@ -282,6 +215,7 @@ def modal_recaudo() -> rx.Component:
                             neuro_button(
                                 "Cancelar",
                                 size="2",
+                                tooltip_content="Cerrar sin guardar",
                             ),
                         ),
                         neuro_button(
@@ -298,6 +232,7 @@ def modal_recaudo() -> rx.Component:
                             size="2",
                             disabled=RecaudosState.is_loading
                             | RecaudosState.is_processing_idempotent,
+                            tooltip_content="Guardar el pago registrado",
                         ),
                         spacing="3",
                         justify="end",

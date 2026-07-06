@@ -5,6 +5,10 @@ Modal Form para Crear/Editar Seguros
 import reflex as rx
 
 from src.presentacion_reflex.state.seguros_state import SegurosState
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_button,
+)
 
 
 def modal_seguro() -> rx.Component:
@@ -33,51 +37,28 @@ def modal_seguro() -> rx.Component:
                         ),
                     ),
                     # Nombre del Seguro *
-                    rx.vstack(
-                        rx.text("Nombre del Seguro *", size="2", weight="bold"),
-                        rx.input(
-                            name="nombre_seguro",
-                            placeholder="Ej: Seguro Todo Riesgo",
-                            required=True,
-                            default_value=SegurosState.seguro_form_data[
-                                "nombre_seguro"
-                            ],
-                            width="100%",
-                        ),
-                        spacing="1",
-                        width="100%",
+                    neuro_floating_input(
+                        label="Nombre del Seguro *",
+                        value=SegurosState.seguro_form_data["nombre_seguro"],
+                        name="nombre_seguro",
+                        required=True,
+                        placeholder="Ej: Seguro Todo Riesgo",
                     ),
                     # Porcentaje y Fecha Inicio (en fila)
                     rx.hstack(
-                        rx.vstack(
-                            rx.text(
-                                "Porcentaje de Seguro * (%)", size="2", weight="bold"
-                            ),
-                            rx.input(
-                                name="porcentaje_seguro",
-                                type="number",
-                                placeholder="Ej: 10",
-                                required=True,
-                                default_value=SegurosState.seguro_form_data[
-                                    "porcentaje_seguro"
-                                ],
-                                width="100%",
-                            ),
-                            width="50%",
-                            spacing="1",
+                        neuro_floating_input(
+                            label="Porcentaje de Seguro * (%)",
+                            value=SegurosState.seguro_form_data["porcentaje_seguro"],
+                            name="porcentaje_seguro",
+                            type="number",
+                            required=True,
+                            placeholder="Ej: 10",
                         ),
-                        rx.vstack(
-                            rx.text("Fecha Inicio", size="2", weight="bold"),
-                            rx.input(
-                                name="fecha_inicio_seguro",
-                                type="date",
-                                default_value=SegurosState.seguro_form_data[
-                                    "fecha_inicio_seguro"
-                                ],
-                                width="100%",
-                            ),
-                            width="50%",
-                            spacing="1",
+                        neuro_floating_input(
+                            label="Fecha Inicio",
+                            value=SegurosState.seguro_form_data["fecha_inicio_seguro"],
+                            name="fecha_inicio_seguro",
+                            type="date",
                         ),
                         spacing="3",
                         width="100%",
@@ -85,18 +66,20 @@ def modal_seguro() -> rx.Component:
                     # Botones
                     rx.hstack(
                         rx.dialog.close(
-                            rx.button(
+                            neuro_button(
                                 "Cancelar",
                                 variant="soft",
                                 color_scheme="gray",
                                 type="button",
                                 on_click=SegurosState.close_seguro_modal,
+                                tooltip_content="Cerrar modal sin guardar",
                             ),
                         ),
-                        rx.button(
+                        neuro_button(
                             "Guardar",
                             type="submit",
                             loading=SegurosState.is_loading,
+                            tooltip_content="Guardar datos del seguro",
                         ),
                         spacing="3",
                         justify="end",

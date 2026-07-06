@@ -5,7 +5,7 @@ Visualiza información consolidada por roles con diseño Editorial (Claude).
 
 import reflex as rx
 from src.presentacion_reflex.state.personas_state import PersonasState
-from src.presentacion_reflex.components.neuro_elements import neuro_badge
+from src.presentacion_reflex.components.neuro_elements import neuro_badge, neuro_button
 from src.presentacion_reflex import styles
 
 
@@ -423,10 +423,11 @@ def modal_detalles() -> rx.Component:
             rx.hstack(
                 rx.spacer(),
                 rx.dialog.close(
-                    rx.button(
+                    neuro_button(
                         "Cerrar",
                         style=styles.NEU_BUTTON_STYLE,
                         on_click=PersonasState.close_details_modal,
+                        tooltip_content="Cerrar detalles de persona"
                     )
                 ),
                 width="100%",

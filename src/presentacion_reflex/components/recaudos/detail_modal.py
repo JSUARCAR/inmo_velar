@@ -5,6 +5,7 @@ import reflex as rx
 from src.presentacion_reflex.components.document_manager_elite import (
     document_manager_elite,
 )
+from src.presentacion_reflex.components.neuro_elements import neuro_button
 from src.presentacion_reflex.state.recaudos_state import RecaudosState
 
 
@@ -370,13 +371,14 @@ def modal_detalle_recaudo() -> rx.Component:
                             ),
                             # Botón Cerrar
                             rx.hstack(
-                                rx.dialog.close(
-                                    rx.button(
-                                        "Cerrar",
-                                        variant="soft",
-                                        size="2",
-                                    ),
+                            rx.dialog.close(
+                                neuro_button(
+                                    "Cerrar",
+                                    variant="soft",
+                                    size="2",
+                                    tooltip_content="Cerrar detalle",
                                 ),
+                            ),
                                 justify="end",
                                 width="100%",
                             ),

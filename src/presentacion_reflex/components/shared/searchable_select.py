@@ -1,12 +1,14 @@
 """
 Componente SearchableSelect - Reflex
 Selectores con búsqueda accesibles y alineados con Claude Design System.
+Usa floating labels para consistencia con el resto del sistema.
 """
 
 import reflex as rx
 from typing import Any, List, Union
 
 from src.presentacion_reflex.components.neuro_elements import neuro_input
+from src.presentacion_reflex.components.shared.floating_label import floating_input
 from src.presentacion_reflex import styles
 
 
@@ -27,8 +29,10 @@ def searchable_select(
 ) -> rx.Component:
     """Componente de selectable con búsqueda accesible tipo Combobox.
 
+    Usa floating label para el label del campo, consistente con form_field.
+
     Args:
-        label: Etiqueta del campo
+        label: Etiqueta del campo (se muestra como floating label)
         placeholder: Texto cuando no hay selección
         value_label: Variable con el texto de la opción seleccionada
         search_value: Variable con el texto de búsqueda actual
@@ -46,8 +50,9 @@ def searchable_select(
         Componente Reflex
     """
 
-    # Input principal que actúa como Combobox
-    combobox_input = neuro_input(
+    # Input principal con floating label que actúa como Combobox
+    combobox_input = floating_input(
+        label=label,
         placeholder=placeholder,
         value=rx.cond(
             menu_open,
@@ -59,8 +64,6 @@ def searchable_select(
         on_blur=lambda: on_toggle_menu(False),
         on_key_down=on_key_down,
         width="100%",
-        variant="surface",
-        size="2",
         custom_attrs={
             "role": "combobox",
             "aria-expanded": menu_open.to_string(),
@@ -123,14 +126,6 @@ def searchable_select(
     )
 
     return rx.vstack(
-        rx.hstack(
-            rx.text(label, size="2", weight="bold"),
-            rx.cond(
-                is_required,
-                rx.text("*", color="var(--brand-primary)", weight="bold"),
-            ),
-            spacing="1",
-        ),
         rx.box(
             combobox_input,
             dropdown_menu,

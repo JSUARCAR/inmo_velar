@@ -2,9 +2,10 @@ import reflex as rx
 
 from src.presentacion_reflex.state.proveedores_state import ProveedoresState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_select_root,
+    neuro_floating_select,
+    neuro_text_area,
+    neuro_button,
 )
-from src.presentacion_reflex import styles
 
 
 def modal_proveedor() -> rx.Component:
@@ -35,45 +36,37 @@ def modal_proveedor() -> rx.Component:
                 ),
                 rx.vstack(
                     # Persona (Solo editable al crear)
-                    rx.vstack(
-                        rx.text("Persona *", weight="bold", size="2"),
-                        neuro_select_root(
-                            rx.foreach(
-                                ProveedoresState.personas_disponibles,
-                                lambda p: rx.select.item(p["label"], value=p["value"]),
-                            ),
-                            placeholder="Seleccione una persona...",
-                            width="100%",
-                            value=ProveedoresState.form_data["id_persona"],
-                            on_change=lambda val: ProveedoresState.set_form_field(
-                                "id_persona", val
-                            ),
-                            disabled=ProveedoresState.is_editing,
+                    neuro_floating_select(
+                        label="Persona *",
+                        value=ProveedoresState.form_data["id_persona"],
+                        options=rx.foreach(
+                            ProveedoresState.personas_disponibles,
+                            lambda p: rx.select.item(p["label"], value=p["value"]),
                         ),
-                        spacing="1",
+                        on_change=lambda val: ProveedoresState.set_form_field(
+                            "id_persona", val
+                        ),
+                        placeholder="Seleccione una persona...",
                         width="100%",
+                        disabled=ProveedoresState.is_editing,
                     ),
                     # Especialidad
-                    rx.vstack(
-                        rx.text("Especialidad *", weight="bold", size="2"),
-                        neuro_select_root(
-                            [
-                                rx.select.item("Plomería", value="Plomería"),
-                                rx.select.item("Electricidad", value="Electricidad"),
-                                rx.select.item("Gas", value="Gas"),
-                                rx.select.item("Pintura", value="Pintura"),
-                                rx.select.item("Obra Civil", value="Obra Civil"),
-                                rx.select.item("Aseo", value="Aseo"),
-                                rx.select.item("Otros", value="Otros"),
-                            ],
-                            value=ProveedoresState.form_data["especialidad"],
-                            on_change=lambda val: ProveedoresState.set_form_field(
-                                "especialidad", val
-                            ),
-                            width="100%",
-                            placeholder="Seleccione especialidad...",
+                    neuro_floating_select(
+                        label="Especialidad *",
+                        value=ProveedoresState.form_data["especialidad"],
+                        options=[
+                            {"label": "Plomería", "value": "Plomería"},
+                            {"label": "Electricidad", "value": "Electricidad"},
+                            {"label": "Gas", "value": "Gas"},
+                            {"label": "Pintura", "value": "Pintura"},
+                            {"label": "Obra Civil", "value": "Obra Civil"},
+                            {"label": "Aseo", "value": "Aseo"},
+                            {"label": "Otros", "value": "Otros"},
+                        ],
+                        on_change=lambda val: ProveedoresState.set_form_field(
+                            "especialidad", val
                         ),
-                        spacing="1",
+                        placeholder="Seleccione especialidad...",
                         width="100%",
                     ),
                     # Calificación
@@ -103,18 +96,12 @@ def modal_proveedor() -> rx.Component:
                         width="100%",
                     ),
                     # Observaciones
-                    rx.vstack(
-                        rx.text("Observaciones", weight="bold", size="2"),
-                        rx.text_area(
-                            placeholder="Notas adicionales sobre el proveedor...",
-                            value=ProveedoresState.form_data["observaciones"],
-                            on_change=lambda val: ProveedoresState.set_form_field(
-                                "observaciones", val
-                            ),
-                            width="100%",
-                            style=styles.NEU_INPUT_STYLE,
+                    neuro_text_area(
+                        placeholder="Notas adicionales sobre el proveedor...",
+                        value=ProveedoresState.form_data["observaciones"],
+                        on_change=lambda val: ProveedoresState.set_form_field(
+                            "observaciones", val
                         ),
-                        spacing="1",
                         width="100%",
                     ),
                     spacing="4",
@@ -122,18 +109,20 @@ def modal_proveedor() -> rx.Component:
                 ),
                 rx.hstack(
                     rx.dialog.close(
-                        rx.button(
+                        neuro_button(
                             "Cancelar",
                             color_scheme="gray",
                             variant="soft",
                             on_click=ProveedoresState.close_modal,
+                            tooltip_content="Cerrar sin guardar",
                         )
                     ),
-                    rx.button(
+                    neuro_button(
                         "Guardar",
                         on_click=ProveedoresState.save_proveedor,
                         loading=ProveedoresState.is_loading,
                         color_scheme="blue",
+                        tooltip_content="Guardar proveedor",
                     ),
                     spacing="3",
                     margin_top="4",

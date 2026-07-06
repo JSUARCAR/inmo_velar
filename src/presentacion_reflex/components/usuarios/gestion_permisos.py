@@ -7,6 +7,10 @@ from typing import Any
 import reflex as rx
 
 from src.presentacion_reflex.state.usuarios_state import UsuariosState
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_button,
+    neuro_icon_action_button,
+)
 
 
 def permission_checkbox_row(permiso: Any) -> rx.Component:
@@ -41,12 +45,11 @@ def module_permissions_table(module_data: Any) -> rx.Component:
         rx.table.cell(
             rx.flex(
                 rx.text(modulo, weight="medium", size="2"),
-                rx.icon_button(
-                    rx.icon("check-check", size=14),
+                neuro_icon_action_button(
+                    "check-check",
                     size="1",
-                    variant="ghost",
                     on_click=UsuariosState.toggle_all_module_permissions(modulo),
-                    tooltip="Seleccionar/Deseleccionar todos",
+                    tooltip_content="Seleccionar/Deseleccionar todos",
                 ),
                 gap="2",
                 align="center",
@@ -95,26 +98,29 @@ def preset_buttons() -> rx.Component:
     """Botones de presets rápidos."""
     return rx.flex(
         rx.text("Presets Rápidos:", size="2", weight="medium"),
-        rx.button(
+        neuro_button(
             "Asesor Típico",
             size="1",
             variant="soft",
             color_scheme="blue",
             on_click=UsuariosState.apply_preset("asesor"),
+            tooltip_content="Aplicar permisos de asesor típico",
         ),
-        rx.button(
+        neuro_button(
             "Operativo Típico",
             size="1",
             variant="soft",
             color_scheme="green",
             on_click=UsuariosState.apply_preset("operativo"),
+            tooltip_content="Aplicar permisos de operativo típico",
         ),
-        rx.button(
+        neuro_button(
             "Solo Lectura",
             size="1",
             variant="soft",
             color_scheme="gray",
             on_click=UsuariosState.apply_preset("solo_lectura"),
+            tooltip_content="Aplicar permisos de solo lectura",
         ),
         gap="2",
         align="center",
@@ -183,14 +189,15 @@ def gestion_permisos_modal() -> rx.Component:
             # Botones de acción
             rx.flex(
                 rx.dialog.close(
-                    rx.button(
+                    neuro_button(
                         "Cancelar",
                         variant="soft",
                         color_scheme="gray",
                         on_click=UsuariosState.close_permissions_modal,
+                        tooltip_content="Cerrar sin guardar",
                     ),
                 ),
-                rx.button(
+                neuro_button(
                     rx.cond(
                         UsuariosState.is_loading_permissions,
                         rx.spinner(size="2"),
@@ -198,6 +205,7 @@ def gestion_permisos_modal() -> rx.Component:
                     ),
                     on_click=UsuariosState.save_permissions,
                     disabled=UsuariosState.is_loading_permissions,
+                    tooltip_content="Guardar permisos del rol",
                 ),
                 gap="3",
                 margin_top="16px",

@@ -156,7 +156,7 @@ class DashboardState(DashboardBaseState):
         try:
             repo_asesores = RepositorioAsesorPostgres(db_manager)
             asesores = repo_asesores.listar_todos()
-            self.advisor_options = [
+            self.advisor_options = [{"value": "todos_asesores", "label": "Todos"}] + [
                 {
                     "value": str(a.id_asesor),
                     "label": getattr(a, "nombre_completo", f"Asesor {a.id_asesor}"),

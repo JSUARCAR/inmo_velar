@@ -13,6 +13,10 @@ from src.presentacion_reflex.components.seguros import (
 )
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.seguros_state import SegurosState
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_floating_select,
+)
 
 
 def seguros_page() -> rx.Component:
@@ -31,7 +35,8 @@ def seguros_page() -> rx.Component:
             ),
             # Search bar
             rx.hstack(
-                rx.input(
+                neuro_floating_input(
+                    label="Buscar seguro por nombre...",
                     placeholder="Buscar seguro por nombre...",
                     value=SegurosState.search_text,
                     on_change=SegurosState.set_search,
@@ -49,12 +54,17 @@ def seguros_page() -> rx.Component:
             # Filtros y Acciones
             rx.hstack(
                 # Filtro Estado
-                rx.select(
-                    ["Todos", "Activos", "Inactivos"],
+                neuro_floating_select(
+                    label="Estado",
+                    options=[
+                        {"label": "Todos", "value": "Todos"},
+                        {"label": "Activos", "value": "Activos"},
+                        {"label": "Inactivos", "value": "Inactivos"},
+                    ],
                     placeholder="Estado",
                     value=SegurosState.filter_estado,
                     on_change=SegurosState.set_filter_estado,
-                    size="2",
+                    width="150px",
                 ),
                 rx.spacer(),
                 # Nueva Póliza

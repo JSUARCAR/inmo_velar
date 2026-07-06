@@ -6,6 +6,7 @@ Permite ingresar el motivo de cancelación
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
+from src.presentacion_reflex.components.neuro_elements import neuro_text_area
 
 
 def cancel_modal() -> rx.Component:
@@ -29,7 +30,7 @@ def cancel_modal() -> rx.Component:
                     weight="medium",
                     size="2",
                 ),
-                rx.text_area(
+                neuro_text_area(
                     placeholder="Ingrese el motivo (mínimo 10 caracteres)...",
                     value=LiquidacionesState.cancel_motivo,
                     on_change=LiquidacionesState.set_cancel_motivo,
@@ -48,20 +49,26 @@ def cancel_modal() -> rx.Component:
                 ),
                 rx.hstack(
                     rx.dialog.close(
-                        rx.button(
-                            "Cancelar",
-                            variant="soft",
-                            color_scheme="gray",
-                            on_click=LiquidacionesState.close_cancel_modal,
+                        rx.tooltip(
+                            rx.button(
+                                "Cancelar",
+                                variant="soft",
+                                color_scheme="gray",
+                                on_click=LiquidacionesState.close_cancel_modal,
+                            ),
+                            content="Volver sin cancelar",
                         ),
                     ),
                     rx.spacer(),
-                    rx.button(
-                        rx.icon("circle_x"),
-                        "Confirmar Cancelación",
-                        on_click=LiquidacionesState.confirmar_cancelacion,
-                        color_scheme="red",
-                        loading=LiquidacionesState.is_loading,
+                    rx.tooltip(
+                        rx.button(
+                            rx.icon("circle_x"),
+                            "Confirmar Cancelación",
+                            on_click=LiquidacionesState.confirmar_cancelacion,
+                            color_scheme="red",
+                            loading=LiquidacionesState.is_loading,
+                        ),
+                        content="Cancelar la liquidación permanentemente",
                     ),
                     width="100%",
                     padding_top="1em",

@@ -5,6 +5,7 @@ Modal de Confirmación para Reversar Pago de Liquidación
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
+from src.presentacion_reflex.components.neuro_elements import neuro_text_area
 
 
 def reverse_pago_confirm_dialog() -> rx.Component:
@@ -61,7 +62,7 @@ def reverse_pago_confirm_dialog() -> rx.Component:
                             size="2",
                             weight="medium",
                         ),
-                        rx.text_area(
+                        neuro_text_area(
                             placeholder="Ingrese el motivo de la reversión del pago...",
                             value=LiquidacionesState.reverse_pago_motivo,
                             on_change=LiquidacionesState.set_reverse_pago_motivo,
@@ -79,20 +80,26 @@ def reverse_pago_confirm_dialog() -> rx.Component:
             rx.alert_dialog.action(
                 rx.hstack(
                     rx.alert_dialog.cancel(
-                        rx.button(
-                            "Cancelar",
-                            variant="soft",
-                            color_scheme="gray",
-                            on_click=LiquidacionesState.close_reverse_pago_confirm,
+                        rx.tooltip(
+                            rx.button(
+                                "Cancelar",
+                                variant="soft",
+                                color_scheme="gray",
+                                on_click=LiquidacionesState.close_reverse_pago_confirm,
+                            ),
+                            content="Cerrar sin reversar el pago",
                         ),
                     ),
                     rx.alert_dialog.action(
-                        rx.button(
-                            rx.icon("rotate_ccw"),
-                            "Confirmar Reversión",
-                            on_click=LiquidacionesState.confirmar_reversar_pago,
-                            color_scheme="orange",
-                            loading=LiquidacionesState.is_loading,
+                        rx.tooltip(
+                            rx.button(
+                                rx.icon("rotate_ccw"),
+                                "Confirmar Reversión",
+                                on_click=LiquidacionesState.confirmar_reversar_pago,
+                                color_scheme="orange",
+                                loading=LiquidacionesState.is_loading,
+                            ),
+                            content="Revertir el pago y volver al estado Aprobada",
                         ),
                     ),
                     spacing="3",

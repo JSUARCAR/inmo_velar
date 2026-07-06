@@ -5,6 +5,7 @@ Modal de Detalle de Seguro con Pólizas Asociadas
 import reflex as rx
 
 from src.presentacion_reflex.state.seguros_state import SegurosState
+from src.presentacion_reflex.components.neuro_elements import neuro_button
 
 
 def modal_detalle_seguro() -> rx.Component:
@@ -200,11 +201,12 @@ def modal_detalle_seguro() -> rx.Component:
                 # Botón Cerrar
                 rx.hstack(
                     rx.dialog.close(
-                        rx.button(
+                        neuro_button(
                             "Cerrar",
                             variant="soft",
                             size="3",
                             on_click=SegurosState.close_detail_modal,
+                            tooltip_content="Cerrar detalle del seguro",
                         ),
                     ),
                     justify="end",

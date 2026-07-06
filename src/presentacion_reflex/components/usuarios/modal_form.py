@@ -2,9 +2,9 @@ import reflex as rx
 
 from src.presentacion_reflex.state.usuarios_state import UsuariosState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
+    neuro_floating_input,
+    neuro_floating_select,
     neuro_button,
-    neuro_select_root,
 )
 from src.presentacion_reflex import styles
 
@@ -25,29 +25,19 @@ def modal_form() -> rx.Component:
                 "Gestione el acceso y roles del usuario.", color=styles.TEXT_SECONDARY
             ),
             rx.flex(
-                rx.vstack(
-                    rx.text("Usuario", weight="bold", color=styles.TEXT_PRIMARY),
-                    neuro_input(
-                        placeholder="nombre.apellido",
-                        value=UsuariosState.form_data["nombre_usuario"],
-                        on_change=lambda val: UsuariosState.set_form_field(
-                            "nombre_usuario", val
-                        ),
-                        disabled=UsuariosState.is_editing,  # No cambiar username al editar
-                        width="100%",
+                neuro_floating_input(
+                    label="Usuario",
+                    value=UsuariosState.form_data["nombre_usuario"],
+                    on_change=lambda val: UsuariosState.set_form_field(
+                        "nombre_usuario", val
                     ),
+                    disabled=UsuariosState.is_editing,
                     width="100%",
-                    spacing="1",
                 ),
                 rx.vstack(
-                    rx.text("Contraseña", weight="bold", color=styles.TEXT_PRIMARY),
-                    neuro_input(
+                    neuro_floating_input(
+                        label="Contraseña",
                         type="password",
-                        placeholder=rx.cond(
-                            UsuariosState.is_editing,
-                            "(Dejar en blanco para mantener)",
-                            "Contraseña segura",
-                        ),
                         value=UsuariosState.form_data["contrasena"],
                         on_change=lambda val: UsuariosState.set_form_field(
                             "contrasena", val
@@ -65,21 +55,17 @@ def modal_form() -> rx.Component:
                     width="100%",
                     spacing="1",
                 ),
-                rx.vstack(
-                    rx.text("Rol", weight="bold", color=styles.TEXT_PRIMARY),
-                    neuro_select_root(
-                        [
-                            rx.select.item("Administrador", value="Administrador"),
-                            rx.select.item("Asesor", value="Asesor"),
-                            rx.select.item("Operativo", value="Operativo"),
-                        ],
-                        value=UsuariosState.form_data["rol"],
-                        on_change=lambda val: UsuariosState.set_form_field("rol", val),
-                        placeholder="Seleccionar Rol",
-                        width="100%",
-                    ),
+                neuro_floating_select(
+                    label="Rol",
+                    value=UsuariosState.form_data["rol"],
+                    options=[
+                        {"label": "Administrador", "value": "Administrador"},
+                        {"label": "Asesor", "value": "Asesor"},
+                        {"label": "Operativo", "value": "Operativo"},
+                    ],
+                    on_change=lambda val: UsuariosState.set_form_field("rol", val),
+                    placeholder="Seleccionar Rol",
                     width="100%",
-                    spacing="1",
                 ),
                 rx.cond(
                     UsuariosState.is_editing,
@@ -111,12 +97,13 @@ def modal_form() -> rx.Component:
             ),
             rx.flex(
                 rx.dialog.close(
-                    neuro_button("Cancelar", size="2"),
+                    neuro_button("Cancelar", size="2", tooltip_content="Cerrar sin guardar"),
                 ),
                 neuro_button(
                     "Guardar",
                     on_click=UsuariosState.save_user,
                     size="2",
+                    tooltip_content="Guardar cambios",
                 ),
                 padding_top="4",
                 justify="end",

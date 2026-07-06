@@ -10,6 +10,10 @@ from src.presentacion_reflex.state.liquidacion_asesores.form_state import (
     LiquidacionFormState,
 )
 from src.presentacion_reflex.state.pdf_state import PDFState
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_button,
+    neuro_icon_action_button,
+)
 
 
 def detail_modal() -> rx.Component:
@@ -236,16 +240,15 @@ def detail_modal() -> rx.Component:
                                                             "estado"
                                                         ]
                                                         == "Pendiente",
-                                                        rx.icon_button(
-                                                            rx.icon("trash-2", size=16),
+                                                        neuro_icon_action_button(
+                                                            "trash-2",
+                                                            color_scheme="red",
+                                                            tooltip_content="Eliminar descuento",
                                                             on_click=lambda id_desc=d[
                                                                 "id_descuento"
                                                             ]: LiquidacionFormState.eliminar_descuento(
                                                                 id_desc
                                                             ),
-                                                            size="1",
-                                                            variant="ghost",
-                                                            color_scheme="red",
                                                         ),
                                                         rx.box(),
                                                     )
@@ -315,7 +318,7 @@ def detail_modal() -> rx.Component:
                 rx.hstack(
                     rx.cond(
                         LiquidacionFormState.liquidacion_actual["estado"] != "Anulada",
-                        rx.button(
+                        neuro_button(
                             rx.icon("file-text"),
                             "Descargar PDF",
                             color_scheme="blue",
@@ -325,12 +328,13 @@ def detail_modal() -> rx.Component:
                                 ]
                             ),
                             loading=PDFState.generating,
+                            tooltip_content="Descargar liquidación en formato PDF",
                         ),
                     ),
                     rx.cond(
                         LiquidacionFormState.liquidacion_actual["estado"]
                         == "Pendiente",
-                        rx.button(
+                        neuro_button(
                             rx.icon("circle_check"),
                             "Aprobar",
                             color_scheme="green",
@@ -339,11 +343,12 @@ def detail_modal() -> rx.Component:
                                     "id_liquidacion"
                                 ]
                             ),
+                            tooltip_content="Aprobar esta liquidación",
                         ),
                     ),
                     rx.cond(
                         LiquidacionFormState.liquidacion_actual["estado"] == "Aprobada",
-                        rx.button(
+                        neuro_button(
                             rx.icon("banknote"),
                             "Marcar Pagada",
                             color_scheme="blue",
@@ -352,6 +357,7 @@ def detail_modal() -> rx.Component:
                                     "id_liquidacion"
                                 ]
                             ),
+                            tooltip_content="Marcar como pagada",
                         ),
                     ),
                     rx.cond(
@@ -360,22 +366,22 @@ def detail_modal() -> rx.Component:
                             LiquidacionFormState.liquidacion_actual["estado"]
                             != "Anulada"
                         ),
-                        rx.button(
+                        neuro_button(
                             rx.icon("circle_x"),
                             "Anular",
                             color_scheme="red",
-                            variant="soft",
                             on_click=lambda: LiquidacionFormState.open_annul_modal(
                                 LiquidacionFormState.liquidacion_actual[
                                     "id_liquidacion"
                                 ]
                             ),
+                            tooltip_content="Anular esta liquidación",
                         ),
                     ),
                     spacing="3",
                 ),
                 rx.dialog.close(
-                    rx.button("Cerrar", variant="soft", color_scheme="gray")
+                    neuro_button("Cerrar", color_scheme="gray", tooltip_content="Cerrar detalle")
                 ),
                 justify="between",
                 margin_top="4",

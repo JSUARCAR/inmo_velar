@@ -6,8 +6,8 @@ from src.presentacion_reflex.components.layout.dashboard_layout import dashboard
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.contratos_state import ContratosState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
-    neuro_select_root,
+    neuro_floating_input,
+    neuro_floating_select,
     neuro_button,
     neuro_icon_action_button,
     neuro_badge,
@@ -465,8 +465,8 @@ def contratos_page() -> rx.Component:
                 # Barra de Herramientas (Filtros y Búsqueda)
                 neuro_panel(
                     rx.flex(
-                        neuro_input(
-                            rx.input.slot(rx.icon("search", size=18)),
+                        neuro_floating_input(
+                            label="Buscar por dirección, nombre o documento...",
                             placeholder="Buscar por dirección, nombre o documento...",
                             value=ContratosState.search_text,
                             on_change=ContratosState.set_search,
@@ -476,11 +476,13 @@ def contratos_page() -> rx.Component:
                         ),
                         # Filtros y acciones agrupados (sin rx.spacer)
                         rx.flex(
-                            neuro_select_root(
-                                rx.foreach(
+                            neuro_floating_select(
+                                label="Asesor",
+                                options=rx.foreach(
                                     ContratosState.asesores_filter_options,
                                     lambda opt: rx.select.item(opt[0], value=opt[1]),
                                 ),
+                                placeholder="Asesor",
                                 value=ContratosState.filter_asesor_id,
                                 on_change=ContratosState.set_filter_asesor_id,
                                 width=["100%", "100%", "200px"],
@@ -489,11 +491,13 @@ def contratos_page() -> rx.Component:
                                     "border_radius": "8px",
                                 },
                             ),
-                            neuro_select_root(
-                                rx.foreach(
+                            neuro_floating_select(
+                                label="Tipo",
+                                options=rx.foreach(
                                     ContratosState.tipo_options,
                                     lambda opt: rx.select.item(opt, value=opt),
                                 ),
+                                placeholder="Tipo",
                                 value=ContratosState.filter_tipo,
                                 on_change=ContratosState.set_filter_tipo,
                                 width=["100%", "100%", "160px"],
@@ -502,11 +506,13 @@ def contratos_page() -> rx.Component:
                                     "border_radius": "8px",
                                 },
                             ),
-                            neuro_select_root(
-                                rx.foreach(
+                            neuro_floating_select(
+                                label="Estado",
+                                options=rx.foreach(
                                     ContratosState.estado_options,
                                     lambda opt: rx.select.item(opt, value=opt),
                                 ),
+                                placeholder="Estado",
                                 value=ContratosState.filter_estado,
                                 on_change=ContratosState.set_filter_estado,
                                 width=["100%", "100%", "140px"],

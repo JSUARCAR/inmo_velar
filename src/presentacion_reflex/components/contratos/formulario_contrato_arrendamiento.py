@@ -9,8 +9,9 @@ from src.presentacion_reflex.components.document_manager_elite import (
 )
 from src.presentacion_reflex.components.image_gallery import image_gallery
 from src.presentacion_reflex.state.contratos_state import ContratosState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button
+from src.presentacion_reflex.components.neuro_elements import neuro_floating_input, neuro_floating_select, neuro_button
 from src.presentacion_reflex import styles
+from src.presentacion_reflex.components.shared.floating_label import floating_input, floating_select
 from src.presentacion_reflex.components.shared.searchable_select import (
     searchable_select,
 )
@@ -107,36 +108,22 @@ def formulario_contrato_arrendamiento() -> rx.Component:
                             ),
                             # Fechas (en dos columnas)
                             rx.grid(
-                                rx.vstack(
-                                    rx.text("Fecha Inicio *", size="2", weight="bold"),
-                                    neuro_input(
-                                        rx.input.slot(rx.icon("calendar", size=16)),
-                                        type="date",
-                                        name="fecha_inicio",
-                                        required=True,
-                                        value=ContratosState.form_data["fecha_inicio"],
-                                        on_change=ContratosState.on_change_fecha_inicio,
-                                        variant="surface",
-                                        style={"box_shadow": styles.SHADOW_INSET_ELITE},
-                                    ),
-                                    spacing="1",
+                                neuro_floating_input(
+                                    label="Fecha Inicio",
+                                    type="date",
+                                    name="fecha_inicio",
+                                    required=True,
+                                    value=ContratosState.form_data["fecha_inicio"],
+                                    on_change=ContratosState.on_change_fecha_inicio,
                                     width="100%",
                                 ),
-                                rx.vstack(
-                                    rx.text("Fecha Fin *", size="2", weight="bold"),
-                                    neuro_input(
-                                        rx.input.slot(
-                                            rx.icon("calendar-check", size=16)
-                                        ),
-                                        type="date",
-                                        name="fecha_fin",
-                                        required=True,
-                                        value=ContratosState.form_data["fecha_fin"],
-                                        on_change=ContratosState.on_change_fecha_fin,
-                                        variant="surface",
-                                        style={"box_shadow": styles.SHADOW_INSET_ELITE},
-                                    ),
-                                    spacing="1",
+                                neuro_floating_input(
+                                    label="Fecha Fin",
+                                    type="date",
+                                    name="fecha_fin",
+                                    required=True,
+                                    value=ContratosState.form_data["fecha_fin"],
+                                    on_change=ContratosState.on_change_fecha_fin,
                                     width="100%",
                                 ),
                                 columns=rx.breakpoints(initial="1", sm="2"),
@@ -144,88 +131,89 @@ def formulario_contrato_arrendamiento() -> rx.Component:
                                 width="100%",
                             ),
                             # Duración en meses
-                            rx.vstack(
-                                rx.text("Duración (meses) *", size="2", weight="bold"),
-                                neuro_input(
-                                    rx.input.slot(rx.icon("clock", size=16)),
-                                    type="number",
-                                    name="duracion_meses",
-                                    placeholder="12",
-                                    read_only=True,
-                                    required=True,
-                                    min=1,
-                                    value=ContratosState.form_data["duracion_meses"],
-                                    variant="surface",
-                                    style={"box_shadow": styles.SHADOW_INSET_ELITE},
-                                ),
-                                spacing="1",
-                                align="start",
+                            neuro_floating_input(
+                                label="Duración (meses)",
+                                type="number",
+                                name="duracion_meses",
+                                placeholder="12",
+                                read_only=True,
+                                required=True,
+                                min=1,
+                                value=ContratosState.form_data["duracion_meses"],
                                 width="100%",
                             ),
                             # Canon, Deposito y Fecha de Pago
                             rx.grid(
-                                rx.vstack(
-                                    rx.text(
-                                        "Canon Arrendamiento *", size="2", weight="bold"
-                                    ),
-                                    neuro_input(
-                                        rx.input.slot(rx.icon("dollar-sign", size=16)),
-                                        type="number",
-                                        name="canon",
-                                        placeholder="1000000",
-                                        required=True,
-                                        min=0,
-                                        value=ContratosState.form_data["canon"],
-                                        on_change=ContratosState.on_change_canon_arriendo,
-                                        variant="surface",
-                                        style={"box_shadow": styles.SHADOW_INSET_ELITE},
-                                    ),
-                                    spacing="1",
+                                neuro_floating_input(
+                                    label="Canon Arrendamiento",
+                                    type="number",
+                                    name="canon",
+                                    placeholder="1000000",
+                                    required=True,
+                                    min=0,
+                                    value=ContratosState.form_data["canon"],
+                                    on_change=ContratosState.on_change_canon_arriendo,
                                     width="100%",
                                 ),
-                                rx.vstack(
-                                    rx.text("Depósito", size="2", weight="bold"),
-                                    neuro_input(
-                                        rx.input.slot(rx.icon("wallet", size=16)),
-                                        type="number",
-                                        name="deposito",
-                                        placeholder="0",
-                                        value=ContratosState.form_data["deposito"],
-                                        on_change=lambda v: (
-                                            ContratosState.set_form_field("deposito", v)
-                                        ),
-                                        variant="surface",
-                                        style={"box_shadow": styles.SHADOW_INSET_ELITE},
-                                    ),
-                                    spacing="1",
+                                neuro_floating_input(
+                                    label="Depósito",
+                                    type="number",
+                                    name="deposito",
+                                    placeholder="0",
+                                    value=ContratosState.form_data["deposito"],
+                                    on_change=lambda v: ContratosState.set_form_field("deposito", v),
                                     width="100%",
                                 ),
-                                rx.vstack(
-                                    rx.text("Fecha de Pago *", size="2", weight="bold"),
-                                    neuro_input(
-                                        rx.input.slot(
-                                            rx.icon("calendar-days", size=16)
-                                        ),
-                                        type="text",
-                                        name="fecha_pago",
-                                        placeholder="Ej: Día 5 de cada mes",
-                                        required=True,
-                                        read_only=True,
-                                        value=ContratosState.form_data["fecha_pago"],
-                                        on_change=lambda v: (
-                                            ContratosState.set_form_field(
-                                                "fecha_pago", v
-                                            )
-                                        ),
-                                        variant="surface",
-                                        style={"box_shadow": styles.SHADOW_INSET_ELITE},
-                                    ),
-                                    spacing="1",
+                                neuro_floating_input(
+                                    label="Fecha de Pago",
+                                    type="text",
+                                    name="fecha_pago",
+                                    placeholder="Ej: Día 5 de cada mes",
+                                    required=True,
+                                    read_only=True,
+                                    value=ContratosState.form_data["fecha_pago"],
+                                    on_change=lambda v: ContratosState.set_form_field("fecha_pago", v),
                                     width="100%",
                                 ),
                                 columns=rx.breakpoints(initial="1", sm="3"),
                                 spacing="4",
                                 width="100%",
+                            ),
+                            # Recepción e Inventario
+                            rx.vstack(
+                                rx.text(
+                                    "Recepción e Inventario",
+                                    size="2",
+                                    color="gray",
+                                    style={"font_style": "italic"},
+                                ),
+rx.grid(
+                                neuro_floating_input(
+                                    label="Enlace Video de Entrega",
+                                    type="url",
+                                    name="enlace_video",
+                                    placeholder="https://...",
+                                    value=ContratosState.form_data["enlace_video"],
+                                    on_change=lambda v: ContratosState.set_form_field("enlace_video", v),
+                                    width="100%",
+                                ),
+                                    searchable_select(
+                                        "Responsable del Depósito (Opcional)",
+                                        "Seleccione el responsable",
+                                        ContratosState.responsable_deposito_selected_label,
+                                        ContratosState.responsable_deposito_search,
+                                        ContratosState.responsable_deposito_menu_open,
+                                        ContratosState.filtered_responsables_deposito_options,
+                                        ContratosState.set_responsable_deposito_search,
+                                        ContratosState.toggle_responsable_deposito_menu,
+                                        ContratosState.select_responsable_deposito,
+                                    ),
+                                    columns=rx.breakpoints(initial="1", sm="2"),
+                                    spacing="4",
+                                    width="100%",
+                                ),
+                                width="100%",
+                                align_items="start",
                             ),
                             spacing="4",
                             width="100%",
@@ -238,6 +226,7 @@ def formulario_contrato_arrendamiento() -> rx.Component:
                                     variant="soft",
                                     color_scheme="gray",
                                     type="button",
+                                    tooltip_content="Cancelar y cerrar",
                                     style={
                                         "box_shadow": styles.SHADOW_FLAT_ELITE,
                                         "_hover": {
@@ -263,6 +252,7 @@ def formulario_contrato_arrendamiento() -> rx.Component:
                                 ),
                                 type="submit",
                                 disabled=ContratosState.is_loading,
+                                tooltip_content="Guardar el contrato",
                                 style={
                                     "background": "var(--brand-primary)",
                                     "color": "white",

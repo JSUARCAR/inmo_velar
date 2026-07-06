@@ -1,5 +1,11 @@
 import reflex as rx
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_floating_select,
+    neuro_button,
+    neuro_icon_action_button,
+)
 from src.presentacion_reflex.state.reportes_state import ReportesState, ReportItem
 from src.presentacion_reflex import styles
 
@@ -30,12 +36,10 @@ def report_item_sidebar(report: ReportItem, is_selected: bool):
 def reports_sidebar():
     """Sidebar de navegación interna de reportes."""
     return rx.vstack(
-        rx.input(
-            placeholder="Buscar reportes...",
+        neuro_floating_input(
+            label="Buscar reportes...",
+            value="",
             on_change=ReportesState.set_search_query,
-            icon="search",
-            size="2",
-            width="100%",
         ),
         rx.divider(margin_y="2"),
         rx.accordion.root(
@@ -96,128 +100,134 @@ def reports_content():
                 rx.cond(
                     ReportesState.selected_report_id == "reporte_consolidado",
                     rx.hstack(
-                        rx.debounce_input(
-                            rx.input(
-                                placeholder="Fecha pago inicio (YYYY-MM-DD)",
-                                on_change=lambda v: ReportesState.set_filter_fecha_pago(
-                                    v, ReportesState.filter_fecha_pago_fin
-                                ),
-                                value=ReportesState.filter_fecha_pago_inicio,
-                                size="2",
-                                width="180px",
+                        neuro_floating_input(
+                            label="Fecha pago inicio (YYYY-MM-DD)",
+                            value=ReportesState.filter_fecha_pago_inicio,
+                            on_change=lambda v: ReportesState.set_filter_fecha_pago(
+                                v, ReportesState.filter_fecha_pago_fin
                             ),
-                            debounce_timeout=500,
+                            width="180px",
+                            debounce_time=500,
                         ),
-                        rx.debounce_input(
-                            rx.input(
-                                placeholder="Fecha pago fin (YYYY-MM-DD)",
-                                on_change=lambda v: ReportesState.set_filter_fecha_pago(
-                                    ReportesState.filter_fecha_pago_inicio, v
-                                ),
-                                value=ReportesState.filter_fecha_pago_fin,
-                                size="2",
-                                width="180px",
+                        neuro_floating_input(
+                            label="Fecha pago fin (YYYY-MM-DD)",
+                            value=ReportesState.filter_fecha_pago_fin,
+                            on_change=lambda v: ReportesState.set_filter_fecha_pago(
+                                ReportesState.filter_fecha_pago_inicio, v
                             ),
-                            debounce_timeout=500,
+                            width="180px",
+                            debounce_time=500,
                         ),
-                        rx.select(
-                            ReportesState.estado_contrato_options,
-                            placeholder="Estado contrato",
-                            on_change=ReportesState.set_filter_estado_contrato,
+                        neuro_floating_select(
+                            label="Estado contrato",
+                            options=rx.foreach(
+                                ReportesState.estado_contrato_options,
+                                lambda opt: rx.select.item(opt, value=opt),
+                            ),
                             value=ReportesState.filter_estado_contrato,
-                            size="2",
+                            on_change=ReportesState.set_filter_estado_contrato,
+                            placeholder="Estado contrato",
                             width="140px",
                         ),
-                        rx.select(
-                            ReportesState.estado_liquidacion_options,
-                            placeholder="Estado liquidación",
-                            on_change=ReportesState.set_filter_estado_liquidacion,
+                        neuro_floating_select(
+                            label="Estado liquidación",
+                            options=rx.foreach(
+                                ReportesState.estado_liquidacion_options,
+                                lambda opt: rx.select.item(opt, value=opt),
+                            ),
                             value=ReportesState.filter_estado_liquidacion,
-                            size="2",
+                            on_change=ReportesState.set_filter_estado_liquidacion,
+                            placeholder="Estado liquidación",
                             width="140px",
                         ),
-                        rx.select(
-                            ReportesState.asesor_options,
-                            placeholder="Asesor",
-                            on_change=ReportesState.set_filter_asesor,
+                        neuro_floating_select(
+                            label="Asesor",
+                            options=rx.foreach(
+                                ReportesState.asesor_options,
+                                lambda opt: rx.select.item(opt, value=opt),
+                            ),
                             value=ReportesState.filter_asesor_id,
-                            size="2",
+                            on_change=ReportesState.set_filter_asesor,
+                            placeholder="Asesor",
                             width="180px",
                         ),
-                        rx.debounce_input(
-                            rx.input(
-                                placeholder="Propietario...",
-                                on_change=ReportesState.set_filter_propietario,
-                                value=ReportesState.filter_propietario_buscar,
-                                size="2",
-                                width="180px",
-                            ),
-                            debounce_timeout=500,
+                        neuro_floating_input(
+                            label="Propietario...",
+                            value=ReportesState.filter_propietario_buscar,
+                            on_change=ReportesState.set_filter_propietario,
+                            width="180px",
+                            debounce_time=500,
                         ),
                         spacing="2",
                     ),
                     rx.hstack(
-                        rx.select(
-                            ReportesState.estado_options,
-                            placeholder="Estado",
-                            on_change=ReportesState.set_filter_activo,
+                        neuro_floating_select(
+                            label="Estado",
+                            options=rx.foreach(
+                                ReportesState.estado_options,
+                                lambda opt: rx.select.item(opt, value=opt),
+                            ),
                             value=ReportesState.filter_estado,
-                            size="2",
+                            on_change=ReportesState.set_filter_activo,
+                            placeholder="Estado",
                             width="150px",
                         ),
                         rx.cond(
                             ReportesState.selected_report_id == "liquidaciones",
-                            rx.select(
-                                ReportesState.asesor_options,
-                                placeholder="Asesor",
-                                on_change=ReportesState.set_filter_asesor,
+                            neuro_floating_select(
+                                label="Asesor",
+                                options=rx.foreach(
+                                    ReportesState.asesor_options,
+                                    lambda opt: rx.select.item(opt, value=opt),
+                                ),
                                 value=ReportesState.filter_asesor_id,
-                                size="2",
+                                on_change=ReportesState.set_filter_asesor,
+                                placeholder="Asesor",
                                 width="200px",
                             ),
                         ),
                         rx.cond(
                             ReportesState.selected_report_id == "recaudos",
                             rx.hstack(
-                                rx.select(
-                                    ReportesState.estado_recaudo_options,
-                                    placeholder="Estado Recaudo",
-                                    on_change=ReportesState.set_filter_estado_recaudo,
+                                neuro_floating_select(
+                                    label="Estado Recaudo",
+                                    options=rx.foreach(
+                                        ReportesState.estado_recaudo_options,
+                                        lambda opt: rx.select.item(opt, value=opt),
+                                    ),
                                     value=ReportesState.filter_estado_recaudo,
-                                    size="2",
+                                    on_change=ReportesState.set_filter_estado_recaudo,
+                                    placeholder="Estado Recaudo",
                                     width="160px",
                                 ),
-                                rx.select(
-                                    ReportesState.metodo_pago_options,
-                                    placeholder="Método Pago",
-                                    on_change=ReportesState.set_filter_metodo_pago,
+                                neuro_floating_select(
+                                    label="Método Pago",
+                                    options=rx.foreach(
+                                        ReportesState.metodo_pago_options,
+                                        lambda opt: rx.select.item(opt, value=opt),
+                                    ),
                                     value=ReportesState.filter_metodo_pago,
-                                    size="2",
+                                    on_change=ReportesState.set_filter_metodo_pago,
+                                    placeholder="Método Pago",
                                     width="160px",
                                 ),
-                                rx.debounce_input(
-                                    rx.input(
-                                        placeholder="Periodo inicio (YYYY-MM)",
-                                        on_change=lambda v: ReportesState.set_filter_periodo(
-                                            v, ReportesState.filter_periodo_fin
-                                        ),
-                                        value=ReportesState.filter_periodo_inicio,
-                                        size="2",
-                                        width="180px",
+                                neuro_floating_input(
+                                    label="Periodo inicio (YYYY-MM)",
+                                    value=ReportesState.filter_periodo_inicio,
+                                    on_change=lambda v: ReportesState.set_filter_periodo(
+                                        v, ReportesState.filter_periodo_fin
                                     ),
-                                    debounce_timeout=500,
+                                    width="180px",
+                                    debounce_time=500,
                                 ),
-                                rx.debounce_input(
-                                    rx.input(
-                                        placeholder="Periodo fin (YYYY-MM)",
-                                        on_change=lambda v: ReportesState.set_filter_periodo(
-                                            ReportesState.filter_periodo_inicio, v
-                                        ),
-                                        value=ReportesState.filter_periodo_fin,
-                                        size="2",
-                                        width="180px",
+                                neuro_floating_input(
+                                    label="Periodo fin (YYYY-MM)",
+                                    value=ReportesState.filter_periodo_fin,
+                                    on_change=lambda v: ReportesState.set_filter_periodo(
+                                        ReportesState.filter_periodo_inicio, v
                                     ),
-                                    debounce_timeout=500,
+                                    width="180px",
+                                    debounce_time=500,
                                 ),
                                 spacing="2",
                             ),
@@ -225,25 +235,21 @@ def reports_content():
                         spacing="2",
                     ),
                 ),
-                rx.debounce_input(
-                    rx.input(
-                        placeholder="Filtrar en tabla...",
-                        icon="search",
-                        on_change=ReportesState.set_filter_busqueda,
-                        value=ReportesState.filter_busqueda_tabla,
-                        size="2",
-                        width="250px",
-                    ),
-                    debounce_timeout=500,
+                neuro_floating_input(
+                    label="Filtrar en tabla...",
+                    value=ReportesState.filter_busqueda_tabla,
+                    on_change=ReportesState.set_filter_busqueda,
+                    width="250px",
+                    debounce_time=500,
                 ),
                 rx.spacer(),
-                rx.button(
+                neuro_button(
                     rx.icon("download", size=18),
                     "Exportar CSV",
+                    tooltip_content="Exportar datos a CSV",
                     on_click=ReportesState.download_csv,
                     variant="solid",
                     color_scheme="green",
-                    size="2",
                 ),
                 width="100%",
                 margin_top="4",
@@ -309,16 +315,18 @@ def reports_content():
                 color="#64748b",
             ),
             rx.spacer(),
-            rx.button(
+            neuro_button(
                 "Anterior",
+                tooltip_content="Página anterior",
                 on_click=ReportesState.prev_page,
                 disabled=ReportesState.current_page <= 1,
                 size="1",
                 variant="soft",
             ),
             rx.text("Página ", ReportesState.current_page, size="1"),
-            rx.button(
+            neuro_button(
                 "Siguiente",
+                tooltip_content="Página siguiente",
                 on_click=ReportesState.next_page,
                 disabled=(ReportesState.current_page * ReportesState.page_size)
                 >= ReportesState.total_records,
@@ -350,9 +358,10 @@ def reportes_page() -> rx.Component:
             rx.box(
                 rx.drawer.root(
                     rx.drawer.trigger(
-                        rx.button(
+                        neuro_button(
                             rx.icon("menu", size=24),
                             "Menú Reportes",
+                            tooltip_content="Abrir menú de navegación",
                             variant="soft",
                             color_scheme="gray",
                             size="3",

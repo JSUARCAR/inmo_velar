@@ -2,37 +2,12 @@ import reflex as rx
 
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
+    neuro_floating_input,
+    neuro_floating_select,
+    neuro_text_area,
     neuro_button,
-    neuro_select_root,
 )
 from src.presentacion_reflex import styles
-
-
-def _prioridad_options() -> rx.Component:
-    return rx.fragment(
-        rx.select.item("Baja", value="Baja"),
-        rx.select.item("Media", value="Media"),
-        rx.select.item("Alta", value="Alta"),
-        rx.select.item("Urgente", value="Urgente"),
-    )
-
-
-def _origen_options() -> rx.Component:
-    return rx.fragment(
-        rx.select.item("Inquilino", value="Inquilino"),
-        rx.select.item("Propietario", value="Propietario"),
-        rx.select.item("Inmobiliaria", value="Inmobiliaria"),
-    )
-
-
-def _responsable_options() -> rx.Component:
-    return rx.fragment(
-        rx.select.item("Inquilino", value="Inquilino"),
-        rx.select.item("Propietario", value="Propietario"),
-        rx.select.item("Inmobiliaria", value="Inmobiliaria"),
-        rx.select.item("Aseguradora", value="Aseguradora"),
-    )
 
 
 def _edit_incidente_form() -> rx.Component:
@@ -58,22 +33,25 @@ def _edit_incidente_form() -> rx.Component:
         rx.vstack(
             rx.grid(
                 rx.vstack(
-                    rx.text("Descripcion", weight="bold", size="2"),
-                    rx.text_area(
+                    neuro_text_area(
+                        label="Descripcion",
                         placeholder="Descripcion del incidente...",
                         on_change=lambda val: IncidentesState.set_edit_field(
                             "descripcion", val
                         ),
                         value=IncidentesState.edit_form_data.get("descripcion", ""),
                         width="100%",
-                        style=styles.NEU_INPUT_STYLE,
                     ),
                 ),
                 rx.vstack(
-                    rx.text("Prioridad", weight="bold", size="2"),
-                    neuro_select_root(
-                        _prioridad_options(),
-                        placeholder="Seleccionar prioridad...",
+                    neuro_floating_select(
+                        label="Prioridad",
+                        options=[
+                            {"label": "Baja", "value": "Baja"},
+                            {"label": "Media", "value": "Media"},
+                            {"label": "Alta", "value": "Alta"},
+                            {"label": "Urgente", "value": "Urgente"},
+                        ],
                         on_change=lambda val: IncidentesState.set_edit_field(
                             "prioridad", val
                         ),
@@ -87,10 +65,13 @@ def _edit_incidente_form() -> rx.Component:
             ),
             rx.grid(
                 rx.vstack(
-                    rx.text("Origen del Reporte", weight="bold", size="2"),
-                    neuro_select_root(
-                        _origen_options(),
-                        placeholder="Seleccionar origen...",
+                    neuro_floating_select(
+                        label="Origen del Reporte",
+                        options=[
+                            {"label": "Inquilino", "value": "Inquilino"},
+                            {"label": "Propietario", "value": "Propietario"},
+                            {"label": "Inmobiliaria", "value": "Inmobiliaria"},
+                        ],
                         on_change=lambda val: IncidentesState.set_edit_field(
                             "origen_reporte", val
                         ),
@@ -101,10 +82,14 @@ def _edit_incidente_form() -> rx.Component:
                     ),
                 ),
                 rx.vstack(
-                    rx.text("Responsable del Pago", weight="bold", size="2"),
-                    neuro_select_root(
-                        _responsable_options(),
-                        placeholder="Seleccionar responsable...",
+                    neuro_floating_select(
+                        label="Responsable del Pago",
+                        options=[
+                            {"label": "Inquilino", "value": "Inquilino"},
+                            {"label": "Propietario", "value": "Propietario"},
+                            {"label": "Inmobiliaria", "value": "Inmobiliaria"},
+                            {"label": "Aseguradora", "value": "Aseguradora"},
+                        ],
                         on_change=lambda val: IncidentesState.set_edit_field(
                             "responsable_pago", val
                         ),
@@ -120,8 +105,8 @@ def _edit_incidente_form() -> rx.Component:
             ),
             rx.grid(
                 rx.vstack(
-                    rx.text("Costo Estimado", weight="bold", size="2"),
-                    neuro_input(
+                    neuro_floating_input(
+                        label="Costo Estimado",
                         type="number",
                         placeholder="0",
                         on_change=lambda val: IncidentesState.set_edit_field(
@@ -132,13 +117,12 @@ def _edit_incidente_form() -> rx.Component:
                     ),
                 ),
                 rx.vstack(
-                    rx.text("Proveedor Asignado", weight="bold", size="2"),
-                    neuro_select_root(
-                        rx.foreach(
+                    neuro_floating_select(
+                        label="Proveedor Asignado",
+                        options=rx.foreach(
                             IncidentesState.proveedores_options,
-                            lambda x: rx.select.item(x["texto"], value=x["id"]),
+                            lambda p: rx.select.item(p["texto"], value=p["id"])
                         ),
-                        placeholder="Seleccionar proveedor...",
                         on_change=lambda val: IncidentesState.set_edit_field(
                             "id_proveedor_asignado", val
                         ),
@@ -171,6 +155,7 @@ def _edit_incidente_form() -> rx.Component:
                 on_click=IncidentesState.close_edit_modal,
                 variant="soft",
                 color_scheme="gray",
+                tooltip_content="Cerrar sin guardar",
             ),
             rx.spacer(),
             neuro_button(
@@ -178,6 +163,7 @@ def _edit_incidente_form() -> rx.Component:
                 on_click=IncidentesState.save_edit_incidente,
                 loading=IncidentesState.is_loading,
                 color_scheme="green",
+                tooltip_content="Guardar cambios del incidente",
             ),
             width="100%",
             margin_top="1em",

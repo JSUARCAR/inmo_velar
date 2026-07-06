@@ -30,19 +30,25 @@ def reverse_confirm_dialog() -> rx.Component:
             rx.alert_dialog.action(
                 rx.hstack(
                     rx.alert_dialog.cancel(
-                        rx.button(
-                            "Cancelar",
-                            variant="soft",
-                            color_scheme="gray",
-                            on_click=LiquidacionesState.close_reverse_confirm,
+                        rx.tooltip(
+                            rx.button(
+                                "Cancelar",
+                                variant="soft",
+                                color_scheme="gray",
+                                on_click=LiquidacionesState.close_reverse_confirm,
+                            ),
+                            content="Cerrar sin reversar",
                         ),
                     ),
                     rx.alert_dialog.action(
-                        rx.button(
-                            rx.icon("rotate_ccw"),
-                            "Confirmar Reversión",
-                            on_click=LiquidacionesState.confirmar_reversar,
-                            color_scheme="yellow",
+                        rx.tooltip(
+                            rx.button(
+                                rx.icon("rotate_ccw"),
+                                "Confirmar Reversión",
+                                on_click=LiquidacionesState.confirmar_reversar,
+                                color_scheme="yellow",
+                            ),
+                            content="Reversar la liquidación al estado En Proceso",
                         ),
                     ),
                     spacing="3",

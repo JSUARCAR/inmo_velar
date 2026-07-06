@@ -6,6 +6,11 @@ from src.presentacion_reflex.state.liquidacion_asesores.form_state import (
 from src.presentacion_reflex.state.liquidacion_asesores.grid_state import (
     LiquidacionGridState,
 )
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_floating_select,
+    neuro_button,
+)
 
 
 def discount_modal() -> rx.Component:
@@ -17,57 +22,39 @@ def discount_modal() -> rx.Component:
             rx.form.root(
                 rx.flex(
                     # Tipo
-                    rx.box(
-                        rx.text(
-                            "Tipo de Descuento",
-                            size="2",
-                            weight="bold",
-                            margin_bottom="1",
+                    neuro_floating_select(
+                        label="Tipo de Descuento",
+                        value=LiquidacionFormState.discount_form["tipo"],
+                        options=[
+                            {"label": "Descuento Manual", "value": "Descuento Manual"},
+                            {"label": "Anticipo", "value": "Anticipo"},
+                            {"label": "Otro", "value": "Otro"},
+                        ],
+                        on_change=lambda val: LiquidacionFormState.set_discount_field(
+                            "tipo", val
                         ),
-                        rx.select(
-                            ["Descuento Manual", "Anticipo", "Otro"],
-                            name="tipo",
-                            placeholder="Seleccione tipo",
-                            required=True,
-                            width="100%",
-                            value=LiquidacionFormState.discount_form["tipo"],
-                            on_change=lambda val: LiquidacionFormState.set_discount_field(
-                                "tipo", val
-                            ),
-                        ),
+                        placeholder="Seleccione tipo",
+                        disabled=True,
                         width="100%",
                     ),
                     # Descripción
-                    rx.box(
-                        rx.text(
-                            "Descripción", size="2", weight="bold", margin_bottom="1"
-                        ),
-                        rx.input(
-                            name="descripcion",
-                            placeholder="Ej: Anticipo de comisión",
-                            required=True,
-                            width="100%",
-                            value=LiquidacionFormState.discount_form["descripcion"],
-                            on_change=lambda val: LiquidacionFormState.set_discount_field(
-                                "descripcion", val
-                            ),
+                    neuro_floating_input(
+                        label="Descripción",
+                        name="descripcion",
+                        value=LiquidacionFormState.discount_form["descripcion"],
+                        on_change=lambda val: LiquidacionFormState.set_discount_field(
+                            "descripcion", val
                         ),
                         width="100%",
                     ),
                     # Valor
-                    rx.box(
-                        rx.text("Valor", size="2", weight="bold", margin_bottom="1"),
-                        rx.input(
-                            name="valor",
-                            placeholder="0",
-                            required=True,
-                            type="number",
-                            min="0",
-                            width="100%",
-                            value=LiquidacionFormState.discount_form["valor"],
-                            on_change=lambda val: LiquidacionFormState.set_discount_field(
-                                "valor", val
-                            ),
+                    neuro_floating_input(
+                        label="Valor",
+                        name="valor",
+                        type="number",
+                        value=LiquidacionFormState.discount_form["valor"],
+                        on_change=lambda val: LiquidacionFormState.set_discount_field(
+                            "valor", val
                         ),
                         width="100%",
                     ),
@@ -77,18 +64,19 @@ def discount_modal() -> rx.Component:
                 # Campo oculto eliminado - ID se maneja por estado
                 rx.flex(
                     rx.dialog.close(
-                        rx.button(
+                        neuro_button(
                             "Cancelar",
-                            variant="soft",
                             color_scheme="gray",
                             type="button",
                             on_click=LiquidacionFormState.close_modal,
+                            tooltip_content="Cerrar sin guardar",
                         )
                     ),
-                    rx.button(
+                    neuro_button(
                         "Guardar Descuento",
                         type="submit",
                         loading=LiquidacionGridState.is_loading,
+                        tooltip_content="Guardar el descuento registrado",
                     ),
                     spacing="3",
                     justify="end",

@@ -116,21 +116,27 @@ def group_delete_confirm_dialog() -> rx.Component:
                     # Botones de acción
                     rx.hstack(
                         rx.dialog.close(
-                            rx.button(
-                                "Cancelar",
-                                variant="soft",
-                                color_scheme="gray",
-                                on_click=LiquidacionesState.close_group_delete_modal,
+                            rx.tooltip(
+                                rx.button(
+                                    "Cancelar",
+                                    variant="soft",
+                                    color_scheme="gray",
+                                    on_click=LiquidacionesState.close_group_delete_modal,
+                                ),
+                                content="Cerrar sin eliminar",
                             ),
                         ),
                         rx.spacer(),
-                        rx.button(
-                            rx.icon("trash-2"),
-                            "Eliminar No Pagadas",
-                            on_click=LiquidacionesState.confirmar_eliminar_agrupadas,
-                            color_scheme="red",
-                            loading=LiquidacionesState.is_loading,
-                            disabled=~LiquidacionesState.group_delete_confirmed,
+                        rx.tooltip(
+                            rx.button(
+                                rx.icon("trash-2"),
+                                "Eliminar No Pagadas",
+                                on_click=LiquidacionesState.confirmar_eliminar_agrupadas,
+                                color_scheme="red",
+                                loading=LiquidacionesState.is_loading,
+                                disabled=~LiquidacionesState.group_delete_confirmed,
+                            ),
+                            content="Eliminar todas las liquidaciones no pagadas del grupo",
                         ),
                         width="100%",
                         padding_top="1em",

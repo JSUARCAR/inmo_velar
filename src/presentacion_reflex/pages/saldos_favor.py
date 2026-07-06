@@ -1,6 +1,13 @@
 import reflex as rx
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_floating_select,
+    neuro_text_area,
+    neuro_button,
+    neuro_icon_action_button,
+)
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.saldos_state import SaldosState
 
@@ -22,52 +29,49 @@ def create_saldo_modal() -> rx.Component:
                         width="100%",
                     ),
                 ),
-                rx.text("Tipo Beneficiario", size="2", weight="bold"),
-                rx.select(
-                    ["Propietario", "Asesor"],
+                neuro_floating_select(
+                    label="Tipo Beneficiario",
                     value=SaldosState.form_tipo_beneficiario,
                     on_change=SaldosState.set_form_tipo_beneficiario,
+                    options=[{"label": "Propietario", "value": "Propietario"}, {"label": "Asesor", "value": "Asesor"}],
                 ),
-                rx.text("ID Beneficiario (Documento/ID)", size="2", weight="bold"),
-                rx.input(
+                neuro_floating_input(
+                    label="ID Beneficiario (Documento/ID)",
                     value=SaldosState.form_id_beneficiario,
                     on_change=SaldosState.set_form_id_beneficiario_safe,
                     type="number",
-                    placeholder="ID del Propietario o Asesor",
                 ),
-                rx.text("Valor ($)", size="2", weight="bold"),
-                rx.input(
+                neuro_floating_input(
+                    label="Valor ($)",
                     value=SaldosState.form_valor,
                     on_change=SaldosState.set_form_valor_safe,
                     type="number",
-                    placeholder="Monto en pesos",
                 ),
-                rx.text("Motivo", size="2", weight="bold"),
-                rx.input(
+                neuro_floating_input(
+                    label="Motivo",
                     value=SaldosState.form_motivo,
                     on_change=SaldosState.set_form_motivo,
-                    placeholder="Ej: Pago doble de administración",
                 ),
-                rx.text("Observaciones", size="2", weight="bold"),
-                rx.text_area(
+                neuro_text_area(
+                    label="Observaciones",
                     value=SaldosState.form_observaciones,
                     on_change=SaldosState.set_form_observaciones,
-                    placeholder="Detalles adicionales...",
                 ),
                 spacing="3",
                 margin_y="4",
             ),
             rx.flex(
                 rx.dialog.close(
-                    rx.button(
+                    neuro_button(
                         "Cancelar",
                         variant="soft",
                         color_scheme="gray",
                         on_click=SaldosState.close_create_modal,
                     )
                 ),
-                rx.button(
+                neuro_button(
                     "Guardar",
+                    tooltip_content="Guardar saldo a favor",
                     on_click=SaldosState.create_saldo,
                     loading=SaldosState.is_loading,
                 ),
@@ -127,47 +131,38 @@ def saldos_table() -> rx.Component:
                             rx.hstack(
                                 rx.cond(
                                     AuthState.check_action("Saldos Favor", "EDITAR"),
-                                    rx.tooltip(
-                                        rx.button(
-                                            rx.icon("circle_check", size=16),
-                                            size="1",
-                                            color_scheme="green",
-                                            variant="ghost",
-                                            on_click=lambda: SaldosState.action_saldo(
-                                                saldo.id_saldo, "aplicar"
-                                            ),
+                                    neuro_icon_action_button(
+                                        "circle_check",
+                                        color_scheme="green",
+                                        size="1",
+                                        tooltip_content="Marcar como Aplicado",
+                                        on_click=lambda: SaldosState.action_saldo(
+                                            saldo.id_saldo, "aplicar"
                                         ),
-                                        content="Marcar como Aplicado",
                                     ),
                                 ),
                                 rx.cond(
                                     AuthState.check_action("Saldos Favor", "EDITAR"),
-                                    rx.tooltip(
-                                        rx.button(
-                                            rx.icon("undo-2", size=16),
-                                            size="1",
-                                            color_scheme="blue",
-                                            variant="ghost",
-                                            on_click=lambda: SaldosState.action_saldo(
-                                                saldo.id_saldo, "devolver"
-                                            ),
+                                    neuro_icon_action_button(
+                                        "undo-2",
+                                        color_scheme="blue",
+                                        size="1",
+                                        tooltip_content="Marcar como Devuelto",
+                                        on_click=lambda: SaldosState.action_saldo(
+                                            saldo.id_saldo, "devolver"
                                         ),
-                                        content="Marcar como Devuelto",
                                     ),
                                 ),
                                 rx.cond(
                                     AuthState.check_action("Saldos Favor", "ELIMINAR"),
-                                    rx.tooltip(
-                                        rx.button(
-                                            rx.icon("trash-2", size=16),
-                                            size="1",
-                                            color_scheme="red",
-                                            variant="ghost",
-                                            on_click=lambda: SaldosState.action_saldo(
-                                                saldo.id_saldo, "eliminar"
-                                            ),
+                                    neuro_icon_action_button(
+                                        "trash-2",
+                                        color_scheme="red",
+                                        size="1",
+                                        tooltip_content="Eliminar",
+                                        on_click=lambda: SaldosState.action_saldo(
+                                            saldo.id_saldo, "eliminar"
                                         ),
-                                        content="Eliminar",
                                     ),
                                 ),
                                 spacing="2",
@@ -189,9 +184,10 @@ def saldos_content() -> rx.Component:
             rx.spacer(),
             rx.cond(
                 AuthState.check_action("Saldos Favor", "CREAR"),
-                rx.button(
+                neuro_button(
                     rx.icon("plus", size=18),
                     "Nuevo Saldo",
+                    tooltip_content="Registrar nuevo saldo a favor",
                     on_click=SaldosState.open_create_modal,
                 ),
             ),
@@ -204,26 +200,30 @@ def saldos_content() -> rx.Component:
         ),
         rx.divider(),
         rx.hstack(
-            rx.select(
-                ["Todos", "Propietario", "Asesor"],
+            neuro_floating_select(
+                label="Tipo",
                 value=SaldosState.filter_tipo,
                 on_change=lambda val: [
                     SaldosState.set_filter_tipo(val),
                     SaldosState.load_saldos(),
                 ],
+                options=[{"label": "Todos", "value": "Todos"}, {"label": "Propietario", "value": "Propietario"}, {"label": "Asesor", "value": "Asesor"}],
             ),
-            rx.select(
-                ["Pendiente", "Historial"],
+            neuro_floating_select(
+                label="Estado",
                 value=SaldosState.filter_estado,
                 on_change=lambda val: [
                     SaldosState.set_filter_estado(val),
                     SaldosState.load_saldos(),
                 ],
+                options=[{"label": "Pendiente", "value": "Pendiente"}, {"label": "Historial", "value": "Historial"}],
             ),
             rx.spacer(),
-            rx.button(
-                rx.icon("refresh-cw", size=16),
-                variant="ghost",
+            neuro_icon_action_button(
+                "refresh-cw",
+                color_scheme="gray",
+                size="2",
+                tooltip_content="Recargar",
                 on_click=SaldosState.load_saldos,
             ),
             width="100%",

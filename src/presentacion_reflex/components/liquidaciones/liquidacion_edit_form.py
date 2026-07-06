@@ -8,20 +8,21 @@ from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex import styles
 
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_text_area,
+)
 
 def form_field_readonly(label: str, name: str, value: str) -> rx.Component:
     """Campo de solo lectura para el formulario de edición."""
-    return rx.vstack(
-        rx.text(label, size="2", weight="medium", color="gray.700"),
-        rx.input(
+    return rx.box(
+        neuro_floating_input(
+            label=label,
+            value=value,
             name=name,
-            default_value=value,
-            read_only=True,
+            disabled=True,
             width="100%",
-            style=styles.NEU_INPUT_STYLE,
-            variant="surface",
         ),
-        spacing="1",
         width="100%",
     )
 
@@ -30,17 +31,17 @@ def form_field_editable(
     label: str, name: str, default_value: str, type: str = "number"
 ) -> rx.Component:
     """Campo editable para el formulario de edición."""
-    return rx.vstack(
-        rx.text(label, size="2", weight="medium", color="gray.700"),
-        rx.input(
+    # Como LiquidacionesState maneja state, usamos on_change del form para mutar o lo dejamos desvinculado
+    # si se captura en on_submit mediante el FormData. Para neuro_floating_input pasamos default_value como value
+    # y on_change vacío, o mejor usamos default_value directamente
+    return rx.box(
+        neuro_floating_input(
+            label=label,
+            value=default_value,
             name=name,
-            default_value=default_value,
             type=type,
             width="100%",
-            style=styles.NEU_INPUT_STYLE,
-            variant="soft",
         ),
-        spacing="1",
         width="100%",
     )
 
@@ -161,7 +162,7 @@ def liquidacion_edit_form() -> rx.Component:
                         margin_top="1em",
                     ),
                     section_title("Observaciones"),
-                    rx.text_area(
+                    neuro_text_area(
                         name="observaciones",
                         default_value=LiquidacionesState.form_data["observaciones"],
                         placeholder="Detalles adicionales sobre la liquidación...",
@@ -171,16 +172,22 @@ def liquidacion_edit_form() -> rx.Component:
                     rx.divider(margin_y="1em"),
                     rx.hstack(
                         rx.dialog.close(
-                            rx.button(
-                                "Cancelar",
-                                variant="soft",
-                                color_scheme="gray",
-                                type="button",
+                            rx.tooltip(
+                                rx.button(
+                                    "Cancelar",
+                                    variant="soft",
+                                    color_scheme="gray",
+                                    type="button",
+                                ),
+                                content="Cerrar sin guardar cambios",
                             ),
                         ),
                         rx.spacer(),
-                        rx.button(
-                            "Guardar Cambios", type="submit", color_scheme="blue"
+                        rx.tooltip(
+                            rx.button(
+                                "Guardar Cambios", type="submit", color_scheme="blue"
+                            ),
+                            content="Aplicar los cambios a la liquidación",
                         ),
                         width="100%",
                     ),

@@ -127,70 +127,62 @@ def person_card(persona: dict) -> rx.Component:
                         color=styles.TEXT_TERTIARY,
                         margin_right="2",
                     ),
-                    rx.tooltip(
+                    neuro_button(
+                        rx.icon("eye", size=16),
+                        on_click=lambda: PersonasState.open_details_modal(persona),
+                        size="1",
+                        style={
+                            "min_width": "32px",
+                            "height": "32px",
+                            "padding": "0",
+                        },
+                        tooltip_content="Ver detalles completos",
+                    ),
+                    rx.cond(
+                        AuthState.check_action("Personas", "EDITAR"),
                         neuro_button(
-                            rx.icon("eye", size=16),
-                            on_click=lambda: PersonasState.open_details_modal(persona),
+                            rx.icon("pencil", size=16),
+                            on_click=lambda: PersonasState.open_edit_modal(persona),
                             size="1",
                             style={
                                 "min_width": "32px",
                                 "height": "32px",
                                 "padding": "0",
                             },
-                        ),
-                        content="Ver detalles completos",
-                    ),
-                    rx.cond(
-                        AuthState.check_action("Personas", "EDITAR"),
-                        rx.tooltip(
-                            neuro_button(
-                                rx.icon("pencil", size=16),
-                                on_click=lambda: PersonasState.open_edit_modal(persona),
-                                size="1",
-                                style={
-                                    "min_width": "32px",
-                                    "height": "32px",
-                                    "padding": "0",
-                                },
-                            ),
-                            content="Editar persona",
+                            tooltip_content="Editar persona",
                         ),
                     ),
                     rx.cond(
                         AuthState.check_action("Personas", "ELIMINAR"),
                         rx.cond(
                             persona["estado"] == "ACTIVO",
-                            rx.tooltip(
-                                neuro_button(
-                                    rx.icon("trash_2", size=16),
-                                    on_click=lambda: PersonasState.toggle_estado_persona(
-                                        persona["id"], persona["estado"]
-                                    ),
-                                    size="1",
-                                    style={
-                                        "min_width": "32px",
-                                        "height": "32px",
-                                        "padding": "0",
-                                        "color": "var(--red-9)",
-                                    },
+                            neuro_button(
+                                rx.icon("trash_2", size=16),
+                                on_click=lambda: PersonasState.toggle_estado_persona(
+                                    persona["id"], persona["estado"]
                                 ),
-                                content="Desactivar persona",
+                                size="1",
+                                style={
+                                    "min_width": "32px",
+                                    "height": "32px",
+                                    "padding": "0",
+                                    "color": "var(--red-9)",
+                                },
+                                tooltip_content="Desactivar persona",
                             ),
-                            rx.tooltip(
-                                neuro_button(
-                                    rx.icon("refresh_cw", size=16),
-                                    on_click=lambda: PersonasState.toggle_estado_persona(
-                                        persona["id"], persona["estado"]
-                                    ),
-                                    size="1",
-                                    style={
-                                        "min_width": "32px",
-                                        "height": "32px",
-                                        "padding": "0",
-                                        "color": "var(--green-9)",
-                                    },
+                            neuro_button(
+                                rx.icon("rotate_ccw", size=16),
+                                on_click=lambda: PersonasState.toggle_estado_persona(
+                                    persona["id"], persona["estado"]
                                 ),
-                                content="Reactivar persona",
+                                size="1",
+                                style={
+                                    "min_width": "32px",
+                                    "height": "32px",
+                                    "padding": "0",
+                                    "color": "var(--green-9)",
+                                },
+                                tooltip_content="Activar persona",
                             ),
                         ),
                     ),

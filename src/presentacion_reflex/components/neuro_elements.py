@@ -1,6 +1,7 @@
 import reflex as rx
 from typing import Any
 from .. import styles
+from .shared.floating_label import floating_input, floating_select
 
 
 def neuro_input(*args, **kwargs) -> rx.Component:
@@ -47,13 +48,17 @@ def neuro_select_root(*args, **kwargs) -> rx.Component:
 def neuro_button(*args, **kwargs) -> rx.Component:
     """Botón con elevación neumórfica y feedback táctil."""
     custom_style = kwargs.pop("style", {})
+    tooltip_content = kwargs.pop("tooltip_content", "")
     final_style = {**styles.NEU_BUTTON_STYLE, **custom_style}
 
     # Los botones sí soportan la variante 'ghost'
     kwargs.setdefault("variant", "ghost")
     kwargs.setdefault("size", "3")
 
-    return rx.button(*args, style=final_style, **kwargs)
+    btn = rx.button(*args, style=final_style, **kwargs)
+    if tooltip_content:
+        return rx.tooltip(btn, content=tooltip_content)
+    return btn
 
 
 def neuro_text_area(*args, **kwargs) -> rx.Component:
@@ -188,22 +193,52 @@ def neuro_table_container(*args, **kwargs) -> rx.Component:
 
 
 def neuro_tooltip(children=None, **kwargs) -> rx.Component:
-    """Tooltip con estilo neumático. Soporta contenido complejo mediante rx.hover_card."""
+    """Tooltip con estilo neumático. Soporta contenido complejo mediante rx.hover_card.
+
+    Incluye atributos ARIA básicos (role="tooltip", aria-describedby) para accesibilidad.
+    """
+    import uuid
     content = kwargs.pop("content", "")
     # El trigger puede venir como children o pasarse explícitamente
     trigger = children if children is not None else kwargs.pop("children", rx.box())
+
+    # Generar ID único para aria-describedby
+    tooltip_id = f"tooltip-{uuid.uuid4().hex[:8]}"
 
     # En Reflex 0.8.x, rx.tooltip solo acepta string en 'content'.
     # Para contenido complejo (como en kpi_card.py), usamos rx.hover_card.
     return rx.hover_card.root(
         rx.hover_card.trigger(trigger),
         rx.hover_card.content(
-            rx.cond(
-                isinstance(content, str),
-                rx.text(content, size="2"),
-                content,  # Si es un componente (VStack, etc.)
-            ),
+            rx.text(content, size="2", id=tooltip_id, role="tooltip"),
             style=styles.NEU_TOOLTIP_STYLE,
+            **kwargs,
+        ),
+    )
+
+
+def neuro_tooltip_modal(children=None, **kwargs) -> rx.Component:
+    """Tooltip para uso dentro de modales con z-index mayor al modal.
+
+    Usa Z_TOOLTIP_IN_MODAL para garantizar visibilidad sobre dialogs.
+    Incluye atributos ARIA básicos para accesibilidad.
+    """
+    import uuid
+    content = kwargs.pop("content", "")
+    trigger = children if children is not None else kwargs.pop("children", rx.box())
+
+    tooltip_id = f"tooltip-modal-{uuid.uuid4().hex[:8]}"
+
+    modal_tooltip_style = {
+        **styles.NEU_TOOLTIP_STYLE,
+        "z_index": styles.Z_TOOLTIP_IN_MODAL,
+    }
+
+    return rx.hover_card.root(
+        rx.hover_card.trigger(trigger),
+        rx.hover_card.content(
+            rx.text(content, size="2", id=tooltip_id, role="tooltip"),
+            style=modal_tooltip_style,
             **kwargs,
         ),
     )
@@ -594,3 +629,43 @@ def neuro_pulse_card(
     if href:
         card = rx.link(card, href=href, underline="none", width="100%")
     return card
+
+
+def neuro_floating_input(
+    label: str,
+    value: str | rx.Var,
+    on_change: Any = None,
+    error: bool | rx.Var = False,
+    disabled: bool = False,
+    **kwargs,
+) -> rx.Component:
+    """Input flotante con estilo neumórfico."""
+    return floating_input(
+        label=label,
+        value=value,
+        error=error,
+        disabled=disabled,
+        **(kwargs | {"on_change": on_change} if on_change else kwargs),
+    )
+
+
+def neuro_floating_select(
+    label: str,
+    value: str | rx.Var,
+    options: list[dict[str, str]] | rx.Var,
+    on_change: Any = None,
+    error: bool | rx.Var = False,
+    placeholder: str = "Seleccionar...",
+    disabled: bool = False,
+    **kwargs,
+) -> rx.Component:
+    """Select flotante con estilo neumórfico."""
+    return floating_select(
+        label=label,
+        value=value,
+        options=options,
+        error=error,
+        placeholder=placeholder,
+        disabled=disabled,
+        **(kwargs | {"on_change": on_change} if on_change else kwargs),
+    )

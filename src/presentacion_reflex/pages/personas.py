@@ -8,12 +8,18 @@ from src.presentacion_reflex.components.personas.person_card import person_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.personas_state import PersonasState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
-    neuro_select_root,
+    neuro_floating_input,
+    neuro_floating_select,
     neuro_button,
     neuro_spinner,
     neuro_badge,
     neuro_switch,
+)
+from src.presentacion_reflex.components.shared.tooltips_text import (
+    TOOLTIP_PERSONAS_FILTRO_NOMBRE,
+    TOOLTIP_PERSONAS_FILTRO_DOCUMENTO,
+    TOOLTIP_PERSONAS_FILTRO_ROL,
+    TOOLTIP_PERSONAS_FILTRO_ESTADO,
 )
 from src.presentacion_reflex import styles
 
@@ -298,8 +304,8 @@ def personas_page() -> rx.Component:
                 rx.card(
                     rx.flex(
                         # Search bar with enhanced styling
-                        neuro_input(
-                            rx.input.slot(rx.icon("search", size=18)),
+                        neuro_floating_input(
+                            label="Buscar por nombre o documento...",
                             placeholder="Buscar por nombre o documento...",
                             value=PersonasState.search_query,
                             on_change=PersonasState.set_search,
@@ -308,8 +314,9 @@ def personas_page() -> rx.Component:
                             width=["100%", "100%", "320px"],
                         ),
                         # Role filter with icon
-                        neuro_select_root(
-                            [
+                        neuro_floating_select(
+                            label="Filtrar por Rol",
+                            options=[
                                 rx.select.item("Todos", value="Todos"),
                                 rx.select.item("Propietario", value="Propietario"),
                                 rx.select.item("Arrendatario", value="Arrendatario"),
@@ -323,16 +330,20 @@ def personas_page() -> rx.Component:
                             width=["100%", "100%", "200px"],
                         ),
                         # Date filters
-                        neuro_input(
+                        neuro_floating_input(
+                            label="Desde",
                             type="date",
                             placeholder="Desde",
+                            value=PersonasState.fecha_inicio,
                             on_change=PersonasState.set_fecha_inicio,
                             size="3",
                             width=["100%", "100%", "auto"],
                         ),
-                        neuro_input(
+                        neuro_floating_input(
+                            label="Hasta",
                             type="date",
                             placeholder="Hasta",
+                            value=PersonasState.fecha_fin,
                             on_change=PersonasState.set_fecha_fin,
                             size="3",
                             width=["100%", "100%", "auto"],
@@ -364,7 +375,7 @@ def personas_page() -> rx.Component:
                                 ),
                                 rx.tooltip(
                                     rx.icon("info", size=14, color="gray"),
-                                    content="Excluye proveedores con rol único",
+                                    content=TOOLTIP_PERSONAS_FILTRO_ESTADO,
                                 ),
                                 align="center",
                                 spacing="2",

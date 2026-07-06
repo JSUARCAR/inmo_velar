@@ -67,6 +67,10 @@ class ContratoArrendamiento:
     updated_at: Optional[str] = None
     updated_by: Optional[str] = None
 
+    # Campos Extra (Migración)
+    enlace_video: Optional[str] = None
+    responsable_deposito_id: Optional[int] = None
+
     @property
     def esta_activo(self) -> bool:
         return self.estado_contrato_a == EstadoContrato.ACTIVO

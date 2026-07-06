@@ -6,9 +6,10 @@ from src.presentacion_reflex.components.document_manager_elite import (
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
+    neuro_floating_input,
+    neuro_floating_select,
+    neuro_text_area,
     neuro_button,
-    neuro_select_root,
 )
 from src.presentacion_reflex import styles
 
@@ -31,13 +32,12 @@ def _quote_form() -> rx.Component:
         rx.heading("Registrar Cotización", size="4", color="var(--blue-9)"),
         rx.grid(
             rx.vstack(
-                rx.text("Proveedor", weight="bold", size="2"),
-                neuro_select_root(
-                    rx.foreach(
+                neuro_floating_select(
+                    label="Proveedor",
+                    options=rx.foreach(
                         IncidentesState.proveedores_options,
-                        lambda x: rx.select.item(x["texto"], value=x["id"]),
+                        lambda p: rx.select.item(p["texto"], value=p["id"])
                     ),
-                    placeholder="Seleccione proveedor...",
                     on_change=lambda val: IncidentesState.set_cotizacion_field(
                         "id_proveedor", val
                     ),
@@ -46,10 +46,11 @@ def _quote_form() -> rx.Component:
                 ),
             ),
             rx.vstack(
-                rx.text("Días Estimados", weight="bold", size="2"),
-                neuro_input(
+                neuro_floating_input(
+                    label="Días Estimados",
                     type="number",
                     placeholder="1",
+                    value=IncidentesState.cotizacion_form["dias"].to(str),
                     on_change=lambda val: IncidentesState.set_cotizacion_field(
                         "dias", val
                     ),
@@ -62,10 +63,11 @@ def _quote_form() -> rx.Component:
         ),
         rx.grid(
             rx.vstack(
-                rx.text("Costo Materiales", weight="bold", size="2"),
-                neuro_input(
+                neuro_floating_input(
+                    label="Costo Materiales",
                     type="number",
                     placeholder="0",
+                    value=IncidentesState.cotizacion_form["materiales"].to(str),
                     on_change=lambda val: IncidentesState.set_cotizacion_field(
                         "materiales", val
                     ),
@@ -73,10 +75,11 @@ def _quote_form() -> rx.Component:
                 ),
             ),
             rx.vstack(
-                rx.text("Costo Mano de Obra", weight="bold", size="2"),
-                neuro_input(
+                neuro_floating_input(
+                    label="Costo Mano de Obra",
                     type="number",
                     placeholder="0",
+                    value=IncidentesState.cotizacion_form["mano_obra"].to(str),
                     on_change=lambda val: IncidentesState.set_cotizacion_field(
                         "mano_obra", val
                     ),
@@ -88,14 +91,14 @@ def _quote_form() -> rx.Component:
             width="100%",
         ),
         rx.vstack(
-            rx.text("Descripción del Trabajo", weight="bold", size="2"),
-            rx.text_area(
+            neuro_text_area(
+                label="Descripción del Trabajo",
                 placeholder="Detalle técnico de la reparación...",
+                value=IncidentesState.cotizacion_form["descripcion"],
                 on_change=lambda val: IncidentesState.set_cotizacion_field(
                     "descripcion", val
                 ),
                 width="100%",
-                style=styles.NEU_INPUT_STYLE,
             ),
             width="100%",
         ),
@@ -105,6 +108,7 @@ def _quote_form() -> rx.Component:
                 on_click=IncidentesState.save_cotizacion,
                 loading=IncidentesState.is_loading,
                 color_scheme="green",
+                tooltip_content="Guardar cotización",
             ),
             width="100%",
             justify="end",
@@ -236,6 +240,7 @@ def modal_details() -> rx.Component:
                         on_click=IncidentesState.generar_pdf_incidente,
                         loading=IncidentesState.is_loading,
                         margin_right="1em",
+                        tooltip_content="Descargar reporte en PDF",
                     ),
                     rx.badge(
                         inc["estado"],
@@ -446,6 +451,7 @@ def modal_details() -> rx.Component:
                                                 ),
                                                 variant="soft",
                                                 color_scheme="blue",
+                                                tooltip_content="Editar incidente",
                                             ),
                                         ),
                                         rx.cond(
@@ -464,6 +470,7 @@ def modal_details() -> rx.Component:
                                                 ),
                                                 variant="soft",
                                                 color_scheme="red",
+                                                tooltip_content="Cancelar incidente",
                                             ),
                                         ),
                                         # Botón Finalizar Directo (solo si estado permite)
@@ -488,6 +495,7 @@ def modal_details() -> rx.Component:
                                                     ),
                                                     variant="soft",
                                                     color_scheme="teal",
+                                                    tooltip_content="Finalizar directamente",
                                                 ),
                                             ),
                                         ),
@@ -516,6 +524,7 @@ def modal_details() -> rx.Component:
                                                     ),
                                                     variant="soft",
                                                     color_scheme="green",
+                                                    tooltip_content="Definir plan de pago",
                                                 ),
                                             ),
                                         ),
@@ -542,12 +551,8 @@ def modal_details() -> rx.Component:
                                             ),
                                             rx.grid(
                                                 rx.vstack(
-                                                    rx.text(
-                                                        "Fecha de Reparacion",
-                                                        weight="bold",
-                                                        size="2",
-                                                    ),
-                                                    neuro_input(
+                                                    neuro_floating_input(
+                                                        label="Fecha de Reparacion",
                                                         type="date",
                                                         on_change=lambda val: (
                                                             IncidentesState.set_direct_finish_field(
@@ -559,12 +564,8 @@ def modal_details() -> rx.Component:
                                                     ),
                                                 ),
                                                 rx.vstack(
-                                                    rx.text(
-                                                        "Costo Final",
-                                                        weight="bold",
-                                                        size="2",
-                                                    ),
-                                                    neuro_input(
+                                                    neuro_floating_input(
+                                                        label="Costo Final",
                                                         type="number",
                                                         placeholder="0",
                                                         on_change=lambda val: (
@@ -579,20 +580,13 @@ def modal_details() -> rx.Component:
                                                     ),
                                                 ),
                                                 rx.vstack(
-                                                    rx.text(
-                                                        "Proveedor",
-                                                        weight="bold",
-                                                        size="2",
-                                                    ),
-                                                    neuro_select_root(
-                                                        rx.foreach(
+                                                    neuro_floating_select(
+                                                        label="Proveedor",
+                                                        options=rx.foreach(
                                                             IncidentesState.proveedores_options,
-                                                            lambda x: rx.select.item(
-                                                                x["texto"],
-                                                                value=x["id"],
-                                                            ),
+                                                            lambda p: rx.select.item(p["texto"], value=p["id"])
                                                         ),
-                                                        placeholder="Seleccionar...",
+                                                        value=IncidentesState.direct_finish_proveedor,
                                                         on_change=lambda val: (
                                                             IncidentesState.set_direct_finish_field(
                                                                 "proveedor", val
@@ -608,12 +602,8 @@ def modal_details() -> rx.Component:
                                                 width="100%",
                                             ),
                                             rx.vstack(
-                                                rx.text(
-                                                    "Observaciones",
-                                                    weight="bold",
-                                                    size="2",
-                                                ),
-                                                rx.text_area(
+                                                neuro_text_area(
+                                                    label="Observaciones",
                                                     placeholder="Observaciones de la reparacion...",
                                                     on_change=lambda val: (
                                                         IncidentesState.set_direct_finish_field(
@@ -622,7 +612,6 @@ def modal_details() -> rx.Component:
                                                     ),
                                                     value=IncidentesState.direct_finish_obs,
                                                     width="100%",
-                                                    style=styles.NEU_INPUT_STYLE,
                                                 ),
                                                 width="100%",
                                             ),
@@ -643,12 +632,14 @@ def modal_details() -> rx.Component:
                                                     on_click=IncidentesState.toggle_direct_finish_form,
                                                     variant="soft",
                                                     color_scheme="gray",
+                                                    tooltip_content="Cancelar finalización",
                                                 ),
                                                 rx.spacer(),
                                                 neuro_button(
                                                     "Confirmar",
                                                     on_click=IncidentesState.confirmar_finalizacion_directa,
                                                     color_scheme="teal",
+                                                    tooltip_content="Confirmar finalización directa",
                                                 ),
                                                 width="100%",
                                                 margin_top="1em",
@@ -688,6 +679,7 @@ def modal_details() -> rx.Component:
                                                     )
                                                 ),
                                                 margin_top="1em",
+                                                tooltip_content="Iniciar reparación",
                                             ),
                                         ),
                                     ),
@@ -741,6 +733,7 @@ def modal_details() -> rx.Component:
                                                     color_scheme="green",
                                                     on_click=IncidentesState.toggle_finalize_form,
                                                     margin_top="1em",
+                                                    tooltip_content="Finalizar incidente",
                                                 ),
                                             ),
                                         ),
@@ -753,45 +746,38 @@ def modal_details() -> rx.Component:
                                                     size="3",
                                                     color="var(--blue-9)",
                                                 ),
-                                                rx.text(
-                                                    "Fecha de Terminación",
-                                                    weight="bold",
-                                                    size="2",
-                                                ),
-                                                neuro_input(
-                                                    type="date",
-                                                    on_change=IncidentesState.set_finalize_date,
-                                                    value=IncidentesState.finalize_date,
-                                                    width="100%",
-                                                ),
-                                                rx.text(
-                                                    "Observaciones",
-                                                    weight="bold",
-                                                    size="2",
-                                                ),
-                                                rx.text_area(
-                                                    placeholder="Descripción...",
-                                                    on_change=IncidentesState.set_finalize_obs,
-                                                    value=IncidentesState.finalize_obs,
-                                                    width="100%",
-                                                    style=styles.NEU_INPUT_STYLE,
-                                                ),
-                                                rx.hstack(
-                                                    neuro_button(
-                                                        "Cancelar",
-                                                        on_click=IncidentesState.toggle_finalize_form,
-                                                        variant="soft",
-                                                        color_scheme="gray",
-                                                    ),
-                                                    rx.spacer(),
-                                                    neuro_button(
-                                                        "Confirmar",
-                                                        on_click=IncidentesState.confirmar_finalizacion,
-                                                        color_scheme="green",
-                                                    ),
-                                                    width="100%",
-                                                    margin_top="0.5em",
-                                                ),
+                                        neuro_floating_input(
+                                            label="Fecha de Terminación",
+                                            type="date",
+                                            on_change=IncidentesState.set_finalize_date,
+                                            value=IncidentesState.finalize_date,
+                                            width="100%",
+                                        ),
+                                        neuro_text_area(
+                                            label="Observaciones",
+                                            placeholder="Descripción...",
+                                            on_change=IncidentesState.set_finalize_obs,
+                                            value=IncidentesState.finalize_obs,
+                                            width="100%",
+                                        ),
+                                        rx.hstack(
+                                            neuro_button(
+                                                "Cancelar",
+                                                on_click=IncidentesState.toggle_finalize_form,
+                                                variant="soft",
+                                                color_scheme="gray",
+                                                tooltip_content="Cancelar finalización",
+                                            ),
+                                            rx.spacer(),
+                                            neuro_button(
+                                                "Confirmar",
+                                                on_click=IncidentesState.confirmar_finalizacion,
+                                                color_scheme="green",
+                                                tooltip_content="Confirmar finalización",
+                                            ),
+                                            width="100%",
+                                            margin_top="0.5em",
+                                        ),
                                                 background_color=styles.BG_PANEL,
                                                 padding="1em",
                                                 border_radius="12px",
@@ -1100,6 +1086,7 @@ def modal_details() -> rx.Component:
                             on_click=IncidentesState.close_details_modal,
                             variant="soft",
                             color_scheme="gray",
+                            tooltip_content="Cerrar detalles",
                         )
                     ),
                     justify="end",

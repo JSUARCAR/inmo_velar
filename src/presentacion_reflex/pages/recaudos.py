@@ -17,8 +17,8 @@ from src.presentacion_reflex.state.recaudos_state import RecaudosState
 
 
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
-    neuro_select_root,
+    neuro_floating_input,
+    neuro_floating_select,
     neuro_button,
 )
 
@@ -39,7 +39,8 @@ def recaudos_toolbar() -> rx.Component:
     """Barra de herramientas con filtros y búsqueda."""
     return rx.flex(
         # Búsqueda
-        neuro_input(
+        neuro_floating_input(
+            label="Buscar por propiedad, arrendatario, matrícula...",
             placeholder="Buscar por propiedad, arrendatario, matrícula...",
             value=RecaudosState.search_text,
             on_change=RecaudosState.set_search,
@@ -48,8 +49,9 @@ def recaudos_toolbar() -> rx.Component:
             size="3",
         ),
         # Filtro Estado
-        neuro_select_root(
-            [
+        neuro_floating_select(
+            label="Estado",
+            options=[
                 rx.select.item("Todos", value="Todos"),
                 rx.select.item("Pendiente", value="Pendiente"),
                 rx.select.item("Vencido", value="Vencido"),
@@ -62,7 +64,8 @@ def recaudos_toolbar() -> rx.Component:
             width=["100%", "100%", "150px"],
         ),
         # Filtro Fecha Desde
-        neuro_input(
+        neuro_floating_input(
+            label="Desde",
             placeholder="Desde",
             type="date",
             value=RecaudosState.filter_fecha_desde,
@@ -71,7 +74,8 @@ def recaudos_toolbar() -> rx.Component:
             size="3",
         ),
         # Filtro Fecha Hasta
-        neuro_input(
+        neuro_floating_input(
+            label="Hasta",
             placeholder="Hasta",
             type="date",
             value=RecaudosState.filter_fecha_hasta,
@@ -510,8 +514,9 @@ def modal_exportar_recibos_periodo() -> rx.Component:
             ),
             rx.separator(margin_y="12px"),
             rx.vstack(
-                rx.text("Período", size="2", weight="medium"),
-                neuro_input(
+                neuro_floating_input(
+                    label="Período",
+                    placeholder="YYYY-MM",
                     type="month",
                     value=RecaudosState.periodo_exportar_recibos,
                     on_change=RecaudosState.set_periodo_exportar,

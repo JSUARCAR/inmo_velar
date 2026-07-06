@@ -7,7 +7,7 @@ from src.presentacion_reflex import styles
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_button,
-    neuro_input,
+    neuro_floating_input,
 )
 
 
@@ -31,8 +31,8 @@ def modal_exportar_liquidaciones_periodo() -> rx.Component:
             ),
             rx.separator(margin_y="12px"),
             rx.vstack(
-                rx.text("Período", size="2", weight="medium"),
-                neuro_input(
+                neuro_floating_input(
+                    label="Período",
                     type="month",
                     value=LiquidacionesState.filter_periodo,  # Reutilizamos el filtro para coherencia
                     on_change=LiquidacionesState.set_filter_periodo,
@@ -55,6 +55,7 @@ def modal_exportar_liquidaciones_periodo() -> rx.Component:
                         variant="soft",
                         color_scheme="gray",
                         on_click=LiquidacionesState.close_export_modal,
+                        tooltip_content="Cerrar sin exportar",
                     ),
                 ),
                 neuro_button(
@@ -64,7 +65,8 @@ def modal_exportar_liquidaciones_periodo() -> rx.Component:
                     ),
                     on_click=LiquidacionesState.exportar_liquidaciones_periodo_zip,
                     loading=LiquidacionesState.exportando_periodo,
-                    color_scheme="orange",  # Coral/Terracotta style
+                    color_scheme="orange",
+                    tooltip_content="Generar y descargar estados de cuenta del período",
                 ),
                 spacing="3",
                 justify="end",

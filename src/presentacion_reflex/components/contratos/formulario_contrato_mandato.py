@@ -10,8 +10,9 @@ from src.presentacion_reflex.components.document_manager_elite import (
 )
 from src.presentacion_reflex.components.image_gallery import image_gallery
 from src.presentacion_reflex.state.contratos_state import ContratosState
-from src.presentacion_reflex.components.neuro_elements import neuro_input, neuro_button
+from src.presentacion_reflex.components.neuro_elements import neuro_floating_input, neuro_floating_select, neuro_button
 from src.presentacion_reflex import styles
+from src.presentacion_reflex.components.shared.floating_label import floating_input, floating_select
 from src.presentacion_reflex.components.shared.searchable_select import (
     searchable_select,
 )
@@ -119,74 +120,33 @@ def formulario_contrato_mandato() -> rx.Component:
                                     style={"font_style": "italic"},
                                 ),
                                 rx.grid(
-                                    rx.vstack(
-                                        rx.text(
-                                            "Fecha Inicio *", size="2", weight="bold"
-                                        ),
-                                        neuro_input(
-                                            rx.input.slot(rx.icon("calendar", size=16)),
-                                            type="date",
-                                            name="fecha_inicio",
-                                            required=True,
-                                            value=ContratosState.form_data[
-                                                "fecha_inicio"
-                                            ],
-                                            on_change=ContratosState.on_change_fecha_inicio,
-                                            variant="surface",
-                                            style={
-                                                "box_shadow": styles.SHADOW_INSET_ELITE
-                                            },
-                                        ),
-                                        spacing="1",
+                                    neuro_floating_input(
+                                        label="Fecha Inicio",
+                                        type="date",
+                                        name="fecha_inicio",
+                                        required=True,
+                                        value=ContratosState.form_data["fecha_inicio"],
+                                        on_change=ContratosState.on_change_fecha_inicio,
                                         width="100%",
                                     ),
-                                    rx.vstack(
-                                        rx.text("Fecha Fin *", size="2", weight="bold"),
-                                        neuro_input(
-                                            rx.input.slot(
-                                                rx.icon("calendar-check", size=16)
-                                            ),
-                                            type="date",
-                                            name="fecha_fin",
-                                            required=True,
-                                            value=ContratosState.form_data["fecha_fin"],
-                                            on_change=ContratosState.on_change_fecha_fin,
-                                            variant="surface",
-                                            style={
-                                                "box_shadow": styles.SHADOW_INSET_ELITE
-                                            },
-                                        ),
-                                        spacing="1",
+                                    neuro_floating_input(
+                                        label="Fecha Fin",
+                                        type="date",
+                                        name="fecha_fin",
+                                        required=True,
+                                        value=ContratosState.form_data["fecha_fin"],
+                                        on_change=ContratosState.on_change_fecha_fin,
                                         width="100%",
                                     ),
-                                    rx.vstack(
-                                        rx.hstack(
-                                            rx.text(
-                                                "Duración (meses) *",
-                                                size="2",
-                                                weight="bold",
-                                            ),
-                                            rx.icon("lock", size=14, color="gray"),
-                                            align="center",
-                                            spacing="1",
-                                        ),
-                                        neuro_input(
-                                            rx.input.slot(rx.icon("clock", size=16)),
-                                            type="number",
-                                            name="duracion_meses",
-                                            placeholder="12",
-                                            required=True,
-                                            min=1,
-                                            read_only=True,
-                                            value=ContratosState.form_data[
-                                                "duracion_meses"
-                                            ],
-                                            variant="surface",
-                                            style={
-                                                "box_shadow": styles.SHADOW_INSET_ELITE
-                                            },
-                                        ),
-                                        spacing="1",
+                                    neuro_floating_input(
+                                        label="Duración (meses)",
+                                        type="number",
+                                        name="duracion_meses",
+                                        placeholder="12",
+                                        required=True,
+                                        min=1,
+                                        read_only=True,
+                                        value=ContratosState.form_data["duracion_meses"],
                                         width="100%",
                                     ),
                                     columns=rx.breakpoints(initial="1", sm="3"),
@@ -205,63 +165,26 @@ def formulario_contrato_mandato() -> rx.Component:
                                     style={"font_style": "italic"},
                                 ),
                                 rx.grid(
-                                    rx.vstack(
-                                        rx.hstack(
-                                            rx.text(
-                                                "Canon Estimado *",
-                                                size="2",
-                                                weight="bold",
-                                            ),
-                                            rx.icon("lock", size=14, color="gray"),
-                                            align="center",
-                                            spacing="1",
-                                        ),
-                                        neuro_input(
-                                            rx.input.slot(
-                                                rx.icon("dollar-sign", size=16)
-                                            ),
-                                            type="number",
-                                            name="canon",
-                                            placeholder="1000000",
-                                            required=True,
-                                            min=0,
-                                            read_only=True,
-                                            value=ContratosState.form_data["canon"],
-                                            variant="surface",
-                                            style={
-                                                "box_shadow": styles.SHADOW_INSET_ELITE
-                                            },
-                                        ),
-                                        spacing="1",
+                                    neuro_floating_input(
+                                        label="Canon Estimado",
+                                        type="number",
+                                        name="canon",
+                                        placeholder="1000000",
+                                        required=True,
+                                        min=0,
+                                        read_only=True,
+                                        value=ContratosState.form_data["canon"],
                                         width="100%",
                                     ),
-                                    rx.vstack(
-                                        rx.text(
-                                            "Fecha de Pago *", size="2", weight="bold"
-                                        ),
-                                        neuro_input(
-                                            rx.input.slot(
-                                                rx.icon("calendar-days", size=16)
-                                            ),
-                                            type="text",
-                                            name="fecha_pago",
-                                            placeholder="Ej: Día 5 de cada mes",
-                                            required=True,
-                                            read_only=True,
-                                            value=ContratosState.form_data[
-                                                "fecha_pago"
-                                            ],
-                                            on_change=lambda v: (
-                                                ContratosState.set_form_field(
-                                                    "fecha_pago", v
-                                                )
-                                            ),
-                                            variant="surface",
-                                            style={
-                                                "box_shadow": styles.SHADOW_INSET_ELITE
-                                            },
-                                        ),
-                                        spacing="1",
+                                    neuro_floating_input(
+                                        label="Fecha de Pago",
+                                        type="text",
+                                        name="fecha_pago",
+                                        placeholder="Ej: Día 5 de cada mes",
+                                        required=True,
+                                        read_only=True,
+                                        value=ContratosState.form_data["fecha_pago"],
+                                        on_change=lambda v: ContratosState.set_form_field("fecha_pago", v),
                                         width="100%",
                                     ),
                                     columns=rx.breakpoints(initial="1", sm="2"),
@@ -280,69 +203,29 @@ def formulario_contrato_mandato() -> rx.Component:
                                     style={"font_style": "italic"},
                                 ),
                                 rx.grid(
-                                    rx.vstack(
-                                        rx.text(
-                                            "Comisión (%) *", size="2", weight="bold"
-                                        ),
-                                        neuro_input(
-                                            rx.input.slot(rx.icon("percent", size=16)),
-                                            type="number",
-                                            name="comision_porcentaje",
-                                            placeholder="10",
-                                            required=True,
-                                            min=0,
-                                            max=100,
-                                            step="0.01",
-                                            value=ContratosState.form_data[
-                                                "comision_porcentaje"
-                                            ],
-                                            on_change=lambda v: (
-                                                ContratosState.set_form_field(
-                                                    "comision_porcentaje", v
-                                                )
-                                            ),
-                                            variant="surface",
-                                            style={
-                                                "box_shadow": styles.SHADOW_INSET_ELITE
-                                            },
-                                        ),
-                                        rx.text(
-                                            "Base 100 (10 = 10%)",
-                                            size="1",
-                                            color="gray",
-                                        ),
-                                        spacing="1",
+                                    neuro_floating_input(
+                                        label="Comisión (%)",
+                                        type="number",
+                                        name="comision_porcentaje",
+                                        placeholder="10",
+                                        required=True,
+                                        min=0,
+                                        max=100,
+                                        step="0.01",
+                                        value=ContratosState.form_data["comision_porcentaje"],
+                                        on_change=lambda v: ContratosState.set_form_field("comision_porcentaje", v),
                                         width="100%",
                                     ),
-                                    rx.vstack(
-                                        rx.text("IVA (%)", size="2", weight="bold"),
-                                        neuro_input(
-                                            rx.input.slot(rx.icon("percent", size=16)),
-                                            type="number",
-                                            name="iva_porcentaje",
-                                            placeholder="19",
-                                            min=0,
-                                            max=100,
-                                            step="0.01",
-                                            value=ContratosState.form_data[
-                                                "iva_porcentaje"
-                                            ],
-                                            on_change=lambda v: (
-                                                ContratosState.set_form_field(
-                                                    "iva_porcentaje", v
-                                                )
-                                            ),
-                                            variant="surface",
-                                            style={
-                                                "box_shadow": styles.SHADOW_INSET_ELITE
-                                            },
-                                        ),
-                                        rx.text(
-                                            "Base 100 (19 = 19%)",
-                                            size="1",
-                                            color="gray",
-                                        ),
-                                        spacing="1",
+                                    neuro_floating_input(
+                                        label="IVA (%)",
+                                        type="number",
+                                        name="iva_porcentaje",
+                                        placeholder="19",
+                                        min=0,
+                                        max=100,
+                                        step="0.01",
+                                        value=ContratosState.form_data["iva_porcentaje"],
+                                        on_change=lambda v: ContratosState.set_form_field("iva_porcentaje", v),
                                         width="100%",
                                     ),
                                     columns=rx.breakpoints(initial="1", sm="2"),
@@ -361,144 +244,91 @@ def formulario_contrato_mandato() -> rx.Component:
                                     style={"font_style": "italic"},
                                 ),
                                 rx.grid(
-                                    rx.vstack(
-                                        rx.text("Banco", size="2", weight="bold"),
-                                        neuro_input(
-                                            rx.input.slot(rx.icon("landmark", size=16)),
-                                            type="text",
-                                            name="banco_propietario",
-                                            placeholder="Ej: Bancolombia",
-                                            value=ContratosState.form_data[
-                                                "banco_propietario"
-                                            ],
-                                            on_change=lambda v: ContratosState.set_form_field(
-                                                "banco_propietario", v.upper()
-                                            ),
-                                            variant="surface",
-                                            style={
-                                                "box_shadow": styles.SHADOW_INSET_ELITE
-                                            },
-                                        ),
-                                        spacing="1",
+                                    neuro_floating_input(
+                                        label="Banco",
+                                        type="text",
+                                        name="banco_propietario",
+                                        placeholder="Ej: Bancolombia",
+                                        value=ContratosState.form_data["banco_propietario"],
+                                        on_change=lambda v: ContratosState.set_form_field("banco_propietario", v.upper()),
                                         width="100%",
                                     ),
-                                    rx.vstack(
-                                        rx.text(
-                                            "Número de Cuenta", size="2", weight="bold"
-                                        ),
-                                        neuro_input(
-                                            rx.input.slot(rx.icon("hash", size=16)),
-                                            type="text",
-                                            name="numero_cuenta_propietario",
-                                            placeholder="Ej: 123456789",
-                                            value=ContratosState.form_data[
-                                                "numero_cuenta_propietario"
-                                            ],
-                                            on_change=lambda v: ContratosState.set_form_field(
-                                                "numero_cuenta_propietario", v
-                                            ),
-                                            variant="surface",
-                                            style={
-                                                "box_shadow": styles.SHADOW_INSET_ELITE
-                                            },
-                                        ),
-                                        spacing="1",
+                                    neuro_floating_input(
+                                        label="Número de Cuenta",
+                                        type="text",
+                                        name="numero_cuenta_propietario",
+                                        placeholder="Ej: 123456789",
+                                        value=ContratosState.form_data["numero_cuenta_propietario"],
+                                        on_change=lambda v: ContratosState.set_form_field("numero_cuenta_propietario", v),
                                         width="100%",
                                     ),
-                                    rx.vstack(
-                                        rx.text(
-                                            "Tipo de Cuenta", size="2", weight="bold"
-                                        ),
-                                        rx.select.root(
-                                            rx.select.trigger(
-                                                placeholder="Seleccionar...",
-                                                style=styles.NEU_SELECT_STYLE,
-                                                width="100%",
-                                            ),
-                                            rx.select.content(
-                                                rx.select.item(
-                                                    "Ahorros", value="Ahorros"
-                                                ),
-                                                rx.select.item(
-                                                    "Corriente", value="Corriente"
-                                                ),
-                                                style={
-                                                    "background": styles.BG_PANEL,
-                                                    "box_shadow": styles.SHADOW_WHISPER,
-                                                    "border_radius": "12px",
-                                                },
-                                            ),
-                                            name="tipo_cuenta",
-                                            value=ContratosState.form_data[
-                                                "tipo_cuenta"
-                                            ],
-                                            on_change=lambda v: ContratosState.set_form_field(
-                                                "tipo_cuenta", v
-                                            ),
-                                        ),
-                                        spacing="1",
-                                        width="100%",
+                                    neuro_floating_select(
+                                        label="Tipo de Cuenta",
+                                        value=ContratosState.form_data["tipo_cuenta"],
+                                        options=[
+                                            {"label": "Ahorros", "value": "Ahorros"},
+                                            {"label": "Corriente", "value": "Corriente"},
+                                        ],
+                                        on_change=lambda v: ContratosState.set_form_field("tipo_cuenta", v),
                                     ),
                                     columns=rx.breakpoints(initial="1", sm="3"),
                                     spacing="4",
                                     width="100%",
                                 ),
                                 rx.grid(
-                                    rx.vstack(
-                                        rx.text(
-                                            "Nombre Consignatario",
-                                            size="2",
-                                            weight="bold",
-                                        ),
-                                        neuro_input(
-                                            rx.input.slot(
-                                                rx.icon("user-check", size=16)
-                                            ),
-                                            type="text",
-                                            name="consignatario",
-                                            placeholder="Nombre de quien recibe el pago",
-                                            value=ContratosState.form_data[
-                                                "consignatario"
-                                            ],
-                                            on_change=lambda v: ContratosState.set_form_field(
-                                                "consignatario", v.upper()
-                                            ),
-                                            variant="surface",
-                                            style={
-                                                "box_shadow": styles.SHADOW_INSET_ELITE
-                                            },
-                                        ),
-                                        spacing="1",
+                                    neuro_floating_input(
+                                        label="Nombre Consignatario",
+                                        type="text",
+                                        name="consignatario",
+                                        placeholder="Nombre de quien recibe el pago",
+                                        value=ContratosState.form_data["consignatario"],
+                                        on_change=lambda v: ContratosState.set_form_field("consignatario", v.upper()),
                                         width="100%",
                                     ),
-                                    rx.vstack(
-                                        rx.text(
-                                            "Documento Consignatario",
-                                            size="2",
-                                            weight="bold",
-                                        ),
-                                        neuro_input(
-                                            rx.input.slot(
-                                                rx.icon("credit-card", size=16)
-                                            ),
-                                            type="text",
-                                            name="documento_consignatario",
-                                            placeholder="Cédula/NIT",
-                                            value=ContratosState.form_data[
-                                                "documento_consignatario"
-                                            ],
-                                            on_change=lambda v: ContratosState.set_form_field(
-                                                "documento_consignatario", v
-                                            ),
-                                            variant="surface",
-                                            style={
-                                                "box_shadow": styles.SHADOW_INSET_ELITE
-                                            },
-                                        ),
-                                        spacing="1",
+                                    neuro_floating_input(
+                                        label="Documento Consignatario",
+                                        type="text",
+                                        name="documento_consignatario",
+                                        placeholder="Cédula/NIT",
+                                        value=ContratosState.form_data["documento_consignatario"],
+                                        on_change=lambda v: ContratosState.set_form_field("documento_consignatario", v),
                                         width="100%",
                                     ),
                                     columns=rx.breakpoints(initial="1", sm="2"),
+                                    spacing="4",
+                                    width="100%",
+                                ),
+                                width="100%",
+                                align_items="start",
+                            ),
+                            # Recepción e Inventario
+                            rx.vstack(
+                                rx.text(
+                                    "Recepción e Inventario",
+                                    size="2",
+                                    color="gray",
+                                    style={"font_style": "italic"},
+                                ),
+                                rx.grid(
+                                    rx.vstack(
+                                        rx.text(
+                                            "Enlace Video de Recibo",
+                                            size="2",
+                                            weight="bold",
+                                        ),
+                                        neuro_floating_input(
+                                        label="Enlace Video de Recibo",
+                                        type="url",
+                                        name="enlace_video",
+                                        placeholder="https://...",
+                                        value=ContratosState.form_data["enlace_video"],
+                                        on_change=lambda v: ContratosState.set_form_field("enlace_video", v),
+                                        width="100%",
+                                    ),
+                                        spacing="1",
+                                        width="100%",
+                                    ),
+                                    columns="1",
                                     spacing="4",
                                     width="100%",
                                 ),
@@ -516,6 +346,7 @@ def formulario_contrato_mandato() -> rx.Component:
                                     variant="soft",
                                     color_scheme="gray",
                                     type="button",
+                                    tooltip_content="Cancelar y cerrar",
                                     style={
                                         "box_shadow": styles.SHADOW_FLAT_ELITE,
                                         "_hover": {
@@ -541,6 +372,7 @@ def formulario_contrato_mandato() -> rx.Component:
                                 ),
                                 type="submit",
                                 disabled=ContratosState.is_loading,
+                                tooltip_content="Guardar el contrato",
                                 style={
                                     "background": "var(--brand-primary)",
                                     "color": "white",

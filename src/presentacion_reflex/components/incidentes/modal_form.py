@@ -2,7 +2,12 @@ import reflex as rx
 
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
 from src.presentacion_reflex import styles
-
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_floating_select,
+    neuro_text_area,
+    neuro_button,
+)
 
 from src.presentacion_reflex.components.shared.searchable_select import (
     searchable_select,
@@ -66,23 +71,27 @@ def modal_form() -> rx.Component:
                         ),
                         _form_field(
                             "Fecha del Incidente",
-                            rx.input(
+                            neuro_floating_input(
+                                label="Fecha",
                                 type="date",
                                 on_change=IncidentesState.set_fecha_incidente,
                                 width="100%",
-                                style=styles.NEU_INPUT_STYLE,
                                 value=IncidentesState.form_data["fecha_incidente"],
                             ),
                             icon="calendar",
                         ),
                         _form_field(
                             "Origen del Reporte",
-                            rx.select(
-                                IncidentesState.origen_reporte_options,
+                            neuro_floating_select(
+                                label="Origen",
+                                options=[
+                                    {"label": "Inquilino", "value": "Inquilino"},
+                                    {"label": "Propietario", "value": "Propietario"},
+                                    {"label": "Inmobiliaria", "value": "Inmobiliaria"},
+                                ],
                                 value=IncidentesState.form_data["origen_reporte"],
                                 on_change=IncidentesState.set_origen_reporte,
                                 width="100%",
-                                style=styles.NEU_SELECT_STYLE,
                             ),
                             icon="user",
                         ),
@@ -93,23 +102,32 @@ def modal_form() -> rx.Component:
                     rx.vstack(
                         _form_field(
                             "Prioridad",
-                            rx.select(
-                                ["Alta", "Media", "Baja"],
+                            neuro_floating_select(
+                                label="Prioridad",
+                                options=[
+                                    {"label": "Alta", "value": "Alta"},
+                                    {"label": "Media", "value": "Media"},
+                                    {"label": "Baja", "value": "Baja"},
+                                ],
                                 value=IncidentesState.form_data["prioridad"],
                                 on_change=IncidentesState.set_prioridad,
                                 width="100%",
-                                style=styles.NEU_SELECT_STYLE,
                             ),
                             icon="triangle-alert",
                         ),
                         _form_field(
                             "Responsable de Pago (Sugerido)",
-                            rx.select(
-                                IncidentesState.responsable_pago_options,
+                            neuro_floating_select(
+                                label="Responsable",
+                                options=[
+                                    {"label": "Inquilino", "value": "Inquilino"},
+                                    {"label": "Propietario", "value": "Propietario"},
+                                    {"label": "Inmobiliaria", "value": "Inmobiliaria"},
+                                    {"label": "Aseguradora", "value": "Aseguradora"},
+                                ],
                                 value=IncidentesState.form_data["responsable_pago"],
                                 on_change=IncidentesState.set_responsable_pago,
                                 width="100%",
-                                style=styles.NEU_SELECT_STYLE,
                             ),
                             icon="wallet",
                         ),
@@ -123,7 +141,7 @@ def modal_form() -> rx.Component:
                 rx.box(
                     _form_field(
                         "Descripción Detallada",
-                        rx.text_area(
+                        neuro_text_area(
                             placeholder="Describa el incidente con el mayor detalle posible...",
                             name="descripcion",
                             value=IncidentesState.form_data["descripcion"],
@@ -131,7 +149,6 @@ def modal_form() -> rx.Component:
                             width="100%",
                             height="120px",
                             resize="vertical",
-                            style=styles.NEU_INPUT_STYLE,
                         ),
                         icon="file-text",
                     ),
@@ -140,16 +157,17 @@ def modal_form() -> rx.Component:
                 ),
                 rx.flex(
                     rx.dialog.close(
-                        rx.button(
+                        neuro_button(
                             "Cancelar",
                             variant="soft",
                             color_scheme="gray",
                             on_click=IncidentesState.close_modal,
                             radius="full",
                             padding_x="1.5em",
+                            tooltip_content="Cerrar formulario",
                         )
                     ),
-                    rx.button(
+                    neuro_button(
                         rx.hstack(
                             rx.icon("send", size=16), rx.text("Reportar Incidente")
                         ),
@@ -159,6 +177,7 @@ def modal_form() -> rx.Component:
                         padding_x="1.5em",
                         color_scheme="blue",
                         variant="solid",
+                        tooltip_content="Enviar reporte de incidente",
                     ),
                     spacing="3",
                     margin_top="2em",

@@ -8,6 +8,8 @@ from typing import Callable
 import reflex as rx
 
 
+from src.presentacion_reflex.components.neuro_elements import neuro_floating_input
+
 def bulk_liquidacion_form(
     form_data: rx.Var,
     on_submit: Callable,
@@ -41,20 +43,13 @@ def bulk_liquidacion_form(
             rx.form(
                 rx.vstack(
                     # Período
-                    rx.box(
-                        rx.text(
-                            "Período (YYYY-MM)",
-                            font_weight="600",
-                            margin_bottom="0.5rem",
-                        ),
-                        rx.input(
-                            placeholder="2026-01",
-                            name="periodo",
-                            type="month",
-                            default_value=form_data["periodo"],
-                            required=True,
-                            width="100%",
-                        ),
+                    neuro_floating_input(
+                        label="Período (YYYY-MM)",
+                        value=form_data["periodo"],
+                        name="periodo",
+                        placeholder="2026-01",
+                        type="month",
+                        required=True,
                         width="100%",
                     ),
                     # Info box
@@ -68,25 +63,31 @@ def bulk_liquidacion_form(
                     # Botones
                     rx.hstack(
                         rx.dialog.close(
-                            rx.button(
-                                "Cancelar",
-                                variant="soft",
-                                color_scheme="gray",
-                                on_click=on_cancel,
+                            rx.tooltip(
+                                rx.button(
+                                    "Cancelar",
+                                    variant="soft",
+                                    color_scheme="gray",
+                                    on_click=on_cancel,
+                                ),
+                                content="Cerrar sin generar",
                             )
                         ),
-                        rx.button(
-                            rx.cond(
-                                is_loading,
-                                rx.hstack(
-                                    rx.spinner(size="1"),
-                                    rx.text("Generando..."),
-                                    spacing="2",
+                        rx.tooltip(
+                            rx.button(
+                                rx.cond(
+                                    is_loading,
+                                    rx.hstack(
+                                        rx.spinner(size="1"),
+                                        rx.text("Generando..."),
+                                        spacing="2",
+                                    ),
+                                    rx.text("Generar Liquidaciones"),
                                 ),
-                                rx.text("Generar Liquidaciones"),
+                                type="submit",
+                                disabled=is_loading,
                             ),
-                            type="submit",
-                            disabled=is_loading,
+                            content="Generar liquidaciones para todos los propietarios activos",
                         ),
                         spacing="3",
                         justify="end",

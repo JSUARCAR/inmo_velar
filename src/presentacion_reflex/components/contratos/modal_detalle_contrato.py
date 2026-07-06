@@ -11,6 +11,8 @@ from src.presentacion_reflex.components.document_manager_elite import (
     document_manager_elite,
 )
 from src.presentacion_reflex import styles
+from src.presentacion_reflex.components.shared.floating_label import floating_input, floating_select
+from src.presentacion_reflex.components.neuro_elements import neuro_button
 
 
 def detail_field(label: str, value: str) -> rx.Component:
@@ -228,6 +230,55 @@ def modal_detalle_contrato() -> rx.Component:
                                 ContratosState.contrato_detalle[
                                     "documento_consignatario"
                                 ].to(str),
+                            ),
+                            columns="2",
+                            spacing="4",
+                            width="100%",
+                        ),
+                        width="100%",
+                    ),
+                    rx.box(),
+                ),
+                # Recepción e Inventario (Mandato y Arrendamiento)
+                rx.cond(
+                    ContratosState.contrato_detalle["enlace_video"] != "",
+                    rx.vstack(
+                        section_divider("Recepción e Inventario"),
+                        rx.grid(
+                            rx.box(
+                                rx.vstack(
+                                    rx.text(
+                                        "Video de Recepción/Entrega",
+                                        size="1",
+                                        weight="bold",
+                                        color="gray.500",
+                                        text_transform="uppercase",
+                                    ),
+                                    rx.link(
+                                        "Ver Video",
+                                        href=ContratosState.contrato_detalle["enlace_video"].to(str),
+                                        is_external=True,
+                                        color="blue.500",
+                                        weight="medium",
+                                    ),
+                                    spacing="1",
+                                    align_items="start",
+                                    width="100%",
+                                ),
+                                padding="0.5em 1em",
+                                border_radius="8px",
+                                style={
+                                    "box_shadow": styles.SHADOW_INSET_ELITE,
+                                    "background": "rgba(255,255,255,0.4)",
+                                },
+                            ),
+                            rx.cond(
+                                ContratosState.contrato_detalle["tipo"] == "Arrendamiento",
+                                detail_field(
+                                    "Responsable Depósito",
+                                    ContratosState.contrato_detalle["nombre_responsable_deposito"].to(str),
+                                ),
+                                rx.box(),
                             ),
                             columns="2",
                             spacing="4",

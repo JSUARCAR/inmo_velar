@@ -6,7 +6,7 @@ import reflex as rx
 from src.presentacion_reflex.state.contratos_state import ContratosState
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_button,
-    neuro_input,
+    neuro_floating_input,
     neuro_badge,
 )
 import src.presentacion_reflex.styles as styles
@@ -119,8 +119,8 @@ def modal_renovacion_contrato() -> rx.Component:
                             rx.text(
                                 "Nueva Fecha de Vencimiento", size="2", weight="bold"
                             ),
-                            neuro_input(
-                                rx.input.slot(rx.icon("calendar")),
+                            neuro_floating_input(
+                                label="Nueva Fecha de Vencimiento",
                                 type="date",
                                 value=ContratosState.renewal_nueva_fecha_fin,
                                 on_change=ContratosState.set_renewal_fecha_fin,
@@ -150,6 +150,7 @@ def modal_renovacion_contrato() -> rx.Component:
                         variant="soft",
                         color_scheme="gray",
                         on_click=ContratosState.cancel_renewal,
+                        tooltip_content="Cancelar renovación",
                     )
                 ),
                 rx.cond(
@@ -167,6 +168,7 @@ def modal_renovacion_contrato() -> rx.Component:
                         on_click=ContratosState.execute_renewal,
                         disabled=ContratosState.is_loading
                         | ContratosState.renewal_loading_proyeccion,
+                        tooltip_content="Confirmar renovación del contrato",
                     ),
                 ),
                 spacing="3",

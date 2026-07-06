@@ -165,18 +165,24 @@ def modal_seleccion_incidentes() -> rx.Component:
             ),
             rx.flex(
                 rx.dialog.close(
-                    rx.button(
-                        "Cancelar",
-                        variant="soft",
-                        color_scheme="gray",
-                        on_click=LiquidacionesState.close_seleccion_incidentes_modal,
+                    rx.tooltip(
+                        rx.button(
+                            "Cancelar",
+                            variant="soft",
+                            color_scheme="gray",
+                            on_click=LiquidacionesState.close_seleccion_incidentes_modal,
+                        ),
+                        content="Cerrar sin asociar incidentes",
                     )
                 ),
-                rx.button(
-                    "Asociar Seleccionados",
-                    on_click=LiquidacionesState.asociar_incidentes_seleccionados,
-                    color_scheme="green",
-                    disabled=LiquidacionesState.seleccion_incidentes_loading,
+                rx.tooltip(
+                    rx.button(
+                        "Asociar Seleccionados",
+                        on_click=LiquidacionesState.asociar_incidentes_seleccionados,
+                        color_scheme="green",
+                        disabled=LiquidacionesState.seleccion_incidentes_loading,
+                    ),
+                    content="Asociar los incidentes seleccionados a la liquidación",
                 ),
                 justify="end",
                 gap="3",

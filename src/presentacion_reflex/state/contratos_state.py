@@ -109,6 +109,10 @@ class ContratosState(DocumentosStateMixin):
     codeudor_menu_open: bool = False
     codeudor_selected_label: str = ""
 
+    responsable_deposito_search: str = ""
+    responsable_deposito_menu_open: bool = False
+    responsable_deposito_selected_label: str = ""
+
     # Mapas de datos adicionales
     propiedades_canon_map: Dict[str, float] = {}
 
@@ -199,6 +203,13 @@ class ContratosState(DocumentosStateMixin):
             return self.codeudores_select_options
         return [opt for opt in self.codeudores_select_options if s in opt[0].lower()]
 
+    @rx.var
+    def filtered_responsables_deposito_options(self) -> List[List[str]]:
+        s = self.responsable_deposito_search.lower()
+        if not s:
+            return self.asesores_select_options
+        return [opt for opt in self.asesores_select_options if s in opt[0].lower()]
+
     # --- Searchable Select Handlers ---
     def set_propiedad_search(self, value: str):
         self.propiedad_search = value
@@ -259,12 +270,35 @@ class ContratosState(DocumentosStateMixin):
         self.form_data["id_codeudor"] = value
         self.codeudor_menu_open = False
 
+    def set_responsable_deposito_search(self, value: str):
+        self.responsable_deposito_search = value
+
+    def toggle_responsable_deposito_menu(self, open: bool):
+        self.responsable_deposito_menu_open = open
+
+    def select_responsable_deposito(self, value: str, label: str):
+        self.responsable_deposito_selected_label = label
+        self.form_data["responsable_deposito_id"] = value
+        self.responsable_deposito_menu_open = False
+
     def set_form_field(self, name: str, value: Any):
         self.form_data[name] = value
 
     @rx.var
     def asesores_filter_options(self) -> List[List[str]]:
         return [["Todos los Asesores", "todos"]] + self.asesores_select_options
+
+    @rx.var
+    def asesores_filter_options_dicts(self) -> List[Dict[str, str]]:
+        return [{"label": opt[0], "value": opt[1]} for opt in (self.asesores_filter_options or [])]
+
+    @rx.var
+    def tipo_options_dicts(self) -> List[Dict[str, str]]:
+        return [{"label": opt, "value": opt} for opt in (self.tipo_options or [])]
+
+    @rx.var
+    def estado_options_dicts(self) -> List[Dict[str, str]]:
+        return [{"label": opt, "value": opt} for opt in (self.estado_options or [])]
 
     def set_search(self, value: str):
         self.search_text = value
@@ -593,6 +627,7 @@ class ContratosState(DocumentosStateMixin):
             "tipo_cuenta": "Ahorros",
             "consignatario": "",
             "documento_consignatario": "",
+            "enlace_video": "",
         }
         self.propiedad_selected_label = ""
         self.propietario_selected_label = ""
@@ -606,13 +641,15 @@ class ContratosState(DocumentosStateMixin):
         self.modal_mode = "crear_arrendamiento"
         self.editing_id = None
         self.limpiar_contexto_documental()
-        self.form_data = {"id_propiedad": "", "id_arrendatario": "", "id_codeudor": ""}
+        self.form_data = {"id_propiedad": "", "id_arrendatario": "", "id_codeudor": "", "enlace_video": "", "responsable_deposito_id": ""}
         self.propiedad_selected_label = ""
         self.arrendatario_selected_label = ""
         self.codeudor_selected_label = ""
+        self.responsable_deposito_selected_label = ""
         self.propiedad_search = ""
         self.arrendatario_search = ""
         self.codeudor_search = ""
+        self.responsable_deposito_search = ""
         self.modal_open = True
 
     @rx.event(background=True)
@@ -653,6 +690,7 @@ class ContratosState(DocumentosStateMixin):
                             "tipo_cuenta": c.tipo_cuenta or "Ahorros",
                             "consignatario": c.consignatario or "",
                             "documento_consignatario": c.documento_consignatario or "",
+                            "enlace_video": c.enlace_video or "",
                         }
                         # Rehidratación de etiquetas
                         self.propiedad_selected_label = self._get_label_by_id(
@@ -685,6 +723,8 @@ class ContratosState(DocumentosStateMixin):
                             "canon": str(c.canon_arrendamiento),
                             "deposito": str(c.deposito),
                             "fecha_pago": c.fecha_pago or "",
+                            "enlace_video": c.enlace_video or "",
+                            "responsable_deposito_id": str(c.responsable_deposito_id) if c.responsable_deposito_id else "",
                         }
                         # Rehidratación de etiquetas
                         self.propiedad_selected_label = self._get_label_by_id(
@@ -696,10 +736,14 @@ class ContratosState(DocumentosStateMixin):
                         self.codeudor_selected_label = self._get_label_by_id(
                             self.codeudores_select_options, c.id_codeudor
                         )
+                        self.responsable_deposito_selected_label = self._get_label_by_id(
+                            self.asesores_select_options, c.responsable_deposito_id
+                        )
 
                         self.propiedad_search = ""
                         self.arrendatario_search = ""
                         self.codeudor_search = ""
+                        self.responsable_deposito_search = ""
                         self.modal_open = True
         except Exception as e:
             async with self:
@@ -770,6 +814,7 @@ class ContratosState(DocumentosStateMixin):
                     "documento_consignatario": full_data.get(
                         "documento_consignatario", ""
                     ),
+                    "enlace_video": full_data.get("enlace_video", ""),
                 }
                 if self.modal_mode == "crear_mandato":
                     servicio.crear_mandato(datos, usuario)
@@ -789,6 +834,12 @@ class ContratosState(DocumentosStateMixin):
                     "canon": int(full_data.get("canon") or 0),
                     "deposito": int(full_data.get("deposito") or 0),
                     "duracion_meses": int(full_data.get("duracion_meses") or 12),
+                    "enlace_video": full_data.get("enlace_video", ""),
+                    "responsable_deposito_id": (
+                        int(full_data["responsable_deposito_id"])
+                        if full_data.get("responsable_deposito_id")
+                        else None
+                    ),
                 }
                 if self.modal_mode == "crear_arrendamiento":
                     servicio.crear_arrendamiento(datos, usuario)

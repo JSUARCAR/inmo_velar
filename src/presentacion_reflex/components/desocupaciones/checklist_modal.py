@@ -9,6 +9,10 @@ from src.presentacion_reflex.components.document_manager_elite import (
     document_manager_elite,
 )
 from src.presentacion_reflex.state.desocupaciones_state import DesocupacionesState
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_icon_action_button,
+    neuro_button,
+)
 
 
 def _header_section() -> rx.Component:
@@ -121,15 +125,14 @@ def _checklist_item(item: dict) -> rx.Component:
                     color="var(--green-9)",
                     cursor="default",
                 ),
-                rx.icon_button(
-                    rx.icon("circle", size=24),
-                    variant="ghost",
+                neuro_icon_action_button(
+                    "circle",
                     color_scheme="gray",
                     size="2",
+                    tooltip_content="Marcar tarea como completada",
                     on_click=lambda: DesocupacionesState.toggle_tarea(
                         item["id_tarea"], True
                     ),
-                    cursor="pointer",
                 ),
             ),
             display="flex",
@@ -229,11 +232,12 @@ def _footer_section() -> rx.Component:
         ),
         rx.spacer(),
         rx.dialog.close(
-            rx.button(
+            neuro_button(
                 "Cerrar",
                 variant="soft",
                 color_scheme="gray",
                 on_click=DesocupacionesState.close_checklist_modal,
+                tooltip_content="Cerrar checklist",
             )
         ),
         justify="between",

@@ -14,8 +14,8 @@ from src.presentacion_reflex.components.propiedades.property_card import (
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
-    neuro_select_root,
+    neuro_floating_input,
+    neuro_floating_select,
     neuro_button,
     neuro_switch,
     neuro_spinner,
@@ -242,8 +242,8 @@ def propiedades_page() -> rx.Component:
                     rx.box(
                         rx.flex(
                             # Search Bar with enhanced styling
-                            neuro_input(
-                                rx.input.slot(rx.icon("search", size=18)),
+                            neuro_floating_input(
+                                label="Buscar por matrícula, dirección...",
                                 placeholder="Buscar por matrícula, dirección...",
                                 value=PropiedadesState.search_text,
                                 on_change=PropiedadesState.set_search,
@@ -255,8 +255,9 @@ def propiedades_page() -> rx.Component:
                             rx.spacer(),
                             # Filters Row
                             rx.flex(
-                                neuro_select_root(
-                                    rx.foreach(
+                                neuro_floating_select(
+                                    label="Tipo",
+                                    options=rx.foreach(
                                         PropiedadesState.tipos_options,
                                         lambda opt: rx.select.item(opt, value=opt),
                                     ),
@@ -267,8 +268,9 @@ def propiedades_page() -> rx.Component:
                                         initial="100%", sm="160px"
                                     ),  # Aumentado
                                 ),
-                                neuro_select_root(
-                                    [
+                                neuro_floating_select(
+                                    label="Disponibilidad",
+                                    options=[
                                         rx.select.item("Todos", value="Todos"),
                                         rx.select.item("Disponible", value="1"),
                                         rx.select.item("Ocupada", value="0"),

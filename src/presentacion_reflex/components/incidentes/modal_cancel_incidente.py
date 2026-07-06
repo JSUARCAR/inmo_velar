@@ -1,7 +1,7 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
-from src.presentacion_reflex.components.neuro_elements import neuro_button
+from src.presentacion_reflex.components.neuro_elements import neuro_button, neuro_text_area
 from src.presentacion_reflex import styles
 
 
@@ -45,18 +45,12 @@ def modal_cancel_incidente() -> rx.Component:
                             width="100%",
                             margin_bottom="1em",
                         ),
-                        rx.text(
-                            "Motivo de cancelacion (obligatorio)",
-                            weight="bold",
-                            size="2",
-                            margin_bottom="0.5em",
-                        ),
-                        rx.text_area(
+                        neuro_text_area(
+                            label="Motivo de cancelacion (obligatorio)",
                             placeholder="Ingrese el motivo por el cual desea cancelar el incidente...",
                             on_change=IncidentesState.set_cancel_motivo,
                             value=IncidentesState.cancel_motivo,
                             width="100%",
-                            style=styles.NEU_INPUT_STYLE,
                             min_height="100px",
                         ),
                         rx.cond(
@@ -78,6 +72,7 @@ def modal_cancel_incidente() -> rx.Component:
                             on_click=IncidentesState.close_cancel_modal,
                             variant="soft",
                             color_scheme="gray",
+                            tooltip_content="Cerrar sin cancelar",
                         ),
                         rx.spacer(),
                         neuro_button(
@@ -85,6 +80,7 @@ def modal_cancel_incidente() -> rx.Component:
                             on_click=IncidentesState.confirmar_cancelacion,
                             loading=IncidentesState.is_loading,
                             color_scheme="red",
+                            tooltip_content="Confirmar cancelación del incidente",
                         ),
                         width="100%",
                         margin_top="1em",

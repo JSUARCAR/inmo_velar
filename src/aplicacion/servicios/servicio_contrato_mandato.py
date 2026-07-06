@@ -107,6 +107,7 @@ class ServicioContratoMandato:
             tipo_cuenta=datos.get("tipo_cuenta"),
             consignatario=datos.get("consignatario"),
             documento_consignatario=datos.get("documento_consignatario"),
+            enlace_video=datos.get("enlace_video"),
         )
 
         return self.repo_mandato.crear(contrato, usuario_sistema)
@@ -187,9 +188,13 @@ class ServicioContratoMandato:
         if "tipo_cuenta" in datos:
             mandato.tipo_cuenta = datos["tipo_cuenta"]
         if "consignatario" in datos:
-            mandato.consignatario = datos["consignatario"]
-        if "documento_consignatario" in datos:
-            mandato.documento_consignatario = datos["documento_consignatario"]
+            mandato.consignatario = datos.get("consignatario", mandato.consignatario)
+        mandato.documento_consignatario = datos.get(
+            "documento_consignatario", mandato.documento_consignatario
+        )
+        
+        if "enlace_video" in datos:
+            mandato.enlace_video = datos["enlace_video"]
 
         mandato.updated_by = usuario_sistema
         mandato.updated_at = datetime.now().isoformat()

@@ -1,6 +1,10 @@
 import reflex as rx
 
 from src.presentacion_reflex.state.recibos_state import RecibosState
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_button,
+)
 
 
 def payment_modal() -> rx.Component:
@@ -9,29 +13,21 @@ def payment_modal() -> rx.Component:
             rx.dialog.title("Registrar Pago"),
             rx.dialog.description("Ingrese los detalles del pago realizado."),
             rx.flex(
-                rx.vstack(
-                    rx.text("Fecha de Pago", weight="bold"),
-                    rx.input(
-                        type="date",
-                        value=RecibosState.payment_data["fecha_pago"],
-                        on_change=lambda val: RecibosState.set_payment_field(
-                            "fecha_pago", val
-                        ),
-                        width="100%",
+                neuro_floating_input(
+                    label="Fecha de Pago",
+                    value=RecibosState.payment_data["fecha_pago"],
+                    on_change=lambda val: RecibosState.set_payment_field(
+                        "fecha_pago", val
                     ),
-                    width="100%",
+                    type="date",
                 ),
-                rx.vstack(
-                    rx.text("Comprobante / Referencia", weight="bold"),
-                    rx.input(
-                        placeholder="Ej: TRX-123456",
-                        value=RecibosState.payment_data["comprobante"],
-                        on_change=lambda val: RecibosState.set_payment_field(
-                            "comprobante", val
-                        ),
-                        width="100%",
+                neuro_floating_input(
+                    label="Comprobante / Referencia",
+                    value=RecibosState.payment_data["comprobante"],
+                    on_change=lambda val: RecibosState.set_payment_field(
+                        "comprobante", val
                     ),
-                    width="100%",
+                    placeholder="Ej: TRX-123456",
                 ),
                 rx.cond(
                     RecibosState.error_message != "",
@@ -49,13 +45,19 @@ def payment_modal() -> rx.Component:
             ),
             rx.flex(
                 rx.dialog.close(
-                    rx.button("Cancelar", variant="soft", color_scheme="gray"),
+                    neuro_button(
+                        "Cancelar",
+                        variant="soft",
+                        color_scheme="gray",
+                        tooltip_content="Cancelar registro de pago",
+                    ),
                 ),
-                rx.button(
+                neuro_button(
                     "Confirmar Pago",
                     on_click=RecibosState.register_payment,
                     loading=RecibosState.is_loading,
                     color_scheme="green",
+                    tooltip_content="Confirmar y registrar el pago",
                 ),
                 spacing="3",
                 justify="end",

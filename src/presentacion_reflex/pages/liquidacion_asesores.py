@@ -16,9 +16,9 @@ from src.presentacion_reflex.state.liquidacion_asesores.form_state import (
 )
 from src.presentacion_reflex.state.pdf_state import PDFState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
+    neuro_floating_input,
+    neuro_floating_select,
     neuro_button,
-    neuro_select_root,
 )
 from src.presentacion_reflex.components.tablas import header_cell_sortable
 from src.presentacion_reflex import styles
@@ -120,16 +120,17 @@ def liquidacion_asesores_content() -> rx.Component:
         # Toolbar
         rx.card(
             rx.flex(
-                neuro_input(
-                    rx.input.slot(rx.icon("search", size=18)),
+                neuro_floating_input(
+                    label="Buscar asesor o contrato...",
                     placeholder="Buscar asesor o contrato...",
                     value=LiquidacionFiltrosState.search_text,
                     on_change=LiquidacionFiltrosState.set_search,
                     width=rx.breakpoints(initial="100%", md="350px"),
                     size="3",
                 ),
-                neuro_select_root(
-                    rx.foreach(
+                neuro_floating_select(
+                    label="Período",
+                    options=rx.foreach(
                         LiquidacionFiltrosState.periodo_options,
                         lambda opt: rx.select.item(opt, value=opt),
                     ),

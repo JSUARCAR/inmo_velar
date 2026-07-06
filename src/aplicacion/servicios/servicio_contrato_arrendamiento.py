@@ -116,9 +116,11 @@ class ServicioContratoArrendamiento:
             deposito=datos.get("deposito", 0),
             fecha_pago=fecha_pago_str,
             grupo_operativo=grupo,
+            enlace_video=datos.get("enlace_video"),
             estado_contrato_a=EstadoContrato.ACTIVO,
             alerta_vencimiento_contrato_a=True,
             alerta_ipc=True,
+            responsable_deposito_id=datos.get("responsable_deposito_id") and int(datos.get("responsable_deposito_id")),
         )
 
         contrato_creado = self.repo_arriendo.crear(contrato, usuario_sistema)
@@ -222,7 +224,15 @@ class ServicioContratoArrendamiento:
         if "canon" in datos:
             arriendo.canon_arrendamiento = int(datos["canon"])
 
-        arriendo.deposito = int(datos.get("deposito", arriendo.deposito))
+        arriendo.deposito = datos.get("deposito", arriendo.deposito)
+        
+        if "enlace_video" in datos:
+            arriendo.enlace_video = datos["enlace_video"]
+            
+        if "responsable_deposito_id" in datos:
+            arriendo.responsable_deposito_id = (
+                int(datos["responsable_deposito_id"]) if datos["responsable_deposito_id"] else None
+            )
 
         # Solo actualizar fecha_pago si no fue recalculada por un cambio en fecha_inicio
         if "fecha_inicio" not in datos:

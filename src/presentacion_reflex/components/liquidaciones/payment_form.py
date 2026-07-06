@@ -7,6 +7,11 @@ import reflex as rx
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 
 
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_floating_select,
+)
+
 def form_field(
     label: str,
     name: str,
@@ -16,17 +21,16 @@ def form_field(
     required: bool = False,
 ) -> rx.Component:
     """Campo de formulario reutilizable."""
-    return rx.vstack(
-        rx.text(label, size="2", weight="medium", color="gray.700"),
-        rx.input(
+    return rx.box(
+        neuro_floating_input(
+            label=label,
+            value=value,
             name=name,
-            default_value=value,
             placeholder=placeholder,
             type=type,
             required=required,
             width="100%",
         ),
-        spacing="1",
         width="100%",
     )
 
@@ -56,26 +60,20 @@ def payment_form() -> rx.Component:
                         required=True,
                     ),
                     # Método de Pago
-                    rx.vstack(
-                        rx.text(
-                            "Método de Pago",
-                            size="2",
-                            weight="medium",
-                            color="gray.700",
-                        ),
-                        rx.select(
-                            [
-                                "Transferencia Electrónica",
-                                "Consignación",
-                                "Cheque",
-                                "Efectivo",
-                                "Otro",
-                            ],
+                    rx.box(
+                        neuro_floating_select(
+                            label="Método de Pago",
+                            value="Transferencia Electrónica",
                             name="metodo_pago",
-                            default_value="Transferencia Electrónica",
+                            options=[
+                                {"label": "Transferencia Electrónica", "value": "Transferencia Electrónica"},
+                                {"label": "Consignación", "value": "Consignación"},
+                                {"label": "Cheque", "value": "Cheque"},
+                                {"label": "Efectivo", "value": "Efectivo"},
+                                {"label": "Otro", "value": "Otro"},
+                            ],
                             width="100%",
                         ),
-                        spacing="1",
                         width="100%",
                     ),
                     # Referencia
@@ -94,18 +92,24 @@ def payment_form() -> rx.Component:
                     # Botones
                     rx.hstack(
                         rx.dialog.close(
-                            rx.button(
-                                "Cancelar",
-                                variant="soft",
-                                color_scheme="gray",
-                                type="button",
+                            rx.tooltip(
+                                rx.button(
+                                    "Cancelar",
+                                    variant="soft",
+                                    color_scheme="gray",
+                                    type="button",
+                                ),
+                                content="Cerrar sin registrar pago",
                             ),
                         ),
                         rx.spacer(),
-                        rx.button(
-                            rx.hstack(rx.icon("dollar-sign"), "Confirmar Pago"),
-                            type="submit",
-                            color_scheme="green",
+                        rx.tooltip(
+                            rx.button(
+                                rx.hstack(rx.icon("dollar-sign"), "Confirmar Pago"),
+                                type="submit",
+                                color_scheme="green",
+                            ),
+                            content="Registrar el pago y cambiar estado a Pagada",
                         ),
                         width="100%",
                     ),

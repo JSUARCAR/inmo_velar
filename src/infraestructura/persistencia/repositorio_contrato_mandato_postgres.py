@@ -17,46 +17,47 @@ class RepositorioContratoMandatoPostgres:
     def crear(self, contrato: ContratoMandato, usuario: str) -> ContratoMandato:
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
-        placeholder = self.db.get_placeholder()
-
-        cursor.execute(
-            f"""
-        INSERT INTO CONTRATOS_MANDATOS (
-            ID_PROPIEDAD, ID_PROPIETARIO, ID_ASESOR,
-            FECHA_INICIO_CONTRATO_M, FECHA_FIN_CONTRATO_M, DURACION_CONTRATO_M,
-            CANON_MANDATO, COMISION_PORCENTAJE_CONTRATO_M, IVA_CONTRATO_M,
-            ESTADO_CONTRATO_M, ALERTA_VENCIMIENTO_CONTRATO_M, FECHA_RENOVACION_CONTRATO_M,
-            FECHA_PAGO, GRUPO_OPERATIVO,
-            BANCO_PROPIETARIO, NUMERO_CUENTA_PROPIETARIO, TIPO_CUENTA,
-            CONSIGNATARIO, DOCUMENTO_CONSIGNATARIO,
-            CREATED_BY, UPDATED_BY
-        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-        RETURNING ID_CONTRATO_M
-        """,
-            (
-                contrato.id_propiedad,
-                contrato.id_propietario,
-                contrato.id_asesor,
-                contrato.fecha_inicio_contrato_m,
-                contrato.fecha_fin_contrato_m,
-                contrato.duracion_contrato_m,
-                contrato.canon_mandato,
-                contrato.comision_porcentaje_contrato_m,
-                contrato.iva_contrato_m,
-                contrato.estado_contrato_m,
-                contrato.alerta_vencimiento_contrato_m,
-                contrato.fecha_renovacion_contrato_m,
-                contrato.fecha_pago,
-                contrato.grupo_operativo,
-                contrato.banco_propietario,
-                contrato.numero_cuenta_propietario,
-                contrato.tipo_cuenta,
-                contrato.consignatario,
-                contrato.documento_consignatario,
-                usuario,
-                usuario,
-            ),
+        query = """
+            INSERT INTO CONTRATOS_MANDATOS (
+                ID_PROPIEDAD, ID_PROPIETARIO, ID_ASESOR,
+                FECHA_INICIO_CONTRATO_M, FECHA_FIN_CONTRATO_M,
+                DURACION_CONTRATO_M, CANON_MANDATO,
+                COMISION_PORCENTAJE_CONTRATO_M, IVA_CONTRATO_M,
+                ESTADO_CONTRATO_M, ALERTA_VENCIMIENTO_CONTRATO_M,
+                FECHA_RENOVACION_CONTRATO_M, FECHA_PAGO, GRUPO_OPERATIVO,
+                BANCO_PROPIETARIO, NUMERO_CUENTA_PROPIETARIO, TIPO_CUENTA,
+                CONSIGNATARIO, DOCUMENTO_CONSIGNATARIO,
+                ENLACE_VIDEO,
+                CREATED_BY, UPDATED_BY
+            ) VALUES (
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+            ) RETURNING ID_CONTRATO_M
+        """
+        valores = (
+            contrato.id_propiedad,
+            contrato.id_propietario,
+            contrato.id_asesor,
+            contrato.fecha_inicio_contrato_m,
+            contrato.fecha_fin_contrato_m,
+            contrato.duracion_contrato_m,
+            contrato.canon_mandato,
+            contrato.comision_porcentaje_contrato_m,
+            contrato.iva_contrato_m,
+            contrato.estado_contrato_m,
+            contrato.alerta_vencimiento_contrato_m,
+            contrato.fecha_renovacion_contrato_m,
+            contrato.fecha_pago,
+            contrato.grupo_operativo,
+            contrato.banco_propietario,
+            contrato.numero_cuenta_propietario,
+            contrato.tipo_cuenta,
+            contrato.consignatario,
+            contrato.documento_consignatario,
+            contrato.enlace_video,
+            usuario,
+            usuario,
         )
+        cursor.execute(query, valores)
 
         row = cursor.fetchone()
 
@@ -378,9 +379,6 @@ class RepositorioContratoMandatoPostgres:
             motivo_cancelacion=(
                 row_dict.get("motivo_cancelacion") or row_dict.get("MOTIVO_CANCELACION")
             ),
-            # Typo in DB column name potentially? ALERTA_VENCIMINETO vs ALERTA_VENCIMIENTO
-            # The original code had ALERTA_VENCIMINETO_CONTRATO_M in SQL insert/update and map.
-            # We preserve it.
             alerta_vencimiento_contrato_m=(
                 row_dict.get("alerta_vencimiento_contrato_m")
                 or row_dict.get("ALERTA_VENCIMIENTO_CONTRATO_M")
@@ -401,14 +399,10 @@ class RepositorioContratoMandatoPostgres:
                 or row_dict.get("NUMERO_CUENTA_PROPIETARIO")
             ),
             tipo_cuenta=(row_dict.get("tipo_cuenta") or row_dict.get("TIPO_CUENTA")),
-            consignatario=(
-                row_dict.get("consignatario") or row_dict.get("CONSIGNATARIO")
-            ),
-            documento_consignatario=(
-                row_dict.get("documento_consignatario")
-                or row_dict.get("DOCUMENTO_CONSIGNATARIO")
-            ),
-            created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
+            consignatario=row_dict.get("consignatario"),
+            documento_consignatario=row_dict.get("documento_consignatario"),
+            enlace_video=row_dict.get("enlace_video"),
+            created_at=str(row_dict.get("created_at", "")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),
             updated_by=(row_dict.get("updated_by") or row_dict.get("UPDATED_BY")),

@@ -7,6 +7,7 @@ import reflex as rx
 from typing import List, Dict
 
 from src.presentacion_reflex import styles
+from src.presentacion_reflex.components.neuro_elements import neuro_icon_action_button
 from src.presentacion_reflex.state.propiedad_horizontal_models import (
     AsistenciaCalendarioModel,
 )
@@ -54,15 +55,12 @@ def neuro_calendario_header(
 ) -> rx.Component:
     """Header de navegación del calendario."""
     return rx.hstack(
-        rx.icon_button(
-            rx.icon(tag="chevron-left"),
-            variant="ghost",
+        neuro_icon_action_button(
+            "chevron-left",
+            color_scheme="gray",
+            size="2",
+            tooltip_content="Mes anterior",
             on_click=on_mes_anterior,
-            style={
-                "background": styles.BG_PANEL,
-                "box_shadow": styles.SHADOW_FLAT_ELITE,
-                "border_radius": "10px",
-            },
         ),
         rx.heading(
             f"{_obtener_nombre_mes(mes)} {año}",
@@ -70,15 +68,12 @@ def neuro_calendario_header(
             font_weight="600",
             color=styles.TEXT_PRIMARY,
         ),
-        rx.icon_button(
-            rx.icon(tag="chevron-right"),
-            variant="ghost",
+        neuro_icon_action_button(
+            "chevron-right",
+            color_scheme="gray",
+            size="2",
+            tooltip_content="Mes siguiente",
             on_click=on_mes_siguiente,
-            style={
-                "background": styles.BG_PANEL,
-                "box_shadow": styles.SHADOW_FLAT_ELITE,
-                "border_radius": "10px",
-            },
         ),
         justify="between",
         width="100%",

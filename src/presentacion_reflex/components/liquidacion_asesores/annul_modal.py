@@ -3,6 +3,10 @@ import reflex as rx
 from src.presentacion_reflex.state.liquidacion_asesores.form_state import (
     LiquidacionFormState,
 )
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_text_area,
+    neuro_button,
+)
 
 
 def annul_modal() -> rx.Component:
@@ -14,7 +18,7 @@ def annul_modal() -> rx.Component:
             ),
             rx.flex(
                 rx.text("Motivo de anulación:", size="2", mb="1", weight="bold"),
-                rx.text_area(
+                neuro_text_area(
                     placeholder="Ingrese el motivo de la anulación...",
                     value=LiquidacionFormState.annul_reason,
                     on_change=LiquidacionFormState.set_annul_reason,
@@ -24,20 +28,21 @@ def annul_modal() -> rx.Component:
             ),
             rx.flex(
                 rx.dialog.close(
-                    rx.button(
+                    neuro_button(
                         "Cancelar",
                         color_scheme="gray",
-                        variant="soft",
                         on_click=LiquidacionFormState.close_modal,
+                        tooltip_content="Cerrar sin anular",
                     ),
                 ),
-                rx.button(
+                neuro_button(
                     "Anular Liquidación",
                     color_scheme="red",
                     on_click=lambda: LiquidacionFormState.anular_liquidacion(
                         LiquidacionFormState.selected_liquidacion_id,
                         LiquidacionFormState.annul_reason,
                     ),
+                    tooltip_content="Confirmar anulación de la liquidación",
                 ),
                 spacing="3",
                 mt="4",

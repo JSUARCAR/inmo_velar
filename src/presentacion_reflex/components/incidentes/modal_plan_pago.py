@@ -6,6 +6,7 @@ Date: 2026-06-30
 
 import reflex as rx
 from src.presentacion_reflex.state.incidentes_state import IncidentesState
+from src.presentacion_reflex.components.neuro_elements import neuro_floating_input, neuro_button
 
 
 def _plan_details_view() -> rx.Component:
@@ -131,11 +132,12 @@ def _plan_details_view() -> rx.Component:
         # Botón cerrar
         rx.flex(
             rx.dialog.close(
-                rx.button(
+                neuro_button(
                     "Cerrar",
                     variant="soft",
                     color_scheme="gray",
                     on_click=IncidentesState.close_plan_pago_modal,
+                    tooltip_content="Cerrar plan de pago",
                 )
             ),
             justify="end",
@@ -174,8 +176,8 @@ def _plan_creation_form() -> rx.Component:
         # Formulario
         rx.form(
             rx.flex(
-                rx.text("Número de Cuotas:", weight="medium"),
-                rx.input(
+                neuro_floating_input(
+                    label="Número de Cuotas",
                     name="num_cuotas",
                     type="number",
                     min_=1,
@@ -185,8 +187,8 @@ def _plan_creation_form() -> rx.Component:
                     required=True,
                     width="100%",
                 ),
-                rx.text("Valor por Cuota:", weight="medium"),
-                rx.input(
+                neuro_floating_input(
+                    label="Valor por Cuota",
                     name="valor_cuota",
                     type="number",
                     min_=1,
@@ -234,18 +236,20 @@ def _plan_creation_form() -> rx.Component:
             # Botones de acción DENTRO del form
             rx.flex(
                 rx.dialog.close(
-                    rx.button(
+                    neuro_button(
                         "Cancelar",
                         variant="soft",
                         color_scheme="gray",
                         on_click=IncidentesState.close_plan_pago_modal,
+                        tooltip_content="Cancelar creación de plan",
                     )
                 ),
-                rx.button(
+                neuro_button(
                     "Crear Plan",
                     type="submit",
                     color_scheme="green",
                     disabled=IncidentesState.plan_pago_loading,
+                    tooltip_content="Crear plan de pago",
                 ),
                 justify="end",
                 gap="3",

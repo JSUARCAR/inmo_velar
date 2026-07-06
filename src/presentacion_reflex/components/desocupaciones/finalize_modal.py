@@ -6,6 +6,7 @@ Diseño élite para confirmar acciones críticas.
 import reflex as rx
 
 from src.presentacion_reflex.state.desocupaciones_state import DesocupacionesState
+from src.presentacion_reflex.components.neuro_elements import neuro_button
 
 
 def finalize_confirm_modal() -> rx.Component:
@@ -113,15 +114,16 @@ def finalize_confirm_modal() -> rx.Component:
             ),
             rx.flex(
                 rx.alert_dialog.cancel(
-                    rx.button(
+                    neuro_button(
                         "Cancelar",
                         variant="soft",
                         color_scheme="gray",
                         on_click=DesocupacionesState.close_finalize_modal,
+                        tooltip_content="Volver sin finalizar",
                     )
                 ),
                 rx.alert_dialog.action(
-                    rx.button(
+                    neuro_button(
                         "Confirmar y Finalizar",
                         color_scheme=rx.cond(
                             ~DesocupacionesState.finalize_info["puede_finalizar"],
@@ -129,6 +131,7 @@ def finalize_confirm_modal() -> rx.Component:
                             "green",
                         ),
                         on_click=DesocupacionesState.confirm_finalize_process,
+                        tooltip_content="Finalizar proceso de desocupación",
                     )
                 ),
                 gap="3",

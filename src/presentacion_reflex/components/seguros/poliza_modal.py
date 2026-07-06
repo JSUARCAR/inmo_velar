@@ -5,6 +5,10 @@ Modal Form para Crear Pólizas de Seguro
 import reflex as rx
 
 from src.presentacion_reflex.state.seguros_state import SegurosState
+from src.presentacion_reflex.components.neuro_elements import (
+    neuro_floating_input,
+    neuro_button,
+)
 
 
 def modal_poliza() -> rx.Component:
@@ -32,85 +36,54 @@ def modal_poliza() -> rx.Component:
                         ),
                     ),
                     # Número de Póliza *
-                    rx.vstack(
-                        rx.text("Número de Póliza *", size="2", weight="bold"),
-                        rx.input(
-                            name="numero_poliza",
-                            placeholder="Ej: POL-2024-001",
-                            required=True,
-                            default_value=SegurosState.poliza_form_data[
-                                "numero_poliza"
-                            ],
-                            width="100%",
-                        ),
-                        spacing="1",
-                        width="100%",
+                    neuro_floating_input(
+                        label="Número de Póliza *",
+                        value=SegurosState.poliza_form_data["numero_poliza"],
+                        name="numero_poliza",
+                        required=True,
+                        placeholder="Ej: POL-2024-001",
                     ),
                     # Contrato ID *
-                    rx.vstack(
-                        rx.text(
-                            "ID Contrato de Arrendamiento *", size="2", weight="bold"
-                        ),
-                        rx.input(
-                            name="id_contrato",
-                            type="number",
-                            placeholder="Ej: 1",
-                            required=True,
-                            width="100%",
-                        ),
-                        rx.text(
-                            "Ingrese el ID del contrato de arrendamiento",
-                            size="1",
-                            color="gray",
-                        ),
-                        spacing="1",
-                        width="100%",
+                    neuro_floating_input(
+                        label="ID Contrato de Arrendamiento *",
+                        value="",
+                        name="id_contrato",
+                        type="number",
+                        required=True,
+                        placeholder="Ej: 1",
+                    ),
+                    rx.text(
+                        "Ingrese el ID del contrato de arrendamiento",
+                        size="1",
+                        color="gray",
                     ),
                     # Seguro ID *
-                    rx.vstack(
-                        rx.text("ID Seguro *", size="2", weight="bold"),
-                        rx.input(
-                            name="id_seguro",
-                            type="number",
-                            placeholder="Ej: 1",
-                            required=True,
-                            width="100%",
-                        ),
-                        rx.text(
-                            "Ingrese el ID del seguro a asignar", size="1", color="gray"
-                        ),
-                        spacing="1",
-                        width="100%",
+                    neuro_floating_input(
+                        label="ID Seguro *",
+                        value="",
+                        name="id_seguro",
+                        type="number",
+                        required=True,
+                        placeholder="Ej: 1",
+                    ),
+                    rx.text(
+                        "Ingrese el ID del seguro a asignar", size="1", color="gray"
                     ),
                     # Fecha Inicio y Fecha Fin (en fila)
                     rx.hstack(
-                        rx.vstack(
-                            rx.text("Fecha Inicio *", size="2", weight="bold"),
-                            rx.input(
-                                name="fecha_inicio",
-                                type="date",
-                                required=True,
-                                default_value=SegurosState.poliza_form_data[
-                                    "fecha_inicio"
-                                ],
-                                width="100%",
-                            ),
-                            width="50%",
-                            spacing="1",
+                        neuro_floating_input(
+                            label="Fecha Inicio *",
+                            value=SegurosState.poliza_form_data["fecha_inicio"],
+                            name="fecha_inicio",
+                            type="date",
+                            required=True,
                         ),
-                        rx.vstack(
-                            rx.text("Fecha Fin *", size="2", weight="bold"),
-                            rx.input(
-                                name="fecha_fin",
-                                type="date",
-                                required=True,
-                                default_value=SegurosState.poliza_form_data[
-                                    "fecha_fin"
-                                ],
-                                width="100%",
-                            ),
-                            width="50%",
-                            spacing="1",
+                        neuro_floating_input(
+                            label="Fecha Fin *",
+                            value=SegurosState.poliza_form_data["fecha_fin"],
+                            name="fecha_fin",
+                            type="date",
+                            required=True,
                         ),
                         spacing="3",
                         width="100%",
@@ -118,18 +91,20 @@ def modal_poliza() -> rx.Component:
                     # Botones
                     rx.hstack(
                         rx.dialog.close(
-                            rx.button(
+                            neuro_button(
                                 "Cancelar",
                                 variant="soft",
                                 color_scheme="gray",
                                 type="button",
                                 on_click=SegurosState.close_poliza_modal,
+                                tooltip_content="Cerrar modal sin guardar",
                             ),
                         ),
-                        rx.button(
+                        neuro_button(
                             "Crear Póliza",
                             type="submit",
                             loading=SegurosState.is_loading,
+                            tooltip_content="Guardar nueva póliza de seguro",
                         ),
                         spacing="3",
                         justify="end",

@@ -1970,32 +1970,32 @@ class LiquidacionesState(DocumentosStateMixin):
             #    y estado_pago != Pagado
             incidentes_elegibles = []
             # Usar búsqueda directa con filtros SQL
-            conn = dm.obtener_conexion()
-            cursor = dm.get_dict_cursor(conn)
-            placeholder = dm.get_placeholder()
+            with dm.obtener_conexion() as conn:
+                cursor = dm.get_dict_cursor(conn)
+                placeholder = dm.get_placeholder()
 
-            query = f"""
-                SELECT i.ID_INCIDENTE, i.DESCRIPCION_INCIDENTE, i.COSTO_INCIDENTE,
-                       i.ESTADO, i.ESTADO_PAGO,
-                       p.DIRECCION_PROPIEDAD as PROPIEDAD,
-                       per.NOMBRE_COMPLETO as PROPIETARIO
-                FROM INCIDENTES i
-                LEFT JOIN PROPIEDADES p ON i.ID_PROPIEDAD = p.ID_PROPIEDAD
-                LEFT JOIN CONTRATOS_MANDATOS cm ON (
-                    i.ID_CONTRATO_M = cm.ID_CONTRATO_M
-                    OR (i.ID_CONTRATO_M IS NULL AND i.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'ACTIVO')
+                query = f"""
+                    SELECT i.ID_INCIDENTE, i.DESCRIPCION_INCIDENTE, i.COSTO_INCIDENTE,
+                           i.ESTADO, i.ESTADO_PAGO,
+                           p.DIRECCION_PROPIEDAD as PROPIEDAD,
+                           per.NOMBRE_COMPLETO as PROPIETARIO
+                    FROM INCIDENTES i
+                    LEFT JOIN PROPIEDADES p ON i.ID_PROPIEDAD = p.ID_PROPIEDAD
+                    LEFT JOIN CONTRATOS_MANDATOS cm ON (
+                        i.ID_CONTRATO_M = cm.ID_CONTRATO_M
+                        OR (i.ID_CONTRATO_M IS NULL AND i.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'ACTIVO')
+                    )
+                    LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
+                    LEFT JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+                    WHERE i.ESTADO IN ({placeholder}, {placeholder}, {placeholder})
+                      AND i.ESTADO_PAGO != {placeholder}
+                    ORDER BY i.ID_INCIDENTE DESC
+                """
+                cursor.execute(
+                    query,
+                    ("Aprobado", "En Reparacion", "Finalizado", "Pagado"),
                 )
-                LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
-                LEFT JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
-                WHERE i.ESTADO IN ({placeholder}, {placeholder}, {placeholder})
-                  AND i.ESTADO_PAGO != {placeholder}
-                ORDER BY i.ID_INCIDENTE DESC
-            """
-            cursor.execute(
-                query,
-                ("Aprobado", "En Reparacion", "Finalizado", "Pagado"),
-            )
-            rows = cursor.fetchall()
+                rows = cursor.fetchall()
 
             for row in rows:
                 id_inc = row["ID_INCIDENTE"]
@@ -2139,6 +2139,7 @@ class LiquidacionesState(DocumentosStateMixin):
                     numero_cuota=incidente["num_cuota"],
                     valor_descuento=incidente["valor_cuota"],
                     asociado_por=usuario,
+                    justificacion=f"Asociación desde liquidación #{id_liquidacion}",
                 )
 
                 if resultado.get("success"):

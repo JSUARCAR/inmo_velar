@@ -29,9 +29,9 @@ from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 from src.presentacion_reflex.state.pdf_state import PDFState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
+    neuro_floating_input,
+    neuro_floating_select,
     neuro_button,
-    neuro_select_root,
 )
 from src.presentacion_reflex import styles
 
@@ -70,15 +70,17 @@ def liquidaciones_toolbar() -> rx.Component:
     return rx.flex(
         # --- GRUPO FILTROS ---
         rx.flex(
-            neuro_input(
+            neuro_floating_input(
+                label="Buscar...",
                 placeholder="Buscar...",
                 value=LiquidacionesState.search_text,
                 on_change=LiquidacionesState.set_search,
                 on_key_down=lambda key: LiquidacionesState.handle_search_key_down(key),
                 width=rx.breakpoints(initial="100%", md="250px"),
             ),
-            neuro_select_root(
-                rx.foreach(
+            neuro_floating_select(
+                label="Período",
+                options=rx.foreach(
                     LiquidacionesState.periodos_select_options,
                     lambda opt: rx.select.item(opt, value=opt),
                 ),
@@ -87,8 +89,9 @@ def liquidaciones_toolbar() -> rx.Component:
                 on_change=LiquidacionesState.set_filter_periodo,
                 width=rx.breakpoints(initial="100%", md="130px"),
             ),
-            neuro_select_root(
-                rx.foreach(
+            neuro_floating_select(
+                label="Estado",
+                options=rx.foreach(
                     LiquidacionesState.estado_options,
                     lambda opt: rx.select.item(opt, value=opt),
                 ),
@@ -97,8 +100,9 @@ def liquidaciones_toolbar() -> rx.Component:
                 on_change=LiquidacionesState.set_filter_estado,
                 width=rx.breakpoints(initial="100%", md="140px"),
             ),
-            neuro_select_root(
-                rx.foreach(
+            neuro_floating_select(
+                label="Ciclo",
+                options=rx.foreach(
                     LiquidacionesState.ciclos_operativos_options,
                     lambda opt: rx.select.item(opt, value=opt),
                 ),
@@ -107,8 +111,9 @@ def liquidaciones_toolbar() -> rx.Component:
                 on_change=LiquidacionesState.set_filter_ciclo_operativo,
                 width=rx.breakpoints(initial="100%", md="120px"),
             ),
-            neuro_select_root(
-                rx.foreach(
+            neuro_floating_select(
+                label="Asesor",
+                options=rx.foreach(
                     LiquidacionesState.asesores_select_options,
                     lambda opt: rx.select.item(opt, value=opt),
                 ),

@@ -3,6 +3,7 @@ import reflex as rx
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.ipc_state import IPCState
+from src.presentacion_reflex.components.neuro_elements import neuro_floating_input
 
 
 def ipc_modal() -> rx.Component:
@@ -24,16 +25,16 @@ def ipc_modal() -> rx.Component:
                         width="100%",
                     ),
                 ),
-                rx.text("Año", size="2", weight="bold"),
-                rx.input(
+                neuro_floating_input(
+                    label="Año",
                     value=IPCState.form_anio,
                     on_change=IPCState.set_anio,
                     type="number",
-                    disabled=IPCState.is_editing,  # No editar año una vez creado
+                    disabled=IPCState.is_editing,
                     placeholder="Ej: 2025",
                 ),
-                rx.text("Valor (%)", size="2", weight="bold"),
-                rx.input(
+                neuro_floating_input(
+                    label="Valor (%)",
                     value=IPCState.form_valor,
                     on_change=IPCState.set_valor,
                     type="number",

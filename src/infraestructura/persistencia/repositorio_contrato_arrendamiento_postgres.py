@@ -16,49 +16,54 @@ class RepositorioContratoArrendamientoPostgres:
         self.db = db_manager
 
     def crear(
-        self, contrato: ContratoArrendamiento, usuario: str
+        self, contrato: ContratoArrendamiento, usuario_sistema: str
     ) -> ContratoArrendamiento:
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
-        placeholder = self.db.get_placeholder()
 
-        cursor.execute(
-            f"""
-        INSERT INTO CONTRATOS_ARRENDAMIENTOS (
-            ID_PROPIEDAD, ID_ARRENDATARIO, ID_CODEUDOR,
-            FECHA_INICIO_CONTRATO_A, FECHA_FIN_CONTRATO_A, DURACION_CONTRATO_A,
-            CANON_ARRENDAMIENTO, DEPOSITO, FECHA_PAGO, GRUPO_OPERATIVO,
-            ESTADO_CONTRATO_A, ALERTA_VENCIMIENTO_CONTRATO_A, ALERTA_IPC,
-            FECHA_RENOVACION_CONTRATO_A, FECHA_INCREMENTO_IPC, FECHA_ULTIMO_INCREMENTO_IPC,
-            CREATED_BY, UPDATED_BY
-        ) VALUES ({placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder}, {placeholder})
-        RETURNING ID_CONTRATO_A
-        """,
+        query = """
+                INSERT INTO CONTRATOS_ARRENDAMIENTOS (
+                    ID_PROPIEDAD, ID_ARRENDATARIO, ID_CODEUDOR,
+                    FECHA_INICIO_CONTRATO_A, FECHA_FIN_CONTRATO_A,
+                    DURACION_CONTRATO_A, CANON_ARRENDAMIENTO,
+                    DEPOSITO, FECHA_PAGO, GRUPO_OPERATIVO,
+                    ESTADO_CONTRATO_A, ALERTA_VENCIMIENTO_CONTRATO_A,
+                    ALERTA_IPC, FECHA_RENOVACION_CONTRATO_A,
+                    FECHA_INCREMENTO_IPC, FECHA_ULTIMO_INCREMENTO_IPC,
+                    ENLACE_VIDEO, RESPONSABLE_DEPOSITO_ID,
+                    CREATED_BY, UPDATED_BY
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                ) RETURNING ID_CONTRATO_A
+            """
+        valores = (
+            contrato.id_propiedad,
+            contrato.id_arrendatario,
+            contrato.id_codeudor,
+            contrato.fecha_inicio_contrato_a,
+            contrato.fecha_fin_contrato_a,
+            contrato.duracion_contrato_a,
+            contrato.canon_arrendamiento,
+            contrato.deposito,
+            contrato.fecha_pago,
+            contrato.grupo_operativo,
             (
-                contrato.id_propiedad,
-                contrato.id_arrendatario,
-                contrato.id_codeudor,
-                contrato.fecha_inicio_contrato_a,
-                contrato.fecha_fin_contrato_a,
-                contrato.duracion_contrato_a,
-                contrato.canon_arrendamiento,
-                contrato.deposito,
-                contrato.fecha_pago,
-                contrato.grupo_operativo,
-                (
-                    contrato.estado_contrato_a.value
-                    if hasattr(contrato.estado_contrato_a, "value")
-                    else contrato.estado_contrato_a
-                ),
-                contrato.alerta_vencimiento_contrato_a,
-                contrato.alerta_ipc,
-                contrato.fecha_renovacion_contrato_a,
-                contrato.fecha_incremento_ipc,
-                contrato.fecha_ultimo_incremento_ipc,
-                usuario,
-                usuario,
+                contrato.estado_contrato_a.value
+                if hasattr(contrato.estado_contrato_a, "value")
+                else contrato.estado_contrato_a
             ),
+            contrato.alerta_vencimiento_contrato_a,
+            contrato.alerta_ipc,
+            contrato.fecha_renovacion_contrato_a,
+            contrato.fecha_incremento_ipc,
+            contrato.fecha_ultimo_incremento_ipc,
+            contrato.enlace_video,
+            contrato.responsable_deposito_id,
+            usuario_sistema,
+            usuario_sistema,
         )
+
+        cursor.execute(query, valores)
 
         row = cursor.fetchone()
 
@@ -363,62 +368,64 @@ class RepositorioContratoArrendamientoPostgres:
                 items=items, total=total, page=params.page, page_size=params.page_size
             )
 
-    def actualizar(self, contrato: ContratoArrendamiento, usuario: str) -> bool:
+    def actualizar(self, contrato: ContratoArrendamiento, usuario_sistema: str) -> bool:
         conn = self.db.obtener_conexion()
         cursor = conn.cursor()
-        placeholder = self.db.get_placeholder()
 
-        cursor.execute(
-            f"""
-        UPDATE CONTRATOS_ARRENDAMIENTOS SET
-            ID_PROPIEDAD = {placeholder},
-            ID_ARRENDATARIO = {placeholder},
-            ID_CODEUDOR = {placeholder},
-            FECHA_INICIO_CONTRATO_A = {placeholder},
-            FECHA_FIN_CONTRATO_A = {placeholder},
-            DURACION_CONTRATO_A = {placeholder},
-            CANON_ARRENDAMIENTO = {placeholder},
-            DEPOSITO = {placeholder},
-            FECHA_PAGO = {placeholder},
-            GRUPO_OPERATIVO = {placeholder},
-            ESTADO_CONTRATO_A = {placeholder},
-            MOTIVO_CANCELACION = {placeholder},
-            ALERTA_VENCIMIENTO_CONTRATO_A = {placeholder},
-            ALERTA_IPC = {placeholder},
-            FECHA_RENOVACION_CONTRATO_A = {placeholder},
-            FECHA_INCREMENTO_IPC = {placeholder},
-            FECHA_ULTIMO_INCREMENTO_IPC = {placeholder},
-            UPDATED_AT = {placeholder},
-            UPDATED_BY = {placeholder}
-        WHERE ID_CONTRATO_A = {placeholder}
-        """,
+        query = """
+                UPDATE CONTRATOS_ARRENDAMIENTOS SET
+                    ID_PROPIEDAD = %s,
+                    ID_ARRENDATARIO = %s,
+                    ID_CODEUDOR = %s,
+                    FECHA_INICIO_CONTRATO_A = %s,
+                    FECHA_FIN_CONTRATO_A = %s,
+                    DURACION_CONTRATO_A = %s,
+                    CANON_ARRENDAMIENTO = %s,
+                    DEPOSITO = %s,
+                    FECHA_PAGO = %s,
+                    GRUPO_OPERATIVO = %s,
+                    ESTADO_CONTRATO_A = %s,
+                    ALERTA_VENCIMIENTO_CONTRATO_A = %s,
+                    ALERTA_IPC = %s,
+                    FECHA_RENOVACION_CONTRATO_A = %s,
+                    FECHA_INCREMENTO_IPC = %s,
+                    FECHA_ULTIMO_INCREMENTO_IPC = %s,
+                    MOTIVO_CANCELACION = %s,
+                    ENLACE_VIDEO = %s,
+                    RESPONSABLE_DEPOSITO_ID = %s,
+                    UPDATED_BY = %s,
+                    UPDATED_AT = CURRENT_TIMESTAMP
+                WHERE ID_CONTRATO_A = %s
+            """
+        valores = (
+            contrato.id_propiedad,
+            contrato.id_arrendatario,
+            contrato.id_codeudor,
+            contrato.fecha_inicio_contrato_a,
+            contrato.fecha_fin_contrato_a,
+            contrato.duracion_contrato_a,
+            contrato.canon_arrendamiento,
+            contrato.deposito,
+            contrato.fecha_pago,
+            contrato.grupo_operativo,
             (
-                contrato.id_propiedad,
-                contrato.id_arrendatario,
-                contrato.id_codeudor,
-                contrato.fecha_inicio_contrato_a,
-                contrato.fecha_fin_contrato_a,
-                contrato.duracion_contrato_a,
-                contrato.canon_arrendamiento,
-                contrato.deposito,
-                contrato.fecha_pago,
-                contrato.grupo_operativo,
-                (
-                    contrato.estado_contrato_a.value
-                    if hasattr(contrato.estado_contrato_a, "value")
-                    else contrato.estado_contrato_a
-                ),
-                contrato.motivo_cancelacion,
-                contrato.alerta_vencimiento_contrato_a,
-                contrato.alerta_ipc,
-                contrato.fecha_renovacion_contrato_a,
-                contrato.fecha_incremento_ipc,
-                contrato.fecha_ultimo_incremento_ipc,
-                datetime.now().isoformat(),
-                usuario,
-                contrato.id_contrato_a,
+                contrato.estado_contrato_a.value
+                if hasattr(contrato.estado_contrato_a, "value")
+                else contrato.estado_contrato_a
             ),
+            contrato.alerta_vencimiento_contrato_a,
+            contrato.alerta_ipc,
+            contrato.fecha_renovacion_contrato_a,
+            contrato.fecha_incremento_ipc,
+            contrato.fecha_ultimo_incremento_ipc,
+            contrato.motivo_cancelacion,
+            contrato.enlace_video,
+            contrato.responsable_deposito_id,
+            usuario_sistema,
+            contrato.id_contrato_a,
         )
+
+        cursor.execute(query, valores)
 
         return cursor.rowcount > 0
 
@@ -481,11 +488,12 @@ class RepositorioContratoArrendamientoPostgres:
                 row_dict.get("fecha_incremento_ipc")
                 or row_dict.get("FECHA_INCREMENTO_IPC")
             ),
-            fecha_ultimo_incremento_ipc=(
-                row_dict.get("fecha_ultimo_incremento_ipc")
-                or row_dict.get("FECHA_ULTIMO_INCREMENTO_IPC")
+            fecha_ultimo_incremento_ipc=str(
+                row_dict.get("fecha_ultimo_incremento_ipc", "")
             ),
-            created_at=(row_dict.get("created_at") or row_dict.get("CREATED_AT")),
+            enlace_video=row_dict.get("enlace_video"),
+            responsable_deposito_id=row_dict.get("responsable_deposito_id") or row_dict.get("RESPONSABLE_DEPOSITO_ID"),
+            created_at=str(row_dict.get("created_at") or row_dict.get("CREATED_AT", "")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),
             updated_by=(row_dict.get("updated_by") or row_dict.get("UPDATED_BY")),

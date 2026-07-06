@@ -380,6 +380,7 @@ class RepositorioRecaudo:
         fecha_desde: Optional[str] = None,
         fecha_hasta: Optional[str] = None,
         busqueda: Optional[str] = None,
+        dia_pago: Optional[str] = None,
     ) -> int:
         """Cuenta total de recaudos filtrados."""
         conn = self.db.obtener_conexion()
@@ -408,6 +409,10 @@ class RepositorioRecaudo:
         if fecha_hasta:
             conditions.append(f"r.FECHA_PAGO <= {placeholder}")
             query_params.append(fecha_hasta)
+
+        if dia_pago and dia_pago != "Todos":
+            conditions.append(f"COALESCE(NULLIF(ca.FECHA_PAGO, ''), EXTRACT(DAY FROM ca.FECHA_INICIO_CONTRATO_A::DATE)::TEXT) = {placeholder}")
+            query_params.append(dia_pago)
 
         if busqueda:
             cols = [
@@ -540,6 +545,7 @@ class RepositorioRecaudo:
         fecha_desde: Optional[str] = None,
         fecha_hasta: Optional[str] = None,
         busqueda: Optional[str] = None,
+        dia_pago: Optional[str] = None,
         sort_by: str = "fecha_pago",
         sort_order: str = "desc",
     ) -> List[Dict[str, Any]]:
@@ -551,11 +557,10 @@ class RepositorioRecaudo:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        # Mapeo de columnas para ordenamiento (Whitelisting contra SQL Injection)
         SORT_COLUMNS = {
             "id_recaudo": "r.ID_RECAUDO",
             "fecha_pago": "r.FECHA_PAGO",
-            "fecha_pago_contrato": "ca.FECHA_PAGO",
+            "fecha_pago_contrato": "COALESCE(NULLIF(ca.FECHA_PAGO, ''), EXTRACT(DAY FROM ca.FECHA_INICIO_CONTRATO_A::DATE)::TEXT)",
             "valor_total": "r.VALOR_TOTAL",
             "estado": "r.ESTADO_RECAUDO",
             "arrendatario": "per.NOMBRE_COMPLETO",
@@ -571,7 +576,7 @@ class RepositorioRecaudo:
                 r.ID_RECAUDO,
                 r.ID_CONTRATO_A,
                 r.FECHA_PAGO,
-                ca.FECHA_PAGO AS FECHA_PAGO_CONTRATO,
+                COALESCE(NULLIF(ca.FECHA_PAGO, ''), EXTRACT(DAY FROM ca.FECHA_INICIO_CONTRATO_A::DATE)::TEXT) AS FECHA_PAGO_CONTRATO,
                 r.VALOR_TOTAL,
                 r.METODO_PAGO,
                 r.REFERENCIA_BANCARIA,
@@ -603,6 +608,10 @@ class RepositorioRecaudo:
         if fecha_hasta:
             query += f" AND r.FECHA_PAGO <= {placeholder}"
             params.append(fecha_hasta)
+
+        if dia_pago and dia_pago != "Todos":
+            query += f" AND COALESCE(NULLIF(ca.FECHA_PAGO, ''), EXTRACT(DAY FROM ca.FECHA_INICIO_CONTRATO_A::DATE)::TEXT) = {placeholder}"
+            params.append(dia_pago)
 
         if busqueda:
             cols = [

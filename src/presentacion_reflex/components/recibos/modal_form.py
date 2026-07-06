@@ -6,8 +6,9 @@ import reflex as rx
 
 from src.presentacion_reflex.state.recibos_state import RecibosState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
-    neuro_select_root,
+    neuro_floating_input,
+    neuro_floating_select,
+    neuro_button,
 )
 
 
@@ -31,93 +32,68 @@ def modal_form() -> rx.Component:
                         rx.flex(
                             # Propiedad
                             rx.box(
-                                rx.text(
-                                    "Propiedad *",
-                                    size="2",
-                                    weight="bold",
-                                    margin_bottom="1",
-                                ),
-                                neuro_select_root(
-                                    rx.foreach(
-                                        RecibosState.propiedades_disponibles,
-                                        lambda x: rx.select.item(
-                                            x["label"], value=x["value"]
-                                        ),
-                                    ),
-                                    placeholder="Seleccione propiedad...",
-                                    name="id_propiedad",
-                                    required=True,
+                                neuro_floating_select(
+                                    label="Propiedad *",
                                     value=RecibosState.form_data["id_propiedad"],
+                                    options=RecibosState.propiedades_disponibles,
                                     on_change=lambda val: RecibosState.set_form_field(
                                         "id_propiedad", val
                                     ),
+                                    name="id_propiedad",
+                                    required=True,
+                                    placeholder="Seleccione propiedad...",
                                 ),
                                 width="100%",
                             ),
                             # Tipo de Servicio
                             rx.box(
-                                rx.text(
-                                    "Tipo de Servicio *",
-                                    size="2",
-                                    weight="bold",
-                                    margin_bottom="1",
-                                ),
-                                neuro_select_root(
-                                    [
-                                        rx.select.item("Agua", value="Agua"),
-                                        rx.select.item("Luz", value="Luz"),
-                                        rx.select.item("Gas", value="Gas"),
-                                        rx.select.item("Internet", value="Internet"),
-                                        rx.select.item("Teléfono", value="Teléfono"),
-                                        rx.select.item("Aseo", value="Aseo"),
-                                        rx.select.item("Otros", value="Otros"),
-                                    ],
-                                    placeholder="Seleccione servicio...",
-                                    name="tipo_servicio",
-                                    required=True,
+                                neuro_floating_select(
+                                    label="Tipo de Servicio *",
                                     value=RecibosState.form_data["tipo_servicio"],
+                                    options=[
+                                        {"label": "Agua", "value": "Agua"},
+                                        {"label": "Luz", "value": "Luz"},
+                                        {"label": "Gas", "value": "Gas"},
+                                        {"label": "Internet", "value": "Internet"},
+                                        {"label": "Teléfono", "value": "Teléfono"},
+                                        {"label": "Aseo", "value": "Aseo"},
+                                        {"label": "Otros", "value": "Otros"},
+                                    ],
                                     on_change=lambda val: RecibosState.set_form_field(
                                         "tipo_servicio", val
                                     ),
+                                    name="tipo_servicio",
+                                    required=True,
+                                    placeholder="Seleccione servicio...",
                                 ),
                                 width="100%",
                             ),
                             # Periodo
                             rx.box(
-                                rx.text(
-                                    "Período (Mes/Año) *",
-                                    size="2",
-                                    weight="bold",
-                                    margin_bottom="1",
-                                ),
-                                neuro_input(
-                                    name="periodo_recibo",
-                                    placeholder="Ej: Enero 2024",
-                                    required=True,
+                                neuro_floating_input(
+                                    label="Período (Mes/Año) *",
                                     value=RecibosState.form_data["periodo_recibo"],
                                     on_change=lambda val: RecibosState.set_form_field(
                                         "periodo_recibo", val
                                     ),
+                                    name="periodo_recibo",
+                                    required=True,
+                                    placeholder="Ej: Enero 2024",
                                 ),
                                 width="100%",
                             ),
                             # Valor
                             rx.box(
-                                rx.text(
-                                    "Valor Facturado *",
-                                    size="2",
-                                    weight="bold",
-                                    margin_bottom="1",
-                                ),
-                                neuro_input(
-                                    name="valor_recibo",  # Note: It was valor_total but state uses valor_recibo
-                                    type="number",
-                                    placeholder="0",
-                                    required=True,
+                                neuro_floating_input(
+                                    label="Valor Facturado *",
                                     value=RecibosState.form_data["valor_recibo"],
                                     on_change=lambda val: RecibosState.set_form_field(
                                         "valor_recibo", val
                                     ),
+                                    name="valor_recibo",
+                                    type="number",
+                                    required=True,
+                                    placeholder="0",
                                 ),
                                 width="100%",
                             ),
@@ -128,76 +104,56 @@ def modal_form() -> rx.Component:
                         rx.flex(
                             # Fecha Desde
                             rx.box(
-                                rx.text(
-                                    "Fecha Desde",
-                                    size="2",
-                                    weight="bold",
-                                    margin_bottom="1",
-                                ),
-                                neuro_input(
-                                    name="fecha_desde",
-                                    type="date",
+                                neuro_floating_input(
+                                    label="Fecha Desde",
                                     value=RecibosState.form_data["fecha_desde"],
                                     on_change=lambda val: RecibosState.set_form_field(
                                         "fecha_desde", val
                                     ),
+                                    name="fecha_desde",
+                                    type="date",
                                 ),
                                 width="100%",
                             ),
                             # Fecha Hasta
                             rx.box(
-                                rx.text(
-                                    "Fecha Hasta",
-                                    size="2",
-                                    weight="bold",
-                                    margin_bottom="1",
-                                ),
-                                neuro_input(
-                                    name="fecha_hasta",
-                                    type="date",
+                                neuro_floating_input(
+                                    label="Fecha Hasta",
                                     value=RecibosState.form_data["fecha_hasta"],
                                     on_change=lambda val: RecibosState.set_form_field(
                                         "fecha_hasta", val
                                     ),
+                                    name="fecha_hasta",
+                                    type="date",
                                 ),
                                 width="100%",
                             ),
                             # Vencimiento
                             rx.box(
-                                rx.text(
-                                    "Fecha Vencimiento *",
-                                    size="2",
-                                    weight="bold",
-                                    margin_bottom="1",
-                                ),
-                                neuro_input(
-                                    name="fecha_vencimiento",
-                                    type="date",
-                                    required=True,
+                                neuro_floating_input(
+                                    label="Fecha Vencimiento *",
                                     value=RecibosState.form_data["fecha_vencimiento"],
                                     on_change=lambda val: RecibosState.set_form_field(
                                         "fecha_vencimiento", val
                                     ),
+                                    name="fecha_vencimiento",
+                                    type="date",
+                                    required=True,
                                 ),
                                 width="100%",
                             ),
                             # Referencia
                             rx.box(
-                                rx.text(
-                                    "Referencia de Pago",
-                                    size="2",
-                                    weight="bold",
-                                    margin_bottom="1",
-                                ),
-                                neuro_input(
-                                    name="referencia_pago",
-                                    placeholder="Número de contrato o factura",
+                                neuro_floating_input(
+                                    label="Referencia de Pago",
                                     value=RecibosState.form_data.get(
                                         "referencia_pago", ""
-                                    ),  # Safe get
+                                    ),
                                     on_change=lambda val: RecibosState.set_form_field(
                                         "referencia_pago", val
                                     ),
+                                    name="referencia_pago",
+                                    placeholder="Número de contrato o factura",
                                 ),
                                 width="100%",
                             ),
@@ -231,7 +187,7 @@ def modal_form() -> rx.Component:
                 ),
                 rx.flex(
                     rx.dialog.close(
-                        rx.button(
+                        neuro_button(
                             "Cancelar",
                             variant="soft",
                             color_scheme="gray",
@@ -239,9 +195,10 @@ def modal_form() -> rx.Component:
                             on_click=lambda: RecibosState.handle_form_open_change(
                                 False
                             ),
+                            tooltip_content="Cerrar modal sin guardar",
                         )
                     ),
-                    rx.button(
+                    neuro_button(
                         rx.cond(
                             RecibosState.is_editing,
                             "Guardar Cambios",
@@ -249,6 +206,7 @@ def modal_form() -> rx.Component:
                         ),
                         type="submit",
                         loading=RecibosState.is_loading,
+                        tooltip_content="Guardar recibo público",
                     ),
                     spacing="3",
                     justify="end",

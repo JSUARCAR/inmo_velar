@@ -341,20 +341,26 @@ def liquidacion_detail_modal() -> rx.Component:
                     # Botones de Acción
                     rx.hstack(
                         rx.dialog.close(
-                            rx.button("Cerrar", variant="soft", color_scheme="gray"),
+                            rx.tooltip(
+                                rx.button("Cerrar", variant="soft", color_scheme="gray"),
+                                content="Cerrar el detalle",
+                            ),
                         ),
                         rx.spacer(),
                         # Editar (solo En Proceso)
                         rx.cond(
                             LiquidacionesState.liquidacion_actual["estado"]
                             == "En Proceso",
-                            rx.button(
-                                rx.icon("pencil"),
-                                "Editar",
-                                on_click=lambda: LiquidacionesState.open_edit_modal(
-                                    LiquidacionesState.liquidacion_actual["id"]
+                            rx.tooltip(
+                                rx.button(
+                                    rx.icon("pencil"),
+                                    "Editar",
+                                    on_click=lambda: LiquidacionesState.open_edit_modal(
+                                        LiquidacionesState.liquidacion_actual["id"]
+                                    ),
+                                    color_scheme="blue",
                                 ),
-                                color_scheme="blue",
+                                content="Editar los valores de la liquidación",
                             ),
                             rx.box(),
                         ),
@@ -362,13 +368,16 @@ def liquidacion_detail_modal() -> rx.Component:
                         rx.cond(
                             LiquidacionesState.liquidacion_actual["estado"]
                             == "En Proceso",
-                            rx.button(
-                                rx.icon("circle_check"),
-                                "Aprobar",
-                                on_click=lambda: LiquidacionesState.aprobar_liquidacion(
-                                    LiquidacionesState.liquidacion_actual["id"]
+                            rx.tooltip(
+                                rx.button(
+                                    rx.icon("circle_check"),
+                                    "Aprobar",
+                                    on_click=lambda: LiquidacionesState.aprobar_liquidacion(
+                                        LiquidacionesState.liquidacion_actual["id"]
+                                    ),
+                                    color_scheme="green",
                                 ),
-                                color_scheme="green",
+                                content="Aprobar la liquidación para pago",
                             ),
                             rx.box(),
                         ),
@@ -376,13 +385,16 @@ def liquidacion_detail_modal() -> rx.Component:
                         rx.cond(
                             LiquidacionesState.liquidacion_actual["estado"]
                             == "Aprobada",
-                            rx.button(
-                                rx.icon("dollar_sign"),
-                                "Registrar Pago",
-                                on_click=lambda: LiquidacionesState.open_payment_modal(
-                                    LiquidacionesState.liquidacion_actual["id"]
+                            rx.tooltip(
+                                rx.button(
+                                    rx.icon("dollar_sign"),
+                                    "Registrar Pago",
+                                    on_click=lambda: LiquidacionesState.open_payment_modal(
+                                        LiquidacionesState.liquidacion_actual["id"]
+                                    ),
+                                    color_scheme="violet",
                                 ),
-                                color_scheme="violet",
+                                content="Registrar el pago de la liquidación",
                             ),
                             rx.box(),
                         ),
@@ -390,26 +402,32 @@ def liquidacion_detail_modal() -> rx.Component:
                         rx.cond(
                             LiquidacionesState.liquidacion_actual["estado"]
                             == "Aprobada",
-                            rx.button(
-                                rx.icon("rotate_ccw"),
-                                "Reversar",
-                                on_click=lambda: LiquidacionesState.open_reverse_confirm(
-                                    LiquidacionesState.liquidacion_actual["id"]
+                            rx.tooltip(
+                                rx.button(
+                                    rx.icon("rotate_ccw"),
+                                    "Reversar",
+                                    on_click=lambda: LiquidacionesState.open_reverse_confirm(
+                                        LiquidacionesState.liquidacion_actual["id"]
+                                    ),
+                                    color_scheme="yellow",
                                 ),
-                                color_scheme="yellow",
+                                content="Reversar al estado En Proceso",
                             ),
                             rx.box(),
                         ),
                         # Reversar Pago (solo Pagada)
                         rx.cond(
                             LiquidacionesState.liquidacion_actual["estado"] == "Pagada",
-                            rx.button(
-                                rx.icon("rotate_ccw"),
-                                "Reversar Pago",
-                                on_click=lambda: LiquidacionesState.open_reverse_pago_confirm(
-                                    LiquidacionesState.liquidacion_actual["id"]
+                            rx.tooltip(
+                                rx.button(
+                                    rx.icon("rotate_ccw"),
+                                    "Reversar Pago",
+                                    on_click=lambda: LiquidacionesState.open_reverse_pago_confirm(
+                                        LiquidacionesState.liquidacion_actual["id"]
+                                    ),
+                                    color_scheme="orange",
                                 ),
-                                color_scheme="orange",
+                                content="Revertir el pago y volver al estado Aprobada",
                             ),
                             rx.box(),
                         ),
@@ -423,14 +441,17 @@ def liquidacion_detail_modal() -> rx.Component:
                                 LiquidacionesState.liquidacion_actual["estado"]
                                 == "Aprobada"
                             ),
-                            rx.button(
-                                rx.icon("circle_x"),
-                                "Cancelar",
-                                on_click=lambda: LiquidacionesState.open_cancel_modal(
-                                    LiquidacionesState.liquidacion_actual["id"]
+                            rx.tooltip(
+                                rx.button(
+                                    rx.icon("circle_x"),
+                                    "Cancelar",
+                                    on_click=lambda: LiquidacionesState.open_cancel_modal(
+                                        LiquidacionesState.liquidacion_actual["id"]
+                                    ),
+                                    color_scheme="red",
+                                    variant="soft",
                                 ),
-                                color_scheme="red",
-                                variant="soft",
+                                content="Cancelar la liquidación",
                             ),
                             rx.box(),
                         ),
@@ -441,13 +462,16 @@ def liquidacion_detail_modal() -> rx.Component:
                                 != "Pagada"
                             )
                             & AuthState.check_action("Liquidaciones", "ELIMINAR"),
-                            rx.button(
-                                rx.icon("trash-2"),
-                                "Eliminar",
-                                on_click=lambda: LiquidacionesState.open_delete_modal(
-                                    LiquidacionesState.liquidacion_actual["id"]
+                            rx.tooltip(
+                                rx.button(
+                                    rx.icon("trash-2"),
+                                    "Eliminar",
+                                    on_click=lambda: LiquidacionesState.open_delete_modal(
+                                        LiquidacionesState.liquidacion_actual["id"]
+                                    ),
+                                    color_scheme="red",
                                 ),
-                                color_scheme="red",
+                                content="Eliminar la liquidación permanentemente",
                             ),
                             rx.box(),
                         ),

@@ -12,6 +12,7 @@
 *.pdf
 
 # === SCRIPTS DE DIAGNOSTICO INTERNOS ===
+scripts/diagnostico/
 scripts/diagnostico_*
 scripts/check_*
 scripts/debug_*
@@ -83,6 +84,8 @@ env/
 .pytest_cache/
 .coverage
 htmlcov/
+.playwright-mcp/
+test-results/
 .tox/
 node_modules/
 package-lock.json

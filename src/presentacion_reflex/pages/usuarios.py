@@ -13,23 +13,26 @@ from src.presentacion_reflex.state.usuarios_state import (
 
 
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_input,
+    neuro_floating_input,
+    neuro_floating_select,
     neuro_button,
-    neuro_select_root,
 )
 from src.presentacion_reflex import styles
 
 
 def filtros_bar() -> rx.Component:
     return rx.flex(
-        neuro_input(
+        neuro_floating_input(
+            label="Buscar usuario...",
             placeholder="Buscar usuario...",
+            value=UsuariosState.search_text,
             on_change=UsuariosState.set_search,
             width=["100%", "300px"],
         ),
         rx.flex(
-            neuro_select_root(
-                [
+            neuro_floating_select(
+                label="Rol",
+                options=[
                     rx.select.item("Todos", value="Todos"),
                     rx.select.item("Administrador", value="Administrador"),
                     rx.select.item("Asesor", value="Asesor"),
@@ -40,8 +43,9 @@ def filtros_bar() -> rx.Component:
                 on_change=lambda val: UsuariosState.set_filter_role(val),
                 width=["100%", "150px"],
             ),
-            neuro_select_root(
-                [
+            neuro_floating_select(
+                label="Estado",
+                options=[
                     rx.select.item("Todos", value="Todos"),
                     rx.select.item("ACTIVO", value="ACTIVO"),
                     rx.select.item("Inactivo", value="Inactivo"),

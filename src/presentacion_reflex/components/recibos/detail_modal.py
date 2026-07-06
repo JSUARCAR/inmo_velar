@@ -4,6 +4,7 @@ from src.presentacion_reflex.components.document_manager_elite import (
     document_manager_elite,
 )
 from src.presentacion_reflex.state.recibos_state import RecibosState
+from src.presentacion_reflex.components.neuro_elements import neuro_button
 
 
 def detail_modal() -> rx.Component:
@@ -138,7 +139,12 @@ def detail_modal() -> rx.Component:
                 # Footer
                 rx.flex(
                     rx.dialog.close(
-                        rx.button("Cerrar", variant="soft", color_scheme="gray"),
+                        neuro_button(
+                            "Cerrar",
+                            variant="soft",
+                            color_scheme="gray",
+                            tooltip_content="Cerrar detalle del recibo",
+                        ),
                     ),
                     justify="end",
                     margin_top="6",

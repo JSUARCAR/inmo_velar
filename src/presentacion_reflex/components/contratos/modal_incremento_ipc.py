@@ -5,6 +5,7 @@ Modal para aplicación de Incremento IPC a contratos de arrendamiento.
 import reflex as rx
 
 from src.presentacion_reflex.state.contratos_state import ContratosState
+from src.presentacion_reflex.components.neuro_elements import neuro_floating_input, neuro_text_area, neuro_button
 
 
 def modal_incremento_ipc() -> rx.Component:
@@ -30,58 +31,34 @@ def modal_incremento_ipc() -> rx.Component:
             # Form
             rx.form(
                 rx.vstack(
-                    # Porcentaje IPC
-                    rx.vstack(
-                        rx.text("Porcentaje IPC *", size="2", weight="bold"),
-                        rx.input(
-                            type="number",
-                            name="porcentaje_ipc",
-                            placeholder="5.62",
-                            step="0.01",
-                            min="0.01",
-                            max="20",
-                            required=True,
-                            value=ContratosState.form_data["porcentaje_ipc"],
-                            on_change=lambda v: ContratosState.set_form_field(
-                                "porcentaje_ipc", v
-                            ),
-                        ),
-                        rx.text(
-                            "Ejemplo: 5.62 para 5.62% de incremento",
-                            size="1",
-                            color="gray",
-                        ),
-                        spacing="1",
+                    neuro_floating_input(
+                        label="Porcentaje IPC",
+                        type="number",
+                        name="porcentaje_ipc",
+                        placeholder="5.62",
+                        step="0.01",
+                        min="0.01",
+                        max="20",
+                        required=True,
+                        value=ContratosState.form_data["porcentaje_ipc"],
+                        on_change=lambda v: ContratosState.set_form_field("porcentaje_ipc", v),
                         width="100%",
                     ),
-                    # Fecha de aplicación
-                    rx.vstack(
-                        rx.text("Fecha de Aplicación *", size="2", weight="bold"),
-                        rx.input(
-                            type="date",
-                            name="fecha_application",  # Note: form field is fecha_aplicacion in state? Wait, I'll check.
-                            required=True,
-                            value=ContratosState.form_data["fecha_aplicacion"],
-                            on_change=lambda v: ContratosState.set_form_field(
-                                "fecha_aplicacion", v
-                            ),
-                        ),
-                        spacing="1",
+                    neuro_floating_input(
+                        label="Fecha de Aplicación",
+                        type="date",
+                        name="fecha_application",
+                        required=True,
+                        value=ContratosState.form_data["fecha_aplicacion"],
+                        on_change=lambda v: ContratosState.set_form_field("fecha_aplicacion", v),
                         width="100%",
                     ),
-                    # Observaciones
-                    rx.vstack(
-                        rx.text("Observaciones (opcional)", size="2", weight="bold"),
-                        rx.text_area(
-                            name="observaciones",
-                            placeholder="Notas adicionales sobre el incremento...",
-                            value=ContratosState.form_data["observaciones"],
-                            on_change=lambda v: ContratosState.set_form_field(
-                                "observaciones", v
-                            ),
-                            min_height="80px",
-                        ),
-                        spacing="1",
+                    neuro_text_area(
+                        label="Observaciones (opcional)",
+                        name="observaciones",
+                        placeholder="Notas adicionales sobre el incremento...",
+                        value=ContratosState.form_data["observaciones"],
+                        on_change=lambda v: ContratosState.set_form_field("observaciones", v),
                         width="100%",
                     ),
                     spacing="4",
@@ -90,14 +67,15 @@ def modal_incremento_ipc() -> rx.Component:
                 # Buttons
                 rx.flex(
                     rx.dialog.close(
-                        rx.button(
+                        neuro_button(
                             "Cancelar",
                             variant="soft",
                             color_scheme="gray",
                             on_click=ContratosState.close_ipc_modal,
+                            tooltip_content="Cancelar",
                         )
                     ),
-                    rx.button(
+                    neuro_button(
                         rx.cond(
                             ContratosState.is_loading,
                             rx.spinner(size="1"),
@@ -106,6 +84,7 @@ def modal_incremento_ipc() -> rx.Component:
                         type="submit",
                         disabled=ContratosState.is_loading,
                         color_scheme="green",
+                        tooltip_content="Aplicar incremento IPC",
                     ),
                     spacing="3",
                     margin_top="1rem",
