@@ -316,7 +316,10 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             params.append(fecha_hasta)
 
         if estado_pago:
-            query += " AND I.ESTADO_PAGO = %s"
+            if estado_pago == "Pendiente":
+                query += " AND (NOT EXISTS (SELECT 1 FROM PLAN_PAGO_INCIDENTE PPI WHERE PPI.ID_INCIDENTE = I.ID_INCIDENTE) OR EXISTS (SELECT 1 FROM PLAN_PAGO_INCIDENTE PPI JOIN CUOTA_INCIDENTE CI ON PPI.ID_PLAN_PAGO = CI.ID_PLAN_PAGO WHERE PPI.ID_INCIDENTE = I.ID_INCIDENTE AND CI.ESTADO_PAGO = %s))"
+            else:
+                query += " AND EXISTS (SELECT 1 FROM PLAN_PAGO_INCIDENTE PPI JOIN CUOTA_INCIDENTE CI ON PPI.ID_PLAN_PAGO = CI.ID_PLAN_PAGO WHERE PPI.ID_INCIDENTE = I.ID_INCIDENTE AND CI.ESTADO_PAGO = %s)"
             params.append(estado_pago)
 
         # Count query independiente con JOINS minimos
@@ -353,7 +356,10 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             count_query += " AND I.FECHA_INCIDENTE <= %s"
             count_params.append(fecha_hasta)
         if estado_pago:
-            count_query += " AND I.ESTADO_PAGO = %s"
+            if estado_pago == "Pendiente":
+                count_query += " AND (NOT EXISTS (SELECT 1 FROM PLAN_PAGO_INCIDENTE PPI WHERE PPI.ID_INCIDENTE = I.ID_INCIDENTE) OR EXISTS (SELECT 1 FROM PLAN_PAGO_INCIDENTE PPI JOIN CUOTA_INCIDENTE CI ON PPI.ID_PLAN_PAGO = CI.ID_PLAN_PAGO WHERE PPI.ID_INCIDENTE = I.ID_INCIDENTE AND CI.ESTADO_PAGO = %s))"
+            else:
+                count_query += " AND EXISTS (SELECT 1 FROM PLAN_PAGO_INCIDENTE PPI JOIN CUOTA_INCIDENTE CI ON PPI.ID_PLAN_PAGO = CI.ID_PLAN_PAGO WHERE PPI.ID_INCIDENTE = I.ID_INCIDENTE AND CI.ESTADO_PAGO = %s)"
             count_params.append(estado_pago)
 
         conn = self.db.obtener_conexion()
