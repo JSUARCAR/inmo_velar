@@ -1,5 +1,19 @@
 # Estado de Tareas
 
+## Tareas Completadas: 030-filtro-pago-incidentes
+**Fecha**: 2026-07-06
+
+Se completaron todas las tareas (17 de 17) descritas en el plan de implementación de la feature `030-filtro-pago-incidentes`.
+
+**Resumen de cambios**:
+- **US1 & US2 (Filtro Estado de Pago)**: Se agregó la funcionalidad para filtrar incidentes por su estado de pago.
+- **Infraestructura**: Se modificó `repositorio_incidentes_postgres.py` para consultar los estados de pago de manera dinámica (`SELECT DISTINCT ESTADO FROM LIQUIDACIONES`) y se actualizó `listar_con_filtros` integrando la subconsulta `EXISTS` para filtrar correctamente en base de datos.
+- **Aplicación**: Se agregaron métodos en `servicio_incidentes.py` para exponer las nuevas funcionalidades al frontend.
+- **Presentación (State & UI)**: En `incidentes_state.py`, se crearon las variables de estado `filter_estado_pago` y `estados_pago_options`, y se implementó `load_estados_pago()` al inicializar la página. En `incidentes.py`, se agregó un nuevo componente `neuro_floating_select` respetando los estilos y el patrón del Claude Design System.
+- **Integración**: Se validó la integración del nuevo filtro junto a los filtros preexistentes (estado, prioridad, búsqueda, y ordenamiento) para asegurar que se conserven los estados correctamente al combinar filtros.
+
+---
+
 ## Tareas Completadas: 004-fix-sincronizacion-incidentes-liquidaciones
 **Fecha**: 2026-07-02
 
