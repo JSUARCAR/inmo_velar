@@ -52,6 +52,8 @@ handle @backend {
     reverse_proxy localhost:8081 {
         header_up Upgrade {http.request.Upgrade}
         header_up Connection {http.request.Connection}
+        header_up X-Forwarded-Proto https
+        flush_interval -1
     }
 }
 
@@ -101,7 +103,14 @@ BACKEND_PID=$!
 
 # ── Step 5: Start Caddy ──────────────────────────────────
 echo ""
-echo "=== Step 5: Waiting 3s then starting Caddy on port ${PORT:-8080} ==="
-sleep 3
+echo "=== Step 5: Waiting for backend on port 8081, then starting Caddy on port ${PORT:-8080} ==="
+for i in $(seq 1 30); do
+    if curl -s http://localhost:8081 > /dev/null 2>&1; then
+        echo "  ✅ Backend ready on port 8081"
+        break
+    fi
+    echo "  ⏳ Waiting for backend... ($i/30)"
+    sleep 1
+done
 echo "  ✅ Starting Caddy..."
 caddy run --config /app/Caddyfile.runtime --adapter caddyfile
