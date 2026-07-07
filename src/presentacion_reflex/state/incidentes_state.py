@@ -63,7 +63,7 @@ class IncidentesState(DocumentosStateMixin):
     # Filtros
     filter_estado: str = "Todos"
     filter_prioridad: str = "Todas"
-    filter_estado_pago: str = ""
+    filter_estado_pago: str = "Todos"
     search_text: str = ""
 
     # Ordenamiento
