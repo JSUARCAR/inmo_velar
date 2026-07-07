@@ -50,8 +50,6 @@ cat > /app/Caddyfile.runtime <<EOF
 
 handle @backend {
     reverse_proxy localhost:8081 {
-        header_up Upgrade {http.request.Upgrade}
-        header_up Connection {http.request.Connection}
         header_up X-Forwarded-Proto https
         flush_interval -1
     }
