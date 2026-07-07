@@ -425,15 +425,28 @@ class IncidentesState(DocumentosStateMixin):
 
     @rx.event(background=True)
     async def load_estados_pago(self):
-        """Carga lista de estados de pago disponibles."""
+        """Carga lista de estados de pago disponibles.
+
+        Accede directamente a la entidad de dominio CuotaIncidente
+        para obtener los estados válidos, evitando la inicialización
+        completa de ServicioIncidentes (que depende de repositorios
+        y conexión a BD).
+        """
         try:
-            servicio = ServicioIncidentes(db_manager)
-            estados = servicio.obtener_estados_pago()
+            from src.dominio.entidades.cuota_incidente import CuotaIncidente
+
+            estados = list(CuotaIncidente.ESTADOS_VALIDOS)
             options = ["Todos"] + estados
             async with self:
                 self.estados_pago_options = options
         except Exception as e:
-            print(f"Error cargando estados de pago: {e}")
+            import logging
+
+            logging.getLogger("IncidentesState").exception(
+                "Error cargando estados de pago"
+            )
+            async with self:
+                self.estados_pago_options = ["Todos"]
 
     @rx.event(background=True)
     async def load_propiedades(self):
