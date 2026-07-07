@@ -103,6 +103,9 @@ def modal_recaudo() -> rx.Component:
                     neuro_floating_input(
                         label="Fecha de Pago *",
                         value=RecaudosState.form_data["fecha_pago"].to(str),
+                        on_change=lambda v: RecaudosState.set_form_field(
+                            "fecha_pago", v
+                        ),
                         type="date",
                         name="fecha_pago",
                         required=True,
@@ -148,9 +151,10 @@ def modal_recaudo() -> rx.Component:
                     # Referencia Bancaria
                     neuro_floating_input(
                         label="Referencia Bancaria",
-                        value=RecaudosState.form_data[
-                            "referencia_bancaria"
-                        ].to(str),
+                        value=RecaudosState.form_data["referencia_bancaria"].to(str),
+                        on_change=lambda v: RecaudosState.set_form_field(
+                            "referencia_bancaria", v
+                        ),
                         name="referencia_bancaria",
                         width="100%",
                     ),
@@ -180,6 +184,9 @@ def modal_recaudo() -> rx.Component:
                         neuro_floating_input(
                             label="Período *",
                             value=RecaudosState.form_data["periodo"].to(str),
+                            on_change=lambda v: RecaudosState.set_form_field(
+                                "periodo", v
+                            ),
                             type="month",
                             name="periodo",
                             required=True,

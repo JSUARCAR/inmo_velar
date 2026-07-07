@@ -5,13 +5,13 @@ Formulario de Edición de Liquidación
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
-from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex import styles
 
 from src.presentacion_reflex.components.neuro_elements import (
     neuro_floating_input,
     neuro_text_area,
 )
+
 
 def form_field_readonly(label: str, name: str, value: str) -> rx.Component:
     """Campo de solo lectura para el formulario de edición."""
@@ -38,6 +38,7 @@ def form_field_editable(
         neuro_floating_input(
             label=label,
             value=default_value,
+            on_change=lambda v: LiquidacionesState.set_form_field(name, v),
             name=name,
             type=type,
             width="100%",
@@ -157,7 +158,9 @@ def liquidacion_edit_form() -> rx.Component:
                                     rx.text("Seleccionar Incidentes"),
                                 ),
                                 on_click=lambda: LiquidacionesState.open_seleccion_incidentes_modal(
-                                    LiquidacionesState.form_data["id_liquidacion"].to(int)
+                                    LiquidacionesState.form_data["id_liquidacion"].to(
+                                        int
+                                    )
                                 ),
                                 type="button",
                                 variant="soft",
