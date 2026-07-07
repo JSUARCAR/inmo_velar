@@ -1,7 +1,10 @@
 import json
+import logging
 from dataclasses import replace
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+
+_log = logging.getLogger("ServicioIncidentes")
 
 from src.dominio.entidades.cotizacion import Cotizacion
 from src.dominio.entidades.historial_incidente import HistorialIncidente
@@ -128,6 +131,7 @@ class ServicioIncidentes:
         id_propiedad: Optional[int] = None,
         prioridad: Optional[str] = None,
         estado: Optional[str] = None,
+        estado_pago: Optional[str] = None,
         fecha_desde: Optional[str] = None,
         fecha_hasta: Optional[str] = None,
         id_proveedor: Optional[int] = None,
@@ -141,6 +145,7 @@ class ServicioIncidentes:
             id_propiedad=id_propiedad,
             prioridad=prioridad,
             estado=estado,
+            estado_pago=estado_pago,
             fecha_desde=fecha_desde,
             fecha_hasta=fecha_hasta,
             id_proveedor=id_proveedor,
@@ -148,6 +153,12 @@ class ServicioIncidentes:
             page=page,
             page_size=page_size,
         )
+
+    def obtener_estados_pago(self) -> List[str]:
+        """Obtiene los estados de pago disponibles desde el dominio."""
+        from src.dominio.entidades.cuota_incidente import CuotaIncidente
+
+        return list(CuotaIncidente.ESTADOS_VALIDOS)
 
     def obtener_detalle(self, id_incidente: int) -> Optional[Dict[str, Any]]:
         incidente = self.repo_incidentes.obtener_por_id(id_incidente)

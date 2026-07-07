@@ -224,6 +224,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         id_proveedor: Optional[int] = None,
         dias_min: Optional[int] = None,
         estado: Optional[str] = None,
+        estado_pago: Optional[str] = None,
         page: Optional[int] = None,
         page_size: Optional[int] = None,
         sort_by: str = "FECHA_INCIDENTE",
@@ -314,6 +315,10 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             query += " AND I.FECHA_INCIDENTE <= %s"
             params.append(fecha_hasta)
 
+        if estado_pago:
+            query += " AND I.ESTADO_PAGO = %s"
+            params.append(estado_pago)
+
         # Count query independiente con JOINS minimos
         count_query = """
         SELECT COUNT(DISTINCT I.ID_INCIDENTE) AS total
@@ -347,6 +352,9 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         if fecha_hasta:
             count_query += " AND I.FECHA_INCIDENTE <= %s"
             count_params.append(fecha_hasta)
+        if estado_pago:
+            count_query += " AND I.ESTADO_PAGO = %s"
+            count_params.append(estado_pago)
 
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
@@ -546,3 +554,11 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             cursor = conn.cursor()
             cursor.execute(query, params)
             conn.commit()
+
+    def obtener_estados_pago_disponibles(self) -> List[str]:
+        query = "SELECT DISTINCT ESTADO FROM LIQUIDACIONES WHERE ESTADO IS NOT NULL AND ESTADO != ''"
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        cursor.execute(query)
+        estados = [row["estado"] or row["ESTADO"] for row in cursor.fetchall()]
+        return sorted(estados)

@@ -25,6 +25,8 @@ class CuotaIncidente:
         created_at: Fecha de creación
     """
 
+    ESTADOS_VALIDOS = ("Pendiente", "Asociada", "Pagada")
+
     id_cuota: Optional[int] = None
     id_plan_pago: int = 0
     numero_cuota: int = 0

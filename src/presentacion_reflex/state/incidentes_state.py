@@ -63,6 +63,7 @@ class IncidentesState(DocumentosStateMixin):
     # Filtros
     filter_estado: str = "Todos"
     filter_prioridad: str = "Todas"
+    filter_estado_pago: str = ""
     search_text: str = ""
 
     # Ordenamiento
@@ -85,6 +86,7 @@ class IncidentesState(DocumentosStateMixin):
         "Cancelado",
     ]
     prioridad_options: List[str] = ["Todas", "Alta", "Media", "Baja"]
+    estados_pago_options: List[str] = ["Todos"]
     propiedades_options: List[Dict[str, Any]] = []
 
     # Combobox State - Propiedad Afectada
@@ -416,9 +418,22 @@ class IncidentesState(DocumentosStateMixin):
             yield IncidentesState.load_incidentes()
             yield IncidentesState.load_propiedades()
             yield IncidentesState.load_proveedores()
+            yield IncidentesState.load_estados_pago()
         finally:
             async with self:
                 self.is_loading = False
+
+    @rx.event(background=True)
+    async def load_estados_pago(self):
+        """Carga lista de estados de pago disponibles."""
+        try:
+            servicio = ServicioIncidentes(db_manager)
+            estados = servicio.obtener_estados_pago()
+            options = ["Todos"] + estados
+            async with self:
+                self.estados_pago_options = options
+        except Exception as e:
+            print(f"Error cargando estados de pago: {e}")
 
     @rx.event(background=True)
     async def load_propiedades(self):
@@ -463,6 +478,7 @@ class IncidentesState(DocumentosStateMixin):
                 self.filter_prioridad if self.filter_prioridad != "Todas" else None
             )
             estado = self.filter_estado if self.filter_estado != "Todos" else None
+            estado_pago = self.filter_estado_pago if self.filter_estado_pago and self.filter_estado_pago != "Todos" else None
 
             # Pagination server-side enforced (US1) to prevent websocket crashes
             pagina = self.page
@@ -472,6 +488,7 @@ class IncidentesState(DocumentosStateMixin):
                 busqueda=self.search_text if self.search_text else None,
                 prioridad=prioridad,
                 estado=estado,
+                estado_pago=estado_pago,
                 page=pagina,
                 page_size=tamano_pagina,
             )
@@ -589,6 +606,11 @@ class IncidentesState(DocumentosStateMixin):
 
     def set_filter_estado(self, value: str):
         self.filter_estado = value
+        return IncidentesState.load_incidentes
+
+    def set_filter_estado_pago(self, value: str):
+        self.filter_estado_pago = value
+        self.page = 1
         return IncidentesState.load_incidentes
 
     def set_filter_prioridad(self, value: str):

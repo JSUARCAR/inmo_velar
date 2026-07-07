@@ -48,6 +48,17 @@ def _filter_bar() -> rx.Component:
             placeholder="Estado",
             width=["100%", "150px"],
         ),
+        neuro_floating_select(
+            label="Estado de Pago",
+            options=rx.foreach(
+                IncidentesState.estados_pago_options,
+                lambda opt: rx.select.item(opt, value=opt),
+            ),
+            value=IncidentesState.filter_estado_pago,
+            on_change=IncidentesState.set_filter_estado_pago,
+            placeholder="Estado de Pago",
+            width=["100%", "180px"],
+        ),
         rx.spacer(display=["none", "block"]),
         rx.segmented_control.root(
             rx.segmented_control.item("Kanban", value="kanban"),
