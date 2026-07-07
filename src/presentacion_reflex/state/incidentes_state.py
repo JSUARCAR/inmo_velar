@@ -86,7 +86,7 @@ class IncidentesState(DocumentosStateMixin):
         "Cancelado",
     ]
     prioridad_options: List[str] = ["Todas", "Alta", "Media", "Baja"]
-    estados_pago_options: List[str] = ["Todos"]
+    estados_pago_options: List[str] = ["Todos", "Pendiente", "Asociada", "Pagada"]
     propiedades_options: List[Dict[str, Any]] = []
 
     # Combobox State - Propiedad Afectada
