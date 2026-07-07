@@ -1,5 +1,20 @@
 # Estado de Tareas
 
+## Tareas Completadas: 001-fix-liquidaciones-incidentes
+**Fecha**: 2026-07-06
+
+Se completaron todas las tareas (25 de 25) descritas en el plan de implementación de la feature `001-fix-liquidaciones-incidentes`.
+
+**Resumen de cambios**:
+- **US1 (Filtrado de Incidentes por Propiedad)**: Se corrigió `open_seleccion_incidentes_modal` en `liquidaciones_state.py` para filtrar incidentes por `ID_PROPIEDAD` de la liquidación. Se agregó consulta para obtener `ID_PROPIEDAD` desde `CONTRATOS_MANDATOS` usando `ID_CONTRATO_M`. Se implementó validación para cuando no se puede obtener la propiedad.
+- **US2 (Carga de Datos al Editar)**: Se verificó que `observaciones` y `valor_incidentes` se cargan correctamente en `open_edit_modal`. Se agregó indicador visual del monto de incidentes en el formulario de edición.
+- **US3 (Consistencia)**: Se verificó que la selección múltiple se persiste correctamente en `INCIDENTE_LIQUIDACION` y que `VALOR_INCIDENTES` se actualiza en `LIQUIDACIONES`.
+- **Archivos modificados**:
+  - `src/presentacion_reflex/state/liquidaciones_state.py`: Corrección del filtrado de incidentes
+  - `src/presentacion_reflex/components/liquidaciones/liquidacion_edit_form.py`: Indicador visual de incidentes
+
+---
+
 ## Tareas Completadas: 030-filtro-pago-incidentes
 **Fecha**: 2026-07-06
 

@@ -103,12 +103,12 @@ def _plan_details_view() -> rx.Component:
                             ),
                             rx.table.cell(
                                 rx.badge(
-                                    cuota.get("estado_cuota", "Pendiente"),
+                                    cuota.get("estado_pago", "Pendiente"),
                                     color_scheme=rx.cond(
-                                        cuota.get("estado_cuota") == "Pagado",
+                                        cuota.get("estado_pago") == "Pagada",
                                         "green",
                                         rx.cond(
-                                            cuota.get("estado_cuota") == "Asociado",
+                                            cuota.get("estado_pago") == "Asociado",
                                             "blue",
                                             "gray",
                                         ),

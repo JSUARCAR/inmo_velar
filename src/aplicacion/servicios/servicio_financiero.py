@@ -347,6 +347,24 @@ class ServicioFinanciero:
             cuota.estado_pago = "Pagada"
             self.repo_cuota.actualizar(cuota)
 
+        # Update incident payment status (US1)
+        from src.infraestructura.persistencia.repositorio_plan_pago_postgres import RepositorioPlanPagoPostgres
+        from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import RepositorioIncidenteLiquidacionPostgres
+        from src.infraestructura.persistencia.repositorio_incidentes_postgres import RepositorioIncidentesPostgres
+        from src.aplicacion.servicios.servicio_estado_pago import ServicioEstadoPagoAutomatico
+        from src.infraestructura.persistencia.database import db_manager
+
+        servicio_estado = ServicioEstadoPagoAutomatico(
+            repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
+            repositorio_cuota=self.repo_cuota,
+            repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(db_manager),
+            repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
+        )
+        servicio_estado.actualizar_estado_pago_por_liquidacion(
+            id_liquidacion=id_liquidacion,
+            usuario=usuario_sistema
+        )
+
     def marcar_liquidacion_propietario_pagada(
         self,
         id_propietario: int,
@@ -390,9 +408,18 @@ class ServicioFinanciero:
         """
         if not motivo or len(motivo.strip()) < 10:
             raise ValueError("El motivo de reversión debe tener al menos 10 caracteres")
-        return self.repo_liquidacion.reversar_pago(
+        result = self.repo_liquidacion.reversar_pago(
             id_liquidacion, usuario_sistema, motivo.strip()
         )
+
+        # US4: Revertir las cuotas asociadas a "Pendiente"
+        cuotas = self.repo_cuota.obtener_por_liquidacion(id_liquidacion)
+        for cuota in cuotas:
+            if cuota.estado_pago == "Pagada":
+                cuota.estado_pago = "Pendiente"
+                self.repo_cuota.actualizar(cuota)
+
+        return result
 
     def reversar_pago_propietario(
         self, id_propietario: int, periodo: str, usuario_sistema: str, motivo: str
@@ -403,9 +430,20 @@ class ServicioFinanciero:
         """
         if not motivo or len(motivo.strip()) < 10:
             raise ValueError("El motivo de reversión debe tener al menos 10 caracteres")
-        return self.repo_liquidacion.reversar_pago_por_propietario_y_periodo(
+        result = self.repo_liquidacion.reversar_pago_por_propietario_y_periodo(
             id_propietario, periodo, usuario_sistema, motivo.strip()
         )
+
+        # US5: Revertir las cuotas asociadas a "Pendiente" para cada liquidación
+        if result and "liquidaciones_revertidas" in result:
+            for liq in result["liquidaciones_revertidas"]:
+                cuotas = self.repo_cuota.obtener_por_liquidacion(liq["id"])
+                for cuota in cuotas:
+                    if cuota.estado_pago == "Pagada":
+                        cuota.estado_pago = "Pendiente"
+                        self.repo_cuota.actualizar(cuota)
+
+        return result
 
     def eliminar_liquidacion(self, id_liquidacion: int, usuario_sistema: str) -> dict:
         """

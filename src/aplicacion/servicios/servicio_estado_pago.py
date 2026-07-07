@@ -61,26 +61,33 @@ class ServicioEstadoPagoAutomatico:
         """
         try:
             with db_manager.transaccion():
-                # 1. Obtener todas las relaciones de esta liquidación
-                relaciones = self.repositorio_relacion.obtener_por_liquidacion(
-                    id_liquidacion
-                )
+                # 1. Obtener todas las cuotas de esta liquidación
+                cuotas = self.repositorio_cuota.obtener_por_liquidacion(id_liquidacion)
 
-                if not relaciones:
+                if not cuotas:
                     return {
                         "success": True,
                         "data": {"incidentes_actualizados": 0},
-                        "message": "No hay incidentes asociados a esta liquidación",
+                        "message": "No hay cuotas asociadas a esta liquidación",
                     }
 
-                # 2. Para cada incidente asociado, recalcular su estado de pago
+                # 2. Para cada incidente asociado (vía plan de pago), recalcular su estado de pago
                 incidentes_actualizados = 0
-                for relacion in relaciones:
-                    resultado = self.recalcular_estado_pago_incidente(
-                        relacion.id_incidente, usuario
-                    )
-                    if resultado.get("success"):
-                        incidentes_actualizados += 1
+                planes_procesados = set()
+                
+                for cuota in cuotas:
+                    if cuota.id_plan_pago in planes_procesados:
+                        continue
+                        
+                    planes_procesados.add(cuota.id_plan_pago)
+                    plan = self.repositorio_plan.obtener_por_id(cuota.id_plan_pago)
+                    
+                    if plan:
+                        resultado = self.recalcular_estado_pago_incidente(
+                            plan.id_incidente, usuario
+                        )
+                        if resultado.get("success"):
+                            incidentes_actualizados += 1
 
                 logger.info(
                     f"Estados de pago actualizados para liquidación {id_liquidacion}: "
@@ -141,12 +148,12 @@ class ServicioEstadoPagoAutomatico:
                 )
             )
 
-            if total_con_liq == 0:
-                # No hay cuotas asociadas a liquidaciones
+            if plan.num_cuotas == 0:
+                # Fallback defensivo
                 nuevo_estado = "Pendiente"
             else:
-                # 5. Determinar estado de pago
-                if cuotas_pagadas == total_con_liq:
+                # 5. Determinar estado de pago en base al total de cuotas del plan
+                if cuotas_pagadas == plan.num_cuotas:
                     nuevo_estado = "Pagado"
                 elif cuotas_pagadas > 0:
                     nuevo_estado = "Parcialmente Pagado"
@@ -158,8 +165,9 @@ class ServicioEstadoPagoAutomatico:
             if incidente:
                 estado_anterior = incidente.estado_pago
                 if estado_anterior != nuevo_estado:
-                    incidente.estado_pago = nuevo_estado
-                    self.repositorio_incidentes.actualizar(incidente)
+                    import dataclasses
+                    incidente_actualizado = dataclasses.replace(incidente, estado_pago=nuevo_estado)
+                    self.repositorio_incidentes.actualizar(incidente_actualizado)
 
                     logger.info(
                         f"Incidente {id_incidente}: estado_pago cambiado "

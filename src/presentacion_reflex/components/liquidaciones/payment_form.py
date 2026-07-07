@@ -19,6 +19,7 @@ def form_field(
     type: str = "text",
     placeholder: str = "",
     required: bool = False,
+    on_change=None,
 ) -> rx.Component:
     """Campo de formulario reutilizable."""
     return rx.box(
@@ -29,6 +30,7 @@ def form_field(
             placeholder=placeholder,
             type=type,
             required=required,
+            on_change=on_change,
             width="100%",
         ),
         width="100%",
@@ -58,12 +60,13 @@ def payment_form() -> rx.Component:
                         LiquidacionesState.form_data["fecha_pago"],
                         type="date",
                         required=True,
+                        on_change=lambda val: LiquidacionesState.set_form_field("fecha_pago", val),
                     ),
                     # Método de Pago
                     rx.box(
                         neuro_floating_select(
                             label="Método de Pago",
-                            value="Transferencia Electrónica",
+                            value=LiquidacionesState.form_data["metodo_pago"],
                             name="metodo_pago",
                             options=[
                                 {"label": "Transferencia Electrónica", "value": "Transferencia Electrónica"},
@@ -72,6 +75,7 @@ def payment_form() -> rx.Component:
                                 {"label": "Efectivo", "value": "Efectivo"},
                                 {"label": "Otro", "value": "Otro"},
                             ],
+                            on_change=lambda val: LiquidacionesState.set_form_field("metodo_pago", val),
                             width="100%",
                         ),
                         width="100%",
@@ -80,8 +84,10 @@ def payment_form() -> rx.Component:
                     form_field(
                         "Referencia / Comprobante",
                         "referencia_pago",
+                        LiquidacionesState.form_data["referencia_pago"],
                         placeholder="Ej: TRX-123456",
                         required=True,
+                        on_change=lambda val: LiquidacionesState.set_form_field("referencia_pago", val),
                     ),
                     rx.callout(
                         "Esta acción cambiará el estado de la liquidación a 'Pagada' y no se podrá revertir fácilmente.",

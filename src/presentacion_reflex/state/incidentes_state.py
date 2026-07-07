@@ -582,8 +582,24 @@ class IncidentesState(DocumentosStateMixin):
                 self.error_message = f"Error al cargar incidentes: {str(e)}"
                 self.incidentes = []
         finally:
+            yield_select = None
+            yield_plan = None
             async with self:
                 self.is_loading = False
+                
+                # Sincronización en tiempo real (US2): Si hay un incidente seleccionado, recargarlo
+                if getattr(self, "details_modal_open", False) and getattr(self, "selected_incidente", None) and self.selected_incidente.get("id"):
+                    yield_select = IncidentesState.select_incidente(self.selected_incidente)
+                
+                # Sincronización en tiempo real (US2): Si el modal del plan de pago está abierto, recargarlo
+                if getattr(self, "show_plan_pago_modal", False) and getattr(self, "plan_pago_incidente_id", None):
+                    yield_plan = IncidentesState.open_plan_pago_modal(self.plan_pago_incidente_id)
+            
+            if yield_select:
+                yield yield_select
+            if yield_plan:
+                yield yield_plan
+
 
     @rx.event(background=True)
     async def load_proveedores(self):

@@ -148,18 +148,44 @@ def liquidacion_edit_form() -> rx.Component:
                     ),
                     # Botón Seleccionar Incidentes (solo aparece en liquidaciones En Proceso
                     # porque el modal solo se abre para liquidaciones en ese estado)
-                    rx.button(
+                    rx.cond(
+                        LiquidacionesState.form_data["valor_incidentes"].to(float) > 0,
                         rx.hstack(
-                            rx.icon("link", size=16),
-                            rx.text("Seleccionar Incidentes"),
+                            rx.button(
+                                rx.hstack(
+                                    rx.icon("link", size=16),
+                                    rx.text("Seleccionar Incidentes"),
+                                ),
+                                on_click=lambda: LiquidacionesState.open_seleccion_incidentes_modal(
+                                    LiquidacionesState.form_data["id_liquidacion"].to(int)
+                                ),
+                                type="button",
+                                variant="soft",
+                                color_scheme="orange",
+                            ),
+                            rx.badge(
+                                "$",
+                                LiquidacionesState.form_data["valor_incidentes"],
+                                color_scheme="green",
+                                size="1",
+                            ),
+                            spacing="2",
+                            align="center",
+                            margin_top="1em",
                         ),
-                        on_click=lambda: LiquidacionesState.open_seleccion_incidentes_modal(
-                            LiquidacionesState.form_data["id_liquidacion"].to(int)
+                        rx.button(
+                            rx.hstack(
+                                rx.icon("link", size=16),
+                                rx.text("Seleccionar Incidentes"),
+                            ),
+                            on_click=lambda: LiquidacionesState.open_seleccion_incidentes_modal(
+                                LiquidacionesState.form_data["id_liquidacion"].to(int)
+                            ),
+                            type="button",
+                            variant="soft",
+                            color_scheme="orange",
+                            margin_top="1em",
                         ),
-                        type="button",
-                        variant="soft",
-                        color_scheme="orange",
-                        margin_top="1em",
                     ),
                     section_title("Observaciones"),
                     neuro_text_area(

@@ -1085,6 +1085,37 @@ class LiquidacionesState(DocumentosStateMixin):
                 usuario_sistema=usuario_sistema,
             )
 
+            # T012 & T013: US3 Actualizar estado de pago de incidentes asociados
+            try:
+                from src.infraestructura.persistencia.repositorio_plan_pago_postgres import RepositorioPlanPagoPostgres
+                from src.infraestructura.persistencia.repositorio_cuota_postgres import RepositorioCuotaPostgres
+                from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import RepositorioIncidenteLiquidacionPostgres
+                from src.infraestructura.persistencia.repositorio_incidentes_postgres import RepositorioIncidentesPostgres
+                from src.aplicacion.servicios.servicio_estado_pago import ServicioEstadoPagoAutomatico
+
+                servicio_estado = ServicioEstadoPagoAutomatico(
+                    repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
+                    repositorio_cuota=RepositorioCuotaPostgres(db_manager),
+                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(db_manager),
+                    repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
+                )
+                # Obtener todas las liquidaciones del periodo y sincronizarlas si están pagadas
+                liquidaciones = servicio.repo_liquidacion.listar_por_propietario_y_periodo(
+                    int(form_data["id_propietario"]), form_data["periodo"]
+                )
+                for liq in liquidaciones:
+                    if liq.estado_liquidacion == "Pagada":
+                        servicio_estado.actualizar_estado_pago_por_liquidacion(
+                            id_liquidacion=liq.id_liquidacion,
+                            usuario=usuario_sistema,
+                        )
+            except Exception as e_estado:
+                import logging
+                logging.getLogger(__name__).error(
+                    f"Error de sincronización en pago masivo para propietario {form_data['id_propietario']}: {str(e_estado)}",
+                    exc_info=True
+                )
+
             async with self:
                 self.show_payment_modal = False
                 self.form_data = {}
@@ -1092,6 +1123,8 @@ class LiquidacionesState(DocumentosStateMixin):
 
             # Recargar lista
             yield LiquidacionesState.load_liquidaciones()
+            from src.presentacion_reflex.state.incidentes_state import IncidentesState
+            yield IncidentesState.load_incidentes()
 
         except Exception as e:
             async with self:
@@ -1273,11 +1306,12 @@ class LiquidacionesState(DocumentosStateMixin):
                     usuario=usuario_sistema,
                 )
             except Exception as e_estado:
-                # No fallar el pago principal por error en actualización de estado
+                # T007: Log sync errors with details instead of silently swallowing
                 import logging
 
-                logging.getLogger(__name__).warning(
-                    f"Error al actualizar estado de pago de incidentes: {e_estado}"
+                logging.getLogger(__name__).error(
+                    f"Error de sincronización de incidentes al pagar liquidación {form_data['id_liquidacion']}: {str(e_estado)}",
+                    exc_info=True
                 )
 
             async with self:
@@ -1287,6 +1321,8 @@ class LiquidacionesState(DocumentosStateMixin):
 
             # Recargar lista
             yield LiquidacionesState.load_liquidaciones()
+            from src.presentacion_reflex.state.incidentes_state import IncidentesState
+            yield IncidentesState.load_incidentes()
 
         except Exception as e:
             async with self:
@@ -1352,6 +1388,31 @@ class LiquidacionesState(DocumentosStateMixin):
             servicio = ServicioFinanciero(db_manager)
             servicio.reversar_liquidacion(self.liquidacion_id_for_action, "admin")
 
+            # T015 & T016: US4 Actualizar estado de pago de incidentes tras la reversión
+            try:
+                from src.infraestructura.persistencia.repositorio_plan_pago_postgres import RepositorioPlanPagoPostgres
+                from src.infraestructura.persistencia.repositorio_cuota_postgres import RepositorioCuotaPostgres
+                from src.infraestructura.persistencia.repositorio_incidente_liq_postgres import RepositorioIncidenteLiquidacionPostgres
+                from src.infraestructura.persistencia.repositorio_incidentes_postgres import RepositorioIncidentesPostgres
+                from src.aplicacion.servicios.servicio_estado_pago import ServicioEstadoPagoAutomatico
+
+                servicio_estado = ServicioEstadoPagoAutomatico(
+                    repositorio_plan=RepositorioPlanPagoPostgres(db_manager),
+                    repositorio_cuota=RepositorioCuotaPostgres(db_manager),
+                    repositorio_relacion=RepositorioIncidenteLiquidacionPostgres(db_manager),
+                    repositorio_incidentes=RepositorioIncidentesPostgres(db_manager),
+                )
+                servicio_estado.revertir_estado_pago_por_liquidacion(
+                    id_liquidacion=self.liquidacion_id_for_action,
+                    usuario="admin",
+                )
+            except Exception as e_estado:
+                import logging
+                logging.getLogger(__name__).error(
+                    f"Error de sincronización al reversar liquidación {self.liquidacion_id_for_action}: {str(e_estado)}",
+                    exc_info=True
+                )
+
             async with self:
                 self.show_reverse_confirm = False
                 self.show_detail_modal = False
@@ -1359,6 +1420,8 @@ class LiquidacionesState(DocumentosStateMixin):
                 self.form_data = {}  # Limpieza de Estado (Post-Reversión)
 
             yield LiquidacionesState.load_liquidaciones()
+            from src.presentacion_reflex.state.incidentes_state import IncidentesState
+            yield IncidentesState.load_incidentes()
 
         except Exception as e:
             async with self:
@@ -1453,9 +1516,9 @@ class LiquidacionesState(DocumentosStateMixin):
                 )
             except Exception as e_estado:
                 import logging
-
-                logging.getLogger(__name__).warning(
-                    f"Error al revertir estado de pago de incidentes: {e_estado}"
+                logging.getLogger(__name__).error(
+                    f"Error al revertir estado de pago de incidentes: {e_estado}",
+                    exc_info=True
                 )
 
             async with self:
@@ -1466,6 +1529,8 @@ class LiquidacionesState(DocumentosStateMixin):
                 self.is_loading = False
 
             yield LiquidacionesState.load_liquidaciones()
+            from src.presentacion_reflex.state.incidentes_state import IncidentesState
+            yield IncidentesState.load_incidentes()
 
         except Exception as e:
             async with self:
@@ -1539,9 +1604,9 @@ class LiquidacionesState(DocumentosStateMixin):
                         )
             except Exception as e_estado:
                 import logging
-
-                logging.getLogger(__name__).warning(
-                    f"Error al revertir estados de pago de incidentes: {e_estado}"
+                logging.getLogger(__name__).error(
+                    f"Error al revertir estados de pago de incidentes: {e_estado}",
+                    exc_info=True
                 )
 
             async with self:
@@ -1550,6 +1615,8 @@ class LiquidacionesState(DocumentosStateMixin):
                 self.is_loading = False
 
             yield LiquidacionesState.load_liquidaciones()
+            from src.presentacion_reflex.state.incidentes_state import IncidentesState
+            yield IncidentesState.load_incidentes()
 
             total = result.get("total_reversadas", 0)
             if total > 0:
@@ -1966,13 +2033,42 @@ class LiquidacionesState(DocumentosStateMixin):
             )
             ids_ya_asociados = {r.id_incidente for r in relaciones_existentes}
 
-            # 2. Buscar incidentes elegibles: estado en [Aprobado, En Reparacion, Finalizado]
-            #    y estado_pago != Pagado
+            # 2. Obtener ID_PROPIEDAD desde la liquidación (via CONTRATOS_MANDATOS)
+            id_propiedad = None
+            with dm.obtener_conexion() as conn:
+                cursor_prop = dm.get_dict_cursor(conn)
+                placeholder_prop = dm.get_placeholder()
+                cursor_prop.execute(
+                    f"""SELECT cm.ID_PROPIEDAD
+                        FROM LIQUIDACIONES l
+                        INNER JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+                        WHERE l.ID_LIQUIDACION = {placeholder_prop}""",
+                    (id_liquidacion,),
+                )
+                row_prop = cursor_prop.fetchone()
+                if row_prop:
+                    id_propiedad = row_prop["ID_PROPIEDAD"]
+
+            # 3. Buscar incidentes elegibles: estado en [Aprobado, En Reparacion, Finalizado]
+            #    y estado_pago != Pagado, FILTRADOS por la propiedad de la liquidación
             incidentes_elegibles = []
             # Usar búsqueda directa con filtros SQL
             with dm.obtener_conexion() as conn:
                 cursor = dm.get_dict_cursor(conn)
                 placeholder = dm.get_placeholder()
+
+                # Filtro por propiedad: solo mostrar incidentes de la misma propiedad
+                filtro_propiedad = ""
+                params_filtro = []
+                if id_propiedad is not None:
+                    filtro_propiedad = f"AND i.ID_PROPIEDAD = {placeholder}"
+                    params_filtro = [id_propiedad]
+                else:
+                    # Si no se pudo obtener la propiedad, no mostrar ningún incidente
+                    async with self:
+                        self.seleccion_incidentes_disponibles = []
+                        self.seleccion_incidentes_loading = False
+                    return
 
                 query = f"""
                     SELECT i.ID_INCIDENTE, i.DESCRIPCION_INCIDENTE, i.COSTO_INCIDENTE,
@@ -1989,12 +2085,13 @@ class LiquidacionesState(DocumentosStateMixin):
                     LEFT JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
                     WHERE i.ESTADO IN ({placeholder}, {placeholder}, {placeholder})
                       AND i.ESTADO_PAGO != {placeholder}
+                      {filtro_propiedad}
                     ORDER BY i.ID_INCIDENTE DESC
                 """
-                cursor.execute(
-                    query,
-                    ("Aprobado", "En Reparacion", "Finalizado", "Pagado"),
-                )
+                params_query = [
+                    "Aprobado", "En Reparacion", "Finalizado", "Pagado"
+                ] + params_filtro
+                cursor.execute(query, params_query)
                 rows = cursor.fetchall()
 
             for row in rows:
