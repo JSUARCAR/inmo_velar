@@ -145,15 +145,20 @@ class RepositorioPropiedadPostgres:
         sort_col = SORT_COLUMNS.get(sort_by, "p.ID_PROPIEDAD")
         order = "ASC" if sort_order.lower() == "asc" else "DESC"
 
+        # OPTIMIZACIÓN: LEFT JOIN LATERAL para imagen principal (elimina subconsulta correlacionada)
         query = """
-            SELECT p.*,
-            (SELECT ID FROM DOCUMENTOS d 
-             WHERE d.ENTIDAD_TIPO = 'PROPIEDAD' 
-             AND d.ENTIDAD_ID = CAST(p.ID_PROPIEDAD AS TEXT) 
-             AND d.MIME_TYPE LIKE 'image/%%' 
-             AND d.ES_VIGENTE = '1' 
-             ORDER BY d.ID ASC LIMIT 1) as IMAGEN_PRINCIPAL_ID
+            SELECT p.*, img.ID as IMAGEN_PRINCIPAL_ID
             FROM PROPIEDADES p
+            LEFT JOIN LATERAL (
+                SELECT d.ID 
+                FROM DOCUMENTOS d 
+                WHERE d.ENTIDAD_TIPO = 'PROPIEDAD' 
+                  AND d.ENTIDAD_ID = CAST(p.ID_PROPIEDAD AS TEXT) 
+                  AND d.MIME_TYPE LIKE 'image/%%' 
+                  AND d.ES_VIGENTE = '1' 
+                ORDER BY d.ID ASC 
+                LIMIT 1
+            ) img ON TRUE
         """
 
         conditions = []

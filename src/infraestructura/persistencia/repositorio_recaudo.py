@@ -702,20 +702,34 @@ class RepositorioRecaudo:
         cursor.execute(query, (periodo,))
         recaudos_rows = cursor.fetchall()
 
+        # OPTIMIZACIÓN N+1: Obtener todos los conceptos de una sola vez
+        ids_recaudos = [row["ID_RECAUDO"] for row in recaudos_rows]
+        
+        conceptos_map = {}
+        if ids_recaudos:
+            placeholders_conceptos = ", ".join([f"{placeholder}" for _ in ids_recaudos])
+            query_todos_conceptos = f"""
+                SELECT ID_RECAUDO, TIPO_CONCEPTO, VALOR, PERIODO
+                FROM RECAUDO_CONCEPTOS
+                WHERE ID_RECAUDO IN ({placeholders_conceptos})
+                ORDER BY ID_RECAUDO, TIPO_CONCEPTO
+            """
+            cursor.execute(query_todos_conceptos, ids_recaudos)
+            
+            for c in cursor.fetchall():
+                id_rec = c["ID_RECAUDO"]
+                if id_rec not in conceptos_map:
+                    conceptos_map[id_rec] = []
+                conceptos_map[id_rec].append({
+                    "tipo_concepto": c["TIPO_CONCEPTO"],
+                    "valor": c["VALOR"],
+                    "periodo": c["PERIODO"],
+                })
+
         resultados: List[Dict[str, Any]] = []
 
         for row in recaudos_rows:
             id_recaudo = row["ID_RECAUDO"]
-
-            # Obtener conceptos para este recaudo
-            query_conceptos = f"""
-                SELECT TIPO_CONCEPTO, VALOR, PERIODO
-                FROM RECAUDO_CONCEPTOS
-                WHERE ID_RECAUDO = {placeholder}
-                ORDER BY TIPO_CONCEPTO
-            """
-            cursor.execute(query_conceptos, (id_recaudo,))
-            conceptos_rows = cursor.fetchall()
 
             resultados.append(
                 {
@@ -738,14 +752,7 @@ class RepositorioRecaudo:
                     or "No registrado",
                     "telefono_arrendatario": row.get("TELEFONO_ARRENDATARIO")
                     or "No registrado",
-                    "conceptos": [
-                        {
-                            "tipo_concepto": c["TIPO_CONCEPTO"],
-                            "valor": c["VALOR"],
-                            "periodo": c["PERIODO"],
-                        }
-                        for c in conceptos_rows
-                    ],
+                    "conceptos": conceptos_map.get(id_recaudo, []),
                 }
             )
 

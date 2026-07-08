@@ -97,3 +97,17 @@ class IRepositorioPersona(Protocol):
             Lista de personas que coinciden
         """
         ...
+
+    def obtener_roles_por_personas(self, ids_personas: List[int]) -> dict:
+        """
+        Obtiene todos los roles para múltiples personas en una sola consulta.
+        
+        OPTIMIZACIÓN N+1: Reemplaza múltiples llamadas individuales por una sola consulta.
+        
+        Args:
+            ids_personas: Lista de IDs de personas a consultar
+            
+        Returns:
+            Diccionario: {id_persona: {rol: datos_rol, ...}}
+        """
+        ...

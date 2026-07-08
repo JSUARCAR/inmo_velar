@@ -74,6 +74,77 @@ class RepositorioPersonaPostgres:
         row = cursor.fetchone()
         return self._row_to_entity(row) if row else None
 
+    def _construir_where_filtros(
+        self,
+        filtro_rol: Optional[str] = None,
+        solo_activos: bool = True,
+        solo_inactivos: bool = False,
+        sin_contrato: bool = False,
+        busqueda: Optional[str] = None,
+        fecha_inicio: Optional[str] = None,
+        fecha_fin: Optional[str] = None,
+    ) -> tuple:
+        """Construye la cláusula WHERE con filtros compartidos.
+        
+        Retorna: (where_clause, join_clause, params)
+        """
+        join_clause = ""
+        if filtro_rol:
+            roles_map = {
+                "Propietario": "PROPIETARIOS",
+                "Arrendatario": "ARRENDATARIOS",
+                "Codeudor": "CODEUDORES",
+                "Asesor": "ASESORES",
+                "Proveedor": "PROVEEDORES",
+            }
+            tabla_rol = roles_map.get(filtro_rol)
+            if tabla_rol:
+                join_clause = f" INNER JOIN {tabla_rol} r ON p.ID_PERSONA = r.ID_PERSONA"
+
+        conditions = []
+        params = []
+
+        if solo_activos:
+            conditions.append("p.ESTADO_REGISTRO = TRUE")
+        elif solo_inactivos:
+            conditions.append("p.ESTADO_REGISTRO = FALSE")
+
+        if sin_contrato:
+            conditions.append(
+                "("
+                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'ACTIVO') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'ACTIVO') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO WHERE arr.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'ACTIVO') "
+                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR WHERE cod.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'ACTIVO') "
+                "AND ("
+                "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM ARRENDATARIOS ar_r WHERE ar_r.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM CODEUDORES co_r WHERE co_r.ID_PERSONA = p.ID_PERSONA) "
+                "   OR EXISTS (SELECT 1 FROM ASESORES as_r WHERE as_r.ID_PERSONA = p.ID_PERSONA)"
+                ")"
+                ")"
+            )
+
+        p = self.db.get_placeholder()
+        if busqueda:
+            conditions.append(
+                f"(unaccent(p.NOMBRE_COMPLETO) ILIKE unaccent({p}) OR p.NUMERO_DOCUMENTO ILIKE {p})"
+            )
+            busqueda_param = f"%{busqueda}%"
+            params.extend([busqueda_param, busqueda_param])
+
+        if fecha_inicio:
+            conditions.append(f"p.CREATED_AT::DATE >= {p}")
+            params.append(fecha_inicio)
+
+        if fecha_fin:
+            conditions.append(f"p.CREATED_AT::DATE <= {p}")
+            params.append(fecha_fin)
+
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+        return where_clause, join_clause, params
+
     def obtener_todos(
         self,
         filtro_rol: Optional[str] = None,
@@ -108,69 +179,21 @@ class RepositorioPersonaPostgres:
         sort_col = SORT_COLUMNS.get(sort_by, "p.ID_PERSONA")
         order = "ASC" if sort_order.lower() == "asc" else "DESC"
 
-        query = "SELECT DISTINCT p.* FROM PERSONAS p"
-        join_clause = ""
-        if filtro_rol:
-            roles_map = {
-                "Propietario": "PROPIETARIOS",
-                "Arrendatario": "ARRENDATARIOS",
-                "Codeudor": "CODEUDORES",
-                "Asesor": "ASESORES",
-                "Proveedor": "PROVEEDORES",
-            }
-            tabla_rol = roles_map.get(filtro_rol)
-            if tabla_rol:
-                join_clause = (
-                    f" INNER JOIN {tabla_rol} r ON p.ID_PERSONA = r.ID_PERSONA"
-                )
+        # OPTIMIZACIÓN: Usar método compartido para construir filtros
+        where_clause, join_clause, params = self._construir_where_filtros(
+            filtro_rol=filtro_rol,
+            solo_activos=solo_activos,
+            solo_inactivos=solo_inactivos,
+            sin_contrato=sin_contrato,
+            busqueda=busqueda,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+        )
 
-        query += join_clause
-        conditions = []
-        params = []
-
-        if solo_activos:
-            conditions.append("p.ESTADO_REGISTRO = TRUE")
-        elif solo_inactivos:
-            conditions.append("p.ESTADO_REGISTRO = FALSE")
-
-        if sin_contrato:
-            conditions.append(
-                "("
-                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'ACTIVO') "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'ACTIVO') "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO WHERE arr.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'ACTIVO') "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR WHERE cod.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'ACTIVO') "
-                "AND ("
-                "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM ARRENDATARIOS ar_r WHERE ar_r.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM CODEUDORES co_r WHERE co_r.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM ASESORES as_r WHERE as_r.ID_PERSONA = p.ID_PERSONA)"
-                ")"
-                ")"
-            )
-
-        p = self.db.get_placeholder()
-        if busqueda:
-            conditions.append(
-                f"(unaccent(p.NOMBRE_COMPLETO) ILIKE unaccent({p}) OR p.NUMERO_DOCUMENTO ILIKE {p})"
-            )
-            busqueda_param = f"%{busqueda}%"
-            params.extend([busqueda_param, busqueda_param])
-
-        if fecha_inicio:
-            conditions.append(f"p.CREATED_AT::DATE >= {p}")
-            params.append(fecha_inicio)
-
-        if fecha_fin:
-            conditions.append(f"p.CREATED_AT::DATE <= {p}")
-            params.append(fecha_fin)
-
-        if conditions:
-            query += " WHERE " + " AND ".join(conditions)
-
+        query = f"SELECT DISTINCT p.* FROM PERSONAS p{join_clause}{where_clause}"
         query += f" ORDER BY {sort_col} {order}"
 
+        p = self.db.get_placeholder()
         if limit is not None:
             query += f" LIMIT {p} OFFSET {p}"
             params.extend([limit, offset])
@@ -195,70 +218,116 @@ class RepositorioPersonaPostgres:
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
 
-        query = "SELECT COUNT(DISTINCT p.ID_PERSONA) as TOTAL FROM PERSONAS p"
-        join_clause = ""
-        if filtro_rol:
-            roles_map = {
-                "Propietario": "PROPIETARIOS",
-                "Arrendatario": "ARRENDATARIOS",
-                "Codeudor": "CODEUDORES",
-                "Asesor": "ASESORES",
-                "Proveedor": "PROVEEDORES",
-            }
-            tabla_rol = roles_map.get(filtro_rol)
-            if tabla_rol:
-                join_clause = (
-                    f" INNER JOIN {tabla_rol} r ON p.ID_PERSONA = r.ID_PERSONA"
-                )
+        # OPTIMIZACIÓN: Usar método compartido para construir filtros
+        where_clause, join_clause, params = self._construir_where_filtros(
+            filtro_rol=filtro_rol,
+            solo_activos=solo_activos,
+            solo_inactivos=solo_inactivos,
+            sin_contrato=sin_contrato,
+            busqueda=busqueda,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin,
+        )
 
-        query += join_clause
-        conditions = []
-        params = []
-
-        if solo_activos:
-            conditions.append("p.ESTADO_REGISTRO = TRUE")
-        elif solo_inactivos:
-            conditions.append("p.ESTADO_REGISTRO = FALSE")
-
-        if sin_contrato:
-            conditions.append(
-                "("
-                "NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN PROPIETARIOS pr ON cm.ID_PROPIETARIO = pr.ID_PROPIETARIO WHERE pr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'ACTIVO') "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_MANDATOS cm JOIN ASESORES asr ON cm.ID_ASESOR = asr.ID_ASESOR WHERE asr.ID_PERSONA = p.ID_PERSONA AND cm.ESTADO_CONTRATO_M = 'ACTIVO') "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO WHERE arr.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'ACTIVO') "
-                "AND NOT EXISTS (SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR WHERE cod.ID_PERSONA = p.ID_PERSONA AND ca.ESTADO_CONTRATO_A = 'ACTIVO') "
-                "AND ("
-                "   NOT EXISTS (SELECT 1 FROM PROVEEDORES prv WHERE prv.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM PROPIETARIOS po WHERE po.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM ARRENDATARIOS ar_r WHERE ar_r.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM CODEUDORES co_r WHERE co_r.ID_PERSONA = p.ID_PERSONA) "
-                "   OR EXISTS (SELECT 1 FROM ASESORES as_r WHERE as_r.ID_PERSONA = p.ID_PERSONA)"
-                ")"
-                ")"
-            )
-
-        p = self.db.get_placeholder()
-        if busqueda:
-            conditions.append(
-                f"(unaccent(p.NOMBRE_COMPLETO) ILIKE unaccent({p}) OR p.NUMERO_DOCUMENTO ILIKE {p})"
-            )
-            busqueda_param = f"%{busqueda}%"
-            params.extend([busqueda_param, busqueda_param])
-
-        if fecha_inicio:
-            conditions.append(f"p.CREATED_AT::DATE >= {p}")
-            params.append(fecha_inicio)
-
-        if fecha_fin:
-            conditions.append(f"p.CREATED_AT::DATE <= {p}")
-            params.append(fecha_fin)
-
-        if conditions:
-            query += " WHERE " + " AND ".join(conditions)
+        query = f"SELECT COUNT(DISTINCT p.ID_PERSONA) as TOTAL FROM PERSONAS p{join_clause}{where_clause}"
 
         cursor.execute(query, params)
         row = cursor.fetchone()
         return row.get("TOTAL", 0) if row else 0
+
+    def obtener_roles_por_personas(self, ids_personas: List[int]) -> dict:
+        """Obtiene todos los roles para múltiples personas en una sola consulta.
+        
+        Retorna un diccionario: {id_persona: {rol: datos_rol, ...}}
+        
+        Ejemplo de retorno:
+        {
+            1: {"Propietario": {...}, "Arrendatario": {...}},
+            2: {"Codeudor": {...}},
+            3: {}
+        }
+        """
+        if not ids_personas:
+            return {}
+
+        logger.debug(f"Ejecutando obtener_roles_por_personas: {len(ids_personas)} personas")
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+
+        p = self.db.get_placeholder()
+        placeholders = ", ".join([f"{p}" for _ in ids_personas])
+
+        query = f"""
+            SELECT 'PROPIETARIO' as ROL, ID_PERSONA, 
+                   ID_PROPIETARIO as ID_ENTIDAD, 
+                   OBSERVACIONES_PROPIETARIO as OBSERVACIONES,
+                   ESTADO_PROPIETARIO as ESTADO,
+                   FECHA_INGRESO_PROPIETARIO as FECHA_INGRESO
+            FROM PROPIETARIOS 
+            WHERE ID_PERSONA IN ({placeholders})
+            
+            UNION ALL
+            
+            SELECT 'ARRENDATARIO' as ROL, ID_PERSONA,
+                   ID_ARRENDATARIO as ID_ENTIDAD,
+                   CODIGO_APROBACION_SEGURO as OBSERVACIONES,
+                   NULL as ESTADO,
+                   FECHA_INGRESO_ARRENDATARIO as FECHA_INGRESO
+            FROM ARRENDATARIOS 
+            WHERE ID_PERSONA IN ({placeholders})
+            
+            UNION ALL
+            
+            SELECT 'CODEUDOR' as ROL, ID_PERSONA,
+                   ID_CODEUDOR as ID_ENTIDAD,
+                   NULL as OBSERVACIONES,
+                   NULL as ESTADO,
+                   NULL as FECHA_INGRESO
+            FROM CODEUDORES 
+            WHERE ID_PERSONA IN ({placeholders})
+            
+            UNION ALL
+            
+            SELECT 'ASESOR' as ROL, ID_PERSONA,
+                   ID_ASESOR as ID_ENTIDAD,
+                   NULL as OBSERVACIONES,
+                   NULL as ESTADO,
+                   NULL as FECHA_INGRESO
+            FROM ASESORES 
+            WHERE ID_PERSONA IN ({placeholders})
+            
+            UNION ALL
+            
+            SELECT 'PROVEEDOR' as ROL, ID_PERSONA,
+                   ID_PROVEEDOR as ID_ENTIDAD,
+                   OBSERVACIONES as OBSERVACIONES,
+                   ESTADO_REGISTRO as ESTADO,
+                   CREATED_AT as FECHA_INGRESO
+            FROM PROVEEDORES 
+            WHERE ID_PERSONA IN ({placeholders})
+        """
+
+        # Los placeholders se repiten 5 veces (una por cada tabla)
+        all_params = ids_personas * 5
+        cursor.execute(query, all_params)
+
+        # Agrupar resultados por persona
+        resultado = {}
+        for row in cursor.fetchall():
+            id_persona = row["ID_PERSONA"]
+            rol = row["ROL"]
+            
+            if id_persona not in resultado:
+                resultado[id_persona] = {}
+            
+            resultado[id_persona][rol] = {
+                "id_entidad": row["ID_ENTIDAD"],
+                "observaciones": row["OBSERVACIONES"],
+                "estado": row["ESTADO"],
+                "fecha_ingreso": row["FECHA_INGRESO"],
+            }
+
+        return resultado
 
     def crear(self, persona: Persona, usuario_sistema: str) -> Persona:
         """Crea una nueva persona con RETURNING id (PostgreSQL)."""

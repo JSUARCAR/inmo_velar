@@ -356,22 +356,29 @@ class ServicioIncidentes:
     def obtener_costos_reparaciones_periodo(
         self, id_contrato_m: int, mes_anio: str
     ) -> int:
-        """Retorna la suma de costos de incidentes Aprobados/Finalizados en un mes dado."""
-        incidentes = self.repo_incidentes.listar()
-
-        total = 0
-        for inc in incidentes:
-            if (
-                inc.id_contrato_m == id_contrato_m
-                and inc.responsable_pago == "Propietario"
-            ):
-                fecha_ref = inc.fecha_arreglo or inc.updated_at
-                if fecha_ref:
-                    if isinstance(fecha_ref, str):
-                        fecha_ref = datetime.fromisoformat(fecha_ref)
-                    if fecha_ref.strftime("%Y-%m") == mes_anio:
-                        total += inc.costo_incidente
-        return total
+        """Retorna la suma de costos de incidentes Aprobados/Finalizados en un mes dado.
+        
+        OPTIMIZACIÓN: Usa SQL SUM() en lugar de cargar todos los incidentes en memoria.
+        """
+        query = """
+            SELECT COALESCE(SUM(COSTO_INCIDENTE), 0) as TOTAL
+            FROM INCIDENTES
+            WHERE ID_CONTRATO_M = %s
+              AND RESPONSABLE_PAGO = 'Propietario'
+              AND ESTADO IN ('Aprobado', 'Finalizado')
+              AND (
+                  (FECHA_ARREGLO IS NOT NULL AND TO_CHAR(FECHA_ARREGLO::timestamp, 'YYYY-MM') = %s)
+                  OR 
+                  (FECHA_ARREGLO IS NULL AND UPDATED_AT IS NOT NULL AND TO_CHAR(UPDATED_AT::timestamp, 'YYYY-MM') = %s)
+              )
+        """
+        
+        conn = self.repo_incidentes.db.obtener_conexion()
+        cursor = conn.cursor()
+        cursor.execute(query, (id_contrato_m, mes_anio, mes_anio))
+        row = cursor.fetchone()
+        
+        return row[0] if row else 0
 
     def _registrar_historial(
         self,

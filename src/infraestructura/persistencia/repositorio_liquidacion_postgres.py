@@ -1009,24 +1009,19 @@ class RepositorioLiquidacionPostgres:
 
             cursor.execute(data_query, query_params + [params.page_size, params.offset])
 
-            items = []
-            for row in cursor.fetchall():
-                # Determinar estado consolidado
-                cursor.execute(
-                    f"""
-                    SELECT ESTADO_LIQUIDACION, COUNT(*) as CNT
-                    FROM LIQUIDACIONES l
-                    JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
-                    WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder}
-                    AND l.eliminada = FALSE
-                    GROUP BY ESTADO_LIQUIDACION
-                """,
-                    (row["ID_PROPIETARIO"], row["PERIODO"]),
-                )
+            rows = cursor.fetchall()
+            
+            # OPTIMIZACIÓN N+1: Obtener todos los estados de una sola vez
+            grupos = [{"ID_PROPIETARIO": r["ID_PROPIETARIO"], "PERIODO": r["PERIODO"]} for r in rows]
+            estados_liquidacion = self._obtener_estados_liquidacion_por_grupos(grupos, placeholder)
+            estados_recaudo = self._obtener_estados_recaudo_por_grupos(grupos, placeholder)
 
-                estados_map = {
-                    e["ESTADO_LIQUIDACION"]: e["CNT"] for e in cursor.fetchall()
-                }
+            items = []
+            for row in rows:
+                key = (row["ID_PROPIETARIO"], row["PERIODO"])
+                
+                # Determinar estado consolidado desde el batch
+                estados_map = estados_liquidacion.get(key, {})
                 total_liq = sum(estados_map.values())
 
                 if estados_map.get("En Proceso", 0) > 0:
@@ -1040,38 +1035,8 @@ class RepositorioLiquidacionPostgres:
                 else:
                     estado_consolidado = "Mixto"
 
-                # Determinar estado_recaudo consolidado del propietario
-                # Subconsulta por liquidación individual para evitar producto cartesiano
-                cursor.execute(
-                    f"""
-                    SELECT recaudo_info.ESTADO_RECAUDO, COUNT(*) as CNT
-                    FROM (
-                        SELECT l.ID_LIQUIDACION,
-                            COALESCE(
-                                (SELECT rrec_sub.ESTADO_RECAUDO
-                                 FROM RECAUDOS rrec_sub
-                                 JOIN RECAUDO_CONCEPTOS rconc_sub ON rconc_sub.ID_RECAUDO = rrec_sub.ID_RECAUDO
-                                 JOIN CONTRATOS_ARRENDAMIENTOS ca_sub ON ca_sub.ID_CONTRATO_A = rrec_sub.ID_CONTRATO_A
-                                 WHERE ca_sub.ID_PROPIEDAD = (
-                                     SELECT cm2.ID_PROPIEDAD FROM CONTRATOS_MANDATOS cm2 WHERE cm2.ID_CONTRATO_M = l.ID_CONTRATO_M
-                                 )
-                                 AND rconc_sub.PERIODO = l.PERIODO
-                                 LIMIT 1),
-                                'Sin Recaudo'
-                            ) AS ESTADO_RECAUDO
-                        FROM LIQUIDACIONES l
-                        JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
-                        WHERE cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder}
-                        AND l.eliminada = FALSE
-                        GROUP BY l.ID_LIQUIDACION
-                    ) AS recaudo_info
-                    GROUP BY recaudo_info.ESTADO_RECAUDO
-                """,
-                    (row["ID_PROPIETARIO"], row["PERIODO"]),
-                )
-                recaudo_estados = {
-                    e["ESTADO_RECAUDO"]: e["CNT"] for e in cursor.fetchall()
-                }
+                # Determinar estado_recaudo consolidado desde el batch
+                recaudo_estados = estados_recaudo.get(key, {})
                 if recaudo_estados.get("Pendiente", 0) > 0:
                     estado_recaudo_consolidado = "Pendiente"
                 elif recaudo_estados.get("Vencido", 0) > 0:
@@ -1105,6 +1070,120 @@ class RepositorioLiquidacionPostgres:
             return PaginatedResult(
                 items=items, total=total, page=params.page, page_size=params.page_size
             )
+
+    def _obtener_estados_liquidacion_por_grupos(
+        self, grupos: List[Dict], placeholder: str
+    ) -> Dict[str, Dict[str, int]]:
+        """
+        OPTIMIZACIÓN N+1: Obtiene los estados de liquidación para múltiples grupos en una sola consulta.
+        
+        Args:
+            grupos: Lista de diccionarios con ID_PROPIETARIO y PERIODO
+            placeholder: Placeholder para parámetros SQL
+            
+        Returns:
+            Diccionario: {(id_propietario, periodo): {estado: count, ...}}
+        """
+        if not grupos:
+            return {}
+
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+
+        # Construir condición IN para todos los grupos
+        conditions = []
+        params = []
+        for g in grupos:
+            conditions.append(f"(cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder})")
+            params.extend([g["ID_PROPIETARIO"], g["PERIODO"]])
+
+        where_grupos = " OR ".join(conditions)
+
+        query = f"""
+            SELECT 
+                cm.ID_PROPIETARIO,
+                l.PERIODO,
+                l.ESTADO_LIQUIDACION,
+                COUNT(*) as CNT
+            FROM LIQUIDACIONES l
+            JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+            WHERE ({where_grupos})
+            AND l.eliminada = FALSE
+            GROUP BY cm.ID_PROPIETARIO, l.PERIODO, l.ESTADO_LIQUIDACION
+        """
+
+        cursor.execute(query, params)
+
+        resultado = {}
+        for row in cursor.fetchall():
+            key = (row["ID_PROPIETARIO"], row["PERIODO"])
+            if key not in resultado:
+                resultado[key] = {}
+            resultado[key][row["ESTADO_LIQUIDACION"]] = row["CNT"]
+
+        return resultado
+
+    def _obtener_estados_recaudo_por_grupos(
+        self, grupos: List[Dict], placeholder: str
+    ) -> Dict[str, Dict[str, int]]:
+        """
+        OPTIMIZACIÓN N+1: Obtiene los estados de recaudo para múltiples grupos en una sola consulta.
+        
+        Args:
+            grupos: Lista de diccionarios con ID_PROPIETARIO y PERIODO
+            placeholder: Placeholder para parámetros SQL
+            
+        Returns:
+            Diccionario: {(id_propietario, periodo): {estado: count, ...}}
+        """
+        if not grupos:
+            return {}
+
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+
+        # Construir condición IN para todos los grupos
+        conditions = []
+        params = []
+        for g in grupos:
+            conditions.append(f"(cm.ID_PROPIETARIO = {placeholder} AND l.PERIODO = {placeholder})")
+            params.extend([g["ID_PROPIETARIO"], g["PERIODO"]])
+
+        where_grupos = " OR ".join(conditions)
+
+        query = f"""
+            SELECT 
+                cm.ID_PROPIETARIO,
+                l.PERIODO,
+                COALESCE(
+                    (SELECT rrec_sub.ESTADO_RECAUDO
+                     FROM RECAUDOS rrec_sub
+                     JOIN RECAUDO_CONCEPTOS rconc_sub ON rconc_sub.ID_RECAUDO = rrec_sub.ID_RECAUDO
+                     JOIN CONTRATOS_ARRENDAMIENTOS ca_sub ON ca_sub.ID_CONTRATO_A = rrec_sub.ID_CONTRATO_A
+                     WHERE ca_sub.ID_PROPIEDAD = cm.ID_PROPIEDAD
+                     AND rconc_sub.PERIODO = l.PERIODO
+                     LIMIT 1),
+                    'Sin Recaudo'
+                ) AS ESTADO_RECAUDO,
+                COUNT(DISTINCT l.ID_LIQUIDACION) as CNT
+            FROM LIQUIDACIONES l
+            JOIN CONTRATOS_MANDATOS cm ON l.ID_CONTRATO_M = cm.ID_CONTRATO_M
+            WHERE ({where_grupos})
+            AND l.eliminada = FALSE
+            GROUP BY cm.ID_PROPIETARIO, l.PERIODO, cm.ID_PROPIEDAD, l.PERIODO
+        """
+
+        cursor.execute(query, params)
+
+        resultado = {}
+        for row in cursor.fetchall():
+            key = (row["ID_PROPIETARIO"], row["PERIODO"])
+            if key not in resultado:
+                resultado[key] = {}
+            estado = row["ESTADO_RECAUDO"]
+            resultado[key][estado] = resultado[key].get(estado, 0) + row["CNT"]
+
+        return resultado
 
     def aprobar_por_propietario_y_periodo(
         self, id_propietario: int, periodo: str, usuario_sistema: str

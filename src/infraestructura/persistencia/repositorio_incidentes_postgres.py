@@ -243,27 +243,35 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             -- Datos Habitante (Si aplica)
             PER_HAB.NOMBRE_COMPLETO AS NOMBRE_HABITANTE,
             PER_HAB.TELEFONO_PRINCIPAL AS TELEFONO_HABITANTE,
-            -- Resumen Cotizaciones
-            COALESCE(
-                (SELECT JSON_AGG(
-                    JSON_BUILD_OBJECT(
-                        'id_cotizacion', C.ID_COTIZACION,
-                        'id_proveedor', C.ID_PROVEEDOR,
-                        'valor_total', C.VALOR_TOTAL,
-                        'estado', C.ESTADO_COTIZACION
-                    ) ORDER BY C.FECHA_COTIZACION DESC
-                ) FROM COTIZACIONES C WHERE C.ID_INCIDENTE = I.ID_INCIDENTE
-                ), '[]'::json
-            ) AS COTIZACIONES_JSON,
-            (SELECT JSON_BUILD_OBJECT(
+            -- Resumen Cotizaciones (OPTIMIZACIÓN: LEFT JOIN LATERAL elimina subconsulta correlacionada)
+            COALESCE(cot.cotizaciones, '[]'::json) AS COTIZACIONES_JSON,
+            pp.plan_pago AS PLAN_PAGO_JSON
+        FROM INCIDENTES I
+        LEFT JOIN LATERAL (
+            SELECT JSON_AGG(
+                JSON_BUILD_OBJECT(
+                    'id_cotizacion', C.ID_COTIZACION,
+                    'id_proveedor', C.ID_PROVEEDOR,
+                    'valor_total', C.VALOR_TOTAL,
+                    'estado', C.ESTADO_COTIZACION
+                ) ORDER BY C.FECHA_COTIZACION DESC
+            ) as cotizaciones
+            FROM COTIZACIONES C 
+            WHERE C.ID_INCIDENTE = I.ID_INCIDENTE
+        ) cot ON TRUE
+        LEFT JOIN LATERAL (
+            SELECT JSON_BUILD_OBJECT(
                 'id_plan_pago', PPI.ID_PLAN_PAGO,
                 'num_cuotas', PPI.NUM_CUOTAS,
                 'valor_cuota', PPI.VALOR_CUOTA,
                 'total_plan', PPI.TOTAL_PLAN,
                 'estado', PPI.ESTADO
-            ) FROM PLAN_PAGO_INCIDENTE PPI WHERE PPI.ID_INCIDENTE = I.ID_INCIDENTE AND PPI.ESTADO = 'Activo' LIMIT 1
-            ) AS PLAN_PAGO_JSON
-        FROM INCIDENTES I
+            ) as plan_pago
+            FROM PLAN_PAGO_INCIDENTE PPI 
+            WHERE PPI.ID_INCIDENTE = I.ID_INCIDENTE 
+              AND PPI.ESTADO = 'Activo' 
+            LIMIT 1
+        ) pp ON TRUE
         LEFT JOIN PROVEEDORES PR ON I.ID_PROVEEDOR_ASIGNADO = PR.ID_PROVEEDOR
         LEFT JOIN PERSONAS PER_PROV ON PR.ID_PERSONA = PER_PROV.ID_PERSONA
         LEFT JOIN PROPIEDADES PROP ON I.ID_PROPIEDAD = PROP.ID_PROPIEDAD

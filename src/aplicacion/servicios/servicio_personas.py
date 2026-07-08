@@ -113,10 +113,14 @@ class ServicioPersonas:
             busqueda=busqueda,
         )
 
+        # OPTIMIZACIÓN N+1: Obtener todos los roles de una sola vez
+        ids_personas = [p.id_persona for p in personas]
+        roles_por_persona = self.repo_persona.obtener_roles_por_personas(ids_personas)
+
         return [
             PersonaConRoles(
                 persona=p,
-                datos_roles=self._obtener_datos_roles_persona(p.id_persona),
+                datos_roles=roles_por_persona.get(p.id_persona, {}),
             )
             for p in personas
         ]
@@ -167,10 +171,14 @@ class ServicioPersonas:
             sort_order=sort_order,
         )
 
+        # OPTIMIZACIÓN N+1: Obtener todos los roles de una sola vez
+        ids_personas = [p.id_persona for p in personas]
+        roles_por_persona = self.repo_persona.obtener_roles_por_personas(ids_personas)
+
         items = [
             PersonaConRoles(
                 persona=p,
-                datos_roles=self._obtener_datos_roles_persona(p.id_persona),
+                datos_roles=roles_por_persona.get(p.id_persona, {}),
             )
             for p in personas
         ]
