@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import time
 from typing import Any, Dict, List, Optional
 
 from src.dominio.entidades.cotizacion import Cotizacion
@@ -230,6 +231,7 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         sort_by: str = "FECHA_INCIDENTE",
         sort_order: str = "desc",
     ) -> Dict[str, Any]:
+        start_time = time.time()
         query = """
         SELECT I.*, 
             PER_PROV.NOMBRE_COMPLETO AS NOMBRE_PROVEEDOR,
@@ -395,8 +397,6 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
             sort_order.lower() if sort_order.lower() in ("asc", "desc") else "desc"
         )
 
-        query += " GROUP BY I.ID_INCIDENTE, PER_PROV.ID_PERSONA, PROP.ID_PROPIEDAD, PER_PROP.ID_PERSONA, PER_INQ.ID_PERSONA, PER_HAB.ID_PERSONA"
-
         query += f" ORDER BY {sort_column} {sort_order_valid}"
 
         if page is not None and page_size is not None:
@@ -406,10 +406,12 @@ class RepositorioIncidentesPostgres(RepositorioIncidentes):
         cursor.execute(query, tuple(params))
         incidentes = [self._mapear_incidente(row) for row in cursor.fetchall()]
 
+        exec_time = time.time() - start_time
         _log.debug(
-            "listar_con_filtros: total=%d, incidentes_devueltos=%d",
+            "listar_con_filtros: total=%d, incidentes_devueltos=%d, tiempo=%.3fs",
             total,
             len(incidentes),
+            exec_time
         )
 
         return {"items": incidentes, "total": total}
