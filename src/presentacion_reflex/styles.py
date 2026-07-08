@@ -69,6 +69,11 @@ __all__ = [
     "FL_LABEL_SIZE_TOP",
     "FL_TRANSLATE_Y",
     "FL_TRANSITION",
+    "NEU_FILTER_BAR_STYLE",
+    "NEU_FILTER_INPUT_STYLE",
+    "NEU_FILTER_SELECT_STYLE",
+    "NEU_FILTER_ICON_BUTTON_STYLE",
+    "NEU_FILTER_LABEL_STYLE",
 ]
 
 # --- Backgrounds ---
@@ -273,6 +278,41 @@ NEU_BADGE_STYLE = {
     "font_weight": "bold",
     "text_transform": "uppercase",
     "letter_spacing": "0.05em",
+}
+
+# --- Filter Component Tokens ---
+NEU_FILTER_BAR_STYLE = {
+    "background": "#FFFFFF",
+    "border": "1px solid #E5E7EB",
+    "box_shadow": "none",
+    "border_radius": "16px",
+    "padding": "24px",
+}
+
+NEU_FILTER_INPUT_STYLE = {
+    **NEU_INPUT_STYLE,
+    "height": "40px !important",
+    "border_radius": "8px",
+}
+
+NEU_FILTER_SELECT_STYLE = {
+    **NEU_SELECT_STYLE,
+    "height": "40px !important",
+    "border_radius": "8px",
+}
+
+NEU_FILTER_ICON_BUTTON_STYLE = {
+    **NEU_ICON_BUTTON_STYLE,
+    "height": "40px !important",
+    "width": "40px !important",
+}
+
+NEU_FILTER_LABEL_STYLE = {
+    "font_size": FONT_SIZE_SM,
+    "font_weight": "600",
+    "color": TEXT_SECONDARY,
+    "margin_bottom": "4px",
+    "display": "block",
 }
 
 # --- Aliases para compatibilidad ---

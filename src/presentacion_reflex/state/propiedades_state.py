@@ -260,7 +260,14 @@ class PropiedadesState(DocumentosStateMixin):
 
             # Preparar filtros
             filtro_tipo = None if tipo == "Todos" else tipo
-            filtro_disp = None if disponibilidad == "Todos" else int(disponibilidad)
+            if disponibilidad == "Todos":
+                filtro_disp = None
+            elif disponibilidad in ("1", "Disponible"):
+                filtro_disp = 1
+            elif disponibilidad in ("0", "Ocupada"):
+                filtro_disp = 0
+            else:
+                filtro_disp = None
             filtro_mun = None if municipio == "0" else int(municipio)
             busqueda = search.strip() if search else None
 
@@ -416,6 +423,27 @@ class PropiedadesState(DocumentosStateMixin):
         self.solo_activas = checked
         self.current_page = 1
         yield PropiedadesState.load_propiedades
+
+    def clear_filters(self):
+        """Limpiar todos los filtros."""
+        self.search_text = ""
+        self.filter_tipo = "Todos"
+        self.filter_disponibilidad = "Todos"
+        self.filter_municipio = "0"
+        self.solo_activas = True
+        self.current_page = 1
+        return [PropiedadesState.load_propiedades, PropiedadesState.load_kpis]
+
+    @rx.var
+    def active_filter_count(self) -> int:
+        """Count of active non-default filters."""
+        count = 0
+        if self.search_text: count += 1
+        if self.filter_tipo != "Todos": count += 1
+        if self.filter_disponibilidad != "Todos": count += 1
+        if self.filter_municipio != "0": count += 1
+        if not self.solo_activas: count += 1
+        return count
 
     # Toggle Vista
     def toggle_vista(self):
@@ -775,8 +803,11 @@ class PropiedadesState(DocumentosStateMixin):
 
             # Preparar filtros
             filtro_disp = None
-            if self.filter_disponibilidad and self.filter_disponibilidad != "Todos":
-                filtro_disp = int(self.filter_disponibilidad)
+            if self.filter_disponibilidad:
+                if self.filter_disponibilidad in ("1", "Disponible"):
+                    filtro_disp = 1
+                elif self.filter_disponibilidad in ("0", "Ocupada"):
+                    filtro_disp = 0
 
             filtro_mun = None
             if self.filter_municipio and self.filter_municipio != "0":

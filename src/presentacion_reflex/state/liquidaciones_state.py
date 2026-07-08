@@ -383,6 +383,8 @@ class LiquidacionesState(DocumentosStateMixin):
     def set_search(self, value: str):
         """Actualiza búsqueda."""
         self.search_text = value
+        self.current_page = 1
+        return LiquidacionesState.load_liquidaciones
 
     def search_liquidaciones(self):
         """Ejecuta búsqueda."""
@@ -429,6 +431,31 @@ class LiquidacionesState(DocumentosStateMixin):
         self.filter_ciclo_operativo = value
         self.current_page = 1
         return LiquidacionesState.load_liquidaciones
+
+    def clear_filters(self):
+        """Limpiar todos los filtros."""
+        self.search_text = ""
+        self.filter_periodo = "Todos"
+        self.filter_estado = "Todos"
+        self.filter_asesor_id = "Todos"
+        self.filter_ciclo_operativo = "Todos"
+        self.filter_propiedad_id = ""
+        self.filter_propietario_id = ""
+        self.current_page = 1
+        return LiquidacionesState.load_liquidaciones
+
+    @rx.var
+    def active_filter_count(self) -> int:
+        """Count of active non-default filters."""
+        count = 0
+        if self.search_text: count += 1
+        if self.filter_periodo and self.filter_periodo != "Todos": count += 1
+        if self.filter_estado != "Todos": count += 1
+        if self.filter_asesor_id != "Todos": count += 1
+        if self.filter_ciclo_operativo != "Todos": count += 1
+        if self.filter_propiedad_id: count += 1
+        if self.filter_propietario_id: count += 1
+        return count
 
     # Modal CRUD
     def open_create_modal(self):

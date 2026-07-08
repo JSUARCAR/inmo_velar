@@ -345,6 +345,30 @@ class PersonasState(rx.State):
         self.page = 1
         return PersonasState.load_personas
 
+    def clear_filters(self):
+        """Limpiar todos los filtros."""
+        logger.debug("Ejecutando clear_filters")
+        self.search_query = ""
+        self.filtro_rol = "Todos"
+        self.mostrar_inactivos = False
+        self.filtro_sin_contrato = False
+        self.fecha_inicio = ""
+        self.fecha_fin = ""
+        self.page = 1
+        return PersonasState.load_personas
+
+    @rx.var
+    def active_filter_count(self) -> int:
+        """Count of active non-default filters."""
+        count = 0
+        if self.search_query: count += 1
+        if self.filtro_rol != "Todos": count += 1
+        if self.mostrar_inactivos: count += 1
+        if self.filtro_sin_contrato: count += 1
+        if self.fecha_inicio: count += 1
+        if self.fecha_fin: count += 1
+        return count
+
     def toggle_filtro_sin_contrato(self, checked: bool):
         """Alterna el filtro de personas sin contrato."""
         logger.debug(f"Ejecutando toggle_filtro_sin_contrato: {checked}")

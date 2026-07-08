@@ -39,6 +39,7 @@ from src.presentacion_reflex.components.contratos.modal_renovacion_contrato impo
 from src.presentacion_reflex.components.shared.elite_gradient_icon import (
     elite_gradient_icon_labeled,
 )
+from src.presentacion_reflex.components.shared.advanced_filter_bar import advanced_filter_bar
 from src.presentacion_reflex.state.pdf_state import PDFState
 
 
@@ -462,126 +463,125 @@ def contratos_page() -> rx.Component:
                     spacing="4",
                     width="100%",
                 ),
-                # Barra de Herramientas (Filtros y Búsqueda)
-                neuro_panel(
-                    rx.flex(
-                        neuro_floating_input(
-                            label="Buscar por dirección, nombre o documento...",
-                            placeholder="Buscar por dirección, nombre o documento...",
-                            value=ContratosState.search_text,
-                            on_change=ContratosState.set_search,
-                            on_key_down=ContratosState.handle_search_key_down,
-                            width=["100%", "100%", "400px"],
-                            style={"box_shadow": styles.SHADOW_INSET_ELITE},
+                # --- Elite Toolbar ---
+                advanced_filter_bar(
+                    # Asesor filter
+                    rx.box(
+                        rx.text("Asesor", style=styles.NEU_FILTER_LABEL_STYLE),
+                        rx.select.root(
+                            rx.select.trigger(placeholder="Asesor", style=styles.NEU_FILTER_SELECT_STYLE),
+                            rx.select.content(
+                                rx.select.group(
+                                    rx.foreach(
+                                        ContratosState.asesores_filter_options,
+                                        lambda opt: rx.select.item(opt[0], value=opt[1]),
+                                    )
+                                )
+                            ),
+                            value=ContratosState.filter_asesor_id,
+                            on_change=ContratosState.set_filter_asesor_id,
                         ),
-                        # Filtros y acciones agrupados (sin rx.spacer)
-                        rx.flex(
-                            neuro_floating_select(
-                                label="Asesor",
-                                options=rx.foreach(
-                                    ContratosState.asesores_filter_options,
-                                    lambda opt: rx.select.item(opt[0], value=opt[1]),
-                                ),
-                                placeholder="Asesor",
-                                value=ContratosState.filter_asesor_id,
-                                on_change=ContratosState.set_filter_asesor_id,
-                                width=["100%", "100%", "200px"],
-                                style={
-                                    "box_shadow": styles.SHADOW_INSET_ELITE,
-                                    "border_radius": "8px",
-                                },
+                        width=["100%", "100%", "200px"]
+                    ),
+                    # Tipo filter
+                    rx.box(
+                        rx.text("Tipo", style=styles.NEU_FILTER_LABEL_STYLE),
+                        rx.select(
+                            ContratosState.tipo_options,
+                            value=ContratosState.filter_tipo,
+                            on_change=ContratosState.set_filter_tipo,
+                            placeholder="Tipo",
+                            style=styles.NEU_FILTER_SELECT_STYLE,
+                        ),
+                        width=["100%", "100%", "160px"]
+                    ),
+                    # Estado filter
+                    rx.box(
+                        rx.text("Estado", style=styles.NEU_FILTER_LABEL_STYLE),
+                        rx.select(
+                            ContratosState.estado_options,
+                            value=ContratosState.filter_estado,
+                            on_change=ContratosState.set_filter_estado,
+                            placeholder="Estado",
+                            style=styles.NEU_FILTER_SELECT_STYLE,
+                        ),
+                        width=["100%", "100%", "140px"]
+                    ),
+                    # Toggles
+                    rx.cond(
+                        ContratosState.filter_tipo != "Arrendamiento",
+                        rx.hstack(
+                            rx.text("Sin arriendo", style=styles.NEU_FILTER_LABEL_STYLE, margin_bottom="0"),
+                            rx.checkbox(
+                                checked=ContratosState.filter_sin_arrendamiento,
+                                on_change=ContratosState.set_filter_sin_arrendamiento,
+                                size="2",
+                                color_scheme="orange",
                             ),
-                            neuro_floating_select(
-                                label="Tipo",
-                                options=rx.foreach(
-                                    ContratosState.tipo_options,
-                                    lambda opt: rx.select.item(opt, value=opt),
-                                ),
-                                placeholder="Tipo",
-                                value=ContratosState.filter_tipo,
-                                on_change=ContratosState.set_filter_tipo,
-                                width=["100%", "100%", "160px"],
-                                style={
-                                    "box_shadow": styles.SHADOW_INSET_ELITE,
-                                    "border_radius": "8px",
-                                },
-                            ),
-                            neuro_floating_select(
-                                label="Estado",
-                                options=rx.foreach(
-                                    ContratosState.estado_options,
-                                    lambda opt: rx.select.item(opt, value=opt),
-                                ),
-                                placeholder="Estado",
-                                value=ContratosState.filter_estado,
-                                on_change=ContratosState.set_filter_estado,
-                                width=["100%", "100%", "140px"],
-                                style={
-                                    "box_shadow": styles.SHADOW_INSET_ELITE,
-                                    "border_radius": "8px",
-                                },
-                            ),
-                            # Filtro: Mandatos sin arriendo activo
-                            rx.cond(
-                                ContratosState.filter_tipo != "Arrendamiento",
-                                rx.tooltip(
-                                    rx.box(
-                                        rx.checkbox(
-                                            "Sin arriendo",
-                                            checked=ContratosState.filter_sin_arrendamiento,
-                                            on_change=ContratosState.set_filter_sin_arrendamiento,
-                                            size="2",
-                                            color_scheme="orange",
-                                        ),
-                                        padding="8px 12px",
-                                        border_radius="8px",
-                                        background=rx.cond(
-                                            ContratosState.filter_sin_arrendamiento,
-                                            "var(--orange-3)",
-                                            "transparent",
-                                        ),
-                                        style={
-                                            "box_shadow": rx.cond(
-                                                ContratosState.filter_sin_arrendamiento,
-                                                styles.SHADOW_INSET_ELITE,
-                                                "none",
-                                            ),
-                                            "transition": "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                                            "white_space": "nowrap",
-                                        },
-                                    ),
-                                    content="Mostrar solo mandatos sin contrato de arriendo activo",
-                                ),
-                            ),
-                            neuro_button(
+                            align="center",
+                            spacing="2",
+                        ),
+                    ),
+                    search_placeholder="Buscar por dirección, nombre o documento...",
+                    on_search=ContratosState.set_search,
+                    search_value=ContratosState.search_text,
+                    on_clear=ContratosState.clear_filters,
+                    active_filter_count=ContratosState.active_filter_count,
+                    action_buttons=[
+                        rx.tooltip(
+                            rx.icon_button(
                                 rx.cond(
                                     ContratosState.is_grid_view,
-                                    rx.icon("table"),
-                                    rx.icon("layout-grid"),
+                                    rx.icon("table", size=18),
+                                    rx.icon("layout_grid", size=18),
                                 ),
                                 on_click=ContratosState.toggle_view,
+                                style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                                color_scheme="gray",
                             ),
-                            rx.tooltip(
-                                neuro_button(
-                                    rx.icon("file-spreadsheet", size=16),
-                                    on_click=ContratosState.exportar_csv,
-                                    size="3",
-                                    style={"min_width": "44px"},
-                                ),
-                                content="Exportar a Excel",
+                            content=rx.cond(
+                                ContratosState.is_grid_view,
+                                "Cambiar a vista de tabla",
+                                "Cambiar a vista de cards",
                             ),
-                            gap="3",
-                            flex_wrap="wrap",
-                            flex_direction=rx.breakpoints(initial="column", md="row"),
-                            align=rx.breakpoints(initial="stretch", md="center"),
-                            width=rx.breakpoints(initial="100%", md="auto"),
                         ),
-                        width="100%",
-                        flex_direction=rx.breakpoints(initial="column", md="row"),
-                        align=rx.breakpoints(initial="stretch", md="center"),
-                        gap="4",
+                        rx.tooltip(
+                            rx.icon_button(
+                                rx.icon("file_spreadsheet", size=18),
+                                color_scheme="green",
+                                style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                                on_click=ContratosState.exportar_csv,
+                            ),
+                            content="Exportar a Excel",
+                        ),
+                        rx.tooltip(
+                            rx.icon_button(
+                                rx.icon("refresh_cw", size=18),
+                                style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                                on_click=ContratosState.load_contratos,
+                            ),
+                            content="Recargar",
+                        ),
+                    ]
+                ),
+                # Stats/Counter
+                rx.flex(
+                    rx.text(
+                        "Mostrando ",
+                        ContratosState.contratos.length(),
+                        " de ",
+                        ContratosState.total_items,
+                        " contratos",
+                        size="2",
+                        weight="medium",
+                        color="var(--gray-10)",
                     ),
                     width="100%",
+                    padding_x="2",
+                    justify="between",
+                    align="center",
+                    flex_wrap="wrap",
+                    gap="3",
                 ),
                 # Contenido de Datos
                 rx.cond(

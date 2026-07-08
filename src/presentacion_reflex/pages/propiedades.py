@@ -22,6 +22,7 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_badge,
     neuro_panel,
 )
+from src.presentacion_reflex.components.shared.advanced_filter_bar import advanced_filter_bar
 from src.presentacion_reflex import styles
 
 
@@ -238,98 +239,84 @@ def propiedades_page() -> rx.Component:
                 ),
                 # --- Main Content Area ---
                 rx.vstack(
-                    # Toolbar Section
-                    rx.box(
-                        rx.flex(
-                            # Search Bar with enhanced styling
-                            neuro_floating_input(
-                                label="Buscar por matrícula, dirección...",
-                                placeholder="Buscar por matrícula, dirección...",
-                                value=PropiedadesState.search_text,
-                                on_change=PropiedadesState.set_search,
-                                size="3",
-                                width=rx.breakpoints(
-                                    initial="100%", md="350px"
-                                ),  # Aumentado de 320 a 350
+                    # --- Elite Toolbar ---
+                    advanced_filter_bar(
+                        # Tipo filter
+                        rx.box(
+                            rx.text("Tipo", style=styles.NEU_FILTER_LABEL_STYLE),
+                            rx.select(
+                                PropiedadesState.tipos_options,
+                                value=PropiedadesState.filter_tipo,
+                                on_change=PropiedadesState.set_filter_tipo,
+                                placeholder="Tipo",
+                                style=styles.NEU_FILTER_SELECT_STYLE,
                             ),
-                            rx.spacer(),
-                            # Filters Row
-                            rx.flex(
-                                neuro_floating_select(
-                                    label="Tipo",
-                                    options=rx.foreach(
-                                        PropiedadesState.tipos_options,
-                                        lambda opt: rx.select.item(opt, value=opt),
-                                    ),
-                                    placeholder="Tipo",
-                                    value=PropiedadesState.filter_tipo,
-                                    on_change=PropiedadesState.set_filter_tipo,
-                                    width=rx.breakpoints(
-                                        initial="100%", sm="160px"
-                                    ),  # Aumentado
-                                ),
-                                neuro_floating_select(
-                                    label="Disponibilidad",
-                                    options=[
-                                        rx.select.item("Todos", value="Todos"),
-                                        rx.select.item("Disponible", value="1"),
-                                        rx.select.item("Ocupada", value="0"),
-                                    ],
-                                    placeholder="Disponibilidad",
-                                    value=PropiedadesState.filter_disponibilidad,
-                                    on_change=PropiedadesState.set_filter_disponibilidad,
-                                    width=rx.breakpoints(initial="100%", sm="180px"),
-                                ),
-                                # View Toggle and Export Button Container
-                                rx.hstack(
-                                    rx.tooltip(
-                                        neuro_button(
-                                            rx.cond(
-                                                PropiedadesState.vista_tipo == "cards",
-                                                rx.icon("table", size=18),
-                                                rx.icon("layout-grid", size=18),
-                                            ),
-                                            on_click=PropiedadesState.toggle_vista,
-                                            size="3",
-                                            style={"min_width": "44px"},
-                                        ),
-                                        content=rx.cond(
-                                            PropiedadesState.vista_tipo == "cards",
-                                            "Cambiar a vista de tabla",
-                                            "Cambiar a vista de cards",
-                                        ),
-                                    ),
-                                    rx.tooltip(
-                                        neuro_button(
-                                            rx.icon("file-spreadsheet", size=16),
-                                            on_click=PropiedadesState.exportar_csv,
-                                            size="3",
-                                            style={"min_width": "44px"},
-                                        ),
-                                        content="Exportar a Excel",
-                                    ),
-                                    spacing="3",
-                                    align="center",
-                                ),
-                                spacing="5",
-                                flex_direction=rx.breakpoints(
-                                    initial="column", sm="row"
-                                ),
-                                width=rx.breakpoints(initial="100%", md="auto"),
-                                align="center",
-                            ),
-                            spacing="4",  # Aumentado de 3 a 4
-                            width="100%",
-                            align=rx.breakpoints(initial="start", md="center"),
-                            flex_direction=rx.breakpoints(initial="column", md="row"),
-                            wrap="wrap",
+                            width=["100%", "100%", "160px"]
                         ),
-                        style={
-                            **styles.NEU_PANEL_STYLE,
-                            "padding": "1.5rem",
-                            "border": "none",
-                        },
-                        width="100%",
+                        # Disponibilidad filter
+                        rx.box(
+                            rx.text("Disponibilidad", style=styles.NEU_FILTER_LABEL_STYLE),
+                            rx.select(
+                                ["Todos", "Disponible", "Ocupada"],
+                                value=PropiedadesState.filter_disponibilidad,
+                                on_change=PropiedadesState.set_filter_disponibilidad,
+                                placeholder="Disponibilidad",
+                                style=styles.NEU_FILTER_SELECT_STYLE,
+                            ),
+                            width=["100%", "100%", "180px"]
+                        ),
+                        # Toggles
+                        rx.hstack(
+                            rx.text("Solo Activas", style=styles.NEU_FILTER_LABEL_STYLE, margin_bottom="0"),
+                            neuro_switch(
+                                checked=PropiedadesState.solo_activas,
+                                on_change=PropiedadesState.toggle_solo_activas,
+                                color_scheme="orange",
+                            ),
+                            align="center",
+                            spacing="2",
+                        ),
+                        search_placeholder="Buscar por matrícula, dirección...",
+                        on_search=PropiedadesState.set_search,
+                        search_value=PropiedadesState.search_text,
+                        on_clear=PropiedadesState.clear_filters,
+                        active_filter_count=PropiedadesState.active_filter_count,
+                        action_buttons=[
+                            rx.tooltip(
+                                rx.icon_button(
+                                    rx.cond(
+                                        PropiedadesState.vista_tipo == "cards",
+                                        rx.icon("table", size=18),
+                                        rx.icon("layout_grid", size=18),
+                                    ),
+                                    on_click=PropiedadesState.toggle_vista,
+                                    style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                                    color_scheme="gray",
+                                ),
+                                content=rx.cond(
+                                    PropiedadesState.vista_tipo == "cards",
+                                    "Cambiar a vista de tabla",
+                                    "Cambiar a vista de cards",
+                                ),
+                            ),
+                            rx.tooltip(
+                                rx.icon_button(
+                                    rx.icon("file_spreadsheet", size=18),
+                                    color_scheme="green",
+                                    style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                                    on_click=PropiedadesState.exportar_csv,
+                                ),
+                                content="Exportar a Excel",
+                            ),
+                            rx.tooltip(
+                                rx.icon_button(
+                                    rx.icon("refresh_cw", size=18),
+                                    style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                                    on_click=PropiedadesState.load_propiedades,
+                                ),
+                                content="Recargar",
+                            ),
+                        ]
                     ),
                     # Stats/Counter
                     rx.flex(
@@ -342,23 +329,6 @@ def propiedades_page() -> rx.Component:
                             size="2",
                             weight="medium",
                             color="var(--gray-10)",
-                        ),
-                        # Toggle solo activas
-                        rx.flex(
-                            rx.text(
-                                "Solo Activas",
-                                size="2",
-                                color="var(--gray-10)",
-                                weight="bold",
-                            ),
-                            neuro_switch(
-                                checked=PropiedadesState.solo_activas,
-                                on_change=PropiedadesState.toggle_solo_activas,
-                                size="2",
-                                color_scheme="orange",
-                            ),
-                            align="center",
-                            gap="3",
                         ),
                         width="100%",
                         padding_x="2",

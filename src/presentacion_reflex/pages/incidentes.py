@@ -14,80 +14,95 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_button,
 )
 from src.presentacion_reflex.components.tablas import header_cell_sortable
+from src.presentacion_reflex.components.shared.advanced_filter_bar import advanced_filter_bar
 from src.presentacion_reflex import styles
 
 
 def _filter_bar() -> rx.Component:
-    return rx.flex(
-        neuro_floating_input(
-            label="Buscar incidente...",
-            placeholder="Buscar incidente...",
-            value=IncidentesState.search_text,
-            on_change=IncidentesState.set_search,
-            width=["100%", "250px"],
-        ),
-        neuro_floating_select(
-            label="Prioridad",
-            options=rx.foreach(
+    return advanced_filter_bar(
+        # Prioridad Select
+        rx.box(
+            rx.text("Prioridad", style=styles.NEU_FILTER_LABEL_STYLE),
+            rx.select(
                 IncidentesState.prioridad_options,
-                lambda opt: rx.select.item(opt, value=opt),
+                value=IncidentesState.filter_prioridad,
+                on_change=IncidentesState.set_filter_prioridad,
+                placeholder="Prioridad",
+                style=styles.NEU_FILTER_SELECT_STYLE,
             ),
-            value=IncidentesState.filter_prioridad,
-            on_change=IncidentesState.set_filter_prioridad,
-            placeholder="Prioridad",
-            width=["100%", "150px"],
+            width=["100%", "100%", "150px"]
         ),
-        neuro_floating_select(
-            label="Estado",
-            options=rx.foreach(
+        # Estado Select
+        rx.box(
+            rx.text("Estado", style=styles.NEU_FILTER_LABEL_STYLE),
+            rx.select(
                 IncidentesState.estado_options,
-                lambda opt: rx.select.item(opt, value=opt),
+                value=IncidentesState.filter_estado,
+                on_change=IncidentesState.set_filter_estado,
+                placeholder="Estado",
+                style=styles.NEU_FILTER_SELECT_STYLE,
             ),
-            value=IncidentesState.filter_estado,
-            on_change=IncidentesState.set_filter_estado,
-            placeholder="Estado",
-            width=["100%", "150px"],
+            width=["100%", "100%", "150px"]
         ),
-        neuro_floating_select(
-            label="Estado de Pago",
-            options=rx.foreach(
+        # Estado de Pago Select
+        rx.box(
+            rx.text("Estado de Pago", style=styles.NEU_FILTER_LABEL_STYLE),
+            rx.select(
                 IncidentesState.estados_pago_options,
-                lambda opt: rx.select.item(opt, value=opt),
+                value=IncidentesState.filter_estado_pago,
+                on_change=IncidentesState.set_filter_estado_pago,
+                placeholder="Estado de Pago",
+                style=styles.NEU_FILTER_SELECT_STYLE,
             ),
-            value=IncidentesState.filter_estado_pago,
-            on_change=IncidentesState.set_filter_estado_pago,
-            placeholder="Estado de Pago",
-            width=["100%", "180px"],
+            width=["100%", "100%", "180px"]
         ),
-        rx.spacer(display=["none", "block"]),
-        rx.segmented_control.root(
-            rx.segmented_control.item("Kanban", value="kanban"),
-            rx.segmented_control.item("Lista", value="list"),
-            value=IncidentesState.view_mode,
-            on_change=lambda val: IncidentesState.toggle_view_mode(),
-            width=["100%", "auto"],
-            style={"box_shadow": styles.NEU_SHADOW, "border_radius": "8px"},
-        ),
-        rx.cond(
-            AuthState.check_action("Incidentes", "CREAR"),
+        search_placeholder="Buscar incidente...",
+        on_search=IncidentesState.set_search,
+        search_value=IncidentesState.search_text,
+        on_clear=IncidentesState.clear_filters,
+        active_filter_count=IncidentesState.active_filter_count,
+        action_buttons=[
+            # Toggle Vista
             rx.tooltip(
-                neuro_button(
-                    rx.hstack(rx.icon("plus", size=18), rx.text("Reportar")),
-                    on_click=IncidentesState.open_create_modal,
-                    width=["100%", "auto"],
+                rx.icon_button(
+                    rx.cond(
+                        IncidentesState.view_mode == "kanban",
+                        rx.icon("list", size=18),
+                        rx.icon("layout_grid", size=18),
+                    ),
+                    color_scheme="gray",
+                    style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                    on_click=lambda: IncidentesState.toggle_view_mode(),
                 ),
-                content="Reportar nuevo incidente",
+                content=rx.cond(
+                    IncidentesState.view_mode == "kanban",
+                    "Cambiar a Vista Lista",
+                    "Cambiar a Vista Kanban",
+                ),
             ),
-        ),
-        width="100%",
-        padding="4",
-        background=styles.BG_PANEL,
-        border_radius="16px",
-        style={"box_shadow": styles.NEU_SHADOW},
-        align_items="center",
-        flex_wrap="wrap",
-        gap="4",
-        margin_bottom="4",
+            # Botón Reportar
+            rx.cond(
+                AuthState.check_action("Incidentes", "CREAR"),
+                rx.tooltip(
+                    rx.icon_button(
+                        rx.icon("plus", size=18),
+                        color_scheme="green",
+                        style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                        on_click=IncidentesState.open_create_modal,
+                    ),
+                    content="Reportar Incidente",
+                ),
+            ),
+            # Refresh
+            rx.tooltip(
+                rx.icon_button(
+                    rx.icon("refresh_cw", size=18),
+                    style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                    on_click=IncidentesState.load_incidentes,
+                ),
+                content="Recargar",
+            ),
+        ]
     )
 
 

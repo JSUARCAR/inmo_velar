@@ -651,6 +651,27 @@ class IncidentesState(DocumentosStateMixin):
         self.page = 1
         return IncidentesState.load_incidentes
 
+    def clear_filters(self):
+        """Restablece todos los filtros a valores por defecto."""
+        self.search_text = ""
+        self.filter_estado = "Todos"
+        self.filter_prioridad = "Todas"
+        self.filter_estado_pago = "Todos"
+        self.sort_by = "fecha"
+        self.sort_order = "desc"
+        self.page = 1
+        return IncidentesState.load_incidentes
+
+    @rx.var
+    def active_filter_count(self) -> int:
+        """Count of active non-default filters."""
+        count = 0
+        if self.search_text: count += 1
+        if self.filter_estado != "Todos": count += 1
+        if self.filter_prioridad != "Todas": count += 1
+        if self.filter_estado_pago != "Todos": count += 1
+        return count
+
     def toggle_sort(self, column: str):
         """Alterna el ordenamiento por columna."""
         if self.sort_by == column:

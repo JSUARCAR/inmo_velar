@@ -21,6 +21,7 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_floating_select,
     neuro_button,
 )
+from src.presentacion_reflex.components.shared.advanced_filter_bar import advanced_filter_bar
 
 
 def render_estado_badge(estado: rx.Var) -> rx.Component:
@@ -36,111 +37,98 @@ def render_estado_badge(estado: rx.Var) -> rx.Component:
 
 
 def recaudos_toolbar() -> rx.Component:
-    """Barra de herramientas con filtros y búsqueda."""
-    return rx.flex(
-        # Búsqueda
-        neuro_floating_input(
-            label="Buscar por propiedad, arrendatario, matrícula...",
-            placeholder="Buscar por propiedad, arrendatario, matrícula...",
-            value=RecaudosState.search_text,
-            on_change=RecaudosState.set_search,
-            on_key_down=lambda key: RecaudosState.handle_search_key_down(key),
-            width=["100%", "100%", "350px"],
-            size="3",
-        ),
+    """Barra de herramientas con filtros y búsqueda (Elite)."""
+    return advanced_filter_bar(
         # Filtro Estado
-        neuro_floating_select(
-            label="Estado",
-            options=[
-                rx.select.item("Todos", value="Todos"),
-                rx.select.item("Pendiente", value="Pendiente"),
-                rx.select.item("Vencido", value="Vencido"),
-                rx.select.item("Aplicado", value="Aplicado"),
-                rx.select.item("Reversado", value="Reversado"),
-            ],
-            placeholder="Estado",
-            value=RecaudosState.filter_estado,
-            on_change=RecaudosState.set_filter_estado,
-            width=["100%", "100%", "150px"],
+        rx.box(
+            rx.text("Estado", style=styles.NEU_FILTER_LABEL_STYLE),
+            rx.select(
+                ["Todos", "Pendiente", "Vencido", "Aplicado", "Reversado"],
+                value=RecaudosState.filter_estado,
+                on_change=RecaudosState.set_filter_estado,
+                placeholder="Estado",
+                style=styles.NEU_FILTER_SELECT_STYLE,
+            ),
+            width=["100%", "100%", "150px"]
         ),
         # Filtro Fecha Desde
-        neuro_floating_input(
-            label="Desde",
-            placeholder="Desde",
-            type="date",
-            value=RecaudosState.filter_fecha_desde,
-            on_change=RecaudosState.set_filter_fecha_desde,
-            width=["100%", "100%", "150px"],
-            size="3",
+        rx.box(
+            rx.text("Desde", style=styles.NEU_FILTER_LABEL_STYLE),
+            rx.input(
+                type="date",
+                value=RecaudosState.filter_fecha_desde,
+                on_change=RecaudosState.set_filter_fecha_desde,
+                style=styles.NEU_FILTER_INPUT_STYLE,
+            ),
+            width=["100%", "100%", "150px"]
         ),
         # Filtro Fecha Hasta
-        neuro_floating_input(
-            label="Hasta",
-            placeholder="Hasta",
-            type="date",
-            value=RecaudosState.filter_fecha_hasta,
-            on_change=RecaudosState.set_filter_fecha_hasta,
-            width=["100%", "100%", "150px"],
-            size="3",
+        rx.box(
+            rx.text("Hasta", style=styles.NEU_FILTER_LABEL_STYLE),
+            rx.input(
+                type="date",
+                value=RecaudosState.filter_fecha_hasta,
+                on_change=RecaudosState.set_filter_fecha_hasta,
+                style=styles.NEU_FILTER_INPUT_STYLE,
+            ),
+            width=["100%", "100%", "150px"]
         ),
-        # Grupo de acciones (sin rx.spacer)
-        rx.flex(
+        search_placeholder="Buscar por propiedad, arrendatario, matrícula...",
+        on_search=RecaudosState.set_search,
+        search_value=RecaudosState.search_text,
+        on_clear=RecaudosState.clear_filters,
+        active_filter_count=RecaudosState.active_filter_count,
+        action_buttons=[
             # Botón Registrar Pago
             rx.cond(
                 AuthState.check_action("Recaudos", "CREAR"),
-                neuro_button(
-                    rx.hstack(rx.icon("plus"), rx.text("Registrar Pago")),
-                    on_click=RecaudosState.open_create_modal,
-                    size="3",
-                    width=rx.breakpoints(initial="100%", md="auto"),
+                rx.tooltip(
+                    rx.icon_button(
+                        rx.icon("plus", size=18),
+                        color_scheme="green",
+                        style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                        on_click=RecaudosState.open_create_modal,
+                    ),
+                    content="Registrar Pago",
                 ),
             ),
             # Botón Generar Pagos Masivos
             rx.cond(
                 AuthState.check_action("Recaudos", "CREAR"),
                 rx.tooltip(
-                    neuro_button(
-                        rx.icon("copy-plus"),
+                    rx.icon_button(
+                        rx.icon("copy_plus", size=18),
+                        color_scheme="blue",
+                        style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
                         on_click=RecaudosState.generar_pagos_masivos,
-                        size="3",
                     ),
-                    content="Generar pagos masivos para contratos activos",
+                    content="Generar Pagos Masivos",
                 ),
-            ),
-            # Botón Refresh
-            neuro_button(
-                rx.icon("refresh-cw"),
-                on_click=RecaudosState.load_recaudos,
-                size="3",
             ),
             # Botón Exportar Recibos ZIP
             rx.cond(
                 AuthState.check_action("Recaudos", "CREAR"),
                 rx.tooltip(
-                    neuro_button(
-                        rx.icon("file-archive"),
+                    rx.icon_button(
+                        rx.icon("file_archive", size=18),
+                        color_scheme="cyan",
+                        style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
                         on_click=RecaudosState.abrir_modal_exportar_recibos,
-                        size="3",
                         loading=RecaudosState.exportando_recibos,
                     ),
-                    content="Exportar recibos del período como ZIP",
+                    content="Exportar Recibos (ZIP)",
                 ),
             ),
-            gap="3",
-            align="center",
-            flex_wrap="wrap",
-            justify=rx.breakpoints(initial="start", md="end"),
-            width=rx.breakpoints(initial="100%", md="auto"),
-        ),
-        width="100%",
-        padding="1em",
-        background=styles.BG_PANEL,
-        border_radius="16px",
-        style={"box_shadow": styles.NEU_SHADOW},
-        gap="3",
-        flex_direction=rx.breakpoints(initial="column", md="row"),
-        flex_wrap="wrap",
-        align=rx.breakpoints(initial="stretch", md="center"),
+            # Botón Refresh
+            rx.tooltip(
+                rx.icon_button(
+                    rx.icon("refresh_cw", size=18),
+                    style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                    on_click=RecaudosState.load_recaudos,
+                ),
+                content="Recargar",
+            ),
+        ]
     )
 
 

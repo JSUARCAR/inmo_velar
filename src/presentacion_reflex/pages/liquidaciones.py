@@ -33,6 +33,7 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_floating_select,
     neuro_button,
 )
+from src.presentacion_reflex.components.shared.advanced_filter_bar import advanced_filter_bar
 from src.presentacion_reflex import styles
 
 
@@ -66,147 +67,122 @@ def render_estado_recaudo_badge(estado_recaudo: rx.Var) -> rx.Component:
 
 
 def liquidaciones_toolbar() -> rx.Component:
-    """Barra de herramientas con filtros y búsqueda con diseño neumórfico."""
-    return rx.flex(
-        # --- GRUPO FILTROS ---
-        rx.flex(
-            neuro_floating_input(
-                label="Buscar...",
-                placeholder="Buscar...",
-                value=LiquidacionesState.search_text,
-                on_change=LiquidacionesState.set_search,
-                on_key_down=lambda key: LiquidacionesState.handle_search_key_down(key),
-                width=rx.breakpoints(initial="100%", md="250px"),
-            ),
-            neuro_floating_select(
-                label="Período",
-                options=rx.foreach(
-                    LiquidacionesState.periodos_select_options,
-                    lambda opt: rx.select.item(opt, value=opt),
-                ),
-                placeholder="Período",
+    """Barra de herramientas con filtros y búsqueda (Elite)."""
+    return advanced_filter_bar(
+        # Período filter
+        rx.box(
+            rx.text("Período", style=styles.NEU_FILTER_LABEL_STYLE),
+            rx.select(
+                LiquidacionesState.periodos_select_options,
                 value=LiquidacionesState.filter_periodo,
                 on_change=LiquidacionesState.set_filter_periodo,
-                width=rx.breakpoints(initial="100%", md="130px"),
+                placeholder="Período",
+                style=styles.NEU_FILTER_SELECT_STYLE,
             ),
-            neuro_floating_select(
-                label="Estado",
-                options=rx.foreach(
-                    LiquidacionesState.estado_options,
-                    lambda opt: rx.select.item(opt, value=opt),
-                ),
-                placeholder="Estado",
+            width=["100%", "100%", "130px"]
+        ),
+        # Estado filter
+        rx.box(
+            rx.text("Estado", style=styles.NEU_FILTER_LABEL_STYLE),
+            rx.select(
+                LiquidacionesState.estado_options,
                 value=LiquidacionesState.filter_estado,
                 on_change=LiquidacionesState.set_filter_estado,
-                width=rx.breakpoints(initial="100%", md="140px"),
+                placeholder="Estado",
+                style=styles.NEU_FILTER_SELECT_STYLE,
             ),
-            neuro_floating_select(
-                label="Ciclo",
-                options=rx.foreach(
-                    LiquidacionesState.ciclos_operativos_options,
-                    lambda opt: rx.select.item(opt, value=opt),
-                ),
-                placeholder="Ciclo",
+            width=["100%", "100%", "140px"]
+        ),
+        # Ciclo filter
+        rx.box(
+            rx.text("Ciclo", style=styles.NEU_FILTER_LABEL_STYLE),
+            rx.select(
+                LiquidacionesState.ciclos_operativos_options,
                 value=LiquidacionesState.filter_ciclo_operativo,
                 on_change=LiquidacionesState.set_filter_ciclo_operativo,
-                width=rx.breakpoints(initial="100%", md="120px"),
+                placeholder="Ciclo",
+                style=styles.NEU_FILTER_SELECT_STYLE,
             ),
-            neuro_floating_select(
-                label="Asesor",
-                options=rx.foreach(
-                    LiquidacionesState.asesores_select_options,
-                    lambda opt: rx.select.item(opt, value=opt),
-                ),
-                placeholder="Asesor",
+            width=["100%", "100%", "120px"]
+        ),
+        # Asesor filter
+        rx.box(
+            rx.text("Asesor", style=styles.NEU_FILTER_LABEL_STYLE),
+            rx.select(
+                LiquidacionesState.asesores_select_options,
                 value=LiquidacionesState.filter_asesor_id,
                 on_change=LiquidacionesState.set_filter_asesor,
-                width=rx.breakpoints(initial="100%", md="180px"),
+                placeholder="Asesor",
+                style=styles.NEU_FILTER_SELECT_STYLE,
             ),
-            gap="5",
-            align="center",
-            flex_wrap="wrap",
+            width=["100%", "100%", "180px"]
         ),
-        
-        # --- GRUPO ACCIONES Y VISTAS ---
+        # Vista agrupada toggle
         rx.hstack(
-            # Toggle Vista Agrupada
-            rx.flex(
-                rx.switch(
-                    checked=LiquidacionesState.vista_agrupada,
-                    on_change=LiquidacionesState.toggle_vista_agrupada,
-                    color_scheme="blue",
-                ),
-                rx.text(
-                    rx.cond(
-                        LiquidacionesState.vista_agrupada,
-                        "Por Propietario",
-                        "Individual",
-                    ),
-                    weight="medium",
-                    size="2",
-                    color=styles.TEXT_PRIMARY,
-                ),
-                gap="3",
-                align="center",
-                padding="0.5em 1em",
-                background=styles.BG_PANEL,
-                border_radius="10px",
-                style={"box_shadow": styles.NEU_INSET},
-                flex_shrink="0",
+            rx.text("Vista Agrupada", style=styles.NEU_FILTER_LABEL_STYLE, margin_bottom="0"),
+            rx.switch(
+                checked=LiquidacionesState.vista_agrupada,
+                on_change=LiquidacionesState.toggle_vista_agrupada,
+                color_scheme="blue",
             ),
-            # Botón Exportar Lote Periodo ZIP
+            align="center",
+            spacing="2",
+        ),
+        search_placeholder="Buscar...",
+        on_search=LiquidacionesState.set_search,
+        search_value=LiquidacionesState.search_text,
+        on_clear=LiquidacionesState.clear_filters,
+        active_filter_count=LiquidacionesState.active_filter_count,
+        action_buttons=[
+            # Export ZIP button
             rx.cond(
                 AuthState.check_action("Liquidaciones", "CREAR"),
                 rx.tooltip(
-                    neuro_button(
-                        rx.icon("file-archive", size=20),
+                    rx.icon_button(
+                        rx.icon("file_archive", size=18),
+                        color_scheme="cyan",
+                        style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
                         on_click=LiquidacionesState.open_export_modal,
                         loading=LiquidacionesState.exportando_periodo,
                     ),
                     content="Exportar Periodo (ZIP)",
                 ),
             ),
-            # Botón Nueva Liquidación Individual o Masiva
+            # New/Bulk create button
             rx.cond(
-                LiquidacionesState.vista_agrupada,
-                rx.cond(
-                    AuthState.check_action("Liquidaciones", "CREAR"),
-                    neuro_button(
-                        rx.hstack(rx.icon("users"), rx.text("Masiva"), gap="2"),
-                        on_click=LiquidacionesState.open_bulk_create_modal,
-                        width=rx.breakpoints(initial="100%", md="auto"),
+                AuthState.check_action("Liquidaciones", "CREAR"),
+                rx.tooltip(
+                    rx.icon_button(
+                        rx.cond(
+                            LiquidacionesState.vista_agrupada,
+                            rx.icon("users", size=18),
+                            rx.icon("plus", size=18)
+                        ),
+                        color_scheme="green",
+                        style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                        on_click=rx.cond(
+                            LiquidacionesState.vista_agrupada,
+                            LiquidacionesState.open_bulk_create_modal,
+                            LiquidacionesState.open_create_modal
+                        ),
                     ),
-                ),
-                rx.cond(
-                    AuthState.check_action("Liquidaciones", "CREAR"),
-                    neuro_button(
-                        rx.hstack(rx.icon("plus"), rx.text("Nueva Liquidción"), gap="4"),
-                        on_click=LiquidacionesState.open_create_modal,
-                        width=rx.breakpoints(initial="100%", md="auto"),
+                    content=rx.cond(
+                        LiquidacionesState.vista_agrupada,
+                        "Liquidación Masiva",
+                        "Nueva Liquidación"
                     ),
                 ),
             ),
-            # Botón Refresh
-            neuro_button(
-                rx.icon("refresh-cw", size=20),
-                on_click=LiquidacionesState.load_liquidaciones,
+            # Refresh
+            rx.tooltip(
+                rx.icon_button(
+                    rx.icon("refresh_cw", size=18),
+                    style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                    on_click=LiquidacionesState.load_liquidaciones,
+                ),
+                content="Recargar",
             ),
-            spacing="5",
-            align="center",
-            wrap="wrap",
-            style={"gap": "1.75rem"},
-        ),
-        
-        width="100%",
-        padding="1em",
-        background=styles.BG_PANEL,
-        border_radius="16px",
-        style={"box_shadow": styles.NEU_SHADOW},
-        gap="6",
-        flex_wrap="wrap",
-        flex_direction="row",
-        align="center",
-        justify="start",
+        ]
     )
 
 

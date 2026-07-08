@@ -21,6 +21,7 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_button,
 )
 from src.presentacion_reflex.components.tablas import header_cell_sortable
+from src.presentacion_reflex.components.shared.advanced_filter_bar import advanced_filter_bar
 from src.presentacion_reflex import styles
 
 # Importar modales
@@ -82,24 +83,6 @@ def liquidacion_asesores_content() -> rx.Component:
                         margin_bottom="1rem",
                     ),
                 ),
-                rx.hstack(
-                    neuro_button(
-                        rx.hstack(rx.icon("refresh-cw", size=18), rx.text("Recargar")),
-                        on_click=LiquidacionGridState.load_liquidaciones,
-                        size="3",
-                    ),
-                    rx.cond(
-                        AuthState.check_action("Liquidaciones Asesores", "LIQUIDAR"),
-                        neuro_button(
-                            rx.hstack(rx.icon("plus"), rx.text("Nueva Liquidación")),
-                            on_click=LiquidacionFormState.open_create_modal,
-                            color_scheme="green",
-                            size="3",
-                        ),
-                    ),
-                    spacing="3",
-                    width=rx.breakpoints(initial="100%", md="auto"),
-                ),
                 width="100%",
                 padding="5",
                 justify="between",
@@ -118,52 +101,73 @@ def liquidacion_asesores_content() -> rx.Component:
             },
         ),
         # Toolbar
-        rx.card(
-            rx.flex(
-                neuro_floating_input(
-                    label="Buscar asesor o contrato...",
-                    placeholder="Buscar asesor o contrato...",
-                    value=LiquidacionFiltrosState.search_text,
-                    on_change=LiquidacionFiltrosState.set_search,
-                    width=rx.breakpoints(initial="100%", md="350px"),
-                    size="3",
-                ),
-                neuro_floating_select(
-                    label="Período",
-                    options=rx.foreach(
-                        LiquidacionFiltrosState.periodo_options,
-                        lambda opt: rx.select.item(opt, value=opt),
-                    ),
+        advanced_filter_bar(
+            # Período filter
+            rx.box(
+                rx.text("Período", style=styles.NEU_FILTER_LABEL_STYLE),
+                rx.select(
+                    LiquidacionFiltrosState.periodo_options,
                     value=LiquidacionFiltrosState.filter_periodo,
                     on_change=LiquidacionFiltrosState.set_filter_periodo,
                     placeholder="Período",
-                    width=rx.breakpoints(initial="100%", md="150px"),
+                    style=styles.NEU_FILTER_SELECT_STYLE,
                 ),
+                width=["100%", "100%", "150px"]
+            ),
+            # Estado filter (exposed)
+            rx.box(
+                rx.text("Estado", style=styles.NEU_FILTER_LABEL_STYLE),
+                rx.select(
+                    LiquidacionFiltrosState.estado_options,
+                    value=LiquidacionFiltrosState.filter_estado,
+                    on_change=LiquidacionFiltrosState.set_filter_estado,
+                    placeholder="Estado",
+                    style=styles.NEU_FILTER_SELECT_STYLE,
+                ),
+                width=["100%", "100%", "150px"]
+            ),
+            search_placeholder="Buscar asesor o contrato...",
+            on_search=LiquidacionFiltrosState.set_search,
+            search_value=LiquidacionFiltrosState.search_text,
+            on_clear=LiquidacionFiltrosState.clear_filters,
+            active_filter_count=LiquidacionFiltrosState.active_filter_count,
+            action_buttons=[
+                # Bulk Generate
                 rx.cond(
                     AuthState.check_action("Liquidaciones Asesores", "LIQUIDAR"),
-                    neuro_button(
-                        rx.hstack(
-                            rx.icon("calculator"), rx.text("Generar Masivamente")
+                    rx.tooltip(
+                        rx.icon_button(
+                            rx.icon("calculator", size=18),
+                            color_scheme="blue",
+                            style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                            on_click=LiquidacionFormState.open_bulk_modal,
                         ),
-                        on_click=LiquidacionFormState.open_bulk_modal,
-                        color_scheme="blue",
-                        width=rx.breakpoints(initial="100%", md="auto"),
+                        content="Generar Masivamente",
                     ),
                 ),
-                gap="3",
-                width="100%",
-                align=rx.breakpoints(initial="stretch", md="center"),
-                flex_direction=rx.breakpoints(initial="column", md="row"),
-                flex_wrap="wrap",
-            ),
-            width="100%",
-            style={
-                "background": styles.BG_PANEL,
-                "box_shadow": styles.NEU_SHADOW,
-                "border": "none",
-                "border_radius": "16px",
-                "padding": "1.2rem",
-            },
+                # New Liquidacion
+                rx.cond(
+                    AuthState.check_action("Liquidaciones Asesores", "LIQUIDAR"),
+                    rx.tooltip(
+                        rx.icon_button(
+                            rx.icon("plus", size=18),
+                            color_scheme="green",
+                            style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                            on_click=LiquidacionFormState.open_create_modal,
+                        ),
+                        content="Nueva Liquidación",
+                    ),
+                ),
+                # Refresh
+                rx.tooltip(
+                    rx.icon_button(
+                        rx.icon("refresh_cw", size=18),
+                        style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                        on_click=LiquidacionGridState.load_liquidaciones,
+                    ),
+                    content="Recargar",
+                ),
+            ]
         ),
         # Table
         rx.cond(

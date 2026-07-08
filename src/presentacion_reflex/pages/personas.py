@@ -15,6 +15,7 @@ from src.presentacion_reflex.components.neuro_elements import (
     neuro_badge,
     neuro_switch,
 )
+from src.presentacion_reflex.components.shared.advanced_filter_bar import advanced_filter_bar
 from src.presentacion_reflex.components.shared.tooltips_text import (
     TOOLTIP_PERSONAS_FILTRO_NOMBRE,
     TOOLTIP_PERSONAS_FILTRO_DOCUMENTO,
@@ -301,159 +302,108 @@ def personas_page() -> rx.Component:
                     style=styles.NEU_PANEL_STYLE,
                 ),
                 # --- Elite Toolbar ---
-                rx.card(
-                    rx.flex(
-                        # Search bar with enhanced styling
-                        neuro_floating_input(
-                            label="Buscar por nombre o documento...",
-                            placeholder="Buscar por nombre o documento...",
-                            value=PersonasState.search_query,
-                            on_change=PersonasState.set_search,
-                            on_key_down=PersonasState.handle_search_key_down,
-                            size="3",
-                            width=["100%", "100%", "320px"],
-                        ),
-                        # Role filter with icon
-                        neuro_floating_select(
-                            label="Filtrar por Rol",
-                            options=[
-                                rx.select.item("Todos", value="Todos"),
-                                rx.select.item("Propietario", value="Propietario"),
-                                rx.select.item("Arrendatario", value="Arrendatario"),
-                                rx.select.item("Codeudor", value="Codeudor"),
-                                rx.select.item("Asesor", value="Asesor"),
-                                rx.select.item("Proveedor", value="Proveedor"),
-                            ],
+                advanced_filter_bar(
+                    # Role filter
+                    rx.box(
+                        rx.text("Filtrar por Rol", style=styles.NEU_FILTER_LABEL_STYLE),
+                        rx.select(
+                            ["Todos", "Propietario", "Arrendatario", "Codeudor", "Asesor", "Proveedor"],
                             value=PersonasState.filtro_rol,
                             on_change=PersonasState.set_filtro_rol,
                             placeholder="Filtrar por Rol",
-                            width=["100%", "100%", "200px"],
+                            style=styles.NEU_FILTER_SELECT_STYLE,
                         ),
-                        # Date filters
-                        neuro_floating_input(
-                            label="Desde",
+                        width=["100%", "100%", "200px"]
+                    ),
+                    # Date filters
+                    rx.box(
+                        rx.text("Desde", style=styles.NEU_FILTER_LABEL_STYLE),
+                        rx.input(
                             type="date",
                             placeholder="Desde",
                             value=PersonasState.fecha_inicio,
                             on_change=PersonasState.set_fecha_inicio,
-                            size="3",
-                            width=["100%", "100%", "auto"],
+                            style=styles.NEU_FILTER_INPUT_STYLE,
                         ),
-                        neuro_floating_input(
-                            label="Hasta",
+                        width=["100%", "100%", "auto"]
+                    ),
+                    rx.box(
+                        rx.text("Hasta", style=styles.NEU_FILTER_LABEL_STYLE),
+                        rx.input(
                             type="date",
                             placeholder="Hasta",
                             value=PersonasState.fecha_fin,
                             on_change=PersonasState.set_fecha_fin,
-                            size="3",
-                            width=["100%", "100%", "auto"],
+                            style=styles.NEU_FILTER_INPUT_STYLE,
                         ),
-                        # --- New Filter Toggles ---
-                        rx.hstack(
-                            rx.hstack(
-                                rx.text(
-                                    "Inactivos", size="2", color=styles.TEXT_SECONDARY
-                                ),
-                                neuro_switch(
-                                    checked=PersonasState.mostrar_inactivos,
-                                    on_change=PersonasState.toggle_mostrar_inactivos,
-                                    color_scheme="ruby",
-                                ),
-                                align="center",
-                                spacing="2",
-                            ),
-                            rx.hstack(
-                                rx.text(
-                                    "Sin contrato",
-                                    size="2",
-                                    color=styles.TEXT_SECONDARY,
-                                ),
-                                neuro_switch(
-                                    checked=PersonasState.filtro_sin_contrato,
-                                    on_change=PersonasState.toggle_filtro_sin_contrato,
-                                    color_scheme="teal",
-                                ),
-                                rx.tooltip(
-                                    rx.icon("info", size=14, color="gray"),
-                                    content=TOOLTIP_PERSONAS_FILTRO_ESTADO,
-                                ),
-                                align="center",
-                                spacing="2",
-                            ),
-                            spacing="4",
-                            padding_x="2",
-                        ),
-                        # View toggle button
-                        rx.hstack(
-                            rx.tooltip(
-                                rx.icon_button(
-                                    rx.cond(
-                                        PersonasState.view_mode == "table",
-                                        rx.icon("layout_grid", size=18),
-                                        rx.icon("table", size=18),
-                                    ),
-                                    on_click=PersonasState.toggle_view_mode,
-                                    variant="ghost",
-                                    style=styles.NEU_BUTTON_STYLE,
-                                    size="3",
-                                    color_scheme="gray",
-                                ),
-                                content=rx.cond(
-                                    PersonasState.view_mode == "table",
-                                    "Cambiar a vista de cards",
-                                    "Cambiar a vista de tabla",
-                                ),
-                            ),
-                            # Export button
-                            rx.tooltip(
-                                rx.icon_button(
-                                    rx.icon("file_spreadsheet", size=18),
-                                    color_scheme="green",
-                                    variant="ghost",
-                                    style=styles.NEU_BUTTON_STYLE,
-                                    on_click=PersonasState.exportar_csv,
-                                    size="3",
-                                    _hover={
-                                        "transform": "scale(1.05)",
-                                    },
-                                    transition="all 0.2s ease",
-                                ),
-                                content="Exportar a Excel",
-                            ),
-                            # Refresh button
-                            rx.tooltip(
-                                rx.icon_button(
-                                    rx.icon("refresh_cw", size=18),
-                                    variant="ghost",
-                                    style=styles.NEU_BUTTON_STYLE,
-                                    size="3",
-                                    on_click=PersonasState.load_personas,
-                                    _hover={
-                                        "transform": "rotate(180deg)",
-                                    },
-                                    transition="transform 0.3s ease",
-                                ),
-                                content="Recargar",
-                            ),
-                            width=["100%", "100%", "auto"],
-                            justify=rx.breakpoints(initial="between", md="start"),
-                            spacing="3",
-                        ),
-                        padding="4",
-                        width="100%",
-                        align="center",
-                        direction=rx.breakpoints(initial="column", md="row"),
-                        wrap="wrap",
-                        spacing="3",
+                        width=["100%", "100%", "auto"]
                     ),
-                    width="100%",
-                    variant="ghost",
-                    style={
-                        "background": styles.BG_PANEL,
-                        "box_shadow": styles.NEU_SHADOW,
-                        "border": "none",
-                        "border_radius": "16px",
-                    },
+                    # Toggles
+                    rx.hstack(
+                        rx.text("Inactivos", style=styles.NEU_FILTER_LABEL_STYLE, margin_bottom="0"),
+                        neuro_switch(
+                            checked=PersonasState.mostrar_inactivos,
+                            on_change=PersonasState.toggle_mostrar_inactivos,
+                            color_scheme="ruby",
+                        ),
+                        align="center",
+                        spacing="2",
+                    ),
+                    rx.hstack(
+                        rx.text("Sin contrato", style=styles.NEU_FILTER_LABEL_STYLE, margin_bottom="0"),
+                        neuro_switch(
+                            checked=PersonasState.filtro_sin_contrato,
+                            on_change=PersonasState.toggle_filtro_sin_contrato,
+                            color_scheme="teal",
+                        ),
+                        rx.tooltip(
+                            rx.icon("info", size=14, color="gray"),
+                            content=TOOLTIP_PERSONAS_FILTRO_ESTADO,
+                        ),
+                        align="center",
+                        spacing="2",
+                    ),
+                    search_placeholder="Buscar por nombre o documento...",
+                    on_search=PersonasState.set_search,
+                    search_value=PersonasState.search_query,
+                    on_clear=PersonasState.clear_filters,
+                    active_filter_count=PersonasState.active_filter_count,
+                    action_buttons=[
+                        rx.tooltip(
+                            rx.icon_button(
+                                rx.cond(
+                                    PersonasState.view_mode == "table",
+                                    rx.icon("layout_grid", size=18),
+                                    rx.icon("table", size=18),
+                                ),
+                                on_click=PersonasState.toggle_view_mode,
+                                style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                                color_scheme="gray",
+                            ),
+                            content=rx.cond(
+                                PersonasState.view_mode == "table",
+                                "Cambiar a vista de cards",
+                                "Cambiar a vista de tabla",
+                            ),
+                        ),
+                        rx.tooltip(
+                            rx.icon_button(
+                                rx.icon("file_spreadsheet", size=18),
+                                color_scheme="green",
+                                style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                                on_click=PersonasState.exportar_csv,
+                            ),
+                            content="Exportar a Excel",
+                        ),
+                        rx.tooltip(
+                            rx.icon_button(
+                                rx.icon("refresh_cw", size=18),
+                                style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                                on_click=PersonasState.load_personas,
+                            ),
+                            content="Recargar",
+                        ),
+                    ]
                 ),
                 # --- Content Area: Table or Cards View ---
                 rx.cond(

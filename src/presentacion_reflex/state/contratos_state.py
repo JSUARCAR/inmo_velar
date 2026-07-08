@@ -375,6 +375,31 @@ class ContratosState(DocumentosStateMixin):
         self.current_page = 1
         return ContratosState.load_contratos
 
+    def clear_filters(self):
+        """Limpiar todos los filtros."""
+        self.search_text = ""
+        self.filter_tipo = "Todos"
+        self.filter_estado = "ACTIVO"
+        self.filter_propiedad_id = ""
+        self.filter_persona_id = ""
+        self.filter_asesor_id = "todos"
+        self.filter_sin_arrendamiento = False
+        self.current_page = 1
+        return [ContratosState.load_contratos, ContratosState.load_kpis]
+
+    @rx.var
+    def active_filter_count(self) -> int:
+        """Count of active non-default filters."""
+        count = 0
+        if self.search_text: count += 1
+        if self.filter_tipo != "Todos": count += 1
+        if self.filter_estado != "ACTIVO": count += 1
+        if self.filter_propiedad_id: count += 1
+        if self.filter_persona_id: count += 1
+        if self.filter_asesor_id != "todos": count += 1
+        if self.filter_sin_arrendamiento: count += 1
+        return count
+
     def toggle_view(self):
         self.is_grid_view = not self.is_grid_view
 

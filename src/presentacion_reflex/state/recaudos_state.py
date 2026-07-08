@@ -240,6 +240,8 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
     def set_search(self, value: str):
         """Actualiza búsqueda."""
         self.search_text = value
+        self.current_page = 1
+        return RecaudosState.load_recaudos
 
     def search_recaudos(self):
         """Ejecuta búsqueda."""
@@ -286,6 +288,17 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
         self.sort_order = "desc"
         self.current_page = 1
         return RecaudosState.load_recaudos
+
+    @rx.var
+    def active_filter_count(self) -> int:
+        """Count of active non-default filters."""
+        count = 0
+        if self.search_text: count += 1
+        if self.filter_estado != "Todos": count += 1
+        if self.filter_dia_pago != "Todos": count += 1
+        if self.filter_fecha_desde: count += 1
+        if self.filter_fecha_hasta: count += 1
+        return count
 
     # ==================== COMBOBOX CONTRATO ====================
 
