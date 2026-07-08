@@ -279,6 +279,7 @@ def propiedades_page() -> rx.Component:
                         search_placeholder="Buscar por matrícula, dirección...",
                         on_search=PropiedadesState.set_search,
                         search_value=PropiedadesState.search_text,
+                        on_key_down=PropiedadesState.handle_search_key_down,
                         on_clear=PropiedadesState.clear_filters,
                         active_filter_count=PropiedadesState.active_filter_count,
                         action_buttons=[

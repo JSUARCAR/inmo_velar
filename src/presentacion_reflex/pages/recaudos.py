@@ -76,6 +76,7 @@ def recaudos_toolbar() -> rx.Component:
         search_placeholder="Buscar por propiedad, arrendatario, matrícula...",
         on_search=RecaudosState.set_search,
         search_value=RecaudosState.search_text,
+        on_key_down=RecaudosState.handle_search_key_down,
         on_clear=RecaudosState.clear_filters,
         active_filter_count=RecaudosState.active_filter_count,
         action_buttons=[

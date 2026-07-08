@@ -129,6 +129,7 @@ def liquidacion_asesores_content() -> rx.Component:
             search_placeholder="Buscar asesor o contrato...",
             on_search=LiquidacionFiltrosState.set_search,
             search_value=LiquidacionFiltrosState.search_text,
+            on_key_down=LiquidacionFiltrosState.handle_search_key_down,
             on_clear=LiquidacionFiltrosState.clear_filters,
             active_filter_count=LiquidacionFiltrosState.active_filter_count,
             action_buttons=[

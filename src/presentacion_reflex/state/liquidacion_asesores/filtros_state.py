@@ -56,6 +56,11 @@ class LiquidacionFiltrosState(rx.State):
         self.search_text = value
         return self._trigger_reload()
 
+    def handle_search_key_down(self, key: str):
+        """Lanza la búsqueda al presionar Enter en el campo de texto."""
+        if key == "Enter":
+            return self._trigger_reload()
+
     def set_filter_estado(self, value: str):
         self.filter_estado = value
         return self._trigger_reload()

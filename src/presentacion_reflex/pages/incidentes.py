@@ -59,6 +59,7 @@ def _filter_bar() -> rx.Component:
         search_placeholder="Buscar incidente...",
         on_search=IncidentesState.set_search,
         search_value=IncidentesState.search_text,
+        on_key_down=IncidentesState.handle_search_key_down,
         on_clear=IncidentesState.clear_filters,
         active_filter_count=IncidentesState.active_filter_count,
         action_buttons=[

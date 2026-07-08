@@ -651,6 +651,15 @@ class IncidentesState(DocumentosStateMixin):
         self.page = 1
         return IncidentesState.load_incidentes
 
+    def search_incidentes(self):
+        self.page = 1
+        return IncidentesState.load_incidentes
+
+    def handle_search_key_down(self, key: str):
+        """Lanza la búsqueda al presionar Enter en el campo de texto."""
+        if key == "Enter":
+            return self.search_incidentes()
+
     def clear_filters(self):
         """Restablece todos los filtros a valores por defecto."""
         self.search_text = ""

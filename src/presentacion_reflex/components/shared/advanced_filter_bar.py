@@ -15,6 +15,7 @@ def advanced_filter_bar(
     on_search: Callable = None,
     search_value: str = "",
     on_clear: Callable = None,
+    on_key_down: Callable = None,
     action_buttons: List[rx.Component] = None,
     **props
 ) -> rx.Component:
@@ -23,15 +24,19 @@ def advanced_filter_bar(
     """
     active_filter_count = props.pop("active_filter_count", 0)
     
+    search_input_props = {
+        "placeholder": search_placeholder,
+        "value": search_value,
+        "on_change": on_search,
+        "style": NEU_FILTER_INPUT_STYLE,
+        "width": "100%",
+    }
+    if on_key_down:
+        search_input_props["on_key_down"] = on_key_down
+
     search_box = rx.box(
         rx.text("Buscar", style=NEU_FILTER_LABEL_STYLE),
-        rx.input(
-            placeholder=search_placeholder,
-            value=search_value,
-            on_change=on_search,
-            style=NEU_FILTER_INPUT_STYLE,
-            width="100%",
-        ),
+        rx.input(**search_input_props),
         width=["100%", "100%", "250px"]
     )
 

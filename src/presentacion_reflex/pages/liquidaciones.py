@@ -131,6 +131,7 @@ def liquidaciones_toolbar() -> rx.Component:
         search_placeholder="Buscar...",
         on_search=LiquidacionesState.set_search,
         search_value=LiquidacionesState.search_text,
+        on_key_down=LiquidacionesState.handle_search_key_down,
         on_clear=LiquidacionesState.clear_filters,
         active_filter_count=LiquidacionesState.active_filter_count,
         action_buttons=[

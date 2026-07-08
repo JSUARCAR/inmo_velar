@@ -367,6 +367,7 @@ def personas_page() -> rx.Component:
                     on_search=PersonasState.set_search,
                     search_value=PersonasState.search_query,
                     on_clear=PersonasState.clear_filters,
+                    on_key_down=PersonasState.handle_search_key_down,
                     active_filter_count=PersonasState.active_filter_count,
                     action_buttons=[
                         rx.tooltip(

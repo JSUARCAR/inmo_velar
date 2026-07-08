@@ -525,6 +525,7 @@ def contratos_page() -> rx.Component:
                     search_placeholder="Buscar por dirección, nombre o documento...",
                     on_search=ContratosState.set_search,
                     search_value=ContratosState.search_text,
+                    on_key_down=ContratosState.handle_search_key_down,
                     on_clear=ContratosState.clear_filters,
                     active_filter_count=ContratosState.active_filter_count,
                     action_buttons=[

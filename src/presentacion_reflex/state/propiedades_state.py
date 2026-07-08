@@ -400,6 +400,11 @@ class PropiedadesState(DocumentosStateMixin):
         self.current_page = 1
         return [PropiedadesState.load_propiedades, PropiedadesState.load_kpis]
 
+    def handle_search_key_down(self, key: str):
+        """Lanza la búsqueda al presionar Enter en el campo de texto."""
+        if key == "Enter":
+            return self.search_propiedades()
+
     def set_filter_tipo(self, value: str):
         """Cambia filtro de tipo."""
         self.filter_tipo = value
