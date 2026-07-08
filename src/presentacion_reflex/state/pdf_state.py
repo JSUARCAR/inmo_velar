@@ -250,8 +250,15 @@ class PDFState(rx.State):
             logger.error(f"Mensaje: {str(e)}")
             logger.error(f"Traceback:\n{traceback.format_exc()}")
 
-            self.error_message = f"Error: {str(e)}"
-            yield rx.toast.error(self.error_message)
+            error_str = str(e).lower()
+            if "column" in error_str and "does not exist" in error_str:
+                self.error_message = "Error en base de datos: Inconsistencia en la estructura de datos. Contacte a soporte."
+            elif "not found" in error_str:
+                self.error_message = "No se encontró la información necesaria para generar el contrato."
+            else:
+                self.error_message = "Ocurrió un error inesperado al generar el contrato. Intente nuevamente."
+
+            yield rx.toast.error(self.error_message, duration=6000)
         finally:
             self.generating = False
             logger.info("=" * 80)
@@ -308,8 +315,15 @@ class PDFState(rx.State):
             logger.error(f"Mensaje: {str(e)}")
             logger.error(f"Traceback:\n{traceback.format_exc()}")
 
-            self.error_message = f"Error: {str(e)}"
-            yield rx.toast.error(self.error_message)
+            error_str = str(e).lower()
+            if "column" in error_str and "does not exist" in error_str:
+                self.error_message = "Error en base de datos: Inconsistencia en la estructura de datos. Contacte a soporte."
+            elif "not found" in error_str:
+                self.error_message = "No se encontró la información necesaria para generar el contrato de mandato."
+            else:
+                self.error_message = "Ocurrió un error inesperado al generar el contrato de mandato. Intente nuevamente."
+
+            yield rx.toast.error(self.error_message, duration=6000)
         finally:
             self.generating = False
             logger.info("=" * 80)
@@ -1224,11 +1238,6 @@ class PDFState(rx.State):
             logger.debug("[DATA] Paso 1: Obteniendo datos del recaudo...")
 
             from src.infraestructura.persistencia.database import db_manager
-            from src.infraestructura.persistencia.repositorio_recaudo import (
-                RepositorioRecaudo,
-            )
-
-            repo_recaudo = RepositorioRecaudo(db_manager)
 
             # Fetch recaudo with all related data
             placeholder = (
@@ -1317,8 +1326,8 @@ class PDFState(rx.State):
                 # Propietario (flat strings, NOT nested dict)
                 "propietario": "Inmobiliaria Velar",  # Schema doesn't have owner info
                 "documento": "N/A",
-                "telefono": "N/A",
-                "email": "N/A",
+                "telefono_propietario": "N/A",
+                "email_propietario": "N/A",
                 "direccion_propietario": "N/A",
                 # Propiedad (flat strings)
                 "propiedad": row["DIRECCION_PROPIEDAD"],
