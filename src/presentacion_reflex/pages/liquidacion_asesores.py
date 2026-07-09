@@ -40,6 +40,12 @@ from src.presentacion_reflex.components.liquidacion_asesores.annul_modal import 
 from src.presentacion_reflex.components.liquidacion_asesores.discount_modal import (
     discount_modal,
 )
+from src.presentacion_reflex.components.liquidacion_asesores.delete_modal import (
+    delete_modal,
+)
+from src.presentacion_reflex.components.liquidacion_asesores.reverse_modal import (
+    reverse_modal,
+)
 
 
 def liquidacion_asesores_content() -> rx.Component:
@@ -317,6 +323,39 @@ def liquidacion_asesores_content() -> rx.Component:
                                                 content="Aprobar Liquidación",
                                             ),
                                         ),
+                                        rx.cond(
+                                            liq["estado"] == "Pendiente",
+                                            rx.tooltip(
+                                                rx.icon_button(
+                                                    rx.icon("trash-2", size=16),
+                                                    variant="ghost",
+                                                    color_scheme="red",
+                                                    on_click=lambda: (
+                                                        LiquidacionFormState.open_delete_confirm_modal(
+                                                            liq["id_liquidacion"]
+                                                        )
+                                                    ),
+                                                ),
+                                                content="Eliminar",
+                                            ),
+                                        ),
+                                        rx.cond(
+                                            liq["estado"] != "Pendiente",
+                                            rx.tooltip(
+                                                rx.icon_button(
+                                                    rx.icon("rotate-ccw", size=16),
+                                                    variant="ghost",
+                                                    color_scheme="orange",
+                                                    on_click=lambda: (
+                                                        LiquidacionFormState.open_reverse_modal(
+                                                            liq["id_liquidacion"],
+                                                            liq["estado"]
+                                                        )
+                                                    ),
+                                                ),
+                                                content="Reversar",
+                                            ),
+                                        ),
                                         spacing="2",
                                     )
                                 ),
@@ -411,6 +450,8 @@ def liquidacion_asesores_content() -> rx.Component:
         detail_modal(),
         annul_modal(),
         discount_modal(),
+        delete_modal(),
+        reverse_modal(),
         spacing="4",
         width="100%",
         padding="2em",

@@ -117,6 +117,42 @@ class RepositorioLiquidacionAsesor:
         liquidacion.updated_at = datetime.now().isoformat()
         return liquidacion
 
+    def eliminar(self, id_liquidacion: int, usuario: str) -> bool:
+        """Realiza un soft delete de la liquidación."""
+        query = """
+            UPDATE LIQUIDACIONES_ASESORES
+            SET ELIMINADA = TRUE, UPDATED_AT = %s, UPDATED_BY = %s
+            WHERE ID_LIQUIDACION_ASESOR = %s
+        """
+        with self.db_manager.transaccion() as conn:
+            cursor = self.db_manager.get_dict_cursor(conn)
+            cursor.execute(query, (datetime.now(), usuario, id_liquidacion))
+            return cursor.rowcount > 0
+
+    def reversar(self, id_liquidacion: int, nuevo_estado: str, usuario: str) -> bool:
+        """
+        Revierte el estado de una liquidación.
+        Limpia los campos de aprobación/anulación si vuelve a Pendiente.
+        """
+        query = """
+            UPDATE LIQUIDACIONES_ASESORES 
+            SET ESTADO_LIQUIDACION = %s,
+                UPDATED_AT = %s, 
+                UPDATED_BY = %s
+        """
+        params = [nuevo_estado, datetime.now(), usuario]
+        
+        if nuevo_estado == "Pendiente":
+            query += ", FECHA_APROBACION = NULL, USUARIO_APROBADOR = NULL, MOTIVO_ANULACION = NULL"
+            
+        query += " WHERE ID_LIQUIDACION_ASESOR = %s"
+        params.append(id_liquidacion)
+        
+        with self.db_manager.transaccion() as conn:
+            cursor = self.db_manager.get_dict_cursor(conn)
+            cursor.execute(query, tuple(params))
+            return cursor.rowcount > 0
+
     def obtener_por_id(self, id_liquidacion: int) -> Optional[LiquidacionAsesor]:
         """Obtiene una liquidación por su ID."""
         query = """
@@ -142,7 +178,7 @@ class RepositorioLiquidacionAsesor:
         estado: Optional[str] = None,
     ) -> List[LiquidacionAsesor]:
         """Lista liquidaciones con múltiples filtros."""
-        query = "SELECT * FROM LIQUIDACIONES_ASESORES WHERE 1=1"
+        query = "SELECT * FROM LIQUIDACIONES_ASESORES WHERE ELIMINADA = FALSE"
         params = []
 
         if id_asesor is not None:
@@ -190,7 +226,7 @@ class RepositorioLiquidacionAsesor:
                 JOIN PERSONAS per ON a.ID_PERSONA = per.ID_PERSONA
             """
 
-            conditions = []
+            conditions = ["l.ELIMINADA = FALSE"]
             query_params = []
 
             if estado and estado != "Todos":
@@ -300,7 +336,7 @@ class RepositorioLiquidacionAsesor:
                 JOIN PERSONAS per ON a.ID_PERSONA = per.ID_PERSONA
             """
 
-            conditions = []
+            conditions = ["l.ELIMINADA = FALSE"]
             query_params = []
 
             if estado and estado != "Todos":
@@ -340,7 +376,7 @@ class RepositorioLiquidacionAsesor:
         self, id_asesor: int, periodo: str
     ) -> Optional[LiquidacionAsesor]:
         """Obtiene una liquidación por asesor y período."""
-        query = "SELECT * FROM LIQUIDACIONES_ASESORES WHERE ID_ASESOR = %s AND PERIODO_LIQUIDACION = %s"
+        query = "SELECT * FROM LIQUIDACIONES_ASESORES WHERE ID_ASESOR = %s AND PERIODO_LIQUIDACION = %s AND ELIMINADA = FALSE"
         with self.db_manager.obtener_conexion() as conn:
             cursor = self.db_manager.get_dict_cursor(conn)
             cursor.execute(query, (id_asesor, periodo))
@@ -446,4 +482,5 @@ class RepositorioLiquidacionAsesor:
             observaciones_liquidacion=gv("OBSERVACIONES_LIQUIDACION"),
             motivo_anulacion=gv("MOTIVO_ANULACION"),
             nombre_asesor=gv("NOMBRE_ASESOR"),
+            eliminada=gv("ELIMINADA") or False,
         )

@@ -413,6 +413,82 @@ class ServicioLiquidacionAsesores:
         return result
 
     @cache_manager.invalidates("dashboard")
+    def eliminar_liquidacion(
+        self, id_liquidacion: int, usuario: str
+    ) -> Dict[str, Any]:
+        """Elimina lógicamente una liquidación de asesor (soft delete)."""
+        liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
+        if not liquidacion:
+            raise ValueError(f"No se encontró la liquidación con ID {id_liquidacion}")
+            
+        if liquidacion.eliminada:
+            return {"exitosa": True, "mensaje": "Ya fue eliminada"}
+            
+        if liquidacion.estado_liquidacion != "Pendiente":
+            raise ValueError("Solo se pueden eliminar liquidaciones Pendientes")
+            
+        # Verificar integridad referencial
+        descuentos = self.repo_descuento.listar_por_liquidacion(id_liquidacion)
+        if descuentos:
+            raise ValueError("No se puede eliminar: tiene descuentos registrados")
+            
+        pagos = self.repo_pago.listar_por_liquidacion(id_liquidacion)
+        if pagos:
+            raise ValueError("No se puede eliminar: tiene pagos registrados")
+            
+        exito = self.repo_liquidacion.eliminar(id_liquidacion, usuario)
+        self._invalidar_caches()
+        return {
+            "exitosa": exito, 
+            "mensaje": "Liquidación eliminada correctamente" if exito else "Error al eliminar"
+        }
+
+    @cache_manager.invalidates("dashboard")
+    def reversar_liquidacion(
+        self, id_liquidacion: int, motivo: str, usuario: str
+    ) -> Dict[str, Any]:
+        """Revierte el estado de una liquidación."""
+        liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
+        if not liquidacion:
+            raise ValueError(f"No se encontró la liquidación con ID {id_liquidacion}")
+            
+        if liquidacion.estado_liquidacion == "Pendiente":
+            raise ValueError("No se pueden reversar liquidaciones Pendientes")
+            
+        if liquidacion.estado_liquidacion in ["Pagada", "Anulada"] and len(motivo) < 10:
+            raise ValueError("Motivo requerido (mínimo 10 caracteres)")
+            
+        nuevo_estado = "Pendiente"
+        if liquidacion.estado_liquidacion == "Pagada":
+            nuevo_estado = "Aprobada"
+            
+        exito = self.repo_liquidacion.reversar(id_liquidacion, nuevo_estado, usuario)
+        self._invalidar_caches()
+        return {
+            "exitosa": exito, 
+            "mensaje": f"Liquidación reversada a {nuevo_estado}", 
+            "nuevo_estado": nuevo_estado
+        }
+
+    def obtener_acciones_disponibles(
+        self, id_liquidacion: int
+    ) -> Dict[str, bool]:
+        """Retorna las acciones disponibles para una liquidación según su estado."""
+        liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
+        if not liquidacion:
+            return {}
+            
+        estado = liquidacion.estado_liquidacion
+        return {
+            "eliminar": estado == "Pendiente",
+            "reversar": estado != "Pendiente",
+            "aprobar": estado == "Pendiente",
+            "anular": estado not in ["Pagada", "Anulada"],
+            "editar": estado == "Pendiente",
+            "motivo_requerido": estado in ["Pagada", "Anulada"]
+        }
+
+    @cache_manager.invalidates("dashboard")
     def agregar_descuento(
         self, id_liquidacion: int, tipo: str, descripcion: str, valor: int, usuario: str
     ) -> DescuentoAsesor:

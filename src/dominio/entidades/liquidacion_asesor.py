@@ -65,6 +65,9 @@ class LiquidacionAsesor:
     # Campo adicional (JOIN con ASESORES/PERSONAS)
     nombre_asesor: Optional[str] = None  # Nombre completo del asesor (desde PERSONAS)
 
+    # Soft delete
+    eliminada: bool = False
+
     # Estados permitidos
     ESTADOS = ["Pendiente", "Aprobada", "Pagada", "Anulada"]
 

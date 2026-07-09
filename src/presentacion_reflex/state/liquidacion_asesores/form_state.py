@@ -67,6 +67,35 @@ class LiquidacionFormState(rx.State):
     def set_show_bulk_modal(self, value: bool):
         self.show_bulk_modal = value
 
+    show_delete_confirm_modal: bool = False
+    show_reverse_modal: bool = False
+    liquidacion_id_for_action: int = 0
+    reverse_motivo: str = ""
+    reverse_motivo_requerido: bool = False
+
+    def set_reverse_motivo(self, value: str):
+        self.reverse_motivo = value
+
+    def open_delete_confirm_modal(self, id_liquidacion: int):
+        self.liquidacion_id_for_action = id_liquidacion
+        self.show_delete_confirm_modal = True
+
+    def open_reverse_modal(self, id_liquidacion: int, estado: str):
+        self.liquidacion_id_for_action = id_liquidacion
+        self.reverse_motivo_requerido = estado in ["Pagada", "Anulada"]
+        self.reverse_motivo = ""
+        self.show_reverse_modal = True
+
+    def close_delete_modal(self):
+        self.show_delete_confirm_modal = False
+        self.liquidacion_id_for_action = 0
+
+    def close_reverse_modal(self):
+        self.show_reverse_modal = False
+        self.liquidacion_id_for_action = 0
+        self.reverse_motivo = ""
+        self.reverse_motivo_requerido = False
+
     def set_annul_reason(self, value: str):
         self.annul_reason = value
 
@@ -308,6 +337,53 @@ class LiquidacionFormState(rx.State):
                 self.error_message = str(e)
 
     @rx.event(background=True)
+    async def eliminar_liquidacion(self, id_liquidacion: int):
+        async with self:
+            auth_state = await self.get_state(AuthState)
+            usuario = auth_state.user_nombre
+        try:
+            servicio = self._obtener_servicio()
+            res = servicio.eliminar_liquidacion(id_liquidacion, usuario)
+            async with self:
+                self.show_delete_confirm_modal = False
+                self.liquidacion_id_for_action = 0
+            if res.get("exitosa"):
+                yield rx.toast.success(res.get("mensaje", "Liquidación eliminada correctamente"))
+                from src.presentacion_reflex.state.liquidacion_asesores.grid_state import LiquidacionGridState
+                yield LiquidacionGridState.load_liquidaciones()
+            else:
+                yield rx.toast.error(res.get("mensaje", "Error al eliminar"))
+        except Exception as e:
+            async with self:
+                self.error_message = str(e)
+                self.show_delete_confirm_modal = False
+            yield rx.toast.error(f"Error: {e}")
+
+    @rx.event(background=True)
+    async def reversar_liquidacion(self, id_liquidacion: int, motivo: str):
+        async with self:
+            auth_state = await self.get_state(AuthState)
+            usuario = auth_state.user_nombre
+        try:
+            servicio = self._obtener_servicio()
+            res = servicio.reversar_liquidacion(id_liquidacion, motivo, usuario)
+            async with self:
+                self.show_reverse_modal = False
+                self.liquidacion_id_for_action = 0
+                self.reverse_motivo = ""
+            if res.get("exitosa"):
+                yield rx.toast.success(res.get("mensaje", "Liquidación reversada correctamente"))
+                from src.presentacion_reflex.state.liquidacion_asesores.grid_state import LiquidacionGridState
+                yield LiquidacionGridState.load_liquidaciones()
+            else:
+                yield rx.toast.error(res.get("mensaje", "Error al reversar"))
+        except Exception as e:
+            async with self:
+                self.error_message = str(e)
+                self.show_reverse_modal = False
+            yield rx.toast.error(f"Error: {e}")
+
+    @rx.event(background=True)
     async def open_detail_modal(self, id_liquidacion: int):
         async with self:
             self.error_message = ""
@@ -467,6 +543,8 @@ class LiquidacionFormState(rx.State):
         self.show_discount_modal = False
         self.show_bulk_modal = False
         self.show_annul_modal = False
+        self.show_delete_confirm_modal = False
+        self.show_reverse_modal = False
         self.liquidacion_actual = None
         self.error_message = ""
 
