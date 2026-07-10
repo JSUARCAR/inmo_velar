@@ -1,0 +1,111 @@
+site_name: Inmobiliaria Velar - Manual de Usuario Final
+site_description: Documentación oficial del sistema Inmobiliaria Velar
+site_author: Equipo de Calidad y Capacitación
+copyright: Inmobiliaria Velar
+theme:
+  name: material
+  language: es
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Cambiar a modo oscuro
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Cambiar a modo claro
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.breadcrumbs
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tooltips
+    - content.tabs
+    - content.action.edit
+    - content.action.view
+plugins:
+  - search:
+      lang: es
+      separator: '[\s\-,:!\(\)=]+|(?!\b)(?=[A-Z][a-z])'
+  - mermaid2:
+      arguments:
+        theme: default
+  - minify:
+      minify_html: true
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - attr_list
+  - md_in_html
+  - def_list
+  - tables
+  - footnotes
+  - toc:
+      permalink: true
+      title: En esta página
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/tu-org/inmobiliaria-velar
+  generator: false
+nav:
+  - Inicio: index.md
+  - Manual de Usuario:
+      - Introducción: manual-usuario/inicio.md
+      - Instalación y Acceso: manual-usuario/instalacion.md
+      - Módulos:
+          - Dashboard: manual-usuario/modulos/dashboard.md
+          - Alertas Tempranas: manual-usuario/modulos/alertas-tempranas.md
+          - Personas: manual-usuario/modulos/personas.md
+          - Propiedades: manual-usuario/modulos/propiedades.md
+          - Contratos: manual-usuario/modulos/contratos.md
+          - Propiedad Horizontal: manual-usuario/modulos/propiedad-horizontal.md
+          - Proveedores: manual-usuario/modulos/proveedores.md
+          - Liquidaciones: manual-usuario/modulos/liquidaciones.md
+          - Liquidación de Asesores: manual-usuario/modulos/liquidacion-asesores.md
+          - Desocupaciones: manual-usuario/modulos/desocupaciones.md
+          - Incidentes: manual-usuario/modulos/incidentes.md
+          - Seguros: manual-usuario/modulos/seguros.md
+          - Recibos Públicos: manual-usuario/modulos/recibos-publicos.md
+          - Saldos a Favor: manual-usuario/modulos/saldos-favor.md
+          - Usuarios: manual-usuario/modulos/usuarios.md
+          - Configuración: manual-usuario/modulos/configuracion.md
+          - IPC / Incrementos: manual-usuario/modulos/ipc-incrementos.md
+          - Auditoría: manual-usuario/modulos/auditoria.md
+          - Reportes: manual-usuario/modulos/reportes.md
+      - Preguntas Frecuentes: manual-usuario/preguntas-frecuentes.md
+  - Manual Técnico:
+      - Arquitectura: manual-tecnico/arquitectura.md
+      - API: manual-tecnico/api.md
+      - Desarrollo: manual-tecnico/desarrollo.md

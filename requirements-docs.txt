@@ -1,0 +1,11 @@
+# =============================================================================
+# Dependencias de documentación (MkDocs)
+# =============================================================================
+# Motor de documentación
+mkdocs>=1.6.0
+# Tema Material for MkDocs
+mkdocs-material>=9.5.0
+# Migración de versiones (opcional, para releases)
+mike>=2.0.0
+# Minificación HTML
+mkdocs-minify-plugin>=0.7.0

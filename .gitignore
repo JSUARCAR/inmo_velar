@@ -110,3 +110,8 @@ nul
 alter_db.py
 *.zip
 .git_log_temp.txt
+
+# === MKDOCS ===
+site/
+.mkdocs/
+.venv-docs/
