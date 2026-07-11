@@ -1162,6 +1162,8 @@ class RepositorioLiquidacionPostgres:
                      JOIN CONTRATOS_ARRENDAMIENTOS ca_sub ON ca_sub.ID_CONTRATO_A = rrec_sub.ID_CONTRATO_A
                      WHERE ca_sub.ID_PROPIEDAD = cm.ID_PROPIEDAD
                      AND rconc_sub.PERIODO = l.PERIODO
+                     AND rrec_sub.ESTADO_RECAUDO != 'Reversado'
+                     ORDER BY rrec_sub.FECHA_PAGO DESC
                      LIMIT 1),
                     'Sin Recaudo'
                 ) AS ESTADO_RECAUDO,
@@ -1650,6 +1652,8 @@ class RepositorioLiquidacionPostgres:
                  JOIN CONTRATOS_ARRENDAMIENTOS ca_sub ON ca_sub.ID_CONTRATO_A = rrec_sub.ID_CONTRATO_A
                  WHERE ca_sub.ID_PROPIEDAD = p.ID_PROPIEDAD
                    AND rconc_sub.PERIODO = l.PERIODO
+                   AND rrec_sub.ESTADO_RECAUDO != 'Reversado'
+                 ORDER BY rrec_sub.FECHA_PAGO DESC
                  LIMIT 1) AS ESTADO_RECAUDO
             {base_from} {where_clause}
             ORDER BY {sort_col} {order}, l.ID_LIQUIDACION DESC

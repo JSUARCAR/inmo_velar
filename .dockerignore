@@ -5,3 +5,8 @@ __pycache__
 .web
 node_modules
 .agent
+
+Dockerfile*
+.dockerignore
+*.log*
+coverage/

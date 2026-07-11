@@ -242,14 +242,15 @@ class RepositorioRecaudo:
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
 
-        # Query directo a RECAUDO_CONCEPTOS para buscar el período
+        # Query directo a RECAUDO_CONCEPTOS para buscar el período y obtener el recaudo vigente
         query = f"""
             SELECT rc.PERIODO, r.ESTADO_RECAUDO
             FROM RECAUDO_CONCEPTOS rc
             JOIN RECAUDOS r ON rc.ID_RECAUDO = r.ID_RECAUDO
             WHERE r.ID_CONTRATO_A = {placeholder}
               AND rc.PERIODO = {placeholder}
-              AND r.ESTADO_RECAUDO = 'Aplicado'
+              AND r.ESTADO_RECAUDO != 'Reversado'
+            ORDER BY r.FECHA_PAGO DESC
             LIMIT 1
         """
 
@@ -257,7 +258,10 @@ class RepositorioRecaudo:
         row = cursor.fetchone()
 
         if row:
-            return "AL_DIA"
+            # Handle row whether it's dict-like (psycopg2 RealDictCursor) or tuple (sqlite3)
+            estado = row.get("ESTADO_RECAUDO") or row.get("estado_recaudo") if hasattr(row, "keys") else row[1]
+            if estado == 'Aplicado':
+                return "AL_DIA"
 
         return "PENDIENTE"
 
