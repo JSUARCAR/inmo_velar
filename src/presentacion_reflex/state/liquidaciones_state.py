@@ -118,6 +118,10 @@ class LiquidacionesState(DocumentosStateMixin):
     seleccion_incidentes_error: str = ""
     seleccion_incidentes_loading: bool = False
 
+    # --- INCIDENTES ASOCIADOS (EDIT MODAL) ---
+    incidentes_asociados_liquidacion: List[Dict[str, Any]] = []
+    loading_incidentes_asociados: bool = False
+
     # Exportación
     exportando_periodo: bool = False
 
@@ -653,7 +657,7 @@ class LiquidacionesState(DocumentosStateMixin):
                         "gastos_reparaciones": str(liquidacion.get("gastos_rep", 0)),
                         "pago_predial": str(liquidacion.get("pago_predial", 0)),
                         "otros_egresos": str(liquidacion.get("otros_egr", 0)),
-                        "observaciones": str(liquidacion.get("observaciones", "")),
+                        "observaciones": str(liquidacion.get("observaciones") or ""),
                         "valor_incidentes": str(liquidacion.get("valor_incidentes", 0)),
                         "estado": str(liquidacion.get("estado", "")),
                     }
@@ -662,6 +666,9 @@ class LiquidacionesState(DocumentosStateMixin):
                     self.show_detail_modal = False
                     self.show_payment_modal = False
                     self.is_loading = False
+                
+                yield LiquidacionesState.cargar_incidentes_asociados(id_liquidacion)
+
         except Exception as e:
             async with self:
                 self.error_message = f"Error al cargar liquidación: {str(e)}"
@@ -945,6 +952,9 @@ class LiquidacionesState(DocumentosStateMixin):
         self.liquidacion_actual = None
         self.form_data = {}
         self.error_message = ""
+        # --- US1 cleanup ---
+        self.incidentes_asociados_liquidacion = []
+        self.loading_incidentes_asociados = False
 
     # =========================================================================
     # FUNCIONALIDAD DE LIQUIDACIONES MASIVAS POR PROPIETARIO
@@ -1187,9 +1197,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 "gastos_servicios": LiquidacionesState.parse_int_safe(
                     form_data.get("gastos_servicios")
                 ),
-                "valor_incidentes": LiquidacionesState.parse_int_safe(
-                    form_data.get("valor_incidentes")
-                ),
+                # valor_incidentes is auto-synced, do not send in payload to avoid overwriting with stale UI state
                 "pago_predial": LiquidacionesState.parse_int_safe(
                     form_data.get("pago_predial")
                 ),
@@ -2268,6 +2276,23 @@ class LiquidacionesState(DocumentosStateMixin):
 
                 if resultado.get("success"):
                     exitosos += 1
+                    async with self:
+                        # Actualizar estado local del formulario para reflejar los cambios
+                        data = resultado.get("data", {})
+                        new_form_data = dict(self.form_data)
+                        
+                        if "total_descuentos_liquidacion" in data:
+                            new_form_data["valor_incidentes"] = str(data["total_descuentos_liquidacion"])
+                        
+                        current_obs = new_form_data.get("observaciones", "")
+                        nuevo_id = f"Inc #{incidente['id']}"
+                        if nuevo_id not in current_obs:
+                            if current_obs:
+                                new_form_data["observaciones"] = f"{current_obs}\n{nuevo_id}"
+                            else:
+                                new_form_data["observaciones"] = nuevo_id
+                                
+                        self.form_data = new_form_data
                 else:
                     errores.append(
                         f"Incidente #{incidente['id']}: {resultado.get('message', 'Error desconocido')}"
@@ -2284,7 +2309,18 @@ class LiquidacionesState(DocumentosStateMixin):
                         f"{exitosos} incidente(s) asociado(s) exitosamente",
                         position="bottom-right",
                     )
+                    
+                    # Refrescar valor_incidentes directamente desde la base de datos
+                    from src.aplicacion.servicios.servicio_financiero import ServicioFinanciero
+                    servicio_fin = ServicioFinanciero(dm)
+                    liq_actual = servicio_fin.obtener_detalle_liquidacion_ui(id_liquidacion)
+                    if liq_actual:
+                        new_form_data = dict(self.form_data)
+                        new_form_data["valor_incidentes"] = str(liq_actual.get("valor_incidentes", 0))
+                        self.form_data = new_form_data
+
                     yield LiquidacionesState.load_liquidaciones()
+                    yield LiquidacionesState.cargar_incidentes_asociados(id_liquidacion)
 
                 self.seleccion_incidentes_loading = False
 
@@ -2294,6 +2330,62 @@ class LiquidacionesState(DocumentosStateMixin):
                     f"Error al asociar incidentes: {str(e)}"
                 )
                 self.seleccion_incidentes_loading = False
+            yield rx.toast.error(
+                "Error al asociar incidentes. Por favor, intente de nuevo.",
+                action=rx.button("Reintentar", on_click=LiquidacionesState.asociar_incidentes_seleccionados),
+                position="bottom-right",
+                duration=5000
+            )
+
+    @rx.event(background=True)
+    async def cargar_incidentes_asociados(self, id_liquidacion: int):
+        """Carga los incidentes asociados a una liquidación específica."""
+        async with self:
+            self.loading_incidentes_asociados = True
+            
+        try:
+            with db_manager.obtener_conexion() as conn:
+                cursor = db_manager.get_dict_cursor(conn)
+                placeholder = db_manager.get_placeholder()
+                
+                query = f"""
+                    SELECT 
+                        i.ID_INCIDENTE,
+                        i.DESCRIPCION_INCIDENTE as DESCRIPCION,
+                        i.ESTADO as ESTADO_INCIDENTE,
+                        i.ESTADO_PAGO,
+                        il.VALOR_DESCUENTO
+                    FROM INCIDENTES i
+                    INNER JOIN INCIDENTE_LIQUIDACION il ON i.ID_INCIDENTE = il.ID_INCIDENTE
+                    WHERE il.ID_LIQUIDACION = {placeholder}
+                    ORDER BY i.ID_INCIDENTE DESC
+                """
+                cursor.execute(query, (id_liquidacion,))
+                incidentes = cursor.fetchall()
+                
+            async with self:
+                self.incidentes_asociados_liquidacion = [
+                    {
+                        "id": row["ID_INCIDENTE"],
+                        "descripcion": row["DESCRIPCION"] or f"Incidente #{row['ID_INCIDENTE']}",
+                        "estado": row["ESTADO_INCIDENTE"],
+                        "estado_pago": row["ESTADO_PAGO"] or "Pendiente",
+                        "valor_descuento": row["VALOR_DESCUENTO"],
+                        "valor_descuento_view": format_currency(row["VALOR_DESCUENTO"] or 0),
+                    } for row in incidentes
+                ]
+                self.loading_incidentes_asociados = False
+                
+        except Exception as e:
+            async with self:
+                self.incidentes_asociados_liquidacion = []
+                self.loading_incidentes_asociados = False
+            yield rx.toast.error(
+                "No se pudieron cargar los incidentes asociados",
+                action=rx.button("Reintentar", on_click=LiquidacionesState.cargar_incidentes_asociados(id_liquidacion)),
+                position="bottom-right",
+                duration=5000
+            )
 
     def close_seleccion_incidentes_modal(self):
         """Cierra el modal de selección de incidentes."""

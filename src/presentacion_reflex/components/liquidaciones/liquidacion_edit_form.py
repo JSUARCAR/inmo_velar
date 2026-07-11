@@ -59,6 +59,65 @@ def section_title(title: str) -> rx.Component:
     )
 
 
+def incidentes_table_row(incidente: dict) -> rx.Component:
+    """Fila de la tabla de incidentes asociados."""
+    return rx.table.row(
+        rx.table.cell(incidente["id"], weight="bold"),
+        rx.table.cell(incidente["descripcion"]),
+        rx.table.cell(incidente["estado"]),
+        rx.table.cell(incidente["estado_pago"]),
+        rx.table.cell(incidente["valor_descuento_view"]),
+    )
+
+
+def seccion_incidentes_asociados() -> rx.Component:
+    """Sección que muestra los incidentes asociados a la liquidación."""
+    return rx.box(
+        section_title("Incidentes Asociados"),
+        rx.cond(
+            LiquidacionesState.loading_incidentes_asociados,
+            rx.center(
+                rx.spinner(size="3"),
+                padding="2em",
+                width="100%",
+            ),
+            rx.cond(
+                LiquidacionesState.incidentes_asociados_liquidacion.length() > 0,
+                rx.table.root(
+                    rx.table.header(
+                        rx.table.row(
+                            rx.table.column_header_cell("ID"),
+                            rx.table.column_header_cell("Descripción"),
+                            rx.table.column_header_cell("Estado"),
+                            rx.table.column_header_cell("Estado Pago"),
+                            rx.table.column_header_cell("Valor Descuento"),
+                        )
+                    ),
+                    rx.table.body(
+                        rx.foreach(
+                            LiquidacionesState.incidentes_asociados_liquidacion,
+                            incidentes_table_row,
+                        )
+                    ),
+                    variant="surface",
+                    size="1",
+                    width="100%",
+                ),
+                rx.text(
+                    "No hay incidentes asociados",
+                    color="gray.500",
+                    size="2",
+                    style={"fontStyle": "italic"},
+                    padding_y="1em",
+                ),
+            ),
+        ),
+        margin_top="1em",
+        margin_bottom="1em",
+        width="100%",
+    )
+
+
 def liquidacion_edit_form() -> rx.Component:
     """Modal con formulario para editar una liquidación existente."""
     return rx.dialog.root(
@@ -128,8 +187,8 @@ def liquidacion_edit_form() -> rx.Component:
                             "gastos_servicios",
                             LiquidacionesState.form_data["gastos_servicios"],
                         ),
-                        form_field_editable(
-                            "Incidentes",
+                        form_field_readonly(
+                            "Incidentes (Auto-sync)",
                             "valor_incidentes",
                             LiquidacionesState.form_data["valor_incidentes"],
                         ),
@@ -157,7 +216,7 @@ def liquidacion_edit_form() -> rx.Component:
                                     rx.icon("link", size=16),
                                     rx.text("Seleccionar Incidentes"),
                                 ),
-                                on_click=lambda: LiquidacionesState.open_seleccion_incidentes_modal(
+                                on_click=LiquidacionesState.open_seleccion_incidentes_modal(
                                     LiquidacionesState.form_data["id_liquidacion"].to(
                                         int
                                     )
@@ -181,7 +240,7 @@ def liquidacion_edit_form() -> rx.Component:
                                 rx.icon("link", size=16),
                                 rx.text("Seleccionar Incidentes"),
                             ),
-                            on_click=lambda: LiquidacionesState.open_seleccion_incidentes_modal(
+                            on_click=LiquidacionesState.open_seleccion_incidentes_modal(
                                 LiquidacionesState.form_data["id_liquidacion"].to(int)
                             ),
                             type="button",
@@ -190,10 +249,12 @@ def liquidacion_edit_form() -> rx.Component:
                             margin_top="1em",
                         ),
                     ),
+                    seccion_incidentes_asociados(),
                     section_title("Observaciones"),
                     neuro_text_area(
                         name="observaciones",
-                        default_value=LiquidacionesState.form_data["observaciones"],
+                        value=LiquidacionesState.form_data["observaciones"],
+                        on_change=lambda v: LiquidacionesState.set_form_field("observaciones", v),
                         placeholder="Detalles adicionales sobre la liquidación...",
                         width="100%",
                         style=styles.NEU_INPUT_STYLE,

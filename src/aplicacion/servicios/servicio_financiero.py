@@ -859,9 +859,8 @@ class ServicioFinanciero:
         liquidacion.gastos_servicios = datos_actualizados.get(
             "gastos_servicios", liquidacion.gastos_servicios
         )
-        liquidacion.valor_incidentes = datos_actualizados.get(
-            "valor_incidentes", liquidacion.valor_incidentes
-        )
+        # valor_incidentes is strictly auto-synced by business logic; never overwrite from form data
+        # liquidacion.valor_incidentes is preserved untouched
         liquidacion.pago_predial = datos_actualizados.get(
             "pago_predial", liquidacion.pago_predial
         )
