@@ -19,7 +19,7 @@
 **Purpose**: Preparar el entorno de desarrollo
 
 - [x] T001 Crear rama `bugfix/043-fix-estado-recaudo` desde `develop`
-- [ ] T002 Verificar que la aplicación compile sin errores (`reflex run --env dev`)
+- [x] T002 Verificar que la aplicación compile sin errores (`reflex run --env dev`)
 
 ---
 
@@ -63,10 +63,10 @@
 
 **Purpose**: Verificación final y documentación
 
-- [ ] T015 Ejecutar pruebas de regresión en módulos relacionados (Recaudos, Contratos)
-- [ ] T016 Verificar que no hay errores en consola del navegador
-- [ ] T017 Verificar que no hay errores en logs de la aplicación
-- [ ] T018 Documentar cambios realizados en commit con mensaje `fix(liquidaciones): corregir estado recaudo para mostrar solo recaudo vigente`
+- [x] T015 Ejecutar pruebas de regresión en módulos relacionados (Recaudos, Contratos)
+- [x] T016 Verificar que no hay errores en consola del navegador
+- [x] T017 Verificar que no hay errores en logs de la aplicación
+- [x] T018 Documentar cambios realizados en commit con mensaje `fix(liquidaciones): corregir estado recaudo para mostrar solo recaudo vigente`
 
 ---
 
