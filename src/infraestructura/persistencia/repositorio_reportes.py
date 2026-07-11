@@ -266,7 +266,9 @@ class RepositorioReportes:
                 l.TOTAL_INGRESOS, l.COMISION_PORCENTAJE, l.COMISION_MONTO,
                 l.IVA_COMISION, l.IMPUESTO_4X1000, l.SEGURO_MONTO as "Seguro_Arrendamiento",
                 l.GASTOS_ADMINISTRACION, l.GASTOS_SERVICIOS, l.GASTOS_REPARACIONES, l.PAGO_PREDIAL,
-                l.OTROS_EGRESOS, l.TOTAL_EGRESOS, l.NETO_A_PAGAR,
+                l.OTROS_EGRESOS, l.TOTAL_EGRESOS, 
+                COALESCE(l.VALOR_INCIDENTES, 0) AS "Valor_Incidentes",
+                l.NETO_A_PAGAR,
                 l.ESTADO_LIQUIDACION, l.FECHA_PAGO, l.METODO_PAGO,
                 l.REFERENCIA_PAGO, l.OBSERVACIONES
             FROM liquidaciones l
@@ -666,6 +668,7 @@ class RepositorioReportes:
                  COALESCE(l.GASTOS_REPARACIONES, 0) + 
                  COALESCE(l.PAGO_PREDIAL, 0) + 
                  COALESCE(l.OTROS_EGRESOS, 0)) AS "TOTAL_EGRESOS",
+                COALESCE(l.VALOR_INCIDENTES, 0) AS "VALOR_INCIDENTES",
 
                 -- 9. Cierre Financiero (Liquidación)
                 (COALESCE(l.TOTAL_INGRESOS, 0) - 
@@ -675,7 +678,8 @@ class RepositorioReportes:
                   COALESCE(l.GASTOS_SERVICIOS, 0) + 
                   COALESCE(l.GASTOS_REPARACIONES, 0) + 
                   COALESCE(l.PAGO_PREDIAL, 0) + 
-                  COALESCE(l.OTROS_EGRESOS, 0))) AS "NETO_A_PAGAR",
+                  COALESCE(l.OTROS_EGRESOS, 0) +
+                  COALESCE(l.VALOR_INCIDENTES, 0))) AS "NETO_A_PAGAR",
                 COALESCE(l.ESTADO_LIQUIDACION, 'Sin Liquidar') AS "ESTADO_LIQUIDACION",
                 l.FECHA_PAGO AS "FECHA_PAGO",
                 l.PERIODO AS "PERIODO",

@@ -1,0 +1,9 @@
+fix(reportes): agregar valor_incidentes a reportes de liquidaciones y consolidado
+
+- Agregar VALOR_INCIDENTES a obtener_reporte_liquidaciones()
+- Agregar VALOR_INCIDENTES a obtener_reporte_consolidado()
+- Corregir calculo de NETO_A_PAGAR en reporte consolidado
+- Actualizar HEADERS_REPORTE_CONSOLIDADO
+- Documentación y tareas del feature 044
+
+Closes #044

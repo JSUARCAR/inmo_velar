@@ -53,6 +53,7 @@ HEADERS_REPORTE_CONSOLIDADO: List[str] = [
     "PAGO_PREDIAL",
     "OTROS_EGRESOS",
     "TOTAL_EGRESOS",
+    "VALOR_INCIDENTES",
     # 9. Cierre Financiero (Liquidación)
     "NETO_A_PAGAR",
     "ESTADO_LIQUIDACION",
