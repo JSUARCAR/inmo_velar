@@ -66,13 +66,15 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
     # Filtros
     search_text: str = ""
     filter_estado: str = "Todos"
-    filter_dia_pago: str = "Todos"
+    filter_dia_pago: List[str] = []
+    filter_ciclo_operativo: List[str] = []
     filter_fecha_desde: str = ""
     filter_fecha_hasta: str = ""
 
     # Opciones de filtros
     estado_options: List[str] = ["Todos"] + EstadoRecaudo.valores()
     dias_pago_options: List[str] = ["Todos"] + [str(i) for i in range(1, 32)]
+    ciclo_operativo_options: List[str] = ["Todos"]
     contratos_options: List[Dict[str, Any]] = []
     contratos_select_options: List[str] = []
 
@@ -123,6 +125,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             self.is_loading = True
 
         try:
+            yield RecaudosState.load_ciclo_operativo_options()
             yield RecaudosState.load_filter_options()
             yield RecaudosState.load_recaudos()
         finally:
@@ -141,6 +144,15 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             self.contratos_select_options = contratos_select
 
     @rx.event(background=True)
+    async def load_ciclo_operativo_options(self):
+        """Carga opciones de ciclos operativos (Grupos)."""
+        servicio = _crear_servicio()
+        grupos = servicio.repo.obtener_grupos_operativos()
+        
+        async with self:
+            self.ciclo_operativo_options = ["Todos"] + grupos
+
+    @rx.event(background=True)
     async def load_recaudos(self):
         """Carga recaudos con filtros y paginación usando el servicio."""
         async with self:
@@ -156,7 +168,8 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             page_size = self.page_size
             sort_by = self.sort_by
             sort_order = self.sort_order
-            dia_pago = self.filter_dia_pago if self.filter_dia_pago != "Todos" else None
+            dia_pago = self.filter_dia_pago if self.filter_dia_pago else None
+            ciclo_operativo = self.filter_ciclo_operativo if self.filter_ciclo_operativo else None
 
         try:
             servicio = _crear_servicio()
@@ -166,6 +179,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                 fecha_desde=fecha_desde,
                 fecha_hasta=fecha_hasta,
                 dia_pago=dia_pago,
+                ciclo_operativo=ciclo_operativo,
                 busqueda=busqueda,
                 page=page,
                 page_size=page_size,
@@ -259,9 +273,45 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
         self.current_page = 1
         return RecaudosState.load_recaudos
 
-    def set_filter_dia_pago(self, value: str):
+    def set_filter_dia_pago(self, value: List[str]):
         """Cambia filtro de día de pago."""
         self.filter_dia_pago = value
+        self.current_page = 1
+        return RecaudosState.load_recaudos
+        
+    def toggle_filter_dia_pago(self, checked: bool, valor: str):
+        """Alterna un valor en el filtro multi-select de día de pago."""
+        if valor == "Todos":
+            if checked:
+                self.filter_dia_pago = []
+        else:
+            if checked:
+                if valor not in self.filter_dia_pago:
+                    self.filter_dia_pago.append(valor)
+            else:
+                if valor in self.filter_dia_pago:
+                    self.filter_dia_pago.remove(valor)
+        self.current_page = 1
+        return RecaudosState.load_recaudos
+
+    def set_filter_ciclo_operativo(self, value: List[str]):
+        """Cambia filtro de ciclo operativo."""
+        self.filter_ciclo_operativo = value
+        self.current_page = 1
+        return RecaudosState.load_recaudos
+        
+    def toggle_filter_ciclo_operativo(self, checked: bool, valor: str):
+        """Alterna un valor en el filtro multi-select de ciclo operativo."""
+        if valor == "Todos":
+            if checked:
+                self.filter_ciclo_operativo = []
+        else:
+            if checked:
+                if valor not in self.filter_ciclo_operativo:
+                    self.filter_ciclo_operativo.append(valor)
+            else:
+                if valor in self.filter_ciclo_operativo:
+                    self.filter_ciclo_operativo.remove(valor)
         self.current_page = 1
         return RecaudosState.load_recaudos
 
@@ -281,7 +331,8 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
         """Restablece todos los filtros a valores por defecto."""
         self.search_text = ""
         self.filter_estado = "Todos"
-        self.filter_dia_pago = "Todos"
+        self.filter_dia_pago = []
+        self.filter_ciclo_operativo = []
         self.filter_fecha_desde = ""
         self.filter_fecha_hasta = ""
         self.sort_by = "fecha_pago"
@@ -295,7 +346,8 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
         count = 0
         if self.search_text: count += 1
         if self.filter_estado != "Todos": count += 1
-        if self.filter_dia_pago != "Todos": count += 1
+        if self.filter_dia_pago and "Todos" not in self.filter_dia_pago: count += 1
+        if self.filter_ciclo_operativo and "Todos" not in self.filter_ciclo_operativo: count += 1
         if self.filter_fecha_desde: count += 1
         if self.filter_fecha_hasta: count += 1
         return count
@@ -774,3 +826,76 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             async with self:
                 self.error_message = f"Error al exportar recibos: {str(e)}"
                 self.exportando_recibos = False
+
+    @rx.event(background=True)
+    async def exportar_csv(self):
+        """Exporta los datos filtrados a CSV y descarga el archivo."""
+        try:
+            yield rx.toast.info("Generando archivo CSV...", position="bottom-right")
+
+            servicio = _crear_servicio()
+            
+            estado_val = self.filter_estado
+            fecha_desde = self.filter_fecha_desde or None
+            fecha_hasta = self.filter_fecha_hasta or None
+            busqueda = self.search_text or None
+            dia_pago = self.filter_dia_pago if self.filter_dia_pago else None
+            ciclo_operativo = self.filter_ciclo_operativo if self.filter_ciclo_operativo else None
+
+            filtros = FiltrosRecaudo(
+                estado=self._parse_estado(estado_val),
+                fecha_desde=fecha_desde,
+                fecha_hasta=fecha_hasta,
+                dia_pago=dia_pago,
+                ciclo_operativo=ciclo_operativo,
+                busqueda=busqueda,
+                page=1,
+                page_size=10000,
+                sort_by=self.sort_by,
+                sort_order=self.sort_order,
+            )
+
+            resultado = servicio.listar_paginado(filtros)
+            
+            import csv
+            import io
+            
+            output = io.StringIO()
+            writer = csv.writer(output, delimiter=';')
+            writer.writerow([
+                "ID", "Fecha Pago", "Fecha Pago Contrato", "Ciclo Operativo", "Propiedad", 
+                "Arrendatario", "Tel. Arrendatario", "Habitante", "Tel. Habitante", 
+                "Valor", "Metodo", "Estado", "Referencia", "Observaciones"
+            ])
+            
+            for item in resultado.items:
+                recaudo_dict = item.model_dump() if hasattr(item, "model_dump") else dict(item)
+                writer.writerow([
+                    recaudo_dict.get("id_recaudo", ""),
+                    recaudo_dict.get("fecha_pago", ""),
+                    recaudo_dict.get("fecha_pago_contrato", ""),
+                    recaudo_dict.get("ciclo_operativo", ""),
+                    recaudo_dict.get("direccion", ""),
+                    recaudo_dict.get("arrendatario", ""),
+                    recaudo_dict.get("telefono_arrendatario", ""),
+                    recaudo_dict.get("habitante", ""),
+                    recaudo_dict.get("telefono_habitante", ""),
+                    recaudo_dict.get("valor_total", ""),
+                    recaudo_dict.get("metodo_pago", ""),
+                    recaudo_dict.get("estado", ""),
+                    recaudo_dict.get("referencia", ""),
+                    recaudo_dict.get("observaciones", "")
+                ])
+                
+            data_bytes = output.getvalue().encode("utf-8-sig")
+            
+            import time
+            timestamp = int(time.time())
+            filename = f"recaudos_export_{timestamp}.csv"
+
+            yield rx.download(data=data_bytes, filename=filename)
+            yield rx.toast.success("Descarga iniciada", position="bottom-right")
+
+        except Exception as e:
+            yield rx.toast.error(f"Error al exportar: {str(e)}", position="bottom-right")
+

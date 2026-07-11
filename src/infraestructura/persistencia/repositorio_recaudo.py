@@ -384,7 +384,8 @@ class RepositorioRecaudo:
         fecha_desde: Optional[str] = None,
         fecha_hasta: Optional[str] = None,
         busqueda: Optional[str] = None,
-        dia_pago: Optional[str] = None,
+        dia_pago: Optional[List[str]] = None,
+        ciclo_operativo: Optional[List[str]] = None,
     ) -> int:
         """Cuenta total de recaudos filtrados."""
         conn = self.db.obtener_conexion()
@@ -397,6 +398,14 @@ class RepositorioRecaudo:
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
             JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+            LEFT JOIN LATERAL (
+                SELECT GRUPO_OPERATIVO
+                FROM CONTRATOS_MANDATOS
+                WHERE ID_PROPIEDAD = ca.ID_PROPIEDAD
+                  AND ESTADO_CONTRATO_M = 'ACTIVO'
+                ORDER BY FECHA_INICIO_CONTRATO_M DESC
+                LIMIT 1
+            ) cm ON true
         """
 
         conditions = []
@@ -414,9 +423,16 @@ class RepositorioRecaudo:
             conditions.append(f"r.FECHA_PAGO <= {placeholder}")
             query_params.append(fecha_hasta)
 
-        if dia_pago and dia_pago != "Todos":
-            conditions.append(f"COALESCE(NULLIF(ca.FECHA_PAGO, ''), EXTRACT(DAY FROM ca.FECHA_INICIO_CONTRATO_A::DATE)::TEXT) = {placeholder}")
-            query_params.append(dia_pago)
+        if dia_pago and len(dia_pago) > 0 and "Todos" not in dia_pago:
+            placeholders = ", ".join([placeholder] * len(dia_pago))
+            conditions.append(f"COALESCE(NULLIF(ca.FECHA_PAGO, ''), EXTRACT(DAY FROM ca.FECHA_INICIO_CONTRATO_A::DATE)::TEXT) IN ({placeholders})")
+            query_params.extend(dia_pago)
+
+        if ciclo_operativo and len(ciclo_operativo) > 0 and "Todos" not in ciclo_operativo:
+            valores_ciclo = [c.replace("Grupo ", "") for c in ciclo_operativo]
+            placeholders = ", ".join([placeholder] * len(valores_ciclo))
+            conditions.append(f"cm.GRUPO_OPERATIVO IN ({placeholders})")
+            query_params.extend(valores_ciclo)
 
         if busqueda:
             cols = [
@@ -541,6 +557,22 @@ class RepositorioRecaudo:
             conn.rollback()
             raise e
 
+    def obtener_grupos_operativos(self) -> List[str]:
+        """Obtiene la lista de grupos operativos distintos de los contratos activos."""
+        conn = self.db.obtener_conexion()
+        cursor = self.db.get_dict_cursor(conn)
+        
+        query = "SELECT DISTINCT GRUPO_OPERATIVO FROM CONTRATOS_MANDATOS WHERE ESTADO_CONTRATO_M = 'ACTIVO' ORDER BY GRUPO_OPERATIVO"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        
+        grupos = []
+        for row in rows:
+            grupo = row.get("GRUPO_OPERATIVO") or row.get("grupo_operativo")
+            if grupo:
+                grupos.append(f"Grupo {grupo}")
+        return grupos
+
     def listar_paginado(
         self,
         limit: int,
@@ -549,7 +581,8 @@ class RepositorioRecaudo:
         fecha_desde: Optional[str] = None,
         fecha_hasta: Optional[str] = None,
         busqueda: Optional[str] = None,
-        dia_pago: Optional[str] = None,
+        dia_pago: Optional[List[str]] = None,
+        ciclo_operativo: Optional[List[str]] = None,
         sort_by: str = "fecha_pago",
         sort_order: str = "desc",
     ) -> List[Dict[str, Any]]:
@@ -570,6 +603,7 @@ class RepositorioRecaudo:
             "arrendatario": "per.NOMBRE_COMPLETO",
             "habitante": "arr.NOMBRE_HABITANTE",
             "direccion": "p.DIRECCION_PROPIEDAD",
+            "ciclo_operativo": "cm.GRUPO_OPERATIVO",
         }
 
         sort_col = SORT_COLUMNS.get(sort_by, "r.FECHA_PAGO")
@@ -591,12 +625,21 @@ class RepositorioRecaudo:
                 per.NOMBRE_COMPLETO as NOMBRE_ARRENDATARIO,
                 per.TELEFONO_PRINCIPAL as TELEFONO_ARRENDATARIO,
                 arr.NOMBRE_HABITANTE,
-                arr.TELEFONO_HABITANTE
+                arr.TELEFONO_HABITANTE,
+                cm.GRUPO_OPERATIVO
             FROM RECAUDOS r
             INNER JOIN CONTRATOS_ARRENDAMIENTOS ca ON r.ID_CONTRATO_A = ca.ID_CONTRATO_A
             INNER JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
             INNER JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             INNER JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+            LEFT JOIN LATERAL (
+                SELECT GRUPO_OPERATIVO
+                FROM CONTRATOS_MANDATOS
+                WHERE ID_PROPIEDAD = ca.ID_PROPIEDAD
+                  AND ESTADO_CONTRATO_M = 'ACTIVO'
+                ORDER BY FECHA_INICIO_CONTRATO_M DESC
+                LIMIT 1
+            ) cm ON true
             WHERE 1=1
         """
         params: list = []
@@ -613,9 +656,16 @@ class RepositorioRecaudo:
             query += f" AND r.FECHA_PAGO <= {placeholder}"
             params.append(fecha_hasta)
 
-        if dia_pago and dia_pago != "Todos":
-            query += f" AND COALESCE(NULLIF(ca.FECHA_PAGO, ''), EXTRACT(DAY FROM ca.FECHA_INICIO_CONTRATO_A::DATE)::TEXT) = {placeholder}"
-            params.append(dia_pago)
+        if dia_pago and len(dia_pago) > 0 and "Todos" not in dia_pago:
+            placeholders = ", ".join([placeholder] * len(dia_pago))
+            query += f" AND COALESCE(NULLIF(ca.FECHA_PAGO, ''), EXTRACT(DAY FROM ca.FECHA_INICIO_CONTRATO_A::DATE)::TEXT) IN ({placeholders})"
+            params.extend(dia_pago)
+
+        if ciclo_operativo and len(ciclo_operativo) > 0 and "Todos" not in ciclo_operativo:
+            valores_ciclo = [c.replace("Grupo ", "") for c in ciclo_operativo]
+            placeholders = ", ".join([placeholder] * len(valores_ciclo))
+            query += f" AND cm.GRUPO_OPERATIVO IN ({placeholders})"
+            params.extend(valores_ciclo)
 
         if busqueda:
             cols = [
@@ -656,6 +706,7 @@ class RepositorioRecaudo:
                 "referencia": row["REFERENCIA_BANCARIA"] or "",
                 "estado": row["ESTADO_RECAUDO"],
                 "observaciones": row["OBSERVACIONES"] or "",
+                "ciclo_operativo": f"Grupo {row['GRUPO_OPERATIVO']}" if row.get("GRUPO_OPERATIVO") else "-",
             }
             for row in rows
         ]

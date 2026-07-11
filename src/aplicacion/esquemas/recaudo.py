@@ -98,6 +98,7 @@ class RecaudoDTO(BaseModel):
     referencia: str = ""
     estado: str = ""
     observaciones: str = ""
+    ciclo_operativo: str = ""
 
 
 class ConceptoDTO(BaseModel):
@@ -212,6 +213,7 @@ class RecaudoMapper:
             referencia=row.get("referencia", ""),
             estado=row.get("estado", ""),
             observaciones=row.get("observaciones", ""),
+            ciclo_operativo=row.get("ciclo_operativo", ""),
         )
 
     @staticmethod

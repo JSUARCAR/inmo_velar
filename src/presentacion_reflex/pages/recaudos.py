@@ -4,6 +4,7 @@ Gestión completa de pagos recibidos
 """
 
 import reflex as rx
+from typing import Any
 from src.presentacion_reflex import styles
 
 from src.presentacion_reflex.components.layout.dashboard_layout import dashboard_layout
@@ -36,6 +37,69 @@ def render_estado_badge(estado: rx.Var) -> rx.Component:
     )
 
 
+def multi_select_popover(
+    label: str,
+    options: Any,
+    selected_values: Any,
+    on_toggle: Any,
+) -> rx.Component:
+    """Componente para multi-select usando popover y checkboxes."""
+    
+    # Texto a mostrar en el trigger
+    trigger_text = rx.cond(
+        selected_values.length() > 0,
+        rx.cond(
+            selected_values.contains("Todos") & (selected_values.length() == 1),
+            "Todos",
+            f"{selected_values.length()} seleccionados"
+        ),
+        "Todos"
+    )
+    
+    return rx.box(
+        rx.text(label, style=styles.NEU_FILTER_LABEL_STYLE),
+        rx.popover.root(
+            rx.popover.trigger(
+                rx.button(
+                    rx.text(trigger_text, truncate=True),
+                    rx.icon("chevron-down", size=16),
+                    variant="surface",
+                    style=styles.NEU_FILTER_INPUT_STYLE,
+                    width="100%",
+                    justify_content="space-between",
+                    color=styles.TEXT_PRIMARY,
+                )
+            ),
+            rx.popover.content(
+                rx.scroll_area(
+                    rx.vstack(
+                        rx.foreach(
+                            options,
+                            lambda opt: rx.checkbox(
+                                opt,
+                                checked=rx.cond(
+                                    selected_values.length() == 0,
+                                    opt == "Todos",
+                                    selected_values.contains(opt)
+                                ),
+                                on_change=lambda c: on_toggle(c, opt),
+                                size="2"
+                            )
+                        ),
+                        align_items="start",
+                    ),
+                    type="auto",
+                    scrollbars="vertical",
+                    style={"max_height": "250px", "padding": "10px"},
+                ),
+                width="200px",
+                style={"z_index": styles.Z_POPOVER, "pointer_events": "auto"}
+            )
+        ),
+        width=["100%", "100%", "150px"]
+    )
+
+
 def recaudos_toolbar() -> rx.Component:
     """Barra de herramientas con filtros y búsqueda (Elite)."""
     return advanced_filter_bar(
@@ -50,6 +114,20 @@ def recaudos_toolbar() -> rx.Component:
                 style=styles.NEU_FILTER_SELECT_STYLE,
             ),
             width=["100%", "100%", "150px"]
+        ),
+        # Filtro Pago Contrato
+        multi_select_popover(
+            label="Pago Contrato",
+            options=RecaudosState.dias_pago_options,
+            selected_values=RecaudosState.filter_dia_pago,
+            on_toggle=RecaudosState.toggle_filter_dia_pago,
+        ),
+        # Filtro Ciclo Operativo
+        multi_select_popover(
+            label="Ciclo Operativo",
+            options=RecaudosState.ciclo_operativo_options,
+            selected_values=RecaudosState.filter_ciclo_operativo,
+            on_toggle=RecaudosState.toggle_filter_ciclo_operativo,
         ),
         # Filtro Fecha Desde
         rx.box(
@@ -120,6 +198,16 @@ def recaudos_toolbar() -> rx.Component:
                     content="Exportar Recibos (ZIP)",
                 ),
             ),
+            # Botón Exportar CSV
+            rx.tooltip(
+                rx.icon_button(
+                    rx.icon("file_spreadsheet", size=18),
+                    color_scheme="green",
+                    style=styles.NEU_FILTER_ICON_BUTTON_STYLE,
+                    on_click=RecaudosState.exportar_csv,
+                ),
+                content="Exportar a Excel",
+            ),
             # Botón Refresh
             rx.tooltip(
                 rx.icon_button(
@@ -167,6 +255,7 @@ def recaudos_table() -> rx.Component:
                 header_cell_sortable("ID", "id_recaudo"),
                 header_cell_sortable("Fecha Pago", "fecha_pago"),
                 header_cell_sortable("Pago Contrato", "fecha_pago_contrato"),
+                header_cell_sortable("Ciclo Operativo", "ciclo_operativo"),
                 header_cell_sortable("Propiedad", "direccion"),
                 header_cell_sortable("Arrendatario", "arrendatario"),
                 header_cell_sortable("Habitante", "habitante"),
@@ -189,6 +278,13 @@ def recaudos_table() -> rx.Component:
                             rec["fecha_pago_contrato"],
                             variant="surface",
                             color_scheme="indigo",
+                        )
+                    ),
+                    rx.table.cell(
+                        rx.cond(
+                            rec["ciclo_operativo"] == "-",
+                            rx.text("-", color="gray"),
+                            rx.text(rec["ciclo_operativo"]),
                         )
                     ),
                     rx.table.cell(

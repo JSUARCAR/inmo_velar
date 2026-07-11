@@ -21,7 +21,8 @@ class FiltrosRecaudo:
     estado: Optional[EstadoRecaudo] = None
     fecha_desde: Optional[str] = None
     fecha_hasta: Optional[str] = None
-    dia_pago: Optional[str] = None
+    dia_pago: Optional[List[str]] = None
+    ciclo_operativo: Optional[List[str]] = None
     busqueda: Optional[str] = None
     sort_by: str = "fecha_pago"
     sort_order: str = "desc"
@@ -72,6 +73,8 @@ class IRepositorioRecaudo(ABC):
         estado: Optional[str] = None,
         fecha_desde: Optional[str] = None,
         fecha_hasta: Optional[str] = None,
+        dia_pago: Optional[List[str]] = None,
+        ciclo_operativo: Optional[List[str]] = None,
         busqueda: Optional[str] = None,
         sort_by: str = "fecha_pago",
         sort_order: str = "desc",
@@ -85,6 +88,8 @@ class IRepositorioRecaudo(ABC):
         estado: Optional[str] = None,
         fecha_desde: Optional[str] = None,
         fecha_hasta: Optional[str] = None,
+        dia_pago: Optional[List[str]] = None,
+        ciclo_operativo: Optional[List[str]] = None,
         busqueda: Optional[str] = None,
     ) -> int:
         """Cuenta total de recaudos con filtros aplicados."""
