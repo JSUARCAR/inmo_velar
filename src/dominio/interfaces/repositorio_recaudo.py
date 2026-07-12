@@ -23,6 +23,7 @@ class FiltrosRecaudo:
     fecha_hasta: Optional[str] = None
     dia_pago: Optional[List[str]] = None
     ciclo_operativo: Optional[List[str]] = None
+    propiedad_ids: Optional[List[str]] = None
     busqueda: Optional[str] = None
     sort_by: str = "fecha_pago"
     sort_order: str = "desc"

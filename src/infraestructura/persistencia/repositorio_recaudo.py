@@ -386,6 +386,7 @@ class RepositorioRecaudo:
         busqueda: Optional[str] = None,
         dia_pago: Optional[List[str]] = None,
         ciclo_operativo: Optional[List[str]] = None,
+        propiedad_ids: Optional[List[str]] = None,
     ) -> int:
         """Cuenta total de recaudos filtrados."""
         conn = self.db.obtener_conexion()
@@ -433,6 +434,29 @@ class RepositorioRecaudo:
             placeholders = ", ".join([placeholder] * len(valores_ciclo))
             conditions.append(f"cm.GRUPO_OPERATIVO IN ({placeholders})")
             query_params.extend(valores_ciclo)
+
+        if propiedad_ids and len(propiedad_ids) > 0 and "Todos" not in propiedad_ids:
+            direcciones = []
+            ids = []
+            for p_id in propiedad_ids:
+                if p_id.startswith("ID:"):
+                    ids.append(p_id.replace("ID:", ""))
+                else:
+                    direcciones.append(p_id)
+            
+            conds = []
+            if direcciones:
+                placeholders_dir = ", ".join([placeholder] * len(direcciones))
+                conds.append(f"p.DIRECCION_PROPIEDAD IN ({placeholders_dir})")
+                query_params.extend(direcciones)
+            
+            if ids:
+                placeholders_id = ", ".join([placeholder] * len(ids))
+                conds.append(f"p.ID_PROPIEDAD IN ({placeholders_id})")
+                query_params.extend(ids)
+                
+            if conds:
+                conditions.append(f"({' OR '.join(conds)})")
 
         if busqueda:
             cols = [
@@ -583,6 +607,7 @@ class RepositorioRecaudo:
         busqueda: Optional[str] = None,
         dia_pago: Optional[List[str]] = None,
         ciclo_operativo: Optional[List[str]] = None,
+        propiedad_ids: Optional[List[str]] = None,
         sort_by: str = "fecha_pago",
         sort_order: str = "desc",
     ) -> List[Dict[str, Any]]:
@@ -620,6 +645,7 @@ class RepositorioRecaudo:
                 r.REFERENCIA_BANCARIA,
                 r.ESTADO_RECAUDO,
                 r.OBSERVACIONES,
+                p.ID_PROPIEDAD,
                 p.DIRECCION_PROPIEDAD,
                 p.MATRICULA_INMOBILIARIA,
                 per.NOMBRE_COMPLETO as NOMBRE_ARRENDATARIO,
@@ -667,6 +693,29 @@ class RepositorioRecaudo:
             query += f" AND cm.GRUPO_OPERATIVO IN ({placeholders})"
             params.extend(valores_ciclo)
 
+        if propiedad_ids and len(propiedad_ids) > 0 and "Todos" not in propiedad_ids:
+            direcciones = []
+            ids = []
+            for p_id in propiedad_ids:
+                if p_id.startswith("ID:"):
+                    ids.append(p_id.replace("ID:", ""))
+                else:
+                    direcciones.append(p_id)
+            
+            conds = []
+            if direcciones:
+                placeholders_dir = ", ".join([placeholder] * len(direcciones))
+                conds.append(f"p.DIRECCION_PROPIEDAD IN ({placeholders_dir})")
+                params.extend(direcciones)
+            
+            if ids:
+                placeholders_id = ", ".join([placeholder] * len(ids))
+                conds.append(f"p.ID_PROPIEDAD IN ({placeholders_id})")
+                params.extend(ids)
+                
+            if conds:
+                query += f" AND ({' OR '.join(conds)})"
+
         if busqueda:
             cols = [
                 "r.REFERENCIA_BANCARIA",
@@ -693,8 +742,8 @@ class RepositorioRecaudo:
                 "id_recaudo": row["ID_RECAUDO"],
                 "id_contrato": row["ID_CONTRATO_A"],
                 "codigo_contrato": f"ID:{row['ID_CONTRATO_A']}",
-                "direccion": row["DIRECCION_PROPIEDAD"],
-                "matricula": row["MATRICULA_INMOBILIARIA"],
+                "direccion": row.get("DIRECCION_PROPIEDAD") or f"ID:{row.get('ID_PROPIEDAD', 'Sin dirección')}",
+                "matricula": row.get("MATRICULA_INMOBILIARIA") or "Sin matrícula",
                 "arrendatario": row["NOMBRE_ARRENDATARIO"],
                 "telefono_arrendatario": row.get("TELEFONO_ARRENDATARIO") or "",
                 "habitante": row.get("NOMBRE_HABITANTE") or "",

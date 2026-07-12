@@ -897,6 +897,9 @@ class RepositorioLiquidacionPostgres:
         sort_by: str = "periodo",
         sort_order: str = "desc",
         ciclo_operativo: Optional[str] = None,
+        fin_column: Optional[str] = None,
+        fin_min: Optional[float] = None,
+        fin_max: Optional[float] = None,
     ):
         """
         Lista liquidaciones agrupadas por propietario con totales consolidados.
@@ -914,6 +917,15 @@ class RepositorioLiquidacionPostgres:
             "documento": "per.NUMERO_DOCUMENTO",
             "cantidad_propiedades": "CANTIDAD_PROPIEDADES",
             "canon": "TOTAL_CANON_BRUTO",
+            "otros_ingresos": "TOTAL_OTROS_INGRESOS",
+            "gastos_administracion": "TOTAL_GASTOS_ADMIN",
+            "gastos_servicios": "TOTAL_GASTOS_SERV",
+            "gastos_reparaciones": "TOTAL_GASTOS_REP",
+            "valor_incidentes": "TOTAL_VALOR_INCIDENTES",
+            "pago_predial": "TOTAL_PAGO_PREDIAL",
+            "otros_egresos": "TOTAL_OTROS_EGRESOS",
+            "comision_monto": "TOTAL_COMISION",
+            "iva_comision": "TOTAL_IVA",
             "neto": "NETO_TOTAL",
         }
 
@@ -935,11 +947,13 @@ class RepositorioLiquidacionPostgres:
                     SUM(l.OTROS_INGRESOS) as TOTAL_OTROS_INGRESOS,
                     SUM(l.TOTAL_INGRESOS) as TOTAL_INGRESOS,
                     SUM(l.COMISION_MONTO) as TOTAL_COMISION,
+                    MAX(l.COMISION_PORCENTAJE) as COMISION_PORCENTAJE,
                     SUM(l.IVA_COMISION) as TOTAL_IVA,
                     SUM(l.IMPUESTO_4X1000) as TOTAL_IMPUESTO,
                     SUM(l.GASTOS_ADMINISTRACION) as TOTAL_GASTOS_ADMIN,
                     SUM(l.GASTOS_SERVICIOS) as TOTAL_GASTOS_SERV,
                     SUM(l.GASTOS_REPARACIONES) as TOTAL_GASTOS_REP,
+                    SUM(l.VALOR_INCIDENTES) as TOTAL_VALOR_INCIDENTES,
                     SUM(l.PAGO_PREDIAL) as TOTAL_PAGO_PREDIAL,
                     SUM(l.OTROS_EGRESOS) as TOTAL_OTROS_EGRESOS,
                     SUM(l.TOTAL_EGRESOS) as TOTAL_EGRESOS,
@@ -983,6 +997,29 @@ class RepositorioLiquidacionPostgres:
 
             where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
             group_by = " GROUP BY cm.ID_PROPIETARIO, l.PERIODO, per.NOMBRE_COMPLETO, per.NUMERO_DOCUMENTO"
+            
+            having_conditions = []
+            if fin_column and fin_column != "Ninguna":
+                map_agr = {
+                    "Otros Ingresos": "SUM(l.OTROS_INGRESOS)",
+                    "Gastos Admin": "SUM(l.GASTOS_ADMINISTRACION)",
+                    "Gastos Servicios": "SUM(l.GASTOS_SERVICIOS)",
+                    "Gastos Reparaciones": "SUM(l.GASTOS_REPARACIONES)",
+                    "Valor Incidentes": "SUM(l.VALOR_INCIDENTES)",
+                    "Pago Predial": "SUM(l.PAGO_PREDIAL)",
+                    "Otros Egresos": "SUM(l.OTROS_EGRESOS)",
+                    "IVA Comisión": "SUM(l.IVA_COMISION)",
+                }
+                col_db = map_agr.get(fin_column)
+                if col_db:
+                    if fin_min is not None:
+                        having_conditions.append(f"{col_db} >= {placeholder}")
+                        query_params.append(fin_min)
+                    if fin_max is not None:
+                        having_conditions.append(f"{col_db} <= {placeholder}")
+                        query_params.append(fin_max)
+                        
+            having_clause = " HAVING " + " AND ".join(having_conditions) if having_conditions else ""
 
             # Count de grupos
             count_query = f"""
@@ -991,6 +1028,7 @@ class RepositorioLiquidacionPostgres:
                     {base_from}
                     {where_clause}
                     {group_by}
+                    {having_clause}
                 ) AS grupos
             """
             cursor.execute(count_query, query_params)
@@ -1003,6 +1041,7 @@ class RepositorioLiquidacionPostgres:
                 {base_from}
                 {where_clause}
                 {group_by}
+                {having_clause}
                 ORDER BY {sort_col} {order}, l.PERIODO DESC
                 LIMIT {placeholder} OFFSET {placeholder}
             """
@@ -1064,6 +1103,16 @@ class RepositorioLiquidacionPostgres:
                         "total_egresos": row["TOTAL_EGRESOS"],
                         "estado": estado_consolidado,
                         "estado_recaudo": estado_recaudo_consolidado,
+                        "otros_ingresos": row["TOTAL_OTROS_INGRESOS"],
+                        "gastos_administracion": row["TOTAL_GASTOS_ADMIN"],
+                        "gastos_servicios": row["TOTAL_GASTOS_SERV"],
+                        "gastos_reparaciones": row["TOTAL_GASTOS_REP"],
+                        "valor_incidentes": row.get("TOTAL_VALOR_INCIDENTES", 0),
+                        "pago_predial": row["TOTAL_PAGO_PREDIAL"],
+                        "otros_egresos": row["TOTAL_OTROS_EGRESOS"],
+                        "comision_monto": row.get("TOTAL_COMISION", 0),
+                        "comision_porcentaje": row.get("COMISION_PORCENTAJE", 0),
+                        "iva_comision": row["TOTAL_IVA"],
                     }
                 )
 
@@ -1564,6 +1613,9 @@ class RepositorioLiquidacionPostgres:
         sort_by: str = "periodo",
         sort_order: str = "desc",
         ciclo_operativo: Optional[str] = None,
+        fin_column: Optional[str] = None,
+        fin_min: Optional[float] = None,
+        fin_max: Optional[float] = None,
     ) -> List[Dict[str, Any]]:
         """Lista liquidaciones con paginación y filtros complejos."""
         conn = self.db.obtener_conexion()
@@ -1577,6 +1629,15 @@ class RepositorioLiquidacionPostgres:
             "fecha_generacion": "l.FECHA_GENERACION",
             "estado": "l.ESTADO_LIQUIDACION",
             "canon": "l.CANON_BRUTO",
+            "otros_ingresos": "l.OTROS_INGRESOS",
+            "gastos_administracion": "l.GASTOS_ADMINISTRACION",
+            "gastos_servicios": "l.GASTOS_SERVICIOS",
+            "gastos_reparaciones": "l.GASTOS_REPARACIONES",
+            "valor_incidentes": "l.VALOR_INCIDENTES",
+            "pago_predial": "l.PAGO_PREDIAL",
+            "otros_egresos": "l.OTROS_EGRESOS",
+            "comision_monto": "l.COMISION_MONTO",
+            "iva_comision": "l.IVA_COMISION",
             "neto": "l.NETO_A_PAGAR",
             "contrato": "p.DIRECCION_PROPIEDAD",
             "matricula": "p.MATRICULA_INMOBILIARIA",
@@ -1636,16 +1697,36 @@ class RepositorioLiquidacionPostgres:
         if ciclo_operativo and ciclo_operativo != "Todos":
             conditions.append(f"cm.GRUPO_OPERATIVO = {placeholder}")
             query_params.append(ciclo_operativo)
+            
+        if fin_column and fin_column != "Ninguna":
+            map_ind = {
+                "Otros Ingresos": "l.OTROS_INGRESOS",
+                "Gastos Admin": "l.GASTOS_ADMINISTRACION",
+                "Gastos Servicios": "l.GASTOS_SERVICIOS",
+                "Gastos Reparaciones": "l.GASTOS_REPARACIONES",
+                "Valor Incidentes": "l.VALOR_INCIDENTES",
+                "Pago Predial": "l.PAGO_PREDIAL",
+                "Otros Egresos": "l.OTROS_EGRESOS",
+                "IVA Comisión": "l.IVA_COMISION",
+            }
+            col_db = map_ind.get(fin_column)
+            if col_db:
+                if fin_min is not None:
+                    conditions.append(f"{col_db} >= {placeholder}")
+                    query_params.append(fin_min)
+                if fin_max is not None:
+                    conditions.append(f"{col_db} <= {placeholder}")
+                    query_params.append(fin_max)
 
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
         query = f"""
             SELECT 
                 l.ID_LIQUIDACION, l.PERIODO, l.ESTADO_LIQUIDACION, l.CANON_BRUTO,
-                l.OTROS_INGRESOS, l.COMISION_MONTO, l.IVA_COMISION, l.IMPUESTO_4X1000,
+                l.OTROS_INGRESOS, l.COMISION_MONTO, l.COMISION_PORCENTAJE, l.IVA_COMISION, l.IMPUESTO_4X1000,
                 l.GASTOS_ADMINISTRACION, l.GASTOS_SERVICIOS, l.GASTOS_REPARACIONES, 
-                l.PAGO_PREDIAL, l.OTROS_EGRESOS, l.NETO_A_PAGAR,
-                p.DIRECCION_PROPIEDAD, cm.FECHA_PAGO, cm.GRUPO_OPERATIVO,
+                l.VALOR_INCIDENTES, l.PAGO_PREDIAL, l.OTROS_EGRESOS, l.NETO_A_PAGAR,
+                p.DIRECCION_PROPIEDAD, per.NOMBRE_COMPLETO as NOMBRE_PROPIETARIO, cm.FECHA_PAGO, cm.GRUPO_OPERATIVO,
                 (SELECT rrec_sub.ESTADO_RECAUDO
                  FROM RECAUDOS rrec_sub
                  JOIN RECAUDO_CONCEPTOS rconc_sub ON rconc_sub.ID_RECAUDO = rrec_sub.ID_RECAUDO
@@ -1672,9 +1753,21 @@ class RepositorioLiquidacionPostgres:
                     "canon": row["CANON_BRUTO"],
                     "neto": row["NETO_A_PAGAR"],
                     "contrato": row["DIRECCION_PROPIEDAD"],
+                    "propiedad": row["DIRECCION_PROPIEDAD"],
+                    "propietario": row.get("NOMBRE_PROPIETARIO", "N/D"),
                     "fecha_pago_mandato": row["FECHA_PAGO"],
                     "grupo_operativo": row.get("GRUPO_OPERATIVO") or 0,
                     "estado_recaudo": row.get("ESTADO_RECAUDO") or "Sin Recaudo",
+                    "otros_ingresos": row.get("OTROS_INGRESOS", 0),
+                    "gastos_administracion": row.get("GASTOS_ADMINISTRACION", 0),
+                    "gastos_servicios": row.get("GASTOS_SERVICIOS", 0),
+                    "gastos_reparaciones": row.get("GASTOS_REPARACIONES", 0),
+                    "valor_incidentes": row.get("VALOR_INCIDENTES", 0),
+                    "pago_predial": row.get("PAGO_PREDIAL", 0),
+                    "otros_egresos": row.get("OTROS_EGRESOS", 0),
+                    "comision_monto": row.get("COMISION_MONTO", 0),
+                    "comision_porcentaje": row.get("COMISION_PORCENTAJE", 0),
+                    "iva_comision": row.get("IVA_COMISION", 0),
                 }
             )
         return items
@@ -1686,6 +1779,9 @@ class RepositorioLiquidacionPostgres:
         busqueda: Optional[str] = None,
         id_asesor: Optional[int] = None,
         ciclo_operativo: Optional[str] = None,
+        fin_column: Optional[str] = None,
+        fin_min: Optional[float] = None,
+        fin_max: Optional[float] = None,
     ) -> int:
         """Cuenta total de liquidaciones filtradas."""
         conn = self.db.obtener_conexion()
@@ -1731,6 +1827,26 @@ class RepositorioLiquidacionPostgres:
         if ciclo_operativo and ciclo_operativo != "Todos":
             conditions.append(f"cm.GRUPO_OPERATIVO = {placeholder}")
             query_params.append(ciclo_operativo)
+            
+        if fin_column and fin_column != "Ninguna":
+            map_ind = {
+                "Otros Ingresos": "l.OTROS_INGRESOS",
+                "Gastos Admin": "l.GASTOS_ADMINISTRACION",
+                "Gastos Servicios": "l.GASTOS_SERVICIOS",
+                "Gastos Reparaciones": "l.GASTOS_REPARACIONES",
+                "Valor Incidentes": "l.VALOR_INCIDENTES",
+                "Pago Predial": "l.PAGO_PREDIAL",
+                "Otros Egresos": "l.OTROS_EGRESOS",
+                "IVA Comisión": "l.IVA_COMISION",
+            }
+            col_db = map_ind.get(fin_column)
+            if col_db:
+                if fin_min is not None:
+                    conditions.append(f"{col_db} >= {placeholder}")
+                    query_params.append(fin_min)
+                if fin_max is not None:
+                    conditions.append(f"{col_db} <= {placeholder}")
+                    query_params.append(fin_max)
 
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
         query = f"SELECT COUNT(*) as TOTAL {base_from} {where_clause}"

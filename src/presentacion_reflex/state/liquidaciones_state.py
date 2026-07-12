@@ -27,6 +27,27 @@ class LiquidacionDict(pydantic.BaseModel):
     cantidad_propiedades: Optional[int] = 1
     grupo_operativo: int = 0
     estado_recaudo: str = "Sin Recaudo"
+    
+    # Nuevos campos financieros
+    otros_ingresos: float = 0.0
+    otros_ingresos_view: str = "$0,00"
+    gastos_administracion: float = 0.0
+    gastos_administracion_view: str = "$0,00"
+    gastos_servicios: float = 0.0
+    gastos_servicios_view: str = "$0,00"
+    gastos_reparaciones: float = 0.0
+    gastos_reparaciones_view: str = "$0,00"
+    valor_incidentes: float = 0.0
+    valor_incidentes_view: str = "$0,00"
+    pago_predial: float = 0.0
+    pago_predial_view: str = "$0,00"
+    otros_egresos: float = 0.0
+    otros_egresos_view: str = "$0,00"
+    comision_monto: float = 0.0
+    comision_monto_view: str = "$0,00"
+    comision_porcentaje: float = 0.0
+    iva_comision: float = 0.0
+    iva_comision_view: str = "$0,00"
 
 
 class LiquidacionesState(DocumentosStateMixin):
@@ -53,6 +74,9 @@ class LiquidacionesState(DocumentosStateMixin):
     filter_propiedad_id: str = ""
     filter_propietario_id: str = ""
     filter_ciclo_operativo: str = "Todos"
+    filter_fin_column: str = "Ninguna"
+    filter_fin_min: str = ""
+    filter_fin_max: str = ""
 
     # Opciones de filtros (para dropdowns)
     estado_options: List[str] = [
@@ -65,6 +89,18 @@ class LiquidacionesState(DocumentosStateMixin):
     ciclos_operativos_options: List[str] = ["Todos", "1", "2", "3", "4", "5"]
     periodos_options: List[str] = []  # Se llenarán dinámicamente
     propiedades_options: List[Dict[str, Any]] = []
+    
+    fin_column_options: List[str] = [
+        "Ninguna",
+        "Otros Ingresos",
+        "Gastos Admin",
+        "Gastos Servicios",
+        "Gastos Reparaciones",
+        "Valor Incidentes",
+        "Pago Predial",
+        "Otros Egresos",
+        "IVA Comisión"
+    ]
     propietarios_options: List[Dict[str, Any]] = []
 
     # Select options (listas simples para rx.select - evitar VarTypeError)
@@ -316,6 +352,9 @@ class LiquidacionesState(DocumentosStateMixin):
                     sort_by=self.sort_by,
                     sort_order=self.sort_order,
                     ciclo_operativo=ciclo_op,
+                    fin_column=self.filter_fin_column if self.filter_fin_column != "Ninguna" else None,
+                    fin_min=float(self.filter_fin_min) if self.filter_fin_min else None,
+                    fin_max=float(self.filter_fin_max) if self.filter_fin_max else None,
                 )
             else:
                 # Vista individual por propiedad
@@ -329,6 +368,9 @@ class LiquidacionesState(DocumentosStateMixin):
                     sort_by=self.sort_by,
                     sort_order=self.sort_order,
                     ciclo_operativo=ciclo_op,
+                    fin_column=self.filter_fin_column if self.filter_fin_column != "Ninguna" else None,
+                    fin_min=float(self.filter_fin_min) if self.filter_fin_min else None,
+                    fin_max=float(self.filter_fin_max) if self.filter_fin_max else None,
                 )
 
             async with self:
@@ -339,6 +381,19 @@ class LiquidacionesState(DocumentosStateMixin):
                     # Guardamos versiones formateadas para la UI
                     new_item["canon_view"] = format_currency(item.get("canon", 0))
                     new_item["neto_view"] = format_currency(item.get("neto", 0))
+                    
+                    # Nuevos campos financieros
+                    new_item["otros_ingresos_view"] = format_currency(item.get("otros_ingresos", 0))
+                    new_item["gastos_administracion_view"] = format_currency(item.get("gastos_administracion", 0))
+                    new_item["gastos_servicios_view"] = format_currency(item.get("gastos_servicios", 0))
+                    new_item["gastos_reparaciones_view"] = format_currency(item.get("gastos_reparaciones", 0))
+                    new_item["valor_incidentes_view"] = format_currency(item.get("valor_incidentes", 0))
+                    new_item["pago_predial_view"] = format_currency(item.get("pago_predial", 0))
+                    new_item["otros_egresos_view"] = format_currency(item.get("otros_egresos", 0))
+                    new_item["comision_monto_view"] = format_currency(item.get("comision_monto", 0))
+                    new_item["comision_porcentaje"] = (item.get("comision_porcentaje", 0) / 100) if item.get("comision_porcentaje") else 0.0
+                    new_item["iva_comision_view"] = format_currency(item.get("iva_comision", 0))
+                    
                     new_item["grupo_operativo"] = item.get("grupo_operativo", 0)
                     formatted_items.append(new_item)
 
@@ -445,18 +500,42 @@ class LiquidacionesState(DocumentosStateMixin):
         self.filter_ciclo_operativo = "Todos"
         self.filter_propiedad_id = ""
         self.filter_propietario_id = ""
+        self.filter_fin_column = "Ninguna"
+        self.filter_fin_min = ""
+        self.filter_fin_max = ""
+        self.current_page = 1
+        return LiquidacionesState.load_liquidaciones
+        
+    def set_filter_fin_column(self, value: str):
+        self.filter_fin_column = value
+        self.current_page = 1
+        return LiquidacionesState.load_liquidaciones
+        
+    def set_filter_fin_min(self, value: str):
+        self.filter_fin_min = value
+        self.current_page = 1
+        return LiquidacionesState.load_liquidaciones
+        
+    def set_filter_fin_max(self, value: str):
+        self.filter_fin_max = value
         self.current_page = 1
         return LiquidacionesState.load_liquidaciones
 
     @rx.var
     def active_filter_count(self) -> int:
-        """Count of active non-default filters."""
+        """Retorna el número de filtros activos."""
         count = 0
+        if self.filter_periodo and self.filter_periodo != "Todos":
+            count += 1
+        if self.filter_estado and self.filter_estado != "Todos":
+            count += 1
+        if self.filter_asesor_id and self.filter_asesor_id != "Todos":
+            count += 1
+        if self.filter_ciclo_operativo and self.filter_ciclo_operativo != "Todos":
+            count += 1
+        if self.filter_fin_column != "Ninguna":
+            count += 1
         if self.search_text: count += 1
-        if self.filter_periodo and self.filter_periodo != "Todos": count += 1
-        if self.filter_estado != "Todos": count += 1
-        if self.filter_asesor_id != "Todos": count += 1
-        if self.filter_ciclo_operativo != "Todos": count += 1
         if self.filter_propiedad_id: count += 1
         if self.filter_propietario_id: count += 1
         return count

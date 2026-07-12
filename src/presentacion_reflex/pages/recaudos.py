@@ -129,6 +129,13 @@ def recaudos_toolbar() -> rx.Component:
             selected_values=RecaudosState.filter_ciclo_operativo,
             on_toggle=RecaudosState.toggle_filter_ciclo_operativo,
         ),
+        # Filtro Propiedad
+        multi_select_popover(
+            label="Propiedad",
+            options=RecaudosState.propiedad_options,
+            selected_values=RecaudosState.filter_propiedad,
+            on_toggle=RecaudosState.toggle_filter_propiedad,
+        ),
         # Filtro Fecha Desde
         rx.box(
             rx.text("Desde", style=styles.NEU_FILTER_LABEL_STYLE),

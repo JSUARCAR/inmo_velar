@@ -115,3 +115,6 @@ alter_db.py
 site/
 .mkdocs/
 .venv-docs/
+.venv/
+reflex_log.txt
+test_db.py

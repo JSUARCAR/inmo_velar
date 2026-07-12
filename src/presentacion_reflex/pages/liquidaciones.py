@@ -117,6 +117,51 @@ def liquidaciones_toolbar() -> rx.Component:
             ),
             width=["100%", "100%", "180px"]
         ),
+        # Filtro Financiero
+        rx.box(
+            rx.text("Columna Financiera", style=styles.NEU_FILTER_LABEL_STYLE),
+            rx.select(
+                LiquidacionesState.fin_column_options,
+                value=LiquidacionesState.filter_fin_column,
+                on_change=LiquidacionesState.set_filter_fin_column,
+                style=styles.NEU_FILTER_SELECT_STYLE,
+            ),
+            width=["100%", "100%", "160px"]
+        ),
+        rx.cond(
+            LiquidacionesState.filter_fin_column != "Ninguna",
+            rx.box(
+                rx.text("Mínimo", style=styles.NEU_FILTER_LABEL_STYLE),
+                rx.debounce_input(
+                    rx.input(
+                        placeholder="Mínimo",
+                        value=LiquidacionesState.filter_fin_min,
+                        on_change=LiquidacionesState.set_filter_fin_min,
+                        type="number",
+                        style=styles.NEU_FILTER_INPUT_STYLE,
+                    ),
+                    debounce_timeout=500
+                ),
+                width=["100%", "100%", "100px"]
+            ),
+        ),
+        rx.cond(
+            LiquidacionesState.filter_fin_column != "Ninguna",
+            rx.box(
+                rx.text("Máximo", style=styles.NEU_FILTER_LABEL_STYLE),
+                rx.debounce_input(
+                    rx.input(
+                        placeholder="Máximo",
+                        value=LiquidacionesState.filter_fin_max,
+                        on_change=LiquidacionesState.set_filter_fin_max,
+                        type="number",
+                        style=styles.NEU_FILTER_INPUT_STYLE,
+                    ),
+                    debounce_timeout=500
+                ),
+                width=["100%", "100%", "100px"]
+            ),
+        ),
         # Vista agrupada toggle
         rx.hstack(
             rx.text("Vista Agrupada", style=styles.NEU_FILTER_LABEL_STYLE, margin_bottom="0"),
@@ -281,14 +326,24 @@ def header_cell_sortable(label: str, column_id: str) -> rx.Component:
 
 def liquidaciones_table() -> rx.Component:
     """Tabla de liquidaciones."""
-    return rx.table.root(
-        rx.table.header(
+    return rx.box(
+        rx.table.root(
+            rx.table.header(
             rx.table.row(
                 header_cell_sortable("ID", "id"),
                 header_cell_sortable("Período", "periodo"),
-                header_cell_sortable("Propiedad", "contrato"),
+                header_cell_sortable("Propiedad", "propiedad"),
                 header_cell_sortable("Ciclo Operativo", "grupo_operativo"),
                 header_cell_sortable("Canon", "canon"),
+                header_cell_sortable("Monto Comisión", "comision_monto"),
+                header_cell_sortable("IVA Comisión", "iva_comision"),
+                header_cell_sortable("Otros Ingresos", "otros_ingresos"),
+                header_cell_sortable("Gastos Admin", "gastos_administracion"),
+                header_cell_sortable("Gastos Serv", "gastos_servicios"),
+                header_cell_sortable("Gastos Rep", "gastos_reparaciones"),
+                header_cell_sortable("V. Incidentes", "valor_incidentes"),
+                header_cell_sortable("Pago Predial", "pago_predial"),
+                header_cell_sortable("Otros Egresos", "otros_egresos"),
                 header_cell_sortable("Neto a Pagar", "neto"),
                 header_cell_sortable("Estado Recaudo", "estado_recaudo"),
                 header_cell_sortable("Estado", "estado"),
@@ -303,9 +358,24 @@ def liquidaciones_table() -> rx.Component:
                 lambda liq: rx.table.row(
                     rx.table.cell(liq["id"]),
                     rx.table.cell(liq["periodo"]),
-                    rx.table.cell(liq["contrato"]),
+                    rx.table.cell(liq["propiedad"]),
                     rx.table.cell(badge_grupo_pago(liq["grupo_operativo"])),
                     rx.table.cell(liq["canon_view"]),
+                    rx.table.cell(
+                        rx.tooltip(
+                            rx.text(liq["comision_monto_view"]),
+                            content=f"{liq['comision_porcentaje']}% sobre canon",
+                        ),
+                        text_align="right"
+                    ),
+                    rx.table.cell(liq["iva_comision_view"], text_align="right"),
+                    rx.table.cell(liq["otros_ingresos_view"], text_align="right"),
+                    rx.table.cell(liq["gastos_administracion_view"], text_align="right"),
+                    rx.table.cell(liq["gastos_servicios_view"], text_align="right"),
+                    rx.table.cell(liq["gastos_reparaciones_view"], text_align="right"),
+                    rx.table.cell(liq["valor_incidentes_view"], text_align="right"),
+                    rx.table.cell(liq["pago_predial_view"], text_align="right"),
+                    rx.table.cell(liq["otros_egresos_view"], text_align="right"),
                     rx.table.cell(
                         rx.text(
                             liq["neto_view"],
@@ -455,6 +525,9 @@ def liquidaciones_table() -> rx.Component:
         ),
         width="100%",
         variant="surface",
+        ),
+        width="100%",
+        overflow_x="auto",
     )
 
 
@@ -468,6 +541,15 @@ def liquidaciones_table_agrupada() -> rx.Component:
                     header_cell_sortable("Propietario", "propietario"),
                     header_cell_sortable("Propiedades", "cantidad_propiedades"),
                     header_cell_sortable("Canon Total", "canon"),
+                    header_cell_sortable("Monto Comisión", "comision_monto"),
+                    header_cell_sortable("Total IVA Com.", "iva_comision"),
+                    header_cell_sortable("Total Otros Ing.", "otros_ingresos"),
+                    header_cell_sortable("Total Gastos Adm.", "gastos_administracion"),
+                    header_cell_sortable("Total Gastos Serv.", "gastos_servicios"),
+                    header_cell_sortable("Total Gastos Rep.", "gastos_reparaciones"),
+                    header_cell_sortable("Total V. Incid.", "valor_incidentes"),
+                    header_cell_sortable("Total Predial", "pago_predial"),
+                    header_cell_sortable("Total Otros Egr.", "otros_egresos"),
                     header_cell_sortable("Neto Total", "neto"),
                     header_cell_sortable("Estado Recaudo", "estado_recaudo"),
                     header_cell_sortable("Estado", "estado"),
@@ -494,6 +576,21 @@ def liquidaciones_table_agrupada() -> rx.Component:
                             text_align="center",
                         ),
                         rx.table.cell(liq["canon_view"]),
+                        rx.table.cell(
+                            rx.tooltip(
+                                rx.text(liq["comision_monto_view"]),
+                                content=f"{liq['comision_porcentaje']}% sobre canon",
+                            ),
+                            text_align="right"
+                        ),
+                        rx.table.cell(liq["iva_comision_view"], text_align="right"),
+                        rx.table.cell(liq["otros_ingresos_view"], text_align="right"),
+                        rx.table.cell(liq["gastos_administracion_view"], text_align="right"),
+                        rx.table.cell(liq["gastos_servicios_view"], text_align="right"),
+                        rx.table.cell(liq["gastos_reparaciones_view"], text_align="right"),
+                        rx.table.cell(liq["valor_incidentes_view"], text_align="right"),
+                        rx.table.cell(liq["pago_predial_view"], text_align="right"),
+                        rx.table.cell(liq["otros_egresos_view"], text_align="right"),
                         rx.table.cell(
                             rx.text(
                                 liq["neto_view"],

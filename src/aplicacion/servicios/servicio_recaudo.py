@@ -326,6 +326,7 @@ class ServicioRecaudo:
             busqueda=filtros.busqueda,
             dia_pago=filtros.dia_pago,
             ciclo_operativo=filtros.ciclo_operativo,
+            propiedad_ids=filtros.propiedad_ids,
         )
 
         rows = self.repo.listar_paginado(
@@ -337,6 +338,7 @@ class ServicioRecaudo:
             busqueda=filtros.busqueda,
             dia_pago=filtros.dia_pago,
             ciclo_operativo=filtros.ciclo_operativo,
+            propiedad_ids=filtros.propiedad_ids,
             sort_by=filtros.sort_by,
             sort_order=filtros.sort_order,
         )

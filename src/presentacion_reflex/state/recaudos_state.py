@@ -70,6 +70,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
     filter_ciclo_operativo: List[str] = []
     filter_fecha_desde: str = ""
     filter_fecha_hasta: str = ""
+    filter_propiedad: List[str] = []
 
     # Opciones de filtros
     estado_options: List[str] = ["Todos"] + EstadoRecaudo.valores()
@@ -77,6 +78,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
     ciclo_operativo_options: List[str] = ["Todos"]
     contratos_options: List[Dict[str, Any]] = []
     contratos_select_options: List[str] = []
+    propiedad_options: List[str] = ["Todos"]
 
     # Combobox Contrato
     contrato_search: str = ""
@@ -126,6 +128,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
 
         try:
             yield RecaudosState.load_ciclo_operativo_options()
+            yield RecaudosState.load_propiedad_options()
             yield RecaudosState.load_filter_options()
             yield RecaudosState.load_recaudos()
         finally:
@@ -153,6 +156,31 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             self.ciclo_operativo_options = ["Todos"] + grupos
 
     @rx.event(background=True)
+    async def load_propiedad_options(self):
+        """Carga opciones de propiedades (Direcciones)."""
+        query = "SELECT DISTINCT ID_PROPIEDAD, DIRECCION_PROPIEDAD FROM PROPIEDADES ORDER BY DIRECCION_PROPIEDAD"
+        servicio = _crear_servicio()
+        conn = servicio.db.obtener_conexion()
+        cursor = servicio.db.get_dict_cursor(conn)
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        
+        propiedades = []
+        for row in rows:
+            prop = row.get("DIRECCION_PROPIEDAD") or row.get("direccion_propiedad")
+            if prop:
+                propiedades.append(prop)
+            else:
+                id_prop = row.get("ID_PROPIEDAD") or row.get("id_propiedad")
+                if id_prop:
+                    propiedades.append(f"ID:{id_prop}")
+                    
+        propiedades_unicas = list(dict.fromkeys(propiedades))
+                
+        async with self:
+            self.propiedad_options = ["Todos"] + propiedades_unicas
+
+    @rx.event(background=True)
     async def load_recaudos(self):
         """Carga recaudos con filtros y paginación usando el servicio."""
         async with self:
@@ -170,6 +198,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
             sort_order = self.sort_order
             dia_pago = self.filter_dia_pago if self.filter_dia_pago else None
             ciclo_operativo = self.filter_ciclo_operativo if self.filter_ciclo_operativo else None
+            propiedad_ids = self.filter_propiedad if self.filter_propiedad else None
 
         try:
             servicio = _crear_servicio()
@@ -180,6 +209,7 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
                 fecha_hasta=fecha_hasta,
                 dia_pago=dia_pago,
                 ciclo_operativo=ciclo_operativo,
+                propiedad_ids=propiedad_ids,
                 busqueda=busqueda,
                 page=page,
                 page_size=page_size,
@@ -327,12 +357,34 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
         self.current_page = 1
         return RecaudosState.load_recaudos
 
+    def set_filter_propiedad(self, value: List[str]):
+        """Cambia filtro de propiedad."""
+        self.filter_propiedad = value
+        self.current_page = 1
+        return RecaudosState.load_recaudos
+        
+    def toggle_filter_propiedad(self, checked: bool, valor: str):
+        """Alterna un valor en el filtro multi-select de propiedad."""
+        if valor == "Todos":
+            if checked:
+                self.filter_propiedad = []
+        else:
+            if checked:
+                if valor not in self.filter_propiedad:
+                    self.filter_propiedad.append(valor)
+            else:
+                if valor in self.filter_propiedad:
+                    self.filter_propiedad.remove(valor)
+        self.current_page = 1
+        return RecaudosState.load_recaudos
+
     def clear_filters(self):
         """Restablece todos los filtros a valores por defecto."""
         self.search_text = ""
         self.filter_estado = "Todos"
         self.filter_dia_pago = []
         self.filter_ciclo_operativo = []
+        self.filter_propiedad = []
         self.filter_fecha_desde = ""
         self.filter_fecha_hasta = ""
         self.sort_by = "fecha_pago"
@@ -348,6 +400,8 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
         if self.filter_estado != "Todos": count += 1
         if self.filter_dia_pago and "Todos" not in self.filter_dia_pago: count += 1
         if self.filter_ciclo_operativo and "Todos" not in self.filter_ciclo_operativo: count += 1
+        if self.filter_propiedad and "Todos" not in self.filter_propiedad:
+            count += 1
         if self.filter_fecha_desde: count += 1
         if self.filter_fecha_hasta: count += 1
         return count
