@@ -211,7 +211,12 @@ class LiquidacionFormState(rx.State):
                 yield rx.toast.success("Liquidación actualizada")
             else:
                 # Creación
-                id_asesor = int(form_data.get("id_asesor"))
+                raw_id = form_data.get("id_asesor") or self.form_data.get("id_asesor")
+                if not raw_id:
+                    async with self:
+                        self.error_message = "Por favor seleccione un asesor válido."
+                    return
+                id_asesor = int(raw_id)
                 periodo = form_data.get("periodo")
 
                 contratos_activos = (
@@ -606,8 +611,13 @@ class LiquidacionFormState(rx.State):
                     }
                     for p in detalles.get("contratos", [])
                 ]
-
                 self.show_form_modal = True
+
+                logger.info(
+                    f"Edit Modal Abierto para liquidación {id_liquidacion}: "
+                    f"Cargados {len(self.existing_discounts)} descuentos, "
+                    f"{len(self.advisor_properties)} propiedades."
+                )
 
         except Exception as e:
             async with self:

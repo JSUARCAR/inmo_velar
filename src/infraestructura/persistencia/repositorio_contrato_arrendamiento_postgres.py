@@ -114,17 +114,19 @@ class RepositorioContratoArrendamientoPostgres:
         placeholder = self.db.get_placeholder()
 
         query = f"""
-            SELECT ca.*, cm.COMISION_PORCENTAJE_CONTRATO_M, cm.ID_CONTRATO_M,
+            SELECT DISTINCT ON (ca.ID_CONTRATO_A)
+                   ca.*, cm.COMISION_PORCENTAJE_CONTRATO_M, cm.ID_CONTRATO_M,
                    p.DIRECCION_PROPIEDAD,
                    arr.ID_SEGURO, seg.NOMBRE_SEGURO, seg.PORCENTAJE_SEGURO
             FROM CONTRATOS_ARRENDAMIENTOS ca
-            JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+            JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
+                AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
+                AND cm.ID_ASESOR = {placeholder}
             LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             LEFT JOIN SEGUROS seg ON arr.ID_SEGURO = seg.ID_SEGURO
-            WHERE cm.ID_ASESOR = {placeholder}
-              AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
-              AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
+            WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
+            ORDER BY ca.ID_CONTRATO_A, cm.ID_CONTRATO_M DESC
         """
 
         cursor.execute(query, (id_asesor,))
@@ -142,18 +144,20 @@ class RepositorioContratoArrendamientoPostgres:
         cursor = self.db.get_dict_cursor(conn)
 
         query = """
-            SELECT ca.*, cm.ID_ASESOR as asesor_id_agrupacion, 
+            SELECT DISTINCT ON (ca.ID_CONTRATO_A)
+                   ca.*, cm.ID_ASESOR as asesor_id_agrupacion, 
                    cm.COMISION_PORCENTAJE_CONTRATO_M, cm.ID_CONTRATO_M,
                    p.DIRECCION_PROPIEDAD,
                    arr.ID_SEGURO, seg.NOMBRE_SEGURO, seg.PORCENTAJE_SEGURO
             FROM CONTRATOS_ARRENDAMIENTOS ca
-            JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+            JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
+                AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
+                AND cm.ID_ASESOR IS NOT NULL
             LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
             LEFT JOIN SEGUROS seg ON arr.ID_SEGURO = seg.ID_SEGURO
             WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
-              AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
-              AND cm.ID_ASESOR IS NOT NULL
+            ORDER BY ca.ID_CONTRATO_A, cm.ID_CONTRATO_M DESC
         """
 
         cursor.execute(query)
@@ -183,7 +187,7 @@ class RepositorioContratoArrendamientoPostgres:
         placeholder = self.db.get_placeholder()
 
         query = f"""
-            SELECT 
+            SELECT DISTINCT ON (ca.ID_CONTRATO_A)
                 ca.ID_CONTRATO_A,
                 ca.CANON_ARRENDAMIENTO,
                 ca.FECHA_INICIO_CONTRATO_A,
@@ -191,11 +195,12 @@ class RepositorioContratoArrendamientoPostgres:
                 p.MATRICULA_INMOBILIARIA,
                 cm.COMISION_PORCENTAJE_CONTRATO_M
             FROM CONTRATOS_ARRENDAMIENTOS ca
-            JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
             JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
-            WHERE cm.ID_ASESOR = {placeholder}
-              AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
-              AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
+            JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
+                AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
+                AND cm.ID_ASESOR = {placeholder}
+            WHERE ca.ESTADO_CONTRATO_A = 'ACTIVO'
+            ORDER BY ca.ID_CONTRATO_A, cm.ID_CONTRATO_M DESC
         """
 
         cursor.execute(query, (id_asesor,))

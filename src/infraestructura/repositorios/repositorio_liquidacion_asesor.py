@@ -384,7 +384,7 @@ class RepositorioLiquidacionAsesor:
             return self._row_to_entity(row) if row else None
 
     def guardar_contratos_liquidacion(
-        self, id_liquidacion: int, contratos_ids_canones: List[Tuple], usuario: str
+        self, id_liquidacion: int, contratos_ids_canones: List[Tuple], usuario: str, conn=None
     ):
         """
         Guarda contratos asociados en tabla intermedia con desglose de comisión.
@@ -396,12 +396,20 @@ class RepositorioLiquidacionAsesor:
                 COMISION_PORCENTAJE_CONTRATO, COMISION_MONTO_CONTRATO, CREATED_BY
             ) VALUES (%s, %s, %s, %s, %s, %s)
         """
-        with self.db_manager.transaccion() as conn:
-            cursor = self.db_manager.get_dict_cursor(conn)
+        
+        def execute_inserts(conexion):
+            cursor = self.db_manager.get_dict_cursor(conexion)
             for id_contrato, canon, pct, comision in contratos_ids_canones:
                 cursor.execute(
                     query, (id_liquidacion, id_contrato, canon, pct, comision, usuario)
                 )
+                
+        if conn:
+            execute_inserts(conn)
+        else:
+            with self.db_manager.transaccion() as t_conn:
+                execute_inserts(t_conn)
+
 
     def obtener_contratos_de_liquidacion(self, id_liquidacion: int) -> List[Dict]:
         """
@@ -415,10 +423,10 @@ class RepositorioLiquidacionAsesor:
                    p.DIRECCION_PROPIEDAD, per.NOMBRE_COMPLETO as ARRENDATARIO,
                    cm.COMISION_PORCENTAJE_CONTRATO_M as PCT_MANDATO_ACTUAL
             FROM LIQUIDACIONES_CONTRATOS lc 
-            JOIN CONTRATOS_ARRENDAMIENTOS ca ON lc.ID_CONTRATO_A = ca.ID_CONTRATO_A 
-            JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD 
-            JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO 
-            JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA 
+            LEFT JOIN CONTRATOS_ARRENDAMIENTOS ca ON lc.ID_CONTRATO_A = ca.ID_CONTRATO_A 
+            LEFT JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD 
+            LEFT JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO 
+            LEFT JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA 
             LEFT JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
             WHERE lc.ID_LIQUIDACION_ASESOR = %s
         """
@@ -450,8 +458,8 @@ class RepositorioLiquidacionAsesor:
                         "canon_incluido": gv("CANON_INCLUIDO"),
                         "comision_porcentaje_contrato": pct_final,
                         "comision_monto_contrato": monto_final,
-                        "direccion": gv("DIRECCION_PROPIEDAD"),
-                        "arrendatario": gv("ARRENDATARIO"),
+                        "direccion": gv("DIRECCION_PROPIEDAD") or "Propiedad no encontrada/eliminada",
+                        "arrendatario": gv("ARRENDATARIO") or "Arrendatario no encontrado/eliminado",
                     }
                 )
             return result

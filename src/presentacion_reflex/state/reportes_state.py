@@ -514,10 +514,12 @@ class ReportesState(rx.State):
         # Prevenir que Excel elimine los ceros iniciales en cuentas bancarias y documentos
         # Se usa el formato ="valor" que Excel interpreta como texto literal.
         if is_export and key in [
+            "NUMERO_CUENTA",
             "NUMERO_CUENTA_PROPIETARIO",
             "NUMERO_DOCUMENTO_PROPIETARIO",
             "NUMERO_DOCUMENTO_ARRENDATARIO",
             "NUMERO_DOCUMENTO",
+            "DOCUMENTO_CONSIGNATARIO",
             "DOCUMENTO_CONSIGNATARIO_PROPIETARIO",
         ]:
             if str_val and (str_val.startswith("0") or str_val.isdigit()):

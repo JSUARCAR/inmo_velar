@@ -235,7 +235,7 @@ class ServicioLiquidacionAsesores:
             )
 
         # Iniciar transacción atómica
-        with self.repo_liquidacion.db_manager.transaccion():
+        with self.repo_liquidacion.db_manager.transaccion() as conn:
             canon_total = 0
             comision_bruta_total = 0
             suma_canon_por_pct = 0
@@ -314,7 +314,7 @@ class ServicioLiquidacionAsesores:
                 for c in contratos_con_comision
             ]
             self.repo_liquidacion.guardar_contratos_liquidacion(
-                liquidacion_creada.id_liquidacion_asesor, contratos_tuplas, usuario
+                liquidacion_creada.id_liquidacion_asesor, contratos_tuplas, usuario, conn=conn
             )
 
             # 2. Descuentos Consolidados
@@ -325,6 +325,7 @@ class ServicioLiquidacionAsesores:
                     "descuento 2.00% Seguro",
                     acumulado_seguro,
                     usuario,
+                    conn=conn
                 )
             if acumulado_4x1000 > 0:
                 self.agregar_descuento(
@@ -333,6 +334,7 @@ class ServicioLiquidacionAsesores:
                     "descuento 4x1000",
                     acumulado_4x1000,
                     usuario,
+                    conn=conn
                 )
 
             if self.repo_idempotencia and idempotency_key:
@@ -353,7 +355,31 @@ class ServicioLiquidacionAsesores:
                     logger.error(f"Error registrando evento multi-contrato: {e}")
 
             self._invalidar_caches()
-            return liquidacion_creada
+
+        # --- Verificación Post-Generación (Fuera de la transacción) ---
+        id_liq = liquidacion_creada.id_liquidacion_asesor
+        contratos_db = self.repo_liquidacion.obtener_contratos_de_liquidacion(id_liq)
+        if len(contratos_db) != len(contratos_con_comision):
+            logger.error(f"Fallo de integridad: Se esperaban {len(contratos_con_comision)} contratos, se encontraron {len(contratos_db)}")
+            raise ValueError(f"Fallo de integridad en base de datos: Contratos no persistieron correctamente (esperados {len(contratos_con_comision)}, encontrados {len(contratos_db)})")
+            
+        descuentos_db = []
+        if total_descuentos_automaticos > 0:
+            descuentos_db = self.repo_descuento.listar_por_liquidacion(id_liq)
+            # Esperamos 1 o 2 descuentos dependiendo de si hay seguro y 4x1000
+            esperados = sum([1 if acumulado_seguro > 0 else 0, 1 if acumulado_4x1000 > 0 else 0])
+            if len(descuentos_db) < esperados:
+                logger.error(f"Fallo de integridad: Se esperaban {esperados} descuentos, se encontraron {len(descuentos_db)}")
+                raise ValueError(f"Fallo de integridad en base de datos: Descuentos no persistieron correctamente (esperados {esperados}, encontrados {len(descuentos_db)})")
+
+        logger.info(
+            f"Liquidación multi-contrato generada exitosamente. "
+            f"ID: {id_liq}, Asesor: {id_asesor}, Periodo: {periodo}. "
+            f"Valores: canon_total={canon_total}, comision_bruta={comision_bruta_total}, total_descuentos={total_descuentos_automaticos}. "
+            f"Registros insertados: {len(contratos_db)} contratos, {len(descuentos_db)} descuentos."
+        )
+
+        return liquidacion_creada
 
     @cache_manager.invalidates("dashboard")
     def actualizar_liquidacion(
@@ -490,7 +516,7 @@ class ServicioLiquidacionAsesores:
 
     @cache_manager.invalidates("dashboard")
     def agregar_descuento(
-        self, id_liquidacion: int, tipo: str, descripcion: str, valor: int, usuario: str
+        self, id_liquidacion: int, tipo: str, descripcion: str, valor: int, usuario: str, conn=None
     ) -> DescuentoAsesor:
         """Agrega un descuento y recalcula el neto."""
         liquidacion = self.repo_liquidacion.obtener_por_id(id_liquidacion)
@@ -505,10 +531,11 @@ class ServicioLiquidacionAsesores:
             descripcion_descuento=descripcion,
             valor_descuento=valor,
         )
-        descuento_creado = self.repo_descuento.crear(descuento, usuario)
+        descuento_creado = self.repo_descuento.crear(descuento, usuario, conn=conn)
         self._recalcular_valor_neto(id_liquidacion, usuario)
         self._invalidar_caches()
         return descuento_creado
+
 
     @cache_manager.invalidates("dashboard")
     def eliminar_descuento(self, id_descuento: int, usuario: str) -> bool:

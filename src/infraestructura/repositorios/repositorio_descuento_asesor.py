@@ -15,7 +15,7 @@ class RepositorioDescuentoAsesor:
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
 
-    def crear(self, descuento: DescuentoAsesor, usuario: str) -> DescuentoAsesor:
+    def crear(self, descuento: DescuentoAsesor, usuario: str, conn=None) -> DescuentoAsesor:
         """
         Crea un nuevo descuento con PostgreSQL Native.
         """
@@ -35,8 +35,8 @@ class RepositorioDescuentoAsesor:
             usuario,
         )
 
-        with self.db_manager.transaccion() as conn:
-            cursor = self.db_manager.get_dict_cursor(conn)
+        def execute_insert(conexion):
+            cursor = self.db_manager.get_dict_cursor(conexion)
             cursor.execute(query, params)
             row = cursor.fetchone()
             if row:
@@ -49,6 +49,13 @@ class RepositorioDescuentoAsesor:
 
             descuento.created_by = usuario
             return descuento
+
+        if conn:
+            return execute_insert(conn)
+        else:
+            with self.db_manager.transaccion() as t_conn:
+                return execute_insert(t_conn)
+
 
     def obtener_por_id(self, id_descuento: int) -> Optional[DescuentoAsesor]:
         """Obtiene un descuento por su ID."""

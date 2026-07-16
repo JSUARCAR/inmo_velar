@@ -1,16 +1,26 @@
-import sqlite3
-
-def check():
-    conn = sqlite3.connect('migraciones/DB_Inmo_Velar.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    print("Tables:", [r[0] for r in cursor.fetchall()])
-    
-    # Check CONTRATOS_MANDATO schema if exists
-    cursor.execute("PRAGMA table_info(CONTRATO_MANDATO)")
-    print("CONTRATO_MANDATO schema:", cursor.fetchall())
-
-    cursor.execute("PRAGMA table_info(CONTRATOS_MANDATO)")
-    print("CONTRATOS_MANDATO schema:", cursor.fetchall())
-
-check()
+import psycopg2
+conn = psycopg2.connect('postgresql://postgres:tBltIuhaUSMqQFvUMtSqIPFQZdXwpPtU@hopper.proxy.rlwy.net:12937/railway')
+cursor = conn.cursor()
+cursor.execute('''
+SELECT COUNT(DISTINCT ca.ID_CONTRATO_A) as total_elegibles
+FROM CONTRATOS_ARRENDAMIENTOS ca
+JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
+    AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
+JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR
+JOIN PERSONAS per ON a.ID_PERSONA = per.ID_PERSONA
+WHERE per.NOMBRE_COMPLETO ILIKE '%CRISTIAN%JAMIOY%'
+  AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
+''')
+print('Direct count:', cursor.fetchone()[0])
+cursor.execute('''
+SELECT ca.ID_CONTRATO_A
+FROM CONTRATOS_ARRENDAMIENTOS ca
+JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD
+JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
+JOIN ASESORES a ON cm.ID_ASESOR = a.ID_ASESOR
+JOIN PERSONAS per ON a.ID_PERSONA = per.ID_PERSONA
+WHERE per.NOMBRE_COMPLETO ILIKE '%CRISTIAN%JAMIOY%'
+  AND ca.ESTADO_CONTRATO_A = 'ACTIVO'
+  AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
+''')
+print('Current query count:', len(cursor.fetchall()))

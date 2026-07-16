@@ -1,5 +1,24 @@
 # Estado de Tareas
 
+## Tareas Completadas: 052-fix-edit-liquidacion-data
+**Fecha**: 2026-07-14
+
+Se completaron todas las tareas (38 de 38) descritas en el plan de implementación de la feature `052-fix-edit-liquidacion-data`.
+
+**Resumen de cambios**:
+- **Fundacional (Atomicidad)**: Se corrigió la generación de liquidaciones de asesores para compartir la conexión activa (`conn`) del `db_manager.transaccion()` a todos los repositorios involucrados (`repositorio_liquidacion_asesor.py` y `repositorio_descuento_asesor.py`). Esto resolvió fallos silenciosos de persistencia en nuevas liquidaciones.
+- **US1 & US2 (Visualización)**: Se corrigió el query en `obtener_contratos_de_liquidacion()` reemplazando un `INNER JOIN` restrictivo por un `LEFT JOIN` con fallbacks de datos (`COALESCE`). Esto resolvió el problema donde la data existente en la BD no se mostraba en la UI si el contrato había sido desactivado o eliminado posterior a la generación.
+- **Validaciones (US3 & US4)**: Se desarrollaron scripts de validación (`validar_consistencia_edit.py`) que comprobaron la consistencia 100% entre PostgreSQL y las respuestas de la API, incluyendo pruebas de volumen para liquidaciones con más de 20 contratos.
+- **Migración de Datos**: Se construyó script preventivo pero se corroboró directamente en BD que ninguna liquidación existente había sufrido pérdida de datos.
+- **Archivos modificados**:
+  - `src/infraestructura/repositorios/repositorio_liquidacion_asesor.py`
+  - `src/infraestructura/repositorios/repositorio_descuento_asesor.py`
+  - `src/aplicacion/servicios/servicio_liquidacion_asesores.py`
+  - `src/presentacion_reflex/state/liquidacion_asesores/form_state.py`
+  - `scripts/diagnostico/validar_consistencia_edit.py`
+
+---
+
 ## Tareas Completadas: 001-fix-liquidaciones-incidentes
 **Fecha**: 2026-07-06
 

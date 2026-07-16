@@ -17,7 +17,7 @@ IS_PROD = os.getenv("RAILWAY_ENVIRONMENT") == "production"
 api_url = os.getenv("API_URL")
 if not api_url:
     if not IS_PROD:
-        api_url = "http://localhost:8000"
+        api_url = "http://localhost:8001"
     else:
         # En producción, intentar obtener el dominio de Railway
         railway_domain = os.getenv("RAILWAY_STATIC_URL") or os.getenv("RAILWAY_PUBLIC_DOMAIN")
@@ -47,7 +47,7 @@ config = rx.Config(
     # IMPORTANTE: app_name debe coincidir con la carpeta y archivo (inmobiliaria_velar/inmobiliaria_velar.py)
     app_name="inmobiliaria_velar",
     # Puertos para ejecución (se comentan para evitar conflictos en producción con --backend-only)
-    # backend_port=8000,
+    backend_port=8001,
     # frontend_port=3000,
     # Configuración PostgreSQL
     db_url=_db_url,

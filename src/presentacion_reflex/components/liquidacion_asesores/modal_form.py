@@ -46,6 +46,7 @@ def modal_form() -> rx.Component:
                         # Asesor
                         neuro_floating_select(
                             label="Asesor",
+                            name="id_asesor",
                             value=LiquidacionFormState.form_data["id_asesor"],
                             options=rx.foreach(
                                 LiquidacionFiltrosState.asesores_options,

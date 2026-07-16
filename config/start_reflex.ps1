@@ -50,7 +50,7 @@ Write-Host ""
 
 # Ejecutar aplicacion Reflex
 try {
-    reflex run --backend-port 8000 --loglevel info
+    reflex run --backend-port 8001 --loglevel info
 }
 catch {
     Write-Host "Error al ejecutar Reflex: $_" -ForegroundColor Red
