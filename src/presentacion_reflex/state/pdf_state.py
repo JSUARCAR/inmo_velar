@@ -948,10 +948,9 @@ class PDFState(rx.State):
         # 3. Detalle (Fila única)
         prop_id = datos.get("id_contrato", 1)
 
-        # Calcular incidentes (agrupados)
-        gastos_rep = datos.get("gastos_rep", 0) or 0
-        otros_egr = datos.get("otros_egr", 0) or 0
-        incidentes = gastos_rep + otros_egr
+        # Incidentes directos
+        valor_incidentes = datos.get("valor_incidentes", 0) or 0
+        otro_val = (datos.get("gastos_rep", 0) or 0) + (datos.get("otros_egr", 0) or 0)
 
         detalle = {
             "id": prop_id,
@@ -963,17 +962,22 @@ class PDFState(rx.State):
             "admin": datos.get("gastos_admin", 0) or 0,
             "servicios": datos.get("gastos_serv", 0) or 0,
             "predial": datos.get("pago_predial", 0) or 0,
-            "incidente": incidentes,
+            "otro": otro_val,
+            "incidentes": valor_incidentes,
+            "comision_porcentaje": datos.get("comision_pct", 0) or 0,
             "total": datos.get("neto_pagar", 0) or 0,
         }
 
         # 4. Resumen
         resumen = {
             "total_ingresos": datos.get("total_ingresos", 0) or 0,
-            "total_egresos": datos.get("total_egresos", 0) or 0,
-            "honorarios": datos.get("comision_monto", 0) or 0,
-            "otros_descuentos": (datos.get("total_egresos", 0) or 0)
-            - (datos.get("comision_monto", 0) or 0),
+            "comision_monto": datos.get("comision_monto", 0) or 0,
+            "comision_porcentaje": datos.get("comision_pct", 0) or 0,
+            "iva_comision": datos.get("iva_comision", 0) or 0,
+            "gastos_administracion": datos.get("gastos_admin", 0) or 0,
+            "gastos_servicios": datos.get("gastos_serv", 0) or 0,
+            "pago_predial": datos.get("pago_predial", 0) or 0,
+            "valor_incidentes": valor_incidentes,
             "valor_neto": datos.get("neto_pagar", 0) or 0,
             "cuenta_bancaria": f"{datos.get('banco', 'N/A')} - {datos.get('tipo_cuenta', '')} {datos.get('numero_cuenta', '')}",
         }
@@ -1050,8 +1054,9 @@ class PDFState(rx.State):
             valor_seguro = prop.get("seguro_monto", 0) or 0
             total_seguro_global += valor_seguro
 
-            # Incidentes y Otros
-            incidente = prop["gastos_rep"] + prop["otros_egr"]
+            # Incidentes directos
+            valor_incidentes = prop.get("valor_incidentes", 0) or 0
+            otro_val = prop.get("gastos_rep", 0) + prop.get("otros_egr", 0)
 
             predial = 0  # No disponible en modelo actual, default 0
 
@@ -1066,7 +1071,8 @@ class PDFState(rx.State):
                     + admin
                     + servicios
                     + predial
-                    + incidente
+                    + otro_val
+                    + valor_incidentes
                 )
 
             detalle_propiedades.append(
@@ -1080,19 +1086,24 @@ class PDFState(rx.State):
                     "admin": admin,
                     "servicios": servicios,
                     "predial": predial,
-                    "incidente": incidente,
+                    "otro": otro_val,
+                    "incidentes": valor_incidentes,
+                    "comision_porcentaje": prop.get("comision_porcentaje", 0) or 0,
                     "total": total_fila,
                 }
             )
 
         # Construir resumen (Confiar en los totales calculados por el repositorio/dominio)
         resumen = {
-            "total_ingresos": datos["total_ingresos"],
-            "total_egresos": datos["total_egresos"],
-            "honorarios": datos["comision_monto"],
-            "otros_descuentos": (datos["total_egresos"] or 0)
-            - (datos["comision_monto"] or 0),
-            "valor_neto": datos["neto_pagar"],
+            "total_ingresos": datos.get("total_ingresos", 0) or 0,
+            "comision_monto": datos.get("comision_monto", 0) or 0,
+            "comision_porcentaje": datos.get("comision_pct", 0) or 0,
+            "iva_comision": datos.get("iva_comision", 0) or 0,
+            "gastos_administracion": datos.get("gastos_admin", 0) or 0,
+            "gastos_servicios": datos.get("gastos_serv", 0) or 0,
+            "pago_predial": datos.get("pago_predial", 0) or 0,
+            "valor_incidentes": datos.get("valor_incidentes", 0) or 0,
+            "valor_neto": datos.get("neto_pagar", 0) or 0,
             "cuenta_bancaria": f"{datos['banco']} - {datos['tipo_cuenta']} {datos['cuenta_bancaria']}",
         }
 

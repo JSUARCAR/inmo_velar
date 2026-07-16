@@ -1497,6 +1497,7 @@ class RepositorioLiquidacionPostgres:
                     "gastos_admin": l.get("GASTOS_ADMINISTRACION"),
                     "gastos_serv": l.get("GASTOS_SERVICIOS"),
                     "gastos_rep": l.get("GASTOS_REPARACIONES"),
+                    "valor_incidentes": l.get("VALOR_INCIDENTES") or 0,
                     "pago_predial": l.get("PAGO_PREDIAL"),
                     "seguro_monto": l.get("SEGURO_MONTO", 0),
                     "otros_egr": l.get("OTROS_EGRESOS"),

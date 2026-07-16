@@ -81,9 +81,6 @@ class EstadoCuentaElite(BaseDocumentTemplate):
         else:
             self.document_title = "ESTADO DE CUENTA - PROPIETARIO"
 
-        # Habilitar QR de verificación
-        self.enable_verification_qr("estado", data["estado_id"])
-
         # Determinar descriptor para el nombre de archivo (Dirección de la propiedad)
         descriptor = "consolidado"
         if data.get("inmueble") and data["inmueble"].get("direccion"):
@@ -293,57 +290,28 @@ class EstadoCuentaElite(BaseDocumentTemplate):
             "SERV",
             "PREDIAL",
             "OTRO",
-            "NETO",
+            "INCIDENTES",
+            "NETO"
         ]
 
         # Convertir a filas
         rows = []
 
-        # Totales columnas
-        t_canon = t_comision = t_iva = t_admin = t_serv = t_predial = t_otro = (
-            t_total
-        ) = 0
-
         for d in detalles:
-            # Acumular
-            t_canon += d["canon"]
-            t_comision += d["comision"]
-            t_iva += d["iva"]
-            t_admin += d["admin"]
-            t_serv += d["servicios"]
-            t_predial += d["predial"]
-            t_otro += d["incidente"]
-            t_total += d["total"]
-
             # Formatear
-            rows.append(
-                [
-                    str(d["id"]),
-                    f"${d['canon']:,.0f}",
-                    f"${d['comision']:,.0f}",
-                    f"${d['iva']:,.0f}",
-                    f"${d['admin']:,.0f}",
-                    f"${d['servicios']:,.0f}",
-                    f"${d['predial']:,.0f}",
-                    f"${d['incidente']:,.0f}",
-                    f"${d['total']:,.0f}",
-                ]
-            )
-
-        # Fila TOTAL FINAL
-        rows.append(
-            [
-                "TOTAL",
-                f"${t_canon:,.0f}",
-                f"${t_comision:,.0f}",
-                f"${t_iva:,.0f}",
-                f"${t_admin:,.0f}",
-                f"${t_serv:,.0f}",
-                f"${t_predial:,.0f}",
-                f"${t_otro:,.0f}",
-                f"${t_total:,.0f}",
+            row = [
+                str(d["id"]),
+                f"${d['canon']:,.0f}",
+                f"${d['comision']:,.0f}",
+                f"${d['iva']:,.0f}",
+                f"${d['admin']:,.0f}",
+                f"${d['servicios']:,.0f}",
+                f"${d['predial']:,.0f}",
+                f"${d.get('otro', 0):,.0f}",
+                f"${d.get('incidentes', 0):,.0f}",
+                f"${d['total']:,.0f}",
             ]
-        )
+            rows.append(row)
 
         # Crear tabla
         table = AdvancedTable.create_data_table(
@@ -361,24 +329,124 @@ class EstadoCuentaElite(BaseDocumentTemplate):
         """Agrega resumen financiero"""
         self.add_heading("RESUMEN FINANCIERO", level=3)
 
-        resumen = data["resumen"]
+        from reportlab.platypus import Paragraph, Spacer
+        from reportlab.lib.styles import ParagraphStyle
+        from reportlab.lib.enums import TA_LEFT
+        from reportlab.lib import colors
 
-        # Tabla de resumen
-        headers = ["Concepto", "Valor"]
-        rows = [
-            ["Total Ingresos", f"${resumen.get('total_ingresos', 0):,.2f}"],
-            ["Total Egresos", f"${resumen.get('total_egresos', 0):,.2f}"],
-            ["Honorarios Administración", f"${resumen.get('honorarios', 0):,.2f}"],
-            ["Otros Descuentos", f"${resumen.get('otros_descuentos', 0):,.2f}"],
+        resumen = data["resumen"]
+        # Obtener comisión (manejar None explícito)
+        comision_val = resumen.get("comision_porcentaje")
+        if comision_val is None:
+            comision_val = 0
+            
+        # Redondear al entero más cercano
+        comision_pct = round(comision_val / 100)
+
+        # Estilo para el título del concepto (negrita)
+        style_titulo = ParagraphStyle(
+            'ConceptoTitulo',
+            parent=self.styles["Body"],
+            fontName='Helvetica-Bold',
+            fontSize=9,
+            leading=11,
+            textColor=colors.HexColor('#141413'),
+        )
+
+        # Estilo para la descripción (gris, pequeño)
+        style_desc = ParagraphStyle(
+            'ConceptoDesc',
+            parent=self.styles["Body"],
+            fontName='Helvetica',
+            fontSize=7,
+            leading=9,
+            textColor=colors.HexColor('#5e5d59'),
+            spaceBefore=1,
+        )
+
+        # Estilo para el valor
+        style_valor = ParagraphStyle(
+            'ValorStyle',
+            parent=self.styles["Body"],
+            fontName='Helvetica',
+            fontSize=9,
+            leading=11,
+            alignment=TA_LEFT,
+        )
+
+        # Construir filas con Paragraph objects
+        def make_concepto_cell(titulo: str, desc: str = None):
+            """Crea una celda con título y opcionalmente descripción"""
+            elements = [Paragraph(titulo, style_titulo)]
+            if desc:
+                elements.append(Paragraph(desc, style_desc))
+            return elements
+
+        # Datos del resumen
+        conceptos = [
+            ("Total Ingresos", "(Total Canon Mandato)", resumen.get('total_ingresos', 0)),
+            (f"Comisión ({comision_pct}%)", None, resumen.get('comision_monto', 0)),
+            ("IVA 19%", "(Gravamen sobre la comisión)", resumen.get('iva_comision', 0)),
+            ("Administración", "(Solo aplica para propiedad horizontal)", resumen.get('gastos_administracion', 0)),
+            ("Servicios", "(Solo aplica para Energía, Agua y Gas)", resumen.get('gastos_servicios', 0)),
+            ("Predial", "(Pago anual del impuesto predial de la vivienda)", resumen.get('pago_predial', 0)),
+            ("Incidentes", "(Valor del incidente; aquí se puede presentar el valor total o parcial del mismo)", resumen.get('valor_incidentes', 0)),
         ]
 
-        # Valor neto
-        valor_neto = resumen.get("valor_neto", 0)
-        totals = {1: f"${valor_neto:,.2f}"}
+        # Construir tabla usando reportlab directamente
+        from reportlab.platypus import Table, TableStyle
+        from reportlab.lib.units import inch
 
-        table = AdvancedTable.create_data_table(
-            headers, rows, totals=totals, highlight_totals=True
+        table_data = [["Concepto", "Valor"]]
+        for titulo, desc, valor in conceptos:
+            concepto_cell = make_concepto_cell(titulo, desc)
+            valor_cell = Paragraph(f"${valor:,.2f}", style_valor)
+            table_data.append([concepto_cell, valor_cell])
+
+        # Fila de totales
+        valor_neto = resumen.get("valor_neto", 0)
+        total_style = ParagraphStyle(
+            'TotalStyle',
+            parent=style_valor,
+            fontName='Helvetica-Bold',
+            fontSize=10,
         )
+        table_data.append(["", Paragraph(f"${valor_neto:,.2f}", total_style)])
+
+        # Crear tabla
+        col_widths = [4.5 * inch, 2 * inch]
+        table = Table(table_data, colWidths=col_widths)
+
+        # Estilos de la tabla
+        style_commands = [
+            # Header
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e8e6dc')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#141413')),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),
+            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, 0), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+            # Body
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('VALIGN', (0, 1), (-1, -1), 'TOP'),
+            ('TOPPADDING', (0, 1), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 4),
+            ('LEFTPADDING', (0, 0), (-1, -1), 8),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+            # Grid
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e8e6dc')),
+            # Fila de totales
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#e8e6dc')),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('LINEABOVE', (0, -1), (-1, -1), 2, colors.HexColor('#c96442')),
+            ('TOPPADDING', (0, -1), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, -1), (-1, -1), 8),
+        ]
+
+        table.setStyle(TableStyle(style_commands))
         self.story.append(table)
 
         # Información de transferencia si hay valor positivo
@@ -400,10 +468,12 @@ class EstadoCuentaElite(BaseDocumentTemplate):
 
     def _add_notas(self, data: Dict[str, Any]) -> None:
         """Agrega notas y observaciones"""
-        if "observaciones" in data and data["observaciones"]:
-            self.add_spacer(0.1)
-            self.add_heading("OBSERVACIONES", level=3)
-            self.add_paragraph(data["observaciones"], style_name="Small")
+        self.add_spacer(0.1)
+        self.add_heading("OBSERVACIONES", level=3)
+        obs_text = data.get("observaciones")
+        if not obs_text:
+            obs_text = "Sin observaciones registradas."
+        self.add_paragraph(obs_text, style_name="Small")
 
         # Pie legal
         self.add_legal_footer_text(

@@ -60,10 +60,10 @@ Como desarrollador del sistema, necesito que la incorporación del valor de Inci
 
 ### Edge Cases
 
-- ¿Qué sucede cuando una liquidación tiene incidentes asociados pero con valor_incidentes = 0 en la base de datos?
-- ¿Cómo maneja el sistema liquidaciones con valores de incidentes en decimales (aunque el tipo sea INTEGER, ¿hay conversión)?
-- ¿Qué ocurre cuando se genera un PDF en lote (ZIP) y algunas liquidaciones tienen incidentes y otras no?
-- ¿Cómo se comporta el formato de moneda para valores de incidentes muy grandes (superiores a $999.999.999)?
+- **Resuelto**: ¿Qué sucede cuando una liquidación tiene incidentes asociados pero con valor_incidentes = 0 en la base de datos? → Se oculta la línea de Incidentes en el PDF.
+- **Resuelto**: ¿Cómo maneja el sistema liquidaciones con valores de incidentes en decimales (aunque el tipo sea INTEGER, ¿hay conversión)? → Se redondea al entero más cercano antes de formatear.
+- **Resuelto**: ¿Qué ocurre cuando se genera un PDF en lote (ZIP) y algunas liquidaciones tienen incidentes y otras no? → Cada PDF se genera individualmente; el ZIP solo empaqueta.
+- **Resuelto**: ¿Cómo se comporta el formato de moneda para valores de incidentes muy grandes (superiores a $999.999.999)? → Se aplica el mismo formato de moneda colombiana que el resto de valores del PDF.
 
 ## Requirements *(mandatory)*
 
@@ -72,10 +72,10 @@ Como desarrollador del sistema, necesito que la incorporación del valor de Inci
 - **FR-001**: El proceso de generación del Estado de Cuenta PDF MUST recuperar el campo `valor_incidentes` directamente desde la consulta SQL que obtiene los datos de la liquidación.
 - **FR-002**: La plantilla del Estado de Cuenta PDF MUST incluir una línea o sección dedicada para mostrar el valor de Incidentes en el detalle de la liquidación.
 - **FR-003**: El cálculo del Neto a Pagar en el PDF MUST incluir la deducción del valor de Incidentes, siendo consistente con el cálculo `neto_a_pagar = total_ingresos - total_egresos - valor_incidentes`.
-- **FR-004**: El valor de Incidentes MUST formatearse como moneda colombiana (separadores de miles, sin decimales) de forma consistente con los demás valores monetarios del documento.
-- **FR-005**: Cuando el valor de Incidentes sea cero, el PDF MUST ocultar la línea de Incidentes o mostrarla con valor $0 sin afectar el cálculo del Neto a Pagar.
+- **FR-004**: El valor de Incidentes MUST formatearse como moneda colombiana (separadores de miles, sin decimales), redondeando al entero más cercano cuando el valor tenga componentes fraccionarios, de forma consistente con los demás valores monetarios del documento.
+- **FR-005**: Cuando el valor de Incidentes sea cero, el PDF MUST ocultar completamente la línea de Incidentes en el detalle, sin afectar el cálculo del Neto a Pagar.
 - **FR-006**: El Resumen Financiero del PDF MUST incluir el valor de Incidentes como concepto deducible, mostrando su impacto en el Valor Neto.
-- **FR-007**: La generación del PDF en lote (ZIP) MUST incluir el valor de Incidentes en cada Estado de Cuenta individual.
+- **FR-007**: La generación del PDF en lote (ZIP) MUST generar cada Estado de Cuenta individualmente aplicando la misma lógica de inclusiones/exclusiones de Incidentes, y empaquetarlos en un archivo ZIP sin agregar resúmenes consolidados.
 - **FR-008**: Los valores mostrados en el PDF MUST coincidir exactamente con los valores almacenados en PostgreSQL para la liquidación correspondiente.
 - **FR-009**: La solución MUST mantener la consistencia entre la información visualizada en la UI del módulo Liquidaciones y la presentada en el PDF.
 - **FR-010**: La implementación MUST preservar la funcionalidad existente de generación de PDF sin introducir regresiones.
@@ -96,6 +96,15 @@ Como desarrollador del sistema, necesito que la incorporación del valor de Inci
 - **SC-003**: No existen diferencias entre los valores mostrados en la UI del módulo Liquidaciones y los reflejados en el Estado de Cuenta PDF (tolerancia: $0).
 - **SC-004**: La generación de PDF no introduce regresiones en otros documentos del sistema (0 errores en pruebas de regresión).
 - **SC-005**: El tiempo de generación del PDF no se incrementa en más del 5% respecto al tiempo actual.
+
+## Clarifications
+
+### Session 2026-07-15
+
+- Q: ¿Cómo debe manejar el PDF las liquidaciones con `valor_incidentes = 0`? → A: Ocultar la línea de Incidentes cuando el valor sea $0 (PDF más limpio).
+- Q: ¿Cómo se comporta la generación de PDF en lote (ZIP) cuando algunas liquidaciones tienen incidentes y otras no? → A: Cada PDF se genera por separado con su propia lógica; el ZIP solo empaqueta.
+- Q: ¿Cómo debe manejar el sistema liquidaciones con valores de incidentes en decimales? → A: Redondear al entero más cercano (formato coherente con "sin decimales" en la spec).
+- Q: ¿Cómo se comporta el formato de moneda para valores de incidentes muy grandes (superiores a $999.999.999)? → A: Mismo formato que el resto de valores del PDF (consistencia).
 
 ## Assumptions
 

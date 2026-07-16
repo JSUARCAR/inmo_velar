@@ -755,6 +755,7 @@ class ServicioFinanciero:
                     "predial": prop.get("pago_predial", 0) or 0,
                     "incidente": (prop.get("gastos_rep", 0) or 0)
                     + (prop.get("otros_egr", 0) or 0),
+                    "valor_incidentes": prop.get("valor_incidentes", 0) if isinstance(prop.get("valor_incidentes", 0), (int, float)) else 0,
                     "total": prop.get("neto", 0) or 0,
                 }
             )
@@ -766,6 +767,7 @@ class ServicioFinanciero:
             "honorarios": datos.get("comision_monto", 0) or 0,
             "otros_descuentos": (datos.get("total_egresos", 0) or 0)
             - (datos.get("comision_monto", 0) or 0),
+            "valor_incidentes": datos.get("valor_incidentes", 0) or 0,
             "valor_neto": datos.get("neto_pagar", 0) or 0,
             "cuenta_bancaria": f"{datos.get('banco', 'N/A')} - {datos.get('tipo_cuenta', 'N/A')} {datos.get('cuenta_bancaria', 'N/A')}",
             "fecha_pago": datos.get("fecha_pago", ""),
