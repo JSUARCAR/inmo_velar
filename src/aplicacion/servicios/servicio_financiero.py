@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 from src.dominio.entidades.liquidacion import Liquidacion
 from src.dominio.entidades.recaudo import Recaudo
 from src.dominio.entidades.recaudo_concepto import RecaudoConcepto
+from src.dominio.entidades.resultado_generacion import ResultadoGeneracionPropietario
 
 from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
 from src.dominio.interfaces.repositorio_recaudo import IRepositorioRecaudo
@@ -268,10 +269,10 @@ class ServicioFinanciero:
         periodo: str,
         datos_adicionales_por_contrato: Optional[Dict],
         usuario_sistema: str,
-    ) -> int:
+    ) -> ResultadoGeneracionPropietario:
         """
         Genera liquidaciones individuales para todos los contratos de mandato activos de un propietario.
-        Retorna la cantidad de liquidaciones generadas.
+        Retorna la cantidad de liquidaciones generadas, omitidas y errores.
         """
         from src.infraestructura.persistencia.database import db_manager
 
@@ -286,9 +287,12 @@ class ServicioFinanciero:
             contratos = cursor.fetchall()
 
         if not contratos:
-            return 0
+            return ResultadoGeneracionPropietario(generadas=0, omitidas=0, errores=0)
 
         generadas = 0
+        omitidas = 0
+        errores = 0
+
         for row in contratos:
             id_contrato_m = row["ID_CONTRATO_M"]
             datos_adicionales = {}
@@ -306,15 +310,21 @@ class ServicioFinanciero:
                     usuario_sistema=usuario_sistema,
                 )
                 generadas += 1
-            except ValueError:
-                pass
+            except ValueError as e:
+                # Si el error es porque ya existe, se cuenta como omitida
+                if f"Ya existe una liquidación para el período {periodo}" in str(e):
+                    omitidas += 1
+                else:
+                    errores += 1
+            except Exception:
+                # Fallo inesperado
+                errores += 1
 
-        if generadas == 0:
-            raise ValueError(
-                f"Ya existían liquidaciones para las propiedades de este propietario en el período {periodo}"
-            )
-
-        return generadas
+        return ResultadoGeneracionPropietario(
+            generadas=generadas,
+            omitidas=omitidas,
+            errores=errores
+        )
 
     def listar_todas_liquidaciones(self) -> List[Dict[str, Any]]:
         return self.repo_liquidacion.listar_todas()

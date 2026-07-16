@@ -645,11 +645,11 @@ class LiquidacionesState(DocumentosStateMixin):
                     cm.ID_CONTRATO_M, 
                     cm.CANON_MANDATO,
                     p.DIRECCION_PROPIEDAD,
-                    per.NOMBRE_COMPLETO as NOMBRE_PROPIETARIO
+                    COALESCE(per.NOMBRE_COMPLETO, 'PROPIETARIO DESCONOCIDO') as NOMBRE_PROPIETARIO
                 FROM CONTRATOS_MANDATOS cm
                 JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
-                JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
-                JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
+                LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
+                LEFT JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
                 WHERE cm.ID_PROPIEDAD = {placeholder} AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
                 LIMIT 1
                 """
@@ -1097,27 +1097,28 @@ class LiquidacionesState(DocumentosStateMixin):
                     "No se encontraron propietarios con contratos de mandato activos"
                 )
 
-            generadas = 0
-            errores = 0
+            total_generadas = 0
+            total_omitidas = 0
+            total_errores = 0
 
             # Generar liquidación consolidada para cada propietario
+            import logging
             for id_propietario in id_propietarios_activos:
                 try:
-                    servicio.generar_liquidacion_propietario(
+                    resultado = servicio.generar_liquidacion_propietario(
                         id_propietario=id_propietario,
                         periodo=periodo,
                         datos_adicionales_por_contrato=None,
                         usuario_sistema=usuario_sistema,
                     )
-                    generadas += 1
+                    total_generadas += resultado.generadas
+                    total_omitidas += resultado.omitidas
+                    total_errores += resultado.errores
                 except Exception as e:
-                    print(
-                        f"Error generando liquidacion masiva para id_propietario={id_propietario}: {e}"
+                    logging.error(
+                        f"Error generando liquidacion para propietario ID={id_propietario}: {e}"
                     )
-                    errores += 1
-
-            if generadas == 0 and errores > 0:
-                raise ValueError("Hubo errores generando todas las liquidaciones.")
+                    total_errores += 1
 
             async with self:
                 self.show_bulk_create_modal = False
@@ -1137,12 +1138,17 @@ class LiquidacionesState(DocumentosStateMixin):
             async with self:
                 self.is_loading = False
                 error_msg = self.error_message
+                generadas = total_generadas if 'total_generadas' in locals() else 0
+                omitidas = total_omitidas if 'total_omitidas' in locals() else 0
+                errores = total_errores if 'total_errores' in locals() else 0
 
             if not error_msg:
-                mensaje = f"Se generaron {generadas} liquidaciones exitosamente."
-                if errores > 0:
-                    mensaje += f" (Omitidas/Error: {errores})"
-                yield rx.toast.success(mensaje, position="bottom-right")
+                if errores == 0 and generadas == 0 and omitidas > 0:
+                    yield rx.toast.info(f"0 generadas, {omitidas} ya existían", position="bottom-right")
+                elif errores == 0:
+                    yield rx.toast.success(f"{generadas} generadas, {omitidas} ya existían", position="bottom-right")
+                else:
+                    yield rx.toast.warning(f"{generadas} generadas, {omitidas} ya existían, {errores} con error", position="bottom-right")
             else:
                 yield rx.toast.error(error_msg, position="bottom-right")
 
@@ -2455,7 +2461,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 ]
                 self.loading_incidentes_asociados = False
                 
-        except Exception as e:
+        except Exception:
             async with self:
                 self.incidentes_asociados_liquidacion = []
                 self.loading_incidentes_asociados = False
