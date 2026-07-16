@@ -25,59 +25,71 @@ def selector_busqueda(
     """Selector con búsqueda integrada con estética Claude y floating label."""
     from src.presentacion_reflex.components.shared.floating_label import floating_input
 
-    return rx.vstack(
-        floating_input(
-            label=etiqueta,
-            placeholder=marcador,
-            value=rx.cond(
-                menu_abierto,
-                valor_busqueda,
-                rx.cond(etiqueta_valor != "", etiqueta_valor, valor_busqueda),
-            ),
-            on_change=lambda val: [al_cambiar_busqueda(val), al_alternar_menu(True)],
-            on_focus=lambda: [al_cambiar_busqueda(""), al_alternar_menu(True)],
-            on_blur=lambda: al_alternar_menu(False),
-            width="100%",
-        ),
-        rx.cond(
+    combobox_input = floating_input(
+        label=etiqueta,
+        placeholder=marcador,
+        value=rx.cond(
             menu_abierto,
-            rx.popover.content(
+            valor_busqueda,
+            rx.cond(etiqueta_valor != "", etiqueta_valor, valor_busqueda),
+        ),
+        on_change=lambda val: [al_cambiar_busqueda(val), al_alternar_menu(True)],
+        on_focus=lambda: [al_cambiar_busqueda(""), al_alternar_menu(True)],
+        on_blur=lambda: al_alternar_menu(False),
+        width="100%",
+    )
+
+    dropdown_menu = rx.cond(
+        menu_abierto,
+        rx.box(
+            rx.scroll_area(
                 rx.vstack(
-                    rx.scroll_area(
-                        rx.vstack(
-                            rx.foreach(
-                                opciones_filtradas,
-                                lambda opt: rx.cond(
-                                    opt[0] != "",
-                                    rx.box(
-                                        rx.text(opt[0], size="2"),
-                                        width="100%",
-                                        padding_x="3",
-                                        padding_y="2",
-                                        transition=styles.GLOBAL_TRANSITION,
-                                        _hover={
-                                            "bg": styles.BG_HOVER,
-                                            "color": styles.TEXT_PRIMARY,
-                                            "cursor": "pointer",
-                                        },
-                                        on_click=lambda: al_seleccionar(opt[1], opt[0]),
-                                    ),
-                                ),
+                    rx.foreach(
+                        opciones_filtradas,
+                        lambda opt: rx.cond(
+                            opt[0] != "",
+                            rx.box(
+                                rx.text(opt[0], size="2"),
+                                width="100%",
+                                padding_x="3",
+                                padding_y="2",
+                                transition=styles.GLOBAL_TRANSITION,
+                                _hover={
+                                    "bg": styles.BG_HOVER,
+                                    "color": styles.TEXT_PRIMARY,
+                                    "cursor": "pointer",
+                                },
+                                on_mouse_down=lambda: al_seleccionar(opt[1], opt[0]),
                             ),
-                            width="100%",
-                            spacing="0",
                         ),
-                        type="auto",
-                        scrollbars="vertical",
-                        style={"max_height": "200px"},
-                        width="100%",
                     ),
-                    padding="2",
-                    width="320px",
-                    spacing="2",
-                    style=styles.NEU_PANEL_STYLE,
+                    width="100%",
+                    spacing="0",
                 ),
+                type="auto",
+                scrollbars="vertical",
+                style={"max_height": "200px"},
+                width="100%",
             ),
+            padding="2",
+            width="100%",
+            spacing="2",
+            style=styles.NEU_PANEL_STYLE,
+            position="absolute",
+            top="100%",
+            left="0",
+            margin_top="4px",
+            z_index=styles.Z_POPOVER,
+            on_mouse_down=rx.prevent_default,
+        ),
+    )
+
+    return rx.vstack(
+        rx.box(
+            combobox_input,
+            dropdown_menu,
+            position="relative",
+            width="100%",
         ),
         spacing="1",
         width="100%",
