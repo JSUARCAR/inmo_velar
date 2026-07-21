@@ -83,11 +83,11 @@
 
 **Purpose**: Mejoras transversales y validación final
 
-- [ ] T016 Ejecutar validación de quickstart.md completa
-- [ ] T017 Ejecutar `reflex run --env dev` y verificar consola limpia (sin errores)
-- [ ] T018 Documentar cambios en ESTADO_TAREAS.md
-- [ ] T019 [P] Ejecutar linting (ruff, black) en archivos modificados
-- [ ] T020 Realizar commit con mensaje convencional: `feat(contratos): agregar columna informacion adicional condicional`
+- [x] T016 Ejecutar validación de quickstart.md completa
+- [x] T017 Ejecutar `reflex run --env dev` y verificar consola limpia (sin errores)
+- [x] T018 Documentar cambios en ESTADO_TAREAS.md
+- [x] T019 [P] Ejecutar linting (ruff, black) en archivos modificados
+- [x] T020 Realizar commit con mensaje convencional: `feat(contratos): agregar columna informacion adicional condicional`
 
 ---
 

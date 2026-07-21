@@ -226,7 +226,10 @@ class RepositorioContratoMandatoPostgres:
                     COALESCE(per.NUMERO_DOCUMENTO, 'N/A') as NUMERO_DOCUMENTO,
                     per_asesor.NOMBRE_COMPLETO as ASESOR,
                     cm.FECHA_PAGO,
-                    cm.GRUPO_OPERATIVO
+                    cm.GRUPO_OPERATIVO,
+                    cm.CONSIGNATARIO,
+                    cm.BANCO_PROPIETARIO,
+                    cm.NUMERO_CUENTA_PROPIETARIO
                 {base_from}
                 {where_clause}
                 ORDER BY {sort_column} {sort_order_valid}
@@ -266,6 +269,9 @@ class RepositorioContratoMandatoPostgres:
                         "asesor_nombre": gv("ASESOR") or "Sin asesor",
                         "fecha_pago": gv("FECHA_PAGO") or "",
                         "grupo_operativo": gv("GRUPO_OPERATIVO") or 0,
+                        "consignatario": gv("CONSIGNATARIO"),
+                        "banco_propietario": gv("BANCO_PROPIETARIO"),
+                        "numero_cuenta_propietario": gv("NUMERO_CUENTA_PROPIETARIO"),
                     }
                 )
             return PaginatedResult(

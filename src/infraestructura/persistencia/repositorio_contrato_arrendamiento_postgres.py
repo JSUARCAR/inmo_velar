@@ -327,7 +327,7 @@ class RepositorioContratoArrendamientoPostgres:
                     ca.FECHA_PAGO,
                     ca.GRUPO_OPERATIVO,
                     per_cod.NOMBRE_COMPLETO as CODEUDOR_NOMBRE,
-                    per_cod.TELEFONO as CODEUDOR_TELEFONO
+                    per_cod.TELEFONO_PRINCIPAL as CODEUDOR_TELEFONO
                 {base_from}
                 LEFT JOIN PROPIETARIOS prop_ent ON cm.ID_PROPIETARIO = prop_ent.ID_PROPIETARIO
                 LEFT JOIN PERSONAS prop_per ON prop_ent.ID_PERSONA = prop_per.ID_PERSONA
