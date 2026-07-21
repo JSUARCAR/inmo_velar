@@ -6,8 +6,6 @@ from src.presentacion_reflex.components.layout.dashboard_layout import dashboard
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.contratos_state import ContratosState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_floating_input,
-    neuro_floating_select,
     neuro_button,
     neuro_icon_action_button,
     neuro_badge,
@@ -39,7 +37,9 @@ from src.presentacion_reflex.components.contratos.modal_renovacion_contrato impo
 from src.presentacion_reflex.components.shared.elite_gradient_icon import (
     elite_gradient_icon_labeled,
 )
-from src.presentacion_reflex.components.shared.advanced_filter_bar import advanced_filter_bar
+from src.presentacion_reflex.components.shared.advanced_filter_bar import (
+    advanced_filter_bar,
+)
 from src.presentacion_reflex.state.pdf_state import PDFState
 
 
@@ -117,8 +117,7 @@ def render_table_view() -> rx.Component:
                     size="1",
                     tooltip_content="Generar Paz y Salvo",
                     on_click=lambda: PDFState.generar_certificado_paz_y_salvo(
-                        c.id_contrato,
-                        c.tipo_contrato
+                        c.id_contrato, c.tipo_contrato
                     ),
                 ),
             ),
@@ -167,6 +166,13 @@ def render_table_view() -> rx.Component:
                 header_cell_sortable(
                     "Propietario/Arrendatario",
                     "propietario_nombre",
+                    ContratosState.sort_by,
+                    ContratosState.sort_order,
+                    ContratosState.toggle_sort,
+                ),
+                header_cell_sortable(
+                    "Información Adicional",
+                    "informacion_adicional",
                     ContratosState.sort_by,
                     ContratosState.sort_order,
                     ContratosState.toggle_sort,
@@ -322,6 +328,13 @@ def render_table_view() -> rx.Component:
                         )
                     ),
                     rx.table.cell(
+                        rx.text(
+                            c.informacion_adicional,
+                            size="1",
+                            color=styles.TEXT_SECONDARY,
+                        )
+                    ),
+                    rx.table.cell(
                         rx.text("$", c.valor_canon.to_string(), weight="bold")
                     ),
                     rx.table.cell(badge_grupo_pago(c.grupo_operativo, c.fecha_pago)),
@@ -469,19 +482,24 @@ def contratos_page() -> rx.Component:
                     rx.box(
                         rx.text("Asesor", style=styles.NEU_FILTER_LABEL_STYLE),
                         rx.select.root(
-                            rx.select.trigger(placeholder="Asesor", style=styles.NEU_FILTER_SELECT_STYLE),
+                            rx.select.trigger(
+                                placeholder="Asesor",
+                                style=styles.NEU_FILTER_SELECT_STYLE,
+                            ),
                             rx.select.content(
                                 rx.select.group(
                                     rx.foreach(
                                         ContratosState.asesores_filter_options,
-                                        lambda opt: rx.select.item(opt[0], value=opt[1]),
+                                        lambda opt: rx.select.item(
+                                            opt[0], value=opt[1]
+                                        ),
                                     )
                                 )
                             ),
                             value=ContratosState.filter_asesor_id,
                             on_change=ContratosState.set_filter_asesor_id,
                         ),
-                        width=["100%", "100%", "200px"]
+                        width=["100%", "100%", "200px"],
                     ),
                     # Tipo filter
                     rx.box(
@@ -493,7 +511,7 @@ def contratos_page() -> rx.Component:
                             placeholder="Tipo",
                             style=styles.NEU_FILTER_SELECT_STYLE,
                         ),
-                        width=["100%", "100%", "160px"]
+                        width=["100%", "100%", "160px"],
                     ),
                     # Estado filter
                     rx.box(
@@ -505,13 +523,17 @@ def contratos_page() -> rx.Component:
                             placeholder="Estado",
                             style=styles.NEU_FILTER_SELECT_STYLE,
                         ),
-                        width=["100%", "100%", "140px"]
+                        width=["100%", "100%", "140px"],
                     ),
                     # Toggles
                     rx.cond(
                         ContratosState.filter_tipo != "Arrendamiento",
                         rx.hstack(
-                            rx.text("Sin arriendo", style=styles.NEU_FILTER_LABEL_STYLE, margin_bottom="0"),
+                            rx.text(
+                                "Sin arriendo",
+                                style=styles.NEU_FILTER_LABEL_STYLE,
+                                margin_bottom="0",
+                            ),
                             rx.checkbox(
                                 checked=ContratosState.filter_sin_arrendamiento,
                                 on_change=ContratosState.set_filter_sin_arrendamiento,
@@ -563,7 +585,7 @@ def contratos_page() -> rx.Component:
                             ),
                             content="Recargar",
                         ),
-                    ]
+                    ],
                 ),
                 # Stats/Counter
                 rx.flex(

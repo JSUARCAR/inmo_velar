@@ -32,6 +32,27 @@ class ContratoDict(pydantic.BaseModel):
     fecha_pago: str = ""
     grupo_operativo: int = 0
     estado_cumplimiento: str = "PENDIENTE"  # AL_DIA, PENDIENTE, VENCIDO
+    informacion_adicional: str | None = None
+
+
+def construir_informacion_adicional(contrato: dict, tipo_contrato: str) -> str | None:
+    """Construye la información adicional según el tipo de contrato."""
+    if tipo_contrato == "Mandato":
+        consignatario = contrato.get("consignatario")
+        banco = contrato.get("banco_propietario")
+        cuenta = contrato.get("numero_cuenta_propietario")
+        partes = [
+            str(x).strip()
+            for x in [consignatario, banco, cuenta]
+            if x and str(x).strip()
+        ]
+        return " | ".join(partes) if partes else "No registrado"
+    elif tipo_contrato == "Arrendamiento":
+        codeudor = contrato.get("codeudor_nombre")
+        telefono = contrato.get("codeudor_telefono")
+        partes = [str(x).strip() for x in [codeudor, telefono] if x and str(x).strip()]
+        return " | ".join(partes) if partes else "No registrado"
+    return "No registrado"
 
 
 class ContratosState(DocumentosStateMixin):
@@ -290,7 +311,10 @@ class ContratosState(DocumentosStateMixin):
 
     @rx.var
     def asesores_filter_options_dicts(self) -> List[Dict[str, str]]:
-        return [{"label": opt[0], "value": opt[1]} for opt in (self.asesores_filter_options or [])]
+        return [
+            {"label": opt[0], "value": opt[1]}
+            for opt in (self.asesores_filter_options or [])
+        ]
 
     @rx.var
     def tipo_options_dicts(self) -> List[Dict[str, str]]:
@@ -391,13 +415,20 @@ class ContratosState(DocumentosStateMixin):
     def active_filter_count(self) -> int:
         """Count of active non-default filters."""
         count = 0
-        if self.search_text: count += 1
-        if self.filter_tipo != "Todos": count += 1
-        if self.filter_estado != "ACTIVO": count += 1
-        if self.filter_propiedad_id: count += 1
-        if self.filter_persona_id: count += 1
-        if self.filter_asesor_id != "todos": count += 1
-        if self.filter_sin_arrendamiento: count += 1
+        if self.search_text:
+            count += 1
+        if self.filter_tipo != "Todos":
+            count += 1
+        if self.filter_estado != "ACTIVO":
+            count += 1
+        if self.filter_propiedad_id:
+            count += 1
+        if self.filter_persona_id:
+            count += 1
+        if self.filter_asesor_id != "todos":
+            count += 1
+        if self.filter_sin_arrendamiento:
+            count += 1
         return count
 
     def toggle_view(self):
@@ -547,27 +578,36 @@ class ContratosState(DocumentosStateMixin):
 
             if self.filter_tipo == "Mandato":
                 res = servicio.listar_mandatos_paginado(**kwargs_mandatos)
-                items = [
-                    ContratoDict(tipo_contrato="Mandato", **item) for item in res.items
-                ]
+                items = []
+                for item in res.items:
+                    item["informacion_adicional"] = construir_informacion_adicional(
+                        item, "Mandato"
+                    )
+                    items.append(ContratoDict(tipo_contrato="Mandato", **item))
                 total = res.total
             elif self.filter_tipo == "Arrendamiento":
                 res = servicio.listar_arrendamientos_paginado(**kwargs_paginacion)
-                items = [
-                    ContratoDict(tipo_contrato="Arrendamiento", **item)
-                    for item in res.items
-                ]
+                items = []
+                for item in res.items:
+                    item["informacion_adicional"] = construir_informacion_adicional(
+                        item, "Arrendamiento"
+                    )
+                    items.append(ContratoDict(tipo_contrato="Arrendamiento", **item))
                 total = res.total
             else:
                 res_m = servicio.listar_mandatos_paginado(**kwargs_mandatos)
                 res_a = servicio.listar_arrendamientos_paginado(**kwargs_paginacion)
-                items = [
-                    ContratoDict(tipo_contrato="Mandato", **item)
-                    for item in res_m.items
-                ] + [
-                    ContratoDict(tipo_contrato="Arrendamiento", **item)
-                    for item in res_a.items
-                ]
+                items = []
+                for item in res_m.items:
+                    item["informacion_adicional"] = construir_informacion_adicional(
+                        item, "Mandato"
+                    )
+                    items.append(ContratoDict(tipo_contrato="Mandato", **item))
+                for item in res_a.items:
+                    item["informacion_adicional"] = construir_informacion_adicional(
+                        item, "Arrendamiento"
+                    )
+                    items.append(ContratoDict(tipo_contrato="Arrendamiento", **item))
                 total = res_m.total + res_a.total
 
             # Cargar cumplimiento (Excepción temporal SQLite hasta migrar liquidaciones/recaudos)
@@ -597,7 +637,7 @@ class ContratosState(DocumentosStateMixin):
                                 it.id_contrato, periodo
                             )
                         )
-                except:
+                except Exception:
                     it.estado_cumplimiento = "PENDIENTE"
 
             async with self:
@@ -666,7 +706,13 @@ class ContratosState(DocumentosStateMixin):
         self.modal_mode = "crear_arrendamiento"
         self.editing_id = None
         self.limpiar_contexto_documental()
-        self.form_data = {"id_propiedad": "", "id_arrendatario": "", "id_codeudor": "", "enlace_video": "", "responsable_deposito_id": ""}
+        self.form_data = {
+            "id_propiedad": "",
+            "id_arrendatario": "",
+            "id_codeudor": "",
+            "enlace_video": "",
+            "responsable_deposito_id": "",
+        }
         self.propiedad_selected_label = ""
         self.arrendatario_selected_label = ""
         self.codeudor_selected_label = ""
@@ -749,7 +795,11 @@ class ContratosState(DocumentosStateMixin):
                             "deposito": str(c.deposito),
                             "fecha_pago": c.fecha_pago or "",
                             "enlace_video": c.enlace_video or "",
-                            "responsable_deposito_id": str(c.responsable_deposito_id) if c.responsable_deposito_id else "",
+                            "responsable_deposito_id": (
+                                str(c.responsable_deposito_id)
+                                if c.responsable_deposito_id
+                                else ""
+                            ),
                         }
                         # Rehidratación de etiquetas
                         self.propiedad_selected_label = self._get_label_by_id(
@@ -761,8 +811,10 @@ class ContratosState(DocumentosStateMixin):
                         self.codeudor_selected_label = self._get_label_by_id(
                             self.codeudores_select_options, c.id_codeudor
                         )
-                        self.responsable_deposito_selected_label = self._get_label_by_id(
-                            self.asesores_select_options, c.responsable_deposito_id
+                        self.responsable_deposito_selected_label = (
+                            self._get_label_by_id(
+                                self.asesores_select_options, c.responsable_deposito_id
+                            )
                         )
 
                         self.propiedad_search = ""
@@ -1097,7 +1149,6 @@ class ContratosState(DocumentosStateMixin):
             porcentaje = float(form_data.get("porcentaje_ipc", 0))
             fecha = form_data.get("fecha_aplicacion", "")
             observaciones = form_data.get("observaciones", "")
-
 
             servicio = ServicioContratos(db_manager)
 

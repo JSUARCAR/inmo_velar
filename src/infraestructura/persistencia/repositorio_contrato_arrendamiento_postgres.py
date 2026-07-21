@@ -2,7 +2,6 @@
 Repositorio Postgres: ContratoArrendamiento
 """
 
-from datetime import datetime
 from typing import Dict, List, Optional
 
 from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
@@ -240,6 +239,8 @@ class RepositorioContratoArrendamientoPostgres:
                 JOIN PROPIEDADES p ON ca.ID_PROPIEDAD = p.ID_PROPIEDAD
                 JOIN ARRENDATARIOS arr ON ca.ID_ARRENDATARIO = arr.ID_ARRENDATARIO
                 JOIN PERSONAS per ON arr.ID_PERSONA = per.ID_PERSONA
+                LEFT JOIN CODEUDORES cod ON ca.ID_CODEUDOR = cod.ID_CODEUDOR
+                LEFT JOIN PERSONAS per_cod ON cod.ID_PERSONA = per_cod.ID_PERSONA
                 LEFT JOIN CONTRATOS_MANDATOS cm ON ca.ID_PROPIEDAD = cm.ID_PROPIEDAD AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
                 LEFT JOIN ASESORES am ON cm.ID_ASESOR = am.ID_ASESOR
                 LEFT JOIN PERSONAS per_asesor ON am.ID_PERSONA = per_asesor.ID_PERSONA
@@ -324,7 +325,9 @@ class RepositorioContratoArrendamientoPostgres:
                     COALESCE(prop_per.NOMBRE_COMPLETO, 'N/A') as PROPIETARIO,
                     COALESCE(prop_per.NUMERO_DOCUMENTO, 'N/A') as PROPIETARIO_DOC,
                     ca.FECHA_PAGO,
-                    ca.GRUPO_OPERATIVO
+                    ca.GRUPO_OPERATIVO,
+                    per_cod.NOMBRE_COMPLETO as CODEUDOR_NOMBRE,
+                    per_cod.TELEFONO as CODEUDOR_TELEFONO
                 {base_from}
                 LEFT JOIN PROPIETARIOS prop_ent ON cm.ID_PROPIETARIO = prop_ent.ID_PROPIETARIO
                 LEFT JOIN PERSONAS prop_per ON prop_ent.ID_PERSONA = prop_per.ID_PERSONA
@@ -366,6 +369,8 @@ class RepositorioContratoArrendamientoPostgres:
                         "asesor_nombre": gv("ASESOR") or "Sin asesor",
                         "fecha_pago": gv("FECHA_PAGO") or "",
                         "grupo_operativo": gv("GRUPO_OPERATIVO") or 0,
+                        "codeudor_nombre": gv("CODEUDOR_NOMBRE"),
+                        "codeudor_telefono": gv("CODEUDOR_TELEFONO"),
                     }
                 )
 
@@ -496,9 +501,12 @@ class RepositorioContratoArrendamientoPostgres:
             fecha_ultimo_incremento_ipc=str(
                 row_dict.get("fecha_ultimo_incremento_ipc", "")
             ),
-            enlace_video=row_dict.get("enlace_video"),
-            responsable_deposito_id=row_dict.get("responsable_deposito_id") or row_dict.get("RESPONSABLE_DEPOSITO_ID"),
-            created_at=str(row_dict.get("created_at") or row_dict.get("CREATED_AT", "")),
+            enlace_video=(row_dict.get("enlace_video") or row_dict.get("ENLACE_VIDEO")),
+            responsable_deposito_id=row_dict.get("responsable_deposito_id")
+            or row_dict.get("RESPONSABLE_DEPOSITO_ID"),
+            created_at=str(
+                row_dict.get("created_at") or row_dict.get("CREATED_AT", "")
+            ),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),
             updated_by=(row_dict.get("updated_by") or row_dict.get("UPDATED_BY")),

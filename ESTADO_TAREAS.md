@@ -1,5 +1,23 @@
 # Estado de Tareas
 
+## Tareas Completadas: 060-columnas-contratos-condicionales
+**Fecha**: 2026-07-21
+
+Se completaron todas las tareas (20 de 20) descritas en el plan de implementación de la feature `060-columnas-contratos-condicionales`.
+
+**Resumen de cambios**:
+- **Foundational**: Se agregó el campo `informacion_adicional` a `ContratoDict` y la lógica para su construcción en `contratos_state.py`. Se modificó la consulta de BD de Arrendamientos para cruzar información con `CODEUDORES` y `PERSONAS`.
+- **US1 & US3 (UI & Lógica)**: Se implementó la columna condicional "Información Adicional" en la vista de tabla principal en `contratos.py` (Muestra "Consignatario | Banco | Cuenta" en Mandatos y "Codeudor | Teléfono" en Arrendamientos). Se agregó ordenamiento alfabético y ajustes en `tarjeta_contrato.py`.
+- **US2 (Integridad de Datos)**: Se creó el script `validar_datos_contratos.py` para validar dependencias de consignatarios y codeudores en la BD. La aplicación fue construida de forma resiliente para evitar caídas en caso de datos incompletos, utilizando fallbacks como "No registrado".
+- **Archivos modificados**:
+  - `src/presentacion_reflex/state/contratos_state.py`
+  - `src/infraestructura/persistencia/repositorio_contrato_arrendamiento_postgres.py`
+  - `src/presentacion_reflex/pages/contratos.py`
+  - `src/presentacion_reflex/components/contratos/tarjeta_contrato.py`
+  - `scripts/validacion/validar_datos_contratos.py`
+
+---
+
 ## Tareas Completadas: 052-fix-edit-liquidacion-data
 **Fecha**: 2026-07-14
 

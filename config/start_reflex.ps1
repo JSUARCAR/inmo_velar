@@ -16,7 +16,7 @@ else {
 }
 
 # Verificar que Reflex esta instalado
-if (-not (Get-Command reflex -ErrorAction SilentlyContinue)) {
+if (-not (python -m reflex --version 2> $null)) {
     Write-Host "Reflex no esta instalado." -ForegroundColor Red
     Write-Host "Ejecute: pip install reflex" -ForegroundColor Yellow
     Read-Host "Presione Enter para salir"
@@ -25,7 +25,7 @@ if (-not (Get-Command reflex -ErrorAction SilentlyContinue)) {
 
 # Verificar version de Reflex
 try {
-    $reflexVersion = reflex --version 2>&1
+    $reflexVersion = python -m reflex --version 2>&1
     Write-Host "Version: $reflexVersion" -ForegroundColor Green
 } catch {
     Write-Host "No se pudo determinar la version de Reflex" -ForegroundColor Yellow
@@ -50,7 +50,7 @@ Write-Host ""
 
 # Ejecutar aplicacion Reflex
 try {
-    reflex run --backend-port 8001 --loglevel info
+    python -m reflex run --backend-port 8001 --loglevel info
 }
 catch {
     Write-Host "Error al ejecutar Reflex: $_" -ForegroundColor Red

@@ -300,6 +300,7 @@ class RepositorioContratoMandatoPostgres:
             TIPO_CUENTA = {placeholder},
             CONSIGNATARIO = {placeholder},
             DOCUMENTO_CONSIGNATARIO = {placeholder},
+            ENLACE_VIDEO = {placeholder},
             UPDATED_AT = {placeholder},
             UPDATED_BY = {placeholder}
         WHERE ID_CONTRATO_M = {placeholder}
@@ -325,6 +326,7 @@ class RepositorioContratoMandatoPostgres:
                 contrato.tipo_cuenta,
                 contrato.consignatario,
                 contrato.documento_consignatario,
+                contrato.enlace_video,
                 datetime.now().replace(microsecond=0).isoformat(),
                 usuario,
                 contrato.id_contrato_m,
@@ -399,9 +401,9 @@ class RepositorioContratoMandatoPostgres:
                 or row_dict.get("NUMERO_CUENTA_PROPIETARIO")
             ),
             tipo_cuenta=(row_dict.get("tipo_cuenta") or row_dict.get("TIPO_CUENTA")),
-            consignatario=row_dict.get("consignatario"),
-            documento_consignatario=row_dict.get("documento_consignatario"),
-            enlace_video=row_dict.get("enlace_video"),
+            consignatario=(row_dict.get("consignatario") or row_dict.get("CONSIGNATARIO")),
+            documento_consignatario=(row_dict.get("documento_consignatario") or row_dict.get("DOCUMENTO_CONSIGNATARIO")),
+            enlace_video=(row_dict.get("enlace_video") or row_dict.get("ENLACE_VIDEO")),
             created_at=str(row_dict.get("created_at", "")),
             created_by=(row_dict.get("created_by") or row_dict.get("CREATED_BY")),
             updated_at=(row_dict.get("updated_at") or row_dict.get("UPDATED_AT")),

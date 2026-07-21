@@ -151,6 +151,17 @@ def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
                 align="center",
                 spacing="2",
             ),
+            # Info: Información Adicional
+            rx.hstack(
+                rx.icon("info", size=16, color="var(--gray-9)"),
+                rx.text(
+                    contrato.informacion_adicional,
+                    size="2",
+                    color="var(--gray-11)",
+                ),
+                align="center",
+                spacing="2",
+            ),
             # Info: Fechas y Valor
             rx.grid(
                 rx.vstack(
@@ -284,8 +295,7 @@ def tarjeta_contrato(contrato: ContratoDict) -> rx.Component:
                         neuro_icon_action_button(
                             "shield-check",
                             on_click=lambda: PDFState.generar_certificado_paz_y_salvo(
-                                contrato.id_contrato,
-                                contrato.tipo_contrato
+                                contrato.id_contrato, contrato.tipo_contrato
                             ),
                             color_scheme="teal",
                             tooltip_content="Generar Paz y Salvo",
