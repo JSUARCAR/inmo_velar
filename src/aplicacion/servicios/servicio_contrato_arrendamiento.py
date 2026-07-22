@@ -602,10 +602,12 @@ class ServicioContratoArrendamiento:
             SELECT id_liquidacion, canon_bruto 
             FROM LIQUIDACIONES 
             WHERE id_contrato_m = (
-                SELECT id_contrato_m FROM CONTRATOS_MANDATOS
-                WHERE id_contrato_a = %s LIMIT 1
+                SELECT m.id_contrato_m 
+                FROM CONTRATOS_MANDATOS m
+                JOIN CONTRATOS_ARRENDAMIENTOS a ON m.id_propiedad = a.id_propiedad
+                WHERE a.id_contrato_a = %s LIMIT 1
             )
-            AND fecha_generacion::date > %s
+            AND fecha_generacion::date >= date_trunc('month', %s::date)
         """
         cursor.execute(query_sel, (id_contrato_a, fecha_renovacion))
         records = cursor.fetchall()
@@ -618,10 +620,12 @@ class ServicioContratoArrendamiento:
             UPDATE LIQUIDACIONES
             SET canon_bruto = %s
             WHERE id_contrato_m = (
-                SELECT id_contrato_m FROM CONTRATOS_MANDATOS
-                WHERE id_contrato_a = %s LIMIT 1
+                SELECT m.id_contrato_m 
+                FROM CONTRATOS_MANDATOS m
+                JOIN CONTRATOS_ARRENDAMIENTOS a ON m.id_propiedad = a.id_propiedad
+                WHERE a.id_contrato_a = %s LIMIT 1
             )
-            AND fecha_generacion::date > %s;
+            AND fecha_generacion::date >= date_trunc('month', %s::date);
         """
         cursor.execute(query_upd, (canon_nuevo, id_contrato_a, fecha_renovacion))
         filas = cursor.rowcount
@@ -655,7 +659,7 @@ class ServicioContratoArrendamiento:
             SELECT id_recaudo, valor_total
             FROM RECAUDOS
             WHERE id_contrato_a = %s
-            AND fecha_pago::date > %s
+            AND fecha_pago::date >= date_trunc('month', %s::date)
         """
         cursor.execute(query_sel, (id_contrato_a, fecha_renovacion))
         records = cursor.fetchall()
@@ -668,7 +672,7 @@ class ServicioContratoArrendamiento:
             UPDATE RECAUDOS
             SET valor_total = %s
             WHERE id_contrato_a = %s
-            AND fecha_pago::date > %s;
+            AND fecha_pago::date >= date_trunc('month', %s::date);
         """
         cursor.execute(query_upd, (canon_nuevo, id_contrato_a, fecha_renovacion))
         filas = cursor.rowcount
@@ -710,10 +714,10 @@ class ServicioContratoArrendamiento:
                 l.fecha_generacion
             FROM LIQUIDACIONES l
             JOIN CONTRATOS_MANDATOS cm ON l.id_contrato_m = cm.id_contrato_m
-            JOIN CONTRATOS_ARRENDAMIENTOS c ON cm.id_contrato_a = c.id_contrato_a
+            JOIN CONTRATOS_ARRENDAMIENTOS c ON cm.id_propiedad = c.id_propiedad
             WHERE c.id_contrato_a = %s
             AND l.canon_bruto != c.canon_arrendamiento
-            AND l.fecha_generacion::date > %s;
+            AND l.fecha_generacion::date >= date_trunc('month', %s::date);
         """
         cursor.execute(query_liq, (id_contrato_a, fecha_renovacion))
         for r in cursor.fetchall():
@@ -742,7 +746,7 @@ class ServicioContratoArrendamiento:
             JOIN CONTRATOS_ARRENDAMIENTOS c ON r.id_contrato_a = c.id_contrato_a
             WHERE c.id_contrato_a = %s
             AND r.valor_total != c.canon_arrendamiento
-            AND r.fecha_pago::date > %s;
+            AND r.fecha_pago::date >= date_trunc('month', %s::date);
         """
         cursor.execute(query_rec, (id_contrato_a, fecha_renovacion))
         for r in cursor.fetchall():
