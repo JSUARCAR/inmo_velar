@@ -327,6 +327,22 @@ class ServicioContratoArrendamiento:
                         logger.warning(
                             f"Propiedad {arriendo.id_propiedad} no encontrada para cascada"
                         )
+            
+            # Sincronizar Liquidaciones Futuras (Propagación Canon)
+            if cambio_canon:
+                fecha_renov = arriendo.fecha_renovacion_contrato_a or datetime.now().date().isoformat()
+                filas_liq = self.actualizar_canon_liquidaciones_futuras(
+                    arriendo.id_contrato_a, nuevo_canon, fecha_renov, usuario_sistema
+                )
+                logger.info(f"Liquidaciones futuras sincronizadas: {filas_liq} actualizadas")
+                
+            # Sincronizar Recaudos Futuros (Propagación Canon)
+            if cambio_canon:
+                fecha_renov = arriendo.fecha_renovacion_contrato_a or datetime.now().date().isoformat()
+                filas_rec = self.actualizar_valor_recaudos_futuros(
+                    arriendo.id_contrato_a, nuevo_canon, fecha_renov, usuario_sistema
+                )
+                logger.info(f"Recaudos futuros sincronizados: {filas_rec} actualizados")
 
     def listar_arrendamientos_paginado(self, **kwargs):
         return self.repo_arriendo.listar_paginado(**kwargs)
@@ -464,6 +480,16 @@ class ServicioContratoArrendamiento:
             mandato.updated_at = datetime.now().isoformat()
             self.repo_mandato.actualizar(mandato, usuario_sistema)
 
+        # 7. Sincronizar Liquidaciones Futuras (Propagación Canon)
+        self.actualizar_canon_liquidaciones_futuras(
+            arriendo.id_contrato_a, nuevo_canon, arriendo.fecha_renovacion_contrato_a, usuario_sistema
+        )
+        
+        # 8. Sincronizar Recaudos Futuros (Propagación Canon)
+        self.actualizar_valor_recaudos_futuros(
+            arriendo.id_contrato_a, nuevo_canon, arriendo.fecha_renovacion_contrato_a, usuario_sistema
+        )
+
         return arriendo
 
     def _calcular_incremento_ipc(self, canon_actual: int) -> tuple[int, float]:
@@ -561,3 +587,250 @@ class ServicioContratoArrendamiento:
         cache_manager.invalidate(CacheKeys.PROPIEDADES_LIST)
         cache_manager.invalidate(CacheKeys.propiedad(id_propiedad))
         cache_manager.invalidate(CacheKeys.DASHBOARD_PROPIEDADES_TIPO)
+
+    def actualizar_canon_liquidaciones_futuras(self, id_contrato_a: int, canon_nuevo: int, fecha_renovacion: str, usuario: str) -> int:
+        """Propaga el nuevo canon a liquidaciones generadas con fecha posterior a la renovación."""
+        db = getattr(self.repo_arriendo, "db", None)
+        if db is None:
+            return 0
+            
+        conn = db.obtener_conexion()
+        cursor = db.get_dict_cursor(conn)
+        
+        # 1. Obtener valores anteriores para auditoría
+        query_sel = """
+            SELECT id_liquidacion, canon_bruto 
+            FROM LIQUIDACIONES 
+            WHERE id_contrato_m = (
+                SELECT id_contrato_m FROM CONTRATOS_MANDATOS
+                WHERE id_contrato_a = %s LIMIT 1
+            )
+            AND fecha_generacion::date > %s
+        """
+        cursor.execute(query_sel, (id_contrato_a, fecha_renovacion))
+        records = cursor.fetchall()
+        
+        if not records:
+            return 0
+            
+        # 2. Actualizar registros futuros
+        query_upd = """
+            UPDATE LIQUIDACIONES
+            SET canon_bruto = %s
+            WHERE id_contrato_m = (
+                SELECT id_contrato_m FROM CONTRATOS_MANDATOS
+                WHERE id_contrato_a = %s LIMIT 1
+            )
+            AND fecha_generacion::date > %s;
+        """
+        cursor.execute(query_upd, (canon_nuevo, id_contrato_a, fecha_renovacion))
+        filas = cursor.rowcount
+        
+        # 3. Registrar auditoría (FR-009)
+        audit_query = """
+            INSERT INTO AUDITORIA_PROPAGACION_CANON (
+                contrato_id, tabla_afectada, registro_id,
+                canon_anterior, canon_nuevo, fecha_actualizacion, usuario_sistema
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s);
+        """
+        now_str = datetime.now().isoformat()
+        for r in records:
+            id_liq = r.get("ID_LIQUIDACION", r.get("id_liquidacion")) if isinstance(r, dict) else r[0]
+            canon_ant = r.get("CANON_BRUTO", r.get("canon_bruto")) if isinstance(r, dict) else r[1]
+            cursor.execute(audit_query, (id_contrato_a, "LIQUIDACIONES", str(id_liq), canon_ant, canon_nuevo, now_str, usuario))
+            
+        return filas
+
+    def actualizar_valor_recaudos_futuros(self, id_contrato_a: int, canon_nuevo: int, fecha_renovacion: str, usuario: str) -> int:
+        """Propaga el nuevo canon a recaudos con fecha de pago posterior a la renovación."""
+        db = getattr(self.repo_arriendo, "db", None)
+        if db is None:
+            return 0
+            
+        conn = db.obtener_conexion()
+        cursor = db.get_dict_cursor(conn)
+        
+        # 1. Obtener valores anteriores para auditoría
+        query_sel = """
+            SELECT id_recaudo, valor_total
+            FROM RECAUDOS
+            WHERE id_contrato_a = %s
+            AND fecha_pago::date > %s
+        """
+        cursor.execute(query_sel, (id_contrato_a, fecha_renovacion))
+        records = cursor.fetchall()
+        
+        if not records:
+            return 0
+            
+        # 2. Actualizar registros futuros
+        query_upd = """
+            UPDATE RECAUDOS
+            SET valor_total = %s
+            WHERE id_contrato_a = %s
+            AND fecha_pago::date > %s;
+        """
+        cursor.execute(query_upd, (canon_nuevo, id_contrato_a, fecha_renovacion))
+        filas = cursor.rowcount
+        
+        # 3. Registrar auditoría (FR-009)
+        audit_query = """
+            INSERT INTO AUDITORIA_PROPAGACION_CANON (
+                contrato_id, tabla_afectada, registro_id,
+                canon_anterior, canon_nuevo, fecha_actualizacion, usuario_sistema
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s);
+        """
+        now_str = datetime.now().isoformat()
+        for r in records:
+            id_rec = r.get("ID_RECAUDO", r.get("id_recaudo")) if isinstance(r, dict) else r[0]
+            canon_ant = r.get("VALOR_TOTAL", r.get("valor_total")) if isinstance(r, dict) else r[1]
+            cursor.execute(audit_query, (id_contrato_a, "RECAUDOS", str(id_rec), canon_ant, canon_nuevo, now_str, usuario))
+            
+        return filas
+
+    def verificar_propagacion_canon(self, id_contrato_a: int, fecha_renovacion: str) -> dict:
+        """
+        Verifica la integridad de la propagación del canon en liquidaciones y recaudos futuros.
+        Retorna un reporte con inconsistencias clasificadas por severidad.
+        """
+        db = getattr(self.repo_arriendo, "db", None)
+        if db is None:
+            return {"inconsistencias": []}
+            
+        conn = db.obtener_conexion()
+        cursor = db.get_dict_cursor(conn)
+        inconsistencias = []
+        
+        # 1. Verificar Liquidaciones
+        query_liq = """
+            SELECT
+                l.id_liquidacion,
+                l.canon_bruto,
+                c.canon_arrendamiento,
+                l.fecha_generacion
+            FROM LIQUIDACIONES l
+            JOIN CONTRATOS_MANDATOS cm ON l.id_contrato_m = cm.id_contrato_m
+            JOIN CONTRATOS_ARRENDAMIENTOS c ON cm.id_contrato_a = c.id_contrato_a
+            WHERE c.id_contrato_a = %s
+            AND l.canon_bruto != c.canon_arrendamiento
+            AND l.fecha_generacion::date > %s;
+        """
+        cursor.execute(query_liq, (id_contrato_a, fecha_renovacion))
+        for r in cursor.fetchall():
+            id_liq = r.get("ID_LIQUIDACION", r.get("id_liquidacion")) if isinstance(r, dict) else r[0]
+            canon_liq = r.get("CANON_BRUTO", r.get("canon_bruto")) if isinstance(r, dict) else r[1]
+            canon_arr = r.get("CANON_ARRENDAMIENTO", r.get("canon_arrendamiento")) if isinstance(r, dict) else r[2]
+            fecha_gen = r.get("FECHA_GENERACION", r.get("fecha_generacion")) if isinstance(r, dict) else r[3]
+            
+            inconsistencias.append({
+                "tipo": "LIQUIDACION",
+                "id_registro": id_liq,
+                "valor_actual": canon_liq,
+                "valor_esperado": canon_arr,
+                "fecha": fecha_gen,
+                "severidad": "ALTA" if abs(canon_liq - canon_arr) > 10000 else "MEDIA"
+            })
+            
+        # 2. Verificar Recaudos
+        query_rec = """
+            SELECT
+                r.id_recaudo,
+                r.valor_total,
+                c.canon_arrendamiento,
+                r.fecha_pago
+            FROM RECAUDOS r
+            JOIN CONTRATOS_ARRENDAMIENTOS c ON r.id_contrato_a = c.id_contrato_a
+            WHERE c.id_contrato_a = %s
+            AND r.valor_total != c.canon_arrendamiento
+            AND r.fecha_pago::date > %s;
+        """
+        cursor.execute(query_rec, (id_contrato_a, fecha_renovacion))
+        for r in cursor.fetchall():
+            id_rec = r.get("ID_RECAUDO", r.get("id_recaudo")) if isinstance(r, dict) else r[0]
+            valor_rec = r.get("VALOR_TOTAL", r.get("valor_total")) if isinstance(r, dict) else r[1]
+            canon_arr = r.get("CANON_ARRENDAMIENTO", r.get("canon_arrendamiento")) if isinstance(r, dict) else r[2]
+            fecha_pago = r.get("FECHA_PAGO", r.get("fecha_pago")) if isinstance(r, dict) else r[3]
+            
+            inconsistencias.append({
+                "tipo": "RECAUDO",
+                "id_registro": id_rec,
+                "valor_actual": valor_rec,
+                "valor_esperado": canon_arr,
+                "fecha": fecha_pago,
+                "severidad": "ALTA" if abs(valor_rec - canon_arr) > 10000 else "MEDIA"
+            })
+            
+        return {
+            "id_contrato": id_contrato_a,
+            "total_inconsistencias": len(inconsistencias),
+            "inconsistencias": inconsistencias
+        }
+
+    def corregir_propagacion_canon(self, id_contrato_a: int, usuario: str) -> dict:
+        """
+        Corrige inconsistencias detectadas en la propagación del canon.
+        Utiliza el último canon de arrendamiento y la fecha de renovación.
+        """
+        db = getattr(self.repo_arriendo, "db", None)
+        if db is None:
+            return {"corregidos": 0}
+            
+        arriendo = self.repo_arriendo.obtener_por_id(id_contrato_a)
+        if not arriendo:
+            raise ValueError(f"Contrato {id_contrato_a} no encontrado")
+            
+        canon_esperado = int(arriendo.canon_arrendamiento or 0)
+        fecha_renovacion = arriendo.fecha_renovacion_contrato_a
+        if not fecha_renovacion:
+            fecha_renovacion = arriendo.fecha_inicio_contrato_a # Fallback si nunca fue renovado
+            
+        # Utilizamos verificar_propagacion_canon para identificar inconsistencias
+        reporte = self.verificar_propagacion_canon(id_contrato_a, fecha_renovacion)
+        
+        if reporte["total_inconsistencias"] == 0:
+            return {"corregidos": 0, "detalles": []}
+            
+        conn = db.obtener_conexion()
+        cursor = db.get_dict_cursor(conn)
+        
+        detalles_corregidos = []
+        
+        # Iniciar bloque transaccional manualmente o asumir que será llamado dentro de db.transaccion()
+        with db.transaccion():
+            for inc in reporte["inconsistencias"]:
+                if inc["tipo"] == "LIQUIDACION":
+                    query = "UPDATE LIQUIDACIONES SET canon_bruto = %s WHERE id_liquidacion = %s"
+                    cursor.execute(query, (canon_esperado, inc["id_registro"]))
+                    
+                    audit_query = """
+                        INSERT INTO AUDITORIA_PROPAGACION_CANON (
+                            contrato_id, tabla_afectada, registro_id,
+                            canon_anterior, canon_nuevo, fecha_actualizacion, usuario_sistema
+                        ) VALUES (%s, %s, %s, %s, %s, NOW(), %s);
+                    """
+                    cursor.execute(audit_query, (
+                        id_contrato_a, "LIQUIDACIONES", str(inc["id_registro"]), 
+                        inc["valor_actual"], canon_esperado, usuario
+                    ))
+                    detalles_corregidos.append(f"Liquidación {inc['id_registro']} corregida de {inc['valor_actual']} a {canon_esperado}")
+                    
+                elif inc["tipo"] == "RECAUDO":
+                    query = "UPDATE RECAUDOS SET valor_total = %s WHERE id_recaudo = %s"
+                    cursor.execute(query, (canon_esperado, inc["id_registro"]))
+                    
+                    audit_query = """
+                        INSERT INTO AUDITORIA_PROPAGACION_CANON (
+                            contrato_id, tabla_afectada, registro_id,
+                            canon_anterior, canon_nuevo, fecha_actualizacion, usuario_sistema
+                        ) VALUES (%s, %s, %s, %s, %s, NOW(), %s);
+                    """
+                    cursor.execute(audit_query, (
+                        id_contrato_a, "RECAUDOS", str(inc["id_registro"]), 
+                        inc["valor_actual"], canon_esperado, usuario
+                    ))
+                    detalles_corregidos.append(f"Recaudo {inc['id_registro']} corregido de {inc['valor_actual']} a {canon_esperado}")
+        
+        return {
+            "corregidos": len(detalles_corregidos),
+            "detalles": detalles_corregidos
+        }
