@@ -2,36 +2,40 @@
 Fixtures para tests de integración.
 
 Proporciona fixtures para:
-- Conexión a base de datos de prueba
+- Conexión a base de datos de prueba (PostgreSQL)
 - Repositorios configurados
 - Datos de prueba
 """
 import pytest
-import sqlite3
-from pathlib import Path
+import psycopg2
+import os
 
 
-@pytest.fixture(scope="function")
-def db_connection(tmp_path):
+@pytest.fixture(scope="session")
+def db_connection():
     """
-    Crea una conexión a una base de datos SQLite temporal.
-    Se limpia después de cada test.
+    Crea una conexión a la base de datos PostgreSQL de test/staging.
     """
-    db_file = tmp_path / "test_integration.db"
-    conn = sqlite3.connect(str(db_file))
+    db_url = os.environ.get("DATABASE_URL")
+    if not db_url:
+        pytest.skip("DATABASE_URL no configurado")
     
+    conn = psycopg2.connect(db_url)
+    conn.autocommit = True
     yield conn
-    
     conn.close()
-    if db_file.exists():
-        db_file.unlink()
 
 
 @pytest.fixture(scope="function")
 def db_with_schema(db_connection):
     """
     Crea una base de datos con el esquema completo.
+    (Staging DB ya debería tener el esquema)
     """
-    # Aquí se puede cargar el esquema desde un archivo SQL
-    # Por ahora retornamos la conexión básica
     return db_connection
+
+@pytest.fixture
+def cursor(db_connection):
+    """Proporciona un cursor para ejecutar consultas en tests."""
+    with db_connection.cursor() as cur:
+        yield cur
