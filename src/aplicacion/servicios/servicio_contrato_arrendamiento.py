@@ -615,19 +615,35 @@ class ServicioContratoArrendamiento:
         if not records:
             return 0
             
-        # 2. Actualizar registros futuros
+        # Se actualizan todos los campos calculados basados en el nuevo canon_bruto
         query_upd = """
-            UPDATE LIQUIDACIONES
-            SET canon_bruto = %s
-            WHERE id_contrato_m = (
+            WITH calc AS (
+                SELECT 
+                    id_liquidacion,
+                    %s + otros_ingresos AS new_total_ingresos,
+                    CAST(%s * comision_porcentaje / 10000.0 AS INTEGER) AS new_comision,
+                    CASE WHEN iva_comision > 0 THEN CAST(CAST(%s * comision_porcentaje / 10000.0 AS INTEGER) * 0.19 AS INTEGER) ELSE 0 END AS new_iva
+                FROM LIQUIDACIONES
+            )
+            UPDATE LIQUIDACIONES l
+            SET 
+                canon_bruto = %s,
+                total_ingresos = c.new_total_ingresos,
+                comision_monto = c.new_comision,
+                iva_comision = c.new_iva,
+                total_egresos = c.new_comision + c.new_iva + COALESCE(l.gastos_administracion, 0) + COALESCE(l.gastos_servicios, 0) + COALESCE(l.gastos_reparaciones, 0) + COALESCE(l.pago_predial, 0) + COALESCE(l.otros_egresos, 0),
+                neto_a_pagar = c.new_total_ingresos - (c.new_comision + c.new_iva + COALESCE(l.gastos_administracion, 0) + COALESCE(l.gastos_servicios, 0) + COALESCE(l.gastos_reparaciones, 0) + COALESCE(l.pago_predial, 0) + COALESCE(l.otros_egresos, 0)) - COALESCE(l.valor_incidentes, 0)
+            FROM calc c
+            WHERE l.id_liquidacion = c.id_liquidacion
+            AND l.id_contrato_m = (
                 SELECT m.id_contrato_m 
                 FROM CONTRATOS_MANDATOS m
                 JOIN CONTRATOS_ARRENDAMIENTOS a ON m.id_propiedad = a.id_propiedad
                 WHERE a.id_contrato_a = %s LIMIT 1
             )
-            AND fecha_generacion::date >= date_trunc('month', %s::date);
+            AND l.fecha_generacion::date >= date_trunc('month', %s::date);
         """
-        cursor.execute(query_upd, (canon_nuevo, id_contrato_a, fecha_renovacion))
+        cursor.execute(query_upd, (canon_nuevo, canon_nuevo, canon_nuevo, canon_nuevo, id_contrato_a, fecha_renovacion))
         filas = cursor.rowcount
         
         # 3. Registrar auditoría (FR-009)
@@ -667,14 +683,31 @@ class ServicioContratoArrendamiento:
         if not records:
             return 0
             
-        # 2. Actualizar registros futuros
-        query_upd = """
-            UPDATE RECAUDOS
-            SET valor_total = %s
-            WHERE id_contrato_a = %s
-            AND fecha_pago::date >= date_trunc('month', %s::date);
+        # Actualizar los conceptos del recaudo
+        query_upd_conceptos = """
+            UPDATE RECAUDO_CONCEPTOS
+            SET valor = %s
+            WHERE tipo_concepto = 'Canon' 
+            AND id_recaudo IN (
+                SELECT id_recaudo FROM RECAUDOS
+                WHERE id_contrato_a = %s
+                AND fecha_pago::date >= date_trunc('month', %s::date)
+            );
         """
-        cursor.execute(query_upd, (canon_nuevo, id_contrato_a, fecha_renovacion))
+        cursor.execute(query_upd_conceptos, (canon_nuevo, id_contrato_a, fecha_renovacion))
+
+        # Actualizar el total del recaudo sumando sus conceptos actualizados
+        query_upd_recaudo = """
+            UPDATE RECAUDOS r
+            SET valor_total = (
+                SELECT COALESCE(SUM(valor), 0) 
+                FROM RECAUDO_CONCEPTOS 
+                WHERE id_recaudo = r.id_recaudo
+            )
+            WHERE r.id_contrato_a = %s
+            AND r.fecha_pago::date >= date_trunc('month', %s::date);
+        """
+        cursor.execute(query_upd_recaudo, (id_contrato_a, fecha_renovacion))
         filas = cursor.rowcount
         
         # 3. Registrar auditoría (FR-009)
