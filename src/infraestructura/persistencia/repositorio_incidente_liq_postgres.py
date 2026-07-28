@@ -42,13 +42,13 @@ class RepositorioIncidenteLiquidacionPostgres(RepositorioIncidenteLiquidacion):
             return str(val) if val else None
 
         return IncidenteLiquidacion(
-            id_relacion=row_dict.get("ID_RELACION"),
-            id_incidente=row_dict.get("ID_INCIDENTE", 0),
-            id_liquidacion=row_dict.get("ID_LIQUIDACION", 0),
-            numero_cuota=row_dict.get("NUMERO_CUOTA", 0),
-            valor_descuento=row_dict.get("VALOR_DESCUENTO", 0),
-            asociado_por=row_dict.get("ASOCIADO_POR", ""),
-            fecha_asociacion=_date_to_str(row_dict.get("FECHA_ASOCIACION")),
+            id_relacion=row_dict.get("id_relacion", row_dict.get("ID_RELACION")),
+            id_incidente=row_dict.get("id_incidente", row_dict.get("ID_INCIDENTE", 0)),
+            id_liquidacion=row_dict.get("id_liquidacion", row_dict.get("ID_LIQUIDACION", 0)),
+            numero_cuota=row_dict.get("numero_cuota", row_dict.get("NUMERO_CUOTA", 0)),
+            valor_descuento=row_dict.get("valor_descuento", row_dict.get("VALOR_DESCUENTO", 0)),
+            asociado_por=row_dict.get("asociado_por", row_dict.get("ASOCIADO_POR", "")),
+            fecha_asociacion=_date_to_str(row_dict.get("fecha_asociacion", row_dict.get("FECHA_ASOCIACION"))),
         )
 
     def crear(self, relacion: IncidenteLiquidacion) -> IncidenteLiquidacion:
@@ -75,8 +75,8 @@ class RepositorioIncidenteLiquidacionPostgres(RepositorioIncidenteLiquidacion):
             result = cursor.fetchone()
 
             if result:
-                relacion.id_relacion = result.get("ID_RELACION")
-                relacion.fecha_asociacion = result.get("FECHA_ASOCIACION")
+                relacion.id_relacion = result.get("id_relacion", result.get("ID_RELACION"))
+                relacion.fecha_asociacion = result.get("fecha_asociacion", result.get("FECHA_ASOCIACION"))
 
             conn.commit()
             logger.info(
@@ -157,4 +157,4 @@ class RepositorioIncidenteLiquidacionPostgres(RepositorioIncidenteLiquidacion):
             (id_liquidacion,),
         )
         result = cursor.fetchone()
-        return result.get("TOTAL", 0) if result else 0
+        return result.get("total", result.get("TOTAL", 0)) if result else 0
