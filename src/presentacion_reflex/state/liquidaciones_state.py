@@ -2167,7 +2167,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 )
                 row_prop = cursor_prop.fetchone()
                 if row_prop:
-                    id_propiedad = row_prop["ID_PROPIEDAD"]
+                    id_propiedad = row_prop.get("id_propiedad", row_prop.get("ID_PROPIEDAD"))
 
             # 3. Buscar incidentes elegibles: estado en [Aprobado, En Reparacion, Finalizado]
             #    y estado_pago != Pagado, FILTRADOS por la propiedad de la liquidación
@@ -2215,7 +2215,7 @@ class LiquidacionesState(DocumentosStateMixin):
                 rows = cursor.fetchall()
 
             for row in rows:
-                id_inc = row["ID_INCIDENTE"]
+                id_inc = row.get("id_incidente", row.get("ID_INCIDENTE"))
                 # Obtener plan activo y cuota disponible
                 plan = repo_plan.obtener_por_incidente(id_inc)
                 if not plan:
@@ -2239,14 +2239,14 @@ class LiquidacionesState(DocumentosStateMixin):
                 incidentes_elegibles.append(
                     {
                         "id": id_inc,
-                        "descripcion": row["DESCRIPCION_INCIDENTE"]
+                        "descripcion": row.get("descripcion_incidente", row.get("DESCRIPCION_INCIDENTE"))
                         or f"Incidente #{id_inc}",
-                        "costo": row["COSTO_INCIDENTE"] or 0,
-                        "costo_view": format_currency(row["COSTO_INCIDENTE"] or 0),
-                        "estado": row["ESTADO"],
-                        "estado_pago": row["ESTADO_PAGO"] or "Pendiente",
-                        "propiedad": row["PROPIEDAD"] or "N/A",
-                        "propietario": row["PROPIETARIO"] or "N/A",
+                        "costo": row.get("costo_incidente", row.get("COSTO_INCIDENTE")) or 0,
+                        "costo_view": format_currency(row.get("costo_incidente", row.get("COSTO_INCIDENTE")) or 0),
+                        "estado": row.get("estado", row.get("ESTADO")),
+                        "estado_pago": row.get("estado_pago", row.get("ESTADO_PAGO")) or "Pendiente",
+                        "propiedad": row.get("propiedad", row.get("PROPIEDAD")) or "N/A",
+                        "propietario": row.get("propietario", row.get("PROPIETARIO")) or "N/A",
                         "num_cuota": cuota_disponible.numero_cuota,
                         "valor_cuota": plan.valor_cuota,
                         "valor_cuota_view": format_currency(plan.valor_cuota),
@@ -2451,12 +2451,12 @@ class LiquidacionesState(DocumentosStateMixin):
             async with self:
                 self.incidentes_asociados_liquidacion = [
                     {
-                        "id": row["ID_INCIDENTE"],
-                        "descripcion": row["DESCRIPCION"] or f"Incidente #{row['ID_INCIDENTE']}",
-                        "estado": row["ESTADO_INCIDENTE"],
-                        "estado_pago": row["ESTADO_PAGO"] or "Pendiente",
-                        "valor_descuento": row["VALOR_DESCUENTO"],
-                        "valor_descuento_view": format_currency(row["VALOR_DESCUENTO"] or 0),
+                        "id": row.get("id_incidente", row.get("ID_INCIDENTE")),
+                        "descripcion": row.get("descripcion", row.get("DESCRIPCION")) or f"Incidente #{row.get('id_incidente', row.get('ID_INCIDENTE'))}",
+                        "estado": row.get("estado_incidente", row.get("ESTADO_INCIDENTE")),
+                        "estado_pago": row.get("estado_pago", row.get("ESTADO_PAGO")) or "Pendiente",
+                        "valor_descuento": row.get("valor_descuento", row.get("VALOR_DESCUENTO")),
+                        "valor_descuento_view": format_currency(row.get("valor_descuento", row.get("VALOR_DESCUENTO")) or 0),
                     } for row in incidentes
                 ]
                 self.loading_incidentes_asociados = False

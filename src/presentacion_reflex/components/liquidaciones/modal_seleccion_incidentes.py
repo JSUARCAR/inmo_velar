@@ -189,7 +189,6 @@ def modal_seleccion_incidentes() -> rx.Component:
                 margin_top="4",
             ),
             max_width="900px",
-            style={"pointer_events": "auto", "z_index": styles.Z_POPOVER},
         ),
         open=LiquidacionesState.show_seleccion_incidentes_modal,
         on_open_change=LiquidacionesState.set_show_seleccion_incidentes_modal,
