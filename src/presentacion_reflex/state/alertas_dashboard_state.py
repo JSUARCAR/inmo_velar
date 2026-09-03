@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 
 import reflex as rx
+from src.presentacion_reflex.state.navigation_mixin import NavigationGenerationMixin
 
 from src.aplicacion.servicios.servicio_alertas import ServicioAlertas
 from src.infraestructura.persistencia.database import db_manager
@@ -11,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class AlertasDashboardState(rx.State):
+class AlertasDashboardState(NavigationGenerationMixin):
     """
     Estado para la página dedicada de Gestión de Alertas.
     """
@@ -38,38 +39,58 @@ class AlertasDashboardState(rx.State):
         return ServicioAlertas(db_manager, repo)
 
     def load_alertas(self):
-        """Carga las alertas con filtros y paginación."""
-        self.is_loading = True
-        yield
+        gen_id = self.start_navigation_generation()
+        yield AlertasDashboardState._load_alertas_background(gen_id)
+
+    @rx.event(background=True)
+    async def _load_alertas_background(self, gen_id: str):
+        async with self:
+            if not self.validate_generation(gen_id):
+                return
+            page = getattr(self, "page", 1)
+            page_size = getattr(self, "page_size", 20)
+            filtro_estado = getattr(self, "filtro_estado", "Pendiente")
+            filtro_prioridad = getattr(self, "filtro_prioridad", "Todas")
+            filtro_tipo = getattr(self, "filtro_tipo", "Todos")
+            
         try:
             servicio = self._get_servicio()
 
-            estado = self.filtro_estado if self.filtro_estado != "Todas" else None
+            estado = filtro_estado if filtro_estado != "Todas" else None
             prioridad = (
-                self.filtro_prioridad if self.filtro_prioridad != "Todas" else None
+                filtro_prioridad if filtro_prioridad != "Todas" else None
             )
-            tipo = self.filtro_tipo if self.filtro_tipo != "Todos" else None
+            tipo = filtro_tipo if filtro_tipo != "Todos" else None
 
-            offset = max(0, (self.page - 1) * self.page_size)
+            offset = max(0, (page - 1) * page_size)
 
             # Obtener datos persistidos
-            self.alertas = servicio.obtener_alertas(
+            alertas = servicio.obtener_alertas(
                 estado=estado,
                 prioridad=prioridad,
                 tipo=tipo,
-                limit=self.page_size,
+                limit=page_size,
                 offset=offset,
             )
 
-            # Obtener total para paginación
-            self.total_alertas = servicio.contar_todas(
+            # Obtener total
+            total = servicio.contar_todas(
                 estado=estado, prioridad=prioridad, tipo=tipo
             )
+            
+            async with self:
+                if not self.validate_generation(gen_id): return
+                self.alertas = alertas
+                self.total_alertas = total
 
         except Exception as e:
             logger.error(f"Error cargando dashboard alertas: {e}", exc_info=True)
+            async with self:
+                for event in self.trigger_graceful_rollback():
+                    yield event
         finally:
-            self.is_loading = False
+            async with self:
+                self.end_navigation_generation()
 
     def set_filtro_estado(self, val: str):
         self.filtro_estado = val
@@ -97,15 +118,32 @@ class AlertasDashboardState(rx.State):
         try:
             servicio = self._get_servicio()
 
-            estado = self.filtro_estado if self.filtro_estado != "Todas" else None
+            estado = filtro_estado if filtro_estado != "Todas" else None
             prioridad = (
-                self.filtro_prioridad if self.filtro_prioridad != "Todas" else None
+                filtro_prioridad if filtro_prioridad != "Todas" else None
             )
-            tipo = self.filtro_tipo if self.filtro_tipo != "Todos" else None
+            tipo = filtro_tipo if filtro_tipo != "Todos" else None
 
-            csv_data = servicio.exportar_alertas_csv(
+            offset = max(0, (page - 1) * page_size)
+
+            # Obtener datos persistidos
+            alertas = servicio.obtener_alertas(
+                estado=estado,
+                prioridad=prioridad,
+                tipo=tipo,
+                limit=page_size,
+                offset=offset,
+            )
+
+            # Obtener total
+            total = servicio.contar_todas(
                 estado=estado, prioridad=prioridad, tipo=tipo
             )
+            
+            async with self:
+                if not self.validate_generation(gen_id): return
+                self.alertas = alertas
+                self.total_alertas = total
 
             # Codificar con BOM para Excel
             data_bytes = csv_data.encode("utf-8-sig")

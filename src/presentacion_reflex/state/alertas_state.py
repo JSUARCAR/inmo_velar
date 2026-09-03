@@ -2,6 +2,7 @@ import time
 from typing import Any, Dict, List
 
 import reflex as rx
+from src.presentacion_reflex.state.navigation_mixin import NavigationGenerationMixin
 
 from src.aplicacion.servicios.servicio_alertas import ServicioAlertas
 from src.infraestructura.persistencia.database import db_manager
@@ -12,7 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class AlertasState(rx.State):
+class AlertasState(NavigationGenerationMixin):
     """
     Estado global para notificaciones y alertas.
     Maneja la campana de notificaciones y la sincronización proactiva.

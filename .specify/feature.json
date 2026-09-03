@@ -1,1 +1,3 @@
-{ "feature_directory": "specs/069-fix-caddy-ratelimit" }
+{
+  "feature_directory": "specs/070-diagnostico-navegacion-dashboard"
+}

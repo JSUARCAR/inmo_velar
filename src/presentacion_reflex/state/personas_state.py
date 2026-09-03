@@ -2,6 +2,7 @@ import pydantic
 from typing import Any, Dict, List, Optional
 
 import reflex as rx
+from src.presentacion_reflex.state.navigation_mixin import NavigationGenerationMixin
 
 from src.aplicacion.servicios.servicio_personas import ServicioPersonas
 from src.infraestructura.persistencia.database import db_manager
@@ -28,7 +29,7 @@ class PersonaDict(pydantic.BaseModel):
     fecha_creacion: str
 
 
-class PersonasState(rx.State):
+class PersonasState(NavigationGenerationMixin):
     """Estado para la gestión de Personas."""
 
     # --- Datos de la Tabla ---
@@ -223,12 +224,25 @@ class PersonasState(rx.State):
         self.seguro_menu_open = False
 
     def load_personas(self):
-        """Carga la lista de personas aplicando filtros y paginación."""
-        logger.debug(
-            f"Ejecutando load_personas: page={self.page}, filtro_rol={self.filtro_rol}, inactivos={self.mostrar_inactivos}, sin_contrato={self.filtro_sin_contrato}"
-        )
-        self.is_loading = True
-        yield
+        gen_id = self.start_navigation_generation()
+        yield PersonasState._load_personas_background(gen_id)
+
+    @rx.event(background=True)
+    async def _load_personas_background(self, gen_id: str):
+        async with self:
+            if not self.validate_generation(gen_id):
+                return
+            
+            # Copiar estado
+            page = getattr(self, "page", 1)
+            page_size = getattr(self, "page_size", 10)
+            filtro_rol = getattr(self, "filtro_rol", None)
+            mostrar_inactivos = getattr(self, "mostrar_inactivos", False)
+            filtro_sin_contrato = getattr(self, "filtro_sin_contrato", False)
+            search_query = getattr(self, "search_query", "")
+            fecha_inicio = getattr(self, "fecha_inicio", "")
+            fecha_fin = getattr(self, "fecha_fin", "")
+            
         try:
             from src.infraestructura.persistencia.repositorio_persona_postgres import (
                 RepositorioPersonaPostgres,

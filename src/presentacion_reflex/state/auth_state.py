@@ -5,6 +5,7 @@ import time as _time
 from typing import Any, Dict, List, Optional
 
 import reflex as rx
+from src.presentacion_reflex.state.navigation_mixin import NavigationGenerationMixin
 
 from src.aplicacion.servicios.servicio_autenticacion import ServicioAutenticacion
 from src.aplicacion.servicios.servicio_permisos import ServicioPermisos
@@ -36,7 +37,7 @@ def _debug(msg: str, **kwargs):
     print(line, file=sys.stderr, flush=True)
 
 
-class AuthState(rx.State):
+class AuthState(NavigationGenerationMixin):
     """
     Estado de Autenticación Global.
     Maneja la sesión del usuario, login y logout.
@@ -192,31 +193,31 @@ class AuthState(rx.State):
 
     def require_login(self):
         """
-        Protector de rutas. Se ejecuta en on_load de páginas protegidas.
-        Valida la sesión; si no es válida, redirige a /login.
+        Protector de rutas. Se ejecuta en on_load de pginas protegidas.
+        Valida la sesin en background para evitar bloqueos sincronos.
         """
-        import threading
+        gen_id = self.start_navigation_generation()
+        yield AuthState._require_login_background(gen_id)
 
-        _debug(
-            "require_login CALLED",
-            route=self.router.url if hasattr(self, "router") else "unknown",
-            thread=threading.current_thread().name,
-            token_present=bool(self.session_token),
-        )
-
-        valid = self._validate_session()
-
-        _debug("require_login → valid=%s" % valid)
-
-        if not valid:
-            _debug("require_login → REDIRECT a /login")
-            return rx.redirect("/login")
-
-        _debug("require_login → ACCESO PERMITIDO")
-        # Sincronizar permisos si están vacíos (F5 reinicia el estado en memoria)
-        if not self.allowed_modules:
-            _debug("require_login → sincronizando permisos")
-            self._sync_permissions()
+    @rx.event(background=True)
+    async def _require_login_background(self, gen_id: str):
+        async with self:
+            if not self.validate_generation(gen_id):
+                return
+            
+            # Realizamos la validacion en el mismo contexto async with self 
+            # dado que modifica muchos atributos internos (is_authenticated, user_data, etc)
+            # Como validate_session es rapida (1 query) lo permitimos aqui.
+            valid = self._validate_session()
+            
+            if not valid:
+                _debug("require_login_background   REDIRECT a /login")
+                yield rx.toast.error("Sesión expirada. Por favor, inicie sesión nuevamente.")
+                yield rx.redirect("/login")
+            else:
+                _debug("require_login_background   ACCESO PERMITIDO")
+                if not self.allowed_modules:
+                    self._sync_permissions()
 
     def redirect_to_dashboard(self):
         """
