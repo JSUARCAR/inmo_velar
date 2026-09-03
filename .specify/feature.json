@@ -1,3 +1,1 @@
-{
-  "feature_directory": "specs/068-fix-admin-value-liquidation"
-}
+{ "feature_directory": "specs/069-fix-caddy-ratelimit" }

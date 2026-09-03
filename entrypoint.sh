@@ -41,11 +41,16 @@ cat > /app/Caddyfile.runtime <<EOF
 
 :${PORT:-8080}
 
-@login_endpoint {
-    path /api/login*
-    path /_event/auth_state.login*
+rate_limit {
+    zone login_limit {
+        key {client_ip}
+        window 15m
+        events 5
+        match {
+            path /api/login* /api/auth* /_event/auth_state.login* /_event/estado_autenticacion.iniciar_sesion*
+        }
+    }
 }
-rate_limit @login_endpoint 5 15m
 
 header {
     Strict-Transport-Security "max-age=31536000; includeSubDomains"
@@ -84,6 +89,20 @@ handle {
         path *.html
     }
     header @html Cache-Control "no-cache, no-store, must-revalidate"
+}
+
+handle_errors {
+    @429 {
+        expression {http.error.status_code} == 429
+    }
+    handle @429 {
+        header Content-Type application/json
+        respond "{\"detail\": \"Demasiados intentos de inicio de sesión\"}" 429
+    }
+    handle {
+        header Content-Type application/json
+        respond "{\"error\": \"Error interno del servidor\"}" 500
+    }
 }
 EOF
 echo "  ✅ Caddyfile generated (frontend: $FRONTEND_DIR)"
