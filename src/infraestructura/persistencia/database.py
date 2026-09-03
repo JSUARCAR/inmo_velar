@@ -22,7 +22,7 @@ import psycopg2
 from dotenv import load_dotenv
 
 # ContextVar for managing connections per asyncio task smoothly
-_pg_conn_ctx = ContextVar("pg_conn_ctx", default=None)
+_pg_conn_ctx: ContextVar[Optional[Any]] = ContextVar("pg_conn_ctx", default=None)
 
 # Cargar variables de entorno
 load_dotenv()
@@ -423,7 +423,7 @@ class DatabaseManager:
         return cursor.fetchone()
 
     def get_last_insert_id(
-        self, cursor, table_name: str = None, id_column: str = None
+        self, cursor, table_name: Optional[str] = None, id_column: Optional[str] = None
     ) -> int:
         """
         Obtiene el último ID insertado de manera compatible.

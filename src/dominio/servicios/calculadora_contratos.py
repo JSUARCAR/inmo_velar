@@ -149,7 +149,7 @@ class CalculadoraContratos:
         Nota: Devuelve el día calculado. Para mayor exactitud financiera,
         se sugiere usar resolver_fecha_pago_habil.
         """
-        dia_base = fecha_pago if fecha_pago not in [None, -1] else 30
+        dia_base = fecha_pago if fecha_pago is not None and fecha_pago != -1 else 30
 
         # Validar si el mes tiene menos días que el día de pago (ej. Febrero 30 -> 28/29)
         import calendar
