@@ -118,32 +118,15 @@ class AlertasDashboardState(NavigationGenerationMixin):
         try:
             servicio = self._get_servicio()
 
-            estado = filtro_estado if filtro_estado != "Todas" else None
+            estado = self.filtro_estado if self.filtro_estado != "Todas" else None
             prioridad = (
-                filtro_prioridad if filtro_prioridad != "Todas" else None
+                self.filtro_prioridad if self.filtro_prioridad != "Todas" else None
             )
-            tipo = filtro_tipo if filtro_tipo != "Todos" else None
+            tipo = self.filtro_tipo if self.filtro_tipo != "Todos" else None
 
-            offset = max(0, (page - 1) * page_size)
-
-            # Obtener datos persistidos
-            alertas = servicio.obtener_alertas(
-                estado=estado,
-                prioridad=prioridad,
-                tipo=tipo,
-                limit=page_size,
-                offset=offset,
-            )
-
-            # Obtener total
-            total = servicio.contar_todas(
+            csv_data = servicio.exportar_alertas_csv(
                 estado=estado, prioridad=prioridad, tipo=tipo
             )
-            
-            async with self:
-                if not self.validate_generation(gen_id): return
-                self.alertas = alertas
-                self.total_alertas = total
 
             # Codificar con BOM para Excel
             data_bytes = csv_data.encode("utf-8-sig")

@@ -242,29 +242,17 @@ class PersonasState(NavigationGenerationMixin):
             search_query = getattr(self, "search_query", "")
             fecha_inicio = getattr(self, "fecha_inicio", "")
             fecha_fin = getattr(self, "fecha_fin", "")
+            sort_by = getattr(self, "sort_by", "fecha_creacion")
+            sort_order = getattr(self, "sort_order", "desc")
             
         try:
-            from src.infraestructura.persistencia.repositorio_persona_postgres import (
-                RepositorioPersonaPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_propietario_postgres import (
-                RepositorioPropietarioPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import (
-                RepositorioArrendatarioPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_codeudor_postgres import (
-                RepositorioCodeudorPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_asesor_postgres import (
-                RepositorioAsesorPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_proveedores_postgres import (
-                RepositorioProveedoresPostgres,
-            )
-            from src.infraestructura.persistencia.repositorio_auditoria_postgres import (
-                RepositorioAuditoriaPostgres,
-            )
+            from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
+            from src.infraestructura.persistencia.repositorio_propietario_postgres import RepositorioPropietarioPostgres
+            from src.infraestructura.persistencia.repositorio_arrendatario_postgres import RepositorioArrendatarioPostgres
+            from src.infraestructura.persistencia.repositorio_codeudor_postgres import RepositorioCodeudorPostgres
+            from src.infraestructura.persistencia.repositorio_asesor_postgres import RepositorioAsesorPostgres
+            from src.infraestructura.persistencia.repositorio_proveedores_postgres import RepositorioProveedoresPostgres
+            from src.infraestructura.persistencia.repositorio_auditoria_postgres import RepositorioAuditoriaPostgres
 
             repo_persona = RepositorioPersonaPostgres(db_manager)
             repo_propietario = RepositorioPropietarioPostgres(db_manager)
@@ -284,44 +272,28 @@ class PersonasState(NavigationGenerationMixin):
                 repo_auditoria=repo_auditoria,
             )
 
-            # Mapear filtro "Todos" a None
-            rol_filter = self.filtro_rol if self.filtro_rol != "Todos" else None
+            rol_filter = filtro_rol if filtro_rol != "Todos" else None
 
-            # Obtener resultado paginado
+            # Obtener resultado paginado sin lock de estado
             resultado = servicio.listar_personas_paginado(
-                page=self.page,
-                page_size=self.page_size,
+                page=page,
+                page_size=page_size,
                 filtro_rol=rol_filter,
-                solo_activos=not self.mostrar_inactivos,
-                solo_inactivos=self.mostrar_inactivos,
-                sin_contrato=self.filtro_sin_contrato,
-                busqueda=self.search_query if self.search_query else None,
-                fecha_inicio=self.fecha_inicio if self.fecha_inicio else None,
-                fecha_fin=self.fecha_fin if self.fecha_fin else None,
-                sort_by=self.sort_by,
-                sort_order=self.sort_order,
+                solo_activos=not mostrar_inactivos,
+                solo_inactivos=mostrar_inactivos,
+                sin_contrato=filtro_sin_contrato,
+                busqueda=search_query if search_query else None,
+                fecha_inicio=fecha_inicio if fecha_inicio else None,
+                fecha_fin=fecha_fin if fecha_fin else None,
+                sort_by=sort_by,
+                sort_order=sort_order,
             )
 
-            self.total_items = resultado.total
-
-            # Cargar KPIs Globales (Activos | Inactivos)
+            # Cargar KPIs Globales
             conteos = servicio.obtener_conteos_por_rol()
-            self.kpi_propietarios = conteos.get(
-                "Propietario", {"activos": 0, "inactivos": 0}
-            )
-            self.kpi_arrendatarios = conteos.get(
-                "Arrendatario", {"activos": 0, "inactivos": 0}
-            )
-            self.kpi_codeudores = conteos.get(
-                "Codeudor", {"activos": 0, "inactivos": 0}
-            )
-            self.kpi_asesores = conteos.get("Asesor", {"activos": 0, "inactivos": 0})
-            self.kpi_proveedores = conteos.get(
-                "Proveedor", {"activos": 0, "inactivos": 0}
-            )
-
-            # Convertir objetos a diccionarios para serialización Reflex
-            self.personas = [
+            
+            # Formatear la salida antes de adquirir el lock de Reflex
+            personas_list = [
                 PersonaDict(
                     id=p.persona.id_persona,
                     nombre=p.nombre_completo,
@@ -340,17 +312,34 @@ class PersonasState(NavigationGenerationMixin):
                 )
                 for p in resultado.items
             ]
+            
+            total_items = resultado.total
+            total_pages = (total_items + page_size - 1) // page_size
+            if total_pages < 1:
+                total_pages = 1
 
-            # Calcular total páginas
-            self.total_pages = (self.total_items + self.page_size - 1) // self.page_size
-            if self.total_pages < 1:
-                self.total_pages = 1
+            async with self:
+                if not self.validate_generation(gen_id): return
+                
+                self.personas = personas_list
+                self.total_items = total_items
+                self.total_pages = total_pages
+                
+                self.kpi_propietarios = conteos.get("Propietario", {"activos": 0, "inactivos": 0})
+                self.kpi_arrendatarios = conteos.get("Arrendatario", {"activos": 0, "inactivos": 0})
+                self.kpi_codeudores = conteos.get("Codeudor", {"activos": 0, "inactivos": 0})
+                self.kpi_asesores = conteos.get("Asesor", {"activos": 0, "inactivos": 0})
+                self.kpi_proveedores = conteos.get("Proveedor", {"activos": 0, "inactivos": 0})
 
         except Exception as e:
             logger.error(f"FALLO CRÍTICO EN CARGA DE PERSONAS: {str(e)}", exc_info=True)
-            self.personas = []
+            async with self:
+                self.personas = []
+                for event in self.trigger_graceful_rollback():
+                    yield event
         finally:
-            self.is_loading = False
+            async with self:
+                self.end_navigation_generation()
 
     def toggle_mostrar_inactivos(self, checked: bool):
         """Alterna el filtro de mostrar personas inactivas."""
