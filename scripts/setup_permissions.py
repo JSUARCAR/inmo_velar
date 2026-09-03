@@ -31,6 +31,20 @@ def get_database_url():
     return db_url
 
 
+def setup_db_roles(cursor):
+    """Crea rol de aplicación con privilegios mínimos (Security Hardening)."""
+    try:
+        cursor.execute("DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'app_velar') THEN CREATE ROLE app_velar WITH LOGIN PASSWORD 'change_me_in_prod'; END IF; END $$;")
+        cursor.execute("GRANT CONNECT ON DATABASE current_database() TO app_velar;")
+        cursor.execute("GRANT USAGE ON SCHEMA public TO app_velar;")
+        cursor.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_velar;")
+        cursor.execute("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_velar;")
+        cursor.execute("GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO app_velar;")
+        cursor.execute("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO app_velar;")
+        logger.info("  ✓ Rol app_velar configurado con privilegios mínimos")
+    except Exception as e:
+        logger.error(f"  ✗ Error configurando rol app_velar (requiere superuser): {e}")
+
 def setup_permissions():
     """Registra todos los permisos necesarios de forma idempotente."""
     import psycopg2
@@ -43,7 +57,10 @@ def setup_permissions():
         conn.autocommit = True
         cursor = conn.cursor()
         
-        logger.info("Conexión exitosa. Configurando permisos...")
+        logger.info("Conexión exitosa. Configurando DB roles y permisos...")
+        
+        # Configurar rol seguro de aplicación
+        setup_db_roles(cursor)
         
         # Lista de permisos a registrar
         permissions = [

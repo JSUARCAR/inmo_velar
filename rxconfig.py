@@ -37,7 +37,7 @@ if _db_url and _db_url.startswith("postgres://"):
 if not _db_url:
     _db_url = (
         f"postgresql://{os.getenv('DB_USER') or 'inmo_user'}"
-        f":{os.getenv('DB_PASSWORD') or '7323'}"
+        f":{os.getenv('DB_PASSWORD') or ''}"
         f"@{os.getenv('DB_HOST') or 'localhost'}"
         f":{os.getenv('DB_PORT') or '5432'}"
         f"/{os.getenv('DB_NAME') or 'db_inmo_velar'}"

@@ -49,17 +49,20 @@ def register_document_routes(app):
     fastapi_app = getattr(app, "api", getattr(app, "_api", None))
 
     if fastapi_app:
+        from src.presentacion_reflex.api.deps import validar_sesion_api
+        from fastapi import Depends
+
         # Sub-app para aislamiento similar a pdf_download_api
-        doc_api = FastAPI()
+        doc_api = FastAPI(dependencies=[Depends(validar_sesion_api)])
 
         from fastapi.middleware.cors import CORSMiddleware
 
         doc_api.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
+            allow_origins=["https://inmovelar-production.up.railway.app"],
+            allow_credentials=False,
+            allow_methods=["GET", "POST"],
+            allow_headers=["Content-Type"],
         )
 
         doc_api.include_router(document_download_router)

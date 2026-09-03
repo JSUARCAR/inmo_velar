@@ -35,7 +35,25 @@ fi
 echo ""
 echo "=== Step 2: Generating Caddyfile ==="
 cat > /app/Caddyfile.runtime <<EOF
+{
+    order rate_limit before basicauth
+}
+
 :${PORT:-8080}
+
+@login_endpoint {
+    path /api/login*
+    path /_event/auth_state.login*
+}
+rate_limit @login_endpoint 5 15m
+
+header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Frame-Options "DENY"
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    -Server
+}
 
 @backend {
     path /_event
@@ -66,9 +84,6 @@ handle {
         path *.html
     }
     header @html Cache-Control "no-cache, no-store, must-revalidate"
-    
-    # Cache static assets (JS, CSS, Images) for a long time, but with versioning check
-    # Reflex uses hashed filenames, so long cache is fine, but index.html MUST be no-cache.
 }
 EOF
 echo "  ✅ Caddyfile generated (frontend: $FRONTEND_DIR)"

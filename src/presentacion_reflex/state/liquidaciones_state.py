@@ -725,12 +725,11 @@ class LiquidacionesState(DocumentosStateMixin):
                         "id_contrato_m": str(liquidacion["id_contrato"]),
                         "periodo": str(liquidacion["periodo"]),
                         "otros_ingresos": str(liquidacion.get("otros_ingresos", 0)),
+                        # T006 [US2] Respetar override manual de 0
                         "gastos_administracion": str(
-                            liquidacion["gastos_admin"]
-                            if liquidacion.get("gastos_admin", 0) > 0
-                            else int(
-                                float(liquidacion.get("valor_administracion") or 0)
-                            )
+                            liquidacion.get("gastos_admin", 0) 
+                            if liquidacion.get("gastos_admin") is not None 
+                            else 0
                         ),
                         "gastos_servicios": str(liquidacion.get("gastos_serv", 0)),
                         "gastos_reparaciones": str(liquidacion.get("gastos_rep", 0)),

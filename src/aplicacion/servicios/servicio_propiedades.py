@@ -202,7 +202,7 @@ class ServicioPropiedades:
 
     def actualizar_propiedad(
         self, id_propiedad: int, datos: Dict, usuario_sistema: str = "sistema"
-    ) -> Propiedad:
+    ) -> tuple[Propiedad, int]:
         """Actualiza una propiedad existente."""
         propiedad = self.repo.obtener_por_id(id_propiedad)
         if not propiedad:
@@ -244,6 +244,9 @@ class ServicioPropiedades:
         # Capturar canon anterior antes de aplicar cambios
         old_canon = propiedad.canon_arrendamiento_estimado
 
+        # Capturar valor de administración anterior (T003/T004)
+        old_admin = propiedad.valor_administracion
+        
         # Actualizar campos
         for k, v in datos.items():
             if hasattr(propiedad, k):
@@ -252,88 +255,125 @@ class ServicioPropiedades:
         propiedad.updated_at = datetime.now().isoformat()
         propiedad.updated_by = usuario_sistema
 
-        self.repo.actualizar(propiedad, usuario_sistema)
-        cache_manager.invalidate("propiedades")
-
-        # =========================================================================
-        # Sincronización en cascada: si el canon estimado cambió, propagar a
-        # contratos activos (mandato y arrendamiento) y registrar historial.
-        # =========================================================================
+        liquidaciones_actualizadas = 0
         nuevo_canon = propiedad.canon_arrendamiento_estimado
-        if old_canon is not None and old_canon != nuevo_canon:
-            try:
-                with db_manager.obtener_conexion() as conn:
-                    cursor = conn.cursor()
+        nuevo_admin = propiedad.valor_administracion
 
-                    # 1. Obtener canon actual del arrendamiento activo (antes del cambio)
+        # T003/T004: Todo se ejecuta dentro de UNA sola transacción para Strict Rollback.
+        # En caso de error, 'transaccion()' lanza la excepción y hace rollback
+        with db_manager.transaccion() as conn:
+            
+            # 1. Guardar la propiedad
+            self.repo.actualizar(propiedad, usuario_sistema)
+
+            cursor = conn.cursor()
+
+            # =========================================================================
+            # Sincronización en cascada: canon_arrendamiento_estimado
+            # =========================================================================
+            if old_canon is not None and old_canon != nuevo_canon:
+                # 1. Obtener canon actual del arrendamiento activo (antes del cambio)
+                cursor.execute(
+                    """
+                    SELECT ID_CONTRATO_A, CANON_ARRENDAMIENTO
+                    FROM CONTRATOS_ARRENDAMIENTOS
+                    WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'ACTIVO'
+                    """,
+                    (id_propiedad,),
+                )
+                row = cursor.fetchone()
+                id_contrato_a = row.get("ID_CONTRATO_A") if row else None
+                canon_anterior_arriendo = (
+                    row.get("CANON_ARRENDAMIENTO") if row else None
+                )
+
+                # 2. Actualizar Mandato activo
+                cursor.execute(
+                    """
+                    UPDATE CONTRATOS_MANDATOS
+                    SET CANON_MANDATO = %s,
+                        UPDATED_AT = CURRENT_TIMESTAMP,
+                        UPDATED_BY = %s
+                    WHERE ID_PROPIEDAD = %s
+                    AND ESTADO_CONTRATO_M = 'ACTIVO'
+                    """,
+                    (nuevo_canon, usuario_sistema, id_propiedad),
+                )
+
+                # 3. Actualizar Arrendamiento activo
+                cursor.execute(
+                    """
+                    UPDATE CONTRATOS_ARRENDAMIENTOS
+                    SET CANON_ARRENDAMIENTO = %s,
+                        UPDATED_AT = CURRENT_TIMESTAMP,
+                        UPDATED_BY = %s
+                    WHERE ID_PROPIEDAD = %s
+                    AND ESTADO_CONTRATO_A = 'ACTIVO'
+                    """,
+                    (nuevo_canon, usuario_sistema, id_propiedad),
+                )
+
+                # 4. Registrar historial (solo si existe arrendamiento activo)
+                if (
+                    id_contrato_a is not None
+                    and canon_anterior_arriendo is not None
+                ):
                     cursor.execute(
                         """
-                        SELECT ID_CONTRATO_A, CANON_ARRENDAMIENTO
-                        FROM CONTRATOS_ARRENDAMIENTOS
-                        WHERE ID_PROPIEDAD = %s AND ESTADO_CONTRATO_A = 'ACTIVO'
+                        INSERT INTO IPC_INCREMENT_HISTORY
+                            (ID_CONTRATO_A, FECHA_APLICACION, PORCENTAJE_IPC,
+                             CANON_ANTERIOR, CANON_NUEVO, OBSERVACIONES, CREATED_BY)
+                        VALUES (%s, CURRENT_DATE, 0, %s, %s, %s, %s)
                         """,
-                        (id_propiedad,),
-                    )
-                    row = cursor.fetchone()
-                    id_contrato_a = row.get("ID_CONTRATO_A") if row else None
-                    canon_anterior_arriendo = (
-                        row.get("CANON_ARRENDAMIENTO") if row else None
-                    )
-
-                    # 2. Actualizar Mandato activo
-                    cursor.execute(
-                        """
-                        UPDATE CONTRATOS_MANDATOS
-                        SET CANON_MANDATO = %s,
-                            UPDATED_AT = CURRENT_TIMESTAMP,
-                            UPDATED_BY = %s
-                        WHERE ID_PROPIEDAD = %s
-                        AND ESTADO_CONTRATO_M = 'ACTIVO'
-                        """,
-                        (nuevo_canon, usuario_sistema, id_propiedad),
+                        (
+                            id_contrato_a,
+                            canon_anterior_arriendo,
+                            nuevo_canon,
+                            "Ajuste manual desde módulo Propiedad",
+                            usuario_sistema,
+                        ),
                     )
 
-                    # 3. Actualizar Arrendamiento activo
-                    cursor.execute(
-                        """
-                        UPDATE CONTRATOS_ARRENDAMIENTOS
-                        SET CANON_ARRENDAMIENTO = %s,
-                            UPDATED_AT = CURRENT_TIMESTAMP,
-                            UPDATED_BY = %s
-                        WHERE ID_PROPIEDAD = %s
-                        AND ESTADO_CONTRATO_A = 'ACTIVO'
-                        """,
-                        (nuevo_canon, usuario_sistema, id_propiedad),
+            # =========================================================================
+            # Sincronización en cascada: valor_administracion (T003 y T004)
+            # =========================================================================
+            if old_admin is not None and old_admin != nuevo_admin:
+                from src.dominio.value_objects.estado_cumplimiento import obtener_periodo_actual
+                
+                # Ejecutamos el update aplicando la fórmula contable estricta
+                update_admin_sql = """
+                UPDATE LIQUIDACIONES
+                SET GASTOS_ADMINISTRACION = %s,
+                    TOTAL_EGRESOS = COALESCE(COMISION_MONTO, 0) + COALESCE(IVA_COMISION, 0) + 
+                                    COALESCE(IMPUESTO_4X1000, 0) + COALESCE(GASTOS_SERVICIOS, 0) + 
+                                    COALESCE(GASTOS_REPARACIONES, 0) + COALESCE(PAGO_PREDIAL, 0) + 
+                                    COALESCE(SEGURO_MONTO, 0) + COALESCE(OTROS_EGRESOS, 0) + %s,
+                    NETO_A_PAGAR = COALESCE(TOTAL_INGRESOS, 0) - (
+                                    COALESCE(COMISION_MONTO, 0) + COALESCE(IVA_COMISION, 0) + 
+                                    COALESCE(IMPUESTO_4X1000, 0) + COALESCE(GASTOS_SERVICIOS, 0) + 
+                                    COALESCE(GASTOS_REPARACIONES, 0) + COALESCE(PAGO_PREDIAL, 0) + 
+                                    COALESCE(SEGURO_MONTO, 0) + COALESCE(OTROS_EGRESOS, 0) + %s
+                                   ) - COALESCE(VALOR_INCIDENTES, 0),
+                    UPDATED_AT = CURRENT_TIMESTAMP,
+                    UPDATED_BY = %s
+                WHERE ID_CONTRATO_M IN (
+                    SELECT ID_CONTRATO_M FROM CONTRATOS_MANDATOS WHERE ID_PROPIEDAD = %s
+                )
+                AND ESTADO_LIQUIDACION = 'En Proceso'
+                AND PERIODO = %s
+                AND GASTOS_ADMINISTRACION = %s -- Solo si no fue sobreescrito manualmente con otro valor
+                """
+                cursor.execute(
+                    update_admin_sql,
+                    (
+                        nuevo_admin, nuevo_admin, nuevo_admin,
+                        usuario_sistema, id_propiedad, obtener_periodo_actual(), old_admin
                     )
+                )
+                liquidaciones_actualizadas = cursor.rowcount
 
-                    # 4. Registrar historial (solo si existe arrendamiento activo)
-                    if (
-                        id_contrato_a is not None
-                        and canon_anterior_arriendo is not None
-                    ):
-                        cursor.execute(
-                            """
-                            INSERT INTO IPC_INCREMENT_HISTORY
-                                (ID_CONTRATO_A, FECHA_APLICACION, PORCENTAJE_IPC,
-                                 CANON_ANTERIOR, CANON_NUEVO, OBSERVACIONES, CREATED_BY)
-                            VALUES (%s, CURRENT_DATE, 0, %s, %s, %s, %s)
-                            """,
-                            (
-                                id_contrato_a,
-                                canon_anterior_arriendo,
-                                nuevo_canon,
-                                "Ajuste manual desde módulo Propiedad",
-                                usuario_sistema,
-                            ),
-                        )
-
-                    conn.commit()
-            except Exception:
-                import traceback
-
-                traceback.print_exc()
-
-        return propiedad
+        cache_manager.invalidate("propiedades")
+        return propiedad, liquidaciones_actualizadas
 
     def cambiar_disponibilidad(
         self,

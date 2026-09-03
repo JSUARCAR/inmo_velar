@@ -36,5 +36,11 @@ class SesionUsuario:
     token_sesion: Optional[str] = None
 
     def esta_activa(self) -> bool:
-        """Determina activos si no tiene fecha de fin."""
-        return self.fecha_fin is None
+        """Determina si la sesión está activa validando la expiración absoluta de fecha_fin."""
+        if not self.fecha_fin:
+            return False
+        try:
+            from datetime import datetime
+            return datetime.fromisoformat(self.fecha_fin) > datetime.now()
+        except ValueError:
+            return False

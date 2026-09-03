@@ -81,16 +81,19 @@ def register_pdf_routes(app):
             )
             return
 
+        from src.presentacion_reflex.api.deps import validar_sesion_api
+        from fastapi import Depends
+
         # Crear una mini-app de FastAPI para el router
-        pdf_api = FastAPI()
+        pdf_api = FastAPI(dependencies=[Depends(validar_sesion_api)])
 
         # Habilitar CORS para esta sub-app
         pdf_api.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
+            allow_origins=["https://inmovelar-production.up.railway.app"],
+            allow_credentials=False,
+            allow_methods=["GET", "POST"],
+            allow_headers=["Content-Type"],
         )
 
         pdf_api.include_router(pdf_router)

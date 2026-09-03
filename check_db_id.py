@@ -1,5 +1,9 @@
+import os
 import psycopg2
-conn = psycopg2.connect('postgresql://postgres:tBltIuhaUSMqQFvUMtSqIPFQZdXwpPtU@hopper.proxy.rlwy.net:12937/railway')
+db_url = os.environ.get('DATABASE_URL')
+if not db_url:
+    raise ValueError("DATABASE_URL not set")
+conn = psycopg2.connect(db_url)
 cursor = conn.cursor()
 cursor.execute('''
 SELECT a.ID_ASESOR FROM ASESORES a

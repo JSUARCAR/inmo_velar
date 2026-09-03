@@ -5,7 +5,7 @@ Implementa lógica de autenticación, hash de contraseñas y gestión de sesione
 
 import hashlib
 import secrets
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import bcrypt
 
@@ -128,9 +128,11 @@ class ServicioAutenticacion:
         Returns:
             Sesión creada
         """
+        ahora = datetime.now()
         sesion = SesionUsuario(
             id_usuario=usuario.id_usuario,
-            fecha_inicio=datetime.now().isoformat(),
+            fecha_inicio=ahora.isoformat(),
+            fecha_fin=(ahora + timedelta(hours=8)).isoformat(),
             token_sesion=secrets.token_urlsafe(32),
         )
 

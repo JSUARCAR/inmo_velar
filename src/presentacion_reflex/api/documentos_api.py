@@ -1,6 +1,6 @@
 import io
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile, Depends
 from fastapi.responses import StreamingResponse
 
 from src.aplicacion.servicios.procesador_documentos_async import (
@@ -8,9 +8,14 @@ from src.aplicacion.servicios.procesador_documentos_async import (
 )
 from src.aplicacion.servicios.servicio_documental import ServicioDocumentalElite
 from src.dominio.servicios.validador_documentos import ValidadorDocumentos
+from src.presentacion_reflex.api.deps import validar_sesion_api
 
-# Crear Router de FastAPI
-documentos_router = APIRouter(prefix="/api/documentos", tags=["Documentos"])
+# Crear Router de FastAPI con dependencia global
+documentos_router = APIRouter(
+    prefix="/api/documentos", 
+    tags=["Documentos"],
+    dependencies=[Depends(validar_sesion_api)]
+)
 
 # Servicios
 servicio_documental = ServicioDocumentalElite()
@@ -22,16 +27,17 @@ async def upload_documento(
     entidad_tipo: str,
     entidad_id: str,
     file: UploadFile = File(...),
-    usuario: str = Form("API_USER"),
+    usuario = Depends(validar_sesion_api),
 ):
     """
     Endpoint para subir un documento.
-    Incluye validación síncrona y procesamiento (compresión) asíncrono opcional.
     """
+    if not servicio_documental.verificar_acceso_entidad(usuario, entidad_tipo, entidad_id):
+        raise HTTPException(status_code=403, detail="Sin acceso al recurso")
+
     try:
         content = await file.read()
 
-        # 1. Validar
         validacion = ValidadorDocumentos.validar_archivo_generico(
             entidad_tipo=entidad_tipo,
             nombre_archivo=file.filename,
@@ -41,14 +47,12 @@ async def upload_documento(
         if not validacion["valido"]:
             raise HTTPException(status_code=400, detail=validacion["mensaje"])
 
-        # 2. Subir (Síncrono por ahora para garantizar persistencia inmediata)
-        # TODO: Implementar optimización asíncrona real si se desea delay
         doc = servicio_documental.subir_documento(
             entidad_tipo=entidad_tipo,
             entidad_id=entidad_id,
             nombre_archivo=file.filename,
             contenido_bytes=content,
-            usuario=usuario,
+            usuario=usuario.nombre_usuario if hasattr(usuario, "nombre_usuario") else "API_USER",
         )
 
         return {"status": "success", "id": doc.id, "filename": doc.nombre_archivo}
@@ -60,8 +64,15 @@ async def upload_documento(
 
 
 @documentos_router.get("/list/{entidad_tipo}/{entidad_id}")
-async def listar_documentos(entidad_tipo: str, entidad_id: str):
+async def listar_documentos(
+    entidad_tipo: str, 
+    entidad_id: str,
+    usuario = Depends(validar_sesion_api)
+):
     """Lista metadatos de documentos de una entidad."""
+    if not servicio_documental.verificar_acceso_entidad(usuario, entidad_tipo, entidad_id):
+        raise HTTPException(status_code=403, detail="Sin acceso al recurso")
+
     docs = servicio_documental.listar_documentos(entidad_tipo, entidad_id)
     return [
         {
@@ -76,15 +87,21 @@ async def listar_documentos(entidad_tipo: str, entidad_id: str):
 
 
 @documentos_router.get("/download/{documento_id}")
-async def descargar_documento(documento_id: int):
+async def descargar_documento(
+    documento_id: int,
+    usuario = Depends(validar_sesion_api)
+):
     """Descarga el contenido de un documento."""
     doc = servicio_documental.descargar_documento(documento_id)
 
     if not doc or not doc.contenido:
         raise HTTPException(status_code=404, detail="Documento no encontrado")
 
+    if not servicio_documental.verificar_acceso_entidad(usuario, doc.entidad_tipo, doc.entidad_id):
+        raise HTTPException(status_code=403, detail="Sin acceso al recurso")
+
     disposition = (
-        "inline" if "image" in doc.mime_type or "pdf" in doc.mime_type else "attachment"
+        "inline" if "image" in (doc.mime_type or "") or "pdf" in (doc.mime_type or "") else "attachment"
     )
 
     return StreamingResponse(

@@ -63,6 +63,16 @@ class Settings(BaseSettings):
         default="CHANGE_ME_IN_PRODUCTION", description="Clave secreta para encriptación"
     )
 
+    @field_validator("secret_key", mode="after")
+    @classmethod
+    def validate_secret_key(cls, v):
+        import sys
+        if not v or v == "CHANGE_ME_IN_PRODUCTION" or len(v) < 16:
+            msg = "[ERROR FATAL DE CONFIGURACIÓN]\nCRÍTICO: SECRET_KEY no configurada o usa valor inseguro. Sistema detenido."
+            print(msg, file=sys.stderr)
+            sys.exit(1)
+        return v
+
     # === Negocio ===
     moneda_default: str = Field(default="COP", description="Moneda por defecto")
 

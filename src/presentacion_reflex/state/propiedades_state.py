@@ -722,10 +722,12 @@ class PropiedadesState(DocumentosStateMixin):
                     raise ValueError("ID de propiedad no encontrado")
 
                 pass  # print(f"🔄 Actualizando propiedad ID: {id_prop}") [OpSec Removed]
-                servicio.actualizar_propiedad(
+                _, liq_actualizadas = servicio.actualizar_propiedad(
                     int(id_prop), datos, usuario_sistema="admin"
                 )
                 msg = "Propiedad actualizada correctamente"
+                if liq_actualizadas > 0:
+                    msg += f". {liq_actualizadas} liquidación(es) actualizada(s) en cascada."
             else:
                 # Crear nueva
                 pass  # print("✨ Creando nueva propiedad") [OpSec Removed]

@@ -9,13 +9,19 @@ import psycopg2
 # Force UTF-8 output
 sys.stdout.reconfigure(encoding='utf-8')
 
+from urllib.parse import urlparse
+
 SQLITE_PATH = "migraciones/DB_Inmo_Velar.db"
+db_url = os.environ.get("DATABASE_URL")
+if not db_url:
+    raise ValueError("DATABASE_URL no configurada")
+parsed = urlparse(db_url)
 RAILWAY = {
-    "host": "hopper.proxy.rlwy.net",
-    "port": 12937,
-    "dbname": "railway",
-    "user": "postgres",
-    "password": "tBltIuhaUSMqQFvUMtSqIPFQZdXwpPtU",
+    "host": parsed.hostname,
+    "port": parsed.port or 5432,
+    "dbname": (parsed.path or "/railway").lstrip("/"),
+    "user": parsed.username,
+    "password": parsed.password,
 }
 
 TYPE_MAP = {
