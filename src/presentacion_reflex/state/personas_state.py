@@ -225,10 +225,10 @@ class PersonasState(NavigationGenerationMixin):
 
     def load_personas(self):
         gen_id = self.start_navigation_generation()
-        yield PersonasState._load_personas_background(gen_id)
+        yield PersonasState.load_personas_background(gen_id)
 
     @rx.event(background=True)
-    async def _load_personas_background(self, gen_id: str):
+    async def load_personas_background(self, gen_id: str):
         async with self:
             if not self.validate_generation(gen_id):
                 return

@@ -40,10 +40,10 @@ class AlertasDashboardState(NavigationGenerationMixin):
 
     def load_alertas(self):
         gen_id = self.start_navigation_generation()
-        yield AlertasDashboardState._load_alertas_background(gen_id)
+        yield AlertasDashboardState.load_alertas_background(gen_id)
 
     @rx.event(background=True)
-    async def _load_alertas_background(self, gen_id: str):
+    async def load_alertas_background(self, gen_id: str):
         async with self:
             if not self.validate_generation(gen_id):
                 return

@@ -197,10 +197,10 @@ class AuthState(NavigationGenerationMixin):
         Valida la sesin en background para evitar bloqueos sincronos.
         """
         gen_id = self.start_navigation_generation()
-        yield AuthState._require_login_background(gen_id)
+        yield AuthState.require_login_background(gen_id)
 
     @rx.event(background=True)
-    async def _require_login_background(self, gen_id: str):
+    async def require_login_background(self, gen_id: str):
         async with self:
             if not self.validate_generation(gen_id):
                 return
