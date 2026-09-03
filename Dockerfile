@@ -4,7 +4,7 @@
 
 # Stage 1: Build Custom Caddy with ratelimit
 FROM caddy:2-builder AS caddy-builder
-RUN xcaddy build --with github.com/mholt/caddy-ratelimit@v1.1.0
+RUN xcaddy build --with github.com/mholt/caddy-ratelimit
 
 # Stage 2: Final image
 FROM python:3.11-slim

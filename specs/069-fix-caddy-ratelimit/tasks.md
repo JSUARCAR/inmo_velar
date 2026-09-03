@@ -26,7 +26,7 @@
 - [x] T003 [US1] Cambiar la clave de rate limit a `{client_ip}` en el Caddyfile generado en entrypoint.sh. **NO configurar `trusted_proxies`** (Q15). *Nota: la línea actual usa `key {http.request.header.X-Forwarded-For}`, que se sustituye por `key {client_ip}`.*
 - [x] T004 [US1] Extender el bloque `match` de login_limit a las 4 rutas requeridas: `/api/login*`, `/api/auth*`, `/_event/auth_state.login*`, `/_event/estado_autenticacion.iniciar_sesion*` (actualmente solo 2 rutas).
 - [x] T005 [US1] Añadir bloque `handle_errors` (a nivel del sitio) que devuelva HTTP 429 con `Content-Type: application/json` y payload `{"detail": "Demasiados intentos de inicio de sesión"}` cuando `{http.error.status_code} == 429`.
-- [x] T007 [US1] Fijar la versión del plugin en Dockerfile (Q16): cambiar `RUN xcaddy build --with github.com/mholt/caddy-ratelimit` por `RUN xcaddy build --with github.com/mholt/caddy-ratelimit@<versión fija ≥ v1.1.0>` en Dockerfile:7 para garantizar la sintaxis de bloque `zone` (build determinista).
+- [x] T007 [US1] Plugin de caddy-ratelimit en Dockerfile: `RUN xcaddy build --with github.com/mholt/caddy-ratelimit` (el repositorio mholt/caddy-ratelimit no publica tags de versión como v1.1.0; se compila desde master).
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
