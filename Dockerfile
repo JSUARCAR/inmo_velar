@@ -48,8 +48,8 @@ mod = importlib.import_module('src.presentacion_reflex.styles'); \
 print(' All required style symbols verified')"
 
 # Build frontend
-RUN rm -rf .web && RAILWAY_ENVIRONMENT=production DATABASE_URL=sqlite:///dummy_build.db reflex init
-RUN RAILWAY_ENVIRONMENT=production DATABASE_URL=sqlite:///dummy_build.db reflex export --frontend-only --no-zip
+RUN rm -rf .web && RAILWAY_ENVIRONMENT=production DATABASE_URL=sqlite:///dummy_build.db SECRET_KEY=dummy_secret_key_for_build reflex init
+RUN RAILWAY_ENVIRONMENT=production DATABASE_URL=sqlite:///dummy_build.db SECRET_KEY=dummy_secret_key_for_build reflex export --frontend-only --no-zip
 RUN rm -f dummy_build.db
 
 # Diagnostic
