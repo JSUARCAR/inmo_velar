@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+import os
 import time
 
 def run(playwright):
@@ -17,8 +18,8 @@ def run(playwright):
     # Check if login is needed (si hay inputs de username/password)
     username_input = page.locator("input[name='username'], input[placeholder*='usuario' i], input[placeholder*='user' i]")
     if username_input.count() > 0:
-        username_input.first.fill("jsuarcar")
-        page.locator("input[name='password'], input[type='password']").first.fill("velarjoan2026")
+        username_input.first.fill(os.getenv("TEST_USER", ""))
+        page.locator("input[name='password'], input[type='password']").first.fill(os.getenv("TEST_PASSWORD", ""))
         page.locator("button[type='submit'], button:has-text('Iniciar'), button:has-text('Ingresar'), button:has-text('Login')").first.click()
         time.sleep(3)
         print("Login completado.")

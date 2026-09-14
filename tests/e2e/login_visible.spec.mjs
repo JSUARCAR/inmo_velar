@@ -19,11 +19,11 @@ import { chromium } from 'playwright';
         
         console.log("Escribiendo usuario...");
         await page.getByPlaceholder("nombre.usuario").click();
-        await page.getByPlaceholder("nombre.usuario").fill("admin");
+        await page.getByPlaceholder("nombre.usuario").fill(process.env.TEST_USER ?? "");
         
         console.log("Escribiendo contraseña...");
         await page.getByPlaceholder("••••••••").click();
-        await page.getByPlaceholder("••••••••").fill("admin0123");
+        await page.getByPlaceholder("••••••••").fill(process.env.TEST_PASSWORD ?? "");
         
         console.log("Haciendo clic en 'Acceder al Panel'...");
         await page.getByText("Acceder al Panel").click();

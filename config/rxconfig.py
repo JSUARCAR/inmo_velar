@@ -1,5 +1,11 @@
 """
 Configuración de Reflex - Sistema de Gestión Inmobiliaria Velar
+
+NOTA Task 5 (Reorden Raíz + SOLID, decisión "Raíz canónica"):
+Archivo LEGADO de referencia en config/ — NO es el canónico.
+Fuente canónica: /rxconfig.py (Reflex lo exige en raíz).
+No editar aquí para cambios de producción; difiere de raíz
+(puertos dual-Flet 8000/3000, env DEV fijo, sin IS_PROD/api_url/DATABASE_URL).
 """
 
 import reflex as rx
