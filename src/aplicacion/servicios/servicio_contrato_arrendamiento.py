@@ -15,8 +15,16 @@ from src.dominio.repositorios.interfaces import (
 )
 from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempotencia
 from src.aplicacion.decorators.idempotent import idempotent
-from src.infraestructura.cache.cache_manager import cache_manager
+from src.infraestructura.cache.cache_manager import cache_manager, invalidate_cache
 from src.dominio.constantes.cache_keys import CacheKeys
+from src.dominio.excepciones.excepciones_base import ContratoNoRenovableError
+from src.aplicacion.utils.validadores import (
+    validar_canon,
+    validar_comision,
+    validar_derivado,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class ServicioContratoArrendamiento:
@@ -392,27 +400,46 @@ class ServicioContratoArrendamiento:
     @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
     @cache_manager.invalidates("dashboard")
     def renovar_arrendamiento(
-        self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
+        self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None, **kwargs
     ) -> ContratoArrendamiento:
         """Lógica de renovación automática con incremento IPC. Acepta fecha fin personalizada."""
         db = getattr(self.repo_arriendo, "db", None)
 
         if db is None:
-            return self._ejecutar_renovacion_arrendamiento(
+            resultado = self._ejecutar_renovacion_arrendamiento(
                 id_contrato, usuario_sistema, nueva_fecha_fin
             )
+        else:
+            with db.transaccion():
+                resultado = self._ejecutar_renovacion_arrendamiento(
+                    id_contrato, usuario_sistema, nueva_fecha_fin
+                )
 
-        with db.transaccion():
-            return self._ejecutar_renovacion_arrendamiento(
-                id_contrato, usuario_sistema, nueva_fecha_fin
-            )
+        self._invalidar_cache_estado_cartera()
+        return resultado
+
+    def _invalidar_cache_estado_cartera(self) -> None:
+        """Invalida la caché de estado de cartera post-commit (FR-012).
+
+        El fallo de invalidación nunca debe abortar ni hacer rollback de la
+        operación de renovación ya confirmada.
+        """
+        try:
+            invalidate_cache("cache_estado_cartera")
+        except Exception as ex:  # pragma: no cover
+            logger.warning("No se pudo invalidar caché 'cache_estado_cartera': %s", ex)
 
     def _ejecutar_renovacion_arrendamiento(
         self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
     ) -> ContratoArrendamiento:
         arriendo = self.repo_arriendo.obtener_por_id(id_contrato)
         if not arriendo or arriendo.estado_contrato_a != EstadoContrato.ACTIVO:
-            raise ValueError("Contrato no válido para renovación")
+            raise ContratoNoRenovableError(
+                f"Contrato de arrendamiento {id_contrato} no válido para renovación"
+            )
+
+        # FR-003 (spec 073): gate 1, máximos operativos sobre el canon actual.
+        validar_canon(int(arriendo.canon_arrendamiento or 0))
 
         # 1. Calcular nuevas fechas
         fecha_fin_actual = datetime.strptime(arriendo.fecha_fin_contrato_a, "%Y-%m-%d")
@@ -434,10 +461,14 @@ class ServicioContratoArrendamiento:
         motivo_ren = "Prórroga Automática - Sin IPC (< 1 año)"
 
         if meses_duracion >= 12:
-            nuevo_canon, porcentaje_ipc = self._calcular_incremento_ipc(
-                arriendo.canon_arrendamiento
-            )
-            motivo_ren = f"Prórroga Automática - Renovación IPC ({porcentaje_ipc}%)"
+            ipc_actual = self.repo_ipc.obtener_ultimo()
+            porcentaje_ipc = self._calcular_incremento_ipc(arriendo, ipc_actual)
+            if porcentaje_ipc > 0:
+                nuevo_canon = int(arriendo.canon_arrendamiento * (1 + porcentaje_ipc / 100))
+                motivo_ren = f"Prórroga Automática - Renovación IPC ({porcentaje_ipc}%)"
+
+        # FR-003 (spec 073): gate 2, red int4 sobre el canon derivado.
+        validar_derivado("canon_nuevo", int(nuevo_canon))
 
         # 3. Registrar Renovación
         renovacion = RenovacionContrato(
@@ -445,6 +476,9 @@ class ServicioContratoArrendamiento:
             tipo_contrato="Arrendamiento",
             fecha_inicio_original=arriendo.fecha_inicio_contrato_a,
             fecha_fin_original=arriendo.fecha_fin_contrato_a,
+            fecha_inicio_renovacion=CalculadoraContratos.calcular_fecha_inicio_renovacion(
+                arriendo.fecha_fin_contrato_a
+            ),
             fecha_fin_renovacion=nueva_fecha_fin_str,
             canon_anterior=arriendo.canon_arrendamiento,
             canon_nuevo=nuevo_canon,
@@ -492,14 +526,19 @@ class ServicioContratoArrendamiento:
 
         return arriendo
 
-    def _calcular_incremento_ipc(self, canon_actual: int) -> tuple[int, float]:
-        ipc = self.repo_ipc.obtener_ultimo()
-        if not ipc:
-            return canon_actual, 0.0
+    def _calcular_incremento_ipc(self, contrato, ipc_actual) -> float:
+        """
+        Retorna el valor del IPC (como decimal, ej. 10.0 = 10%) a aplicar.
 
-        porcentaje = float(ipc.valor_ipc)
-        incremento = canon_actual * (porcentaje / 100)
-        return int(canon_actual + incremento), porcentaje
+        Aplica SOLO si `duracion_contrato_a >= 12` meses Y existe un valor de IPC
+        vigente registrado; en caso contrario retorna `0.0` (incremento 0%).
+        """
+        duracion = int(getattr(contrato, "duracion_contrato_a", 0) or 0)
+        if duracion < 12:
+            return 0.0
+        if ipc_actual is None:
+            return 0.0
+        return float(ipc_actual.valor_ipc)
 
     @idempotent(key_prefix="arriendo:terminar")
     @cache_manager.invalidates(CacheKeys.ARRIENDOS_LIST)
@@ -599,7 +638,7 @@ class ServicioContratoArrendamiento:
         
         # 1. Obtener valores anteriores para auditoría
         query_sel = """
-            SELECT id_liquidacion, canon_bruto 
+            SELECT id_liquidacion, canon_bruto, comision_porcentaje
             FROM LIQUIDACIONES 
             WHERE id_contrato_m = (
                 SELECT m.id_contrato_m 
@@ -607,13 +646,25 @@ class ServicioContratoArrendamiento:
                 JOIN CONTRATOS_ARRENDAMIENTOS a ON m.id_propiedad = a.id_propiedad
                 WHERE a.id_contrato_a = %s LIMIT 1
             )
-            AND fecha_generacion::date >= date_trunc('month', %s::date)
+            AND NULLIF(fecha_generacion, '')::date >= date_trunc('month', %s::date)
         """
         cursor.execute(query_sel, (id_contrato_a, fecha_renovacion))
         records = cursor.fetchall()
-        
+
         if not records:
             return 0
+
+        # FR-003 (spec 073): gate 1 sobre las comisiones afectadas;
+        # el canon nuevo es derivado y va a la red int4 (gate 2), pues el
+        # crecimiento legítimo por IPC puede superar el máximo operativo.
+        validar_derivado("canon_nuevo", int(canon_nuevo))
+        comisiones = [
+            int(r.get("COMISION_PORCENTAJE", r.get("comision_porcentaje")) or 0)
+            if isinstance(r, dict) else int(r[2] or 0)
+            for r in records
+        ]
+        if comisiones:
+            validar_comision(max(comisiones))
             
         # Se actualizan todos los campos calculados basados en el nuevo canon_bruto
         query_upd = """
@@ -621,8 +672,8 @@ class ServicioContratoArrendamiento:
                 SELECT 
                     id_liquidacion,
                     %s + otros_ingresos AS new_total_ingresos,
-                    CAST(%s * comision_porcentaje / 10000.0 AS INTEGER) AS new_comision,
-                    CASE WHEN iva_comision > 0 THEN CAST(CAST(%s * comision_porcentaje / 10000.0 AS INTEGER) * 0.19 AS INTEGER) ELSE 0 END AS new_iva
+                    CAST(%s::BIGINT * comision_porcentaje / 10000.0 AS INTEGER) AS new_comision,
+                    CASE WHEN iva_comision > 0 THEN CAST(CAST(%s::BIGINT * comision_porcentaje / 10000.0 AS INTEGER) * 0.19 AS INTEGER) ELSE 0 END AS new_iva
                 FROM LIQUIDACIONES
             )
             UPDATE LIQUIDACIONES l
@@ -641,7 +692,7 @@ class ServicioContratoArrendamiento:
                 JOIN CONTRATOS_ARRENDAMIENTOS a ON m.id_propiedad = a.id_propiedad
                 WHERE a.id_contrato_a = %s LIMIT 1
             )
-            AND l.fecha_generacion::date >= date_trunc('month', %s::date);
+            AND NULLIF(l.fecha_generacion, '')::date >= date_trunc('month', %s::date);
         """
         cursor.execute(query_upd, (canon_nuevo, canon_nuevo, canon_nuevo, canon_nuevo, id_contrato_a, fecha_renovacion))
         filas = cursor.rowcount
@@ -657,7 +708,9 @@ class ServicioContratoArrendamiento:
         for r in records:
             id_liq = r.get("ID_LIQUIDACION", r.get("id_liquidacion")) if isinstance(r, dict) else r[0]
             canon_ant = r.get("CANON_BRUTO", r.get("canon_bruto")) if isinstance(r, dict) else r[1]
-            cursor.execute(audit_query, (id_contrato_a, "LIQUIDACIONES", str(id_liq), canon_ant, canon_nuevo, now_str, usuario))
+            # FR-002: auditar SOLO si hubo cambio real de canon (evita ruido con 0%)
+            if canon_ant != canon_nuevo:
+                cursor.execute(audit_query, (id_contrato_a, "LIQUIDACIONES", str(id_liq), canon_ant, canon_nuevo, now_str, usuario))
             
         return filas
 
@@ -675,7 +728,7 @@ class ServicioContratoArrendamiento:
             SELECT id_recaudo, valor_total
             FROM RECAUDOS
             WHERE id_contrato_a = %s
-            AND fecha_pago::date >= date_trunc('month', %s::date)
+            AND NULLIF(fecha_pago, '')::date >= date_trunc('month', %s::date)
         """
         cursor.execute(query_sel, (id_contrato_a, fecha_renovacion))
         records = cursor.fetchall()
@@ -691,7 +744,7 @@ class ServicioContratoArrendamiento:
             AND id_recaudo IN (
                 SELECT id_recaudo FROM RECAUDOS
                 WHERE id_contrato_a = %s
-                AND fecha_pago::date >= date_trunc('month', %s::date)
+                AND NULLIF(fecha_pago, '')::date >= date_trunc('month', %s::date)
             );
         """
         cursor.execute(query_upd_conceptos, (canon_nuevo, id_contrato_a, fecha_renovacion))
@@ -705,7 +758,7 @@ class ServicioContratoArrendamiento:
                 WHERE id_recaudo = r.id_recaudo
             )
             WHERE r.id_contrato_a = %s
-            AND r.fecha_pago::date >= date_trunc('month', %s::date);
+            AND NULLIF(r.fecha_pago, '')::date >= date_trunc('month', %s::date);
         """
         cursor.execute(query_upd_recaudo, (id_contrato_a, fecha_renovacion))
         filas = cursor.rowcount
@@ -721,7 +774,9 @@ class ServicioContratoArrendamiento:
         for r in records:
             id_rec = r.get("ID_RECAUDO", r.get("id_recaudo")) if isinstance(r, dict) else r[0]
             canon_ant = r.get("VALOR_TOTAL", r.get("valor_total")) if isinstance(r, dict) else r[1]
-            cursor.execute(audit_query, (id_contrato_a, "RECAUDOS", str(id_rec), canon_ant, canon_nuevo, now_str, usuario))
+            # FR-002: auditar SOLO si hubo cambio real de canon
+            if canon_ant != canon_nuevo:
+                cursor.execute(audit_query, (id_contrato_a, "RECAUDOS", str(id_rec), canon_ant, canon_nuevo, now_str, usuario))
             
         return filas
 
@@ -750,7 +805,7 @@ class ServicioContratoArrendamiento:
             JOIN CONTRATOS_ARRENDAMIENTOS c ON cm.id_propiedad = c.id_propiedad
             WHERE c.id_contrato_a = %s
             AND l.canon_bruto != c.canon_arrendamiento
-            AND l.fecha_generacion::date >= date_trunc('month', %s::date);
+            AND NULLIF(l.fecha_generacion, '')::date >= date_trunc('month', %s::date);
         """
         cursor.execute(query_liq, (id_contrato_a, fecha_renovacion))
         for r in cursor.fetchall():
@@ -779,7 +834,7 @@ class ServicioContratoArrendamiento:
             JOIN CONTRATOS_ARRENDAMIENTOS c ON r.id_contrato_a = c.id_contrato_a
             WHERE c.id_contrato_a = %s
             AND r.valor_total != c.canon_arrendamiento
-            AND r.fecha_pago::date >= date_trunc('month', %s::date);
+            AND NULLIF(r.fecha_pago, '')::date >= date_trunc('month', %s::date);
         """
         cursor.execute(query_rec, (id_contrato_a, fecha_renovacion))
         for r in cursor.fetchall():

@@ -6,6 +6,7 @@ import reflex as rx
 
 from src.dominio.servicios.calculadora_contratos import CalculadoraContratos
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
+from src.dominio.excepciones.excepciones_base import ValorFueraDeRangoError
 from src.infraestructura.persistencia.database import db_manager
 from src.presentacion_reflex.state.documentos_mixin import DocumentosStateMixin
 
@@ -1098,6 +1099,9 @@ class ContratosState(DocumentosStateMixin):
                         "success": True,
                         "message": f"Arrendamiento renovado: {contrato.fecha_fin_contrato_a if contrato else ''}",
                     }
+            except ValorFueraDeRangoError as e:
+                # FR-003 (spec 073): mensaje operativo tal cual, sin tecnicismos.
+                res = {"success": False, "message": str(e)}
             except ValueError as e:
                 res = {"success": False, "message": str(e)}
             except Exception as e:

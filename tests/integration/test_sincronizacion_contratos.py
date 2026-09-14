@@ -16,7 +16,7 @@ def test_cascada_renovacion_canon(db_connection):
             SELECT count(*)
             FROM contratos_arrendamientos ca
             JOIN propiedades p ON ca.id_propiedad = p.id_propiedad
-            LEFT JOIN contratos_mandatos cm ON cm.propiedad_id = p.id_propiedad AND cm.estado_contrato_m = 'Activo'
+            LEFT JOIN contratos_mandatos cm ON cm.id_propiedad = p.id_propiedad AND cm.estado_contrato_m = 'Activo'
             WHERE ca.estado_contrato_a = 'Activo' AND (
                 ca.canon_arrendamiento != cm.canon_mandato OR 
                 ca.canon_arrendamiento != p.canon_arrendamiento_estimado

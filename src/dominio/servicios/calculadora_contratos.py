@@ -3,7 +3,7 @@ Servicio de Dominio: Calculadora de Contratos
 Centraliza la lógica de cálculo de duraciones y validaciones de fechas.
 """
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import calendar
 from typing import Union, Tuple, Optional
 
@@ -191,17 +191,41 @@ class CalculadoraContratos:
     @staticmethod
     def sumar_meses(fecha: Union[date, str], meses: int) -> date:
         """
-        Suma N meses a una fecha manejando bordes (31 -> último día del mes destino).
-        Único punto de verdad para lógica de renovación.
+        Suma N meses a una fecha manejando bordes de fin de mes.
+
+        Convención fin-de-mes: si la fecha origen es el último día de su mes,
+        el resultado es el último día del mes destino (30-Nov -> 31-Dic).
+        Si no, conserva el día, truncándolo al último día del mes destino si
+        hace falta (31-Ene -> 28/29-Feb). Único punto de verdad para lógica
+        de renovación.
         """
         if isinstance(fecha, str):
             fecha = datetime.strptime(fecha[:10], "%Y-%m-%d").date()
         año = fecha.year + (fecha.month + meses - 1) // 12
         mes = (fecha.month + meses - 1) % 12 + 1
+        ultimo_dia_destino = calendar.monthrange(año, mes)[1]
+        ultimo_dia_origen = calendar.monthrange(fecha.year, fecha.month)[1]
+        if fecha.day == ultimo_dia_origen:
+            return fecha.replace(year=año, month=mes, day=ultimo_dia_destino)
         try:
             return fecha.replace(year=año, month=mes)
         except ValueError:
-            import calendar
+            return fecha.replace(year=año, month=mes, day=ultimo_dia_destino)
 
-            ultimo_dia = calendar.monthrange(año, mes)[1]
-            return fecha.replace(year=año, month=mes, day=ultimo_dia)
+    @staticmethod
+    def calcular_fecha_inicio_renovacion(fecha_fin_original: str) -> str:
+        """
+        Calcula la fecha de inicio de la renovación: fecha_fin_original + 1 día.
+
+        Fuente única de verdad para este campo (FR-001, CHK006). NO usar
+        `sumar_meses` aquí, que suma meses calendario y rompe casos límite
+        (quickstart E5: 2026-12-31 -> 2027-01-01).
+
+        Args:
+            fecha_fin_original: Fecha de fin del contrato (YYYY-MM-DD).
+
+        Returns:
+            Fecha ISO (YYYY-MM-DD) del día siguiente.
+        """
+        fecha_fin = datetime.strptime(fecha_fin_original[:10], "%Y-%m-%d").date()
+        return (fecha_fin + timedelta(days=1)).isoformat()

@@ -71,7 +71,10 @@ class ServicioContratos:
 
         # Servicios especializados (SRP)
         self.servicio_mandato = ServicioContratoMandato(
-            self.repo_mandato, self.repo_propiedad, self.repo_renovacion
+            self.repo_mandato,
+            self.repo_propiedad,
+            self.repo_renovacion,
+            self.repo_idempotencia,
         )
         self.servicio_arriendo = ServicioContratoArrendamiento(
             self.repo_arriendo,
@@ -79,6 +82,7 @@ class ServicioContratos:
             self.repo_renovacion,
             self.repo_ipc,
             self.repo_mandato,
+            self.repo_idempotencia,
         )
 
         # Repositorios auxiliares

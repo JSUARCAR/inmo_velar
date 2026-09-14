@@ -96,3 +96,9 @@
 1. Complete Phase 1 and 2.
 2. Complete Phase 3 (US1).
 3. Validate independent tests before moving to Phase 4 (Auth Fixes).
+
+## Phase 6: Convergence
+- [x] T014 Fix SyntaxError in src/presentacion_reflex/state/navigation_mixin.py caused by escaped triple quotes. per T003 (missing)
+- [x] T015 Fix SyntaxError and NameError in xportar_csv in src/presentacion_reflex/state/alertas_dashboard_state.py. per T007 (missing)
+- [x] T016 Implement Graceful Rollback by yielding 	rigger_graceful_rollback() on exception in _load_personas_background (src/presentacion_reflex/state/personas_state.py). per T004 (missing)
+- [x] T017 Wrap state mutations (self.personas, self.is_loading, etc.) in sync with self: within _load_personas_background (src/presentacion_reflex/state/personas_state.py). per T005 (partial)

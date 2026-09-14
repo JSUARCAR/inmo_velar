@@ -85,6 +85,12 @@ class RepositorioContratoMandatoPostgres:
     def obtener_activo_por_propiedad(
         self, id_propiedad: int
     ) -> Optional[ContratoMandato]:
+        """Obtiene el mandato ACTIVO más reciente de una propiedad (FR-009).
+
+        Si existen múltiples mandatos activos (caso anómalo), retorna el de
+        mayor ID (más reciente). Si no existe ninguno, retorna None para que
+        el flujo continúe sin error.
+        """
         conn = self.db.obtener_conexion()
         cursor = self.db.get_dict_cursor(conn)
         placeholder = self.db.get_placeholder()
@@ -92,6 +98,8 @@ class RepositorioContratoMandatoPostgres:
             f"""
         SELECT * FROM CONTRATOS_MANDATOS 
         WHERE ID_PROPIEDAD = {placeholder} AND ESTADO_CONTRATO_M = 'ACTIVO'
+        ORDER BY ID_CONTRATO_M DESC
+        LIMIT 1
         """,
             (id_propiedad,),
         )

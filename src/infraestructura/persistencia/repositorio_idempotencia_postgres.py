@@ -29,7 +29,13 @@ class RepositorioIdempotenciaPostgres(IRepositorioIdempotencia):
             INSERT INTO IDEMPOTENCY_KEYS (
                 KEY, OPERACION, PARAMETROS, RESULTADO, USUARIO_ID, FECHA_EXPIRA, ESTADO, INTENTOS
             ) VALUES (%s, %s, %s, %s::jsonb, %s, %s, 'processing', 0)
-            ON CONFLICT (KEY) DO NOTHING
+            ON CONFLICT (KEY) DO UPDATE SET
+                ESTADO = 'processing',
+                RESULTADO = '{"status": "processing"}',
+                USUARIO_ID = EXCLUDED.USUARIO_ID,
+                FECHA_EXPIRA = EXCLUDED.FECHA_EXPIRA,
+                INTENTOS = IDEMPOTENCY_KEYS.INTENTOS + 1
+            WHERE IDEMPOTENCY_KEYS.ESTADO = 'failed'
             RETURNING ID_KEY
         """
         with db_manager.transaccion() as conn:

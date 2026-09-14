@@ -94,3 +94,39 @@ class SesionInvalida(ExcepcionDominio):
 
     def __init__(self, mensaje: str = "Sesión inválida o expirada"):
         super().__init__(mensaje, "SESSION_ERROR")
+
+
+class ContratoNoRenovableError(OperacionNoPermitida):
+    """
+    Excepción cuando un contrato no es válido para renovación.
+
+    Se lanza en los flujos de renovación (mandato/arrendamiento) cuando el
+    contrato no existe o no está en estado ACTIVO (FR-008).
+    """
+
+    def __init__(self, mensaje: str = "Contrato no válido para renovación"):
+        super().__init__(mensaje)
+
+
+class ValorFueraDeRangoError(ErrorValidacion):
+    """
+    Excepción cuando un valor numérico de la renovación excede su máximo.
+
+    El mensaje es operativo: indica campo y valor en lenguaje no técnico,
+    nunca el error crudo de la base de datos (spec 073, FR-003).
+    """
+
+    def __init__(self, campo: str, valor: int, maximo: int):
+        """
+        Args:
+            campo: Nombre del campo que excede el rango.
+            valor: Valor que excede el rango.
+            maximo: Máximo permitido para el campo.
+        """
+        mensaje = (
+            f"El valor {valor} del campo {campo} excede "
+            f"el máximo permitido ({maximo})"
+        )
+        super().__init__(mensaje, campo=campo)
+        self.valor = valor
+        self.maximo = maximo

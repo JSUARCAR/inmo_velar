@@ -2,8 +2,8 @@
 
 ## Sistema Velar - Core de Gestión Inmobiliaria
 
-> **Versión:** 1.0.1 Élite
-> **Última actualización:** 2026-05-10
+> **Versión:** 1.0.2 Élite
+> **Última actualización:** 2026-09-13
 > **Arquitectura:** Clean Architecture + Domain-Driven Design
 > **Framework:** Reflex (Python Full-Stack) + PostgreSQL
 > **Plataforma:** Railway (Cloud-Native)
@@ -16,6 +16,7 @@
 
 | Fecha | Hito | Impacto |
 |-------|------|---------|
+| 2026-09-13 | 072 Renovación de Contratos (Debug) | Fix de casting de fechas vacías (`NULLIF`), `fecha_inicio_renovacion = fin original + 1 día`, `sumar_meses` fin-de-mes, IPC condicional (≥12 meses), `ContratoNoRenovableError` tipado, atomicidad + idempotencia DB-backed (`IDEMPOTENCY_KEYS`), auditoría de propagación solo de filas modificadas, caché no bloqueante (FR-012). 47 tests verdes + SC-003 (61 passed). |
 | 2026-05-10 | Dashboard Alertas Tempranas | Implementación de motor proactivo de detección de vencimientos con persistencia en DB y vista de gestión. |
 | 2026-05-10 | Modernización PDF Elite | Arquitectura BaseDocTemplate, validación de assets y soporte multi-página dinámico. |
 | 2026-05-10 | Filtros Avanzados Personas | Implementación de toggles 'Inactivos' y 'Sin Contrato' con lógica SQL recursiva y KPIs dinámicos. |

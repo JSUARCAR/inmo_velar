@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from typing import Any, Dict, List, Optional
 
 from src.dominio.constantes.estados_contrato import EstadoContrato
@@ -10,8 +11,14 @@ from src.dominio.repositorios.interfaces import (
     RepositorioPropiedad,
     RepositorioRenovacion,
 )
-from src.infraestructura.cache.cache_manager import cache_manager
+from src.dominio.interfaces.repositorio_idempotencia import IRepositorioIdempotencia
+from src.aplicacion.decorators.idempotent import idempotent
+from src.infraestructura.cache.cache_manager import cache_manager, invalidate_cache
 from src.dominio.constantes.cache_keys import CacheKeys
+from src.dominio.excepciones.excepciones_base import ContratoNoRenovableError
+from src.aplicacion.utils.validadores import validar_canon
+
+logger = logging.getLogger(__name__)
 
 
 class ServicioContratoMandato:
@@ -25,10 +32,12 @@ class ServicioContratoMandato:
         repo_mandato: RepositorioContratoMandato,
         repo_propiedad: RepositorioPropiedad,
         repo_renovacion: RepositorioRenovacion,
+        repo_idempotencia: Optional[IRepositorioIdempotencia] = None,
     ):
         self.repo_mandato = repo_mandato
         self.repo_propiedad = repo_propiedad
         self.repo_renovacion = repo_renovacion
+        self.repo_idempotencia = repo_idempotencia
 
     # =========================================================================
     # HELPERS UI / DROPDOWNS
@@ -238,14 +247,24 @@ class ServicioContratoMandato:
             "aplica_ipc": False,
         }
 
+    @idempotent(key_prefix="mandato:renovar")
     @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def renovar_mandato(
-        self, id_contrato: int, usuario_sistema: str, nueva_fecha_fin: str = None
+        self,
+        id_contrato: int,
+        usuario_sistema: str,
+        nueva_fecha_fin: str = None,
+        **kwargs,
     ) -> "ContratoMandato":
         """Renueva un contrato de mandato extendiendo su fecha de fin. Acepta fecha personalizada."""
         mandato = self.repo_mandato.obtener_por_id(id_contrato)
         if not mandato or mandato.estado_contrato_m != EstadoContrato.ACTIVO:
-            raise ValueError("Contrato de mandato no válido para renovación")
+            raise ContratoNoRenovableError(
+                f"Contrato de mandato {id_contrato} no válido para renovación"
+            )
+
+        # FR-009 (spec 073): mismo estándar de validación que arrendamiento.
+        validar_canon(int(mandato.canon_mandato or 0))
 
         fecha_fin_actual = datetime.strptime(mandato.fecha_fin_contrato_m, "%Y-%m-%d")
         meses_duracion = mandato.duracion_contrato_m
@@ -268,6 +287,9 @@ class ServicioContratoMandato:
             tipo_contrato="Mandato",
             fecha_inicio_original=mandato.fecha_inicio_contrato_m,
             fecha_fin_original=mandato.fecha_fin_contrato_m,
+            fecha_inicio_renovacion=CalculadoraContratos.calcular_fecha_inicio_renovacion(
+                mandato.fecha_fin_contrato_m
+            ),
             fecha_fin_renovacion=nueva_fecha_fin_str,
             canon_anterior=mandato.canon_mandato,
             canon_nuevo=mandato.canon_mandato,
@@ -291,7 +313,21 @@ class ServicioContratoMandato:
             propiedad.canon_arrendamiento_estimado = mandato.canon_mandato
             self.repo_propiedad.actualizar(propiedad, usuario_sistema)
 
+        self._invalidar_cache_estado_cartera()
         return mandato
+
+    def _invalidar_cache_estado_cartera(self) -> None:
+        """Invalida la caché de estado de cartera post-commit (FR-012).
+
+        El fallo de invalidación nunca debe abortar ni hacer rollback de la
+        operación de renovación ya confirmada.
+        """
+        try:
+            invalidate_cache("cache_estado_cartera")
+        except Exception as ex:  # pragma: no cover
+            logger.warning(
+                "No se pudo invalidar caché 'cache_estado_cartera': %s", ex
+            )
 
     @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def terminar_mandato(
