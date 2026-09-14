@@ -1,0 +1,70 @@
+title = "gitleaks-config-inmo-velar"
+
+# Extiende las reglas por defecto de Gitleaks (AWS, Stripe, JWT, etc.)
+# y agrega reglas propias para los patrones de baja entropía que
+# el escaneo por defecto NO detecta: contraseñas cortas usadas como
+# valor por defecto de os.getenv(...), DSNs con credenciales embebidas
+# y credenciales hardcodeadas en scripts de automatización (Playwright).
+[extend]
+useDefault = true
+
+# --- Regla 1: fallback hardcodeado de DB_PASSWORD ---
+[[rules]]
+id = "inmo-velar-db-password-fallback"
+description = "os.getenv('DB_PASSWORD', '<valor literal>') — fallback de password con valor no vacío"
+regex = '''os\.getenv\(\s*["']DB_PASSWORD["']\s*,\s*["'][^"'\)]+["']\s*\)'''
+tags = ["password", "database", "custom", "critical"]
+
+# --- Regla 2: DSN de PostgreSQL/MySQL/Mongo con credenciales embebidas ---
+[[rules]]
+id = "inmo-velar-dsn-credentials-embedded"
+description = "Cadena de conexión con usuario:password embebidos en texto plano"
+regex = '''(postgres(?:ql)?|mysql|mongodb(?:\+srv)?)://[A-Za-z0-9_.-]+:[^@/\s"']+@[A-Za-z0-9_.-]+'''
+tags = ["dsn", "database", "custom", "critical"]
+
+# --- Regla 3: variable PASSWORD/CONTRASEÑA asignada a literal en scripts ---
+[[rules]]
+id = "inmo-velar-hardcoded-password-var"
+description = "Asignación literal a una variable PASSWORD/CONTRASENA (típico en scripts de diagnóstico/test)"
+regex = '''(?i)\b(PASSWORD|CONTRASENA|CONTRASE\xC3\x91A)\s*=\s*["'][^"'\n]{4,}["']'''
+tags = ["password", "custom", "high"]
+
+[rules.allowlist]
+description = "Placeholders conocidos que no son secretos reales"
+regexes = [
+  '''(?i)change_me''',
+  '''(?i)your[-_]?password''',
+  '''(?i)app_password''',
+]
+
+# --- Regla 4: credenciales hardcodeadas en llamadas .fill() de Playwright/Selenium ---
+[[rules]]
+id = "inmo-velar-playwright-hardcoded-login"
+description = "page.fill(...) / locator(...).fill(...) con credencial literal (usuario o password)"
+regex = '''\.fill\(\s*["'][^"']*(?:password|username|user|correo|email)[^"']*["']\s*,\s*["'][^"']{3,}["']\s*\)'''
+tags = ["password", "test", "custom", "high"]
+
+# --- Regla 5: denylist de secretos YA CONFIRMADOS como filtrados en este repo ---
+# IMPORTANTE: esta regla es transitoria. Elimínala del archivo una vez que
+# las contraseñas hayan sido rotadas y purgadas del historial (ver
+# AUDIT_SECRETS_CREDENCIALES_HARDCODEADAS.md), porque después de rotarlas
+# ya no representan un secreto vigente y solo generaría ruido.
+[[rules]]
+id = "inmo-velar-known-leaked-literals-TEMPORAL"
+description = "Coincidencia exacta con secretos ya confirmados como filtrados (7323 / admin0123 / velarjoan2026). Quitar esta regla tras rotar y purgar el historial."
+regex = '''\b(7323|admin0123|velarjoan2026)\b'''
+tags = ["known-leak", "denylist", "custom", "temporal"]
+
+[rules.allowlist]
+description = "Excluir el propio informe de auditoría y este archivo de config, que citan los valores a modo de evidencia/documentación"
+paths = [
+  '''AUDIT_SECRETS_CREDENCIALES_HARDCODEADAS\.md$''',
+  '''\.gitleaks\.toml$''',
+]
+
+# --- Allowlist global ---
+[allowlist]
+description = "Rutas donde valores de ejemplo/placeholder son intencionales"
+paths = [
+  '''\.env\.example$''',
+]
