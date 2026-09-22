@@ -30,8 +30,8 @@ def verify_bonus():
     PORCENTAJE = 500 # 5%
     BONUS = 200000 # 200k Bonus
     
-    print(f"Scenario: Canon 1M, Comm 5% (50k), Bonus 200k")
-    print(f"Expected Net: 50k + 200k = 250k")
+    print("Scenario: Canon 1M, Comm 5% (50k), Bonus 200k")
+    print("Expected Net: 50k + 200k = 250k")
     
     # 1. Clean up potential previous run
     print("Cleaning up...")

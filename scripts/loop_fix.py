@@ -2,7 +2,6 @@
 Auto-fix loop para errores de indentación.
 Ejecuta compileall y auto_fix_indentation en bucle hasta que no haya errores.
 """
-import os
 import subprocess
 import re
 import sys

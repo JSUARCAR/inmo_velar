@@ -107,12 +107,7 @@ def auditoria_content() -> rx.Component:
         rx.heading("Registro de Auditoría", size="6"),
         rx.text("Seguimiento de cambios y acciones en el sistema.", color="gray"),
         rx.divider(),
-        filters_bar(),
-        rx.cond(
-            AuditoriaState.is_loading,
-            rx.center(rx.spinner()),
-            auditoria_table(),
-        ),
+        rx.tabs.root(rx.tabs.list(rx.tabs.trigger('Sistema', value='tab1'), rx.tabs.trigger('Elegibilidad', value='tab2')), rx.tabs.content(rx.vstack(filters_bar(), rx.cond(AuditoriaState.is_loading, rx.center(rx.spinner()), auditoria_table())), value='tab1'), rx.tabs.content(auditoria_elegibilidad_ui(), value='tab2'), defaultValue='tab1', width='100%'),
         spacing="5",
         padding="6",
         width="100%",
@@ -127,3 +122,58 @@ def auditoria_content() -> rx.Component:
 )
 def auditoria_page() -> rx.Component:
     return dashboard_layout(auditoria_content())
+
+
+def auditoria_elegibilidad_ui() -> rx.Component:
+    return rx.vstack(
+        rx.heading("Auditora de Elegibilidad (Histrica)", size="5"),
+        rx.text("Reporte de solo lectura de liquidaciones generadas bajo la regla anterior.", color="gray"),
+        rx.hstack(
+            neuro_input(
+                placeholder="Perodo (ej: 2024-05) o en blanco para todos",
+                on_change=lambda val: AuditoriaState.set_periodo_elegibilidad(val),
+                width=["100%", "300px"]
+            ),
+            neuro_button("Ejecutar Auditora", on_click=AuditoriaState.auditar_elegibilidad),
+        ),
+        rx.cond(AuditoriaState.criterios_reconstruccion != "", rx.text(f"Criterios: {AuditoriaState.criterios_reconstruccion}", size="2", color="green")),
+        rx.cond(
+            AuditoriaState.is_loading,
+            rx.spinner(),
+            rx.box(
+                rx.table.root(
+                    rx.table.header(
+                        rx.table.row(
+                            rx.table.column_header_cell("ID Liq"),
+                            rx.table.column_header_cell("Perodo"),
+                            rx.table.column_header_cell("Generada"),
+                            rx.table.column_header_cell("Propiedad"),
+                            rx.table.column_header_cell("Propietario"),
+                            rx.table.column_header_cell("Motivo"),
+                        )
+                    ),
+                    rx.table.body(
+                        rx.foreach(
+                            AuditoriaState.no_elegibles,
+                            lambda liq: rx.table.row(
+                                rx.table.cell(liq["id_liquidacion"]),
+                                rx.table.cell(liq["periodo"]),
+                                rx.table.cell(liq["fecha_generacion"]),
+                                rx.table.cell(liq["direccion_propiedad"]),
+                                rx.table.cell(liq["nombre_propietario"]),
+                                rx.table.cell(liq["motivo"]),
+                            )
+                        )
+                    ),
+                    width="100%",
+                    variant="surface",
+                    size="3",
+                ),
+                width="100%",
+                overflow_x="auto"
+            )
+        ),
+        width="100%",
+        spacing="4"
+    )
+

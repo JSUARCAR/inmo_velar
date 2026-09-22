@@ -10,7 +10,6 @@ import pytest
 from src.aplicacion.decorators.estrategia_idempotencia import (
     DatabaseIdempotencyStrategy,
     _build_full_key,
-    _resolve_usuario_id,
     _serialize,
     _MAX_POLL_ATTEMPTS,
 )

@@ -2,7 +2,6 @@
 Tests unitarios para los formateadores de PropiedadHorizontalState.
 """
 
-import pytest
 from datetime import date, time
 
 

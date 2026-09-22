@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from src.presentacion_reflex.state.dashboard_state import DashboardState
 import time
 

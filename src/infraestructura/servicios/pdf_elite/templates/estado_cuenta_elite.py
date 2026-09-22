@@ -329,7 +329,7 @@ class EstadoCuentaElite(BaseDocumentTemplate):
         """Agrega resumen financiero"""
         self.add_heading("RESUMEN FINANCIERO", level=3)
 
-        from reportlab.platypus import Paragraph, Spacer
+        from reportlab.platypus import Paragraph
         from reportlab.lib.styles import ParagraphStyle
         from reportlab.lib.enums import TA_LEFT
         from reportlab.lib import colors

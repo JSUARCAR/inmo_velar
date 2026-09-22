@@ -4,7 +4,6 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.infraestructura.persistencia.database import db_manager
-from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
 
 def update_config():
     print("=== Actualizando Configuración (Retry) ===")

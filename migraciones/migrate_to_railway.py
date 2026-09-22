@@ -228,8 +228,8 @@ def main():
         # For manual table, assume id
         if table == "configuracion_sistema" and table not in tables:
              try:
-                pc.execute(f"SELECT setval('configuracion_sistema_id_seq', COALESCE((SELECT MAX(id) FROM configuracion_sistema), 1))")
-                print(f"  SEQ configuracion_sistema.id")
+                pc.execute("SELECT setval('configuracion_sistema_id_seq', COALESCE((SELECT MAX(id) FROM configuracion_sistema), 1))")
+                print("  SEQ configuracion_sistema.id")
              except: pass
              continue
 

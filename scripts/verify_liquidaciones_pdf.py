@@ -36,7 +36,7 @@ try:
     datos = servicio.obtener_datos_liquidacion_para_pdf(1)
     
     if datos:
-        print(f"   ✅ Data retrieved successfully")
+        print("   ✅ Data retrieved successfully")
         print(f"   - Propietario: {datos.get('propietario')}")
         print(f"   - Propiedad: {datos.get('propiedad')}")
         print(f"   - Período: {datos.get('periodo')}")

@@ -1,7 +1,6 @@
 
 import sys
 import os
-import sqlite3
 
 # Add src to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))

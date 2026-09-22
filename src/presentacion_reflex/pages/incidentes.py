@@ -8,11 +8,6 @@ from src.presentacion_reflex.state.incidentes_state import (
     IncidenteDict,
 )
 
-from src.presentacion_reflex.components.neuro_elements import (
-    neuro_floating_input,
-    neuro_floating_select,
-    neuro_button,
-)
 from src.presentacion_reflex.components.tablas import header_cell_sortable
 from src.presentacion_reflex.components.shared.advanced_filter_bar import advanced_filter_bar
 from src.presentacion_reflex import styles

@@ -1,6 +1,5 @@
 import os
 import psycopg2
-from psycopg2 import sql
 
 # Connect to database
 conn = psycopg2.connect(

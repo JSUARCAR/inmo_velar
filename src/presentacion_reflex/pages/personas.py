@@ -8,8 +8,6 @@ from src.presentacion_reflex.components.personas.person_card import person_card
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.personas_state import PersonasState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_floating_input,
-    neuro_floating_select,
     neuro_button,
     neuro_spinner,
     neuro_badge,
@@ -17,9 +15,6 @@ from src.presentacion_reflex.components.neuro_elements import (
 )
 from src.presentacion_reflex.components.shared.advanced_filter_bar import advanced_filter_bar
 from src.presentacion_reflex.components.shared.tooltips_text import (
-    TOOLTIP_PERSONAS_FILTRO_NOMBRE,
-    TOOLTIP_PERSONAS_FILTRO_DOCUMENTO,
-    TOOLTIP_PERSONAS_FILTRO_ROL,
     TOOLTIP_PERSONAS_FILTRO_ESTADO,
 )
 from src.presentacion_reflex import styles

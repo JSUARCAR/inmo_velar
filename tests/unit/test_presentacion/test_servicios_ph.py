@@ -3,7 +3,7 @@ Tests unitarios para servicios de Propiedad Horizontal.
 """
 
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 
 class TestServicioAsistenciasAsambleas:

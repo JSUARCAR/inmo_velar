@@ -151,7 +151,7 @@ if __name__ == '__main__':
         if DB_MODE == 'postgresql':
             cursor.execute("SELECT version();")
             version = cursor.fetchone()[0]
-            print(f"[OK] Conectado a PostgreSQL:")
+            print("[OK] Conectado a PostgreSQL:")
             print(f"     {version}")
         else:
             cursor.execute("SELECT sqlite_version();")

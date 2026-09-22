@@ -24,6 +24,8 @@ from src.dominio.interfaces.repositorio_propiedad import IRepositorioPropiedad
 # Pero para ser estrictos con Fase 3, el servicio financiero debería recibir interfaces.
 
 from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
+from src.dominio.excepciones.excepciones_liquidacion import LiquidacionNoElegibleError
+from src.dominio.constantes.estados_contrato import EstadoContrato
 
 
 class ServicioFinanciero:
@@ -165,6 +167,13 @@ class ServicioFinanciero:
         if not contrato:
             raise ValueError(f"No existe el contrato de mandato con ID {id_contrato_m}")
 
+        if not EstadoContrato(contrato.estado_contrato_m).es_activo:
+            raise LiquidacionNoElegibleError("sin contrato de mandato activo")
+
+        arriendo_activo = self.repo_arriendo.obtener_activo_por_propiedad(contrato.id_propiedad)
+        if not arriendo_activo:
+            raise LiquidacionNoElegibleError("sin contrato de arrendamiento activo en esta propiedad")
+
         existente = self.repo_liquidacion.obtener_por_contrato_y_periodo(
             id_contrato_m, periodo
         )
@@ -279,11 +288,17 @@ class ServicioFinanciero:
         with db_manager.obtener_conexion() as conn:
             cursor = db_manager.get_dict_cursor(conn)
             query = """
-            SELECT ID_CONTRATO_M 
-            FROM CONTRATOS_MANDATOS
-            WHERE ID_PROPIETARIO = %s AND ESTADO_CONTRATO_M = 'ACTIVO'
+            SELECT cm.ID_CONTRATO_M,
+                   p.DIRECCION_PROPIEDAD,
+                   EXISTS (
+                       SELECT 1 FROM CONTRATOS_ARRENDAMIENTOS ca
+                       WHERE ca.ID_PROPIEDAD = cm.ID_PROPIEDAD AND ca.ESTADO_CONTRATO_A = %s
+                   ) as tiene_arriendo
+            FROM CONTRATOS_MANDATOS cm
+            JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+            WHERE cm.ID_PROPIETARIO = %s AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
             """
-            cursor.execute(query, (id_propietario,))
+            cursor.execute(query, (EstadoContrato.ACTIVO.value, id_propietario))
             contratos = cursor.fetchall()
 
         if not contratos:
@@ -292,9 +307,19 @@ class ServicioFinanciero:
         generadas = 0
         omitidas = 0
         errores = 0
+        no_elegibles = 0
+        detalles_no_elegibles = []
 
         for row in contratos:
             id_contrato_m = row["ID_CONTRATO_M"]
+            direccion = row["DIRECCION_PROPIEDAD"]
+            
+            # Clasificar los ACTIVO sin arrendamiento como no_elegibles tempranamente
+            if not row["tiene_arriendo"]:
+                no_elegibles += 1
+                detalles_no_elegibles.append(f"{direccion}: sin contrato de arrendamiento activo en esta propiedad")
+                continue
+
             datos_adicionales = {}
             if (
                 datos_adicionales_por_contrato
@@ -310,9 +335,14 @@ class ServicioFinanciero:
                     usuario_sistema=usuario_sistema,
                 )
                 generadas += 1
+            except LiquidacionNoElegibleError as e:
+                no_elegibles += 1
+                detalles_no_elegibles.append(f"{direccion}: {e.motivo}")
             except ValueError as e:
                 # Si el error es porque ya existe, se cuenta como omitida
-                if f"Ya existe una liquidación para el período {periodo}" in str(e):
+                if f"Ya existe una liquidacin para el perodo {periodo}" in str(e).replace('ó', 'o').replace('á', 'a'):
+                    omitidas += 1
+                elif f"Ya existe una liquidación para el período {periodo}" in str(e):
                     omitidas += 1
                 else:
                     errores += 1
@@ -321,9 +351,11 @@ class ServicioFinanciero:
                 errores += 1
 
         return ResultadoGeneracionPropietario(
-            generadas=generadas,
-            omitidas=omitidas,
-            errores=errores
+            generadas=generadas, 
+            omitidas=omitidas, 
+            errores=errores, 
+            no_elegibles=no_elegibles,
+            detalles_no_elegibles=detalles_no_elegibles
         )
 
     def listar_todas_liquidaciones(self) -> List[Dict[str, Any]]:

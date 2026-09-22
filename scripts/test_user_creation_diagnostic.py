@@ -44,7 +44,7 @@ def test_crear_usuario():
             creador="admin"
         )
         
-        print(f"✓ Usuario creado exitosamente!")
+        print("✓ Usuario creado exitosamente!")
         print(f"  ID: {usuario.id_usuario}")
         print(f"  Nombre: {usuario.nombre_usuario}")
         print(f"  Rol: {usuario.rol}")
@@ -100,7 +100,7 @@ def test_crear_usuario():
         return True
         
     except Exception as e:
-        print(f"\n✗ ERROR DETECTADO:")
+        print("\n✗ ERROR DETECTADO:")
         print(f"  Tipo: {type(e).__name__}")
         print(f"  Mensaje: {str(e)}")
         

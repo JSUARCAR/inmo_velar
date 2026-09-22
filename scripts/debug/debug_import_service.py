@@ -1,6 +1,5 @@
 
 import sys
-import os
 from pathlib import Path
 
 # Add root to path

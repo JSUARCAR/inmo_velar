@@ -1,8 +1,6 @@
 import unittest
 import os
-import shutil
 import sqlite3
-from datetime import datetime
 from src.dominio.entidades.documento import Documento
 from src.infraestructura.repositorios.repositorio_documento import RepositorioDocumento
 from src.aplicacion.servicios.servicio_documental import ServicioDocumental

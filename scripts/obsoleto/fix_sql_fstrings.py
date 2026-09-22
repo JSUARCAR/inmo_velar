@@ -4,7 +4,6 @@ Script de Corrección Sintáctica para Repositorios
 2. Asegura que cursor.lastrowid sea reemplazado.
 3. Verifica sintaxis básica.
 """
-import os
 import re
 from pathlib import Path
 

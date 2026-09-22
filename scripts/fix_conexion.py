@@ -1,7 +1,6 @@
 """
 Script para arreglar get_connection -> obtener_conexion en todos los repositorios
 """
-import os
 from pathlib import Path
 
 # Directorios a procesar

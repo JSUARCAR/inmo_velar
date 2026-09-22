@@ -1,6 +1,4 @@
-import pytest
 from unittest.mock import MagicMock
-from src.dominio.entidades.documento import Documento
 from src.infraestructura.repositorios.repositorio_documento import RepositorioDocumento
 from src.infraestructura.persistencia.database import DatabaseManager
 

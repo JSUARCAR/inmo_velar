@@ -7,7 +7,6 @@ Valida que:
 - El servicio propaga filtro de estado a SQL.
 - La UI no tiene rx.text anidados (errores de hidratación).
 """
-import ast
 import re
 import unittest
 from pathlib import Path

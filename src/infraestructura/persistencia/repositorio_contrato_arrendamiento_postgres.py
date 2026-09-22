@@ -479,6 +479,7 @@ class RepositorioContratoArrendamientoPostgres:
             ),
             deposito=(row_dict.get("deposito") or row_dict.get("DEPOSITO")),
             fecha_pago=(row_dict.get("fecha_pago") or row_dict.get("FECHA_PAGO")),
+            grupo_operativo=int(gv("GRUPO_OPERATIVO") or 0),
             estado_contrato_a=self._map_estado(
                 row_dict.get("estado_contrato_a") or row_dict.get("ESTADO_CONTRATO_A")
             ),

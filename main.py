@@ -5,9 +5,6 @@ Punto de entrada principal para la aplicación web.
 
 import signal
 import sys
-import reflex as rx
-from pathlib import Path
-from datetime import datetime
 
 # Importar la app de Reflex
 from inmobiliaria_velar.inmobiliaria_velar import app

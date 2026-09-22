@@ -5,7 +5,6 @@ Verifica la lógica de negocio del servicio de personas incluyendo
 gestión de roles múltiples, validaciones, filtros y operaciones CRUD completas.
 """
 import pytest
-import sqlite3
 
 from tests.integration.test_database_manager import TestDatabaseManager
 from src.aplicacion.servicios.servicio_personas import ServicioPersonas

@@ -79,7 +79,7 @@ def ejecutar_migracion():
             return False
 
         table_sql = table_result[0]
-        print(f"   CREATE TABLE actual (primeros 200 chars):")
+        print("   CREATE TABLE actual (primeros 200 chars):")
         print(f"   {table_sql[:200]}...")
 
         print("\n3. Verificando valores actuales en ESTADO_RECAUDO...")

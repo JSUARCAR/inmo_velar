@@ -1,5 +1,4 @@
 import os
-import sys
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
@@ -136,7 +135,7 @@ def run_migration():
             rows = src_cursor.fetchall()
             
             if not rows:
-                print(f"     -> Empty.")
+                print("     -> Empty.")
                 continue
                 
             columns = rows[0].keys()

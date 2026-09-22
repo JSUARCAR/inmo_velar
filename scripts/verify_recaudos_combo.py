@@ -20,7 +20,7 @@ def verify():
     # 2. Llamar al nuevo método
     try:
         contratos = servicio.listar_arrendamientos_activos()
-        print(f"✅ Método listar_arrendamientos_activos ejecutado correctamente.")
+        print("✅ Método listar_arrendamientos_activos ejecutado correctamente.")
         print(f"📊 Se encontraron {len(contratos)} contratos activos.")
     except AttributeError:
         print("❌ Error: El método listar_arrendamientos_activos no existe en ServicioContratos.")

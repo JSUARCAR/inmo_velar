@@ -36,7 +36,7 @@ def run_migrations():
     import psycopg2
     
     db_url = get_database_url()
-    logger.info(f"Conectando a la base de datos...")
+    logger.info("Conectando a la base de datos...")
     
     try:
         conn = psycopg2.connect(db_url)
@@ -235,7 +235,7 @@ def run_migrations():
         cursor.close()
         conn.close()
         
-        logger.info(f"\n--- Resumen ---")
+        logger.info("\n--- Resumen ---")
         logger.info(f"Migraciones exitosas: {successful}")
         logger.info(f"Migraciones fallidas: {failed}")
         

@@ -29,7 +29,7 @@ def insertar_observaciones():
             FROM LIQUIDACIONES WHERE ID_LIQUIDACION = 572
         """)
         liq = cursor.fetchone()
-        print(f"\nEstado ANTES:")
+        print("\nEstado ANTES:")
         print(f"  ID: {liq[0]}")
         print(f"  OBSERVACIONES: '{liq[1]}'")
         print(f"  VALOR_INCIDENTES: {liq[2]}")
@@ -61,7 +61,7 @@ def insertar_observaciones():
             FROM LIQUIDACIONES WHERE ID_LIQUIDACION = 572
         """)
         liq = cursor.fetchone()
-        print(f"\nEstado DESPUES:")
+        print("\nEstado DESPUES:")
         print(f"  ID: {liq[0]}")
         print(f"  OBSERVACIONES: '{liq[1]}'")
         print(f"  VALOR_INCIDENTES: {liq[2]}")

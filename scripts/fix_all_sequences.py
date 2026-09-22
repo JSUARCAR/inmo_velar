@@ -66,7 +66,7 @@ def fix_all_sequences():
             conn.commit()
             print("\nAll Done.")
 
-    except Exception as e:
+    except Exception:
         print("Global Error:")
         traceback.print_exc()
 

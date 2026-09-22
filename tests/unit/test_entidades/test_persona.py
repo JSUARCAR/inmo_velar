@@ -1,8 +1,6 @@
 """
 Tests unitarios para la entidad Persona.
 """
-import pytest
-from datetime import datetime
 from src.dominio.entidades.persona import Persona
 
 

@@ -1,5 +1,6 @@
 import pydantic
 from typing import Any, Dict, List, Optional
+from src.dominio.constantes.estados_contrato import EstadoContrato
 
 import reflex as rx
 
@@ -219,22 +220,24 @@ class LiquidacionesState(DocumentosStateMixin):
             periodo = (today - relativedelta(months=i)).strftime("%Y-%m")
             periodos.append(periodo)
 
-        # Cargar propiedades (solo con contratos de mandato activos)
+        # Cargar propiedades (solo con contratos de mandato activos y arrendamiento activo)
         query_propiedades = """
         SELECT DISTINCT p.ID_PROPIEDAD, p.MATRICULA_INMOBILIARIA, p.DIRECCION_PROPIEDAD
         FROM PROPIEDADES p
         INNER JOIN CONTRATOS_MANDATOS cm ON p.ID_PROPIEDAD = cm.ID_PROPIEDAD
-        WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO'
+        INNER JOIN CONTRATOS_ARRENDAMIENTOS ca ON p.ID_PROPIEDAD = ca.ID_PROPIEDAD
+        WHERE cm.ESTADO_CONTRATO_M = %s AND ca.ESTADO_CONTRATO_A = %s
         ORDER BY p.DIRECCION_PROPIEDAD
         """
 
-        # Cargar propietarios (con contratos activos)
+        # Cargar propietarios (con contratos activos de mandato y arrendamiento)
         query_propietarios = """
         SELECT DISTINCT prop.ID_PROPIETARIO, per.ID_PERSONA, per.NOMBRE_COMPLETO, per.NUMERO_DOCUMENTO
         FROM PERSONAS per
         INNER JOIN PROPIETARIOS prop ON per.ID_PERSONA = prop.ID_PERSONA
         INNER JOIN CONTRATOS_MANDATOS cm ON prop.ID_PROPIETARIO = cm.ID_PROPIETARIO
-        WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO'
+        INNER JOIN CONTRATOS_ARRENDAMIENTOS ca ON cm.ID_PROPIEDAD = ca.ID_PROPIEDAD
+        WHERE cm.ESTADO_CONTRATO_M = %s AND ca.ESTADO_CONTRATO_A = %s
         ORDER BY per.NOMBRE_COMPLETO
         """
 
@@ -242,7 +245,7 @@ class LiquidacionesState(DocumentosStateMixin):
             cursor = db_manager.get_dict_cursor(conn)
 
             # Propiedades
-            cursor.execute(query_propiedades)
+            cursor.execute(query_propiedades, (EstadoContrato.ACTIVO.value, EstadoContrato.ACTIVO.value))
             rows_propiedades = cursor.fetchall()
             propiedades = [
                 {
@@ -256,7 +259,7 @@ class LiquidacionesState(DocumentosStateMixin):
             ]
 
             # Propietarios
-            cursor.execute(query_propietarios)
+            cursor.execute(query_propietarios, (EstadoContrato.ACTIVO.value, EstadoContrato.ACTIVO.value))
             rows_propietarios = cursor.fetchall()
             propietarios = [
                 {
@@ -294,7 +297,7 @@ class LiquidacionesState(DocumentosStateMixin):
             # Obtener datos de BD (sin bloquear el hilo principal)
             with db_manager.obtener_conexion() as conn:
                 cursor = db_manager.get_dict_cursor(conn)
-                cursor.execute(query)
+                cursor.execute(query, (EstadoContrato.ACTIVO.value, EstadoContrato.ACTIVO.value))
                 rows = cursor.fetchall()
 
             # Formatear fuera del lock para eficiencia
@@ -648,12 +651,13 @@ class LiquidacionesState(DocumentosStateMixin):
                     COALESCE(per.NOMBRE_COMPLETO, 'PROPIETARIO DESCONOCIDO') as NOMBRE_PROPIETARIO
                 FROM CONTRATOS_MANDATOS cm
                 JOIN PROPIEDADES p ON cm.ID_PROPIEDAD = p.ID_PROPIEDAD
+                INNER JOIN CONTRATOS_ARRENDAMIENTOS ca ON cm.ID_PROPIEDAD = ca.ID_PROPIEDAD
                 LEFT JOIN PROPIETARIOS prop ON cm.ID_PROPIETARIO = prop.ID_PROPIETARIO
                 LEFT JOIN PERSONAS per ON prop.ID_PERSONA = per.ID_PERSONA
-                WHERE cm.ID_PROPIEDAD = {placeholder} AND cm.ESTADO_CONTRATO_M = 'ACTIVO'
+                WHERE cm.ID_PROPIEDAD = {placeholder} AND cm.ESTADO_CONTRATO_M = {placeholder} AND ca.ESTADO_CONTRATO_A = {placeholder}
                 LIMIT 1
                 """
-                cursor.execute(query_mandato, (id_propiedad,))
+                cursor.execute(query_mandato, (id_propiedad, EstadoContrato.ACTIVO.value, EstadoContrato.ACTIVO.value))
                 mandato = cursor.fetchone()
 
                 # 2. Buscar Valor Administración de la Propiedad (Backup si no estuviera en join)
@@ -1085,9 +1089,10 @@ class LiquidacionesState(DocumentosStateMixin):
                 SELECT DISTINCT prop.ID_PROPIETARIO
                 FROM PROPIETARIOS prop
                 INNER JOIN CONTRATOS_MANDATOS cm ON prop.ID_PROPIETARIO = cm.ID_PROPIETARIO
-                WHERE cm.ESTADO_CONTRATO_M = 'ACTIVO'
+                INNER JOIN CONTRATOS_ARRENDAMIENTOS ca ON cm.ID_PROPIEDAD = ca.ID_PROPIEDAD
+                WHERE cm.ESTADO_CONTRATO_M = %s AND ca.ESTADO_CONTRATO_A = %s
                 """
-                cursor.execute(query)
+                cursor.execute(query, (EstadoContrato.ACTIVO.value, EstadoContrato.ACTIVO.value))
                 rows = cursor.fetchall()
                 id_propietarios_activos = [row["ID_PROPIETARIO"] for row in rows]
 
@@ -1099,8 +1104,10 @@ class LiquidacionesState(DocumentosStateMixin):
             total_generadas = 0
             total_omitidas = 0
             total_errores = 0
+            total_no_elegibles = 0
+            detalles_no_elegibles_list = []
 
-            # Generar liquidación consolidada para cada propietario
+            # Generar liquidacin consolidada para cada propietario
             import logging
             for id_propietario in id_propietarios_activos:
                 try:
@@ -1113,6 +1120,9 @@ class LiquidacionesState(DocumentosStateMixin):
                     total_generadas += resultado.generadas
                     total_omitidas += resultado.omitidas
                     total_errores += resultado.errores
+                    total_no_elegibles += getattr(resultado, 'no_elegibles', 0)
+                    if getattr(resultado, 'detalles_no_elegibles', None):
+                        detalles_no_elegibles_list.extend(resultado.detalles_no_elegibles)
                 except Exception as e:
                     logging.error(
                         f"Error generando liquidacion para propietario ID={id_propietario}: {e}"
@@ -1140,14 +1150,19 @@ class LiquidacionesState(DocumentosStateMixin):
                 generadas = total_generadas if 'total_generadas' in locals() else 0
                 omitidas = total_omitidas if 'total_omitidas' in locals() else 0
                 errores = total_errores if 'total_errores' in locals() else 0
+                no_elegibles = total_no_elegibles if 'total_no_elegibles' in locals() else 0
+                detalles = detalles_no_elegibles_list if 'detalles_no_elegibles_list' in locals() else []
 
             if not error_msg:
+                msg = f"{generadas} generadas / {omitidas} ya existan / {no_elegibles} no elegibles / {errores} con error"
+                if detalles:
+                    msg += " (Motivos: " + ", ".join(detalles[:3]) + ("..." if len(detalles) > 3 else "") + ")"
                 if errores == 0 and generadas == 0 and omitidas > 0:
-                    yield rx.toast.info(f"0 generadas, {omitidas} ya existían", position="bottom-right")
+                    yield rx.toast.info(msg, position="bottom-right")
                 elif errores == 0:
-                    yield rx.toast.success(f"{generadas} generadas, {omitidas} ya existían", position="bottom-right")
+                    yield rx.toast.success(msg, position="bottom-right")
                 else:
-                    yield rx.toast.warning(f"{generadas} generadas, {omitidas} ya existían, {errores} con error", position="bottom-right")
+                    yield rx.toast.warning(msg, position="bottom-right")
             else:
                 yield rx.toast.error(error_msg, position="bottom-right")
 

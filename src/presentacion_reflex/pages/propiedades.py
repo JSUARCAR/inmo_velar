@@ -14,8 +14,6 @@ from src.presentacion_reflex.components.propiedades.property_card import (
 from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.propiedades_state import PropiedadesState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_floating_input,
-    neuro_floating_select,
     neuro_button,
     neuro_switch,
     neuro_spinner,

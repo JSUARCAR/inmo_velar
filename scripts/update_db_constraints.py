@@ -1,6 +1,5 @@
 
 import sqlite3
-import os
 
 DB_PATH = r"c:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-FLET\DB_Inmo_Velar.db"
 

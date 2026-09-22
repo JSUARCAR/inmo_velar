@@ -8,9 +8,8 @@ de renovación, y que IDEMPOTENCY_KEYS transita processing -> completed.
 
 from datetime import datetime
 from typing import Any, Dict, Optional
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
-import pytest
 
 from src.aplicacion.decorators.idempotent import idempotent
 from src.aplicacion.servicios.servicio_contrato_mandato import ServicioContratoMandato
@@ -181,6 +180,12 @@ class TestServicioRealMandato:
         repo_mandato = Mock()
         repo_propiedad = Mock()
         repo_renovacion = Mock()
+
+        # FR-006/FR-008: renovar_mandato abre db.transaccion(); el mock debe
+        # soportar el protocolo de context manager (Spec 075).
+        repo_mandato.db = MagicMock()
+        repo_mandato.db.transaccion.return_value.__enter__ = MagicMock()
+        repo_mandato.db.transaccion.return_value.__exit__ = MagicMock()
 
         mandato = _mandato_activo()
         repo_mandato.obtener_por_id.return_value = mandato

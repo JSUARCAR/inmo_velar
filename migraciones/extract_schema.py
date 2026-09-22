@@ -127,9 +127,9 @@ if __name__ == '__main__':
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(schema, f, indent=2, ensure_ascii=False)
     
-    print(f"\n[OK] Esquema extraido exitosamente!")
+    print("\n[OK] Esquema extraido exitosamente!")
     print(f"Guardado en: {output_path}")
-    print(f"\nResumen:")
+    print("\nResumen:")
     print(f"   - Tablas: {len(schema['tables'])}")
     print(f"   - Vistas: {len(schema['views'])}")
     print(f"   - Triggers: {len(schema['triggers'])}")

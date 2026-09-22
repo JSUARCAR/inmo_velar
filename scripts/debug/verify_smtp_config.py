@@ -1,5 +1,3 @@
-import sys
-import os
 import smtplib
 from src.infraestructura.configuracion.settings import obtener_configuracion
 
@@ -11,7 +9,7 @@ def verificar_configuracion():
         user = config.smtp_user
         password = config.smtp_password
         
-        print(f"\n1. Analizando Variables Cargadas:")
+        print("\n1. Analizando Variables Cargadas:")
         print(f"   SMTP_USER:     '{user}' (Longitud: {len(user) if user else 0})")
         
         if password:

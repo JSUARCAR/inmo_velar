@@ -1,6 +1,4 @@
 
-import reflex as rx
-import time
 
 def main(page: ft.Page):
     page.title = "SnackBar Test"

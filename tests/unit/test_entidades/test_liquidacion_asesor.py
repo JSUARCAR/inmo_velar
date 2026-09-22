@@ -4,7 +4,6 @@ Verifica reglas de negocio y validaciones del dominio.
 """
 
 import pytest
-from datetime import datetime
 from src.dominio.entidades.liquidacion_asesor import LiquidacionAsesor
 
 

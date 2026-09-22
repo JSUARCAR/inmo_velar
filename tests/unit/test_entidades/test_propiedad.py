@@ -1,8 +1,6 @@
 """
 Tests unitarios para la entidad Propiedad.
 """
-import pytest
-from datetime import datetime
 from src.dominio.entidades.propiedad import Propiedad
 
 

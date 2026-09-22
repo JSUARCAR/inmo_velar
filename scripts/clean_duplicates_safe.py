@@ -1,5 +1,4 @@
 import psycopg2
-from psycopg2 import sql
 import os
 from dotenv import load_dotenv
 
@@ -114,7 +113,7 @@ try:
     eliminados = cursor.rowcount
     
     # Paso 5: Recalcular totales en liquidaciones
-    print(f"\n[PASO 4] Recalculando totales de liquidaciones...")
+    print("\n[PASO 4] Recalculando totales de liquidaciones...")
     
     cursor.execute("""
         UPDATE LIQUIDACIONES_ASESORES la
@@ -148,7 +147,7 @@ try:
     print(f"\n   Descuentos eliminados: {eliminados:,}")
     print(f"   Descuentos restantes: {final_count:,}")
     print(f"   Liquidaciones actualizadas: {actualizados:,}")
-    print(f"\n✓ Los totales de descuentos y valores netos han sido recalculados.\n")
+    print("\n✓ Los totales de descuentos y valores netos han sido recalculados.\n")
     
 except Exception as e:
     print(f"\n❌ ERROR: {e}")

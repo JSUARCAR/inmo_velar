@@ -1,5 +1,4 @@
 
-import os
 
 file_path = "task.md"
 new_content = """

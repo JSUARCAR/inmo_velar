@@ -232,7 +232,7 @@ def test_stress(workers: int = 50):
     fallidos = [r for r in results if not r[1]]
     unique_ids = set(r[0] for r in exitosos if r[0] > 0)
 
-    print(f"\n--- RESULTADOS ---")
+    print("\n--- RESULTADOS ---")
     print(f"Duración: {duration:.2f}s")
     print(f"Totales: {len(results)} | OK: {len(exitosos)} | FAIL: {len(fallidos)}")
     print(f"IDs únicos: {len(unique_ids)}")

@@ -16,7 +16,6 @@ Fecha: 2026-01-08
 
 import sqlite3
 import psycopg2
-from psycopg2 import sql
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import json
 from pathlib import Path

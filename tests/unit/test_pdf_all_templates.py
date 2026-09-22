@@ -4,7 +4,6 @@ Verificación integral de todos los templates de PDF Elite.
 import sys
 import os
 from pathlib import Path
-from datetime import datetime
 
 # Añadir raíz del proyecto al path
 sys.path.insert(0, os.getcwd())

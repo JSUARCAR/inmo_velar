@@ -8,7 +8,6 @@ Fecha: 2026-01-18
 """
 
 import pytest
-from pathlib import Path
 
 
 def test_base_template_watermark():

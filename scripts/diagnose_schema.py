@@ -2,7 +2,6 @@
 Script de diagnóstico para inspeccionar tablas y esquemas en PostgreSQL.
 """
 import sys
-import os
 from pathlib import Path
 
 # Agregar directorio raíz

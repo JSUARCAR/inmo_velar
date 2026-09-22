@@ -42,7 +42,7 @@ try:
     actualizados = cursor.rowcount
     conn.commit()
     
-    print(f"\n✅ Recálculo completado exitosamente")
+    print("\n✅ Recálculo completado exitosamente")
     print(f"   Liquidaciones actualizadas: {actualizados:,}\n")
     
 except Exception as e:

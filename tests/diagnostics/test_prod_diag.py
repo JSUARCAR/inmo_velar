@@ -1,5 +1,4 @@
-import pytest
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page
 
 PROPIEDAD_INCIDENTES = "CONJ CIUDADELA COMFENALCO MZ H CS 29"
 

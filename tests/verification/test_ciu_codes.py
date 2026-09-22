@@ -2,7 +2,6 @@
 import sqlite3
 import unittest
 import sys
-import os
 from pathlib import Path
 
 # Add project root to path
@@ -11,7 +10,6 @@ sys.path.append(str(PROJECT_ROOT))
 
 # Imports after path setup
 from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
-from src.infraestructura.persistencia.database import DatabaseManager
 
 class TestVerificacionCIU(unittest.TestCase):
     def setUp(self):

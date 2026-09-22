@@ -1,6 +1,6 @@
 
 import pytest
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 from src.dominio.entidades.recibo_publico import ReciboPublico
 
 class TestReciboPublico:

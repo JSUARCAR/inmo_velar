@@ -11,7 +11,6 @@ sys.path.append(os.getcwd())
 
 def test_manual_pdf_generation():
     from src.infraestructura.servicios.pdf_elite.templates.contrato_template import ContratoArrendamientoElite
-    from src.infraestructura.servicios.pdf_elite.core.config import config
     
     print("🚀 Iniciando prueba de generación PDF Elite (BaseDocTemplate)...")
     

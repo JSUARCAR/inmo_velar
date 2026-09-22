@@ -22,9 +22,9 @@ for db_path in db_files:
                 print(f"Table: {name}")
                 # Simple string check on CREATE statement
                 if "UPDATED_BY" in (sql or ""):
-                    print(f"  - Has UPDATED_BY in SQL definition")
+                    print("  - Has UPDATED_BY in SQL definition")
                 else:
-                    print(f"  - MISSING UPDATED_BY in SQL definition")
+                    print("  - MISSING UPDATED_BY in SQL definition")
         conn.close()
     except Exception as e:
         print(f"Error reading {db_path}: {e}")

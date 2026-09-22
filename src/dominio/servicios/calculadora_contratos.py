@@ -7,8 +7,40 @@ from datetime import date, datetime, timedelta
 import calendar
 from typing import Union, Tuple, Optional
 
+# Constantes de tramos operativos V2 (Spec §FR-001..FR-003, contracts/contratos-dominio.md)
+DIA_CORTE_GRUPO_1_INICIO: int = 28
+DIA_CORTE_GRUPO_1_FIN: int = 7
+DIA_CORTE_GRUPO_2_INICIO: int = 8
+DIA_CORTE_GRUPO_2_FIN: int = 17
+DIA_CORTE_GRUPO_3_INICIO: int = 18
+DIA_CORTE_GRUPO_3_FIN: int = 27
+
+DIA_PAGO_MANDATO_GRUPO_1: int = 10
+DIA_PAGO_MANDATO_GRUPO_2: int = 20
+DIA_PAGO_MANDATO_GRUPO_3: int = 30
+
 
 class CalculadoraContratos:
+    @staticmethod
+    def _parsear_fecha(fecha: Union[date, str]) -> date:
+        """
+        Parsea una fecha a objeto date de forma segura.
+
+        Args:
+            fecha: Objeto date o cadena ISO (YYYY-MM-DD).
+
+        Returns:
+            date: Objeto date parseado.
+
+        Raises:
+            ValueError: Si la cadena no corresponde a un formato válido.
+        """
+        if isinstance(fecha, date):
+            return fecha
+        if isinstance(fecha, str):
+            return datetime.strptime(fecha[:10], "%Y-%m-%d").date()
+        raise ValueError(f"Tipo de fecha no soportado: {type(fecha)}")
+
     @staticmethod
     def calcular_duracion_meses(
         fecha_inicio: Union[date, str], fecha_fin: Union[date, str]
@@ -100,22 +132,46 @@ class CalculadoraContratos:
         return dia
 
     @staticmethod
+    def calcular_grupo_operativo(fecha: Union[date, str]) -> int:
+        """
+        Retorna 1, 2 o 3 según el tramo V2 del día de la fecha (28-7, 8-17, 18-27).
+
+        Args:
+            fecha: Objeto date o string YYYY-MM-DD.
+
+        Returns:
+            int: 1, 2 o 3 según el tramo del día.
+        """
+        fecha_obj = CalculadoraContratos._parsear_fecha(fecha)
+        dia = fecha_obj.day
+        if dia >= DIA_CORTE_GRUPO_1_INICIO or dia <= DIA_CORTE_GRUPO_1_FIN:
+            return 1
+        elif DIA_CORTE_GRUPO_2_INICIO <= dia <= DIA_CORTE_GRUPO_2_FIN:
+            return 2
+        else:
+            return 3
+
+    @staticmethod
     def calcular_dia_pago_mandato(fecha_inicio: Union[date, str]) -> int:
         """
         Retorna el día de pago para mandato según el nuevo grupo operativo V2.
         G1 (Inicios 28 al 7) -> Paga el 10
         G2 (Inicios 8 al 17) -> Paga el 20
         G3 (Inicios 18 al 27) -> Paga el 30
+
+        Args:
+            fecha_inicio: Objeto date o string YYYY-MM-DD.
+
+        Returns:
+            int: 10 para Grupo 1, 20 para Grupo 2, 30 para Grupo 3.
         """
-        if isinstance(fecha_inicio, str):
-            fecha_inicio = datetime.strptime(fecha_inicio[:10], "%Y-%m-%d").date()
-        dia = fecha_inicio.day
-        if dia >= 28 or dia <= 7:
-            return 10
-        elif 8 <= dia <= 17:
-            return 20
-        else:  # 18 al 27
-            return 30
+        grupo = CalculadoraContratos.calcular_grupo_operativo(fecha_inicio)
+        if grupo == 1:
+            return DIA_PAGO_MANDATO_GRUPO_1
+        elif grupo == 2:
+            return DIA_PAGO_MANDATO_GRUPO_2
+        else:
+            return DIA_PAGO_MANDATO_GRUPO_3
 
     @staticmethod
     def calcular_ciclo_pago_mandato(fecha_inicio: Union[date, str]) -> Tuple[int, int]:
@@ -125,17 +181,17 @@ class CalculadoraContratos:
         - 28 al 7: Grupo 1, Paga 10
         - 8 al 17: Grupo 2, Paga 20
         - 18 al 27: Grupo 3, Paga 30
-        """
-        if isinstance(fecha_inicio, str):
-            fecha_inicio = datetime.strptime(fecha_inicio[:10], "%Y-%m-%d").date()
 
-        dia = fecha_inicio.day
-        if dia >= 28 or dia <= 7:
-            return 1, 10
-        elif 8 <= dia <= 17:
-            return 2, 20
-        else:  # 18 al 27
-            return 3, 30
+        Args:
+            fecha_inicio: Objeto date o string YYYY-MM-DD.
+
+        Returns:
+            Tuple[int, int]: (grupo_operativo, dia_pago_mandato).
+        """
+        return (
+            CalculadoraContratos.calcular_grupo_operativo(fecha_inicio),
+            CalculadoraContratos.calcular_dia_pago_mandato(fecha_inicio),
+        )
 
     @staticmethod
     def resolver_dia_pago_real(
@@ -182,11 +238,16 @@ class CalculadoraContratos:
     @staticmethod
     def calcular_dia_pago_arrendamiento(fecha_inicio: Union[date, str]) -> int:
         """
-        Arrendamiento: la fecha de pago es EXACTAMENTE el mismo día de la fecha de inicio.
+        Arrendamiento: la fecha de pago es EXACTAMENTE el mismo día de la fecha efectiva.
+
+        Args:
+            fecha_inicio: Objeto date o string YYYY-MM-DD.
+
+        Returns:
+            int: Día exacto de la fecha (1..31).
         """
-        if isinstance(fecha_inicio, str):
-            fecha_inicio = datetime.strptime(fecha_inicio[:10], "%Y-%m-%d").date()
-        return fecha_inicio.day
+        fecha_obj = CalculadoraContratos._parsear_fecha(fecha_inicio)
+        return fecha_obj.day
 
     @staticmethod
     def sumar_meses(fecha: Union[date, str], meses: int) -> date:

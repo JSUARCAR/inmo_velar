@@ -1,7 +1,6 @@
 
 import sys
 import os
-import sqlite3
 from datetime import datetime
 
 # Add src to path
@@ -9,7 +8,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from src.infraestructura.configuracion.settings import obtener_configuracion
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
-from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
 
 def test_terminacion_arriendo():
     try:

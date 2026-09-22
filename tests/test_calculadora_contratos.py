@@ -1,4 +1,3 @@
-import pytest
 from datetime import date
 from src.dominio.servicios.calculadora_contratos import CalculadoraContratos
 

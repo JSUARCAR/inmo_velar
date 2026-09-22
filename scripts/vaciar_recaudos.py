@@ -1,5 +1,4 @@
 import sys
-import os
 from pathlib import Path
 
 # Asegurar que el directorio raíz esté en el PYTHONPATH para importar migraciones.database_config

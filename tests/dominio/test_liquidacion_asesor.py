@@ -1,4 +1,3 @@
-import pytest
 from src.dominio.entidades.liquidacion_asesor import LiquidacionAsesor
 
 def test_calcular_comision_por_contrato():

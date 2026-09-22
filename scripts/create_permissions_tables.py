@@ -91,11 +91,11 @@ def try_create_tables():
             conn.autocommit = True
             cursor = conn.cursor()
             
-            print(f"   ✓ Conectado exitosamente")
+            print("   ✓ Conectado exitosamente")
             
             # Ejecutar CREATE TABLE
             cursor.execute(sql_create)
-            print(f"   ✓ Tablas creadas")
+            print("   ✓ Tablas creadas")
             
             # Verificar
             cursor.execute("""
@@ -121,9 +121,9 @@ def try_create_tables():
         except Exception as e:
             error_msg = str(e)
             if 'password' in error_msg.lower():
-                print(f"   ✗ Error de autenticación")
+                print("   ✗ Error de autenticación")
             elif 'permission' in error_msg.lower() or 'permiso' in error_msg.lower():
-                print(f"   ✗ Sin permisos CREATE")
+                print("   ✗ Sin permisos CREATE")
             else:
                 print(f"   ✗ Error: {error_msg[:100]}")
     

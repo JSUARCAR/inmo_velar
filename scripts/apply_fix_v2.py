@@ -25,7 +25,7 @@ except ImportError:
 SQL_FILE = "src/infraestructura/db/migrations/fix_audit_postgres_v2.sql"
 
 try:
-    print(f"Connecting to PostgreSQL...")
+    print("Connecting to PostgreSQL...")
     conn = psycopg2.connect(
         host=DB_HOST,
         port=DB_PORT,

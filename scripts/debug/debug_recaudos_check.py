@@ -8,7 +8,7 @@ OUTPUT_FILE = 'debug_recaudos_correct_table.txt'
 
 def inspect_recaudos_correct():
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        f.write(f"--- Inspecting RECAUDOS (Correct Table) ---\n")
+        f.write("--- Inspecting RECAUDOS (Correct Table) ---\n")
         
         if not os.path.exists(DB_PATH):
             f.write(f"Error: Database not found at {DB_PATH}\n")

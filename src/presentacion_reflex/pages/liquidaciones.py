@@ -29,8 +29,6 @@ from src.presentacion_reflex.state.auth_state import AuthState
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
 from src.presentacion_reflex.state.pdf_state import PDFState
 from src.presentacion_reflex.components.neuro_elements import (
-    neuro_floating_input,
-    neuro_floating_select,
     neuro_button,
 )
 from src.presentacion_reflex.components.shared.advanced_filter_bar import advanced_filter_bar

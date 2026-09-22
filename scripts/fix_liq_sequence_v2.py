@@ -5,7 +5,7 @@ def fix_sequences_v2():
     print("Starting sequence fix v2...")
     try:
         with db_manager.obtener_conexion() as conn:
-            print(f"Connected to DB.")
+            print("Connected to DB.")
             cursor = conn.cursor()
             
             # Check DB Type
@@ -70,7 +70,7 @@ def fix_sequences_v2():
             else:
                 print("No suitable sequence found.")
             
-    except Exception as e:
+    except Exception:
         print("An error occurred:")
         traceback.print_exc()
 

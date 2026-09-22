@@ -12,7 +12,7 @@ Cubre los 7 casos del set SC-001 referentes al IPC:
 """
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from src.aplicacion.servicios.servicio_contrato_arrendamiento import (
     ServicioContratoArrendamiento,

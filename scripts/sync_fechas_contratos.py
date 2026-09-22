@@ -1,9 +1,6 @@
 
 import os
 import sys
-import json
-from datetime import datetime
-from dotenv import load_dotenv
 
 # Añadir el directorio raíz al path para importar desde migraciones
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -143,7 +140,7 @@ def run_sync():
 
     except Exception as e:
         conn.rollback()
-        print(f"\n[ERROR] Se produjo un error durante la ejecución. Se ha realizado ROLLBACK.")
+        print("\n[ERROR] Se produjo un error durante la ejecución. Se ha realizado ROLLBACK.")
         print(f"Detalle: {e}")
     finally:
         cursor.close()

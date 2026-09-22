@@ -87,7 +87,7 @@ def add_incident_payment_permissions():
         except Exception as e:
             print(f"❌ Error al crear permiso '{modulo}: {accion}': {e}")
     
-    print(f"\n📊 Resumen:")
+    print("\n📊 Resumen:")
     print(f"   - Permisos creados: {permisos_creados}")
     print(f"   - Permisos existentes: {permisos_existentes_count}")
     print(f"   - Total procesados: {permisos_creados + permisos_existentes_count}")

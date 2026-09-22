@@ -36,7 +36,6 @@ app = rx.App(
     style=getattr(styles, "BASE_STYLE", None) or {},
 )
 
-from src.presentacion_reflex import pages
 
 # Registrar rutas de descarga (PDFs y Blobs)
 from src.presentacion_reflex.api.pdf_download_api import register_pdf_routes

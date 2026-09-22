@@ -36,7 +36,7 @@ try:
     admin_user = cur.fetchone()
     
     if admin_user:
-        print(f"✅ Usuario 'admin' encontrado")
+        print("✅ Usuario 'admin' encontrado")
         print(f"   Datos: {admin_user}")
     else:
         print("❌ No se encontró el usuario 'admin'")

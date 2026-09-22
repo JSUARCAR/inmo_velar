@@ -1,5 +1,4 @@
 import requests
-import sys
 
 url = "http://localhost:8000/api/pdf/download/contrato_mandato_17_20260206183311.pdf"
 

@@ -2,7 +2,6 @@
 from src.infraestructura.servicios.servicio_documentos_pdf import ServicioDocumentosPDF
 import os
 import shutil
-from datetime import datetime
 
 def test_pdf_generation_and_download():
     print("Testing Desocupación Checklist PDF Generation & Download logic...")

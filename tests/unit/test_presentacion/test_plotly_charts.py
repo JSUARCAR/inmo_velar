@@ -1,4 +1,3 @@
-import pytest
 import plotly.graph_objects as go
 from src.presentacion_reflex.state.dashboard_state import DashboardState
 

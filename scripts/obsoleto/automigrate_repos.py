@@ -2,7 +2,6 @@
 Script de Migración Masiva de Repositorios (SQLite -> Dual SQLite/PostgreSQL)
 Actualiza sintaxis, placeholders y manejo de resultados.
 """
-import os
 import re
 from pathlib import Path
 

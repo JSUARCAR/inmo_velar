@@ -13,7 +13,6 @@ import pytest
 
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
-from src.dominio.entidades.ipc import IPC
 from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
 
 

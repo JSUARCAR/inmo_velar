@@ -1,5 +1,4 @@
 import sqlite3
-import sys
 
 # Query with NO aliases
 sql = """

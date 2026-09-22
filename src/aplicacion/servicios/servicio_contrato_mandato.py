@@ -201,7 +201,7 @@ class ServicioContratoMandato:
         mandato.documento_consignatario = datos.get(
             "documento_consignatario", mandato.documento_consignatario
         )
-        
+
         if "enlace_video" in datos:
             mandato.enlace_video = datos["enlace_video"]
 
@@ -253,10 +253,31 @@ class ServicioContratoMandato:
         self,
         id_contrato: int,
         usuario_sistema: str,
-        nueva_fecha_fin: str = None,
+        nueva_fecha_fin: Optional[str] = None,
         **kwargs,
     ) -> "ContratoMandato":
         """Renueva un contrato de mandato extendiendo su fecha de fin. Acepta fecha personalizada."""
+        db = getattr(self.repo_mandato, "db", None)
+
+        if db is None:
+            resultado = self._ejecutar_renovacion_mandato(
+                id_contrato, usuario_sistema, nueva_fecha_fin
+            )
+        else:
+            with db.transaccion():
+                resultado = self._ejecutar_renovacion_mandato(
+                    id_contrato, usuario_sistema, nueva_fecha_fin
+                )
+
+        self._invalidar_cache_estado_cartera()
+        return resultado
+
+    def _ejecutar_renovacion_mandato(
+        self,
+        id_contrato: int,
+        usuario_sistema: str,
+        nueva_fecha_fin: Optional[str] = None,
+    ) -> "ContratoMandato":
         mandato = self.repo_mandato.obtener_por_id(id_contrato)
         if not mandato or mandato.estado_contrato_m != EstadoContrato.ACTIVO:
             raise ContratoNoRenovableError(
@@ -280,16 +301,16 @@ class ServicioContratoMandato:
             else nueva_fecha_fin_dt.strftime("%Y-%m-%d")
         )
 
-        # Registrar historial de renovación
-
+        # Registrar historial de renovación (Spec §FR-001, §FR-006)
+        fecha_inicio_ren = CalculadoraContratos.calcular_fecha_inicio_renovacion(
+            mandato.fecha_fin_contrato_m
+        )
         renovacion = RenovacionContrato(
             id_contrato_m=mandato.id_contrato_m,
             tipo_contrato="Mandato",
             fecha_inicio_original=mandato.fecha_inicio_contrato_m,
             fecha_fin_original=mandato.fecha_fin_contrato_m,
-            fecha_inicio_renovacion=CalculadoraContratos.calcular_fecha_inicio_renovacion(
-                mandato.fecha_fin_contrato_m
-            ),
+            fecha_inicio_renovacion=fecha_inicio_ren,
             fecha_fin_renovacion=nueva_fecha_fin_str,
             canon_anterior=mandato.canon_mandato,
             canon_nuevo=mandato.canon_mandato,
@@ -299,21 +320,25 @@ class ServicioContratoMandato:
         )
         self.repo_renovacion.crear(renovacion, usuario_sistema)
 
-        # Actualizar contrato
+        # Actualizar contrato (recalcular grupo y fecha_pago, Spec §FR-006)
         mandato.fecha_fin_contrato_m = nueva_fecha_fin_str
         mandato.fecha_renovacion_contrato_m = datetime.now().date().isoformat()
+        grupo_m, dia_m = CalculadoraContratos.calcular_ciclo_pago_mandato(
+            fecha_inicio_ren
+        )
+        mandato.grupo_operativo = grupo_m
+        mandato.fecha_pago = str(dia_m)
         mandato.updated_by = usuario_sistema
         mandato.updated_at = datetime.now().isoformat()
 
         self.repo_mandato.actualizar(mandato, usuario_sistema)
 
-        # 5. Actualizar canon estimado en propiedad
+        # Actualizar canon estimado en propiedad
         propiedad = self.repo_propiedad.obtener_por_id(mandato.id_propiedad)
         if propiedad:
             propiedad.canon_arrendamiento_estimado = mandato.canon_mandato
             self.repo_propiedad.actualizar(propiedad, usuario_sistema)
 
-        self._invalidar_cache_estado_cartera()
         return mandato
 
     def _invalidar_cache_estado_cartera(self) -> None:
@@ -325,9 +350,7 @@ class ServicioContratoMandato:
         try:
             invalidate_cache("cache_estado_cartera")
         except Exception as ex:  # pragma: no cover
-            logger.warning(
-                "No se pudo invalidar caché 'cache_estado_cartera': %s", ex
-            )
+            logger.warning("No se pudo invalidar caché 'cache_estado_cartera': %s", ex)
 
     @cache_manager.invalidates(CacheKeys.MANDATOS_LIST)
     def terminar_mandato(

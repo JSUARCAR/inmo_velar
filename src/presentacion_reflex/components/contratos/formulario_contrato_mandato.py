@@ -12,7 +12,6 @@ from src.presentacion_reflex.components.image_gallery import image_gallery
 from src.presentacion_reflex.state.contratos_state import ContratosState
 from src.presentacion_reflex.components.neuro_elements import neuro_floating_input, neuro_floating_select, neuro_button
 from src.presentacion_reflex import styles
-from src.presentacion_reflex.components.shared.floating_label import floating_input, floating_select
 from src.presentacion_reflex.components.shared.searchable_select import (
     searchable_select,
 )

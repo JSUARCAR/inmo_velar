@@ -22,7 +22,7 @@ cursor.execute("""
 """)
 row = cursor.fetchone()
 if row:
-    print(f"Codeudor exists:")
+    print("Codeudor exists:")
     print(f"  ID_CODEUDOR: {row[0]}")
     print(f"  ID_PERSONA: {row[1]}")
     print(f"  CODEUDOR.ESTADO_REGISTRO: {row[2]}")

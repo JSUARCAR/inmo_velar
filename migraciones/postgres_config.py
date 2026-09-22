@@ -197,7 +197,7 @@ if __name__ == '__main__':
     print(f"Base de datos: {POSTGRES_CONFIG['database']}")
     print(f"Usuario: {POSTGRES_CONFIG['user']}")
     print("")
-    print(f"URL de conexion:")
+    print("URL de conexion:")
     print(f"  {DATABASE_URL}")
     print("")
     print("Para probar la conexion, ejecuta:")

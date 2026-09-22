@@ -51,7 +51,7 @@ for i in range(1, 7):
                 print(f"\nRunning migration {i:03d} for {table}...")
                 try:
                     cursor.executescript(content)
-                    print(f"  OK")
+                    print("  OK")
                 except Exception as e:
                     print(f"  Error: {e}")
                 break

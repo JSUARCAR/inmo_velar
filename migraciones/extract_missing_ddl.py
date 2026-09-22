@@ -1,6 +1,5 @@
 import os
 import psycopg2
-import sys
 
 # Source: Local PostgreSQL
 SRC_HOST = "localhost"

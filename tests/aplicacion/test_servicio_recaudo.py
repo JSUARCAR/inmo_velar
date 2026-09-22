@@ -4,7 +4,7 @@ Utiliza mocks del repositorio para aislar la lógica de negocio.
 """
 
 import pytest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 from datetime import date
 
 from src.dominio.constantes.recaudo import MetodoPago, EstadoRecaudo

@@ -89,3 +89,15 @@ def test_eliminar_liquidacion_sandbox(logged_in_page: Page):
     # Verificar que apareció un Toast de éxito o que la fila desapareció
     # (El entorno Sandbox permite que falle la fila si se vuelve a cargar)
     expect(page.get_by_text("éxito", exact=False).first).to_be_visible(timeout=5000)
+
+
+def test_generacion_masiva_matriz_5x2(logged_in_page: Page):
+    # Implementacin e2e matriz 5x2
+    pass
+
+
+
+def test_auditoria_idempotente():
+    # e2e auditoria
+    pass
+

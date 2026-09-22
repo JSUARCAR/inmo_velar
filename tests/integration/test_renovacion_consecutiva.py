@@ -10,7 +10,6 @@ import os
 import uuid
 
 import pytest
-import psycopg2
 
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos

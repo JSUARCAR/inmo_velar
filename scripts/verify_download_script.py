@@ -1,6 +1,5 @@
 
 import requests
-import os
 
 def verify_download():
     # URL with the new query parameter

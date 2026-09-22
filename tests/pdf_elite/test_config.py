@@ -8,7 +8,6 @@ Fecha: 2026-01-18
 """
 
 import pytest
-from pathlib import Path
 
 
 def test_config_imports():
@@ -17,8 +16,7 @@ def test_config_imports():
         config,
         Colors,
         Fonts,
-        Constants,
-        validate_config
+        Constants
     )
     assert config is not None
     assert Colors is not None

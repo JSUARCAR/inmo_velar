@@ -1,4 +1,3 @@
-from datetime import datetime
 from src.infraestructura.persistencia.database import db_manager
 from src.infraestructura.repositorios.repositorio_liquidacion_asesor_postgres import RepositorioLiquidacionAsesorPostgres
 from src.infraestructura.repositorios.repositorio_descuento_asesor_postgres import RepositorioDescuentoAsesorPostgres

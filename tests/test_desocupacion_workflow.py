@@ -7,8 +7,7 @@ Valida que al completar una desocupación:
 """
 
 import pytest
-import sqlite3
-from datetime import datetime, date
+from datetime import date
 import os
 import sys
 

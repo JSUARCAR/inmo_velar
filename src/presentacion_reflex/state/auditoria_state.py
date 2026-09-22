@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Dict
 
 import reflex as rx
+import psycopg2
 from pydantic import BaseModel
 
 from src.aplicacion.servicios.servicio_configuracion import ServicioConfiguracion
@@ -94,9 +95,9 @@ class AuditoriaState(rx.State):
                 self.logs = modelos
                 self.is_loading = False
 
-        except Exception as e:
+        except psycopg2.Error as e:
             async with self:
-                self.error_message = str(e)
+                self.error_message = f"Error de base de datos: {str(e)}"
                 self.is_loading = False
 
     def set_filter_tabla(self, value: str):
@@ -104,3 +105,40 @@ class AuditoriaState(rx.State):
 
     def set_search(self, value: str):
         self.search_query = value
+
+    # --- Auditoria de Elegibilidad ---
+    periodo_elegibilidad: str = ""
+    liquidaciones_auditadas: int = 0
+    no_elegibles: List[Dict] = []
+    criterios_reconstruccion: str = ""
+
+    @rx.event(background=True)
+    async def auditar_elegibilidad(self):
+        async with self:
+            self.is_loading = True
+            self.error_message = ""
+
+        try:
+            from src.aplicacion.servicios.servicio_auditoria_elegibilidad import ServicioAuditoriaElegibilidad
+            servicio = ServicioAuditoriaElegibilidad()
+            resultado = servicio.auditar(periodo=self.periodo_elegibilidad if self.periodo_elegibilidad else None)
+            
+            async with self:
+                self.liquidaciones_auditadas = resultado.liquidaciones_auditadas
+                self.no_elegibles = [e.__dict__ for e in resultado.no_elegibles]
+                self.criterios_reconstruccion = f"{resultado.criterios.fecha_reconstruccion} | {resultado.criterios.filtro_regla}"
+        except ValueError as e:
+            async with self:
+                self.error_message = str(e)
+        except psycopg2.Error as e:
+            async with self:
+                self.error_message = f"Error de base de datos: {str(e)}"
+                self.is_loading = False
+        finally:
+            async with self:
+                self.is_loading = False
+
+
+    def set_periodo_elegibilidad(self, value: str):
+        self.periodo_elegibilidad = value
+

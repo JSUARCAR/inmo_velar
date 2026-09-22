@@ -5,9 +5,7 @@ import os
 # Add src to path
 sys.path.append(os.getcwd())
 
-from src.infraestructura.persistencia.database import DatabaseManager
 from src.aplicacion.servicios.servicio_propiedades import ServicioPropiedades
-from src.infraestructura.persistencia.repositorio_propiedad_sqlite import RepositorioPropiedadSQLite
 
 # Robust Mocking
 class MockConn:

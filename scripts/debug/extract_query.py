@@ -1,4 +1,3 @@
-import re
 import sys
 
 file_path = r'src/aplicacion/servicios/servicio_contratos.py'

@@ -1,5 +1,4 @@
 import sys
-import os
 from pathlib import Path
 
 # Asegurar que el directorio raíz esté en el PYTHONPATH para importar migraciones.database_config
@@ -37,7 +36,7 @@ def vaciar_liquidaciones():
         
         # 3. Confirmar cambios
         conn.commit()
-        print(f"✓ Éxito: Se ha vaciado la tabla 'liquidaciones_asesores' y sus registros dependientes.")
+        print("✓ Éxito: Se ha vaciado la tabla 'liquidaciones_asesores' y sus registros dependientes.")
         
         # 4. Verificar
         cursor.execute("SELECT COUNT(*) FROM liquidaciones_asesores;")

@@ -1,8 +1,6 @@
 
 import sys
 import os
-import sqlite3
-from datetime import datetime
 
 # Add src to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -84,7 +82,7 @@ def verify_renovacion_mandato():
         if mandato_renovado.fecha_fin_contrato_m > fecha_fin_original:
              print(f">>> SUCCESS: La fecha fin se extendió a {mandato_renovado.fecha_fin_contrato_m} (Correcto).")
         else:
-             print(f">>> FAILURE: La fecha fin NO se extendió.")
+             print(">>> FAILURE: La fecha fin NO se extendió.")
 
     except Exception as e:
         print(f"Error: {e}")

@@ -5,7 +5,6 @@ import os
 import argparse
 from datetime import datetime
 import psycopg2
-from typing import Dict, Any, List
 
 def conectar_bd_staging():
     """Conecta a la base de datos de staging (PostgreSQL)."""

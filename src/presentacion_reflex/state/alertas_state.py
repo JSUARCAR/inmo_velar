@@ -1,7 +1,6 @@
 import time
 from typing import Any, Dict, List
 
-import reflex as rx
 from src.presentacion_reflex.state.navigation_mixin import NavigationGenerationMixin
 
 from src.aplicacion.servicios.servicio_alertas import ServicioAlertas

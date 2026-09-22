@@ -82,7 +82,7 @@ def generate_reports_doble_activos():
         print("--- REPORTE (MANDATO ACTIVO Y ARRENDAMIENTO ACTIVO) ---")
         print(md_table)
         print(f"\nTotal registros exportados: {len(df)}")
-        print(f"Archivos generados en la raíz:")
+        print("Archivos generados en la raíz:")
         print(f"- {os.path.basename(excel_path)}")
         print(f"- {os.path.basename(md_path)}")
 

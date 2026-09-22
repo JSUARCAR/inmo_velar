@@ -1,6 +1,5 @@
 import os
 import pytest
-from playwright.sync_api import sync_playwright, Page, BrowserContext
 
 # URL base de producción
 PROD_URL = "https://extraordinary-joy-production-2fd2.up.railway.app"

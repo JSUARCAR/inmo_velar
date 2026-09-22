@@ -125,8 +125,8 @@ class PDFEliteSetup:
             module_name = filename.replace('.py', '').replace('_', ' ').title()
             content = f'"""\n{module_name}\n{"=" * len(module_name)}\n'
             content += f'Módulo: {module}\n'
-            content += f'Propósito: [Pendiente implementación]\n'
-            content += f'"""\n\n'
+            content += 'Propósito: [Pendiente implementación]\n'
+            content += '"""\n\n'
             content += 'from typing import Any, Dict, List, Optional\n\n'
             content += '# TODO: Implementar funcionalidad\n'
             

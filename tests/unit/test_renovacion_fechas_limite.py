@@ -5,7 +5,6 @@ Verifica `calcular_fecha_inicio_renovacion` (+1 día) y `sumar_meses`
 en bordes: 31-Dic→01-Ene, 28-Feb bisiesto, 31-Ene→28/29-Feb, 30-Nov→31-Dic.
 """
 
-import pytest
 
 from src.dominio.servicios.calculadora_contratos import CalculadoraContratos
 

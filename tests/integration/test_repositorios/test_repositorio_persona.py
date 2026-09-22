@@ -6,8 +6,6 @@ de la entidad Persona.
 """
 import pytest
 import sqlite3
-from pathlib import Path
-from datetime import datetime
 
 from tests.integration.test_database_manager import TestDatabaseManager
 from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres

@@ -8,8 +8,9 @@ No editar aquí para cambios de producción; difiere de raíz
 (puertos dual-Flet 8000/3000, env DEV fijo, sin IS_PROD/api_url/DATABASE_URL).
 """
 
-import reflex as rx
 import os
+
+import reflex as rx
 from dotenv import load_dotenv
 
 load_dotenv()

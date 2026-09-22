@@ -30,11 +30,11 @@ try:
     print(f"✓ Valor actual de secuencia: {seq_val}")
     
     if seq_val <= max_id:
-        print(f"\n⚠️  PROBLEMA: Secuencia desincronizada!")
+        print("\n⚠️  PROBLEMA: Secuencia desincronizada!")
         print(f"   Secuencia ({seq_val}) <= MAX ID ({max_id})")
-        print(f"   Esto causará error de clave duplicada")
+        print("   Esto causará error de clave duplicada")
     else:
-        print(f"\n✓ Secuencia OK (mayor que MAX ID)")
+        print("\n✓ Secuencia OK (mayor que MAX ID)")
 except Exception as e:
     print(f"\n⚠️  Error verificando secuencia: {e}")
 
@@ -48,7 +48,7 @@ for liq in enero_liq:
 # Verificar últimas 5 liquidaciones
 cursor.execute("SELECT id_liquidacion, periodo FROM liquidaciones ORDER BY id_liquidacion DESC LIMIT 5")
 ultimas = cursor.fetchall()
-print(f"\n✓ Últimas 5 liquidaciones:")
+print("\n✓ Últimas 5 liquidaciones:")
 for liq in ultimas:
     print(f"   - ID: {liq['ID_LIQUIDACION']}, Periodo: {liq['PERIODO']}")
 

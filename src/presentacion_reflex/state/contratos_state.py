@@ -1,3 +1,5 @@
+import logging
+
 import pydantic
 from datetime import datetime
 from typing import Any, Dict, List, Optional
@@ -1105,7 +1107,12 @@ class ContratosState(DocumentosStateMixin):
             except ValueError as e:
                 res = {"success": False, "message": str(e)}
             except Exception as e:
-                res = {"success": False, "message": f"Error: {e}"}
+                # FR-008: mensaje operativo, sin errores crudos del motor
+                logging.getLogger(__name__).error("Rollback en renovación: %s", e)
+                res = {
+                    "success": False,
+                    "message": "No se aplicó ningún cambio; es seguro reintentar.",
+                }
 
             if res["success"]:
                 async with self:

@@ -1,6 +1,5 @@
 import os
 import psycopg2
-from psycopg2 import sql
 
 # Configuración de la base de datos obtenida del .env
 DB_CONFIG = {

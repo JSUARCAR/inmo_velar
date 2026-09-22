@@ -1,6 +1,4 @@
-import pytest
 from playwright.sync_api import Page, expect
-import re
 from .utils import navigate_to_module, select_property_in_table
 
 def test_visualizacion_plan_pago(logged_in_page: Page):

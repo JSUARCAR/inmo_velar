@@ -1,7 +1,6 @@
 
 import os
 import sys
-from dotenv import load_dotenv
 
 # Añadir el directorio raíz al path para importar desde migraciones
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

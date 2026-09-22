@@ -9,7 +9,7 @@ Relación con la lógica inversa:
   crear_arrendamiento    → disponibilidad_propiedad = 0 (Ocupada)    ✅ (fix)
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 import pytest
 
 from src.aplicacion.servicios.servicio_contrato_arrendamiento import (

@@ -8,7 +8,6 @@ y FECHA_FIN_CONTRATO_M vs FECHA_FIN_CONTRATO_A para cada propiedad.
 import os
 import csv
 import sys
-from datetime import datetime
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -215,7 +214,7 @@ def auditar_fechas():
     )
 
     print(f"\n{'=' * 70}")
-    print(f"  REPORTE DE AUDITORIA - FECHAS CONTRATOS")
+    print("  REPORTE DE AUDITORIA - FECHAS CONTRATOS")
     print(f"{'=' * 70}")
     print(f"  Total registros analizados:        {total}")
     print(f"  Mandatos con arrendamiento:         {total_con_arriendo}")

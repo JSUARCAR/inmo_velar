@@ -1,6 +1,4 @@
 import pytest
-from src.presentacion_reflex.state.dashboard_state import DashboardState
-import traceback
 
 @pytest.mark.skip(reason="Test obsoleto: load_dashboard_data ahora es un background task de Reflex que no puede iterarse manualmente")
 @pytest.mark.asyncio

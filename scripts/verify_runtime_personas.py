@@ -1,7 +1,6 @@
 
 import sys
 import os
-import asyncio
 
 # Add project root to sys.path
 sys.path.insert(0, os.getcwd())

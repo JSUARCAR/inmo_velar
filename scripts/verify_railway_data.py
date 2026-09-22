@@ -13,7 +13,7 @@ if not DATABASE_URL:
 TABLES_TO_CHECK = ["usuarios", "propiedades", "contratos_arrendamientos", "permisos", "rol_permisos", "configuracion_sistema"]
 
 def verify_data():
-    print(f"Connecting to Railway DB...")
+    print("Connecting to Railway DB...")
     try:
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()

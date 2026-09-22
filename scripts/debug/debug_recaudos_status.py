@@ -1,7 +1,6 @@
 
 import sqlite3
 import os
-import sys
 
 # Config
 DB_PATH = 'DB_Inmo_Velar.db'
@@ -9,7 +8,7 @@ OUTPUT_FILE = 'debug_recaudos_output.txt'
 
 def inspect_recaudos():
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        f.write(f"--- Inspecting RECAUDO_ARRENDAMIENTO ---\n")
+        f.write("--- Inspecting RECAUDO_ARRENDAMIENTO ---\n")
         
         if not os.path.exists(DB_PATH):
             f.write(f"Error: Database not found at {DB_PATH}\n")

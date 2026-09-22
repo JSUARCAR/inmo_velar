@@ -4,7 +4,6 @@ Valida la sincronización, persistencia e idempotencia.
 """
 import sys
 import os
-from pathlib import Path
 
 # Añadir raíz al path
 sys.path.append(os.getcwd())

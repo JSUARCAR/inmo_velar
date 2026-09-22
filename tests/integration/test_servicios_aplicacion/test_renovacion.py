@@ -1,15 +1,12 @@
 
 import sys
 import os
-import sqlite3
-from datetime import datetime, date
 
 # Add src to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
-from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
 from src.dominio.entidades.ipc import IPC
 from src.infraestructura.persistencia.repositorio_ipc_postgres import RepositorioIPCPostgres
 
@@ -22,7 +19,7 @@ def setup_test_data(db):
     ipc = IPC(anio=2024, valor_ipc=10, fecha_publicacion="2025-01-01") # 10% incremento
     try:
         repo_ipc.crear(ipc, "test_script")
-        print(f"IPC Creado: 10%")
+        print("IPC Creado: 10%")
     except:
         print("IPC ya existe o error creando (ignorable si ya hay datos)")
 
@@ -118,7 +115,7 @@ def test_renovacion():
     try:
         contrato_renovado = servicio.renovar_arrendamiento(id_contrato, "test_runner")
         
-        print(f"Renovación Exitosa!")
+        print("Renovación Exitosa!")
         print(f"Nuevo Canon: {contrato_renovado.canon_arrendamiento} (Esperado: 1.100.000 si IPC=10%)")
         print(f"Nueva Fecha Fin: {contrato_renovado.fecha_fin_contrato_a} (Esperado: 2026-01-01 aprox)")
         

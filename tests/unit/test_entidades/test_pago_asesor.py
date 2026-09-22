@@ -4,7 +4,6 @@ Verifica validaciones de estados y medios de pago.
 """
 
 import pytest
-from datetime import datetime
 from src.dominio.entidades.pago_asesor import PagoAsesor
 
 

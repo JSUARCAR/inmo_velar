@@ -9,7 +9,7 @@ conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 try:
-    print(f"Inspeccionando vista: VW_ALERTA_MORA_DIARIA")
+    print("Inspeccionando vista: VW_ALERTA_MORA_DIARIA")
     cursor.execute("PRAGMA table_info(VW_ALERTA_MORA_DIARIA)")
     columns = cursor.fetchall()
     if columns:

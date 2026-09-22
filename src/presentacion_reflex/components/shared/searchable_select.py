@@ -7,7 +7,6 @@ Usa floating labels para consistencia con el resto del sistema.
 import reflex as rx
 from typing import Any, List, Union
 
-from src.presentacion_reflex.components.neuro_elements import neuro_input
 from src.presentacion_reflex.components.shared.floating_label import floating_input
 from src.presentacion_reflex import styles
 

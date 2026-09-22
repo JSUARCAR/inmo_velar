@@ -1,5 +1,4 @@
 import sqlite3
-import sys
 
 print(f"SQLite Version: {sqlite3.sqlite_version}")
 

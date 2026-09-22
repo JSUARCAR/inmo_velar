@@ -8,7 +8,6 @@ import sys
 sys.path.insert(0, r'c:\Users\PC\OneDrive\Desktop\inmobiliaria velar\PYTHON-REFLEX')
 
 from src.infraestructura.persistencia.database import db_manager
-import re
 
 print("=" * 80)
 print("ELITE DEBUG REPORT: SQL Placeholder Syntax Error")
@@ -61,10 +60,10 @@ if placeholder != "UNKNOWN" and expected_placeholder != "UNKNOWN":
     if placeholder == expected_placeholder:
         print(f"✅ MATCH: get_placeholder() returns '{placeholder}' for {actual_db}")
     else:
-        print(f"❌ MISMATCH DETECTED!")
+        print("❌ MISMATCH DETECTED!")
         print(f"   get_placeholder() returns: '{placeholder}'")
         print(f"   {actual_db} expects: '{expected_placeholder}'")
-        print(f"   → This is the ROOT CAUSE of the syntax error")
+        print("   → This is the ROOT CAUSE of the syntax error")
 
 # LAYER 4: Test Query Execution
 print("\n### LAYER 4: Test Query with Different Placeholders ###")

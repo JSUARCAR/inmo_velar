@@ -3,7 +3,6 @@ Deep inspection of database values to identify exact data types
 and values causing the dashboard to show 0.
 """
 import sqlite3
-import os
 
 DB_PATH = "DB_Inmo_Velar.db"
 OUTPUT_FILE = "debug_deep_inspection_output.txt"
@@ -72,7 +71,7 @@ def inspect():
                     break
             
             if estado_col:
-                cursor.execute(f"SELECT * FROM LIQUIDACIONES_ASESORES LIMIT 5")
+                cursor.execute("SELECT * FROM LIQUIDACIONES_ASESORES LIMIT 5")
                 rows = cursor.fetchall()
                 for row in rows:
                     f.write(f"  {row}\n")

@@ -3,7 +3,6 @@ Tests unitarios para la entidad Recaudo.
 Cobertura: Creación, validaciones, inmutabilidad, transiciones de estado.
 """
 import pytest
-from datetime import date
 
 from src.dominio.entidades.recaudo import Recaudo
 from src.dominio.constantes.recaudo import MetodoPago, EstadoRecaudo

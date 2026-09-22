@@ -1,12 +1,12 @@
 import sys
 import os
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 # Add src to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.dominio.modelos.pagination import PaginatedResult, PaginationParams
+from src.dominio.modelos.pagination import PaginatedResult
 # Mock DatabaseManager for testing without real DB connection if possible, 
 # but for integration we might want real DB. 
 # However, to avoid dependency on local DB state, I will mock the execute/fetchall behavior 

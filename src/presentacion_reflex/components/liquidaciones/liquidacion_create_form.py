@@ -7,7 +7,6 @@ from typing import Any
 import reflex as rx
 
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
-from src.presentacion_reflex import styles
 
 
 from src.presentacion_reflex.components.shared.searchable_select import (

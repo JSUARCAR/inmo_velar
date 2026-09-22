@@ -39,7 +39,7 @@ def test_smtp_auth():
         return True
         
     except smtplib.SMTPAuthenticationError as e:
-        print(f"\n❌ AUTHENTICATION FAILED")
+        print("\n❌ AUTHENTICATION FAILED")
         print(f"Error: {e}")
         print("\nPossible causes:")
         print("1. Incorrect App Password (regenerate in Microsoft Account)")
@@ -48,7 +48,7 @@ def test_smtp_auth():
         return False
         
     except Exception as e:
-        print(f"\n❌ CONNECTION FAILED")
+        print("\n❌ CONNECTION FAILED")
         print(f"Error: {e}")
         return False
 

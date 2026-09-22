@@ -8,7 +8,7 @@ Cubre:
 """
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from src.aplicacion.servicios.servicio_contrato_arrendamiento import (
     ServicioContratoArrendamiento,

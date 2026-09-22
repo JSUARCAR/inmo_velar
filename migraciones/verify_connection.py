@@ -5,7 +5,6 @@ Verifica que la migración fue exitosa y que la aplicación puede conectarse
 """
 
 import psycopg2
-from psycopg2 import sql
 
 POSTGRES_CONFIG = {
     'host': 'localhost',
@@ -34,7 +33,7 @@ def test_connection():
         # Verificar versión de PostgreSQL
         cursor.execute("SELECT version();")
         version = cursor.fetchone()[0]
-        print(f"Version de PostgreSQL:")
+        print("Version de PostgreSQL:")
         print(f"  {version}")
         print("")
         

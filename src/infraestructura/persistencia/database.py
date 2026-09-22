@@ -91,6 +91,14 @@ if DB_MODE == "postgresql":
         def close(self):
             return self._cursor.close()
 
+        def __enter__(self):
+            """Paridad con psycopg2: permite `with conn.cursor() as cur:`."""
+            return self
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self.close()
+            return False
+
     class UpperCaseConnectionWrapper:
         def __init__(self, pool_ref, conn):
             self._pool = pool_ref

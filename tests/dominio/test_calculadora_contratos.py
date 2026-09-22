@@ -1,6 +1,5 @@
 
 import unittest
-from datetime import date
 from src.dominio.servicios.calculadora_contratos import CalculadoraContratos
 
 class TestCalculadoraContratos(unittest.TestCase):

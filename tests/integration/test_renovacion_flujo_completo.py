@@ -3,16 +3,13 @@ Tests de integración: flujo completo de renovación (T009, US1).
 Cubre E1/E2/E3/E6/E7/E8/E9/E10 (IPC, propagación, auditoría, caché).
 """
 
-import sys
 import os
 import uuid
 
 import pytest
-import psycopg2
 
 from src.infraestructura.persistencia.database import DatabaseManager
 from src.aplicacion.servicios.servicio_contratos import ServicioContratos
-from src.dominio.entidades.contrato_arrendamiento import ContratoArrendamiento
 from src.dominio.entidades.ipc import IPC
 from src.infraestructura.persistencia.repositorio_ipc_postgres import (
     RepositorioIPCPostgres,

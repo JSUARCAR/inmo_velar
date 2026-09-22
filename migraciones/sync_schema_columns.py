@@ -1,5 +1,4 @@
 import os
-import sys
 import psycopg2
 from dotenv import load_dotenv
 
@@ -62,7 +61,7 @@ def sync_schema():
                 try:
                     dest_cursor.execute(f'ALTER TABLE "{table}" ADD COLUMN IF NOT EXISTS "{col}" {mapped_type}')
                     dest_conn.commit()
-                    print(f"   ✅ Added.")
+                    print("   ✅ Added.")
                 except Exception as e:
                     print(f"   ❌ Failed to add {col}: {e}")
                     dest_conn.rollback()

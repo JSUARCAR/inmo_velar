@@ -439,7 +439,7 @@ class IncidentesState(DocumentosStateMixin):
             options = ["Todos"] + estados
             async with self:
                 self.estados_pago_options = options
-        except Exception as e:
+        except Exception:
             import logging
 
             logging.getLogger("IncidentesState").exception(

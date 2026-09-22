@@ -6,7 +6,6 @@ Verifica la lógica de "Inactivos" y "Sin contrato" en RepositorioPersonaPostgre
 import pytest
 from tests.integration.test_database_manager import TestDatabaseManager
 from src.infraestructura.persistencia.repositorio_persona_postgres import RepositorioPersonaPostgres
-from src.dominio.entidades.persona import Persona
 
 @pytest.fixture
 def db_manager(tmp_path):

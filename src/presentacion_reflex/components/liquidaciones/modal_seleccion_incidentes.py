@@ -9,7 +9,6 @@ Date: 2026-06-30
 
 import reflex as rx
 from src.presentacion_reflex.state.liquidaciones_state import LiquidacionesState
-from src.presentacion_reflex import styles
 
 def _badge_estado_pago(estado_pago: str) -> rx.Component:
     """Badge de color para el estado de pago."""

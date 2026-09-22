@@ -1,6 +1,5 @@
 import os
 import psycopg2
-import sys
 
 # Credentials from commented out section in .env
 DB_HOST = "localhost"

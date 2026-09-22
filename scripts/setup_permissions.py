@@ -188,7 +188,7 @@ def setup_permissions():
         cursor.close()
         conn.close()
         
-        logger.info(f"\n--- Resumen ---")
+        logger.info("\n--- Resumen ---")
         logger.info(f"Permisos registrados: {registered}")
         logger.info(f"Permisos existentes: {existing}")
         logger.info(f"Errores: {errors}")
