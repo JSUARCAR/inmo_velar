@@ -88,7 +88,6 @@ class AuthState(NavigationGenerationMixin):
     permissions_map: Dict[str, List[str]] = {}
 
     # Estado de UX
-    is_loading: bool = False
     error_message: str = ""
     password_visible: bool = False
 

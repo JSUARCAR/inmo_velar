@@ -19,7 +19,6 @@ class AlertasDashboardState(NavigationGenerationMixin):
 
     alertas: List[Dict[str, Any]] = []
     total_alertas: int = 0
-    is_loading: bool = False
 
     # Filtros
     filtro_estado: str = "Pendiente"

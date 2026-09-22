@@ -95,7 +95,6 @@ class PropiedadesState(DocumentosStateMixin):
     form_validation_errors: Dict[str, str] = {}
 
     # Documentos
-    current_entidad_tipo: str = "PROPIEDAD"
 
     def set_id_municipio(self, value: str):
         """Actualiza el municipio en el formulario."""

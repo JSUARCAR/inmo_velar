@@ -50,10 +50,6 @@ class RecaudosState(DocumentosStateMixin, IdempotencyStateMixin):
     error_message: str = ""
 
     # ==================== IDEMPOTENCIA ====================
-    # Declaración explícita para que Reflex registre las variables usadas por IdempotencyStateMixin
-    current_request_key: str = ""
-    is_processing_idempotent: bool = False
-
     # Modal exportación masiva recibos
     mostrar_modal_exportar_recibos: bool = False
     periodo_exportar_recibos: str = ""

@@ -59,7 +59,6 @@ class PersonasState(NavigationGenerationMixin):
     sort_order: str = "desc"
 
     # --- UI State ---
-    is_loading: bool = False
 
     # --- Modal State ---
     show_modal: bool = False
