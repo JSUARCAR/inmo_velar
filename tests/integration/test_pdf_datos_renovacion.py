@@ -64,7 +64,39 @@ def _setup(db):
             "AND ESTADO_CONTRATO_A='ACTIVO'", (id_prop,),
         )
         conn.commit()
-    return id_prop, id_arrend
+    return id_prop, id_arrend, id_persona
+
+
+def _limpiar(db, ids):
+    """Limpieza total (SC-005): deja la BD sin rastro del test."""
+    with db.obtener_conexion() as conn:
+        cursor = conn.cursor()
+        c_a = ids.get("id_contrato_a")
+        if c_a:
+            cursor.execute(
+                "DELETE FROM IPC_INCREMENT_HISTORY WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute(
+                "DELETE FROM RENOVACIONES_CONTRATOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute("DELETE FROM RECAUDOS WHERE ID_CONTRATO_A = %s", (c_a,))
+            cursor.execute(
+                "DELETE FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+        if ids.get("id_prop"):
+            cursor.execute(
+                "DELETE FROM PROPIEDADES WHERE ID_PROPIEDAD = %s", (ids["id_prop"],)
+            )
+        if ids.get("id_arrend"):
+            cursor.execute(
+                "DELETE FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = %s",
+                (ids["id_arrend"],),
+            )
+        if ids.get("id_persona"):
+            cursor.execute(
+                "DELETE FROM PERSONAS WHERE ID_PERSONA = %s", (ids["id_persona"],)
+            )
+        conn.commit()
 
 
 def _ipc_vigente(db):
@@ -73,13 +105,15 @@ def _ipc_vigente(db):
     return vigente.valor_ipc if vigente else 0.0
 
 
-def test_pdf_datos_reflejan_canon_renovado():
+def test_pdf_datos_reflejan_canon_renovado(request):
     """SC-004: tras renovar, el detalle para PDF muestra canon y fechas nuevos."""
     db = _require_db()
     servicio = ServicioContratos(db)
     valor_ipc = _ipc_vigente(db)
 
-    id_prop, id_arrend = _setup(db)
+    id_prop, id_arrend, id_persona = _setup(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     contrato = servicio.crear_arrendamiento(
         {
             "id_propiedad": id_prop,
@@ -92,6 +126,7 @@ def test_pdf_datos_reflejan_canon_renovado():
         },
         "test_pdf",
     )
+    ids["id_contrato_a"] = contrato.id_contrato_a
 
     renovado = servicio.renovar_arrendamiento(contrato.id_contrato_a, "test_pdf")
 

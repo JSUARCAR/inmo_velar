@@ -72,7 +72,44 @@ def _setup_arrendatario(db):
         row2 = cursor.fetchone()
         id_arrendatario = row2[0] if isinstance(row2, tuple) else row2["ID_ARRENDATARIO"]
         conn.commit()
-    return id_arrendatario
+    return id_arrendatario, id_persona
+
+
+def _limpiar(db, ids):
+    """Limpieza total (SC-005): deja la BD sin rastro del test."""
+    with db.obtener_conexion() as conn:
+        cursor = conn.cursor()
+        c_a = ids.get("id_contrato_a")
+        if c_a:
+            cursor.execute(
+                "DELETE FROM IPC_INCREMENT_HISTORY WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute(
+                "DELETE FROM RENOVACIONES_CONTRATOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute("DELETE FROM RECAUDOS WHERE ID_CONTRATO_A = %s", (c_a,))
+            cursor.execute(
+                "DELETE FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+        if ids.get("anio_ipc"):
+            cursor.execute(
+                "DELETE FROM IPC WHERE ANIO = %s AND CREATED_BY = 'test_e5'",
+                (ids["anio_ipc"],),
+            )
+        if ids.get("id_prop"):
+            cursor.execute(
+                "DELETE FROM PROPIEDADES WHERE ID_PROPIEDAD = %s", (ids["id_prop"],)
+            )
+        if ids.get("id_arrend"):
+            cursor.execute(
+                "DELETE FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = %s",
+                (ids["id_arrend"],),
+            )
+        if ids.get("id_persona"):
+            cursor.execute(
+                "DELETE FROM PERSONAS WHERE ID_PERSONA = %s", (ids["id_persona"],)
+            )
+        conn.commit()
 
 
 def _setup_ipc(db, valor_ipc=10.0):
@@ -125,15 +162,18 @@ def _crear_contrato(servicio, db, id_prop, id_arrend, fecha_inicio, fecha_fin, m
     )
 
 
-def test_E5_31_dic_a_01_ene():
+def test_E5_31_dic_a_01_ene(request):
     """E5.1: fecha_fin 2026-12-31 → fecha_inicio_renovacion 2027-01-01 (jamás "")."""
     db = _require_db()
     servicio = ServicioContratos(db)
     id_prop = _setup_propiedad(db)
-    id_arrend = _setup_arrendatario(db)
+    id_arrend, id_persona = _setup_arrendatario(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona, "anio_ipc": 2098}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     _setup_ipc(db, valor_ipc=5.0)
 
     contrato = _crear_contrato(servicio, db, id_prop, id_arrend, "2026-01-01", "2026-12-31", 12)
+    ids["id_contrato_a"] = contrato.id_contrato_a
     servicio.renovar_arrendamiento(contrato.id_contrato_a, "test_e5")
 
     inicio, fin = _fechas_renovacion(db, contrato.id_contrato_a)
@@ -142,16 +182,19 @@ def test_E5_31_dic_a_01_ene():
     assert not str(inicio).startswith('""'), "Fecha inicio renovación no debe contener comillas vacías"
 
 
-def test_E5_28_feb_bisiesto_a_29_feb():
+def test_E5_28_feb_bisiesto_a_29_feb(request):
     """E5.2: fecha_fin 2028-02-28 (año bisiesto) → fecha_inicio_renovacion 2028-02-29
     y fecha_fin_renovacion = +12 meses sobre la última fecha del mes destino."""
     db = _require_db()
     servicio = ServicioContratos(db)
     id_prop = _setup_propiedad(db)
-    id_arrend = _setup_arrendatario(db)
+    id_arrend, id_persona = _setup_arrendatario(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona, "anio_ipc": 2098}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     _setup_ipc(db, valor_ipc=5.0)
 
     contrato = _crear_contrato(servicio, db, id_prop, id_arrend, "2027-02-28", "2028-02-28", 12)
+    ids["id_contrato_a"] = contrato.id_contrato_a
     servicio.renovar_arrendamiento(contrato.id_contrato_a, "test_e5")
 
     inicio, fin = _fechas_renovacion(db, contrato.id_contrato_a)
@@ -160,16 +203,19 @@ def test_E5_28_feb_bisiesto_a_29_feb():
     assert fin == "2029-02-28", f"fecha_fin_renovacion esperada 2029-02-28, obtuvo {fin}"
 
 
-def test_E5_31_ene_fin_de_mes():
+def test_E5_31_ene_fin_de_mes(request):
     """E5.3: fecha_fin 31-Ene → fecha_inicio_renovacion 01-Feb y
     fecha_fin_renovacion 31-Ene del periodo siguiente (fin de mes)."""
     db = _require_db()
     servicio = ServicioContratos(db)
     id_prop = _setup_propiedad(db)
-    id_arrend = _setup_arrendatario(db)
+    id_arrend, id_persona = _setup_arrendatario(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona, "anio_ipc": 2098}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     _setup_ipc(db, valor_ipc=5.0)
 
     contrato = _crear_contrato(servicio, db, id_prop, id_arrend, "2026-02-01", "2027-01-31", 12)
+    ids["id_contrato_a"] = contrato.id_contrato_a
     servicio.renovar_arrendamiento(contrato.id_contrato_a, "test_e5")
 
     inicio, fin = _fechas_renovacion(db, contrato.id_contrato_a)

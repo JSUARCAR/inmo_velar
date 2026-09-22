@@ -70,7 +70,44 @@ def _setup_arrendatario(db):
         row2 = cursor.fetchone()
         id_arrendatario = row2[0] if isinstance(row2, tuple) else row2["ID_ARRENDATARIO"]
         conn.commit()
-    return id_arrendatario
+    return id_arrendatario, id_persona
+
+
+def _limpiar(db, ids):
+    """Limpieza total (SC-005): deja la BD sin rastro del test."""
+    with db.obtener_conexion() as conn:
+        cursor = conn.cursor()
+        c_a = ids.get("id_contrato_a")
+        if c_a:
+            cursor.execute(
+                "DELETE FROM IPC_INCREMENT_HISTORY WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute(
+                "DELETE FROM RENOVACIONES_CONTRATOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute("DELETE FROM RECAUDOS WHERE ID_CONTRATO_A = %s", (c_a,))
+            cursor.execute(
+                "DELETE FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+        if ids.get("anio_ipc"):
+            cursor.execute(
+                "DELETE FROM IPC WHERE ANIO = %s AND CREATED_BY = 'test_integration'",
+                (ids["anio_ipc"],),
+            )
+        if ids.get("id_prop"):
+            cursor.execute(
+                "DELETE FROM PROPIEDADES WHERE ID_PROPIEDAD = %s", (ids["id_prop"],)
+            )
+        if ids.get("id_arrend"):
+            cursor.execute(
+                "DELETE FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = %s",
+                (ids["id_arrend"],),
+            )
+        if ids.get("id_persona"):
+            cursor.execute(
+                "DELETE FROM PERSONAS WHERE ID_PERSONA = %s", (ids["id_persona"],)
+            )
+        conn.commit()
 
 
 def _setup_ipc(db, valor_ipc=10.0, anio=2099):
@@ -88,12 +125,14 @@ def _canon_esperado(canon_base, valor_ipc):
     return int(canon_base * (1 + valor_ipc / 100))
 
 
-def test_E1_renovacion_con_ipc_incrementa_canon():
+def test_E1_renovacion_con_ipc_incrementa_canon(request):
     """E1: duración >= 12 + IPC -> canon_nuevo = canon*(1+IPC/100)."""
     db = _require_db()
     servicio = ServicioContratos(db)
     id_prop = _setup_propiedad(db)
-    id_arrendatario = _setup_arrendatario(db)
+    id_arrend, id_persona = _setup_arrendatario(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona, "anio_ipc": 2099}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     valor_ipc = _setup_ipc(db, valor_ipc=10.0)
 
     with db.obtener_conexion() as conn:
@@ -108,7 +147,7 @@ def test_E1_renovacion_con_ipc_incrementa_canon():
     contrato = servicio.crear_arrendamiento(
         {
             "id_propiedad": id_prop,
-            "id_arrendatario": id_arrendatario,
+            "id_arrendatario": id_arrend,
             "fecha_inicio": "2024-01-01",
             "fecha_fin": "2024-12-31",
             "duracion_meses": 12,
@@ -117,6 +156,7 @@ def test_E1_renovacion_con_ipc_incrementa_canon():
         },
         "test_int",
     )
+    ids["id_contrato_a"] = contrato.id_contrato_a
 
     renovado = servicio.renovar_arrendamiento(contrato.id_contrato_a, "test_int")
 
@@ -140,12 +180,14 @@ def test_E1_renovacion_con_ipc_incrementa_canon():
     assert fecha_ini == "2025-01-01", f"E9: fecha_inicio_renovacion debe ser 2025-01-01; obtuvo {fecha_ini}"
 
 
-def test_E2_duracion_menos_12_no_aplica_ipc():
+def test_E2_duracion_menos_12_no_aplica_ipc(request):
     """E2: duración < 12 meses -> 0% de incremento."""
     db = _require_db()
     servicio = ServicioContratos(db)
     id_prop = _setup_propiedad(db)
-    id_arrendatario = _setup_arrendatario(db)
+    id_arrend, id_persona = _setup_arrendatario(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona, "anio_ipc": 2099}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     _setup_ipc(db, valor_ipc=10.0)
 
     with db.obtener_conexion() as conn:
@@ -160,7 +202,7 @@ def test_E2_duracion_menos_12_no_aplica_ipc():
     contrato = servicio.crear_arrendamiento(
         {
             "id_propiedad": id_prop,
-            "id_arrendatario": id_arrendatario,
+            "id_arrendatario": id_arrend,
             "fecha_inicio": "2024-01-01",
             "fecha_fin": "2024-06-30",
             "duracion_meses": 6,
@@ -169,6 +211,7 @@ def test_E2_duracion_menos_12_no_aplica_ipc():
         },
         "test_int",
     )
+    ids["id_contrato_a"] = contrato.id_contrato_a
 
     renovado = servicio.renovar_arrendamiento(contrato.id_contrato_a, "test_int")
 
@@ -177,12 +220,14 @@ def test_E2_duracion_menos_12_no_aplica_ipc():
     )
 
 
-def test_E6_sin_filas_futuras_no_falla():
+def test_E6_sin_filas_futuras_no_falla(request):
     """E6: sin liquidaciones/recaudos futuros, la renovación no falla."""
     db = _require_db()
     servicio = ServicioContratos(db)
     id_prop = _setup_propiedad(db)
-    id_arrendatario = _setup_arrendatario(db)
+    id_arrend, id_persona = _setup_arrendatario(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona, "anio_ipc": 2099}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     valor_ipc = _setup_ipc(db, valor_ipc=5.0)
 
     with db.obtener_conexion() as conn:
@@ -197,7 +242,7 @@ def test_E6_sin_filas_futuras_no_falla():
     contrato = servicio.crear_arrendamiento(
         {
             "id_propiedad": id_prop,
-            "id_arrendatario": id_arrendatario,
+            "id_arrendatario": id_arrend,
             "fecha_inicio": "2024-01-01",
             "fecha_fin": "2024-12-31",
             "duracion_meses": 12,
@@ -206,6 +251,7 @@ def test_E6_sin_filas_futuras_no_falla():
         },
         "test_int",
     )
+    ids["id_contrato_a"] = contrato.id_contrato_a
 
     renovado = servicio.renovar_arrendamiento(contrato.id_contrato_a, "test_int")
     assert renovado.canon_arrendamiento == _canon_esperado(1_000_000, valor_ipc)

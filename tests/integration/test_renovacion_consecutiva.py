@@ -72,7 +72,44 @@ def _setup_arrendatario(db):
         row2 = cursor.fetchone()
         id_arrendatario = row2[0] if isinstance(row2, tuple) else row2["ID_ARRENDATARIO"]
         conn.commit()
-    return id_arrendatario
+    return id_arrendatario, id_persona
+
+
+def _limpiar(db, ids):
+    """Limpieza total (SC-005): deja la BD sin rastro del test."""
+    with db.obtener_conexion() as conn:
+        cursor = conn.cursor()
+        c_a = ids.get("id_contrato_a")
+        if c_a:
+            cursor.execute(
+                "DELETE FROM IPC_INCREMENT_HISTORY WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute(
+                "DELETE FROM RENOVACIONES_CONTRATOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute("DELETE FROM RECAUDOS WHERE ID_CONTRATO_A = %s", (c_a,))
+            cursor.execute(
+                "DELETE FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+        if ids.get("anio_ipc"):
+            cursor.execute(
+                "DELETE FROM IPC WHERE ANIO = %s AND CREATED_BY = 'test_e4'",
+                (ids["anio_ipc"],),
+            )
+        if ids.get("id_prop"):
+            cursor.execute(
+                "DELETE FROM PROPIEDADES WHERE ID_PROPIEDAD = %s", (ids["id_prop"],)
+            )
+        if ids.get("id_arrend"):
+            cursor.execute(
+                "DELETE FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = %s",
+                (ids["id_arrend"],),
+            )
+        if ids.get("id_persona"):
+            cursor.execute(
+                "DELETE FROM PERSONAS WHERE ID_PERSONA = %s", (ids["id_persona"],)
+            )
+        conn.commit()
 
 
 def _setup_ipc(db, valor_ipc=10.0):
@@ -101,13 +138,15 @@ def _count_renovaciones(db, id_contrato_a):
         return row[0] if isinstance(row, tuple) else next(iter(row.values()))
 
 
-def test_E4_dos_renovaciones_consecutivas_dos_filas():
+def test_E4_dos_renovaciones_consecutivas_dos_filas(request):
     """E4: dos renovaciones consecutivas producen 2 filas válidas
     y la segunda parte del canon de la primera."""
     db = _require_db()
     servicio = ServicioContratos(db)
     id_prop = _setup_propiedad(db)
-    id_arrend = _setup_arrendatario(db)
+    id_arrend, id_persona = _setup_arrendatario(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona, "anio_ipc": 2099}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     valor_ipc = _setup_ipc(db, valor_ipc=5.0)
 
     with db.obtener_conexion() as conn:
@@ -132,6 +171,7 @@ def test_E4_dos_renovaciones_consecutivas_dos_filas():
         },
         "test_e4",
     )
+    ids["id_contrato_a"] = contrato.id_contrato_a
 
     r1 = servicio.renovar_arrendamiento(contrato.id_contrato_a, "test_e4", "2025-12-31")
     filas_1 = _count_renovaciones(db, contrato.id_contrato_a)
