@@ -16,3 +16,8 @@
 
 | Task | Status | Commits | Review |
 |------|--------|---------|--------|
+| Feature: Control async + timeouts en login (US1-US4) | complete | e8d133e | - Approved |
+| Converge: F1-F3 hallazgos anexados (Phase 8) | complete | - | - |
+| T039: E2E RBAC regresion_rbac.spec.mjs | complete | - | - Approved |
+| T040: Test migración SHA256→Bcrypt | complete | - | - Approved |
+| T041: Unificar URL E2E/diagnostics a inmovelar-production | complete | - | - Approved |

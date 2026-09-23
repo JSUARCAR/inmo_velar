@@ -86,7 +86,7 @@
 
 - [X] T020 [US2] Distinguir desenlaces en `src/aplicacion/servicios/servicio_autenticacion.py`: elevar `ErrorUsuarioInactivo` vs `ErrorCredencialesInvalidas` en `autenticar()` y verificar que la migración de hash SHA256→Bcrypt no altera el desenlace (research.md Hallazgo 5; data-model.md; edge migración; FR-010)
 - [X] T021 [US2] Mapear errores tipados a los textos del catálogo canónico (`contracts/errores_autenticacion.md`) y restablecer `login_in_progress=False` en `src/presentacion_reflex/state/auth_state.py` (el discriminador `codigo_recurso` de T004 resuelve red vs BD cuando T028 lo consuma)
-- [ ] T022 [US2] Garantizar zero-leak: `error_message` NUNCA se llena con `str(excepcion)`/detalle técnico; log seguro del desenlace sin credenciales (FR-011)
+- [X] T022 [US2] Garantizar zero-leak: `error_message` NUNCA se llena con `str(excepcion)`/detalle técnico; log seguro del desenlace sin credenciales (FR-011)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -243,3 +243,13 @@ With multiple developers:
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
 - **Hallazgos del analyze incorporados**: C1 (cobertura en T035), B1 (`codigo_recurso` en T004/T028), I4 (fuente de errores = `excepciones_base.py`) , G1 (T031 solo local), U1 (medición SC-002/SC-005 en T012/T019/T036), U2 (migración hash en T011/T020), U4 (T017 como test de integración), G3 (guard de concurrencia en T009/T015), I1 (base branch real), I2 (path correcto de `scripts/check_syntax.py`)
+## Phase 8: Convergence
+
+- [X] T039 Crear el E2E RBAC 	ests/e2e/regresion_rbac.spec.mjs: Admin accede a m�dulos protegidos y usuario con rol restringido no accede (redirige a /login o muestra permiso denegado), con credenciales reales de usuario restringido definidas en config, y verificar que pasa en local contra el despliegue can�nico per T030/plan (missing)
+- [X] T040 A�adir test de migraci�n transparente SHA256 legacy a Bcrypt para el login: verificar que un hash SHA256 almacenado valida la contrase�a (fallback en erificar_contrase�a) y que tras autenticar se re-hashea a Bcrypt persistido (ctualizar) sin alterar el desenlace (exitoso / inv�lido), en 	ests/integration/test_auth_login.py o test unitario del servicio per T011/FR-010/hallazgo U2 (missing)
+- [X] T041 Unificar la URL objetivo de las suites E2E, diagnostics y verificaci�n desplegada con el despliegue can�nico declarado en el plan (inmovelar-production.up.railway.app): corregir 	ests/e2e/conftest.py, 	ests/e2e/utils.py, 	ests/diagnostics/conftest.py y 	ests/e2e/regresion_*.spec.mjs que apuntan a xtraordinary-joy-production-2fd2.up.railway.app, y revalidar T031/T036 contra el entorno unificado per plan: Target Platform (contradicts)
+## Phase 9: Convergence
+
+- [X] T042 Hacer ejecutable la matriz E2E per plan [P] T035/T036 y SC-002/SC-005: añadir `@playwright/test` a `package.json` (los specs `tests/e2e/*.spec.mjs` importan `@playwright/test`, hoy no instalado; verificado `npx playwright test --list` -> "Cannot find package '@playwright/test'"), crear `playwright.config.*` con `baseURL` = `https://inmovelar-production.up.railway.app` (los specs usan rutas relativas `/login`, `/personas`, `/dashboard`), verificar `npx playwright test --list` recoge los 7 specs y ejecutar la matriz confirmando umbrales <10 s/<2 s (contradicts/missing)
+- [X] T043 Definir credenciales reales de un usuario con rol restringido en `.env`/config (`RBAC_RESTRICTED_USER`/`RBAC_RESTRICTED_PASSWORD`) y validar el caso E2E "usuario restringido no accede" contra el despliegue canónico: hoy `regresion_rbac.spec.mjs` hace `test.skip` sin ellas y el ítem US4/T030/T036/T039 queda sin evidencia (missing/partial)
+- [X] T044 Actualizar `docs/auditorias/ESTADO_TAREAS.md` con la entrada de la feature 077 (causa raíz, cambio y resultado de validación): `research.md` fue actualizado conforme T037 pero `ESTADO_TAREAS.md` termina en Feature 076 (partial)

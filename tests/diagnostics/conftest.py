@@ -2,7 +2,7 @@ import os
 import pytest
 
 # URL base de producción
-PROD_URL = "https://extraordinary-joy-production-2fd2.up.railway.app"
+PROD_URL = "https://inmovelar-production.up.railway.app"
 
 @pytest.fixture(scope="session")
 def prod_credentials():

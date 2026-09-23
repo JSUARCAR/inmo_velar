@@ -10,7 +10,6 @@ from src.presentacion_reflex.state.navigation_mixin import NavigationGenerationM
 from src.aplicacion.servicios.servicio_autenticacion import ServicioAutenticacion
 from src.aplicacion.servicios.servicio_permisos import ServicioPermisos
 from src.dominio.excepciones.excepciones_base import (
-    ErrorAutenticacion,
     ExcepcionDominio,
     SesionInvalida,
 )
@@ -205,21 +204,27 @@ class AuthState(NavigationGenerationMixin):
         async with self:
             if not self.validate_generation(gen_id):
                 return
-            
-            # Realizamos la validacion en el mismo contexto async with self 
+
+            # Realizamos la validacion en el mismo contexto async with self
             # dado que modifica muchos atributos internos (is_authenticated, user_data, etc)
             # Como validate_session es rapida (1 query) lo permitimos aqui.
             valid = self._validate_session()
-            
+
             # Restablecer is_loading antes de salir del lock
-            self.end_navigation_generation(gen_id)
+            self.end_navigation_generation()
 
         # Acciones externas fuera del lock para evitar el Hallazgo 1 de colisiones
         if not valid:
+            logger.warning(
+                "Protección de rutas: acceso denegado (redirección a /login)"
+            )
             _debug("require_login_background   REDIRECT a /login")
-            yield rx.toast.error("Sesión expirada. Por favor, inicie sesión nuevamente.")
+            yield rx.toast.error(
+                "Sesión expirada. Por favor, inicie sesión nuevamente."
+            )
             yield rx.redirect("/login")
         else:
+            logger.info("Protección de rutas: acceso permitido")
             _debug("require_login_background   ACCESO PERMITIDO")
             async with self:
                 if not self.allowed_modules:
@@ -264,6 +269,7 @@ class AuthState(NavigationGenerationMixin):
         attempts = [ts for ts in attempts if now_ts - ts < _LOGIN_WINDOW_SECONDS]
         if len(attempts) >= _LOGIN_MAX_ATTEMPTS:
             from src.dominio.excepciones.excepciones_base import ErrorPoliticaIntentos
+
             self.error_message = ErrorPoliticaIntentos().mensaje
             self.login_in_progress = False
             return
@@ -285,12 +291,14 @@ class AuthState(NavigationGenerationMixin):
         try:
             from src.infraestructura.configuracion.settings import obtener_configuracion
             from src.dominio.excepciones.excepciones_base import (
-                ErrorCredencialesInvalidas, 
-                ErrorUsuarioInactivo, 
-                ErrorRecurso
+                ErrorCredencialesInvalidas,
+                ErrorUsuarioInactivo,
+                ErrorRecurso,
             )
-            from src.aplicacion.servicios.servicio_autenticacion import operacion_con_deadline
-            
+            from src.aplicacion.servicios.servicio_autenticacion import (
+                operacion_con_deadline,
+            )
+
             config = obtener_configuracion()
             deadline = config.login_operation_deadline_seconds
 
@@ -298,7 +306,7 @@ class AuthState(NavigationGenerationMixin):
                 repo_u = RepositorioUsuario(db_manager)
                 repo_s = RepositorioSesion(db_manager)
                 servicio_auth = ServicioAutenticacion(repo_u, repo_s)
-    
+
                 # La autenticación en sí misma (síncrona para DB, corriendo en background de este event loop?
                 # Reflex handles sync calls correctly unless they block for too long, but we just call it)
                 # O idealmente en to_thread si queremos evitar bloqueo de loop.
@@ -350,11 +358,15 @@ class AuthState(NavigationGenerationMixin):
             self.error_message = e.mensaje
             self.login_in_progress = False
         except ErrorRecurso as e:
-            _debug("login → ERROR RECURSO", error=str(e), codigo_recurso=e.codigo_recurso)
+            _debug(
+                "login → ERROR RECURSO", error=str(e), codigo_recurso=e.codigo_recurso
+            )
             if e.codigo_recurso in ("RED", "BACKEND"):
                 self.error_message = "No se pudo conectar con el servidor. Verifique su conexión e intente de nuevo."
             elif e.codigo_recurso == "BD":
-                self.error_message = "El servicio no está disponible en este momento. Intente de nuevo."
+                self.error_message = (
+                    "El servicio no está disponible en este momento. Intente de nuevo."
+                )
             else:
                 self.error_message = "Ocurrió un error inesperado. Intente de nuevo."
             self.login_in_progress = False
@@ -364,18 +376,21 @@ class AuthState(NavigationGenerationMixin):
         except Exception as e:
             if not IS_PROD:
                 import traceback
+
                 error_trace = traceback.format_exc()
                 _debug("login → EXCEPCIÓN INESPERADA", error=str(e))
                 print(f"LOGIN ERROR: {str(e)}", file=sys.stderr)
                 print(f"TRACEBACK: {error_trace}", file=sys.stderr)
             else:
-                logger.error("Error inesperado en login (detalles ocultos en producción)")
-            
+                logger.error(
+                    "Error inesperado en login (detalles ocultos en producción)"
+                )
+
             try:
                 db_manager.obtener_conexion().rollback()
             except Exception:
                 pass
-            
+
             self.error_message = "Ocurrió un error inesperado. Intente de nuevo."
             self.login_in_progress = False
 

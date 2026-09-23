@@ -18,7 +18,7 @@ def test_filtro_asesores():
         try:
             # 1. Navegar a la URL
             print("Navegando a la URL...")
-            page.goto("https://extraordinary-joy-production-2fd2.up.railway.app/")
+            page.goto("https://inmovelar-production.up.railway.app/")
             page.wait_for_load_state("networkidle")
 
             # 2. Login
@@ -44,7 +44,7 @@ def test_filtro_asesores():
             # 3. Navegar a Liquidaciones
             print("Navegando al módulo de Liquidaciones...")
             page.goto(
-                "https://extraordinary-joy-production-2fd2.up.railway.app/liquidaciones"
+                "https://inmovelar-production.up.railway.app/liquidaciones"
             )
             page.wait_for_timeout(5000)  # Esperar a que carguen los datos y el toolbar
 

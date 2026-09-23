@@ -19,7 +19,7 @@ def auth_credentials():
 @pytest.fixture
 def logged_in_page(page: Page, auth_credentials):
     """Fixture que provee una página autenticada y lista para probar módulos."""
-    base_url = "https://extraordinary-joy-production-2fd2.up.railway.app/"
+    base_url = "https://inmovelar-production.up.railway.app/"
     page.goto(base_url)
     
     # Localizar inputs por el atributo name definido en el frontend

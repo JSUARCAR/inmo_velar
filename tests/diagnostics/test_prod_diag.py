@@ -11,7 +11,7 @@ def test_validacion_plan_pago(diag_page: Page):
     
     # 1. Navegar a Incidentes
     print("\n[DIAG] Navegando a Incidentes...")
-    page.goto("https://extraordinary-joy-production-2fd2.up.railway.app/incidentes")
+    page.goto("https://inmovelar-production.up.railway.app/incidentes")
     
     # 2. Esperar a que cargue la tabla
     page.locator(".rt-TableRoot").wait_for(timeout=15000)
@@ -61,7 +61,7 @@ def test_seleccion_incidentes(diag_page: Page):
     page = diag_page
     
     print("\n[DIAG] Navegando a Liquidaciones...")
-    page.goto("https://extraordinary-joy-production-2fd2.up.railway.app/liquidaciones")
+    page.goto("https://inmovelar-production.up.railway.app/liquidaciones")
     page.locator(".rt-TableRoot").wait_for(timeout=15000)
     
     print(f"\n[DIAG] Buscando liquidación para: {PROPIEDAD_SANDBOX}")
@@ -105,7 +105,7 @@ def test_eliminar_liquidacion_sandbox(diag_page: Page):
     page = diag_page
     
     print("\n[DIAG] Navegando a Liquidaciones para eliminar...")
-    page.goto("https://extraordinary-joy-production-2fd2.up.railway.app/liquidaciones")
+    page.goto("https://inmovelar-production.up.railway.app/liquidaciones")
     page.locator(".rt-TableRoot").wait_for(timeout=15000)
     
     print(f"\n[DIAG] Buscando liquidación Sandbox para eliminar: {PROPIEDAD_SANDBOX}")

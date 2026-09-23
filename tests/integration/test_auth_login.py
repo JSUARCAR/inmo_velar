@@ -31,6 +31,65 @@ def test_login_valido_persiste_sesion(auth_service):
     except Exception as e:
         pytest.fail(f"Login failed: {e}")
 
+def _crear_servicio(usuario):
+    """Construye un ServicioAutenticacion con repositorios en memoria (sin I/O)."""
+    from unittest.mock import MagicMock
+
+    repo_usuario = MagicMock()
+    repo_usuario.obtener_por_nombre.return_value = usuario
+    repo_usuario.obtener_por_id.return_value = usuario
+    repo_sesion = MagicMock()
+    servicio = ServicioAutenticacion(repo_usuario=repo_usuario, repo_sesion=repo_sesion)
+    return servicio, repo_usuario
+
+
+def _usuario_legacy_sha256(nombre="legacy_user", hash_sha256=""):
+    """Crea un usuario con hash SHA256 legacy almacenado (sin prefijo Bcrypt)."""
+    from src.dominio.entidades.usuario import Usuario
+
+    return Usuario(
+        nombre_usuario=nombre,
+        contrasena_hash=hash_sha256,
+        rol="Admin",
+        estado_usuario=True,
+    )
+
+
+def test_migracion_sha256_a_bcrypt_rehashea_y_persiste():
+    """FR-010/U2: un hash SHA256 legacy valida la contraseña y tras autenticar
+    se re-hashea a Bcrypt persistido sin alterar el desenlace exitoso."""
+    import hashlib
+
+    contraseña = "clave_legacy_123"
+    hash_sha256 = hashlib.sha256(contraseña.encode("utf-8")).hexdigest()
+    usuario = _usuario_legacy_sha256(hash_sha256=hash_sha256)
+    servicio, repo_usuario = _crear_servicio(usuario)
+
+    resultado = servicio.autenticar(usuario.nombre_usuario, contraseña)
+
+    assert resultado is usuario
+    assert resultado.contrasena_hash.startswith("$2b$")
+    repo_usuario.actualizar.assert_called()
+
+
+def test_migracion_sha256_no_alterea_desenlace_invalido():
+    """FR-010/U2: con hash SHA256 legacy y contraseña incorrecta el desenlace
+    es ErrorCredencialesInvalidas y NO se re-hashea ni se persiste."""
+    import hashlib
+
+    from src.dominio.excepciones.excepciones_base import ErrorCredencialesInvalidas
+
+    contraseña = "clave_legacy_123"
+    hash_sha256 = hashlib.sha256(contraseña.encode("utf-8")).hexdigest()
+    usuario = _usuario_legacy_sha256(hash_sha256=hash_sha256)
+    servicio, repo_usuario = _crear_servicio(usuario)
+
+    with pytest.raises(ErrorCredencialesInvalidas):
+        servicio.autenticar(usuario.nombre_usuario, "clave_incorrecta")
+
+    repo_usuario.actualizar.assert_not_called()
+
+
 @pytest.mark.asyncio
 async def test_auth_login_persiste_sesion(auth_service):
     from src.presentacion_reflex.state.auth_state import _login_attempts
@@ -44,13 +103,12 @@ async def test_auth_login_persiste_sesion(auth_service):
         with patch("src.presentacion_reflex.state.auth_state.AuthState._validate_session", return_value=True):
             with patch("src.presentacion_reflex.state.auth_state.AuthState._sync_permissions") as mock_sync:
                 with patch("src.presentacion_reflex.state.auth_state.AuthState.validate_generation", return_value=True):
-                    with patch("src.presentacion_reflex.state.auth_state.AuthState.end_navigation_generation"):
-                        
-                        generador = AuthState.require_login_background.fn(auth_state, "test-gen-1")
-                        eventos = []
-                        async for evento in generador:
-                            eventos.append(evento)
-                        
-                        # No redirige, eventos esta vacio (solo lock context calls _sync_permissions)
-                        assert len(eventos) == 0
-                        mock_sync.assert_called_once()
+                    
+                    generador = AuthState.require_login_background.fn(auth_state, "test-gen-1")
+                    eventos = []
+                    async for evento in generador:
+                        eventos.append(evento)
+                    
+                    # No redirige, eventos esta vacio (solo lock context calls _sync_permissions)
+                    assert len(eventos) == 0
+                    mock_sync.assert_called_once()

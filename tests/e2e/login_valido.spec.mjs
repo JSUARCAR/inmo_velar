@@ -8,8 +8,8 @@ test('login vlido redirige a /dashboard y bton sin spinner', async ({ page }) =>
     await page.getByPlaceholder("nombre.usuario").click();
     await page.getByPlaceholder("nombre.usuario").fill(process.env.TEST_USER ?? "admin");
     
-    await page.getByPlaceholder("        ").click();
-    await page.getByPlaceholder("        ").fill(process.env.TEST_PASSWORD ?? "admin0123");
+    await page.locator('input[type="password"]').click();
+    await page.locator('input[type="password"]').fill(process.env.TEST_PASSWORD ?? "admin0123");
     
     // 3. Capturar startTime
     const startTime = Date.now();

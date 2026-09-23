@@ -8,7 +8,7 @@ def run(playwright):
     page = context.new_page()
 
     print("Navegando a la URL...")
-    page.goto("https://extraordinary-joy-production-2fd2.up.railway.app/liquidaciones")
+    page.goto("https://inmovelar-production.up.railway.app/liquidaciones")
     
     print("Iniciando sesión...")
     # Asumiendo los selectores básicos para un form de login genérico de Reflex si redirige
@@ -25,7 +25,7 @@ def run(playwright):
         print("Login completado.")
         
         # Redirigiendo explícitamente a liquidaciones de nuevo por si acaso el login redirige a dashboard
-        page.goto("https://extraordinary-joy-production-2fd2.up.railway.app/liquidaciones")
+        page.goto("https://inmovelar-production.up.railway.app/liquidaciones")
         time.sleep(3)
 
     print("Buscando la liquidación 562 o CONJ CIUDADELA COMFENALCO...")

@@ -2,7 +2,7 @@ from playwright.sync_api import Page, expect
 
 def navigate_to_module(page: Page, module_name: str, url_path: str):
     """Navega a un módulo específico usando el sidebar o directamente la URL."""
-    base_url = "https://extraordinary-joy-production-2fd2.up.railway.app/"
+    base_url = "https://inmovelar-production.up.railway.app/"
     target_url = f"{base_url}{url_path}"
     
     # Navegación directa es más rápida y menos propensa a fallos de UI
