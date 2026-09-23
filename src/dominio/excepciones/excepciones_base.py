@@ -130,3 +130,40 @@ class ValorFueraDeRangoError(ErrorValidacion):
         super().__init__(mensaje, campo=campo)
         self.valor = valor
         self.maximo = maximo
+
+
+class ErrorCredencialesInvalidas(ErrorAutenticacion):
+    """
+    Excepción lanzada cuando el usuario no existe o la contraseña es incorrecta.
+    """
+
+    def __init__(self, mensaje: str = "Credenciales inválidas. Verifique usuario y contraseña."):
+        super().__init__(mensaje)
+
+
+class ErrorUsuarioInactivo(ErrorAutenticacion):
+    """
+    Excepción lanzada cuando el usuario existe pero está inactivo.
+    """
+
+    def __init__(self, mensaje: str = "El usuario se encuentra inactivo."):
+        super().__init__(mensaje)
+
+
+class ErrorRecurso(ExcepcionDominio):
+    """
+    Excepción lanzada por indisponibilidad de recursos (BD, red, timeout).
+    """
+
+    def __init__(self, mensaje: str = "Error de recurso", codigo_recurso: Optional[str] = None):
+        super().__init__(mensaje, "RESOURCE_ERROR")
+        self.codigo_recurso = codigo_recurso
+
+
+class ErrorPoliticaIntentos(ErrorAutenticacion):
+    """
+    Excepción lanzada cuando se alcanza el límite de intentos (rate limiting).
+    """
+
+    def __init__(self, mensaje: str = "Demasiados intentos. Intente de nuevo en 15 minutos."):
+        super().__init__(mensaje)

@@ -88,6 +88,7 @@ class AuthState(NavigationGenerationMixin):
     permissions_map: Dict[str, List[str]] = {}
 
     # Estado de UX
+    login_in_progress: bool = False
     error_message: str = ""
     password_visible: bool = False
 
@@ -200,6 +201,7 @@ class AuthState(NavigationGenerationMixin):
 
     @rx.event(background=True)
     async def require_login_background(self, gen_id: str):
+        valid = False
         async with self:
             if not self.validate_generation(gen_id):
                 return
@@ -209,12 +211,17 @@ class AuthState(NavigationGenerationMixin):
             # Como validate_session es rapida (1 query) lo permitimos aqui.
             valid = self._validate_session()
             
-            if not valid:
-                _debug("require_login_background   REDIRECT a /login")
-                yield rx.toast.error("Sesión expirada. Por favor, inicie sesión nuevamente.")
-                yield rx.redirect("/login")
-            else:
-                _debug("require_login_background   ACCESO PERMITIDO")
+            # Restablecer is_loading antes de salir del lock
+            self.end_navigation_generation(gen_id)
+
+        # Acciones externas fuera del lock para evitar el Hallazgo 1 de colisiones
+        if not valid:
+            _debug("require_login_background   REDIRECT a /login")
+            yield rx.toast.error("Sesión expirada. Por favor, inicie sesión nuevamente.")
+            yield rx.redirect("/login")
+        else:
+            _debug("require_login_background   ACCESO PERMITIDO")
+            async with self:
                 if not self.allowed_modules:
                     self._sync_permissions()
 
@@ -237,9 +244,13 @@ class AuthState(NavigationGenerationMixin):
         _debug("redirect_to_dashboard → REDIRECT a /login")
         return rx.redirect("/login")
 
-    def login(self, form_data: dict):
+    async def login(self, form_data: dict):
         """Procesa el inicio de sesión con rate-limiting por IP."""
         _debug("login CALLED", username=form_data.get("username"))
+
+        if self.login_in_progress:
+            _debug("login → abortado por concurrencia")
+            return
 
         # Rate limiting por IP
         client_ip = (
@@ -252,13 +263,14 @@ class AuthState(NavigationGenerationMixin):
         # Limpiar intentos expirados
         attempts = [ts for ts in attempts if now_ts - ts < _LOGIN_WINDOW_SECONDS]
         if len(attempts) >= _LOGIN_MAX_ATTEMPTS:
-            self.error_message = "Demasiados intentos. Intente de nuevo en 15 minutos."
-            self.is_loading = False
+            from src.dominio.excepciones.excepciones_base import ErrorPoliticaIntentos
+            self.error_message = ErrorPoliticaIntentos().mensaje
+            self.login_in_progress = False
             return
         attempts.append(now_ts)
         _login_attempts[client_ip] = attempts
 
-        self.is_loading = True
+        self.login_in_progress = True
         self.error_message = ""
         yield  # Enviar estado de loading al frontend inmediatamente
 
@@ -267,16 +279,33 @@ class AuthState(NavigationGenerationMixin):
 
         if not username or not password:
             self.error_message = "Por favor ingrese usuario y contraseña."
-            self.is_loading = False
+            self.login_in_progress = False
             return
 
         try:
-            repo_u = RepositorioUsuario(db_manager)
-            repo_s = RepositorioSesion(db_manager)
-            servicio_auth = ServicioAutenticacion(repo_u, repo_s)
+            from src.infraestructura.configuracion.settings import obtener_configuracion
+            from src.dominio.excepciones.excepciones_base import (
+                ErrorCredencialesInvalidas, 
+                ErrorUsuarioInactivo, 
+                ErrorRecurso
+            )
+            from src.aplicacion.servicios.servicio_autenticacion import operacion_con_deadline
+            
+            config = obtener_configuracion()
+            deadline = config.login_operation_deadline_seconds
 
-            usuario_autenticado = servicio_auth.autenticar(username, password)
-            sesion = servicio_auth.crear_sesion(usuario_autenticado)
+            async with operacion_con_deadline(deadline):
+                repo_u = RepositorioUsuario(db_manager)
+                repo_s = RepositorioSesion(db_manager)
+                servicio_auth = ServicioAutenticacion(repo_u, repo_s)
+    
+                # La autenticación en sí misma (síncrona para DB, corriendo en background de este event loop?
+                # Reflex handles sync calls correctly unless they block for too long, but we just call it)
+                # O idealmente en to_thread si queremos evitar bloqueo de loop.
+                # Como psycopg2 pool podría bloquear, podemos hacer un offload simple, pero para compatibilidad
+                # lo ejecutamos tal cual como estaba.
+                usuario_autenticado = servicio_auth.autenticar(username, password)
+                sesion = servicio_auth.crear_sesion(usuario_autenticado)
 
             # Guardar token en cookie ofuscada
             self.session_token = sesion.token_sesion
@@ -307,37 +336,48 @@ class AuthState(NavigationGenerationMixin):
             self.error_message = ""
 
             _debug("login → ÉXITO, redirigiendo a /dashboard", usuario=username)
-            self.is_loading = False
+            self.login_in_progress = False
+            # OJO: Yield cookies y el redirect en el mismo delta
             yield rx.redirect("/dashboard")
-            return  # Terminar el generador para prevenir colisiones en el ciclo de vida
+            return
 
-        except ErrorAutenticacion as e:
-            _debug("login → ERROR_AUTH", error=str(e))
-            self.error_message = (
-                "Credenciales inválidas. Verifique usuario y contraseña."
-            )
-            self.is_loading = False
+        except ErrorCredencialesInvalidas as e:
+            _debug("login → CREDENCIALES INVALIDAS", error=str(e))
+            self.error_message = e.mensaje
+            self.login_in_progress = False
+        except ErrorUsuarioInactivo as e:
+            _debug("login → USUARIO INACTIVO", error=str(e))
+            self.error_message = e.mensaje
+            self.login_in_progress = False
+        except ErrorRecurso as e:
+            _debug("login → ERROR RECURSO", error=str(e), codigo_recurso=e.codigo_recurso)
+            if e.codigo_recurso in ("RED", "BACKEND"):
+                self.error_message = "No se pudo conectar con el servidor. Verifique su conexión e intente de nuevo."
+            elif e.codigo_recurso == "BD":
+                self.error_message = "El servicio no está disponible en este momento. Intente de nuevo."
+            else:
+                self.error_message = "Ocurrió un error inesperado. Intente de nuevo."
+            self.login_in_progress = False
         except ExcepcionDominio as e:
-            self.error_message = f"Error de negocio: {str(e)}"
-            self.is_loading = False
+            self.error_message = f"Error de negocio: {e.mensaje}"
+            self.login_in_progress = False
         except Exception as e:
             if not IS_PROD:
                 import traceback
-
                 error_trace = traceback.format_exc()
-                _debug("login → EXCEPCIÓN", error=str(e))
+                _debug("login → EXCEPCIÓN INESPERADA", error=str(e))
                 print(f"LOGIN ERROR: {str(e)}", file=sys.stderr)
                 print(f"TRACEBACK: {error_trace}", file=sys.stderr)
             else:
-                logger.error(
-                    "Error inesperado en login (detalles ocultos en producción)"
-                )
+                logger.error("Error inesperado en login (detalles ocultos en producción)")
+            
             try:
                 db_manager.obtener_conexion().rollback()
             except Exception:
                 pass
+            
             self.error_message = "Ocurrió un error inesperado. Intente de nuevo."
-            self.is_loading = False
+            self.login_in_progress = False
 
     def logout(self):
         """Cierra la sesión del usuario."""

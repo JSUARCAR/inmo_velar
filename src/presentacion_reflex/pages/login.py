@@ -112,7 +112,7 @@ def login_card() -> rx.Component:
                         width="100%",
                         style=styles.NEU_BUTTON_PRIMARY_STYLE,
                         margin_top="4",
-                        loading=AuthState.is_loading,
+                        loading=AuthState.login_in_progress,
                     ),
                     # Mensaje de error condicional
                     rx.cond(

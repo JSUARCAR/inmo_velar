@@ -14,10 +14,32 @@ from src.dominio.entidades.sesion_usuario import SesionUsuario
 from src.dominio.entidades.usuario import Usuario
 from src.dominio.excepciones.excepciones_base import (
     ErrorAutenticacion,
+    ErrorCredencialesInvalidas,
+    ErrorUsuarioInactivo,
+    ErrorRecurso,
     SesionInvalida,
 )
 from src.dominio.repositorios.interfaces import RepositorioSesion, RepositorioUsuario
 from src.infraestructura.logging.logger import logger
+
+
+import asyncio
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def operacion_con_deadline(segundos: int):
+    """
+    Context manager asíncrono que establece un tiempo límite para la operación.
+    Si se excede el tiempo, levanta ErrorRecurso(codigo_recurso="BACKEND").
+    No es un temporizador de UI.
+    """
+    try:
+        async with asyncio.timeout(segundos):
+            yield
+    except asyncio.TimeoutError:
+        raise ErrorRecurso(
+            "La operación ha excedido el tiempo límite", codigo_recurso="BACKEND"
+        )
 
 
 class ServicioAutenticacion:
@@ -84,14 +106,14 @@ class ServicioAutenticacion:
             logger.warning(
                 "Intento de login fallido: usuario no encontrado", user=nombre_usuario
             )
-            raise ErrorAutenticacion("Usuario o contraseña incorrectos")
+            raise ErrorCredencialesInvalidas()
 
         # Verificar que esté activo
         if not usuario.es_activo():
             logger.warning(
                 "Intento de login fallido: usuario inactivo", user=nombre_usuario
             )
-            raise ErrorAutenticacion("El usuario se encuentra inactivo")
+            raise ErrorUsuarioInactivo()
 
         # Verificar contraseña (automigración incluida)
         es_valida = self.verificar_contraseña(contraseña, usuario.contrasena_hash)
@@ -116,7 +138,7 @@ class ServicioAutenticacion:
         logger.warning(
             "Intento de login fallido: contraseña incorrecta", user=nombre_usuario
         )
-        raise ErrorAutenticacion("Usuario o contraseña incorrectos")
+        raise ErrorCredencialesInvalidas()
 
     def crear_sesion(self, usuario: Usuario) -> SesionUsuario:
         """

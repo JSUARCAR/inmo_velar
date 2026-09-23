@@ -63,6 +63,10 @@ class Settings(BaseSettings):
         default="CHANGE_ME_IN_PRODUCTION", description="Clave secreta para encriptación"
     )
 
+    login_operation_deadline_seconds: int = Field(
+        default=12, description="Tiempo máximo en segundos para completar la operación de login"
+    )
+
     @field_validator("secret_key", mode="after")
     @classmethod
     def validate_secret_key(cls, v):

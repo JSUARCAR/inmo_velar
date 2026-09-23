@@ -242,6 +242,9 @@ class DatabaseManager:
     def _configurar_postgresql(self):
         """Carga la configuración de Postgres desde el entorno."""
         database_url = os.getenv("DATABASE_URL", "")
+        timeout_ms = int(os.getenv("DB_STATEMENT_TIMEOUT", 5000))
+        options = f"-c statement_timeout={timeout_ms} -c lock_timeout={timeout_ms}"
+        
         if database_url and database_url.startswith("postgresql"):
             from urllib.parse import urlparse
 
@@ -256,6 +259,7 @@ class DatabaseManager:
                 "application_name": os.getenv(
                     "DB_APPLICATION_NAME", "InmobiliariaVelar"
                 ),
+                "options": options,
             }
         else:
             self.pg_config = {
@@ -268,6 +272,7 @@ class DatabaseManager:
                 "application_name": os.getenv(
                     "DB_APPLICATION_NAME", "InmobiliariaVelar"
                 ),
+                "options": options,
             }
 
     def _inicializar_pg_pool(self):
