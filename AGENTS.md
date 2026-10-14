@@ -1,178 +1,96 @@
-# AGENTS.md
+# AGENTS.md — Guía de Agentes IA · Inmobiliaria Velar
 
-This file provides guidance to AI coding agents (Claude Code, Cursor, Copilot, Antigravity, etc.) when working with code in this repository.
+> **Actualizado:** 2026-10-14 · **Rama activa:** `main` (`JSUARCAR/inmo_velar`)
+> **Gobernanza:** `.specify/memory/constitution.md` **v2.0.0** prevalece sobre este archivo, `README.md`, `CLAUDE.md` y `GEMINI.md`.
 
-## Repository Overview
+## 1. Qué es este repositorio
 
-A collection of skills for Claude.ai and Claude Code for senior software engineers. Skills are packaged instructions and scripts that extend Claude and your coding agents capabilities.
+Sistema Core de Gestión Inmobiliaria Velar: plataforma transaccional (contratos, liquidaciones financieras, PDF, RBAC, auditoría) con **Clean Architecture + DDD**, **Reflex 0.8.28 + PostgreSQL 13+**, desplegada en **Railway** (Docker + Caddy con ratelimit, `entrypoint.sh`).
 
-## OpenCode Integration
+- Código: `src/` (≈418 ficheros). Tests: `tests/` (≈107 ficheros `test_*`). Specs activas: `specs/072–079`.
+- Estado a 2026-10-14: `079-fix-liquidacion-oct2026` **en curso** (working tree con cambios sin commitear en `servicio_financiero.py`, states y tests de renovación). Hitos recientes: auth 077/078 (spinner + 404 router), 074 secretos+gitleaks, 072 renovación con 47 tests verdes.
+- Stack real: Python prod `3.11-slim` / dev `3.12`, Reflex instalado `0.8.28.post1`, `psycopg2-binary`, Pydantic 2.5+. Puertos: backend `8001`, frontend `3000` (`rxconfig.py`).
 
-OpenCode uses a **skill-driven execution model** powered by the `skill` tool and this repository's `/skills` directory.
+## 2. Reglas no negociables (resumen Constitución v2.0.0)
 
-### Core Rules
+1. **100% español** en código, UI, comentarios y docs (solo términos de librería en inglés).
+2. **Capas unidireccionales:** Dominio → Aplicación → Infraestructura → Presentación. Dominio con ZERO deps externas, VOs `frozen=True`.
+3. **PostgreSQL nativo:** placeholders `%s`, `INSERT ... RETURNING id`, booleanos/fechas ISO 8601 validados. Prohibidos `?`, `lastrowid` y sufijo `_sqlite.py` (`repositorio_[entidad].py`).
+4. **Zero Leak:** jamás commitear `.env`, `railway.json` con secretos ni `*.key/*.pem`. Sanitizar con `config/sanitize_credentials.py`. `gitleaks.toml` activo.
+5. **Testing:** Dominio 100%, lógica nueva >90%. Pre-commit: `check_syntax.py`, `mypy`, `ruff`, `black` + render Reflex.
+6. **Reflex único framework** (Flet obsoleto). Mutaciones de State atómicas; sin vars heredadas colisionadas (`is_loading`, etc. en Reflex ≥0.9); sin `_` inicial en background events.
+7. **Diseño Claude/Anthropic** + escala `Z_*` de `styles.py` (prohibidos `z-index: 9999` y estética IA genérica). Overlays Radix con `pointer-events: auto`.
+8. **Contract-First + validación en fronteras**; un solo formato de error estructurado.
+9. **Stop-the-Line:** ante test/build roto, detener features hasta corregir raíz + test de regresión. **Zero Guessing:** si falta info, preguntar (`CONFUSION:` / `MISSING REQUIREMENT:`), no adivinar.
+10. **Docs dinámicas:** todo cambio estructural MUST actualizar `README.md` + `CLAUDE.md` + este `AGENTS.md`; decisiones relevantes → ADR en `docs/decisions/`.
 
-- If a task matches a skill, you MUST invoke it
-- Skills are located in `skills/<skill-name>/SKILL.md`
-- Never implement directly if a skill applies
-- Always follow the skill instructions exactly (do not partially apply them)
-
-### Intent â†’ Skill Mapping
-
-The agent should automatically map user intent to skills:
-
-- Feature / new functionality â†’ `spec-driven-development`, then `incremental-implementation`, `test-driven-development`
-- Planning / breakdown â†’ `planning-and-task-breakdown`
-- Bug / failure / unexpected behavior â†’ `debugging-and-error-recovery`
-- Code review â†’ `code-review-and-quality`
-- Refactoring / simplification â†’ `code-simplification`
-- API or interface design â†’ `api-and-interface-design`
-- UI work â†’ `frontend-ui-engineering`
-
-### Lifecycle Mapping (Implicit Commands)
-
-OpenCode does not support slash commands like `/spec` or `/plan`.
-
-Instead, the agent must internally follow this lifecycle:
-
-- DEFINE â†’ `spec-driven-development`
-- PLAN â†’ `planning-and-task-breakdown`
-- BUILD â†’ `incremental-implementation` + `test-driven-development`
-- VERIFY â†’ `debugging-and-error-recovery`
-- REVIEW â†’ `code-review-and-quality`
-- SHIP â†’ `shipping-and-launch`
-
-### Execution Model
-
-For every request:
-
-1. Determine if any skill applies (even 1% chance)
-2. Invoke the appropriate skill using the `skill` tool
-3. Follow the skill workflow strictly
-4. Only proceed to implementation after required steps (spec, plan, etc.) are complete
-
-### Anti-Rationalization
-
-The following thoughts are incorrect and must be ignored:
-
-- "This is too small for a skill"
-- "I can just quickly implement this"
-- "Iâ€™ll gather context first"
-
-Correct behavior:
-
-- Always check for and use skills first
-
-This ensures OpenCode behaves similarly to Claude Code with full workflow enforcement.
-
-## Creating a New Skill
-
-### Directory Structure
+## 3. Estructura (rutas reales)
 
 ```
-skills/
-  {skill-name}/           # kebab-case directory name
-    SKILL.md              # Required: skill definition
-    scripts/              # Required: executable scripts
-      {script-name}.sh    # Bash scripts (preferred)
-  {skill-name}.zip        # Required: packaged for distribution
+src/
+├── dominio/              # entidades, value_objects, interfaces, servicios, excepciones
+├── aplicacion/           # servicios de orquestación + esquemas.py (DTOs Pydantic)
+├── infraestructura/      # persistencia (repositorio_*.py), pdf_elite, cache, logging
+├── presentacion_reflex/  # pages/, components/, state/, api/, utils/, config/, styles.py
+├── core/                 # helpers, decoradores (RBAC)
+└── scripts/              # utilidades (diagnostico/)
+migraciones/sql/ | tests/ | specs/ | docs/decisions/ | scripts/diagnostico/
+inmobiliaria_velar/inmobiliaria_velar.py  # entry point Reflex (app_name="inmobiliaria_velar")
 ```
 
-### Naming Conventions
-
-- **Skill directory**: `kebab-case` (e.g. `web-quality`)
-- **SKILL.md**: Always uppercase, always this exact filename
-- **Scripts**: `kebab-case.sh` (e.g., `deploy.sh`, `fetch-logs.sh`)
-- **Zip file**: Must match directory name exactly: `{skill-name}.zip`
-
-### SKILL.md Format
-
-```markdown
----
-name: {skill-name}
-description: {One sentence describing when to use this skill. Include trigger phrases like "Deploy my app", "Check logs", etc.}
----
-
-# {Skill Title}
-
-{Brief description of what the skill does.}
-
-## How It Works
-
-{Numbered list explaining the skill's workflow}
-
-## Usage
+## 4. Comandos operativos
 
 ```bash
-bash /mnt/skills/user/{skill-name}/scripts/{script}.sh [args]
+# Entorno
+python -m venv venv; venv\Scripts\activate  # Windows (o source venv/bin/activate)
+pip install -r requirements.txt
+cp .env.example .env  # completar DATABASE_URL=postgresql://... , SECRET_KEY, API_URL
+
+# Desarrollo (HMR) — validación final exigida: reflex run --env dev
+reflex run
+reflex run --env dev
+
+# Calidad (orden Shift-Left: lint → tipado → tests → build)
+python scripts/check_syntax.py
+ruff check . ; black --check . ; mypy src
+pytest -v
+pytest --cov=src --cov-report=term-missing
 ```
 
-**Arguments:**
-- `arg1` - Description (defaults to X)
+## 5. Reglas de Build
 
-**Examples:**
-{Show 2-3 common usage patterns}
-
-## Output
-
-{Show example output users will see}
-
-## Present Results to User
-
-{Template for how Claude should format results when presenting to users}
-
-## Troubleshooting
-
-{Common issues and solutions, especially network/permissions errors}
-```
-
-### Best Practices for Context Efficiency
-
-Skills are loaded on-demand â€” only the skill name and description are loaded at startup. The full `SKILL.md` loads into context only when the agent decides the skill is relevant. To minimize context usage:
-
-- **Keep SKILL.md under 500 lines** â€” put detailed reference material in separate files
-- **Write specific descriptions** â€” helps the agent know exactly when to activate the skill
-- **Use progressive disclosure** â€” reference supporting files that get read only when needed
-- **Prefer scripts over inline code** â€” script execution doesn't consume context (only output does)
-- **File references work one level deep** â€” link directly from SKILL.md to supporting files
-
-### Script Requirements
-
-- Use `#!/bin/bash` shebang
-- Use `set -e` for fail-fast behavior
-- Write status messages to stderr: `echo "Message" >&2`
-- Write machine-readable output (JSON) to stdout
-- Include a cleanup trap for temp files
-- Reference the script path as `/mnt/skills/user/{skill-name}/scripts/{script}.sh`
-
-### Creating the Zip Package
-
-After creating or updating a skill:
-
-```bash
-cd skills
-zip -r {skill-name}.zip {skill-name}/
-```
-
-### End-User Installation
-
-Document these two installation methods for users:
-
-**Claude Code:**
-```bash
-cp -r skills/{skill-name} ~/.claude/skills/
-```
-
-**claude.ai:**
-Add the skill to project knowledge or paste SKILL.md contents into the conversation.
-
-If the skill requires network access, instruct users to add required domains at `claude.ai/settings/capabilities`.
-
-## Reglas de Build
-1. ANTES de modificar inmobiliaria_velar.py:
+1. ANTES de modificar `inmobiliaria_velar.py`:
    - Verificar que todos los símbolos nuevos existen en sus módulos fuente
-   - Ejecutar: python -c "from src.presentacion_reflex.styles import BASE_STYLE"
-   
+   - Ejecutar: `python -c "from src.presentacion_reflex.styles import BASE_STYLE"`
 2. ANTES de hacer push:
-   - git status debe mostrar working tree limpio
-   - Ejecutar: DATABASE_URL=sqlite:///test.db reflex export --frontend-only --no-zip
+   - `git status` debe mostrar working tree limpio
+   - Ejecutar: `DATABASE_URL=sqlite:///test.db reflex export --frontend-only --no-zip`
+3. Commits Semver + Conventional Commits (`feat/fix/refactor/perf/test/chore`) con scope (`feat(dominio): ...`). Ramas `feature/` y `bugfix/` (base histórica `develop`; integración actual sobre `main`).
+
+## 6. Modelo de ejecución con skills
+
+Los skills se cargan **on-demand** vía el tool `skill` (no están en contexto permanente). Si la intención coincide con un skill — aunque sea 1% — invocarlo y seguirlo al pie de la letra.
+
+| Intención | Skill(s) |
+| :--- | :--- |
+| Feature / funcionalidad nueva | `spec-driven-development` → `incremental-implementation` → `test-driven-development` (+ `speckit-specify/plan/tasks/implement` en `.agents/skills` para trazabilidad SpecKit) |
+| Planificar / descomponer | `planning-and-task-breakdown` |
+| Bug / fallo / comportamiento inesperado | `debugging-and-error-recovery` (+ `browser-testing-with-devtools` si es UI/Runtime) |
+| Revisar código antes de merge | `code-review-and-quality` (5 ejes de la Constitución) |
+| Refactorizar / simplificar | `code-simplification` (solo lo tocado por la tarea; Chesterton's Fence) |
+| API / interfaces | `api-and-interface-design` (Contract-First) |
+| UI / estilos | `frontend-ui-engineering` (sistema Claude, sin estética IA) |
+| Seguridad / secretos / RBAC | `security-and-hardening` |
+| Perf / N+1 / bundle | `performance-optimization` (medir, no adivinar; metas p95) |
+| Docs de decisiones | `documentation-and-adrs` |
+| Deploy / release | `shipping-and-launch` + `ci-cd-and-automation` (gates verdes, rollback claro) |
+| Deprecar / migrar legacy | `deprecation-and-migration` |
+| Duda de framework (Reflex/Python) | `source-driven-development` (citar docs oficiales) |
+
+Ciclo de vida: `DEFINE → PLAN → BUILD → VERIFY → REVIEW → SHIP`. Anti-racionalización: "es muy pequeño para un skill", "primero exploro y luego veo" y "ya me sé el skill" son incorrectos — invocar el skill primero.
+
+## 7. Higiene del repo
+
+- Raíz limpia: `debug_*.py`, `repro_*.py`, `.txt` sueltos o logs huérfanos van a `scripts/diagnostico/` o se eliminan.
+- Cambios atómicos (~100 líneas); lo masivo se divide en subtareas/commits.
+- No construir sobre base inestable; consola del navegador limpia; capturas Antes/Después en cambios visuales.

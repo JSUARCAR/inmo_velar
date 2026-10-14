@@ -1,5 +1,7 @@
 # PROTOCOLO DE OPERACIONES ÉLITE - INMOBILIARIA VELAR
 
+> **Gobernanza:** `.specify/memory/constitution.md` **v2.0.0** (ratificada `2026-06-30`, enmendada `2026-10-14`) prevalece sobre este documento, `CLAUDE.md`, `AGENTS.md` y `README.md`.
+
 Este manifiesto define los estándares de ejecución técnica, arquitectónica y de convenciones obligatorios para la IA en el sistema Velar. Combina los mandatos de ejecución con los principios de ingeniería de `CLAUDE.md`. Cualquier desviación debe ser justificada técnica y empíricamente.
 
 ## 1. FILOSOFÍA DE DESARROLLO (ESTADO FINAL)

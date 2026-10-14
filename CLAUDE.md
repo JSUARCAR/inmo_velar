@@ -2,11 +2,13 @@
 
 ## Sistema Velar - Core de Gestión Inmobiliaria
 
-> **Versión:** 1.0.2 Élite
-> **Última actualización:** 2026-09-13
+> **Versión:** 2.0.0 Élite
+> **Última actualización:** 2026-10-14
 > **Arquitectura:** Clean Architecture + Domain-Driven Design
-> **Framework:** Reflex (Python Full-Stack) + PostgreSQL
-> **Plataforma:** Railway (Cloud-Native)
+> **Framework:** Reflex 0.8.28 (Python Full-Stack) + PostgreSQL 13+
+> **Plataforma:** Railway (Cloud-Native, Docker + Caddy con ratelimit)
+> **Rama activa:** `main` (`origin: JSUARCAR/inmo_velar`)
+> **Gobernanza:** `.specify/memory/constitution.md` **v2.0.0** (ratificada 2026-06-30, enmendada 2026-10-14) — prevalece sobre este documento.
 
 ---
 
@@ -16,6 +18,12 @@
 
 | Fecha | Hito | Impacto |
 |-------|------|---------|
+| 2026-10-14 | Constitución v2.0.0 + docs | Adopción formal SpecKit (Core/Constraints/Workflow/Governance). README, CLAUDE y AGENTS alineados. |
+| 2026-10-13 | 079 Fix liquidación (oct2026, en curso) | Corrección financiera en curso; working tree con cambios en `servicio_financiero.py` y tests de renovación. |
+| 2026-09-23 | Auth US3-US4 + login 077/078 | Fin de spinner infinito (control asíncrono + timeouts); restaurado import de `pages` eliminado por ruff (404). |
+| 2026-09-23 | Fix Reflex ≥0.9 + PDF 404 | Colisión de vars heredadas en States (`is_loading`, etc.); sin `_` en background events; endpoint PDF blindado. |
+| 2026-09-22 | 074 Remediación secretos + gitleaks | Secretos hardcodeados eliminados; `gitleaks.toml` activo; Zero Leak reforzado. |
+| 2026-09-22 | 073 Integer-range + 075/076 | Fix desbordamiento integer en renovación; grupo-pago y liquidación-requiere-arrendamiento. |
 | 2026-09-13 | 072 Renovación de Contratos (Debug) | Fix de casting de fechas vacías (`NULLIF`), `fecha_inicio_renovacion = fin original + 1 día`, `sumar_meses` fin-de-mes, IPC condicional (≥12 meses), `ContratoNoRenovableError` tipado, atomicidad + idempotencia DB-backed (`IDEMPOTENCY_KEYS`), auditoría de propagación solo de filas modificadas, caché no bloqueante (FR-012). 47 tests verdes + SC-003 (61 passed). |
 | 2026-05-10 | Dashboard Alertas Tempranas | Implementación de motor proactivo de detección de vencimientos con persistencia en DB y vista de gestión. |
 | 2026-05-10 | Modernización PDF Elite | Arquitectura BaseDocTemplate, validación de assets y soporte multi-página dinámico. |
@@ -115,14 +123,23 @@ src/
 │   └── notificaciones/         # Clientes de notificación
 │
 ├── presentacion_reflex/        # UI con Reflex (⚠️ NOTA: NO es 'presentacion/')
-│   ├── views/                  # Páginas/vistas completas
-│   ├── components/             # Componentes reutilizables
-│   │   └── widgets/            # Widgets especializados
-│   └── estados/                # States de Reflex (gestión de estado)
+│   ├── pages/                    # Páginas/vistas completas (router Reflex)
+│   ├── components/               # Componentes reutilizables
+│   │   └── widgets/              # Widgets especializados
+│   ├── state/                    # States de Reflex (mutaciones atómicas; sin vars heredadas colisionadas)
+│   ├── api/                      # Endpoints/handlers (PDF download blindado)
+│   ├── utils/                    # Helpers de UI
+│   └── config/                   # Configuración de presentación
+│
+├── scripts/                      # Utilidades (incl. `diagnostico/`, `sanitize_credentials.py`)
+│
+├── migraciones/sql/              # Migraciones SQL versionadas
 │
 └── core/                       # Utilidades transversales
     └── (helpers, decorators, etc.)
 ```
+
+**Estado real (2026-10-14):** `src/` ≈ 418 ficheros, `tests/` ≈ 107 ficheros (`test_*.py`). Python prod `3.11-slim` (Docker), dev `3.12`; Reflex instalado `0.8.28.post1`. Puertos: backend `8001`, frontend `3000` (ver `rxconfig.py`).
 
 ---
 
@@ -467,7 +484,7 @@ def procesar_recaudo(
 | `test` | Pruebas | `test(servicios): agregar tests para CalculadorComision` |
 | `docs` | Documentación | `docs(readme): actualizar instrucciones de instalación` |
 | `style` | Formato (espacios, comas) | `style(dashboard): aplicar formato black` |
-| `chore` | Tareas de mantenimiento | `chore(deps): actualizar reflex a 0.7.x` |
+| `chore` | Tareas de mantenimiento | `chore(deps): actualizar reflex a 0.8.x` |
 
 #### Scopes Principales
 
@@ -482,9 +499,9 @@ def procesar_recaudo(
 ### Flujo de Ramas
 
 ```
-main (producción)
+main (producción, rama activa actual)
   ↑
-develop (integración)
+develop (integración, histórico)
   ↑
 feature/VEL-123-nombre-descriptivo (features)
 bugfix/VEL-456-descripcion (bugfixes)
@@ -546,14 +563,14 @@ class TestContratoArrendamiento:
 
 ```python
 import pytest
-from src.infraestructura.persistencia import RepositorioPersonaSQLite
+from src.infraestructura.persistencia import RepositorioPersona  # Nombre genérico; PROHIBIDO sufijo `_sqlite`
 
 @pytest.mark.integration
-class TestRepositorioPersonaSQLite:
+class TestRepositorioPersona:
     """Tests con base de datos real (test container)."""
 
     def test_guardar_y_recuperar_persona(self, db_session):
-        repo = RepositorioPersonaSQLite(db_session)
+        repo = RepositorioPersona(db_session)
         persona = PersonaFactory.build()
 
         guardada = repo.guardar(persona)
@@ -1141,6 +1158,8 @@ def sanitize_output(text: str) -> str:
 | `ESTADO_TAREAS.md` | Tareas pendientes/en progreso | Completar hito |
 | `auditoria_GEMINI_CLI.md` | Auditoría de cambios | Cada sesión |
 | `CLAUDE.md` | Este documento | Cambios arquitectónicos |
+| `.specify/memory/constitution.md` | Constitución v2.0.0 (prevalece) | Cualquier cambio de gobierno/principios (bump Semver) |
+| `README.md` / `AGENTS.md` | Guías operativas | Cada cambio estructural (docs dinámicas) |
 
 ### Template de Actualización
 
@@ -1185,6 +1204,7 @@ def sanitize_output(text: str) -> str:
 
 | Archivo | Propósito |
 |---------|-----------|
+| `.specify/memory/constitution.md` | Constitución v2.0.0 — Protocolo élite, prevalece sobre todo |
 | `CLAUDE.md` | Este documento - Protocolo de ingeniería élite |
 | `GEMINI.md` | Protocolo de operaciones élite (complementario) |
 | `ESTADO_TAREAS.md` | Tareas pendientes y estado del proyecto |
