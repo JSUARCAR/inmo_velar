@@ -1070,7 +1070,6 @@ class LiquidacionesState(DocumentosStateMixin):
         async with self:
             self.is_loading = True
             self.error_message = ""
-            vista_agrupada = self.vista_agrupada
 
         try:
             servicio = ServicioFinanciero(db_manager)
@@ -1132,10 +1131,18 @@ class LiquidacionesState(DocumentosStateMixin):
             async with self:
                 self.show_bulk_create_modal = False
                 self.form_data = {}
+                # Sincronizar filtro con el período generado para garantizar
+                # visibilidad inmediata de las liquidaciones recién creadas.
+                # Sin esto, si el filtro apuntaba a otro período, la tabla
+                # seguiría mostrando el período anterior y parecería que
+                # "no se generó nada" (caso octubre 2026).
+                self.filter_periodo = periodo
+                self.current_page = 1
 
-            # Si estamos en vista agrupada, recargar
-            if vista_agrupada:
-                yield LiquidacionesState.load_liquidaciones()
+            # Recargar siempre (vista individual y agrupada) para mostrar
+            # las nuevas liquidaciones. Antes solo recargaba en vista
+            # agrupada, ocultando el resultado en vista individual.
+            yield LiquidacionesState.load_liquidaciones()
 
         except ValueError as e:
             async with self:

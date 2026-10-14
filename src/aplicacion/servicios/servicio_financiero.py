@@ -311,11 +311,15 @@ class ServicioFinanciero:
         detalles_no_elegibles = []
 
         for row in contratos:
-            id_contrato_m = row["ID_CONTRATO_M"]
-            direccion = row["DIRECCION_PROPIEDAD"]
+            # Compatibilidad dual SQLite/PostgreSQL: UpperCaseCursorWrapper
+            # convierte claves a MAYÚSCULAS en PG, mientras SQLite preserva
+            # el alias original en minúsculas. Se soportan ambas variantes.
+            id_contrato_m = row.get("ID_CONTRATO_M", row.get("id_contrato_m"))
+            direccion = row.get("DIRECCION_PROPIEDAD", row.get("direccion_propiedad"))
+            tiene_arriendo = row.get("TIENE_ARRIENDO", row.get("tiene_arriendo"))
             
             # Clasificar los ACTIVO sin arrendamiento como no_elegibles tempranamente
-            if not row["tiene_arriendo"]:
+            if not tiene_arriendo:
                 no_elegibles += 1
                 detalles_no_elegibles.append(f"{direccion}: sin contrato de arrendamiento activo en esta propiedad")
                 continue
