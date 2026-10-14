@@ -91,7 +91,7 @@ def _setup_arrendatario(db):
         row2 = cursor.fetchone()
         id_arrendatario = row2[0] if isinstance(row2, tuple) else row2["ID_ARRENDATARIO"]
         conn.commit()
-    return id_arrendatario
+    return id_arrendatario, id_persona
 
 
 def _setup_ipc(db, valor_ipc=5.0):
@@ -103,6 +103,55 @@ def _setup_ipc(db, valor_ipc=5.0):
         pass
     vigente = repo_ipc.obtener_ultimo()
     return vigente.valor_ipc if vigente else 0.0
+
+
+def _limpiar(db, ids):
+    """Limpieza total (T022): deja la BD sin rastro del test.
+
+    Sigue el patron _limpiar + request.addfinalizer de los tests de
+    renovacion hermanos. Corre tambien si el test falla, por lo que cada
+    corrida deja cero residuos aunque la asercion falle.
+    """
+    with db.obtener_conexion() as conn:
+        cursor = conn.cursor()
+        c_a = ids.get("id_contrato_a")
+        if c_a:
+            cursor.execute(
+                "DELETE FROM IPC_INCREMENT_HISTORY WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute(
+                "DELETE FROM AUDITORIA_PROPAGACION_CANON WHERE CONTRATO_ID = %s", (c_a,)
+            )
+            cursor.execute(
+                "DELETE FROM RENOVACIONES_CONTRATOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute("DELETE FROM RECAUDOS WHERE ID_CONTRATO_A = %s", (c_a,))
+            cursor.execute(
+                "DELETE FROM IDEMPOTENCY_KEYS WHERE PARAMETROS->>'id_contrato' = %s",
+                (str(c_a),),
+            )
+            cursor.execute(
+                "DELETE FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+        if ids.get("anio_ipc"):
+            cursor.execute(
+                "DELETE FROM IPC WHERE ANIO = %s AND CREATED_BY = %s",
+                (ids["anio_ipc"], ids.get("creador_ipc", "test_t22")),
+            )
+        if ids.get("id_prop"):
+            cursor.execute(
+                "DELETE FROM PROPIEDADES WHERE ID_PROPIEDAD = %s", (ids["id_prop"],)
+            )
+        if ids.get("id_arrend"):
+            cursor.execute(
+                "DELETE FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = %s",
+                (ids["id_arrend"],),
+            )
+        if ids.get("id_persona"):
+            cursor.execute(
+                "DELETE FROM PERSONAS WHERE ID_PERSONA = %s", (ids["id_persona"],)
+            )
+        conn.commit()
 
 
 class RepoPropiedadFallaEnActualizar:
@@ -140,13 +189,16 @@ def _estado_contrato(db, id_contrato):
     return (row["FECHA_FIN_CONTRATO_A"], row["CANON_ARRENDAMIENTO"], row["ESTADO_CONTRATO_A"])
 
 
-def test_T022_fallo_a_mitad_de_transaccion_zero_estado_parcial():
+def test_T022_fallo_a_mitad_de_transaccion_zero_estado_parcial(request):
     """Fallo tras actualizar el contrato → rollback total: sin renovaciones,
     sin auditoría de propagación, contrato intacto."""
     db = _require_db()
     servicio = ServicioContratos(db)
     id_prop = _setup_propiedad(db)
-    id_arrend = _setup_arrendatario(db)
+    id_arrend, id_persona = _setup_arrendatario(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona,
+           "anio_ipc": 2097, "creador_ipc": "test_t22"}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     _setup_ipc(db, valor_ipc=5.0)
 
     with db.obtener_conexion() as conn:
@@ -171,6 +223,7 @@ def test_T022_fallo_a_mitad_de_transaccion_zero_estado_parcial():
         },
         "test_t22",
     )
+    ids["id_contrato_a"] = contrato.id_contrato_a
 
     # Estado previo
     fin_previo, canon_previo, estado_previo = _estado_contrato(db, contrato.id_contrato_a)
@@ -216,13 +269,16 @@ def test_T022_fallo_a_mitad_de_transaccion_zero_estado_parcial():
     assert estado_tras == estado_previo, f"Contrato no debe cambiar su estado: {estado_tras} vs {estado_previo}"
 
 
-def test_T022_reintento_misma_idempotency_key_completa_sin_duplicados():
+def test_T022_reintento_misma_idempotency_key_completa_sin_duplicados(request):
     """Reintento con la misma idempotency_key completa exitosamente y
     produce exactamente 1 fila de RENOVACIONES_CONTRATOS (sin duplicados)."""
     db = _require_db()
     servicio = ServicioContratos(db)
     id_prop = _setup_propiedad(db)
-    id_arrend = _setup_arrendatario(db)
+    id_arrend, id_persona = _setup_arrendatario(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona,
+           "anio_ipc": 2097, "creador_ipc": "test_t22"}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     _setup_ipc(db, valor_ipc=5.0)
 
     with db.obtener_conexion() as conn:
@@ -247,6 +303,7 @@ def test_T022_reintento_misma_idempotency_key_completa_sin_duplicados():
         },
         "test_t22b",
     )
+    ids["id_contrato_a"] = contrato.id_contrato_a
 
     repo_propiedad_real = RepositorioPropiedadPostgres(db)
     repo_propiedad_fallido = RepoPropiedadFallaEnActualizar(repo_propiedad_real)

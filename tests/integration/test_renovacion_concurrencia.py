@@ -100,7 +100,7 @@ def _setup_arrendatario(db):
         row2 = cursor.fetchone()
         id_arrendatario = row2[0] if isinstance(row2, tuple) else row2["ID_ARRENDATARIO"]
         conn.commit()
-    return id_arrendatario
+    return id_arrendatario, id_persona
 
 
 def _setup_ipc(db, valor_ipc=5.0):
@@ -112,6 +112,60 @@ def _setup_ipc(db, valor_ipc=5.0):
         pass
     vigente = repo_ipc.obtener_ultimo()
     return vigente.valor_ipc if vigente else 0.0
+
+
+def _limpiar(db, ids):
+    """Limpieza total (T023): deja la BD sin rastro del test.
+
+    Sigue el patron _limpiar + request.addfinalizer de los tests de
+    renovacion hermanos. Corre tambien si el test falla, por lo que cada
+    corrida deja cero residuos aunque la asercion falle.
+    """
+    with db.obtener_conexion() as conn:
+        cursor = conn.cursor()
+        if ids.get("id_recaudo"):
+            cursor.execute(
+                "DELETE FROM RECAUDO_CONCEPTOS WHERE ID_RECAUDO = %s",
+                (ids["id_recaudo"],),
+            )
+        c_a = ids.get("id_contrato_a")
+        if c_a:
+            cursor.execute(
+                "DELETE FROM IPC_INCREMENT_HISTORY WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute(
+                "DELETE FROM AUDITORIA_PROPAGACION_CANON WHERE CONTRATO_ID = %s", (c_a,)
+            )
+            cursor.execute(
+                "DELETE FROM RENOVACIONES_CONTRATOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+            cursor.execute("DELETE FROM RECAUDOS WHERE ID_CONTRATO_A = %s", (c_a,))
+            cursor.execute(
+                "DELETE FROM IDEMPOTENCY_KEYS WHERE PARAMETROS->>'id_contrato' = %s",
+                (str(c_a),),
+            )
+            cursor.execute(
+                "DELETE FROM CONTRATOS_ARRENDAMIENTOS WHERE ID_CONTRATO_A = %s", (c_a,)
+            )
+        if ids.get("anio_ipc"):
+            cursor.execute(
+                "DELETE FROM IPC WHERE ANIO = %s AND CREATED_BY = %s",
+                (ids["anio_ipc"], ids.get("creador_ipc", "test_t23")),
+            )
+        if ids.get("id_prop"):
+            cursor.execute(
+                "DELETE FROM PROPIEDADES WHERE ID_PROPIEDAD = %s", (ids["id_prop"],)
+            )
+        if ids.get("id_arrend"):
+            cursor.execute(
+                "DELETE FROM ARRENDATARIOS WHERE ID_ARRENDATARIO = %s",
+                (ids["id_arrend"],),
+            )
+        if ids.get("id_persona"):
+            cursor.execute(
+                "DELETE FROM PERSONAS WHERE ID_PERSONA = %s", (ids["id_persona"],)
+            )
+        conn.commit()
 
 
 def _crear_contrato(servicio, db, id_prop, id_arrend, usuario="test_t23"):
@@ -159,16 +213,20 @@ def _query(db, sql, params):
         return row[0] if isinstance(row, tuple) else next(iter(row.values()))
 
 
-def test_T023_dos_renovaciones_concurrentes_misma_key_sin_deadlock():
+def test_T023_dos_renovaciones_concurrentes_misma_key_sin_deadlock(request):
     """CHK032: dos renovaciones concurrentes del mismo contrato con la misma
     idempotency_key — una gana el lock, la otra obtiene el resultado cached;
     sin deadlock y exactamente 1 fila de RENOVACIONES_CONTRATOS."""
     db = _require_db()
     servicio = ServicioContratos(db)
     id_prop = _setup_propiedad(db)
-    id_arrend = _setup_arrendatario(db)
+    id_arrend, id_persona = _setup_arrendatario(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona,
+           "anio_ipc": 2096, "creador_ipc": "test_t23"}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     valor_ipc = _setup_ipc(db, valor_ipc=5.0)
     contrato = _crear_contrato(servicio, db, id_prop, id_arrend)
+    ids["id_contrato_a"] = contrato.id_contrato_a
 
     servicio_renov = _servicio_renovacion(db)
     canon_esperado = int(1000000 * (1 + valor_ipc / 100))
@@ -212,16 +270,20 @@ def test_T023_dos_renovaciones_concurrentes_misma_key_sin_deadlock():
     )
 
 
-def test_T023_renovacion_y_escritura_recaudo_concurrentes_sin_deadlock():
+def test_T023_renovacion_y_escritura_recaudo_concurrentes_sin_deadlock(request):
     """CHK032: la propagación de canon actualiza un RECAUDO del mismo contrato
     mientras otra conexión lo escribe simultáneamente; la transacción espera
     el lock de fila, se completa sin deadlock y la propagación es correcta."""
     db = _require_db()
     servicio = ServicioContratos(db)
     id_prop = _setup_propiedad(db)
-    id_arrend = _setup_arrendatario(db)
+    id_arrend, id_persona = _setup_arrendatario(db)
+    ids = {"id_prop": id_prop, "id_arrend": id_arrend, "id_persona": id_persona,
+           "anio_ipc": 2096, "creador_ipc": "test_t23"}
+    request.addfinalizer(lambda: _limpiar(db, ids))
     valor_ipc = _setup_ipc(db, valor_ipc=5.0)
     contrato = _crear_contrato(servicio, db, id_prop, id_arrend)
+    ids["id_contrato_a"] = contrato.id_contrato_a
     canon_esperado = int(1000000 * (1 + valor_ipc / 100))
 
     # Recaudo futuro del contrato (sobre el que la propagación escribe)
@@ -242,6 +304,7 @@ def test_T023_renovacion_y_escritura_recaudo_concurrentes_sin_deadlock():
             (id_recaudo,),
         )
         conn.commit()
+    ids["id_recaudo"] = id_recaudo
 
     servicio_renov = _servicio_renovacion(db)
 
