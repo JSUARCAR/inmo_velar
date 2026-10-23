@@ -1,0 +1,36 @@
+# ============================================================================
+# requirements.in — Dependencias DIRECTAS de producción (editable)
+# El lock con hashes (requirements.txt) se GENERA, nunca se edita a mano:
+#   uv pip compile requirements.in -o requirements.txt --generate-hashes --python-version 3.11 --upgrade
+# Ver DEPENDENCIAS.md
+# ============================================================================
+
+# === Framework UI (FIJO: no subir a 0.9+/0.10; choques documentados, va en spec aparte) ===
+reflex==0.8.28
+fastapi>=0.110
+plotly>=5.18
+# kaleido: requerido por plotly.io.to_image (src/infraestructura/servicios/pdf_elite/utils/chart_converter.py)
+kaleido>=0.2.1
+
+# === Configuración y Validación ===
+pydantic>=2.5
+pydantic-settings>=2.1
+
+# === Base de Datos ===
+psycopg2-binary>=2.9
+# sqlalchemy<2.1 (transitiva de reflex/sqlmodel, fijada a propósito): SQLAlchemy 2.1 dejó de instalar
+# greenlet por defecto y rompe el soporte asyncio (tests/integration/test_auth_errores.py).
+# Producción venía usando 2.0.x. Quitar al migrar Reflex (spec aparte) o al declarar sqlalchemy[asyncio].
+sqlalchemy>=2.0.14,<2.1
+
+# === Utilidades, PDF y códigos ===
+python-dotenv>=1.0
+python-dateutil>=2.8
+fpdf2>=2.7.5
+reportlab>=4.0
+qrcode[pil]>=7.4.2
+python-barcode>=0.15.1
+pillow>=12.3
+num2words>=0.5.13
+bcrypt>=4.0
+holidays>=0.46

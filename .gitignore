@@ -13,6 +13,7 @@
 
 # === SCRIPTS DE DIAGNOSTICO INTERNOS ===
 scripts/diagnostico/
+!scripts/diagnostico/prueba_humo_dependencias.py
 scripts/diagnostico_*
 scripts/check_*
 scripts/debug_*
@@ -118,3 +119,9 @@ site/
 .venv/
 reflex_log.txt
 test_db.py
+
+# Entornos virtuales de auditoría/validación (spec 080)
+.venv-*/
+
+# Configuración local de IDEs/herramientas
+.kilo/

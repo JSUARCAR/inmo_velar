@@ -1,0 +1,20 @@
+# ============================================================================
+# requirements-dev.in — Dependencias de desarrollo/CI (editable)
+# Restringido por el lock de producción para no divergir de las versiones prod.
+#   uv pip compile requirements-dev.in -o requirements-dev.txt --generate-hashes --python-version 3.11 --upgrade
+# Ver DEPENDENCIAS.md
+# ============================================================================
+-c requirements.txt
+
+# === Testing ===
+pytest>=7.4
+pytest-cov>=4.1
+pytest-asyncio>=0.23
+
+# === Tipado, linting y formateo ===
+mypy>=1.7
+ruff>=0.1
+black>=23.12
+
+# === Seguridad ===
+pip-audit>=2.7

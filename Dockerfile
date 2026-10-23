@@ -25,7 +25,7 @@ WORKDIR /app
 
 # Copy requirements first (Docker cache optimization)
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
 
 # Cache-busting ARG
 ARG CACHEBUST=20260704_1045
