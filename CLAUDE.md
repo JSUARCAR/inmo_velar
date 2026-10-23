@@ -18,6 +18,7 @@
 
 | Fecha | Hito | Impacto |
 |-------|------|---------|
+| 2026-10-22 | 080 Lock de dependencias con hashes | `requirements.in`/`requirements-dev.in` (editables) → `requirements.txt`/`requirements-dev.txt` (generados con `uv`, nunca a mano). Reflex FIJO en 0.8.28. Instalar con `pip install --require-hashes -r requirements.txt` y, para desarrollo, también `-r requirements-dev.txt`. Ver `DEPENDENCIAS.md` y ADR 080. |
 | 2026-10-14 | Constitución v2.0.0 + docs | Adopción formal SpecKit (Core/Constraints/Workflow/Governance). README, CLAUDE y AGENTS alineados. |
 | 2026-10-13 | 079 Fix liquidación (oct2026, en curso) | Corrección financiera en curso; working tree con cambios en `servicio_financiero.py` y tests de renovación. |
 | 2026-09-23 | Auth US3-US4 + login 077/078 | Fin de spinner infinito (control asíncrono + timeouts); restaurado import de `pages` eliminado por ruff (404). |

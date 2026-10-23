@@ -7,7 +7,7 @@
 
 Sistema Core de Gestión Inmobiliaria Velar: plataforma transaccional (contratos, liquidaciones financieras, PDF, RBAC, auditoría) con **Clean Architecture + DDD**, **Reflex 0.8.28 + PostgreSQL 13+**, desplegada en **Railway** (Docker + Caddy con ratelimit, `entrypoint.sh`).
 
-- Código: `src/` (≈418 ficheros). Tests: `tests/` (≈107 ficheros `test_*`). Specs activas: `specs/072–079`.
+- Código: `src/` (≈418 ficheros). Tests: `tests/` (≈107 ficheros `test_*`). Specs activas: `specs/072–080` (080: lock de dependencias con hashes, ver `DEPENDENCIAS.md`).
 - Estado a 2026-10-14: `079-fix-liquidacion-oct2026` **en curso** (working tree con cambios sin commitear en `servicio_financiero.py`, states y tests de renovación). Hitos recientes: auth 077/078 (spinner + 404 router), 074 secretos+gitleaks, 072 renovación con 47 tests verdes.
 - Stack real: Python prod `3.11-slim` / dev `3.12`, Reflex instalado `0.8.28.post1`, `psycopg2-binary`, Pydantic 2.5+. Puertos: backend `8001`, frontend `3000` (`rxconfig.py`).
 
@@ -43,7 +43,9 @@ inmobiliaria_velar/inmobiliaria_velar.py  # entry point Reflex (app_name="inmobi
 ```bash
 # Entorno
 python -m venv venv; venv\Scripts\activate  # Windows (o source venv/bin/activate)
-pip install -r requirements.txt
+pip install --require-hashes -r requirements.txt  # producción (lock con hashes)
+pip install --require-hashes -r requirements.txt -r requirements-dev.txt  # desarrollo
+# Actualizar dependencias: editar *.in y regenerar con uv (ver DEPENDENCIAS.md); Reflex fijo en 0.8.28
 cp .env.example .env  # completar DATABASE_URL=postgresql://... , SECRET_KEY, API_URL
 
 # Desarrollo (HMR) — validación final exigida: reflex run --env dev

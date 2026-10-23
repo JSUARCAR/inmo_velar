@@ -127,7 +127,10 @@ git clone <repository-url> && cd PYTHON-REFLEX
 python -m venv venv
 # Windows: venv\\Scripts\\activate | Unix: source venv/bin/activate
 pip install --upgrade pip
-pip install -r requirements.txt
+pip install --require-hashes -r requirements.txt
+# Desarrollo (tests, linters, pip-audit): agregar también el lock de dev
+pip install --require-hashes -r requirements.txt -r requirements-dev.txt
+# Referencia completa de dependencias: DEPENDENCIAS.md
 ```
 
 ### 6.2. Variables de Entorno y Capa de Datos
@@ -179,7 +182,7 @@ pytest --cov=src --cov-report=term-missing
 3. **Análisis Estático**: `black` & `mypy` no arrojan flags u overrides ignorados localmente.
 4. **Pre-commit obligatorio**: `check_syntax.py`, `mypy`, `ruff`, `black` y tests de renderizado Reflex (Constitución VI). En CI ningún cambio pasa a producción sin gates verdes.
 
-### Hitos recientes (specs `072–079`)
+### Hitos recientes (specs `072–080`)
 | Spec | Tema | Estado |
 | :--- | :--- | :--- |
 | `072` | Renovación de contratos (debug: `NULLIF`, IPC ≥12m, idempotencia) | ✅ 47 tests verdes |
@@ -189,6 +192,7 @@ pytest --cov=src --cov-report=term-missing
 | `077` | Spinner infinito en login (control asíncrono + timeouts) | ✅ |
 | `078` | Error 404 por import de router eliminado por ruff | ✅ |
 | `079` | Fix liquidación (oct-2026) | 🚧 en curso |
+| `080` | Lock de dependencias con hashes + separación prod/dev (`DEPENDENCIAS.md`, ADR 080) | ✅ implementada en rama `chore/080-actualizacion-dependencias-seguridad` (pendiente de merge) |
 
 Lecciones blindadas: colisión de vars heredadas en States con `reflex>=0.9` (`is_loading`, etc.), no usar `_` en background events, validación de assets PDF antes de generar.
 
