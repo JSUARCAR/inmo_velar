@@ -1,0 +1,29 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      python-patch-minor:
+        update-types: ["patch", "minor"]
+    ignore:
+      # Reflex FIJO en 0.8.28 (ver DEPENDENCIAS.md); su migración va en una spec aparte.
+      - dependency-name: "reflex"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      docker-patch-minor:
+        update-types: ["patch", "minor"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions-patch-minor:
+        update-types: ["patch", "minor"]
