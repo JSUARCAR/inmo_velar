@@ -6,7 +6,7 @@
 # ============================================================================
 
 # === Framework UI (FIJO: no subir a 0.9+/0.10; choques documentados, va en spec aparte) ===
-reflex==0.8.28
+reflex==0.8.28.post1
 fastapi>=0.110
 plotly>=5.18
 # kaleido: requerido por plotly.io.to_image (src/infraestructura/servicios/pdf_elite/utils/chart_converter.py)
