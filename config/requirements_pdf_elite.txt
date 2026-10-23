@@ -18,7 +18,7 @@ qrcode[pil]>=7.4.2        # Generación de códigos QR con PIL
 python-barcode>=0.15.1    # Generación de códigos de barra
 
 # === Gráficos y Visualización ===
-matplotlib>=3.9.2         # Gráficos científicos
+matplotlib>=3.11.2         # Gráficos científicos
 seaborn>=0.13.2           # Visualizaciones estadísticas avanzadas
 
 # === Optimización y Compresión ===
