@@ -21,7 +21,7 @@ psycopg2-binary>=2.9
 # sqlalchemy<2.1 (transitiva de reflex/sqlmodel, fijada a propósito): SQLAlchemy 2.1 dejó de instalar
 # greenlet por defecto y rompe el soporte asyncio (tests/integration/test_auth_errores.py).
 # Producción venía usando 2.0.x. Quitar al migrar Reflex (spec aparte) o al declarar sqlalchemy[asyncio].
-sqlalchemy>=2.0.14,<2.1
+sqlalchemy>=2.1.5,<2.2
 
 # === Utilidades, PDF y códigos ===
 python-dotenv>=1.0
@@ -33,4 +33,4 @@ python-barcode>=0.15.1
 pillow>=12.3
 num2words>=0.5.13
 bcrypt>=4.0
-holidays>=0.46
+holidays>=0.107
