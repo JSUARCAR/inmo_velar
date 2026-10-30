@@ -9,11 +9,11 @@
 # === Testing ===
 pytest>=7.4
 pytest-cov>=4.1
-pytest-asyncio>=0.23
+pytest-asyncio>=1.4.1
 
 # === Tipado, linting y formateo ===
 mypy>=1.7
-ruff>=0.1
+ruff>=0.17.3
 black>=23.12
 
 # === Seguridad ===
