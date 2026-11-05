@@ -84,6 +84,13 @@ class ServicioContratoArrendamiento:
         self, datos: Dict, usuario_sistema: str
     ) -> ContratoArrendamiento:
         id_propiedad = datos["id_propiedad"]
+        id_arrendatario = datos["id_arrendatario"]
+
+        # Validar que los IDs obligatorios sean > 0
+        if id_propiedad <= 0:
+            raise ValueError("ID de propiedad inválido")
+        if id_arrendatario <= 0:
+            raise ValueError("ID de arrendatario inválido")
 
         # 0. Validar Coherencia de Fechas y Duración
         fecha_inicio = datos["fecha_inicio"]

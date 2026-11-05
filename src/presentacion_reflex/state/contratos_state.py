@@ -872,9 +872,9 @@ class ContratosState(DocumentosStateMixin):
 
             if "mandato" in self.modal_mode:
                 datos = {
-                    "id_propiedad": int(full_data["id_propiedad"]),
-                    "id_propietario": int(full_data["id_propietario"]),
-                    "id_asesor": int(full_data["id_asesor"]),
+                    "id_propiedad": int(full_data.get("id_propiedad") or 0),
+                    "id_propietario": int(full_data.get("id_propietario") or 0),
+                    "id_asesor": int(full_data.get("id_asesor") or 0),
                     "fecha_inicio": full_data["fecha_inicio"],
                     "fecha_fin": full_data["fecha_fin"],
                     "canon": int(full_data.get("canon") or 0),
@@ -896,14 +896,19 @@ class ContratosState(DocumentosStateMixin):
                     ),
                     "enlace_video": full_data.get("enlace_video", ""),
                 }
+                # Validar campos obligatorios antes de persistir
+                if not datos["id_propiedad"] or not datos["id_propietario"] or not datos["id_asesor"]:
+                    raise ValueError(
+                        "Debe seleccionar una propiedad, propietario y asesor válidos"
+                    )
                 if self.modal_mode == "crear_mandato":
                     servicio.crear_mandato(datos, usuario)
                 else:
                     servicio.actualizar_mandato(self.editing_id, datos, usuario)
             else:
                 datos = {
-                    "id_propiedad": int(full_data["id_propiedad"]),
-                    "id_arrendatario": int(full_data["id_arrendatario"]),
+                    "id_propiedad": int(full_data.get("id_propiedad") or 0),
+                    "id_arrendatario": int(full_data.get("id_arrendatario") or 0),
                     "id_codeudor": (
                         int(full_data["id_codeudor"])
                         if full_data.get("id_codeudor")
@@ -921,6 +926,11 @@ class ContratosState(DocumentosStateMixin):
                         else None
                     ),
                 }
+                # Validar campos obligatorios antes de persistir
+                if not datos["id_propiedad"] or not datos["id_arrendatario"]:
+                    raise ValueError(
+                        "Debe seleccionar una propiedad y un arrendatario válidos"
+                    )
                 if self.modal_mode == "crear_arrendamiento":
                     servicio.crear_arrendamiento(datos, usuario)
                 else:
@@ -933,10 +943,14 @@ class ContratosState(DocumentosStateMixin):
             yield ContratosState.load_kpis()
             yield ContratosState.load_filter_options()
             yield rx.toast.success("Guardado exitoso", position="bottom-right")
-        except Exception as e:
+        except ValueError as e:
             async with self:
                 self.error_message = str(e)
-            yield rx.toast.error(f"Error: {e}")
+            yield rx.toast.error(str(e), position="bottom-right")
+        except Exception as e:
+            async with self:
+                self.error_message = f"Error inesperado: {e}"
+            yield rx.toast.error("Error inesperado al guardar", position="bottom-right")
         finally:
             async with self:
                 self.is_loading = False

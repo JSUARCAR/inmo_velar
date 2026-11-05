@@ -69,6 +69,16 @@ class ServicioContratoMandato:
         self, datos: Dict, usuario_sistema: str
     ) -> ContratoMandato:
         id_propiedad = datos["id_propiedad"]
+        id_propietario = datos["id_propietario"]
+        id_asesor = datos["id_asesor"]
+
+        # Validar que los IDs obligatorios sean > 0
+        if id_propiedad <= 0:
+            raise ValueError("ID de propiedad inválido")
+        if id_propietario <= 0:
+            raise ValueError("ID de propietario inválido")
+        if id_asesor <= 0:
+            raise ValueError("ID de asesor inválido")
 
         # 0. Validar Coherencia de Fechas y Duración
         fecha_inicio = datos["fecha_inicio"]
