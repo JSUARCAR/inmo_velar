@@ -9,8 +9,8 @@ plotly>=5.18.0
 kaleido>=0.2.1
 
 # === Configuración y Validación ===
-pydantic>=2.5.0
-pydantic-settings>=2.1.0
+pydantic>=2.14.2
+pydantic-settings>=2.16.2
 
 # === Base de Datos ===
 # SQLite está incluido en Python estándar
@@ -18,21 +18,21 @@ pydantic-settings>=2.1.0
 # === Utilidades ===
 python-dotenv>=1.0.0
 python-dateutil>=2.8.0
-fpdf2>=2.7.5
+fpdf2>=2.9.0
 num2words>=0.5.13
 
 # === Type Checking (para desarrollo) ===
-mypy>=1.7.0
+mypy>=2.4.1
 
 
 # === Testing ===
-pytest>=7.4.0
+pytest>=9.2.0
 pytest-cov>=4.1.0
 
 # === Linting y Formateo ===
-ruff>=0.1.0
+ruff>=0.17.3
 black>=23.12.0
 
 # === Automatización y Notificaciones ===
 pyautogui>=0.9.54
-holidays==0.98
+holidays==0.108
