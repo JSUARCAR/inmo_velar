@@ -7,7 +7,7 @@ FROM caddy:2-builder AS caddy-builder
 RUN xcaddy build --with github.com/mholt/caddy-ratelimit
 
 # Stage 2: Final image
-FROM python:3.11-slim
+FROM python:3.15-slim
 
 # Create non-root user
 RUN groupadd -r appgroup && useradd -r -g appgroup -d /app -s /sbin/nologin appuser
